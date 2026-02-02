@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen w-full bg-[#003d35] overflow-x-hidden flex items-center justify-center p-4 lg:p-12 relative font-sans">
+  <div class="min-h-screen w-full bg-[#003d35] overflow-x-hidden flex items-center justify-center p-4 lg:p-12 relative font-sans" :dir="isRtl ? 'rtl' : 'ltr'">
     <!-- BACKGROUND LAYERS -->
     <div v-if="!isFinished" class="absolute inset-0 z-0 bg-layer"></div>
     <div v-if="!isFinished" class="absolute inset-0 z-0">
@@ -9,7 +9,7 @@
     <!-- MAIN ONBOARDING INTERFACE -->
     
     <!-- LANGUAGE TOGGLE -->
-    <div class="absolute top-6 right-6 z-50">
+    <div class="absolute top-6 z-50" :class="isRtl ? 'left-6' : 'right-6'">
        <LanguageToggle v-model="currentLanguage" />
     </div>
 
@@ -41,8 +41,8 @@
                 <div class="flex justify-between items-center mb-8">
                   <img src="/images/logo-white.png" class="w-full max-w-[140px] h-auto" alt="Logo" />
                   <div class="flex items-center gap-3 text-[#04C18F]/70 select-none">
-                    <button class="top-prev-btn" :class="{ disabled: !canGoPrevious }" :disabled="!canGoPrevious" @click="handlePrevious()">
-                      ‹ Previous
+                    <button class="top-prev-btn" :class="{ disabled: !canGoMainPrevious }" :disabled="!canGoMainPrevious" @click="handleMainPrevious()">
+                      <span v-if="!isRtl">‹</span> {{ t.prev }} <span v-if="isRtl">›</span>
                     </button>
                     <span class="opacity-30">|</span>
                     <span class="text-[#04C18F] font-medium text-[18px]">{{ step }}/11</span>
@@ -54,118 +54,127 @@
                   
                   <!-- Step 1: Entity Registration -->
                   <div v-if="step === 1" class="space-y-8">
-                    <h2 class="step-title">How many entities would you like to register?</h2>
+                    <h2 class="step-title">{{ t.step1Title }}</h2>
                     <div class="space-y-4 max-w-[400px]">
-                      <button v-for="opt in entityOptions" :key="opt.label" @click="selectEntityOption(opt)" class="option-btn" :class="{ active: selectedLabel === opt.label }">{{ opt.label }}</button>
+                      <button v-for="opt in entityOptions" :key="opt.value" @click="selectEntityOption(opt)" class="option-btn" :class="{ active: selectedLabel === opt.value }">{{ opt.label }}</button>
                     </div>
                   </div>
 
                   <!-- Step 2: Company Details (Image Style) -->
                   <div v-else-if="step === 2" class="space-y-6">
                     <div class="space-y-1">
-                      <h2 class="step-title !text-[22px]">Please enter your company details.</h2>
-                      <p class="text-white/70 text-[16px]">Entity {{ currentEntity }}</p>
+                      <h2 class="step-title !text-[22px]">{{ t.step2Title }}</h2>
+                      <p class="text-white/70 text-[16px]">{{ t.entity }} {{ currentEntity }}</p>
                     </div>
 
                     <!-- Numbered Progress Bar -->
                     <div class="entity-progress-wrapper py-4">
-                        <div class="progress-line-bg"></div>
-                        <div class="progress-line-fill" :style="{ width: entitiesCount > 1 ? ((currentEntity - 1) / (entitiesCount - 1)) * 100 + '%' : '0%' }"></div>
+                        <div v-if="entitiesCount > 1" class="progress-line-bg"></div>
+                        <div v-if="entitiesCount > 1" class="progress-line-fill" :style="{ width: entitiesCount > 1 ? ((currentEntity - 1) / (entitiesCount - 1)) * 100 + '%' : '0%' }"></div>
                         <div class="dots-container">
                            <div v-for="n in entitiesCount" :key="n" class="img-dot" :class="{ 'done': n < currentEntity, 'active': n === currentEntity }" @click="jumpToEntity(n)">{{ n }}</div>
                         </div>
                     </div>
 
                     <div class="space-y-5">
-                      <input v-model="entityForms[currentEntity - 1].legalName" class="image-input" placeholder="Enter Company Legal Name" />
+                      <input v-model="entityForms[currentEntity - 1].legalName" class="image-input" :placeholder="t.legalNamePh" />
                       <div>
-                        <input v-model="entityForms[currentEntity - 1].nickName" class="image-input" placeholder="Enter Company Nick Name" />
-                        <p class="text-white/30 text-[13px] mt-2 ml-5">e.g. HQ (Max 15 characters)</p>
+                        <input v-model="entityForms[currentEntity - 1].nickName" class="image-input" :placeholder="t.nickNamePh" />
+                        <p class="text-white/30 text-[13px] mt-2 ml-5">{{ t.nickNameHint }}</p>
                       </div>
                     </div>
                     
                     <button v-if="selectedLabel === 'Multiple Entities' && entitiesCount < 3" class="add-entity-pill mt-4" @click="addAnotherEntity">
-                        <span class="text-[20px] leading-none mr-2">+</span> Add Another Entity
+                        <span class="text-[20px] leading-none mr-2">+</span> {{ t.addEntity }}
                     </button>
 
-                    <div class="flex items-center justify-between text-white/45 text-[14px] pt-8 mt-4 border-t border-white/5">
-                      <button class="nav-text-btn" @click="handlePrevious()">← Previous</button>
+                    <div class="flex items-center justify-between text-white/45 text-[14px] pt-8 mt-4 border-t border-white/5 min-h-[60px]">
+                      <button class="nav-text-btn" :class="{ 'invisible': currentEntity <= 1 }" @click="handleSubPrevious()">
+                         <span v-if="!isRtl">←</span> {{ t.prev }} <span v-if="isRtl">→</span>
+                      </button>
                       <span class="text-white/30">{{ currentEntity }}/{{ entitiesCount }}</span>
-                      <button class="nav-text-btn" @click="handleSubNext()">Next →</button>
+                      <button class="nav-text-btn" :class="{ 'invisible': currentEntity >= entitiesCount }" @click="handleSubNext()">
+                         {{ t.next }} <span v-if="!isRtl">→</span> <span v-if="isRtl">←</span>
+                      </button>
                     </div>
                   </div>
 
                   <!-- Step 3: Group Nickname -->
                   <div v-else-if="step === 3" class="space-y-10">
-                    <h2 class="step-title">Set a common group nickname to refer to all your entities together.</h2>
-                    <input v-model="commonGroupNickname" class="image-input max-w-[450px]" placeholder="Enter Common Group Nick Name" />
+                    <h2 class="step-title">{{ t.step3Title }}</h2>
+                    <input v-model="commonGroupNickname" class="image-input max-w-[450px]" :placeholder="t.groupNickPh" />
                   </div>
 
                   <!-- Step 4: Business Type -->
                   <div v-else-if="step === 4" class="space-y-8">
-                    <h2 class="step-title">How would you describe your business in one line?</h2>
+                    <h2 class="step-title">{{ t.step4Title }}</h2>
                     <div class="space-y-4 max-w-[400px]">
-                      <div v-for="desc in businessDescriptions" :key="desc" class="space-y-3">
-                        <button @click="selectedBusiness = desc" class="option-btn" :class="{ active: selectedBusiness === desc }">{{ desc }}</button>
-                        <Transition name="panel"><div v-if="desc === 'Other' && selectedBusiness === 'Other'" class="pt-1"><input v-model="otherBusinessDescription" class="image-input" placeholder="Please specify your business type" /></div></Transition>
+                      <div v-for="opt in businessDescriptions" :key="opt.value" class="space-y-3">
+                        <button @click="selectedBusiness = opt.value" class="option-btn" :class="{ active: selectedBusiness === opt.value }">{{ opt.label }}</button>
+                        <Transition name="panel"><div v-if="opt.value === 'Other' && selectedBusiness === 'Other'" class="pt-1"><input v-model="otherBusinessDescription" class="image-input" :placeholder="t.otherBusinessPh" /></div></Transition>
                       </div>
                     </div>
                   </div>
 
                   <!-- Step 5: Financial Challenge -->
                   <div v-else-if="step === 5" class="space-y-8">
-                    <h2 class="step-title">What’s the biggest financial challenge you’re facing right now?</h2>
+                    <h2 class="step-title">{{ t.step5Title }}</h2>
                     <div class="space-y-4 max-w-[400px]">
-                      <button v-for="c in challengeOptions" :key="c" @click="selectedChallenge = c" class="option-btn" :class="{ active: selectedChallenge === c }">{{ c }}</button>
+                      <button v-for="opt in challengeOptions" :key="opt.value" @click="selectedChallenge = opt.value" class="option-btn" :class="{ active: selectedChallenge === opt.value }">{{ opt.label }}</button>
                     </div>
                   </div>
 
                   <!-- Step 6: Improvements -->
                   <div v-else-if="step === 6" class="space-y-8">
-                    <h2 class="step-title">Which of these areas do you want to improve the most?</h2>
-                    <div class="space-y-4 max-w-[400px]"><button v-for="opt in improvementOptions" :key="opt" @click="selectedImprovement = opt" class="option-btn" :class="{ active: selectedImprovement === opt }">{{ opt }}</button></div>
+                    <h2 class="step-title">{{ t.step6Title }}</h2>
+                    <div class="space-y-4 max-w-[400px]"><button v-for="opt in improvementOptions" :key="opt.value" @click="selectedImprovement = opt.value" class="option-btn" :class="{ active: selectedImprovement === opt.value }">{{ opt.label }}</button></div>
                   </div>
 
                   <!-- Step 7: Frequency -->
                   <div v-else-if="step === 7" class="space-y-8">
-                    <h2 class="step-title">How frequently do you review your financial reports?</h2>
-                    <div class="space-y-4 max-w-[400px]"><button v-for="opt in frequencyOptions" :key="opt" @click="selectedFrequency = opt" class="option-btn" :class="{ active: selectedFrequency === opt }">{{ opt }}</button></div>
+                    <h2 class="step-title">{{ t.step7Title }}</h2>
+                    <div class="space-y-4 max-w-[400px]"><button v-for="opt in frequencyOptions" :key="opt.value" @click="selectedFrequency = opt.value" class="option-btn" :class="{ active: selectedFrequency === opt.value }">{{ opt.label }}</button></div>
                   </div>
 
                   <!-- Step 8: ERP -->
                   <div v-else-if="step === 8" class="space-y-8">
-                    <h2 class="step-title">Do you use any accounting or ERP system currently?</h2>
+                    <h2 class="step-title">{{ t.step8Title }}</h2>
                     <div class="space-y-4 max-w-[400px]">
-                      <div v-for="opt in erpOptions" :key="opt" class="space-y-3">
-                        <button @click="selectedERP = opt" class="option-btn" :class="{ active: selectedERP === opt }">{{ opt }}</button>
-                        <Transition name="panel"><div v-if="opt === 'Other' && selectedERP === 'Other'" class="pt-1"><input v-model="otherERPDescription" class="image-input" placeholder="Enter System Name" /></div></Transition>
+                      <div v-for="opt in erpOptions" :key="opt.value" class="space-y-3">
+                        <button @click="selectedERP = opt.value" class="option-btn" :class="{ active: selectedERP === opt.value }">{{ opt.label }}</button>
+                        <Transition name="panel"><div v-if="opt.value === 'Other' && selectedERP === 'Other'" class="pt-1"><input v-model="otherERPDescription" class="image-input" :placeholder="t.otherERPPh" /></div></Transition>
                       </div>
                     </div>
                   </div>
 
                   <!-- Step 9: Insights -->
                   <div v-else-if="step === 9" class="space-y-8">
-                    <h2 class="step-title">What’s your preferred way to view insights?</h2>
-                    <div class="space-y-4 max-w-[400px]"><button v-for="opt in insightOptions" :key="opt" @click="selectedInsight = opt" class="option-btn" :class="{ active: selectedInsight === opt }">{{ opt }}</button></div>
+                    <h2 class="step-title">{{ t.step9Title }}</h2>
+                    <div class="space-y-4 max-w-[400px]"><button v-for="opt in insightOptions" :key="opt.value" @click="selectedInsight = opt.value" class="option-btn" :class="{ active: selectedInsight === opt.value }">{{ opt.label }}</button></div>
                   </div>
 
                   <!-- Step 10: Compliance -->
                   <div v-else-if="step === 10" class="space-y-8">
-                    <h2 class="step-title">Would you like me to keep an eye on compliance changes for you?</h2>
-                    <div class="space-y-4 max-w-[400px]"><button v-for="opt in ['Yes', 'No']" :key="opt" @click="selectedCompliance = opt" class="option-btn" :class="{ active: selectedCompliance === opt }">{{ opt }}</button></div>
+                    <h2 class="step-title">{{ t.step10Title }}</h2>
+                    <div class="space-y-4 max-w-[400px]">
+                        <button @click="selectedCompliance = 'Yes'" class="option-btn" :class="{ active: selectedCompliance === 'Yes' }">{{ t.yes }}</button>
+                        <button @click="selectedCompliance = 'No'" class="option-btn" :class="{ active: selectedCompliance === 'No' }">{{ t.no }}</button>
+                    </div>
                   </div>
 
                   <!-- Step 11: Goal -->
                   <div v-else-if="step === 11" class="space-y-8">
-                    <h2 class="step-title">What’s your ultimate goal with TAXAID.AI?</h2>
-                    <div class="space-y-4 max-w-[400px]"><button v-for="opt in goalOptions" :key="opt" @click="selectedGoal = opt" class="option-btn" :class="{ active: selectedGoal === opt }">{{ opt }}</button></div>
+                    <h2 class="step-title">{{ t.step11Title }}</h2>
+                    <div class="space-y-4 max-w-[400px]"><button v-for="opt in goalOptions" :key="opt.value" @click="selectedGoal = opt.value" class="option-btn" :class="{ active: selectedGoal === opt.value }">{{ opt.label }}</button></div>
                   </div>
                 </div>
 
                 <!-- BOTTOM NEXT BUTTON -->
                 <div class="mt-auto pt-8">
                   <button class="image-next-btn" :disabled="nextDisabled" @click="handleNext()">
-                    {{ step === 11 ? 'Finish' : 'Next' }} <span class="font-bold ml-1">→</span>
+                    {{ step === 11 ? t.finish : t.next }} 
+                    <span class="font-bold mx-1" v-if="!isRtl">→</span>
+                    <span class="font-bold mx-1" v-if="isRtl">←</span>
                   </button>
                 </div>
               </div>
@@ -184,10 +193,12 @@
           <img :src="avatarSrc" class="relative z-10 w-32 h-32 md:w-44 md:h-44 object-contain drop-shadow-[0_0_30px_rgba(4,193,143,0.5)]" alt="Success Icon" />
         </div>
         <h2 class="relative z-10 text-white text-xl md:text-2xl font-light leading-relaxed max-w-2xl mb-12">
-          You're all set! Our implementation team will reach out soon to help you set up and start exploring insights with Akeel.
+          {{ t.successTitle }}
         </h2>
         <button class="relative z-10 image-next-btn !max-w-[320px] !h-14 !text-xl" @click="goToDashboard()">
-          Go to Dashboard <span class="font-bold">→</span>
+          {{ t.goDashboard }} 
+          <span class="font-bold mx-1" v-if="!isRtl">→</span>
+          <span class="font-bold mx-1" v-if="isRtl">←</span>
         </button>
       </div>
     </Transition>
@@ -223,26 +234,210 @@ const selectedCompliance = ref(null)
 const selectedGoal = ref(null)
 
 // Option Lists (RESTORED)
-const entityOptions = [{ label: 'Single Entity' }, { label: 'Multiple Entities' }]
-const businessDescriptions = ['Trading', 'Professional Services', 'Medical', 'Construction', 'Other']
-const challengeOptions = ['Cash Flow', 'Compliance', 'Profitability', 'Cost Control', 'Growth']
-const improvementOptions = ['Profitability', 'Liquidity', 'Debt Management', 'Growth', 'Efficiency']
-const frequencyOptions = ['Daily', 'Weekly', 'Monthly', 'Quarterly']
-const erpOptions = ['Tally', 'Zoho Books', 'QuickBooks', 'Odoo', 'Other']
-const insightOptions = ['Chat-based Summaries', 'Graphical Dashboards', 'Alerts & Notifications']
-const goalOptions = ['Save Time', 'Increase Profit', 'Ensure Compliance', 'Prepare for Growth']
+const isRtl = computed(() => currentLanguage.value === 'ar')
+
+const translations = {
+  en: {
+    prev: 'Previous',
+    next: 'Next',
+    finish: 'Finish',
+    goDashboard: 'Go to Dashboard',
+    step1Title: 'How many entities would you like to register?',
+    singleEntity: 'Single Entity',
+    multiEntity: 'Multiple Entities',
+    step2Title: 'Please enter your company details.',
+    entity: 'Entity',
+    legalNamePh: 'Enter Company Legal Name',
+    nickNamePh: 'Enter Company Nick Name',
+    nickNameHint: 'e.g. HQ (Max 15 characters)',
+    addEntity: 'Add Another Entity',
+    step3Title: 'Set a common group nickname to refer to all your entities together.',
+    groupNickPh: 'Enter Common Group Nick Name',
+    step4Title: 'How would you describe your business in one line?',
+    other: 'Other',
+    otherBusinessPh: 'Please specify your business type',
+    step5Title: 'What’s the biggest financial challenge you’re facing right now?',
+    step6Title: 'Which of these areas do you want to improve the most?',
+    step7Title: 'How frequently do you review your financial reports?',
+    step8Title: 'Do you use any accounting or ERP system currently?',
+    otherERPPh: 'Enter System Name',
+    step9Title: 'What’s your preferred way to view insights?',
+    step10Title: 'Would you like me to keep an eye on compliance changes for you?',
+    yes: 'Yes',
+    no: 'No',
+    step11Title: 'What’s your ultimate goal with TAXAID.AI?',
+    successTitle: "You're all set! Our implementation team will reach out soon to help you set up and start exploring insights with Akeel.",
+    businessOpts: {
+      Trading: 'Trading',
+      'Professional Services': 'Professional Services',
+      Medical: 'Medical',
+      Construction: 'Construction',
+      Other: 'Other'
+    },
+    challenges: {
+      'Cash Flow': 'Cash Flow',
+      Compliance: 'Compliance',
+      Profitability: 'Profitability',
+      'Cost Control': 'Cost Control',
+      Growth: 'Growth'
+    },
+    improvements: {
+      Profitability: 'Profitability',
+      Liquidity: 'Liquidity',
+      'Debt Management': 'Debt Management',
+      Growth: 'Growth',
+      Efficiency: 'Efficiency'
+    },
+    frequencies: {
+      Daily: 'Daily',
+      Weekly: 'Weekly',
+      Monthly: 'Monthly',
+      Quarterly: 'Quarterly'
+    },
+    erps: {
+      Tally: 'Tally',
+      'Zoho Books': 'Zoho Books',
+      QuickBooks: 'QuickBooks',
+      Odoo: 'Odoo',
+      Other: 'Other'
+    },
+    insights: {
+      'Chat-based Summaries': 'Chat-based Summaries',
+      'Graphical Dashboards': 'Graphical Dashboards',
+      'Alerts & Notifications': 'Alerts & Notifications'
+    },
+    goals: {
+      'Save Time': 'Save Time',
+      'Increase Profit': 'Increase Profit',
+      'Ensure Compliance': 'Ensure Compliance',
+      'Prepare for Growth': 'Prepare for Growth'
+    }
+  },
+  ar: {
+    prev: 'سابق',
+    next: 'التالي',
+    finish: 'إنهاء',
+    goDashboard: 'الذهاب إلى لوحة القيادة',
+    step1Title: 'كم عدد الكيانات التي ترغب في تسجيلها؟',
+    singleEntity: 'كيان واحد',
+    multiEntity: 'كيانات متعددة',
+    step2Title: 'الرجاء إدخال تفاصيل شركتك.',
+    entity: 'الكيان',
+    legalNamePh: 'أدخل الاسم القانوني للشركة',
+    nickNamePh: 'أدخل اسم الشركة نيك',
+    nickNameHint: 'مثلاً: المقر الرئيسي (الحد الأقصى 15 حرفًا)',
+    addEntity: 'إضافة كيان آخر',
+    step3Title: 'قم بتعيين لقب مجموعة مشترك للإشارة إلى جميع كياناتك معًا.',
+    groupNickPh: 'أدخل اسم المجموعة المشترك',
+    step4Title: 'كيف تصف عملك في سطر واحد؟',
+    other: 'أخرى',
+    otherBusinessPh: 'الرجاء تحديد نوع عملك',
+    step5Title: 'ما هو أكبر تحدي مالي تواجهه الآن؟',
+    step6Title: 'أي من هذه المجالات تريد تحسينه أكثر؟',
+    step7Title: 'كم مرة تراجع تقاريرك المالية؟',
+    step8Title: 'هل تستخدم أي نظام محاسبة أو تخطيط موارد المؤسسات حاليًا؟',
+    otherERPPh: 'أدخل اسم النظام',
+    step9Title: 'ما هي طريقتك المفضلة لعرض الرؤى؟',
+    step10Title: 'هل ترغب في أن أراقب تغييرات الامتثال نيابةً عنك؟',
+    yes: 'نعم',
+    no: 'لا',
+    step11Title: 'ما هو هدفك النهائي مع TAXAID.AI؟',
+    successTitle: 'أنت جاهز تمامًا! سيتواصل معك فريق التنفيذ قريبًا لمساعدتك في الإعداد والبدء في استكشاف الرؤى مع عقيل.',
+    businessOpts: {
+      Trading: 'تداول',
+      'Professional Services': 'خدمات احترافية',
+      Medical: 'طبي',
+      Construction: 'بناء',
+      Other: 'أخرى'
+    },
+    challenges: {
+      'Cash Flow': 'تدفق نقدي',
+      Compliance: 'امتثال',
+      Profitability: 'ربحية',
+      'Cost Control': 'التحكم في التكاليف',
+      Growth: 'نمو'
+    },
+    improvements: {
+      Profitability: 'ربحية',
+      Liquidity: 'سيولة',
+      'Debt Management': 'إدارة الديون',
+      Growth: 'نمو',
+      Efficiency: 'كفاءة'
+    },
+    frequencies: {
+      Daily: 'يومي',
+      Weekly: 'أسبوعي',
+      Monthly: 'شهري',
+      Quarterly: 'ربع سنوي'
+    },
+    erps: {
+      Tally: 'تالي',
+      'Zoho Books': 'كتب زوهو',
+      QuickBooks: 'كويك بوكس',
+      Odoo: 'أودو',
+      Other: 'أخرى'
+    },
+    insights: {
+      'Chat-based Summaries': 'ملخصات قائمة على الدردشة',
+      'Graphical Dashboards': 'لوحات معلومات رسومية',
+      'Alerts & Notifications': 'تنبيهات وإشعارات'
+    },
+    goals: {
+      'Save Time': 'توفير الوقت',
+      'Increase Profit': 'زيادة الربح',
+      'Ensure Compliance': 'ضمان الامتثال',
+      'Prepare for Growth': 'الاستعداد للنمو'
+    }
+  }
+}
+
+const t = computed(() => translations[currentLanguage.value])
+
+// COMPUTED OPTIONS (Preserve English Values for logic)
+const entityOptions = computed(() => [
+  { label: t.value.singleEntity, value: 'Single Entity' },
+  { label: t.value.multiEntity, value: 'Multiple Entities' }
+])
+
+const businessDescriptions = computed(() => [
+  'Trading', 'Professional Services', 'Medical', 'Construction', 'Other'
+].map(k => ({ value: k, label: t.value.businessOpts[k] })))
+
+const challengeOptions = computed(() => [
+  'Cash Flow', 'Compliance', 'Profitability', 'Cost Control', 'Growth'
+].map(k => ({ value: k, label: t.value.challenges[k] })))
+
+const improvementOptions = computed(() => [
+  'Profitability', 'Liquidity', 'Debt Management', 'Growth', 'Efficiency'
+].map(k => ({ value: k, label: t.value.improvements[k] })))
+
+const frequencyOptions = computed(() => [
+  'Daily', 'Weekly', 'Monthly', 'Quarterly'
+].map(k => ({ value: k, label: t.value.frequencies[k] })))
+
+const erpOptions = computed(() => [
+  'Tally', 'Zoho Books', 'QuickBooks', 'Odoo', 'Other'
+].map(k => ({ value: k, label: t.value.erps[k] })))
+
+const insightOptions = computed(() => [
+  'Chat-based Summaries', 'Graphical Dashboards', 'Alerts & Notifications'
+].map(k => ({ value: k, label: t.value.insights[k] })))
+
+const goalOptions = computed(() => [
+  'Save Time', 'Increase Profit', 'Ensure Compliance', 'Prepare for Growth'
+].map(k => ({ value: k, label: t.value.goals[k] })))
 
 const transitionName = computed(() => direction.value === 'next' ? 'box-slide-next' : 'box-slide-prev')
-const canGoPrevious = computed(() => step.value > 1 || (step.value === 2 && currentEntity.value > 1))
+const canGoMainPrevious = computed(() => step.value > 1)
 
 function selectEntityOption(opt) {
-  selectedLabel.value = opt.label
-  if (opt.label === 'Single Entity') {
+  selectedLabel.value = opt.value
+  if (opt.value === 'Single Entity') {
     entitiesCount.value = 1
     entityForms.value = [{ legalName: '', nickName: '' }]
-  } else if (entitiesCount.value < 2) {
-    entitiesCount.value = 2
-    entityForms.value = [{ legalName: '', nickName: '' }, { legalName: '', nickName: '' }]
+  } else {
+    // Keep existing count/forms if already > 1, otherwise ensure at least 1 (which it is).
+    // Do not force 2. User must add manually.
   }
 }
 
@@ -262,13 +457,29 @@ function handleNext() {
   step.value++
 }
 
-function handleSubNext() { if (currentEntity.value < entitiesCount.value) { direction.value = 'next'; currentEntity.value++ } else { handleNext() } }
+function handleSubNext() { 
+  if (currentEntity.value < entitiesCount.value) { 
+    direction.value = 'next'; 
+    currentEntity.value++ 
+  } 
+}
 
-function handlePrevious() {
+function handleMainPrevious() {
   direction.value = 'prev'
-  if (step.value === 4 && selectedLabel.value === 'Single Entity') { step.value = 1; return }
-  if (step.value === 2 && currentEntity.value > 1) { currentEntity.value--; return }
-  step.value--
+  if (step.value > 1) {
+    step.value--
+    // Reset to first entity if leaving step 2? Or keep state? Usually reset is safer for navigation flow context.
+    // However, if users go back to check, keeping state might be nicer. But user asked for "Main" navigation.
+    // Let's safe reset if stepping back FROM step 2 into 1.
+    if (step.value === 1) currentEntity.value = 1
+  }
+}
+
+function handleSubPrevious() {
+  if (currentEntity.value > 1) {
+    direction.value = 'prev'
+    currentEntity.value--
+  }
 }
 
 function addAnotherEntity() {
@@ -350,22 +561,35 @@ function goToDashboard() { window.location.href = '/dashboard' }
 }
 .bg-gradient-radial { background: radial-gradient(circle, var(--tw-gradient-stops)); }
 
-/* QUESTION BOX - EQUAL HEIGHT ON DESKTOP */
+/* QUESTION BOX - RESPONSIVE */
 .question-box { 
-  width: 100%; max-width: 550px; min-height: 550px; padding: 30px; border-radius: 40px; 
+  width: 100%; max-width: 550px; 
+  min-height: 50vh; /* Allow it to be smaller on mobile */
+  padding: 24px; /* Reduced padding for mobile */
+  border-radius: 30px; /* Reduced radius for mobile */
   background: radial-gradient(ellipse at top left, rgba(0, 88, 71, 0.3) 0%, rgba(0, 50, 43, 0.98) 100%); 
   border: 1px solid rgba(1, 88, 71, 0.5); backdrop-filter: blur(60px); display: flex; flex-direction: column; 
+  margin: 0 auto; /* Center it */
 }
-@media (min-width: 1024px) { .question-box { min-height: 700px; padding: 45px; border-radius: 60px; } }
+@media (min-width: 768px) {
+    .question-box { min-height: 600px; padding: 35px; border-radius: 45px; }
+}
+@media (min-width: 1024px) { 
+    .question-box { min-height: 700px; padding: 45px; border-radius: 60px; margin: 0; } 
+}
 
-.step-title { color: #04C18F; font-size: 20px; font-weight: 500; line-height: 1.3; max-width: 480px; }
+.step-title { color: #04C18F; font-size: 20px; font-weight: 500; line-height: 1.35; max-width: 480px; }
 @media (min-width: 1024px) { .step-title { font-size: 24px; } }
 
 /* IMAGE STYLE: INPUTS */
 .image-input {
-    width: 100%; height: 52px; background: rgba(255, 255, 255, 0.03);
+    width: 100%; height: 50px; /* slightly smaller on mobile */
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 999px;
-    padding: 0 28px; color: white; font-size: 16px; outline: none; transition: 0.3s;
+    padding: 0 24px; color: white; font-size: 15px; outline: none; transition: 0.3s;
+}
+@media (min-width: 1024px) {
+    .image-input { height: 52px; padding: 0 28px; font-size: 16px; }
 }
 .image-input:focus { border-color: #04C18F; background: rgba(255, 255, 255, 0.06); }
 
@@ -382,13 +606,24 @@ function goToDashboard() { window.location.href = '/dashboard' }
 .img-dot.active { background: white; border-color: white; color: #003d35; font-weight: 600; }
 
 /* OPTION BUTTONS */
-.option-btn { width: 100%; text-align: left; padding: 16px 28px; border-radius: 50px; color: white; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.02); transition: 0.3s; font-size: 16px; }
+.option-btn { 
+    width: 100%; text-align: left; padding: 14px 24px; border-radius: 50px; 
+    color: white; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.02); 
+    transition: 0.3s; font-size: 15px; 
+}
+@media (min-width: 1024px) {
+    .option-btn { padding: 16px 28px; font-size: 16px; }
+}
 .option-btn.active { border-color: #04C18F; background: rgba(4, 193, 143, 0.15); }
 
 /* CTA BUTTON */
 .image-next-btn {
-    width: 100%; max-width: 240px; height: 54px; border-radius: 999px; color: white; font-weight: 600; font-size: 18px; border: none;
+    width: 100%; max-width: 100%; /* Full width on mobile */
+    height: 50px; border-radius: 999px; color: white; font-weight: 600; font-size: 16px; border: none;
     background: linear-gradient(90deg, #00C79F 0%, #0A6B59 100%); cursor: pointer; transition: 0.2s;
+}
+@media (min-width: 640px) {
+    .image-next-btn { max-width: 240px; height: 54px; font-size: 18px; }
 }
 .image-next-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
