@@ -1,23 +1,37 @@
 <template>
   <div
-    class="w-full rounded-[35px] text-white relative flex flex-col items-center h-[580px] overflow-hidden bg-no-repeat bg-top bg-cover shadow-sm"
+    class="
+      w-full
+      mx-auto
+      rounded-[35px]
+      text-white
+      relative
+      flex
+      flex-col
+      items-center
+      overflow-hidden
+      bg-no-repeat
+      bg-top
+      bg-cover
+      shadow-md
+    "
     :style="{
       backgroundImage: 'url(/images/bg-Revenue.png)',
-      backgroundColor: '#003d35'
+      
     }"
   >
     <!-- Header -->
-    <div class="w-full flex items-center gap-2 px-5 pt-8">
-      <div class="w-9 h-9 rounded-full grid place-items-center bg-white/10 shrink-0">
-        <img src="/images/icons/revenue.svg" alt="Revenue" class="w-4 h-4 object-contain" />
+    <div class="w-full flex items-center gap-3 px-6 pt-[65px]">
+      <div class="w-[50px] h-[50px] rounded-full grid place-items-center bg-white/10 shrink-0">
+        <img src="/images/icons/revenue.svg" alt="Revenue" class="w-6 h-6 object-contain" />
       </div>
-      <div class="text-[16px] font-medium tracking-tight">Revenue</div>
+      <div class="text-lg font-medium tracking-tight">Revenue</div>
     </div>
 
     <!-- Gauge Area -->
-    <div class="relative w-full px-2 mt-4">
-      <div class="relative w-full h-[260px]">
-        <svg class="w-full h-full block" :viewBox="`0 0 ${svgW} ${svgH}`">
+    <div class="relative w-full px-4 mt-6">
+      <div class="relative w-full">
+        <svg class="w-full h-auto block" :viewBox="`0 0 ${svgW} ${svgH}`">
           <!-- Ticks -->
           <g v-if="showTicks">
             <circle
@@ -30,12 +44,10 @@
             />
           </g>
 
-          <!-- Segments -->
           <path :d="segLastYearPath" :stroke="colors.lastYear" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
           <path :d="segCurrentPath" :stroke="colors.currentYear" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
           <path :d="segBalancePath" :stroke="colors.balance" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
 
-          <!-- Marker -->
           <circle
             v-if="currentYearPct > 0"
             :cx="marker.x"
@@ -48,31 +60,44 @@
 
         <!-- Center Value -->
         <div class="absolute inset-0 flex flex-col items-center justify-center translate-y-4">
-          <span class="text-3xl font-bold leading-none">{{ Math.round(currentYearPct) }}%</span>
-          <span class="text-[10px] opacity-60 mt-1 uppercase tracking-[1px]">Target</span>
+          <span class="leading-none text-[40px] font-normal -mt-[75px] block">
+  {{ Math.round(currentYearPct) }}%
+</span>
+
+          <span class="text-[12px] font-light opacity-60 mt-1 uppercase tracking-widest block">
+  Target Achieved
+</span>
+
         </div>
 
         <!-- Center Icon -->
-        <div class="absolute left-1/2 top-[72%] -translate-x-1/2 -translate-y-1/2">
-          <img src="/images/icons/Total-Revenue.svg" alt="Icon" class="w-12 h-12 object-contain" />
+        <div class="absolute left-1/2 top-[85%] -translate-x-1/2 -translate-y-1/2">
+          <img
+  src="/images/icons/Total-Revenue.svg"
+  alt="Icon"
+  class="w-[75px] h-auto object-contain -mt-[15px]"
+/>
+
         </div>
       </div>
     </div>
 
     <!-- Bottom Values -->
-    <div class="w-full text-center px-4 flex-1 flex flex-col justify-between pb-10">
+    <div class="w-full text-center px-6 flex-1 flex flex-col justify-end gap-6 pb-10">
       <div class="mt-2">
-        <div class="text-[11px] opacity-60 uppercase tracking-widest mb-1">Total Revenue</div>
-        <div class="text-2xl font-bold">
-          <span class="text-base mr-1 opacity-60">د.إ</span>{{ formatNumber(totalRevenue) }}
+        <div class="text-[12px] opacity-70 mb-1 uppercase tracking-widest">Total Revenue</div>
+        <div class="text-2xl font-bold flex items-center justify-center">
+          <span class="mr-1"><img src="/images/icons/dirham.svg" alt="Icon" class="w-[25px]" /></span>{{ formatNumber(totalRevenue) }}
         </div>
       </div>
 
       <div class="pt-6 border-t border-white/10 mx-2">
-        <div class="text-[10px] opacity-50 uppercase tracking-[2px] mb-1">Net Revenue</div>
-        <div class="text-lg font-semibold">
-          <span class="text-xs opacity-60">د.إ</span>{{ formatNumber(netRevenue) }}
+        
+        <div class="text-[14px] font-thin flex items-center justify-center gap-1">
+          <img src="/images/icons/dirham.svg" alt="Icon" class="w-[20px]" />{{ formatNumber(netRevenue) }}
+          <div class="text-[14px] font-thin">Net Revenue (After Returns)</div>
         </div>
+        
       </div>
     </div>
   </div>
@@ -80,15 +105,14 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-
 const totalRevenue = 2775000;
 const netRevenue = 988430;
 const currentYearTarget = 3000000;
 const currentYearAchieved = 2760000;
 
 const colors = { lastYear: "#21E669", currentYear: "#03D8B0", balance: "#0A7C4B" };
-const svgW = 400; const svgH = 320;
-const cx = 200;   const cy = 200;  const r = 175;
+const svgW = 400; const svgH = 330;
+const cx = 200;   const cy = 180;  const r = 170;
 const strokeW = 18; const startDeg = -180; const endDeg = 0;
 const gapDeg = 6; const lastYearSpanDeg = 30;
 
@@ -117,8 +141,8 @@ const marker = computed(() => polarToCartesian(segCurrent.value.a1));
 const showTicks = true;
 const tickPoints = computed(() => {
   const pts = [];
-  for (let i = 0; i <= 25; i++) {
-    const ang = startDeg + (i / 25) * 180;
+  for (let i = 0; i <= 26; i++) {
+    const ang = startDeg + (i / 26) * 180;
     const p = polarToCartesian(ang);
     const rads = (ang * Math.PI) / 180;
     pts.push({ i, x: p.x - 30 * Math.cos(rads), y: p.y - 30 * Math.sin(rads) });
