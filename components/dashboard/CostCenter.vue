@@ -6,7 +6,7 @@
         class="w-10 h-10 rounded-full grid place-items-center"
         style="background: linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)"
       >
-        <img src="/images/icons/Cost-Center-Project.svg" alt="Cost Center" class="w-5 h-5 object-contain" />
+        <img src="/images/icons/Cost-Center-Project-black.svg" alt="Cost Center" class="w-5 h-5 object-contain" />
       </div>
       <div class="text-[18px] font-bold text-[#000]">Cost Center / Project</div>
     </div>

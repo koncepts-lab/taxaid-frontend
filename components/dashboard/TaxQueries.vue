@@ -6,7 +6,7 @@
         class="w-10 h-10 rounded-full grid place-items-center"
         style="background: linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)"
       >
-        <img src="/images/icons/Tax-Queries.svg" alt="Tax Queries" class="w-5 h-5 object-contain" />
+        <img src="/images/icons/Tax-Queries-black.svg" alt="Tax Queries" class="w-5 h-5 object-contain" />
       </div>
       <div class="text-[18px] font-bold text-[#000]">Tax Queries</div>
     </div>
@@ -29,9 +29,11 @@
           <circle cx="50" cy="50" r="40" fill="none" stroke="#F1B208" stroke-width="8" stroke-dasharray="251.2" :stroke-dashoffset="251.2 * 0.2" stroke-linecap="round" />
         </svg>
         <div class="absolute inset-0 flex items-center justify-center">
-           <div class="flex items-center gap-1 text-[#00B794] font-bold text-[10px]">
-             <span>↗</span>8.4%
-           </div>
+           
+            <div class="flex items-center gap-1 text-[#00B794] font-bold text-[12px] mt-2">
+           <span><img src="/images/icons/up.svg" alt="Up" class="w-4 h-4" /></span>
+           <span>+8.4%</span>
+        </div>
         </div>
       </div>
     </div>

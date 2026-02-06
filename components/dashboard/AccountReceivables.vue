@@ -7,7 +7,7 @@
           class="w-12 h-12 rounded-full grid place-items-center"
           style="background: linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)"
         >
-          <img src="/images/icons/Account-Receivables.svg" alt="Receivables" class="w-6 h-6 object-contain" />
+          <img src="/images/icons/Account-Receivables-black.svg" alt="Receivables" class="w-6 h-6 object-contain" />
         </div>
         <div class="text-[20px] font-bold text-[#000]">Account Receivables</div>
       </div>

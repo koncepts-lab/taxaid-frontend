@@ -7,7 +7,7 @@
       <div class="flex items-center gap-3 mb-4 md:mb-0">
         <div class="w-10 h-10 rounded-full flex items-center justify-center text-[#00B794] text-xl" style="background: linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)">
           <!-- Refresh Icon SVG or simple text -->
-          <img src="/images/icons/Cashflow-black.svg" alt="Cashflow">
+          <img src="/images/icons/Cashflow-black.svg" alt="Cashflow" class="w-5 h-5 object-contain">
         </div>
         <div class="text-[#000] font-bold text-2xl">Cashflow</div>
       </div>
