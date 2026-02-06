@@ -1,12 +1,12 @@
 <template>
-  <div class="bg-white rounded-[35px] p-6 shadow-sm flex flex-col justify-between h-[250px] relative overflow-hidden">
+  <div class="col-span-12 md:col-span-6 lg:col-span-3 bg-white rounded-[20px] p-4 shadow-sm flex flex-col justify-between h-[260px] relative overflow-hidden">
     <!-- Header -->
     <div class="flex items-center gap-3">
       <div 
         class="w-12 h-12 rounded-full grid place-items-center"
         style="background: linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)"
       >
-        <img src="/images/icons/C.O.G.S-black.svg" alt="C.O.G.S" class="w-6 h-6 object-contain" />
+        <img src="/images/icons/C.O.G.S-black.svg" alt="C.O.G.S" class="w-4 h-4 object-contain" />
       </div>
       <div class="text-[20px] font-medium text-[#000]">C.O.G.S</div>
     </div>

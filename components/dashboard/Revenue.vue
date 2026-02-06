@@ -3,7 +3,7 @@
     class="
       w-full
       mx-auto
-      rounded-[35px]
+      rounded-[20px]
       text-white
       relative
       flex
@@ -14,6 +14,7 @@
       bg-top
       bg-cover
       shadow-md
+      h-[567px]
     "
     :style="{
       backgroundImage: 'url(/images/bg-Revenue.png)',
@@ -21,15 +22,15 @@
     }"
   >
     <!-- Header -->
-    <div class="w-full flex items-center gap-3 px-6 pt-[65px]">
-      <div class="w-[50px] h-[50px] rounded-full grid place-items-center bg-white/10 shrink-0">
+    <div class="w-full flex items-center gap-3 px-6 pt-8">
+      <div class="w-[45px] h-[45px] rounded-full grid place-items-center bg-white/10 shrink-0">
         <img src="/images/icons/revenue.svg" alt="Revenue" class="w-6 h-6 object-contain" />
       </div>
-      <div class="text-lg font-medium tracking-tight">Revenue</div>
+      <div class="text-base font-medium tracking-tight">Revenue</div>
     </div>
 
     <!-- Gauge Area -->
-    <div class="relative w-full px-4 mt-6">
+    <div class="relative w-full px-4 mt-2">
       <div class="relative w-full">
         <svg class="w-full h-auto block" :viewBox="`0 0 ${svgW} ${svgH}`">
           <!-- Ticks -->
@@ -59,23 +60,23 @@
         </svg>
 
         <!-- Center Value -->
-        <div class="absolute inset-0 flex flex-col items-center justify-center translate-y-4">
-          <span class="leading-none text-[40px] font-normal -mt-[75px] block">
+        <div class="absolute inset-0 flex flex-col items-center justify-center translate-y-2">
+          <span class="leading-none text-[40px] font-semibold -mt-[60px] block">
   {{ Math.round(currentYearPct) }}%
 </span>
 
-          <span class="text-[12px] font-light opacity-60 mt-1 uppercase tracking-widest block">
+          <span class="text-[11px] font-light opacity-60 mt-3 uppercase tracking-widest block">
   Target Achieved
 </span>
 
         </div>
 
         <!-- Center Icon -->
-        <div class="absolute left-1/2 top-[85%] -translate-x-1/2 -translate-y-1/2">
+        <div class="absolute left-1/2 top-[80%] -translate-x-1/2 -translate-y-1/2">
           <img
   src="/images/icons/Total-Revenue.svg"
   alt="Icon"
-  class="w-[75px] h-auto object-contain -mt-[15px]"
+  class="w-[80px] h-auto object-contain -mt-[10px]"
 />
 
         </div>
@@ -83,19 +84,19 @@
     </div>
 
     <!-- Bottom Values -->
-    <div class="w-full text-center px-6 flex-1 flex flex-col justify-end gap-6 pb-10">
-      <div class="mt-2">
-        <div class="text-[12px] opacity-70 mb-1 uppercase tracking-widest">Total Revenue</div>
-        <div class="text-2xl font-bold flex items-center justify-center">
-          <span class="mr-1"><img src="/images/icons/dirham.svg" alt="Icon" class="w-[25px]" /></span>{{ formatNumber(totalRevenue) }}
+    <div class="w-full text-center px-6 flex-1 flex flex-col justify-end gap-3 pb-6">
+      <div class="mt-0">
+        <div class="text-[14px] opacity-70 mb-0 uppercase tracking-widest">Total Revenue</div>
+        <div class="text-xl font-bold flex items-center justify-center">
+          <span class="mr-1"><img src="/images/icons/dirham.svg" alt="Icon" class="w-[20px]" /></span>{{ formatNumber(totalRevenue) }}
         </div>
       </div>
 
-      <div class="pt-6 border-t border-white/10 mx-2">
+      <div class="pt-3 border-t border-white/10 mx-2">
         
-        <div class="text-[14px] font-thin flex items-center justify-center gap-1">
-          <img src="/images/icons/dirham.svg" alt="Icon" class="w-[20px]" />{{ formatNumber(netRevenue) }}
-          <div class="text-[14px] font-thin">Net Revenue (After Returns)</div>
+        <div class="text-[12px] font-thin flex items-center justify-center gap-1">
+          <img src="/images/icons/dirham.svg" alt="Icon" class="w-[16px]" />{{ formatNumber(netRevenue) }}
+          <div class="text-[12px] font-thin">Net Revenue (After Returns)</div>
         </div>
         
       </div>

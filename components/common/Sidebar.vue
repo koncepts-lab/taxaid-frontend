@@ -1,7 +1,7 @@
 <template>
   <aside class="fixed left-0 top-0 bottom-0 z-30 w-[100px] flex flex-col items-center py-10 transition-all duration-300 hidden lg:flex" style="background-image: url('/images/side-menu-bg.png'); background-size: 100% 100%; background-repeat: no-repeat;">
     <!-- NAV ITEMS -->
-    <nav class="flex-1 w-full flex flex-col items-start justify-center gap-7">
+   <nav class="flex-1 w-full flex flex-col items-start justify-center gap-y-[3vh] md:gap-y-[5vh] lg:gap-y-[3vh]">
       <NuxtLink 
         v-for="(item, index) in navItems" 
         :key="index" 

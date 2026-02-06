@@ -2,7 +2,7 @@
   <header class="flex items-center justify-between px-8 py-4 bg-transparent mt-0 mb-2">
     <!-- LEFT: LOGO -->
     <div class="flex items-center">
-      <img src="/images/logo.svg" alt="Taxaid.AI" class="h-14" />
+      <img src="/images/logo.svg" alt="Taxaid.AI" class="h-14 ml-[30px]" />
     </div>
 
     <!-- CENTER: NAVIGATION PILL -->
