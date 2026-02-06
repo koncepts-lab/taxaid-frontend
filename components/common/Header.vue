@@ -6,7 +6,8 @@
     </div>
 
     <!-- CENTER: NAVIGATION PILL -->
-    <div class="hidden lg:flex items-center border border-[#B2E4D9] p-1.5 rounded-full" style="background: linear-gradient(271.49deg, rgba(164, 227, 214, 0.485) 30.96%, rgba(109, 216, 193, 0.5) 109.26%); box-shadow: 0px 4px 4px 0px #D0F7EF80;">
+    <div class="hidden lg:flex items-center border border-[#B2E4D9] p-1.5 rounded-full"
+      style="background: linear-gradient(271.49deg, rgba(164, 227, 214, 0.485) 30.96%, rgba(109, 216, 193, 0.5) 109.26%); box-shadow: 0px 4px 4px 0px #D0F7EF80;">
       <button class="px-8 py-2.5 rounded-full text-black font-medium bg-white shadow-sm transition-all text-[16px]">
         Dashboard
       </button>
@@ -28,35 +29,39 @@
 
       <!-- FLASH ACTION -->
       <div class="group relative">
-        <button class="action-btn flash-btn">
+        <button
+          class="action-btn flash-btn w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300">
           <img src="/images/icons/flash.svg" class="w-6 h-6" alt="Flash" />
         </button>
         <!-- TOOLTIP -->
-        <div class="absolute top-[110%] left-1/2 -translate-x-1/2 mt-2 px-4 py-2.5 bg-[#003d35] text-white text-[12px] font-medium rounded-2xl whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-xl z-50">
+        <div
+          class="absolute top-[110%] left-1/2 -translate-x-1/2 mt-2 px-4 py-2.5 bg-[#003d35] text-white text-[12px] font-medium rounded-2xl whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-xl z-50">
           One Click Summary
           <!-- Arrow -->
-          <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 border-x-[6px] border-x-transparent border-b-[6px] border-b-[#003d35]"></div>
+          <div
+            class="absolute -top-1.5 left-1/2 -translate-x-1/2 border-x-[6px] border-x-transparent border-b-[6px] border-b-[#003d35]">
+          </div>
         </div>
       </div>
 
       <!-- THEME TOGGLE (DARK) -->
-      <button class="action-btn theme-btn">
+      <button
+        class="action-btn theme-btn w-11 h-11 rounded-full items-center justify-center transition-all duration-300 flex">
         <img src="/images/icons/dark.svg" class="w-6 h-6 invert brightness-0" alt="Dark Mode" />
       </button>
 
       <!-- SETTINGS -->
       <div class="group relative">
-        <button class="action-btn settings-btn">
+        <button
+          class="action-btn settings-btn w-11 h-11 rounded-full items-center justify-center transition-all duration-300 flex">
           <img src="/images/icons/settings.svg" class="w-6 h-6" alt="Settings" />
         </button>
         <!-- DROPDOWN MENU -->
-        <div class="absolute top-[110%] right-0 mt-2 w-[324px] bg-white rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-4 border border-teal-50">
+        <div
+          class="absolute top-[110%] right-0 mt-2 w-[324px] bg-white rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-4 border border-teal-50">
           <div class="flex flex-col gap-1">
-            <div 
-              v-for="(item, index) in settingsItems" 
-              :key="index"
-              class="flex items-center gap-4 p-1 rounded-2xl hover:bg-[#E6FFF9] cursor-pointer transition-colors group/item"
-            >
+            <div v-for="(item, index) in settingsItems" :key="index"
+              class="flex items-center gap-4 p-1 rounded-2xl hover:bg-[#E6FFF9] cursor-pointer transition-colors group/item">
               <div class="w-10 h-10 rounded-xl flex items-center justify-center">
                 <img :src="item.icon" class="w-5 h-5" :alt="item.label" />
               </div>
@@ -73,7 +78,8 @@
           <div class="text-[#013E32] text-[12px] font-light">Abu Dhabi, UAE</div>
         </div>
         <div class="relative">
-          <img src="/images/avatar-company.png" class="w-12 h-12 rounded-full border-2 border-white shadow-md object-cover" alt="Profile" />
+          <img src="/images/avatar-company.png"
+            class="w-12 h-12 rounded-full border-2 border-white shadow-md object-cover" alt="Profile" />
         </div>
       </div>
     </div>
@@ -96,11 +102,8 @@ const settingsItems = [
 </script>
 
 <style scoped>
-.action-btn {
-  @apply w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300;
-}
-
-.flash-btn, .settings-btn {
+.flash-btn,
+.settings-btn {
   background: linear-gradient(313.43deg, rgba(197, 230, 223, 0.5) 14.29%, rgba(109, 216, 193, 0.5) 81.93%);
   box-shadow: 0px 4px 4px 0px #D0F7EF;
 }
@@ -115,11 +118,8 @@ const settingsItems = [
   transform: translateY(-1px);
 }
 
-.flash-btn:hover, .settings-btn:hover {
+.flash-btn:hover,
+.settings-btn:hover {
   background: linear-gradient(313.43deg, rgba(197, 230, 223, 0.8) 14.29%, rgba(109, 216, 193, 0.8) 81.93%) !important;
-}
-
-.theme-btn:hover {
-  /* Retains the original theme-btn background */
 }
 </style>

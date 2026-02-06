@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  /* Your existing variables */
+  --color-primary-50: #ecfff9;
+  --color-primary-100: #04c18f;
+  --color-primary-150: #2fff0029;
+  --color-primary-200: #1cb232;
+  --color-primary-250: #00b484;
+  --color-primary-300: #009276;
+  --color-primary-350: #b3ffe7;
+  --color-primary-400: #7cffd6;
+
+  --color-secondary-50: #6d91ff;
+  --color-secondary-100: #8124fb;
+  --color-secondary-150: #929296;
+  --color-secondary-200: #101010;
+  --color-secondary-250: #2d2d2d;
+  --color-secondary-300: #1c1c1c;
+  --color-orange-50: #fb7554;
+  --color-red-100: #a20909;
+  --color-white-50: #ffffff;
+  --color-yellow-50: #ffeecb;
+
+  /* --- NEW TAXAID BRAND COLORS --- */
+  --color-tax-primary: #00b69b; /* The bright green */
+  --color-tax-secondary: #008472; /* The dark green button/header */
+  --color-tax-bg: #f0f5f4; /* Page background */
+  --color-tax-surface: #f4f9f8; /* Card/Input background */
+  --color-tax-active: #d2f7f1; /* Active tab background */
+  --color-tax-border: #a9eae0; /* Active tab border */
+  --color-tax-orange: #ea580c; /* Variance text */
+  --color-tax-orange-soft: #ffedd5; /* Variance badge background */
+
+  --breakpoint-customSM: 390px;
+}
+
+/* Scrollbar Utility for the dashboard */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
