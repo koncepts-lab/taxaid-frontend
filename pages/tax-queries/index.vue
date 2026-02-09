@@ -1,7 +1,7 @@
 <template>
     <NuxtLayout name="dashboard">
         <!-- Main Wrapper: Fixed height, no page scroll -->
-        <div class="h-[calc(100vh-90px)] bg-[#F0F5F4] p-6 font-sans overflow-hidden">
+        <div class="h-[calc(100vh-90px)] bg-[#F0F5F4] px-6 pb-4 font-sans overflow-hidden">
             <div class="flex gap-6 h-full">
 
                 <!-- Left Sidebar: Internal scroll for 'Recent' section -->
@@ -18,12 +18,14 @@
                     <TaxQueriesChatWindow :isMinimized="isTableMinimized" class="flex-1 min-h-0" />
 
                     <!-- Footer -->
-                    <div class="flex justify-between items-center text-[10px] text-gray-400 px-2 shrink-0">
-                        <p>Copyright Reserved @2025</p>
-                        <p>Last Sync: 19 Oct 2025, 10:45 AM IST</p>
-                    </div>
+
                 </div>
             </div>
+
+        </div>
+        <div class="flex justify-between items-center text-[10px] text-gray-400 px-6 pb-4   shrink-0">
+            <p>Copyright Reserved @2025</p>
+            <p>Last Sync: 19 Oct 2025, 10:45 AM IST</p>
         </div>
     </NuxtLayout>
 </template>

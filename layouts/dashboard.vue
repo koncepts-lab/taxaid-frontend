@@ -6,8 +6,9 @@
     <!-- MAIN CONTENT -->
     <div class="flex-1 flex flex-col overflow-hidden relative">
       <Header />
-      
-      <main class="flex-1 overflow-x-hidden overflow-y-auto bg-[#F3F4F6] lg:pt-0 lg:pl-0 lg:pr-4 lg:pb-4 lg:ml-[110px] transition-all duration-300">
+
+      <main
+        class="flex-1 overflow-x-hidden overflow-y-auto bg-[#F3F4F6] lg:pt-0 lg:pl-0 lg:pr-4  lg:ml-[110px] transition-all duration-300">
         <slot />
       </main>
     </div>
