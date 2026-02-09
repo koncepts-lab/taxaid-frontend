@@ -15,6 +15,8 @@
       bg-cover
       shadow-md
       h-[567px]
+      group
+      cursor-pointer
     "
     :style="{
       backgroundImage: 'url(/images/bg-Revenue.png)',
@@ -22,15 +24,22 @@
     }"
   >
     <!-- Header -->
-    <div class="w-full flex items-center gap-3 px-6 pt-8">
-      <div class="w-[45px] h-[45px] rounded-full grid place-items-center bg-white/10 shrink-0">
-        <img src="/images/icons/revenue.svg" alt="Revenue" class="w-6 h-6 object-contain" />
+    <div class="w-full flex items-center justify-between px-6 pt-15">
+      <div class="flex items-center gap-3">
+        <div class="w-[41px] h-[41px] rounded-full grid place-items-center bg-white/10 shrink-0">
+          <img src="/images/icons/revenue.svg" alt="Revenue" class="w-[24px] object-contain" />
+        </div>
+        <div class="text-base font-medium tracking-tight text-[20px]">Revenue</div>
       </div>
-      <div class="text-base font-medium tracking-tight">Revenue</div>
+      <img 
+        src="/images/icons/right-hover.svg" 
+        alt="Arrow" 
+        class="w-[35px] h-[35px] opacity-0 group-hover:opacity-100 transition-all duration-300"
+      />
     </div>
 
     <!-- Gauge Area -->
-    <div class="relative w-full px-4 mt-2">
+    <div class="relative w-full px-4 mt-4">
       <div class="relative w-full">
         <svg class="w-full h-auto block" :viewBox="`0 0 ${svgW} ${svgH}`">
           <!-- Ticks -->
@@ -60,8 +69,8 @@
           />
 
           <!-- Labels -->
-          <text :x="polarToCartesian(-180).x" :y="polarToCartesian(-180).y + 35" text-anchor="middle" fill="white" font-size="14" font-weight="500" opacity="0.5">0</text>
-          <text :x="polarToCartesian(0).x" :y="polarToCartesian(0).y + 35" text-anchor="middle" fill="white" font-size="14" font-weight="500" opacity="0.5">100</text>
+          <text :x="polarToCartesian(-180).x" :y="polarToCartesian(-180).y + 35" text-anchor="middle" fill="white" font-size="18" font-weight="500" opacity="0.5">0</text>
+          <text :x="polarToCartesian(0).x" :y="polarToCartesian(0).y + 35" text-anchor="middle" fill="white" font-size="18" font-weight="500" opacity="0.5">100 %</text>
         </svg>
 
         <!-- Center Value -->
@@ -78,7 +87,7 @@
 
         <!-- Center Icon -->
         <div 
-          class="absolute left-1/2 top-[80%] -translate-x-1/2 -translate-y-1/2"
+          class="absolute left-1/2 top-[80%] -translate-x-1/2 -translate-y-1/2 pt-5"
           :style="{ 
             opacity: animProgress / 100, 
             clipPath: `inset(${100 - animProgress}% 0 0 0)`
@@ -94,7 +103,7 @@
     </div>
 
     <!-- Bottom Values -->
-    <div class="w-full text-center px-6 flex-1 flex flex-col justify-end gap-3 pb-6">
+    <div class="w-full text-center px-6 flex-1 flex flex-col justify-end gap-3 pb-[30px]">
       <div class="mt-0">
         <div class="text-[14px] opacity-70 mb-0 uppercase tracking-widest">Total Revenue</div>
         <div class="text-xl font-bold flex items-center justify-center">
@@ -104,9 +113,9 @@
 
       <div class="pt-3 border-t border-white/10 mx-2">
         
-        <div class="text-[12px] font-thin flex items-center justify-center gap-1">
+        <div class="text-[18px] font-thin flex items-center justify-center gap-1">
           <img src="/images/icons/dirham.svg" alt="Icon" class="w-[16px]" />{{ formatNumber(netRevenue) }}
-          <div class="text-[12px] font-thin">Net Revenue (After Returns)</div>
+          <div class="text-[14px] font-thin">Net Revenue (After Returns)</div>
         </div>
         
       </div>

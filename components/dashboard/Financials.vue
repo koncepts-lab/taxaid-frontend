@@ -1,5 +1,5 @@
 <template>
-  <div class="col-span-12 lg:col-span-4 bg-white rounded-[20px] p-5 shadow-sm flex flex-col h-[250px]">
+  <div class="col-span-12 lg:col-span-5 bg-white rounded-[20px] p-5 shadow-sm flex flex-col h-[250px]">
     <!-- Header -->
     <div class="flex items-center gap-3 mb-2">
       <div 
