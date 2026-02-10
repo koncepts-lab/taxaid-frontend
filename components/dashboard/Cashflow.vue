@@ -1,34 +1,41 @@
 <template>
-  <div class="col-span-12 lg:col-span-7 bg-white rounded-[20px] p-6 shadow-sm relative h-[250px]">
+  <div class="col-span-12 lg:col-span-7 rounded-[20px] p-6 shadow-sm relative h-[250px] group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300"
+    :class="isDark ? 'bg-[#002e26] border border-[#04c18f]/20' : 'bg-white'">
     <!-- Header Area -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-2">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
       
-      <!-- Title & Icon -->
+       <!-- Title & Icon -->
       <div class="flex items-center gap-3 mb-4 md:mb-0">
-        <div class="w-10 h-10 rounded-full flex items-center justify-center text-[#00B794] text-xl" style="background: linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center text-xl" 
+          :style="isDark ? { background: '#00B794' } : { background: 'linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)' }">
           <!-- Refresh Icon SVG or simple text -->
-          <img src="/images/icons/Cashflow-black.svg" alt="Cashflow" class="w-5 h-5 object-contain">
+          <img :src="isDark ? '/images/icons/Cashflow.svg' : '/images/icons/Cashflow-black.svg'" alt="Cashflow" class="w-5 h-5 object-contain" :class="{ 'invert brightness-0': isDark }">
         </div>
-        <div class="text-[#000] font-bold text-2xl">Cashflow</div>
+        <div class="font-medium text-xl" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'التدفق النقدي' : 'Cashflow' }}</div>
       </div>
 
-      <!-- Legend & Filters -->
+      <!-- Legend & Filters & Hover Icon -->
       <div class="flex items-center gap-3 text-xs font-medium">
              <div class="flex items-center gap-1">
                <span class="w-3 h-3 rounded-full bg-[#FF7B5F]"></span>
-               <span class="text-[#191919]">Hypothetical Scenario</span>
+               <span class="transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#191919]'">{{ currentLang === 'ar' ? 'سيناريو افتراضي' : 'Hypothetical Scenario' }}</span>
              </div>
              <div class="flex items-center gap-1">
                <span class="w-3 h-3 rounded-full bg-[#00B794]"></span>
-               <span class="text-[#191919]">Real Scenario</span>
+               <span class="transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#191919]'">{{ currentLang === 'ar' ? 'سيناريو حقيقي' : 'Real Scenario' }}</span>
              </div>
+             <img 
+               src="/images/icons/right-hover-2.svg" 
+               alt="Arrow" 
+               class="w-[35px] h-[35px] opacity-0 group-hover:opacity-100 transition-all duration-300 ml-2"
+             />
       </div>
     </div>
 
     <!-- Chart & Filters Area -->
     <div class="flex gap-3">
       <!-- Chart -->
-      <div class="flex-1 h-[170px]">
+      <div class="flex-1 h-[180px]">
         <ClientOnly>
           <apexchart width="100%" height="100%" type="area" :options="chartOptions" :series="chartSeries"></apexchart>
         </ClientOnly>
@@ -36,9 +43,12 @@
 
       <!-- Vertical Time Filters -->
       <div class="flex flex-col gap-2 pt-2 shrink-0">
-          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-bold bg-[#E0E7E6] text-[#003d35]">3M</button>
-          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-bold text-white bg-[#003d35] shadow-lg">6M</button>
-          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-bold bg-[#E0E7E6] text-[#003d35]">1Y</button>
+          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-bold transition-colors"
+            :class="isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]'">3M</button>
+          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-bold transition-colors shadow-lg"
+            :class="isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35]'">6M</button>
+          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-bold transition-colors"
+            :class="isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]'">1Y</button>
       </div>
     </div>
   </div>
@@ -46,6 +56,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+const currentLang = useState('currentLang')
+const { isDark } = useTheme()
 
 const seriesData = {
   real: [2.8, 2.1, 2.5, 1.7, 2.3, 4.0, 4.2, 3.1, 3.6, 3.0, 3.0, 1.4, 1.9, 1.5, 1.8, 3.0, 3.4, 3.6, 4.1, 3.9],
@@ -73,6 +85,7 @@ const chartOptions = computed(() => ({
     fontFamily: 'inherit',
     zoom: { enabled: false }
   },
+  legend: { show: false },
   colors: ['#00B794', '#FF7B5F'],
   fill: {
     type: 'gradient',
@@ -88,10 +101,12 @@ const chartOptions = computed(() => ({
     curve: 'smooth',
     width: 3
   },
-  xaxis: {
-    categories: ['May', '','', 'Jun', '','', 'Jul', '','', 'Aug', '','', 'Sep', '','', 'Oct'],
+    xaxis: {
+    categories: currentLang.value === 'ar' 
+      ? ['مايو', '', '', 'يونيو', '', '', 'يوليو', '', '', 'أغسطس', '', '', 'سبتمبر', '', '', 'أكتوبر']
+      : ['May', '','', 'Jun', '','', 'Jul', '','', 'Aug', '','', 'Sep', '','', 'Oct'],
     labels: {
-        style: { colors: '#9CA3AF', fontSize: '12px' }
+        style: { colors: isDark.value ? '#9CA3AF' : '#9CA3AF', fontSize: '12px' }
     },
     axisBorder: { show: false },
     axisTicks: { show: false }
@@ -102,22 +117,24 @@ const chartOptions = computed(() => ({
     tickAmount: 5,
     labels: {
       formatter: (value: number) => value.toFixed(0) + 'M',
-      style: { colors: '#9CA3AF', fontSize: '12px' }
+      style: { colors: isDark.value ? '#6B7280' : '#9CA3AF', fontSize: '12px' }
     }
   },
   grid: {
-    borderColor: '#f3f4f6',
+    borderColor: isDark.value ? '#374151' : '#f3f4f6',
     strokeDashArray: 0,
     xaxis: { lines: { show: true } },
     yaxis: { lines: { show: false } },
   },
-  legend: { show: false }, // Custom legend used
   tooltip: {
-    custom: function({series, seriesIndex, dataPointIndex, w}) {
+    custom: function({series, seriesIndex, dataPointIndex, w}: any) {
+      const month = currentLang.value === 'ar' ? 'يوليو' : 'July';
+      const realLabel = currentLang.value === 'ar' ? 'حقيقي: ' : 'Real: ';
+      const hypoLabel = currentLang.value === 'ar' ? 'افتراضي: ' : 'Hypothetical: ';
       return '<div class="px-3 py-2 bg-[#DFFFF6] text-[#003d35] rounded-lg shadow-lg border-none text-xs">' +
-        '<div class="font-bold mb-1">July</div>' +
-        '<div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 rounded-full bg-[#00B794]"></span><span>Real: AED 2.5M</span></div>' +
-        '<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#FF7B5F]"></span><span>Hypothetical: AED 1.2M</span></div>' +
+        '<div class="font-bold mb-1">' + month + '</div>' +
+        '<div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 rounded-full bg-[#00B794]"></span><span>' + realLabel + 'AED 2.5M</span></div>' +
+        '<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#FF7B5F]"></span><span>' + hypoLabel + 'AED 1.2M</span></div>' +
         '</div>'
     }
   },
@@ -156,3 +173,20 @@ const chartOptions = computed(() => ({
   }
 }));
 </script>
+
+<style scoped>
+@keyframes sweep-right {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+:deep(.apexcharts-series) {
+  animation: sweep-right 1.5s ease-out forwards;
+  animation-delay: 0.5s;
+  clip-path: inset(0 100% 0 0);
+}
+</style>

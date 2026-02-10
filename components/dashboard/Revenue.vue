@@ -17,6 +17,7 @@
       h-[567px]
       group
       cursor-pointer
+      justify-between
     "
     :style="{
       backgroundImage: 'url(/images/bg-Revenue.png)',
@@ -29,7 +30,7 @@
         <div class="w-[41px] h-[41px] rounded-full grid place-items-center bg-white/10 shrink-0">
           <img src="/images/icons/revenue.svg" alt="Revenue" class="w-[24px] object-contain" />
         </div>
-        <div class="text-base font-medium tracking-tight text-[20px]">Revenue</div>
+        <div class="text-base font-medium tracking-tight text-[20px]">{{ currentLang === 'ar' ? 'الإيرادات' : 'Revenue' }}</div>
       </div>
       <img 
         src="/images/icons/right-hover.svg" 
@@ -39,7 +40,7 @@
     </div>
 
     <!-- Gauge Area -->
-    <div class="relative w-full px-4 mt-4">
+    <div class="relative w-full px-4 mt-4 overflow-hidden" style="max-height: 25vh;">
       <div class="relative w-full">
         <svg class="w-full h-auto block" :viewBox="`0 0 ${svgW} ${svgH}`">
           <!-- Ticks -->
@@ -80,32 +81,33 @@
 </span>
 
           <span class="text-[11px] font-light opacity-60 mt-3 uppercase tracking-widest block">
-  Target Achieved
+  {{ currentLang === 'ar' ? 'تم تحقيق الهدف' : 'Target Achieved' }}
 </span>
 
         </div>
 
-        <!-- Center Icon -->
-        <div 
-          class="absolute left-1/2 top-[80%] -translate-x-1/2 -translate-y-1/2 pt-5"
-          :style="{ 
-            opacity: animProgress / 100, 
-            clipPath: `inset(${100 - animProgress}% 0 0 0)`
-          }"
-        >
-          <img
-            src="/images/icons/Total-Revenue.svg"
-            alt="Icon"
-            class="w-[80px] h-auto object-contain -mt-[10px]"
-          />
-        </div>
       </div>
     </div>
 
+    <!-- Center Icon -->
+    <div 
+      class="flex justify-center"
+      :style="{ 
+        opacity: animProgress / 100, 
+        clipPath: `inset(${100 - animProgress}% 0 0 0)`
+      }"
+    >
+      <img
+        src="/images/icons/Total-Revenue.svg"
+        alt="Icon"
+        class="w-[80px] h-auto object-contain"
+      />
+    </div>
+
     <!-- Bottom Values -->
-    <div class="w-full text-center px-6 flex-1 flex flex-col justify-end gap-3 pb-[30px]">
+    <div class="w-full text-center px-6 flex-1 flex flex-col justify-end gap-3 pb-[30px] overflow-hidden" style="max-height: 22vh;">
       <div class="mt-0">
-        <div class="text-[14px] opacity-70 mb-0 uppercase tracking-widest">Total Revenue</div>
+        <div class="text-[14px] opacity-70 mb-0 uppercase tracking-widest">{{ currentLang === 'ar' ? 'إجمالي الإيرادات' : 'Total Revenue' }}</div>
         <div class="text-xl font-bold flex items-center justify-center">
           <span class="mr-1"><img src="/images/icons/dirham.svg" alt="Icon" class="w-[20px]" /></span>{{ formatNumber(totalRevenue) }}
         </div>
@@ -115,7 +117,7 @@
         
         <div class="text-[18px] font-thin flex items-center justify-center gap-1">
           <img src="/images/icons/dirham.svg" alt="Icon" class="w-[16px]" />{{ formatNumber(netRevenue) }}
-          <div class="text-[14px] font-thin">Net Revenue (After Returns)</div>
+          <div class="text-[14px] font-thin">{{ currentLang === 'ar' ? 'صافي الإيرادات (بعد المرتجعات)' : 'Net Revenue (After Returns)' }}</div>
         </div>
         
       </div>
@@ -125,6 +127,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from "vue";
+const currentLang = useState('currentLang')
 const totalRevenue = 2775000;
 const netRevenue = 988430;
 const currentYearTarget = 3000000;

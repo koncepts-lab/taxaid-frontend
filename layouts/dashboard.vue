@@ -1,15 +1,27 @@
 <template>
-  <div class="flex h-screen bg-[#F3F4F6] overflow-hidden font-sans">
+  <div 
+    class="flex h-screen bg-[#F3F4F6] overflow-hidden font-sans transition-colors duration-300"
+    :class="{ 'dark-mode-bg': isDark }"
+    :dir="currentLang === 'ar' ? 'rtl' : 'ltr'"
+  >
     <!-- SIDEBAR -->
     <Sidebar />
 
     <!-- MAIN CONTENT -->
     <div class="flex-1 flex flex-col overflow-hidden relative">
+      <ParticleBackground />
       <Header />
 
-      <main
-        class="flex-1 overflow-x-hidden overflow-y-auto bg-[#F3F4F6] lg:pt-0 lg:pl-0 lg:pr-4  lg:ml-[110px] transition-all duration-300">
-        <slot />
+      <main 
+        class="flex-1 overflow-x-hidden overflow-y-auto lg:pt-0 transition-all duration-300 relative px-[15px]"
+        :class="[
+          currentLang === 'ar' ? 'lg:mr-[90px] lg:ml-0' : 'lg:ml-[90px] lg:mr-0',
+          isDark ? 'bg-transparent' : 'bg-[#F3F4F6]'
+        ]"
+      >
+        <div class="relative z-10">
+          <slot />
+        </div>
       </main>
     </div>
   </div>
@@ -18,4 +30,8 @@
 <script setup>
 import Sidebar from '~/components/common/Sidebar.vue'
 import Header from '~/components/common/Header.vue'
+import ParticleBackground from '~/components/common/ParticleBackground.vue'
+
+const currentLang = useState('currentLang', () => 'en')
+const { isDark } = useTheme()
 </script>

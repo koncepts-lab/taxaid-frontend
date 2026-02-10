@@ -1,37 +1,47 @@
 <template>
-  <div class="col-span-12 lg:col-span-5 bg-white rounded-[20px] p-5 shadow-sm flex flex-col h-[305px]">
+  <div class="col-span-12 lg:col-span-5 rounded-[20px] p-5 shadow-sm flex flex-col h-[305px] group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300"
+    :class="isDark ? 'bg-[#002e26] border border-[#04c18f]/20' : 'bg-white'">
     <!-- Header -->
-    <div class="flex items-center gap-3 mb-4">
-      <div 
-        class="w-12 h-12 rounded-full grid place-items-center"
-        style="background: linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)"
-      >
-        <img src="/images/icons/Indirect-Expense-black.svg" alt="Indirect Expense" class="w-6 h-6 object-contain" />
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div 
+          class="w-12 h-12 rounded-full grid place-items-center"
+          :style="isDark ? { background: '#00B794' } : { background: 'linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)' }"
+        >
+          <img :src="isDark ? '/images/icons/Indirect-Expense.svg' : '/images/icons/Indirect-Expense-black.svg'" alt="Indirect Expense" class="w-6 h-6 object-contain" :class="{ 'invert brightness-0': isDark }" />
+        </div>
+        <div class="font-medium text-xl" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'المصاريف غير المباشرة' : 'Indirect Expense' }}</div>
       </div>
-      <div class="text-[20px] font-bold text-[#000]">Indirect Expense</div>
+      <img 
+        src="/images/icons/right-hover-2.svg" 
+        alt="Arrow" 
+        class="w-[35px] h-[35px] opacity-0 group-hover:opacity-100 transition-all duration-300"
+      />
     </div>
 
     <!-- Chart Area -->
-    <div class="flex-1 flex flex-col md:flex-row items-center justify-between gap-8">
+    <div class="flex-1 flex flex-col md:flex-row items-center justify-between gap-1">
        <!-- Custom SVG Irregular Pie Chart -->
-       <div class="relative w-[200px] h-[200px] shrink-0 flex items-center justify-center">
+       <div class="relative w-full max-w-[40%] shrink-0 flex items-center justify-center">
           <!-- Subtle Background Circle for effect -->
           <div class="absolute inset-0 rounded-full bg-gray-50 opacity-50"></div>
           
-          <svg viewBox="-110 -110 220 220" class="w-full h-full transform -rotate-110">
+          <svg viewBox="-110 -110 220 220" class="w-full h-full transform -rotate-42 transition-all duration-700 ease-out" :style="{ opacity: animProgress / 100 }">
             <g v-for="(slice, index) in computedSlices" :key="index">
               <path 
                 :d="slice.path" 
                 :fill="slice.color"
+                class="transition-all duration-300"
               />
               <text 
+                v-if="animProgress > 50"
                 :x="slice.textPos.x" 
                 :y="slice.textPos.y" 
                 fill="white" 
-                font-size="14" 
-                font-weight="bold" 
+                font-size="12" 
+                font-weight="500" 
                 text-anchor="middle"
-                class="transform rotate-110"
+                class="transform rotate-42"
                 style="transform-box: fill-box; transform-origin: center;"
               >
                 {{ slice.value }}%
@@ -41,10 +51,10 @@
        </div>
 
        <!-- Custom Legend -->
-       <div class="flex flex-col gap-3 justify-center">
+       <div class="flex flex-col gap-1 justify-center w-full max-w-[50%]">
           <div v-for="(label, index) in labels" :key="index" class="flex items-center gap-2">
-             <span class="w-3 h-3 rounded-full shrink-0" :style="{ backgroundColor: colors[index] }"></span>
-             <span class="text-[13px] font-medium text-gray-500">{{ label }}</span>
+             <span class="w-[10px] h-[10px] rounded-full shrink-0" :style="{ backgroundColor: colors[index] }"></span>
+             <span class="text-[14px] font-normal transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? labelsAr[index] : label }}</span>
           </div>
        </div>
     </div>
@@ -52,19 +62,39 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 
+const currentLang = useState('currentLang', () => 'en')
+const { isDark } = useTheme()
 const labels = ['Rent & Utilities', 'Salaries & Wages', 'Marketing & Advertising', 'Office Supplies', 'Others'];
+const labelsAr = ['الإيجار والمرافق', 'الرواتب والأجور', 'التسويق والإعلان', 'اللوازم المكتبية', 'أخرى'];
 const series = [35, 30, 20, 10, 5];
 const colors = ['#004D41', '#00966C', '#FFB100', '#D29600', '#FF7E5B'];
+
+const animProgress = ref(0);
+
+onMounted(() => {
+  let startTimestamp: number | null = null;
+  const duration = 1500;
+  const animate = (timestamp: number) => {
+    if (!startTimestamp) startTimestamp = timestamp;
+    const progress = timestamp - startTimestamp;
+    animProgress.value = Math.min(100, (progress / duration) * 100);
+    if (progress < duration) {
+      requestAnimationFrame(animate);
+    }
+  };
+  requestAnimationFrame(animate);
+});
 // Different radii for irregular look
 const radii = [100, 96, 88, 80, 72];
 
 const computedSlices = computed(() => {
-  let currentAngle = 0;
-  return series.map((value, index) => {
+  let currentAngle = 90; // Start at top (90 degrees)
+  return series.map((val, index) => {
+    const value = val * (animProgress.value / 100);
     const angle = (value / 100) * 360;
-    const r = radii[index];
+    const r = radii[index] || 100;
     const startAngle = currentAngle;
     const endAngle = currentAngle + angle;
     

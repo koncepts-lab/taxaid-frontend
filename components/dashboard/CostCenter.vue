@@ -1,45 +1,93 @@
 <template>
-  <div class="col-span-12 md:col-span-6 lg:col-span-3 bg-white rounded-[20px] p-4 shadow-sm flex flex-col h-[260px] relative overflow-hidden">
+  <div class="col-span-12 md:col-span-6 lg:col-span-3 rounded-[20px] p-4 shadow-sm flex flex-col h-[225px] relative overflow-hidden group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300"
+    :class="isDark ? 'bg-[#002e26] border border-[#04c18f]/20' : 'bg-white'">
     <!-- Header -->
-    <div class="flex items-center gap-3 mb-4">
-      <div 
-        class="w-10 h-10 rounded-full grid place-items-center"
-        style="background: linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)"
-      >
-        <img src="/images/icons/Cost-Center-Project-black.svg" alt="Cost Center" class="w-5 h-5 object-contain" />
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div 
+          class="w-10 h-10 rounded-full grid place-items-center"
+          :style="isDark ? { background: '#00B794' } : { background: 'linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)' }"
+        >
+          <img :src="isDark ? '/images/icons/Cost-Center-Project.svg' : '/images/icons/Cost-Center-Project-black.svg'" alt="Cost Center" class="w-5 h-5 object-contain" :class="{ 'invert brightness-0': isDark }" />
+        </div>
+        <div class="font-medium text-xl" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'مركز التكلفة / المشروع' : 'Cost Center / Project' }}</div>
       </div>
-      <div class="text-[18px] font-bold text-[#000]">Cost Center / Project</div>
+      <img 
+        src="/images/icons/right-hover-2.svg" 
+        alt="Arrow" 
+        class="w-[35px] h-[35px] opacity-0 group-hover:opacity-100 transition-all duration-300"
+      />
     </div>
 
     <!-- Main Content -->
-    <div class="flex justify-between items-end mb-6">
+    <div class="flex justify-between items-end">
       <div class="flex flex-col">
-        <div class="text-[12px] text-gray-400 font-medium">Active Projects</div>
-        <div class="text-[42px] font-bold text-[#000] leading-none mt-2">12</div>
-        <div class="flex items-center gap-1 text-[#00B794] font-bold text-[12px] mt-2">
+        <div class="text-[12px] font-medium transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? 'المشاريع النشطة' : 'Active Projects' }}</div>
+         <div class="text-[34px] font-semibold mt-1 flex items-center transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">12</div>
+        <div class="flex items-center gap-1 text-[#05B743] font-medium text-[14px] mt-2">
            <span><img src="/images/icons/up.svg" alt="Up" class="w-4 h-4" /></span>
-           <span>2% vs last month</span>
+           <span>{{ currentLang === 'ar' ? '2% مقارنة بالشهر الماضي' : '2% vs last month' }}</span>
         </div>
       </div>
 
       <!-- Mini Wave Chart -->
-      <div class="w-24 h-12 mb-2">
-        <svg viewBox="0 0 100 40" class="w-full h-full">
-          <path d="M0 30 Q 20 10 40 25 T 80 15 T 100 20" fill="none" stroke="#00B794" stroke-width="2.5" stroke-linecap="round" />
-          <path d="M0 30 Q 20 10 40 25 T 80 15 T 100 20 V 40 H 0 Z" fill="#00B794" opacity="0.1" />
+      <div class="w-28 h-16 mb-2 animate-sweep-right">
+        <svg viewBox="0 0 120 60" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="costCenterGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00B794" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#00B794" stop-opacity="0.05"/>
+            </linearGradient>
+          </defs>
+          
+          <!-- Wave fill -->
+          <path 
+            d="M 0 45 Q 15 35, 30 40 Q 45 45, 60 25 Q 75 10, 90 30 Q 105 45, 120 15 L 120 60 L 0 60 Z" 
+            fill="url(#costCenterGradient)" 
+          />
+          
+          <!-- Wave stroke -->
+          <path 
+            d="M 0 45 Q 15 35, 30 40 Q 45 45, 60 25 Q 75 10, 90 30 Q 105 45, 120 15" 
+            stroke="#00B794" 
+            stroke-width="3" 
+            stroke-linecap="round" 
+            fill="none" 
+          />
         </svg>
       </div>
     </div>
 
     <!-- Footer Text -->
-    <div class="pt-4 border-t border-gray-100 mt-auto">
-      <p class="text-[11px] text-gray-400 leading-relaxed">
-        <span class="font-bold text-gray-500">Atria.co</span> recently added 2 new projects. Strengthening operational activity.
+    <div class="mt-auto transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">
+      <p class="text-[12px] font-regular">
+        <template v-if="currentLang === 'ar'">
+          أضافت <span :class="isDark ? 'text-white' : 'text-[#000]'">Atria.co</span> مؤخرًا مشروعين جديدين. <br/>تعزيز النشاط التشغيلي.
+        </template>
+        <template v-else>
+          <span :class="isDark ? 'text-white' : 'text-[#000]'">Atria.co</span> recently added 2 new projects. <br/>Strengthening operational activity.
+        </template>
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// No logic needed
+const currentLang = useState('currentLang')
+const { isDark } = useTheme()
 </script>
+
+<style scoped>
+@keyframes sweep-right {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.animate-sweep-right {
+  animation: sweep-right 1.2s ease-out forwards;
+}
+</style>
