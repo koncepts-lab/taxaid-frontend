@@ -85,8 +85,22 @@ const dashboardData = {
             { label: 'Profit Before Tax (PBT)', schedule: '', current: '1,270,000', previous: '1,120,000', budget: '1,350,000', variance: '+5.3%', progress: 20, isSummary: true },
         ]
     },
-    'balance-sheet': { title: 'Balance Sheet Summary', rows: [] },
-    'schedules': { title: 'Schedules', rows: [] },
+    'balance-sheet': {
+        title: 'Balance Sheet Summary',
+        rows: [
+            { label: 'Assets', isHeader: true },
+            { label: 'Current Assets', schedule: '01', current: '4,250,000', previous: '3,900,000', budget: '5,000,000', variance: '+5.9%', progress: 75 },
+            { label: 'Fixed Assets (Net)', schedule: '02', current: '2,150,000', previous: '2,000,000', budget: '2,800,000', variance: '+3.6%', progress: 65 },
+            { label: 'Total Assets', schedule: '-', current: '7,700,000', previous: '7,700,000', budget: '8,100,000', variance: '+3.6%', progress: 65 },
+
+            { label: 'Liabilities & Equity', isHeader: true },
+            { label: 'Investments', schedule: '03', current: '950,000', previous: '870,000', budget: '1,200,000', variance: '+4.3%', progress: 25 },
+            { label: 'Current Liabilities', schedule: '04', current: '120,000', previous: '90,000', budget: '150,000', variance: '+16.7%', progress: 30 },
+            { label: 'Long-Term Liabilities', schedule: '05', current: '190,000', previous: '170,000', budget: '210,000', variance: '+16.7%', progress: 30 },
+            { label: 'Shareholders\' Equity', schedule: '06', current: '190,000', previous: '170,000', budget: '210,000', variance: '+16.7%', progress: 30 },
+            { label: 'Total Liabilities & Equity', schedule: '-', current: '7,700,000', previous: '7,180,000', budget: '8,100,000', variance: '+16.7%', progress: 30 },
+        ]
+    }, 'schedules': { title: 'Schedules', rows: [] },
     'ratios': { title: 'Financial Ratios', rows: [] }
 }
 

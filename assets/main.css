@@ -17,6 +17,8 @@
   --color-primary-650: #00ffbc;
   --color-primary-700: #dbfff7;
   --color-primary-750: #008864;
+  --color-primary-800: #a9ffed;
+  --color-primary-850: #6effa0;
 
   --color-secondary-50: #6d91ff;
   --color-secondary-100: #8124fb;
@@ -28,7 +30,11 @@
 }
 
 .dark-mode-bg {
-  background: radial-gradient(circle at center, #015c4d 0%, #002e26 100%) !important;
+  background: radial-gradient(
+    circle at center,
+    #015c4d 0%,
+    #002e26 100%
+  ) !important;
   color: white;
 }
 
