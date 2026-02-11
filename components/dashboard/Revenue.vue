@@ -14,7 +14,10 @@
       bg-top
       bg-cover
       shadow-md
-      h-[567px]
+      h-[542px]
+      group
+      cursor-pointer
+      justify-between
     "
     :style="{
       backgroundImage: 'url(/images/bg-Revenue.png)',
@@ -22,15 +25,22 @@
     }"
   >
     <!-- Header -->
-    <div class="w-full flex items-center gap-3 px-6 pt-8">
-      <div class="w-[45px] h-[45px] rounded-full grid place-items-center bg-white/10 shrink-0">
-        <img src="/images/icons/revenue.svg" alt="Revenue" class="w-6 h-6 object-contain" />
+    <div class="w-full flex items-center justify-between px-6 pt-15">
+      <div class="flex items-center gap-3">
+        <div class="w-[41px] h-[41px] rounded-full grid place-items-center bg-white/10 shrink-0">
+          <img src="/images/icons/revenue.svg" alt="Revenue" class="w-[24px] object-contain" />
+        </div>
+        <div class="text-base font-medium tracking-tight text-[20px]">{{ currentLang === 'ar' ? 'الإيرادات' : 'Revenue' }}</div>
       </div>
-      <div class="text-base font-medium tracking-tight">Revenue</div>
+      <img 
+        src="/images/icons/right-hover.svg" 
+        alt="Arrow" 
+        class="w-[35px] h-[35px] opacity-0 group-hover:opacity-100 transition-all duration-300"
+      />
     </div>
 
     <!-- Gauge Area -->
-    <div class="relative w-full px-4 mt-2">
+    <div class="relative w-full px-4 mt-4 overflow-hidden" style="max-height: 25vh;">
       <div class="relative w-full">
         <svg class="w-full h-auto block" :viewBox="`0 0 ${svgW} ${svgH}`">
           <!-- Ticks -->
@@ -55,8 +65,13 @@
             :cy="marker.y"
             r="9"
             fill="#fff"
-            style="filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3))"
+            stroke="#03D9B0"
+            stroke-width="6"
           />
+
+          <!-- Labels -->
+          <text :x="polarToCartesian(-180).x" :y="polarToCartesian(-180).y + 35" text-anchor="middle" fill="white" font-size="18" font-weight="500" opacity="0.5">0</text>
+          <text :x="polarToCartesian(0).x" :y="polarToCartesian(0).y + 35" text-anchor="middle" fill="white" font-size="18" font-weight="500" opacity="0.5">100 %</text>
         </svg>
 
         <!-- Center Value -->
@@ -66,27 +81,33 @@
 </span>
 
           <span class="text-[11px] font-light opacity-60 mt-3 uppercase tracking-widest block">
-  Target Achieved
+  {{ currentLang === 'ar' ? 'تم تحقيق الهدف' : 'Target Achieved' }}
 </span>
 
         </div>
 
-        <!-- Center Icon -->
-        <div class="absolute left-1/2 top-[80%] -translate-x-1/2 -translate-y-1/2">
-          <img
-  src="/images/icons/Total-Revenue.svg"
-  alt="Icon"
-  class="w-[80px] h-auto object-contain -mt-[10px]"
-/>
-
-        </div>
       </div>
     </div>
 
+    <!-- Center Icon -->
+    <div 
+      class="flex justify-center"
+      :style="{ 
+        opacity: animProgress / 100, 
+        clipPath: `inset(${100 - animProgress}% 0 0 0)`
+      }"
+    >
+      <img
+        src="/images/icons/Total-Revenue.svg"
+        alt="Icon"
+        class="w-[60px] h-auto object-contain"
+      />
+    </div>
+
     <!-- Bottom Values -->
-    <div class="w-full text-center px-6 flex-1 flex flex-col justify-end gap-3 pb-6">
+    <div class="w-full text-center px-6 flex-1 flex flex-col justify-end gap-3 pb-[30px] overflow-hidden" style="max-height: 22vh;">
       <div class="mt-0">
-        <div class="text-[14px] opacity-70 mb-0 uppercase tracking-widest">Total Revenue</div>
+        <div class="text-[14px] opacity-70 mb-0 uppercase tracking-widest">{{ currentLang === 'ar' ? 'إجمالي الإيرادات' : 'Total Revenue' }}</div>
         <div class="text-xl font-bold flex items-center justify-center">
           <span class="mr-1"><img src="/images/icons/dirham.svg" alt="Icon" class="w-[20px]" /></span>{{ formatNumber(totalRevenue) }}
         </div>
@@ -94,9 +115,9 @@
 
       <div class="pt-3 border-t border-white/10 mx-2">
         
-        <div class="text-[12px] font-thin flex items-center justify-center gap-1">
+        <div class="text-[18px] font-thin flex items-center justify-center gap-1">
           <img src="/images/icons/dirham.svg" alt="Icon" class="w-[16px]" />{{ formatNumber(netRevenue) }}
-          <div class="text-[12px] font-thin">Net Revenue (After Returns)</div>
+          <div class="text-[14px] font-thin">{{ currentLang === 'ar' ? 'صافي الإيرادات (بعد المرتجعات)' : 'Net Revenue (After Returns)' }}</div>
         </div>
         
       </div>
@@ -105,7 +126,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, onMounted } from "vue";
+const currentLang = useState('currentLang')
 const totalRevenue = 2775000;
 const netRevenue = 988430;
 const currentYearTarget = 3000000;
@@ -115,7 +137,23 @@ const colors = { lastYear: "#21E669", currentYear: "#03D8B0", balance: "#0A7C4B"
 const svgW = 400; const svgH = 330;
 const cx = 200;   const cy = 180;  const r = 170;
 const strokeW = 18; const startDeg = -180; const endDeg = 0;
-const gapDeg = 6; const lastYearSpanDeg = 30;
+const gapDeg = 9; const lastYearSpanDeg = 30;
+
+const animProgress = ref(0);
+
+onMounted(() => {
+  let startTimestamp: number | null = null;
+  const duration = 1200;
+  const animate = (timestamp: number) => {
+    if (!startTimestamp) startTimestamp = timestamp;
+    const progress = timestamp - startTimestamp;
+    animProgress.value = Math.min(100, (progress / duration) * 100);
+    if (progress < duration) {
+      requestAnimationFrame(animate);
+    }
+  };
+  requestAnimationFrame(animate);
+});
 
 const currentYearPct = computed(() => Math.min(100, (currentYearAchieved / currentYearTarget) * 100));
 const remainingSpan = computed(() => (endDeg - startDeg) - lastYearSpanDeg - (gapDeg * 2));
@@ -126,18 +164,41 @@ const polarToCartesian = (angleDeg: number, radius = r) => {
 };
 
 const arcPath = (a0: number, a1: number) => {
+  if (a1 <= a0) return "M 0 0";
   const p0 = polarToCartesian(a0); const p1 = polarToCartesian(a1);
   return `M ${p0.x} ${p0.y} A ${r} ${r} 0 0 1 ${p1.x} ${p1.y}`;
 };
 
-const segLastYearPath = computed(() => arcPath(startDeg, startDeg + lastYearSpanDeg));
+const displayLimitDeg = computed(() => startDeg + (animProgress.value / 100) * (endDeg - startDeg));
+
+const segLastYearPath = computed(() => {
+  const a0 = startDeg;
+  const a1 = startDeg + lastYearSpanDeg;
+  return arcPath(a0, Math.min(a1, displayLimitDeg.value));
+});
+
 const segCurrent = computed(() => {
   const a0 = startDeg + lastYearSpanDeg + gapDeg;
   return { a0, a1: a0 + (currentYearPct.value / 100) * remainingSpan.value };
 });
-const segCurrentPath = computed(() => arcPath(segCurrent.value.a0, segCurrent.value.a1));
-const segBalancePath = computed(() => arcPath(segCurrent.value.a1 + gapDeg, endDeg));
-const marker = computed(() => polarToCartesian(segCurrent.value.a1));
+
+const segCurrentPath = computed(() => {
+  const { a0, a1 } = segCurrent.value;
+  if (displayLimitDeg.value <= a0) return "M 0 0";
+  return arcPath(a0, Math.min(a1, displayLimitDeg.value));
+});
+
+const segBalancePath = computed(() => {
+  const a0 = segCurrent.value.a1 + gapDeg;
+  const a1 = endDeg;
+  if (displayLimitDeg.value <= a0) return "M 0 0";
+  return arcPath(a0, Math.min(a1, displayLimitDeg.value));
+});
+
+const marker = computed(() => {
+  const targetA = segCurrent.value.a1;
+  return polarToCartesian(Math.min(targetA, displayLimitDeg.value));
+});
 
 const showTicks = true;
 const tickPoints = computed(() => {

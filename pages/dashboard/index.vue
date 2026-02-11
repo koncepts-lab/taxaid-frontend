@@ -1,7 +1,7 @@
 <template>
   <NuxtLayout name="dashboard">
     <!-- Main Grid Wrapper -->
-    <div class="grid grid-cols-12 gap-3 pb-4">
+    <div class="grid grid-cols-12 gap-3 pb-4 pt-4">
       
       <!-- LEFT SIDEBAR -->
       <div class="col-span-12 lg:col-span-3 flex flex-col gap-3">

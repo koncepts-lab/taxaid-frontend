@@ -23,6 +23,11 @@
   --breakpoint-customSM: 390px;
 }
 
+.dark-mode-bg {
+  background: radial-gradient(circle at center, #015c4d 0%, #002e26 100%) !important;
+  color: white;
+}
+
 /* Scrollbar Utility for the dashboard */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
@@ -30,4 +35,28 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00b792;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00b792;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #00b792 #f1f1f1;
 }

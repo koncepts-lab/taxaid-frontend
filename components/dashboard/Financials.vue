@@ -1,14 +1,22 @@
 <template>
-  <div class="col-span-12 lg:col-span-4 bg-white rounded-[20px] p-5 shadow-sm flex flex-col h-[250px]">
+  <div class="col-span-12 lg:col-span-5 rounded-[20px] p-5 shadow-sm flex flex-col h-[250px] group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300"
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
     <!-- Header -->
-    <div class="flex items-center gap-3 mb-2">
-      <div 
-        class="w-12 h-12 rounded-full grid place-items-center"
-        style="background: linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)"
-      >
-        <img src="/images/icons/Financial-Statement-black.svg" alt="Financials" class="w-6 h-6 object-contain" />
+    <div class="flex items-center justify-between mb-2">
+      <div class="flex items-center gap-3">
+        <div 
+          class="w-12 h-12 rounded-full grid place-items-center"
+          :style="isDark ? { background: '#00B794' } : { background: 'linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)' }"
+        >
+          <img src="/images/icons/Financial-Statement-black.svg" alt="Financials" class="w-6 h-6 object-contain" />
+        </div>
+       <div class="font-medium text-xl" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'القوائم المالية' : 'Financial Statements' }}</div>
       </div>
-      <div class="text-[20px] font-bold text-[#000]">Financial Statements</div>
+      <img 
+        src="/images/icons/right-hover-2.svg" 
+        alt="Arrow" 
+        class="w-[35px] h-[35px] opacity-0 group-hover:opacity-100 transition-all duration-300"
+      />
     </div>
 
     <!-- Charts Container -->
@@ -32,13 +40,13 @@
                :stroke="item.color" 
                stroke-width="8" 
                stroke-linecap="round"
-               :stroke-dasharray="`${item.progress * 2.83} 283`"
+               :stroke-dasharray="`${(item.progress * (animProgress / 100)) * 2.83} 283`"
              />
              <!-- Marker Circle (Calculated position) -->
              <circle 
                 v-if="item.progress > 0"
-                :cx="getMarkerPos(item.progress).x" 
-                :cy="getMarkerPos(item.progress).y" 
+                :cx="getMarkerPos(item.progress * (animProgress / 100)).x" 
+                :cy="getMarkerPos(item.progress * (animProgress / 100)).y" 
                 r="5" 
                 fill="white" 
                 :stroke="item.color"
@@ -47,12 +55,12 @@
            </svg>
            <!-- Center Text -->
            <div class="absolute inset-0 flex items-center justify-center transform">
-             <span class="text-xl font-bold text-[#000]">{{ item.value }}</span>
+             <span class="text-xl font-bold" :class="isDark ? 'text-white' : 'text-[#000]'">{{ item.value }}</span>
            </div>
         </div>
         <!-- Label -->
-        <div class="text-[13px] font-medium text-gray-600 text-center leading-tight">
-          {{ item.label }}
+        <div class="text-[13px] font-medium text-center leading-tight transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-gray-600'">
+          {{ currentLang === 'ar' ? item.labelAr : item.label }}
         </div>
       </div>
     </div>
@@ -60,10 +68,30 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue';
+const currentLang = useState('currentLang')
+const { isDark } = useTheme()
+
+const animProgress = ref(0);
+
+onMounted(() => {
+  let startTimestamp: number | null = null;
+  const duration = 1200;
+  const animate = (timestamp: number) => {
+    if (!startTimestamp) startTimestamp = timestamp;
+    const progress = timestamp - startTimestamp;
+    animProgress.value = Math.min(100, (progress / duration) * 100);
+    if (progress < duration) {
+      requestAnimationFrame(animate);
+    }
+  };
+  requestAnimationFrame(animate);
+});
+
 const financials = [
-  { label: 'Revenue Growth', value: '+8.2%', progress: 75, color: '#009848', bgColor: '#009848' }, // Green
-  { label: 'Net Profit Margin', value: '+4.8%', progress: 60, color: '#036192', bgColor: '#036192' }, // Blue
-  { label: 'Liquidity Status', value: '+2.2%', progress: 35, color: '#F1B208', bgColor: '#F1B208' }  // Yellow
+  { label: 'Revenue Growth', labelAr: 'نمو الإيرادات', value: '+8.2%', progress: 75, color: '#009848', bgColor: '#009848' }, // Green
+  { label: 'Net Profit Margin', labelAr: 'هامش الربح الصافي', value: '+4.8%', progress: 60, color: '#036192', bgColor: '#036192' }, // Blue
+  { label: 'Liquidity Status', labelAr: 'حالة السيولة', value: '+2.2%', progress: 35, color: '#F1B208', bgColor: '#F1B208' }  // Yellow
 ];
 
 // Helper to calculate marker position
