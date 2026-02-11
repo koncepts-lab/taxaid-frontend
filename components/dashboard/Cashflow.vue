@@ -1,6 +1,6 @@
 <template>
   <div class="col-span-12 lg:col-span-7 rounded-[20px] p-6 shadow-sm relative h-[250px] group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300"
-    :class="isDark ? 'bg-[#002e26] border border-[#04c18f]/20' : 'bg-white'">
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
     <!-- Header Area -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
       
@@ -9,7 +9,7 @@
         <div class="w-10 h-10 rounded-full flex items-center justify-center text-xl" 
           :style="isDark ? { background: '#00B794' } : { background: 'linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)' }">
           <!-- Refresh Icon SVG or simple text -->
-          <img :src="isDark ? '/images/icons/Cashflow.svg' : '/images/icons/Cashflow-black.svg'" alt="Cashflow" class="w-5 h-5 object-contain" :class="{ 'invert brightness-0': isDark }">
+          <img src="/images/icons/Cashflow-black.svg" alt="Cashflow" class="w-5 h-5 object-contain">
         </div>
         <div class="font-medium text-xl" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'التدفق النقدي' : 'Cashflow' }}</div>
       </div>

@@ -1,5 +1,5 @@
 <template>
-  <header class="flex items-center justify-between px-4 md:px-8 py-3 md:py-4 bg-transparent mt-0 mb-2">
+  <header class="flex items-center justify-between px-4 md:px-8 py-1 md:py-2 bg-transparent mt-0 mb-2">
     <!-- LEFT: LOGO -->
     <div class="flex items-center">
       <img :src="isDark ? '/images/logo-dark.svg' : '/images/logo.svg'" alt="Taxaid.AI" :class="currentLang === 'ar' ? 'h-10 md:h-14 mr-0 md:mr-[30px]' : 'h-10 md:h-14 ml-0 md:ml-[30px]'" />
@@ -7,7 +7,7 @@
 
     <!-- CENTER: NAVIGATION PILL -->
     <div class="hidden lg:flex items-center p-1.5 rounded-full transition-all duration-300"
-      :class="isDark ? 'bg-[#015F4D] text-white' : 'border border-[#B2E4D9]'"
+      :class="isDark ? 'bg-[#015F4D] text-white' : ''"
       :style="isDark ? {} : { background: 'linear-gradient(271.49deg, rgba(164, 227, 214, 0.485) 30.96%, rgba(109, 216, 193, 0.5) 109.26%)', boxShadow: '0px 4px 4px 0px #D0F7EF80' }">
       <button class="px-8 py-2.5 rounded-full font-regular transition-all text-[16px]"
         :class="isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm'">

@@ -14,7 +14,7 @@
       bg-top
       bg-cover
       shadow-md
-      h-[567px]
+      h-[542px]
       group
       cursor-pointer
       justify-between
@@ -100,7 +100,7 @@
       <img
         src="/images/icons/Total-Revenue.svg"
         alt="Icon"
-        class="w-[80px] h-auto object-contain"
+        class="w-[60px] h-auto object-contain"
       />
     </div>
 

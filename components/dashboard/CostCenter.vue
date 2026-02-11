@@ -1,6 +1,6 @@
 <template>
   <div class="col-span-12 md:col-span-6 lg:col-span-3 rounded-[20px] p-4 shadow-sm flex flex-col h-[225px] relative overflow-hidden group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300"
-    :class="isDark ? 'bg-[#002e26] border border-[#04c18f]/20' : 'bg-white'">
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-3">
@@ -8,7 +8,7 @@
           class="w-10 h-10 rounded-full grid place-items-center"
           :style="isDark ? { background: '#00B794' } : { background: 'linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)' }"
         >
-          <img :src="isDark ? '/images/icons/Cost-Center-Project.svg' : '/images/icons/Cost-Center-Project-black.svg'" alt="Cost Center" class="w-5 h-5 object-contain" :class="{ 'invert brightness-0': isDark }" />
+          <img src="/images/icons/Cost-Center-Project-black.svg" alt="Cost Center" class="w-5 h-5 object-contain" />
         </div>
         <div class="font-medium text-xl" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'مركز التكلفة / المشروع' : 'Cost Center / Project' }}</div>
       </div>

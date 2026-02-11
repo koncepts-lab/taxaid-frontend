@@ -1,6 +1,6 @@
 <template>
   <div class="col-span-12 md:col-span-6 lg:col-span-3 rounded-[20px] p-4 shadow-sm flex flex-col h-[225px] relative overflow-hidden group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300"
-    :class="isDark ? 'bg-[#002e26] border border-[#04c18f]/20' : 'bg-white'">
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-3">
@@ -8,7 +8,7 @@
           class="w-10 h-10 rounded-full grid place-items-center"
           :style="isDark ? { background: '#00B794' } : { background: 'linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)' }"
         >
-          <img :src="isDark ? '/images/icons/Accounts-Payable.svg' : '/images/icons/Accounts-Payable-black.svg'" alt="Payable" class="w-5 h-5 object-contain" :class="{ 'invert brightness-0': isDark }" />
+          <img src="/images/icons/Accounts-Payable-black.svg" alt="Payable" class="w-5 h-5 object-contain" />
         </div>
         <div class="font-medium text-xl" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'حسابات الدفع' : 'Accounts Payable' }}</div>
       </div>
@@ -24,7 +24,7 @@
       <div class="flex flex-col">
         <div class="text-[12px] font-medium transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? 'إجمالي الذمم الدائنة المستحقة' : 'Total Outstanding Payables' }}</div>
         <div class="text-[34px] font-semibold mt-1 flex items-center transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">
-          <span class="mr-1"><img src="/images/icons/AED.svg" alt="AED" class="w-7" /></span>140,175
+          <span class="mr-1"><img :src="isDark ? '/images/icons/AED-dark.svg' : '/images/icons/AED.svg'" alt="AED" class="w-7" /></span>140,175
         </div>
         <div class="flex items-center gap-1 text-[#FB7554] font-medium text-[14px] mt-2">
            <span><img src="/images/icons/down-right.svg" alt="Down" class="w-4 h-4" /></span>

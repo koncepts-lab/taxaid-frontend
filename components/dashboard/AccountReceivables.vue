@@ -1,6 +1,6 @@
 <template>
-  <div class="col-span-12 lg:col-span-7 rounded-[20px] p-5 shadow-sm h-[305px] group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300 flex flex-col justify-between"
-    :class="isDark ? 'bg-[#002e26] border border-[#04c18f]/20' : 'bg-white'">
+  <div class="col-span-12 lg:col-span-7 rounded-[20px] p-5 shadow-sm h-[280px] group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300 flex flex-col justify-between"
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
     <!-- Header -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-2">
       <div class="flex items-center justify-between w-full md:w-auto">
@@ -9,7 +9,7 @@
             class="w-12 h-12 rounded-full grid place-items-center"
             :style="isDark ? { background: '#00B794' } : { background: 'linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)' }"
           >
-            <img :src="isDark ? '/images/icons/Account-Receivables.svg' : '/images/icons/Account-Receivables-black.svg'" alt="Receivables" class="w-6 h-6 object-contain" :class="{ 'invert brightness-0': isDark }" />
+            <img src="/images/icons/Account-Receivables-black.svg" alt="Receivables" class="w-6 h-6 object-contain" />
           </div>
          <div class="font-medium text-xl" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'حسابات القبض' : 'Account Receivables' }}</div>
         </div>

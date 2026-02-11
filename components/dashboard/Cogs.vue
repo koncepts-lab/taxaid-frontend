@@ -1,6 +1,6 @@
 <template>
   <div class="col-span-12 md:col-span-6 lg:col-span-3 rounded-[20px] p-4 shadow-sm flex flex-col justify-between h-[225px] relative overflow-hidden group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300 gap-1"
-    :class="isDark ? 'bg-[#002e26] border border-[#04c18f]/20' : 'bg-white'">
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
@@ -8,7 +8,7 @@
           class="w-12 h-12 rounded-full grid place-items-center"
           :style="isDark ? { background: '#00B794' } : { background: 'linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)' }"
         >
-          <img :src="isDark ? '/images/icons/C.O.G.S.svg' : '/images/icons/C.O.G.S-black.svg'" alt="C.O.G.S" class="w-5 h-5 object-contain" :class="{ 'invert brightness-0': isDark }" />
+          <img src="/images/icons/C.O.G.S-black.svg" alt="C.O.G.S" class="w-5 h-5 object-contain" />
         </div>
         <div class="text-[20px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'تكلفة البضائع المباعة' : 'C.O.G.S' }}</div>
       </div>
@@ -25,7 +25,7 @@
         <div class="text-[12px] font-medium transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? 'نسبة تكلفة البضائع المباعة إلى الإيرادات' : 'COGS to Revenue Ratio' }}</div>
         <div class="text-[40px] font-semibold leading-tight transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">65%</div>
         <div class="flex items-center gap-1 text-[#05B743] font-medium text-[14px] mt-1">
-          <span><img src="/images/icons/up.svg" alt="C.O.G.S" class="w-6 h-6 object-contain" /></span>
+          <span><img src="/images/icons/up.svg" alt="C.O.G.S" class="w-4 h-4 object-contain" /></span>
           <span class="text-[12px] font-Regular transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? '2% مقارنة بالشهر الماضي' : '2% vs last month' }}</span>
         </div>
       </div>

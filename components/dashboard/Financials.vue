@@ -1,6 +1,6 @@
 <template>
   <div class="col-span-12 lg:col-span-5 rounded-[20px] p-5 shadow-sm flex flex-col h-[250px] group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300"
-    :class="isDark ? 'bg-[#002e26] border border-[#04c18f]/20' : 'bg-white'">
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
     <!-- Header -->
     <div class="flex items-center justify-between mb-2">
       <div class="flex items-center gap-3">
@@ -8,7 +8,7 @@
           class="w-12 h-12 rounded-full grid place-items-center"
           :style="isDark ? { background: '#00B794' } : { background: 'linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)' }"
         >
-          <img :src="isDark ? '/images/icons/Financial-Statement.svg' : '/images/icons/Financial-Statement-black.svg'" alt="Financials" class="w-6 h-6 object-contain" :class="{ 'invert brightness-0': isDark }" />
+          <img src="/images/icons/Financial-Statement-black.svg" alt="Financials" class="w-6 h-6 object-contain" />
         </div>
        <div class="font-medium text-xl" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'القوائم المالية' : 'Financial Statements' }}</div>
       </div>

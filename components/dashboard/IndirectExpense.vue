@@ -1,14 +1,14 @@
 <template>
-  <div class="col-span-12 lg:col-span-5 rounded-[20px] p-5 shadow-sm flex flex-col h-[305px] group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300"
-    :class="isDark ? 'bg-[#002e26] border border-[#04c18f]/20' : 'bg-white'">
+  <div class="col-span-12 lg:col-span-5 rounded-[20px] p-5 shadow-sm flex flex-col h-[280px] group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300"
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between mb-4"> 
       <div class="flex items-center gap-3">
         <div 
           class="w-12 h-12 rounded-full grid place-items-center"
           :style="isDark ? { background: '#00B794' } : { background: 'linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)' }"
         >
-          <img :src="isDark ? '/images/icons/Indirect-Expense.svg' : '/images/icons/Indirect-Expense-black.svg'" alt="Indirect Expense" class="w-6 h-6 object-contain" :class="{ 'invert brightness-0': isDark }" />
+          <img src="/images/icons/Indirect-Expense-black.svg" alt="Indirect Expense" class="w-6 h-6 object-contain" />
         </div>
         <div class="font-medium text-xl" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'المصاريف غير المباشرة' : 'Indirect Expense' }}</div>
       </div>
@@ -22,9 +22,9 @@
     <!-- Chart Area -->
     <div class="flex-1 flex flex-col md:flex-row items-center justify-between gap-1">
        <!-- Custom SVG Irregular Pie Chart -->
-       <div class="relative w-full max-w-[40%] shrink-0 flex items-center justify-center">
+       <div class="relative w-full max-w-[35%] shrink-0 flex items-center justify-center">
           <!-- Subtle Background Circle for effect -->
-          <div class="absolute inset-0 rounded-full bg-gray-50 opacity-50"></div>
+          <div class="absolute inset-0 rounded-full opacity-50" :class="isDark ? 'bg-[#005B48]' : 'bg-gray-50'"></div>
           
           <svg viewBox="-110 -110 220 220" class="w-full h-full transform -rotate-42 transition-all duration-700 ease-out" :style="{ opacity: animProgress / 100 }">
             <g v-for="(slice, index) in computedSlices" :key="index">

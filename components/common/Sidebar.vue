@@ -123,6 +123,4 @@ const navItems = [
 .nav-item.router-link-active {
   opacity: 1;
 }
-
-.side-icons {}
 </style>
