@@ -9,22 +9,30 @@
     <div class="hidden lg:flex items-center p-1.5 rounded-full transition-all duration-300"
       :class="isDark ? 'bg-[#015F4D] text-white' : ''"
       :style="isDark ? {} : { background: 'linear-gradient(271.49deg, rgba(164, 227, 214, 0.485) 30.96%, rgba(109, 216, 193, 0.5) 109.26%)', boxShadow: '0px 4px 4px 0px #D0F7EF80' }">
-      <button class="px-8 py-2.5 rounded-full font-regular transition-all text-[16px]"
-        :class="isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm'">
+      <NuxtLink to="/dashboard" class="px-8 py-2.5 rounded-full font-regular transition-all text-[16px] nav-link"
+        :class="$route.path.startsWith('/dashboard') 
+          ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
+          : (isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black')">
         {{ currentLang === 'ar' ? 'لوحة القيادة' : 'Dashboard' }}
-      </button>
-      <button class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px]"
-        :class="isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black'">
+      </NuxtLink>
+      <NuxtLink to="/data-source" class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px] nav-link"
+        :class="$route.path.startsWith('/data-source')
+          ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
+          : (isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black')">
         {{ currentLang === 'ar' ? 'مصدر البيانات' : 'Data Source' }}
-      </button>
-      <button class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px]"
-        :class="isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black'">
+      </NuxtLink>
+      <NuxtLink to="/alerts" class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px] nav-link"
+        :class="$route.path.startsWith('/alerts')
+          ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
+          : (isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black')">
         {{ currentLang === 'ar' ? 'التنبيهات' : 'Alerts' }}
-      </button>
-      <button class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px]"
-        :class="isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black'">
+      </NuxtLink>
+      <NuxtLink to="/appointment" class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px] nav-link"
+        :class="$route.path.startsWith('/appointment')
+          ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
+          : (isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black')">
         {{ currentLang === 'ar' ? 'المواعيد' : 'Appointment' }}
-      </button>
+      </NuxtLink>
     </div>
 
     <!-- RIGHT: ACTIONS -->
