@@ -1,38 +1,42 @@
 <template>
     <NuxtLayout name="dashboard">
-        <div class="min-h-screen bg-[#f0f4f7] font-sans overflow-x-hidden">
-            <div class="flex gap-6 items-center transition-all duration-500 ease-in-out w-full">
+        <!-- 1. Container fills the screen height and prevents page-level scrolling -->
+        <div class="h-screen bg-[#f0f4f7] font-sans flex overflow-hidden">
 
-                <div class="transition-all duration-500 ease-in-out min-w-0"
-                    :class="isChatOpen ? 'w-[calc(100%-510px)]' : 'w-[calc(100%-140px)] mr-35'">
+            <!-- 2. LEFT AREA: Resizes dynamically and handles its own scrolling -->
+            <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out p-8 pt-0"
+                :class="isChatOpen ? `mr-[480px]` : `mr-[170px]`">
+                <div class=" mx-auto">
                     <FinancialStatementHeader />
 
-                    <div class="flex gap-3 my-8 overflow-x-auto pb-2">
+                    <!-- Tabs -->
+                    <div class="flex gap-3 my-8 overflow-x-auto pb-2 no-scrollbar">
                         <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
                             :class="activeTab === tab.id ? 'bg-primary-750 text-white shadow-md' : 'bg-white text-gray-600 '"
-                            class="flex items-center gap-2 pl-2 py-3 rounded-lg border border-primary-650 text-sm font-normal transition-all whitespace-nowrap hover:shadow-lg w-48">
+                            class="flex items-center gap-2 pl-4 py-3 rounded-lg border border-primary-650 text-sm font-normal transition-all whitespace-nowrap hover:shadow-lg w-48">
                             <div v-html="tab.icon" class="w-5 h-5 flex items-center justify-center"></div>
                             {{ tab.label }}
                         </button>
                     </div>
 
-                    <div class="bg-white rounded-3xl py-8 shadow-sm border border-gray-100 min-h-[500px]">
-                        <FinancialStatementSummary :data="activeTabData.rows" :is-compressed="isChatOpen" />
+                    <!-- Table Container -->
+                    <div class="bg-white rounded-3xl py-8 shadow-sm border border-gray-100 min-h-[500px] mb-10">
+                        <FinancialStatementSummary :data="activeTabData.rows" :is-compressed="isChatOpen"
+                            :active-tab="activeTab" />
                     </div>
-
-                    <!-- <p class="mt-8 text-[11px] text-gray-400">Copyright Reserved @2025</p> -->
                 </div>
-
-                <!-- RIGHT: Sidebar Container -->
-                <aside class="transition-all duration-500 ease-in-out shrink-0"
-                    :class="isChatOpen ? 'w-121.5' : 'w-auto'">
-                    <CommonChatSideBar v-model:isChatOpen="isChatOpen" />
-                </aside>
-
             </div>
+
+            <!-- 3. RIGHT SIDEBAR: Fixed width, does not scroll with content -->
+            <aside class=" fixed right-0 top-1/2 -translate-y-1/2 shrink-0 transition-all duration-500 ease-in-out "
+                :class="isChatOpen ? 'w-121.5' : 'w-[80px]'">
+                <CommonChatSideBar v-model:isChatOpen="isChatOpen" />
+            </aside>
+
         </div>
     </NuxtLayout>
 </template>
+
 
 <script setup>
 const isChatOpen = ref(true)
@@ -91,17 +95,40 @@ const dashboardData = {
             { label: 'Assets', isHeader: true },
             { label: 'Current Assets', schedule: '01', current: '4,250,000', previous: '3,900,000', budget: '5,000,000', variance: '+5.9%', progress: 75 },
             { label: 'Fixed Assets (Net)', schedule: '02', current: '2,150,000', previous: '2,000,000', budget: '2,800,000', variance: '+3.6%', progress: 65 },
-            { label: 'Total Assets', schedule: '-', current: '7,700,000', previous: '7,700,000', budget: '8,100,000', variance: '+3.6%', progress: 65 },
+            { label: 'Total Assets', schedule: '-', current: '7,700,000', previous: '7,700,000', budget: '8,100,000', variance: '+3.6%', progress: 65, isTotal: true },
 
             { label: 'Liabilities & Equity', isHeader: true },
             { label: 'Investments', schedule: '03', current: '950,000', previous: '870,000', budget: '1,200,000', variance: '+4.3%', progress: 25 },
             { label: 'Current Liabilities', schedule: '04', current: '120,000', previous: '90,000', budget: '150,000', variance: '+16.7%', progress: 30 },
             { label: 'Long-Term Liabilities', schedule: '05', current: '190,000', previous: '170,000', budget: '210,000', variance: '+16.7%', progress: 30 },
             { label: 'Shareholders\' Equity', schedule: '06', current: '190,000', previous: '170,000', budget: '210,000', variance: '+16.7%', progress: 30 },
-            { label: 'Total Liabilities & Equity', schedule: '-', current: '7,700,000', previous: '7,180,000', budget: '8,100,000', variance: '+16.7%', progress: 30 },
+            { label: 'Total Liabilities & Equity', schedule: '-', current: '7,700,000', previous: '7,180,000', budget: '8,100,000', variance: '+16.7%', progress: 30, isTotal: true },
         ]
-    }, 'schedules': { title: 'Schedules', rows: [] },
-    'ratios': { title: 'Financial Ratios', rows: [] }
+    }, 'schedules': {
+        title: 'Financial Schedule Summary',
+        rows: [
+            { label: 'Assets', isHeader: true },
+            { label: 'Current Assets', schedule: '01', current: '4,250,000', previous: '3,900,000', budget: '5,000,000', variance: '+5.9%', progress: 75 },
+            { label: 'Fixed Assets (Net)', schedule: '02', current: '2,150,000', previous: '2,000,000', budget: '2,800,000', variance: '+3.6%', progress: 65 },
+            { label: 'Total Assets', schedule: '-', current: '7,700,000', previous: '7,700,000', budget: '8,100,000', variance: '+3.6%', progress: 65, isTotal: true },
+
+            { label: 'Liabilities & Equity', isHeader: true },
+            { label: 'Investments', schedule: '03', current: '950,000', previous: '870,000', budget: '1,200,000', variance: '+4.3%', progress: 25 },
+            { label: 'Current Liabilities', schedule: '04', current: '120,000', previous: '90,000', budget: '150,000', variance: '+16.7%', progress: 30 },
+            { label: 'Long-Term Liabilities', schedule: '05', current: '190,000', previous: '170,000', budget: '210,000', variance: '+16.7%', progress: 30 },
+            { label: 'Shareholders\' Equity', schedule: '06', current: '190,000', previous: '170,000', budget: '210,000', variance: '+16.7%', progress: 30 },
+            { label: 'Total Liabilities & Equity', schedule: '-', current: '7,700,000', previous: '7,180,000', budget: '8,100,000', variance: '+16.7%', progress: 30, isTotal: true },
+        ]
+    },
+    'ratios': {
+        rows: [
+            { label: 'Profitability', metric: 'Net Profit Margin', current: '22%', previous: '18%', variance: '+4.0%', progress: 25 },
+            { label: 'Liquidity', metric: 'Current Ratio', current: '1.6', previous: '1.4', variance: '+0.2%', progress: 12 },
+            { label: 'Valuation', metric: 'Earnings Per Share (EPS)', current: '2.10', previous: '1.80', variance: '+0.30%', progress: 10 },
+            { label: 'Efficiency', metric: 'Inventory Turnover', current: '4.8', previous: '5.1', variance: '-0.3%', progress: 15 },
+            { label: 'Leverage', metric: 'Debt-to-Equity Ratio', current: '0.75', previous: '0.82', variance: '-0.07%', progress: 7 },
+        ]
+    }
 }
 
 const activeTabData = computed(() => dashboardData[activeTab.value] || dashboardData['profit-loss'])
