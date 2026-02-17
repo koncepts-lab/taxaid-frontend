@@ -1,42 +1,132 @@
 <template>
     <NuxtLayout name="dashboard">
-        <div class="min-h-screen bg-[#f0f4f7] font-sans overflow-x-hidden">
-            <div class="flex gap-6 items-center transition-all duration-500 ease-in-out w-full">
+        <ParticleBackground />
 
-                <div class="transition-all duration-500 ease-in-out min-w-0"
-                    :class="isChatOpen ? 'w-[calc(100%-510px)]' : 'w-[calc(100%-140px)] mr-35'">
-                    <FinancialStatementHeader />
+        <!-- 1. Container fills the screen height and prevents page-level scrolling -->
+        <div v-if="!isFullScreenChat" class="h-screen bg-[#f0f4f7] font-sans flex overflow-hidden relative z-10"
+            :class="{ 'dark-mode-bg': isDark }" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
-                    <div class="flex gap-3 my-8 overflow-x-auto pb-2">
+            <!-- 2. LEFT AREA: Resizes dynamically and handles its own scrolling -->
+            <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out p-8 pt-0"
+                :class="isChatOpen ? `2xl:mr-[480px] mr-[400px]` : `mr-[170px]`">
+                <div class=" mx-auto">
+                    <FinancialStatementHeader @export-excel="handleExportExcel" @export-pdf="handleExportPDF"
+                        @refresh="fetchTabData(activeTab)" />
+
+                    <!-- Tabs -->
+                    <div class="flex gap-3 my-8 overflow-x-auto pb-2 no-scrollbar">
                         <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
                             :class="activeTab === tab.id ? 'bg-primary-750 text-white shadow-md' : 'bg-white text-gray-600 '"
-                            class="flex items-center gap-2 pl-2 py-3 rounded-lg border border-primary-650 text-sm font-normal transition-all whitespace-nowrap hover:shadow-lg w-48">
+                            class="flex items-center gap-2 pl-4 py-3 rounded-lg border border-primary-650 text-sm font-normal transition-all whitespace-nowrap hover:shadow-lg w-48">
                             <div v-html="tab.icon" class="w-5 h-5 flex items-center justify-center"></div>
                             {{ tab.label }}
                         </button>
                     </div>
 
-                    <div class="bg-white rounded-3xl py-8 shadow-sm border border-gray-100 min-h-[500px]">
-                        <FinancialStatementSummary :data="activeTabData.rows" :is-compressed="isChatOpen" />
+                    <!-- Table Container -->
+                    <div
+                        class="bg-white rounded-3xl py-8 shadow-sm border border-gray-100 min-h-[500px] mb-10 bg-white">
+                        <FinancialStatementSummary :data="activeTabData.rows" :is-compressed="isChatOpen"
+                            @ask-akeel="handleInfo" :active-tab="activeTab" />
                     </div>
-
-                    <!-- <p class="mt-8 text-[11px] text-gray-400">Copyright Reserved @2025</p> -->
                 </div>
-
-                <!-- RIGHT: Sidebar Container -->
-                <aside class="transition-all duration-500 ease-in-out shrink-0"
-                    :class="isChatOpen ? 'w-121.5' : 'w-auto'">
-                    <CommonChatSideBar v-model:isChatOpen="isChatOpen" />
-                </aside>
-
             </div>
+
+            <!-- 3. RIGHT SIDEBAR: Fixed width, does not scroll with content -->
+            <aside class=" fixed right-0 top-1/2 -translate-y-1/2 shrink-0 transition-all duration-500 ease-in-out mt-5"
+                :class="isChatOpen ? '2xl:w-120 w-100' : 'w-[80px]'">
+                <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = true" />
+            </aside>
+        </div>
+        <div v-else class=" w-full  flex overflow-hidden">
+
+            <!-- Full Sidebar version -->
+            <aside class="w-80 shrink-0 h-[calc(100vh-90px)] ">
+                <TaxQueriesLeftSideBar @close="isFullScreenChat = false" />
+            </aside>
+
+            <!-- Main Chat Window -->
+            <main class="flex-1">
+                <TaxQueriesChatWindow :isMinimized="false" class="flex-1 min-h-0 h-[calc(100vh-90px)] ml-12" />
+            </main>
+
         </div>
     </NuxtLayout>
 </template>
 
+
 <script setup>
-const isChatOpen = ref(true)
-const activeTab = ref('profit-loss')
+import ParticleBackground from '~/components/common/ParticleBackground.vue'
+
+import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable' // Import the function directly
+const isFullScreenChat = ref(false) // State to control view switch
+const currentLang = useState('currentLang', () => 'en')
+const { isDark } = useTheme()
+const handleInfo = () => {
+    isChatOpen.value = true
+}
+
+// --- EXCEL LOGIC ---
+const handleExportExcel = () => {
+    const exportData = activeTabData.value.rows.map(row => ({
+        "Account": row.label,
+        "Current": row.current,
+        "Previous": row.previous,
+        "Variance": row.variance
+    }))
+    const worksheet = XLSX.utils.json_to_sheet(exportData)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1")
+    XLSX.writeFile(workbook, `Report_${activeTab.value}.xlsx`)
+}
+
+// --- PDF LOGIC ---
+const handleExportPDF = async () => {
+    // 1. Only run on the client side
+    if (!process.client) return;
+
+    try {
+        // 2. Dynamically import the libraries to get the correct 'default' exports
+        const { default: jsPDF } = await import('jspdf');
+        const { default: autoTable } = await import('jspdf-autotable');
+
+        // 3. Initialize the document
+        const doc = new jsPDF();
+
+        // 4. Prepare your data
+        const body = activeTabData.value.rows.map(row => [
+            row.label,
+            row.current,
+            row.previous,
+            row.variance
+        ]);
+
+        // 5. Title
+        doc.setFontSize(18);
+        doc.text(`${activeTab.value.toUpperCase()} Report`, 14, 15);
+
+        // 6. Call autoTable directly
+        autoTable(doc, {
+            head: [['Account', 'Current', 'Previous', 'Variance']],
+            body: body,
+            startY: 25,
+            theme: 'grid',
+            headStyles: { fillColor: [13, 148, 136] }, // Teal
+            styles: { fontSize: 9 },
+            // Add a margin to make it look professional
+            margin: { top: 25 }
+        });
+
+        // 7. Save the file
+        doc.save(`Report_${activeTab.value}.pdf`);
+
+    } catch (error) {
+        console.error("Export Error:", error);
+        alert("Could not generate PDF. Please try again.");
+    }
+};
 
 const tabs = [
     {
@@ -54,14 +144,7 @@ const tabs = [
 <path d="M3.83203 3.83398H7.16536M4.66536 7.16732H3.83203M3.83203 10.5007H6.33203" stroke="currentColor" stroke-linecap="round"/>
 </svg>`
     },
-    {
-        id: 'schedules',
-        label: 'Schedules',
-        icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M7.5013 16.666H5.0013C4.11725 16.666 3.2694 16.3148 2.64428 15.6897C2.01916 15.0646 1.66797 14.2167 1.66797 13.3327V5.83268C1.66797 4.94863 2.01916 4.10078 2.64428 3.47566C3.2694 2.85054 4.11725 2.49935 5.0013 2.49935H14.168C15.052 2.49935 15.8999 2.85054 16.525 3.47566C17.1501 4.10078 17.5013 4.94863 17.5013 5.83268V8.33268M6.66797 1.66602V3.33268M12.5013 1.66602V3.33268M1.66797 6.66602H17.5013M15.418 13.0352L14.168 14.2852" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M14.1667 18.3333C16.4679 18.3333 18.3333 16.4679 18.3333 14.1667C18.3333 11.8655 16.4679 10 14.1667 10C11.8655 10 10 11.8655 10 14.1667C10 16.4679 11.8655 18.3333 14.1667 18.3333Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>`
-    },
+
     {
         id: 'ratios',
         label: 'Ratios',
@@ -71,26 +154,107 @@ const tabs = [
 `
     }
 ]
+const config = useRuntimeConfig()
+const isChatOpen = ref(true)
+const activeTab = ref('profit-loss')
+const isLoading = ref(false)
+const dashboardData = ref({
+    'profit-loss': { rows: [] },
+    'balance-sheet': { rows: [] },
+    'schedules': { rows: [] },
+    'ratios': { rows: [] }
+})
 
-const dashboardData = {
-    'profit-loss': {
-        title: 'Profit & Loss Summary',
-        rows: [
-            { label: 'Revenue', schedule: '01', current: '4,250,000', previous: '3,900,000', budget: '5,000,000', variance: '+5.9%', progress: 75 },
-            { label: 'COGS', schedule: '02', current: '2,150,000', previous: '2,000,000', budget: '2,800,000', variance: '+3.6%', progress: 65 },
-            { label: 'Gross Profit', schedule: '', current: '2,100,000', previous: '1,900,000', budget: '2,200,000', variance: '+7.1%', progress: 10, isSummary: true },
-            { label: 'Operating Expenses', schedule: '03', current: '950,000', previous: '870,000', budget: '1,200,000', variance: '+4.3%', progress: 25 },
-            { label: 'Net Operating Income', schedule: '', current: '1,150,000', previous: '1,030,000', budget: '1,200,000', variance: '+8.7%', progress: 50, isSummary: true },
-            { label: 'Other Income / (Expense)', schedule: '04', current: '120,000', previous: '90,000', budget: '150,000', variance: '+16.7%', progress: 30 },
-            { label: 'Profit Before Tax (PBT)', schedule: '', current: '1,270,000', previous: '1,120,000', budget: '1,350,000', variance: '+5.3%', progress: 20, isSummary: true },
-        ]
-    },
-    'balance-sheet': { title: 'Balance Sheet Summary', rows: [] },
-    'schedules': { title: 'Schedules', rows: [] },
-    'ratios': { title: 'Financial Ratios', rows: [] }
+const fetchTabData = async (tabId) => {
+    const apiEndpoints = {
+        'profit-loss': '/financial-analysis/pl-maingroup-totals',
+        'balance-sheet': '/financial-analysis/bs-maingroup-totals',
+        'schedules': '/financial-analysis/schedules-totals',
+        'ratios': '/financial-analysis/ratios-totals'
+    }
+
+    // --- LOGIC MOVED INSIDE THE FUNCTION ---
+    let currentPayload = {}
+
+    if (tabId === 'balance-sheet') {
+        currentPayload = {
+            "folder_from": "2025-01-01",
+            "folder_to": "2025-12-31",
+            "as_of_date": "2025-12-11",
+            "compare_folder_from": "2024-01-01",
+            "compare_folder_to": "2024-12-31",
+            "compare_as_of_date": "2024-12-11"
+        }
+    } else {
+        // P&L and others use the query_from/to format
+        currentPayload = {
+            "folder_from": "2025-01-01",
+            "folder_to": "2025-12-31",
+            "query_from": "2025-01-01",
+            "query_to": "2025-01-13",
+            "compare_folder_from": "2024-01-01",
+            "compare_folder_to": "2024-12-31",
+            "compare_query_from": "2024-01-01",
+            "compare_query_to": "2024-01-13"
+        }
+    }
+
+    isLoading.value = true
+    try {
+        const response = await $fetch(apiEndpoints[tabId], {
+            baseURL: config.public.apiBase,
+            method: 'POST',
+            body: currentPayload
+        })
+
+        if (response.status === 'success') {
+            // Create a formatter for US-style commas
+            const formatter = new Intl.NumberFormat('en-US');
+
+            dashboardData.value[tabId].rows = response.data.map(item => {
+                // 1. Get raw values (defaulting to 0 if null)
+                const currentVal = item['Current Year'] || 0;
+                const previousVal = item['Previous Year'] || 0;
+                const varianceVal = item.Variance || 0;
+
+                // 2. Format Variance with commas and +/- sign
+                let varianceStr = formatter.format(varianceVal);
+                if (varianceVal > 0) {
+                    varianceStr = '+' + varianceStr;
+                }
+
+                return {
+                    label: item.label,
+                    // 3. Apply formatting with commas here
+                    current: formatter.format(currentVal),
+                    previous: formatter.format(previousVal),
+                    variance: varianceStr,
+
+                    isHeader: item.isHeader,
+                    isSummary: item.isSummary,
+                    isTotal: item.isTotal,
+                    schedule: '01',
+                    budget: '150,000',
+                    progress: 10
+                };
+            });
+        }
+    } catch (err) {
+        console.error(`API Error for ${tabId}:`, err)
+    } finally {
+        isLoading.value = false
+    }
 }
 
-const activeTabData = computed(() => dashboardData[activeTab.value] || dashboardData['profit-loss'])
+// Trigger fetch when tab changes
+watch(activeTab, (newTab) => {
+    fetchTabData(newTab)
+}, { immediate: true })
+
+const activeTabData = computed(() => {
+    return dashboardData.value[activeTab.value] || { rows: [] }
+})
+
 </script>
 
 <style scoped>
