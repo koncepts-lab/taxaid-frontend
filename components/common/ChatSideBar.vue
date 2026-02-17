@@ -1,6 +1,6 @@
 <template>
     <div class="z-50 flex items-center justify-end pointer-events-auto transition-all duration-500 ease-in-out shrink-0 -mr-4"
-        :class="isChatOpen ? 'w-121.5 h-[85vh]' : 'w-24 h-150'">
+        :class="isChatOpen ? '2xl:w-120 w-100 h-[85vh]' : 'w-24 h-150'">
 
         <!-- Collapsed State (Initial) -->
         <div v-if="!isChatOpen" class="relative h-150 w-auto shrink-0">
@@ -47,14 +47,14 @@
                                 <span class="text-primary-200 text-xs">Online</span>
                             </div>
                             <div
-                                class="bg-secondary-50/40 border border-primary-100 rounded-md flex items-center p-1 gap-1">
+                                class="bg-secondary-50/40 border border-secondary-50 rounded-md flex items-center p-1 gap-1">
                                 <span class="text-secondary-100 text-xs">8,001/10,485 Tokens</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="flex gap-1 justify-center items-center">
-                    <button>
+                    <button @click="$emit('expand')">
                         <img src="/images/icons/expand-dark.svg" alt="Pin Chat"
                             class="w-5 h-5 opacity-70 hover:opacity-100 transition-opacity" />
                     </button>
@@ -123,6 +123,7 @@
 <script setup>
 // defineModel allows the parent dashboard to stay in sync with the open/close state
 const isChatOpen = defineModel('isChatOpen')
+defineEmits(['update:activeTab', 'expand']); // Added expand emit
 
 const openChat = () => { isChatOpen.value = true }
 const closeChat = () => { isChatOpen.value = false }
