@@ -1,73 +1,226 @@
 <template>
-  <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-full flex flex-col">
-    <div class="flex justify-between items-center mb-8">
+  <div class="rounded-3xl p-8 h-full flex flex-col transition-all duration-500"
+    :class="isDark ? 'bg-[#00141080] border-none shadow-none' : 'bg-white shadow-sm border border-gray-100'">
+    <div class="flex justify-between items-start mb-4">
       <div class="flex flex-col">
-        <span class="text-base font-medium text-primary-450">Revenue by category</span>
-        <span class="text-xs text-black/40">Values in AED Million</span>
+        <h2 class="text-[16px] font-normal leading-tight text-white">{{ currentLang === 'ar' ? 'الإيرادات حسب الفئة' : 'Revenue by category' }}</h2>
+        <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
-      <img src="/images/icons/expand-dark.svg" alt="Expand" class="w-5 h-5 cursor-pointer" />
+      <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-5 h-5 cursor-pointer opacity-80" />
     </div>
 
-    <div class="flex-1 flex flex-col justify-end">
-      <!-- Y-Axis Labels -->
-      <div class="relative flex-1 w-full pt-4">
-        <div v-for="label in ['5M', '4M', '3M', '2M', '1M', '0']" :key="label" 
-             class="h-1/5 border-b border-gray-50 flex items-start text-[10px] text-gray-400">
-          <span class="w-8 -mt-2">{{ label }}</span>
-        </div>
-
-        <!-- Bars Container -->
-        <div class="absolute inset-0 left-8 right-0 flex justify-around items-end pb-0">
-          <div v-for="(category, index) in categories" :key="index" class="flex flex-col items-center group">
-            <div class="flex gap-1 items-end">
-              <!-- Previous Year Bar -->
-              <div class="w-2.5 bg-[#FF8A65] rounded-t-full transition-all duration-1000"
-                   :style="{ height: (category.previous / 5) * 100 + '%' }">
-                <div class="opacity-0 group-hover:opacity-100 absolute -top-10 bg-gray-800 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-10">
-                  Prev: {{ category.previous }}M
-                </div>
-              </div>
-              <!-- Current Year Bar -->
-              <div class="w-2.5 bg-[#03D9B0] rounded-t-full transition-all duration-1000"
-                   :style="{ height: (category.current / 5) * 100 + '%' }">
-                <div class="opacity-0 group-hover:opacity-100 absolute -top-10 bg-gray-800 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-10">
-                  Curr: {{ category.current }}M
-                </div>
-              </div>
-            </div>
-            <span class="mt-4 text-[10px] text-gray-500">{{ category.name }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Legend -->
-    <div class="flex gap-4 mt-8 pt-4 border-t border-gray-50">
-      <div class="flex items-center gap-2">
-        <div class="w-2.5 h-2.5 rounded-full bg-[#FF8A65]"></div>
-        <span class="text-[10px] text-gray-500">Previous Year</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <div class="w-2.5 h-2.5 rounded-full bg-[#03D9B0]"></div>
-        <span class="text-[10px] text-gray-500">Current Year</span>
-      </div>
+    <div class="flex-1 w-full min-h-[400px]">
+      <ClientOnly>
+        <apexchart
+          type="bar"
+          height="100%"
+          :options="chartOptions"
+          :series="series"
+        />
+      </ClientOnly>
     </div>
   </div>
 </template>
 
 <script setup>
-const categories = [
-  { name: 'Consulting', previous: 2.8, current: 4.2 },
-  { name: 'SaaS', previous: 3.1, current: 3.5 },
-  { name: 'Training', previous: 2.8, current: 3.4 },
-  { name: 'Support', previous: 1.5, current: 2.0 },
-  { name: 'Other', previous: 2.5, current: 1.7 }
-]
+import { ref, computed } from 'vue'
+
+const { isDark } = useTheme()
+const currentLang = useState('currentLang', () => 'en')
+
+const series = computed(() => [
+  {
+    name: currentLang.value === 'ar' ? 'السنة السابقة' : 'Previous Year',
+    data: [2.8, 3.1, 3.4, 1.5, 2.5]
+  },
+  {
+    name: currentLang.value === 'ar' ? 'السنة الحالية' : 'Current Year',
+    data: [4.2, 3.5, 2.8, 2.0, 1.7]
+  }
+])
+
+const chartOptions = computed(() => ({
+  chart: {
+    type: 'bar',
+    toolbar: {
+      show: false
+    },
+    fontFamily: 'Noto Sans Arabic, sans-serif',
+    rtl: currentLang.value === 'ar'
+  },
+  plotOptions: {
+    bar: {
+      horizontal: false,
+      columnWidth: '50%',
+      borderRadius: 5,
+      borderRadiusApplication: 'end',
+      dataLabels: {
+        position: 'top',
+      },
+    },
+  },
+  dataLabels: {
+    enabled: true,
+    offsetY: -30,
+    style: {
+      fontSize: '10px',
+      colors: ['#46867E'],
+      fontWeight: 400,
+    },
+    formatter: function (val) {
+      if (currentLang.value === 'ar') {
+        return val.toString().replace('.', ',') + " مليون"
+      }
+      return val.toString().replace('.', ',') + "M"
+    }
+  },
+  stroke: {
+    show: true,
+    width: 2,
+    colors: ['transparent']
+  },
+  xaxis: {
+    categories: currentLang.value === 'ar' ? ['استشارات', 'ساس', 'تدريب', 'دعم', 'أخرى'] : ['Consulting', 'SaaS', 'Training', 'Support', 'Other'],
+    axisBorder: {
+      show: false
+    },
+    axisTicks: {
+      show: false
+    },
+    labels: {
+      style: {
+        fontSize: '12px',
+        colors: isDark.value ? '#FFFFFF80' : '#00000080',
+        fontWeight: 400
+      },
+      offsetY: 0,
+      rotate: -45,
+      rotateAlways: false,
+      hideOverlappingLabels: false
+    }
+  },
+  yaxis: {
+    min: 0,
+    max: 6,
+    tickAmount: 6,
+    labels: {
+      style: {
+        fontSize: '12px',
+        colors: '#A6A6A6',
+        fontWeight: 400
+      },
+      formatter: (value) => {
+        if (currentLang.value === 'ar') {
+          return value === 0 ? "0" : Math.floor(value) + " مليون"
+        }
+        return value === 0 ? "0" : Math.floor(value) + "M"
+      },
+      offsetX: 0
+    },
+    opposite: currentLang.value === 'ar',
+    axisBorder: {
+      show: true,
+      color: isDark.value ? '#F2F2F20F' : '#EFEFEF99',
+      width: 1,
+      offsetX: -2
+    }
+  },
+  grid: {
+    borderColor: isDark.value ? '#F2F2F20F' : '#EFEFEF99',
+    strokeDashArray: 0,
+    yaxis: {
+      lines: {
+        show: true
+      }
+    },
+    xaxis: {
+      lines: {
+        show: false
+      }
+    },
+    padding: {
+      top: 0,
+      right: currentLang.value === 'ar' ? 10 : 20,
+      bottom: 0,
+      left: currentLang.value === 'ar' ? 20 : 10
+    }
+  },
+  fill: {
+    opacity: 1
+  },
+  colors: ['#FB7554', '#0BD9A4'],
+  legend: {
+    position: 'bottom',
+    horizontalAlign: currentLang.value === 'ar' ? 'right' : 'left',
+    fontSize: '14px',
+    fontWeight: 400,
+    offsetY: 0,
+    markers: {
+      width: 12,
+      height: 12,
+      radius: 6,
+      offsetY: 0
+    },
+    itemMargin: {
+      horizontal: 10,
+      vertical: -5
+    },
+    labels: {
+      colors: isDark.value ? '#FFFFFF' : '#000000'
+    }
+  },
+  tooltip: {
+    y: {
+      formatter: function (val) {
+        if (currentLang.value === 'ar') {
+          return val + " مليون درهم"
+        }
+        return val + " Million AED"
+      }
+    }
+  },
+  responsive: [
+    {
+      breakpoint: 600,
+      options: {
+        plotOptions: {
+          bar: {
+            borderRadius: 4,
+            columnWidth: '70%'
+          }
+        },
+        dataLabels: {
+          style: {
+            fontSize: '10px'
+          }
+        },
+        legend: {
+          fontSize: '12px'
+        },
+        xaxis: {
+          labels: {
+            style: {
+              fontSize: '10px'
+            },
+            rotate: -45,
+            rotateAlways: true,
+            hideOverlappingLabels: false
+          }
+        }
+      }
+    }
+  ]
+}))
 </script>
 
 <style scoped>
-.rounded-t-full {
-  border-top-left-radius: 9999px;
-  border-top-right-radius: 9999px;
+/* Adjust ApexCharts default font styles if necessary */
+:deep(.apexcharts-legend) {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+:deep(.apexcharts-legend-series) {
+  margin-bottom: 5px !important;
 }
 </style>
