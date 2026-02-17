@@ -4,13 +4,15 @@
             <div class="flex items-center justify-between">
                 <!-- Title Section -->
                 <div>
-                    <h1 class="text-2xl font-medium text-primary-450">Financial Statement Analysis</h1>
-                    <p class="text-sm text-black/59 mt-1">Income, balance sheet, and financial ratios overview.</p>
+                    <h1 class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-primary-450'">Financial
+                        Statement Analysis</h1>
+                    <p class="text-sm  mt-1" :class="isDark ? 'text-white/80' : 'text-black/59'">Income, balance sheet,
+                        and
+                        financial ratios overview.</p>
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="flex items-center space-x-3">
-                    <!-- Date Filter -->
                     <div class="relative">
                         <button @click="showDateDropdown = !showDateDropdown"
                             class="flex items-center space-x-2 px-4 py-2 bg-white border border-primary-100 text-gray-700 rounded-lg hover:bg-teal-50 transition-colors">
@@ -38,17 +40,35 @@
                         </Transition>
                     </div>
 
-                    <!-- Search Button -->
                     <button
                         class="p-2 bg-white border border-primary-100 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
                         <img src="/images/icons/reload.svg" alt="Search Icon" class="w-5 h-5" />
                     </button>
 
-                    <!-- Download Button -->
-                    <button
-                        class="p-2 bg-white border border-primary-100 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                        <img src="/images/icons/export.svg" alt="Export Icon" class="w-5 h-5" />
-                    </button>
+                    <div class="relative">
+                        <button @click="showExportDropdown = !showExportDropdown"
+                            class="p-2 bg-white border border-primary-100 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                            <img src="/images/icons/export.svg" alt="Export Icon" class="w-5 h-5" />
+                        </button>
+
+                        <!-- Export Dropdown Menu -->
+                        <Transition name="dropdown">
+                            <div v-if="showExportDropdown"
+                                class="absolute right-0 mt-2 w-48 bg-white border border-primary-100 rounded-lg shadow-lg z-20 py-2 px-2">
+
+                                <button @click="triggerExport('excel')"
+                                    class="w-full text-left px-4 py-2 text-xs hover:bg-primary-700 rounded-lg flex items-center space-x-2">
+                                    <span class="font-medium">Export as Excel (.xlsx)</span>
+                                </button>
+
+                                <button @click="triggerExport('pdf')"
+                                    class="w-full text-left px-4 py-2 text-xs hover:bg-primary-700 rounded-lg flex items-center space-x-2">
+                                    <span class="font-medium">Export as PDF (.pdf)</span>
+                                </button>
+                            </div>
+                        </Transition>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -58,22 +78,21 @@
 <script setup>
 import { ref } from 'vue'
 
+const emit = defineEmits(['export-excel', 'export-pdf', 'refresh'])
+
+const showExportDropdown = ref(false)
 const showDateDropdown = ref(false)
-const selectedPeriod = ref('Year to Date')
-const dashboardData = {
-    'profit-loss': {
-        title: 'Profit & Loss Summary',
-        subtitle: 'Values in AED Million',
-        rows: [
-            { label: 'Revenue', schedule: '01', current: 4250000, previous: 3900000, budget: 5000000, variance: '+5.9%', progress: 75 },
-            { label: 'COGS', schedule: '02', current: 2150000, previous: 2000000, budget: 2800000, variance: '+3.6%', progress: 65 },
-            { label: 'Gross Profit', schedule: '', current: 2100000, previous: 1900000, budget: 2200000, variance: '+7.1%', progress: 10 },
-            { label: 'Operating Expenses', schedule: '03', current: 950000, previous: 870000, budget: 1200000, variance: '+4.3%', progress: 25 },
-            // ... rest of the data
-        ]
-    },
-    // ...
+
+const triggerExport = (type) => {
+    if (type === 'excel') emit('export-excel')
+    if (type === 'pdf') emit('export-pdf')
+
+    showExportDropdown.value = false // Close dropdown after clicking
 }
+
+const selectedPeriod = ref('Year to Date')
+const isDark = useTheme().isDark
+console.log("🚀 ~ isDark:", isDark.value)
 
 const periods = [
     'Year to Date',

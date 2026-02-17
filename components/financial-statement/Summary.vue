@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full overflow-x-auto no-scrollbar transition-all duration-500">
+    <div class="w-full overflow-x-auto no-scrollbar transition-all duration-500 bg-white">
 
         <div v-if="activeTab === `schedules`" class="px-8 pb-8 flex gap-4 transition-all duration-500">
             <div class="flex-1 relative">
@@ -74,8 +74,11 @@
                         </div>
                     </div>
                 </div>
-                <button @click="isModalOpen = true">
+                <button @click="isModalOpen = true" v-if="isCompressed">
                     <img src="/images/icons/expand-dark.svg" alt="Expand Icon" class="w-5 h-5" />
+                </button>
+                <button @click="handleInfoClick">
+                    <img src="/images/icons/i.svg" alt="Refresh Icon" class="w-5 h-5" />
                 </button>
             </div>
         </div>
@@ -95,6 +98,7 @@
                         </div>
                     </th>
                     <th class="font-medium text-center text-sm px-4">{{ `Previous Year` }}</th>
+                    <th class="font-medium text-center text-sm px-4">{{ `Budget` }}</th>
                     <th class="font-medium text-center text-sm px-4">{{ `Variance` }}</th>
                     <th class="font-medium text-center text-sm pr-8">{{ `Year to Go` }}</th>
                 </tr>
@@ -102,7 +106,7 @@
             <tbody>
                 <template v-for="(row, i) in data" :key="i">
                     <tr v-if="row.isHeader" class="bg-primary-800">
-                        <td colspan="6" class="pl-8 py-3 text-primary-950 text-sm font-medium">{{ row.label }}</td>
+                        <td colspan="7" class="pl-8 py-3 text-primary-950 text-sm font-medium">{{ row.label }}</td>
                     </tr>
                     <tr v-else
                         :class="[row.isSummary ? `bg-primary-800 font-medium` : `bg-white border-b border-gray-50 px-8`, isCompressed ? `text-sm px-8` : `text-sm px-8`]"
@@ -125,6 +129,9 @@
                         <td class="text-center text-black px-4"
                             :class="[row.isSummary || row.isTotal ? `font-medium` : `font-normal`]">{{
                                 row.previous }}</td>
+                        <td class="text-center px-4"
+                            :class="[row.isSummary || row.isTotal ? `font-medium` : `font-normal`]">{{ row.budget }}
+                        </td>
                         <td class="text-center px-4">
                             <span
                                 :class="[row.variance?.includes(`-`) ? `bg-red-50 text-red-500` : `bg-[#E6F9F4] text-[#029F80]`, `px-2 py-0.5 rounded-full text-xs font-bold`]">{{
@@ -135,19 +142,24 @@
                                 <div :class="isCompressed ? `w-14 h-8` : `w-16 h-10`"
                                     class="relative transition-all duration-500">
                                     <svg class="w-full h-full" viewBox="0 0 36 22">
+                                        <!-- Background Gray Arc -->
                                         <circle cx="18" cy="18" r="15" fill="none" class="stroke-gray-100"
-                                            stroke-width="3" stroke-dasharray="47.1" transform="rotate(-180 18 18)"
+                                            stroke-width="3" stroke-dasharray="47.1 94.2" transform="rotate(-180 18 18)"
                                             stroke-linecap="round" />
-                                        <circle cx="18" cy="18" r="15" fill="none"
+
+                                        <!-- Colored Progress Arc -->
+                                        <!-- v-if="row.progress > 0" handles the orange dots at 0% -->
+                                        <circle v-if="row.progress > 0" cx="18" cy="18" r="15" fill="none"
                                             :stroke="getProgressColor(row.progress)" stroke-width="3.5"
-                                            stroke-dasharray="47.1"
+                                            stroke-dasharray="47.1 94.2"
                                             :stroke-dashoffset="47.1 - (row.progress / 100) * 47.1"
                                             transform="rotate(-180 18 18)" stroke-linecap="round"
                                             class="transition-all duration-1000" />
                                     </svg>
                                     <span
-                                        class="absolute bottom-0 text-[10px] inset-x-0 flex items-center justify-center font-bold leading-none">{{
-                                            row.progress }}%</span>
+                                        class="absolute bottom-0 text-[10px] inset-x-0 flex items-center justify-center font-bold leading-none">
+                                        {{ row.progress }}%
+                                    </span>
                                 </div>
                             </div>
                         </td>
@@ -287,23 +299,30 @@
                                                 :class="[row.variance?.includes(`-`) ? `bg-red-50 text-red-500` : `bg-[#E6F9F4] text-[#029F80]`, `px-3 py-1 rounded-full text-xs font-bold shadow-sm`]">{{
                                                     row.variance }}</span>
                                         </td>
-                                        <td class="pr-8 py-4">
+                                        <td class="pr-8 py-2">
                                             <div class="flex justify-center items-end">
-                                                <div class="w-16 h-10 relative">
+                                                <div :class="isCompressed ? `w-14 h-8` : `w-16 h-10`"
+                                                    class="relative transition-all duration-500">
                                                     <svg class="w-full h-full" viewBox="0 0 36 22">
+                                                        <!-- Background Gray Arc -->
                                                         <circle cx="18" cy="18" r="15" fill="none"
                                                             class="stroke-gray-100" stroke-width="3"
-                                                            stroke-dasharray="47.1" transform="rotate(-180 18 18)"
+                                                            stroke-dasharray="47.1 94.2" transform="rotate(-180 18 18)"
                                                             stroke-linecap="round" />
-                                                        <circle cx="18" cy="18" r="15" fill="none"
-                                                            :stroke="getProgressColor(row.progress)" stroke-width="3.5"
-                                                            stroke-dasharray="47.1"
+
+                                                        <!-- Colored Progress Arc -->
+                                                        <!-- v-if="row.progress > 0" handles the orange dots at 0% -->
+                                                        <circle v-if="row.progress > 0" cx="18" cy="18" r="15"
+                                                            fill="none" :stroke="getProgressColor(row.progress)"
+                                                            stroke-width="3.5" stroke-dasharray="47.1 94.2"
                                                             :stroke-dashoffset="47.1 - (row.progress / 100) * 47.1"
-                                                            transform="rotate(-180 18 18)" stroke-linecap="round" />
+                                                            transform="rotate(-180 18 18)" stroke-linecap="round"
+                                                            class="transition-all duration-1000" />
                                                     </svg>
                                                     <span
-                                                        class="absolute bottom-0 text-[10px] inset-x-0 flex items-center justify-center font-bold">{{
-                                                            row.progress }}%</span>
+                                                        class="absolute bottom-0 text-[10px] inset-x-0 flex items-center justify-center font-bold leading-none">
+                                                        {{ row.progress }}%
+                                                    </span>
                                                 </div>
                                             </div>
                                         </td>
@@ -326,6 +345,7 @@ const props = defineProps({
     isCompressed: Boolean,
     activeTab: String
 });
+const emit = defineEmits(['askAkeel'])
 
 const isModalOpen = ref(false);
 const isOpenPL = ref(false);
@@ -351,6 +371,9 @@ const activeTitle = computed(() => {
     if (props.activeTab === `ratios`) return `Financial Ratios Summary`;
     return `Profit & Loss Summary`;
 });
+const handleInfoClick = () => {
+    emit('askAkeel')
+}
 </script>
 
 <style scoped>
