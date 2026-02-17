@@ -25,6 +25,8 @@
   --color-orange-50: #fb7554;
 
   --breakpoint-customSM: 390px;
+
+  --font-sans: "Noto Sans Arabic", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 .dark-mode-bg {
@@ -63,4 +65,7 @@
 * {
   scrollbar-width: thin;
   scrollbar-color: #00b792 #f1f1f1;
+}
+body{
+      font-family: Noto Sans Arabic;
 }
