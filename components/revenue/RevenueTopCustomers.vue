@@ -11,14 +11,14 @@
         <div class="flex items-center gap-4 text-[12px] font-regular">
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full bg-[#FF886A]"></div>
-            <span class="text-[#0000005C]">{{ currentLang === 'ar' ? 'نسبة تراكمي' : 'Cumulative %' }}</span>
+            <span :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'نسبة تراكمي' : 'Cumulative %' }}</span>
           </div>
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full bg-[#04C18F]"></div>
             <span :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
           </div>
         </div>
-        <img src="/images/icons/expand-dark.svg" alt="Expand" class="w-6 h-6 cursor-pointer opacity-60" />
+        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-6 h-6 cursor-pointer opacity-60" />
       </div>
     </div>
 
@@ -38,7 +38,7 @@
     <div class="grid grid-cols-2 md:grid-cols-5 gap-y-3 gap-x-4 mt-0">
       <div v-for="item in customers" :key="item.id" class="flex items-center gap-1.5 whitespace-nowrap overflow-hidden">
         <span class="text-[12px] font-regular" :style="{ color: item.color }">{{ item.id }}</span>
-        <span class="text-[12px] font-regular text-[#00000080] truncate">- {{ item.displayName }}</span>
+        <span class="text-[12px] font-regular truncate" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">- {{ item.displayName }}</span>
       </div>
     </div>
   </div>
@@ -85,7 +85,7 @@ const series = ref([
   }
 ])
 
-const chartOptions = {
+const chartOptions = computed(() => ({
   chart: {
     fontFamily: 'Noto Sans Arabic, sans-serif',
     toolbar: { show: false },
@@ -124,16 +124,12 @@ const chartOptions = {
   },
   xaxis: {
     categories: customersData.map(c => c.id),
-    axisBorder: { 
-      show: true,
-      color: '#EFEFEF99',
-      width: 1
-    },
+    axisBorder: { show: false },
     axisTicks: { show: false },
     labels: {
       style: {
         fontSize: '14px',
-        colors: '#8C8C8C',
+        colors: isDark.value ? '#FFFFFF80' : '#8C8C8C',
         fontWeight: 400
       }
     }
@@ -145,14 +141,13 @@ const chartOptions = {
       tickAmount: 5,
       axisBorder: {
         show: true,
-        color: '#EFEFEF99',
+        color: isDark.value ? '#F2F2F20F' : '#f1f1f1',
         width: 1
       },
       labels: {
-        show: false,
         style: {
           fontSize: '12px',
-          colors: '#8C8C8C'
+          colors: isDark.value ? '#FFFFFF80' : '#8C8C8C'
         },
         formatter: (val) => val === 0 ? "0" : val + "M"
       }
@@ -163,17 +158,16 @@ const chartOptions = {
       max: 100,
       tickAmount: 5,
       labels: {
-        show: false,
         style: {
           fontSize: '12px',
-          colors: '#8C8C8C'
+          colors: isDark.value ? '#FFFFFF80' : '#8C8C8C'
         },
         formatter: (val) => val + "%"
       }
     }
   ],
   grid: {
-    borderColor: '#EFEFEF99',
+    borderColor: isDark.value ? '#F2F2F20F' : '#f1f1f1',
     padding: { top: 0, right: 0, bottom: 0, left: 10 }
   },
   legend: { show: false },
@@ -207,13 +201,12 @@ const chartOptions = {
       `
     }
   }
-}
+}))
 </script>
 
 <style scoped>
 :deep(.apexcharts-canvas) {
   margin: 0 auto;
-  margin-left: -2px;
 }
 
 :deep(.custom-tooltip) {

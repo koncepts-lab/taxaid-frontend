@@ -1,5 +1,5 @@
 <template>
-    <NuxtLayout name="dashboard">
+    <NuxtLayout name="dashboard"> 
         <div class="min-h-screen overflow-x-hidden">
             <div class="flex gap-6 items-center transition-all duration-500 ease-in-out w-full">
 

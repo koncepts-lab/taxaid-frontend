@@ -3,13 +3,13 @@
     :class="isDark ? 'bg-[#00141080] border-none shadow-none' : 'bg-white shadow-sm border border-gray-100'">
     <div class="flex justify-between items-start mb-4">
       <div class="flex flex-col">
-        <h2 class="text-[16px] font-normal leading-tight text-white">{{ currentLang === 'ar' ? 'الإيرادات حسب الفئة' : 'Revenue by category' }}</h2>
+        <h2 class="text-[16px] font-normal leading-tight">{{ currentLang === 'ar' ? 'الإيرادات حسب الفئة' : 'Revenue by category' }}</h2>
         <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
       <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-5 h-5 cursor-pointer opacity-80" />
     </div>
 
-    <div class="flex-1 w-full min-h-[400px]">
+    <div class="flex-1 w-full min-h-[400px]"> 
       <ClientOnly>
         <apexchart
           type="bar"
