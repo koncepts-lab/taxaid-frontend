@@ -11,32 +11,25 @@
                 :class="isChatOpen ? `2xl:mr-[480px] mr-[400px]` : `mr-[170px]`">
                 <div class="mx-auto">
                     
-                    <RevenueHeader class="mb-8" />
+                    <CashFlowHeader class="mb-8" />
+
+                    <CashFlowMetrics />
 
                     <div class="rounded-3xl mb-8 transition-all duration-500"
                         :class="isDark ? 'bg-[#00141080] border-none' : 'bg-white shadow-sm border border-gray-100'"
                         :style="isDark ? { boxShadow: '0px 4px 4px 0px #00000040' } : {}">
-                        <RevenueSummary :data="revenueSummaryData" :is-compressed="isChatOpen" />
+                        <CashFlowSummary :data="cashFlowSummaryData" :is-compressed="isChatOpen" />
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-                        <div class="h-[500px]">
-                            <RevenueGauge />
-                        </div>
-                        <div class="h-[500px]">
-                            <RevenueByCategory />
+                    <div class="mb-8">
+                        <div class="h-[420px]">
+                            <CashFlowChart />
                         </div>
                     </div>
 
                     <div class="mb-8">
                         <div class="h-[420px]">
-                            <RevenueTrend />
-                        </div>
-                    </div>
-
-                    <div class="mb-8">
-                        <div class="h-[600px]">
-                            <RevenueTopCustomers />
+                            <CashFlowInflowOutflow />
                         </div>
                     </div>
 
@@ -73,11 +66,11 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const revenueSummaryData = computed(() => [
-    { label: 'Product Sales', labelAr: 'مبيعات المنتجات', current: '1,850,000', previous: '1,620,000', budget: '1,900,000', variance: '+14.2%', progress: 50 },
-    { label: 'Service', labelAr: 'الخدمات', current: '450,000', previous: '380,000', budget: '480,000', variance: '+18.4%', progress: 30 },
-    { label: 'Subscriptions', labelAr: 'الاشتراكات', current: '280,000', previous: '240,000', budget: '300,000', variance: '-16.7%', progress: 20 },
-    { label: 'Total Revenue', labelAr: 'إجمالي الإيرادات', current: '2,775,000', previous: '2,405,000', budget: '2,890,000', variance: '+15.4%', progress: 25, isSummary: true },
+const cashFlowSummaryData = computed(() => [
+    { label: 'Operating Activities', labelAr: 'أنشطة التشغيل', current: '1,200,000', previous: '1,100,000', budget: '1,250,000', variance: '+9.1%', progress: 60 },
+    { label: 'Investing Activities', labelAr: 'أنشطة الاستثمار', current: '-400,000', previous: '-350,000', budget: '-450,000', variance: '-14.3%', progress: 30 },
+    { label: 'Financing Activities', labelAr: 'أنشطة التمويل', current: '-200,000', previous: '-150,000', budget: '-200,000', variance: '-33.3%', progress: 20 },
+    { label: 'Net Cash Flow', labelAr: 'صافي التدفق النقدي', current: '600,000', previous: '600,000', budget: '600,000', variance: '0.0%', progress: 40, isSummary: true },
 ])
 </script>
 

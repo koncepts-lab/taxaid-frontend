@@ -45,7 +45,7 @@ const navItems = [
   {
     label: 'Cashflow',
     labelAr: 'التدفق النقدي',
-    to: '/dashboard/transactions',
+    to: '/cash-flow',
     icon: '/images/icons/Cashflow.svg',
     activeIcon: '/images/icons/Cashflow-active.svg'
   },

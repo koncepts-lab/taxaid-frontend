@@ -110,8 +110,11 @@ const chartOptions = computed(() => ({
     offsetY: -30,
     style: {
       fontSize: '12px',
-      colors: ['#04C18F'],
+      colors: [isDark.value ? '#00E0A5CF' : '#013E32CF'],
       fontWeight: 500
+    },
+    background: {
+      enabled: false,
     },
     formatter: (val) => val.toString().replace('.', ',') + "M"
   },
