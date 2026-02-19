@@ -19,6 +19,11 @@
   --color-primary-750: #008864;
   --color-primary-800: #a9ffed;
   --color-primary-850: #6effa0;
+  --color-primary-900: #002b23;
+  --color-primary-950: #003a2e;
+  --color-primary-1000: #001410;
+  --color-primary-1050: #1f6f4d;
+  --color-primary-1100: #002118;
 
   --color-secondary-50: #6d91ff;
   --color-secondary-100: #8124fb;
@@ -28,7 +33,11 @@
 
   --breakpoint-customSM: 390px;
 
-  --font-sans: "Noto Sans Arabic", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans:
+    "Noto Sans Arabic", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 .dark-mode-bg {
@@ -72,6 +81,6 @@
   scrollbar-width: thin;
   scrollbar-color: #00b792 #f1f1f1;
 }
-body{
-      font-family: Noto Sans Arabic;
+body {
+  font-family: Noto Sans Arabic;
 }
