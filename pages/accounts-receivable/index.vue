@@ -32,7 +32,7 @@
           </div>
 
           <div class="mb-8">
-            <div class="h-[360px]">
+            <div class="h-[440px]">
               <AccountsReceivableAgingGraph />
             </div>
           </div>
