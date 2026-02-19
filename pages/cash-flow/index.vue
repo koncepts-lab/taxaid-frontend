@@ -3,8 +3,8 @@
         <ParticleBackground />
 
         <!-- 1. Container fills the screen height and prevents page-level scrolling -->
-        <div v-if="!isFullScreenChat" class="h-screen bg-[#f0f4f7] font-sans flex overflow-hidden relative z-10"
-            :class="{ 'dark-mode-bg': isDark }" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+        <div v-if="!isFullScreenChat" class="h-screen font-sans flex overflow-hidden relative z-10"
+            :class="{ '': isDark }" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
             <!-- 2. LEFT AREA: Resizes dynamically and handles its own scrolling -->
             <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out p-8 pt-0"
@@ -13,7 +13,7 @@
                     
                     <CashFlowHeader class="mb-8" />
 
-                    <CashFlowMetrics />
+                    <CashFlowMetrics :is-compressed="isChatOpen" />
 
                     <div class="rounded-3xl mb-8 transition-all duration-500"
                         :class="isDark ? 'bg-[#00141080] border-none' : 'bg-white shadow-sm border border-gray-100'"

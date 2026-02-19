@@ -1,24 +1,24 @@
 <template>
   <div class="w-full h-full rounded-[20px] p-6 shadow-sm relative group cursor-pointer transition-all duration-300 flex flex-col"
-    style="background: linear-gradient(180deg, #00A176 0%, #004E3F 100%);">
+    :style="isDark ? { background: '#00141080' } : { background: 'linear-gradient(205.59deg, #005A48 8.7%, #00342A 83.81%)' }">
     <!-- Header Area -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center flex-shrink-0">
       
        <!-- Title -->
       <div class="mb-2">
         <h2 class="text-[16px] font-regular text-white">{{ currentLang === 'ar' ? 'التدفق الداخلي مقابل التدفق الخارجي' : 'Inflow vs Outflow' }}</h2>
-        <p class="text-[12px] font-regular mt-1 text-[#FFFFFFCF]">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+        <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white' : 'text-[#FFFFFF5C]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
 
       <!-- Legend & Expand Icon -->
       <div class="flex items-center gap-4 text-xs font-medium">
              <div class="flex items-center gap-1.5">
                <span class="w-3 h-3 rounded-full bg-[#FF7B5F]"></span>
-               <span class="text-white">{{ currentLang === 'ar' ? 'التدفق الخارجي' : 'Outflow' }}</span>
+               <span class="text-white font-regular">{{ currentLang === 'ar' ? 'التدفق الخارجي' : 'Outflow' }}</span>
              </div>
              <div class="flex items-center gap-1.5">
                <span class="w-3 h-3 rounded-full bg-[#00FFBC]"></span>
-               <span class="text-white">{{ currentLang === 'ar' ? 'التدفق الداخلي' : 'Inflow' }}</span>
+               <span class="text-white font-regular">{{ currentLang === 'ar' ? 'التدفق الداخلي' : 'Inflow' }}</span>
              </div>
              <img 
                :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-white.svg'" 
@@ -29,7 +29,7 @@
     </div>
 
     <!-- Chart Area -->
-    <div class="flex-1 min-h-0 mt-6">
+    <div class="flex-1 min-h-0 mt-0">
       <ClientOnly>
         <apexchart width="100%" height="100%" type="bar" :options="chartOptions" :series="chartSeries"></apexchart>
       </ClientOnly>
@@ -64,8 +64,10 @@ const chartOptions = computed(() => ({
   plotOptions: {
     bar: {
       horizontal: false,
-      columnWidth: '45%',
-      borderRadius: 4,
+      columnWidth: '15',
+      borderRadius: 5,
+      borderRadiusApplication: 'end',
+      borderRadiusWhenStacked: 'last',
       dataLabels: {
         position: 'top'
       }
@@ -73,11 +75,11 @@ const chartOptions = computed(() => ({
   },
   dataLabels: {
     enabled: true,
-    offsetY: -20,
+    offsetY: -30,
     style: {
-      fontSize: '11px',
-      colors: ['#FFFFFF'],
-      fontWeight: 500
+      fontSize: '12px',
+      colors: ['#00B793CF'],
+      fontWeight: 400
     },
     formatter: function (val: number) {
       return val.toFixed(1) + 'M'

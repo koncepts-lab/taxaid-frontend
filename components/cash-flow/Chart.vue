@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-full rounded-[20px] p-6 shadow-sm relative group cursor-pointer transition-all duration-300 flex flex-col"
-    style="background: linear-gradient(180deg, #00A176 0%, #004E3F 100%);">
+    :style="isDark ? { background: '#015645' } : { background: 'linear-gradient(180deg, #00A176 0%, #004E3F 100%)' }">
     <!-- Header Area -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center flex-shrink-0">
       
@@ -80,7 +80,8 @@ const chartOptions = computed(() => ({
         style: { colors: '#FFFFFF', fontSize: '13px', fontWeight: 500 }
     },
     axisBorder: { show: false },
-    axisTicks: { show: false }
+    axisTicks: { show: false },
+    tooltip: { enabled: false }
   },
   yaxis: {
     min: 0,
@@ -106,24 +107,25 @@ const chartOptions = computed(() => ({
   },
   tooltip: {
     custom: function({series, seriesIndex, dataPointIndex, w}: any) {
-      const month = w.globals.labels[dataPointIndex];
-      const realValue = series[0][dataPointIndex];
-      const hypoValue = series[1][dataPointIndex];
+      const months = currentLang.value === 'ar' 
+        ? ['مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر']
+        : ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+      const monthName = months[Math.floor(dataPointIndex / 3)];
       
-      // Calculate decline percentage
+      // Values matched to design image but with standard tooltip styling
       const currentYear = 4.6;
       const previousYear = 4.7;
-      const decline = ((currentYear - previousYear) / previousYear * 100).toFixed(1);
+      const decline = "-3.2%";
       
       const currentYearLabel = currentLang.value === 'ar' ? 'السنة الحالية: ' : 'Current Year: ';
       const previousYearLabel = currentLang.value === 'ar' ? 'السنة السابقة: ' : 'Previous Year: ';
       const declineLabel = currentLang.value === 'ar' ? 'الانخفاض: ' : 'Decline: ';
       
-      return '<div class="px-4 py-3 bg-white rounded-lg shadow-xl border-none" style="min-width: 180px;">' +
-        '<div class="font-semibold mb-2 text-[#000] text-[13px]">' + month + '</div>' +
-        '<div class="text-[#000] text-[12px] mb-1">' + currentYearLabel + '<span class="font-semibold">AED ' + currentYear.toFixed(1) + 'M</span></div>' +
-        '<div class="text-[#000] text-[12px] mb-1">' + previousYearLabel + '<span class="font-semibold">AED ' + previousYear.toFixed(1) + 'M</span></div>' +
-        '<div class="text-[12px]">' + declineLabel + '<span class="font-semibold text-[#FF582F]">' + decline + '%</span></div>' +
+      return '<div class="px-5 py-4 bg-white rounded-xl shadow-xl border-none" style="min-width: 200px;">' +
+        '<div class="font-bold mb-2 text-[#000] text-[16px]">' + monthName + '</div>' +
+        '<div class="text-[#000] text-[14px] mb-1">' + currentYearLabel + '<span class="font-medium"> AED ' + currentYear.toFixed(1).replace('.', ',') + 'M</span></div>' +
+        '<div class="text-[#000] text-[14px] mb-1">' + previousYearLabel + '<span class="font-medium"> AED ' + previousYear.toFixed(1).replace('.', ',') + 'M</span></div>' +
+        '<div class="text-[#000] text-[14px]">' + declineLabel + '<span class="font-bold text-[#FF7B5F]"> ' + decline + '</span></div>' +
         '</div>'
     }
   }
@@ -149,6 +151,6 @@ const chartOptions = computed(() => ({
 :deep(.apexcharts-tooltip) {
   background: white !important;
   border: none !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
 }
 </style>
