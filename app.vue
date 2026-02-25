@@ -1,5 +1,8 @@
 <template>
-  <NuxtPage />
+  <UApp>
+
+    <NuxtPage />
+  </UApp>
 </template>
 
 <script setup>
@@ -14,5 +17,7 @@ useHead({
 </script>
 
 <style>
-:root { font-family: "Noto Sans Arabic", sans-serif; }
+:root {
+  font-family: "Noto Sans Arabic", sans-serif;
+}
 </style>

@@ -2,7 +2,8 @@
   <header class="flex items-center justify-between px-4 md:px-8 py-1 md:py-2 bg-transparent mt-0 mb-2">
     <!-- LEFT: LOGO -->
     <div class="flex items-center">
-      <img :src="isDark ? '/images/logo-dark.svg' : '/images/logo.svg'" alt="Taxaid.AI" :class="currentLang === 'ar' ? 'h-10 md:h-14 mr-0 md:mr-[30px]' : 'h-10 md:h-14 ml-0 md:ml-[30px]'" />
+      <img :src="isDark ? '/images/logo-dark.svg' : '/images/logo.svg'" alt="Taxaid.AI"
+        :class="currentLang === 'ar' ? 'h-10 md:h-14 mr-0 md:mr-[30px]' : 'h-10 md:h-14 ml-0 md:ml-[30px]'" />
     </div>
 
     <!-- CENTER: NAVIGATION PILL -->
@@ -10,7 +11,7 @@
       :class="isDark ? 'bg-[#015F4D] text-white' : ''"
       :style="isDark ? {} : { background: 'linear-gradient(271.49deg, rgba(164, 227, 214, 0.485) 30.96%, rgba(109, 216, 193, 0.5) 109.26%)', boxShadow: '0px 4px 4px 0px #D0F7EF80' }">
       <NuxtLink to="/dashboard" class="px-8 py-2.5 rounded-full font-regular transition-all text-[16px] nav-link"
-        :class="$route.path.startsWith('/dashboard') 
+        :class="$route.path.startsWith('/dashboard')
           ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
           : (isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black')">
         {{ currentLang === 'ar' ? 'لوحة القيادة' : 'Dashboard' }}
@@ -21,10 +22,9 @@
           : (isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black')">
         {{ currentLang === 'ar' ? 'مصدر البيانات' : 'Data Source' }}
       </NuxtLink>
-      <NuxtLink to="/alerts" class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px] nav-link"
-        :class="$route.path.startsWith('/alerts')
-          ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
-          : (isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black')">
+      <NuxtLink to="/alerts" class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px] nav-link" :class="$route.path.startsWith('/alerts')
+        ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
+        : (isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black')">
         {{ currentLang === 'ar' ? 'التنبيهات' : 'Alerts' }}
       </NuxtLink>
       <NuxtLink to="/appointment" class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px] nav-link"
@@ -44,30 +44,25 @@
 
       <!-- FLASH ACTION -->
       <div class="group relative hidden md:block">
-        <button
-          class="action-btn flash-btn w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300"
-          :class="{ 'shadow-none': isDark }"
-          :style="isDark ? { background: 'linear-gradient(313.43deg, rgba(4, 183, 136, 0.5) 14.29%, rgba(5, 119, 89, 0.5) 81.93%)', boxShadow: 'none' } : {}">
-          <img :src="isDark ? '/images/icons/flash-dark.svg' : '/images/icons/flash.svg'" class="w-6 h-6" alt="Flash" />
-        </button>
-        <!-- TOOLTIP -->
-        <div
-          class="absolute top-[110%] left-1/2 -translate-x-1/2 mt-2 px-4 py-2.5 bg-[#003d35] text-white text-[12px] font-medium rounded-2xl whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-xl z-50">
-          {{ currentLang === 'ar' ? 'ملخص بنقرة واحدة' : 'One Click Summary' }}
-          <!-- Arrow -->
-          <div
-            class="absolute -top-1.5 left-1/2 -translate-x-1/2 border-x-[6px] border-x-transparent border-b-[6px] border-b-[#003d35]">
-          </div>
-        </div>
+        <CommonTooltip :text="currentLang === 'ar' ? 'ملخص بنقرة واحدة' : 'One Click Summary'">
+          <button
+            class="action-btn flash-btn w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300"
+            :class="{ 'shadow-none': isDark }"
+            :style="isDark ? { background: 'linear-gradient(313.43deg, rgba(4, 183, 136, 0.5) 14.29%, rgba(5, 119, 89, 0.5) 81.93%)', boxShadow: 'none' } : {}">
+            <img :src="isDark ? '/images/icons/flash-dark.svg' : '/images/icons/flash.svg'" class="w-6 h-6"
+              alt="Flash" />
+          </button>
+        </CommonTooltip>
+
       </div>
 
       <!-- THEME TOGGLE (DARK) -->
-      <button
-        @click="toggleTheme"
+      <button @click="toggleTheme"
         class="action-btn theme-btn w-9 h-9 md:w-11 md:h-11 rounded-full items-center justify-center transition-all duration-300 flex"
         :class="{ 'shadow-none': isDark }"
         :style="isDark ? { background: 'linear-gradient(180deg, #057759 0%, #04B788 100%)', boxShadow: 'none' } : {}">
-        <img v-if="!isDark" src="/images/icons/dark.svg" class="w-5 h-5 md:w-6 md:h-6 invert brightness-0" alt="Dark Mode" />
+        <img v-if="!isDark" src="/images/icons/dark.svg" class="w-5 h-5 md:w-6 md:h-6 invert brightness-0"
+          alt="Dark Mode" />
         <img v-else src="/images/icons/sun.svg" class="w-5 h-5 md:w-6 md:h-6" alt="Light Mode" />
       </button>
 
@@ -77,7 +72,8 @@
           class="action-btn settings-btn w-9 h-9 md:w-11 md:h-11 rounded-full items-center justify-center transition-all duration-300 flex"
           :class="{ 'shadow-none': isDark }"
           :style="isDark ? { background: 'linear-gradient(313.43deg, rgba(4, 183, 135, 0.5) 14.29%, rgba(2, 83, 64, 0.5) 81.93%)', boxShadow: 'none' } : {}">
-          <img :src="isDark ? '/images/icons/settings-dark.svg' : '/images/icons/settings.svg'" class="w-5 h-5 md:w-6 md:h-6" alt="Settings" />
+          <img :src="isDark ? '/images/icons/settings-dark.svg' : '/images/icons/settings.svg'"
+            class="w-5 h-5 md:w-6 md:h-6" alt="Settings" />
         </button>
         <!-- DROPDOWN MENU -->
         <div
@@ -88,7 +84,8 @@
               <div class="w-10 h-10 rounded-xl flex items-center justify-center">
                 <img :src="item.icon" class="w-5 h-5" :alt="item.label" />
               </div>
-              <span class="text-[#013E32] font-medium text-[15px]">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
+              <span class="text-[#013E32] font-medium text-[15px]">{{ currentLang === 'ar' ? item.labelAr : item.label
+                }}</span>
             </div>
           </div>
         </div>
@@ -97,8 +94,12 @@
       <!-- PROFILE SECTION -->
       <div class="flex items-center gap-2 md:gap-4 p-1" :class="currentLang === 'ar' ? 'mr-1 md:mr-3' : 'ml-1 md:ml-3'">
         <div class="text-right hidden lg:block" :class="currentLang === 'ar' ? 'text-left' : 'text-right'">
-          <div class="font-medium text-[15px] leading-tight transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ currentLang === 'ar' ? 'ماستر لاين ميكانيك' : 'Masterline Mech' }}</div>
-          <div class="text-[12px] font-light transition-colors duration-300" :class="isDark ? 'text-white/80' : 'text-[#013E32]'">{{ currentLang === 'ar' ? 'أبو ظبي، الإمارات العربية المتحدة' : 'Abu Dhabi, UAE' }}</div>
+          <div class="font-medium text-[15px] leading-tight transition-colors duration-300"
+            :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ currentLang === 'ar' ? 'ماستر لاين ميكانيك' :
+              'Masterline Mech' }}</div>
+          <div class="text-[12px] font-light transition-colors duration-300"
+            :class="isDark ? 'text-white/80' : 'text-[#013E32]'">{{ currentLang === 'ar' ?
+              'أبو ظبي، الإمارات العربية المتحدة' : 'Abu Dhabi, UAE' }}</div>
         </div>
         <div class="relative">
           <img src="/images/avatar-company.png"

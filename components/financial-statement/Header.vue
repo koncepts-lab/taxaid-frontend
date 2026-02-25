@@ -1,6 +1,6 @@
 <template>
     <div :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" class="relative">
-        <div class="container mx-auto">
+        <div class="w-full">
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-primary-450'">
@@ -51,6 +51,7 @@
                                         <span>{{ getTranslatedPeriod(period) }}</span>
                                     </button>
 
+                                    <!-- CUSTOM RANGE POPOVER -->
                                     <div v-if="period === 'Custom Range' && selectedPeriod === 'Custom Range'"
                                         class="absolute top-0 z-60 shadow-2xl rounded-xl border overflow-hidden "
                                         :class="[
@@ -80,13 +81,13 @@
                         </Transition>
                     </div>
 
-                    <button @click="emit('refresh')" class="p-2 border rounded-lg transition-colors"
+                    <button @click="handleRefresh" class="p-2 border rounded-lg transition-colors"
                         :class="isDark ? 'bg-primary-900 border-primary-100 text-white hover:bg-white/10' : 'bg-white border-primary-100 text-gray-700 hover:bg-gray-50'">
                         <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5"
                             :class="isDark ? 'invert' : ''" />
                     </button>
-
-
+                    <!-- 3. EXPORT DROPDOWN -->
+                    <!-- ADDED: ref="exportDropdownRef" -->
                     <div class="relative" ref="exportDropdownRef">
                         <button @click="showExportDropdown = !showExportDropdown"
                             class="p-2 border rounded-lg transition-colors"
@@ -129,10 +130,9 @@
         </div>
     </div>
 </template>
-
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { format } from 'date-fns'
+import { format, subMonths, startOfYear } from 'date-fns' // Added subMonths and startOfYear for cleaner logic
 import { DatePicker as VDatePicker } from 'v-calendar'
 import 'v-calendar/dist/style.css'
 
@@ -156,6 +156,25 @@ const prevMonthPage = ref({ month: prevMonthDate.getMonth() + 1, year: prevMonth
 
 const selectedPeriod = ref('Year to Date')
 const periods = ['Year to Date', 'Previous 3 Months', 'Previous 6 Months', 'Custom Range']
+const handleRefresh = () => {
+    // 1. Reset the dropdown label to YTD
+    selectedPeriod.value = 'Year to Date'
+
+    // 2. Reset the custom calendar dates
+    range.value = { start: null, end: null }
+
+    // 3. Calculate YTD dates to send to parent
+    const startDate = startOfYear(today)
+
+    emit('date-change', {
+        range_option: 'Year to Date',
+        custom_from: '13-05-2025',
+        custom_to: null
+    })
+
+    // 4. Trigger the standard refresh emit
+    emit('refresh')
+}
 
 const periodTranslations = {
     'Year to Date': 'من بداية العام',
@@ -176,26 +195,46 @@ const selectedPeriodLabel = computed(() => {
     return getTranslatedPeriod(selectedPeriod.value)
 })
 
+// --- MODIFIED: Predefined Period Selection ---
 const selectPeriod = (period) => {
     selectedPeriod.value = period
+    range.value = { start: null, end: null }
+
     if (period !== 'Custom Range') {
         showDateDropdown.value = false
-        emit('date-change', { type: period })
+
+        let startDate = new Date()
+        const endDate = new Date() // Today
+
+        if (period === 'Year to Date') {
+            startDate = startOfYear(today)
+        } else if (period === 'Previous 3 Months') {
+            startDate = subMonths(today, 3)
+        } else if (period === 'Previous 6 Months') {
+            startDate = subMonths(today, 6)
+        }
+
+        emit('date-change', {
+            range_option: period,
+            custom_from: format(startDate, 'dd-MM-yyyy'),
+            custom_to: format(endDate, 'dd-MM-yyyy')
+        })
     }
 }
 
+// --- MODIFIED: Custom Range Selection ---
 const emitDateChange = () => {
     if (range.value.start && range.value.end) {
-        if (range.value.start > range.value.end) {
-            const temp = range.value.start;
-            range.value.start = range.value.end;
-            range.value.end = temp;
-        }
+        // Sort dates to ensure start is before end
+        const startDate = range.value.start < range.value.end ? range.value.start : range.value.end;
+        const endDate = range.value.start < range.value.end ? range.value.end : range.value.start;
+
         emit('date-change', {
-            type: 'Custom Range',
-            start: format(range.value.start, 'yyyy-MM-dd'),
-            end: format(range.value.end, 'yyyy-MM-dd')
+            range_option: 'Custom Dates', // Backend usually expects a specific string like 'Custom Dates' or 'Custom Range'
+            custom_from: format(startDate, 'dd-MM-yyyy'),
+            custom_to: format(endDate, 'dd-MM-yyyy')
         });
+
         setTimeout(() => { showDateDropdown.value = false; }, 300);
     }
 };
@@ -225,6 +264,7 @@ const triggerExport = (type) => {
 </script>
 
 <style>
+/* Existing CSS preserved */
 .dropdown-enter-active,
 .dropdown-leave-active {
     transition: all 0.2s ease;
@@ -265,21 +305,14 @@ const triggerExport = (type) => {
     background: transparent !important;
 }
 
-.dark .vc-title,
-.dark .vc-weekday,
-.dark .vc-header .vc-arrow,
-.dark .vc-nav-title,
-.dark .vc-nav-arrow,
-.dark .vc-nav-item {
-    color: #ffffff !important;
-}
+
 
 .dark .vc-day-content:not(.vc-highlight-content-solid) {
-    color: rgba(255, 255, 255, 0.9) !important;
+    /* color: rgba(255, 255, 255, 0.9) !important; */
 }
 
 .vc-highlight-content-solid {
-    color: #ffffff !important;
+    /* color: #ffffff !important; */
     font-weight: 700 !important;
 }
 

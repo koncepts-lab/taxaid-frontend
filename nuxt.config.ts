@@ -2,8 +2,11 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineNuxtConfig({
   // Ensure this is clean
-  modules: [],
-
+  modules: ["@nuxt/ui"],
+  ui: {
+    primary: "teal",
+    gray: "cool",
+  },
   css: ["~/assets/main.css"],
 
   vite: {
