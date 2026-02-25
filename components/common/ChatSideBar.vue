@@ -5,7 +5,7 @@
     ]">
 
         <div v-if="!isChatOpen" class="relative h-150 w-auto shrink-0 transition-transform duration-500"
-            :style="currentLang === 'ar' ? 'transform: scaleX(-1);' : ''">
+            :style="currentLang === 'ar' ? 'transform: scaleX(-1); margin-left:-8px' : 'margin-right: -8px'">
 
             <img src="/images/chatSideBar.webp" alt="" class="h-full w-auto object-contain" />
 
@@ -59,8 +59,9 @@
                             <div
                                 class="bg-primary-150 border border-primary-100 rounded-md flex items-center justify-center p-1 gap-1">
                                 <span class="inline-block w-2 h-2 bg-primary-200 rounded-full"></span>
-                                <span class="text-primary-200 text-xs">{{ currentLang === 'ar' ? 'متصل' : 'Online'
-                                    }}</span>
+                                <span class="text-primary-200 text-xs">{{ currentLang === 'ar' ? 'متصل' :
+                                    'Online'
+                                }}</span>
                             </div>
                             <div class="border border-secondary-50 rounded-md flex items-center p-1 gap-1"
                                 :class="isDark ? 'bg-secondary-50/25' : 'bg-secondary-50/40'">
@@ -77,9 +78,9 @@
                             class="w-5 h-5 opacity-70 hover:opacity-100"
                             :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'transform scale-x-[-1]' : '']" />
                     </button>
-                    <button>
+                    <a href="/chat-with-akeel" target="_blank" rel="noopener noreferrer">
                         <img src="/images/icons/open-new.svg" alt="Minimize Chat" :class="isDark ? 'invert' : ''" />
-                    </button>
+                    </a>
                     <button @click="closeChat" class="rounded-full transition-colors"
                         :class="isDark ? 'text-white hover:bg-white/10' : 'text-black hover:bg-black/5'">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,12 +98,12 @@
                     <h2 class="text-lg font-medium" :class="isDark ? 'text-white' : 'text-gray-800'">
                         {{ currentLang === 'ar' ? 'دعنا نفكر مع عقيل' : "Let's Brainstorm with Akeel" }}
                     </h2>
-                    <p class="text-sm font-light" :class="isDark ? 'text-white/60' : ''">
+                    <p class="text-xs font-light" :class="isDark ? 'text-white/60' : ''">
                         <template v-if="currentLang === 'ar'">
                             يمكنك طرح الأسئلة بالعربية أو الإنجليزية. جرّب أن تطلب مقاييس محددة أو مقارنات!
                         </template>
                         <template v-else>
-                            You can ask questions in English or Arabic. Try asking for specific metrics or
+                            You can ask questions in English or Arabic. Try asking for specific <br> metrics or
                             comparisons!
                         </template>
                     </p>
@@ -147,14 +148,14 @@
             </div>
 
             <div class="p-4" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
-                <div class="flex items-center border rounded-xl px-2 py-1 gap-2"
+                <div class="flex items-center border rounded-[10px] pl-2 pr-1 py-1 gap-2"
                     :class="isDark ? 'border-white/10 bg-white/5' : 'border-primary-100'">
                     <input type="text"
                         :placeholder="currentLang === 'ar' ? 'اسأل عن بياناتك المالية...' : 'Ask about your financials....'"
                         class="flex-1 bg-transparent focus:outline-none transition-colors text-sm py-2"
                         :class="isDark ? 'text-white placeholder:text-white/30' : 'placeholder:text-black/30'" />
                     <button
-                        class="p-2 bg-primary-600 hover:bg-primary-700 text-white rounded transition-colors shrink-0">
+                        class="p-2 bg-primary-600 hover:bg-primary-700 text-white rounded-[5px] transition-colors shrink-0">
                         <img src="/images/icons/chat.svg" alt="Send" class="w-6 h-6"
                             :class="currentLang === 'ar' ? 'transform scale-x-[-1]' : ''" />
                     </button>
