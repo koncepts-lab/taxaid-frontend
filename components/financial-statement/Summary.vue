@@ -198,8 +198,8 @@
             <div v-if="isModalOpen"
                 class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
                 :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-                <div class="w-full max-w-[95%] max-h-[90vh] rounded-xl shadow-2xl overflow-hidden flex flex-col"
-                    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
+                <div class="w-full max-h-[90vh] rounded-xl shadow-2xl overflow-hidden flex flex-col"
+                    :class="isDark ? 'bg-[#002e26]' : 'bg-white'" style="max-width: 1500px; margin: 0 15px;">
 
                     <div class="flex justify-between items-center py-6 px-8">
                         <div>

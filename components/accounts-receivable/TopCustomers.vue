@@ -20,7 +20,7 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
           </div>
         </div>
-        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-5 h-5 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" />
+        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-5 h-5 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
       </div>
     </div>
 
@@ -43,6 +43,56 @@
         <span class="text-[14px] font-regular truncate opacity-90">- {{ item.displayName }}</span>
       </div>
     </div>
+
+    <!-- Modal -->
+    <Teleport to="body">
+      <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden top-customers-card" style="max-width: 1500px; margin: 0 15px;">
+          <!-- Modal Header -->
+          <div class="flex justify-between items-center py-6 px-8 border-b border-white/10 text-white relative z-10 w-full">
+            <div class="flex flex-col">
+              <h2 class="text-lg font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات القبض' : 'Top Account Receivable customer wise' }}</h2>
+              <p class="text-xs font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+            </div>
+            <div class="flex items-center gap-6">
+              <div class="flex items-center gap-6 text-[14px] font-regular">
+                <div class="flex items-center gap-2">
+                  <div class="w-3.5 h-3.5 rounded-full bg-[#FF886A]"></div>
+                  <span class="opacity-90">{{ currentLang === 'ar' ? 'نسبة تراكمي' : 'Cumulative %' }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="w-3.5 h-3.5 rounded-full bg-[#04C18F]"></div>
+                  <span class="opacity-90">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
+                </div>
+              </div>
+              <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
+                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+              </button>
+            </div>
+          </div>
+          
+          <!-- Modal Body (Chart) -->
+          <div class="flex-1 w-full p-8 relative z-10 min-h-[350px]">
+            <ClientOnly>
+              <apexchart
+                type="line"
+                height="100%"
+                :options="chartOptions"
+                :series="series"
+              />
+            </ClientOnly>
+          </div>
+
+          <!-- Bottom Legend Grid -->
+          <div class="grid grid-cols-2 lg:grid-cols-5 gap-y-4 gap-x-6 mt-0 text-white relative z-10 px-8 pb-8">
+            <div v-for="item in customers" :key="'modal-' + item.id" class="flex items-center gap-2 whitespace-nowrap overflow-hidden">
+              <span class="text-[14px] font-semibold text-[#04C18F]">{{ item.id }}</span>
+              <span class="text-[14px] font-regular truncate opacity-90">- {{ item.displayName }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -51,6 +101,7 @@ import { ref, computed } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+const isModalOpen = ref(false)
 
 const customersData = [
   { id: 'A', name: 'Horizon Global', nameAr: 'هورايزون جلوبال', value: 3.3, color: '#04C18F' },

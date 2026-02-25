@@ -29,7 +29,7 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
           </div>
         </div>
-        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" />
+        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
       </div>
     </div>
 
@@ -44,6 +44,57 @@
         />
       </ClientOnly>
     </div>
+
+    <!-- Modal -->
+    <Teleport to="body">
+      <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden aging-graph-card" style="max-width: 1500px; margin: 0 15px;">
+          <!-- Modal Header -->
+          <div class="flex justify-between items-center py-6 px-8 border-b border-white/10 text-white">
+            <div class="flex flex-col">
+              <h2 class="text-lg font-regular leading-tight">
+                {{ currentLang === 'ar' ? 'الرسم البياني حسب التقادم' : 'Graph based on aging' }}
+              </h2>
+              <p class="text-xs font-regular mt-1 opacity-80">
+                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+              </p>
+            </div>
+            <div class="flex items-center gap-6">
+              <!-- Custom Legend -->
+              <div class="flex items-center gap-6 text-[13px] font-regular">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 rounded-full bg-[#FB7554]"></div>
+                  <span class="opacity-90">{{ currentLang === 'ar' ? 'نسبة تراكمية' : 'Cumulative %' }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 rounded-full bg-[#FFC107]"></div>
+                  <span class="opacity-90">{{ currentLang === 'ar' ? 'السنة الماضية' : 'Previous Year' }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 rounded-full bg-[#04C18F]"></div>
+                  <span class="opacity-90">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
+                </div>
+              </div>
+              <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
+                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+              </button>
+            </div>
+          </div>
+          
+          <!-- Modal Body (Chart) -->
+          <div class="flex-1 w-full p-8 relative z-10">
+            <ClientOnly>
+              <apexchart
+                type="line"
+                height="100%"
+                :options="chartOptions"
+                :series="series"
+              />
+            </ClientOnly>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -52,6 +103,7 @@ import { ref, computed } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+const isModalOpen = ref(false)
 
 const agingCategories = [
   { en: 'Overdue >30 Days',  ar: 'متأخر أكثر من 30 يوم' },

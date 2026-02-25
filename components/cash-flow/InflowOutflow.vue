@@ -24,6 +24,7 @@
                :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-white.svg'" 
                alt="Expand" 
                class="w-5 h-5 cursor-pointer opacity-80 hover:opacity-100"
+               @click="isModalOpen = true"
              />
       </div>
     </div>
@@ -34,13 +35,51 @@
         <apexchart width="100%" height="100%" type="bar" :options="chartOptions" :series="chartSeries"></apexchart>
       </ClientOnly>
     </div>
+
+    <!-- Modal -->
+    <Teleport to="body">
+      <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300" :style="isDark ? { background: '#002e26' } : { background: 'linear-gradient(205.59deg, #005A48 8.7%, #00342A 83.81%)' }" style="max-width: 1500px; margin: 0 15px;">
+          <!-- Modal Header -->
+          <div class="flex justify-between items-center py-6 px-8 border-b border-white/10">
+            <div class="flex flex-col">
+              <h2 class="text-lg font-regular text-white">{{ currentLang === 'ar' ? 'التدفق الداخلي مقابل التدفق الخارجي' : 'Inflow vs Outflow' }}</h2>
+              <p class="text-xs font-regular mt-1" :class="isDark ? 'text-white' : 'text-[#FFFFFF5C]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+            </div>
+            <div class="flex items-center gap-6">
+              <div class="flex items-center gap-4 text-sm font-medium">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-3 h-3 rounded-full bg-[#FF7B5F]"></span>
+                  <span class="text-white font-regular">{{ currentLang === 'ar' ? 'التدفق الخارجي' : 'Outflow' }}</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-3 h-3 rounded-full bg-[#00FFBC]"></span>
+                  <span class="text-white font-regular">{{ currentLang === 'ar' ? 'التدفق الداخلي' : 'Inflow' }}</span>
+                </div>
+              </div>
+              <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
+                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+              </button>
+            </div>
+          </div>
+          
+          <!-- Modal Body (Chart) -->
+          <div class="flex-1 w-full p-8 relative z-10 min-h-[350px]">
+            <ClientOnly>
+              <apexchart width="100%" height="100%" type="bar" :options="chartOptions" :series="chartSeries"></apexchart>
+            </ClientOnly>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
+const isModalOpen = ref(false)
 
 const chartSeries = [
   {

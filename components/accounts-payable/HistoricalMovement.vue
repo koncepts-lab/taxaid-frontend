@@ -17,7 +17,7 @@
             <span class="text-[13px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
           </div>
         </div>
-        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-4 h-4 opacity-70 hover:opacity-100 transition-opacity cursor-pointer ml-4" />
+        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-4 h-4 opacity-70 hover:opacity-100 transition-opacity cursor-pointer ml-4" @click="isModalOpen = true" />
       </div>
     </div>
 
@@ -32,6 +32,45 @@
         />
       </ClientOnly>
     </div>
+
+    <!-- Modal -->
+    <Teleport to="body">
+      <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden" :class="isDark ? 'bg-[#002e26]' : 'bg-white'" style="max-width: 1500px; margin: 0 15px;">
+          <!-- Modal Header -->
+          <div class="flex justify-between items-center py-6 px-8 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
+            <div class="flex flex-col">
+              <h2 class="text-lg font-medium leading-tight" :class="isDark ? 'text-white' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'حركة حسابات القبض التاريخية' : 'AR balances historical movement' }}</h2>
+              <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+            </div>
+            <div class="flex items-center gap-6">
+              <!-- Custom Legend -->
+              <div class="flex items-center gap-6 text-[14px]">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 rounded-full bg-[#FB7554]"></div>
+                  <span class="text-[13px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
+                </div>
+              </div>
+              <button @click="isModalOpen = false" class="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
+                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5" :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+              </button>
+            </div>
+          </div>
+          
+          <!-- Modal Body (Chart) -->
+          <div class="flex-1 w-full p-8 relative z-10 bg-white dark:bg-[#00141080]">
+            <ClientOnly>
+              <apexchart
+                type="line"
+                height="100%"
+                :options="chartOptions"
+                :series="series"
+              />
+            </ClientOnly>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -40,6 +79,7 @@ import { ref, computed } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+const isModalOpen = ref(false)
 
 const series = ref([
   {

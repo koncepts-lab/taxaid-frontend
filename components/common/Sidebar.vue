@@ -87,7 +87,7 @@ const navItems = [
   {
     label: 'Cost Center',
     labelAr: 'مركز التكلفة',
-    to: '/dashboard/tags',
+    to: '/cost-center',
     icon: '/images/icons/Cost-Center-Project.svg',
     activeIcon: '/images/icons/Cost-Center-Project-active.svg'
   },
