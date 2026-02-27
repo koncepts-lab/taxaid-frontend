@@ -91,7 +91,7 @@
                 </div>
               </div>
               <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
-                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 flex-shrink-0 invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+                <img :src="'/images/icons/expand-white.svg'" alt="Close Modal" class="w-5 h-5 flex-shrink-0" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
               </button>
             </div>
           </div>
@@ -188,7 +188,7 @@ const chartOptions = computed(() => ({
   colors: ['#FB7554', '#03D8B0'],
   dataLabels: {
     enabled: true,
-    offsetY: -25,
+    offsetY: -35,
     style: {
       fontSize: '11px',
       colors: ['#FB7554', '#03D8B0']
@@ -215,8 +215,8 @@ const chartOptions = computed(() => ({
   },
   yaxis: {
     min: 0,
-    max: 5,
-    tickAmount: 5,
+    max: 6,
+    tickAmount: 6,
     axisBorder: { 
       show: true,
       color: 'rgba(255, 255, 255, 0.1)',
@@ -237,7 +237,7 @@ const chartOptions = computed(() => ({
     strokeDashArray: 0,
     xaxis: { lines: { show: false } },
     yaxis: { lines: { show: true } },
-    padding: { top: 20, right: 20, bottom: 0, left: 10 }
+    padding: { top: 40, right: 20, bottom: 0, left: 10 }
   },
   states: {
     hover: { filter: { type: 'none' } },

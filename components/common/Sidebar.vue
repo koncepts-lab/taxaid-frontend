@@ -38,7 +38,7 @@ const navItems = [
   {
     label: 'Revenue',
     labelAr: 'الإيرادات',
-    to: '/dashboard',
+    to: '/revenue',
     icon: '/images/icons/Revenue.svg',
     activeIcon: '/images/icons/Revenue-active.svg'
   },
@@ -59,28 +59,28 @@ const navItems = [
   {
     label: 'Indirect Expense',
     labelAr: 'المصاريف غير المباشرة',
-    to: '/dashboard/budget',
+    to: '/indirect-expense',
     icon: '/images/icons/Indirect-Expense.svg',
     activeIcon: '/images/icons/Indirect-Expense-active.svg'
   },
   {
     label: 'Account Receivables',
     labelAr: 'حسابات القبض',
-    to: '/dashboard/goals',
+    to: '/accounts-receivable',
     icon: '/images/icons/Account-Receivables.svg',
     activeIcon: '/images/icons/Account-Receivables-active.svg'
   },
   {
     label: 'COGS',
     labelAr: 'تكلفة البضائع المباعة',
-    to: '/dashboard/tags',
+    to: '/cogs',
     icon: '/images/icons/C.O.G.S.svg',
     activeIcon: '/images/icons/C.O.G.S-active.svg'
   },
   {
     label: 'Accounts Payable',
     labelAr: 'حسابات الدفع',
-    to: '/dashboard/tags',
+    to: '/accounts-payable',
     icon: '/images/icons/Accounts-Payable.svg',
     activeIcon: '/images/icons/Accounts-Payable-active.svg'
   },
