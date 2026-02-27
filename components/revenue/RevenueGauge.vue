@@ -7,7 +7,7 @@
         <h2 class="text-[16px] font-normal leading-tight">{{ currentLang === 'ar' ? 'الهدف ، العام الماضي والحالي' : 'Target , Previous Year and Current' }}</h2>
         <p class="text-[12px] opacity-70 font-normal mt-1">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
-      <img src="/images/icons/expand-white.svg" alt="Expand" class="w-5 h-5 opacity-60 hover:opacity-100 transition-opacity cursor-pointer" />
+      <img src="/images/icons/expand-white.svg" alt="Expand" class="w-5 h-5 opacity-60 hover:opacity-100 transition-opacity cursor-pointer" @click="isModalOpen = true" />
     </div>
 
     <!-- Gauge Area -->
@@ -93,6 +93,108 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal -->
+    <Teleport to="body">
+      <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden revenue-gauge-card" :class="{ 'dark-mode': isDark }" style="max-width: 1500px; margin: 0 15px;">
+          <!-- Modal Header -->
+          <div class="flex justify-between items-center py-6 px-8 border-b border-white/10">
+            <div class="flex flex-col">
+              <h2 class="text-lg font-normal leading-tight text-white">{{ currentLang === 'ar' ? 'الهدف ، العام الماضي والحالي' : 'Target , Previous Year and Current' }}</h2>
+              <p class="text-xs opacity-70 font-normal mt-1 text-white">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+            </div>
+            <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
+              <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+            </button>
+          </div>
+          
+          <!-- Modal Body -->
+          <div class="flex-1 w-full p-8 relative flex flex-col items-center justify-center">
+            <!-- Gauge Area -->
+            <div class="relative w-full max-w-[500px] flex-1 flex flex-col items-center justify-center">
+              <svg class="w-full h-auto block" :viewBox="`0 0 ${svgW} ${svgH}`">
+                <!-- Ticks -->
+                <g>
+                  <circle
+                    v-for="t in tickPoints"
+                    :key="'modal-' + t.i"
+                    :cx="t.x"
+                    :cy="t.y"
+                    r="1.2"
+                    fill="rgba(255,255,255,0.4)"
+                  />
+                </g>
+
+                <!-- Paths from Dashboard -->
+                <path :d="segLastYearPath" :stroke="colors.lastYear" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
+                <path :d="segCurrentPath" :stroke="colors.currentYear" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
+                <path :d="segBalancePath" :stroke="colors.balance" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
+
+                <!-- Marker -->
+                <circle
+                  v-if="currentYearPct > 0"
+                  :cx="marker.x"
+                  :cy="marker.y"
+                  r="9"
+                  fill="#fff"
+                  stroke="#03D9B0"
+                  stroke-width="6"
+                />
+
+                <!-- Labels -->
+                <text :x="polarToCartesian(-180, r).x" :y="polarToCartesian(-180, r).y + 35" text-anchor="middle" fill="white" font-size="18" font-weight="500" opacity="0.5">0</text>
+                <text :x="polarToCartesian(0, r).x" :y="polarToCartesian(0, r).y + 35" text-anchor="middle" fill="white" font-size="18" font-weight="500" opacity="0.5">100%</text>
+              </svg>
+
+              <!-- Center Value -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center translate-y-2 text-white">
+                <span class="leading-none text-[50px] font-semibold mt-[0px] block">
+                  {{ Math.round(currentYearPct) }}%
+                </span>
+                <span class="text-[14px] font-light mt-3 tracking-widest block">
+                  {{ currentLang === 'ar' ? 'تم تحقيق الهدف' : 'Target Achieved' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Legend (Dashboard Style) -->
+            <div class="w-full max-w-[800px] grid grid-cols-3 gap-2 mt-[-30px] pt-6 border-t border-white/10 text-white">
+              <div class="flex flex-col items-center text-center">
+                <div class="flex items-center gap-2 mb-1">
+                  <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: colors.lastYear }"></div>
+                  <span class="text-[14px] opacity-70 whitespace-nowrap">{{ currentLang === 'ar' ? 'العام الماضي' : 'Previous Year' }} ({{ lastYearPct }}%)</span>
+                </div>
+                <div class="text-[20px] font-bold">
+                  <template v-if="currentLang === 'ar'">0,8 مليون د.إ</template>
+                  <template v-else>AED 0.8M</template>
+                </div>
+              </div>
+              <div class="flex flex-col items-center text-center">
+                <div class="flex items-center gap-2 mb-1">
+                  <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: colors.currentYear }"></div>
+                  <span class="text-[14px] opacity-70 whitespace-nowrap">{{ currentLang === 'ar' ? 'الحالي' : 'Current' }} ({{ Math.round(currentYearPct) }}%)</span>
+                </div>
+                <div class="text-[20px] font-bold">
+                  <template v-if="currentLang === 'ar'">7,8 مليون د.إ</template>
+                  <template v-else>AED 7.8M</template>
+                </div>
+              </div>
+              <div class="flex flex-col items-center text-center">
+                <div class="flex items-center gap-2 mb-1">
+                  <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: colors.balance }"></div>
+                  <span class="text-[14px] opacity-70 whitespace-nowrap">{{ currentLang === 'ar' ? 'المستهدف' : 'Target' }} (100%)</span>
+                </div>
+                <div class="text-[20px] font-bold">
+                  <template v-if="currentLang === 'ar'">8,5 مليون د.إ</template>
+                  <template v-else>AED 8.5M</template>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -102,6 +204,7 @@ import { computed, ref, onMounted } from "vue";
 // Support for language state if available, fallback to 'en'
 const { isDark } = useTheme();
 const currentLang = useState('currentLang', () => 'en');
+const isModalOpen = ref(false);
 
 // Data
 const currentYearTarget = 8500000;
