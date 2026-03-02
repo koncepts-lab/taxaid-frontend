@@ -1,5 +1,5 @@
 <template>
-  <div class="col-span-12 lg:col-span-7 rounded-[20px] p-6 shadow-sm relative h-[250px] group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300"
+  <div class="rounded-[20px] p-5 shadow-sm flex flex-col h-[250px] group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300"
     :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
     <!-- Header Area -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -8,7 +8,6 @@
       <div class="flex items-center gap-3 mb-4 md:mb-0">
         <div class="w-10 h-10 rounded-full flex items-center justify-center text-xl" 
           :style="isDark ? { background: '#00B794' } : { background: 'linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)' }">
-          <!-- Refresh Icon SVG or simple text -->
           <img src="/images/icons/Cashflow-black.svg" alt="Cashflow" class="w-5 h-5 object-contain">
         </div>
         <div class="font-medium text-xl" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'التدفق النقدي' : 'Cashflow' }}</div>
@@ -43,11 +42,11 @@
 
       <!-- Vertical Time Filters -->
       <div class="flex flex-col gap-2 pt-2 shrink-0">
-          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-bold transition-colors"
+          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
             :class="isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]'">3M</button>
-          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-bold transition-colors shadow-lg"
+          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors shadow-lg"
             :class="isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35]'">6M</button>
-          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-bold transition-colors"
+          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
             :class="isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]'">1Y</button>
       </div>
     </div>
@@ -91,8 +90,8 @@ const chartOptions = computed(() => ({
     type: 'gradient',
     gradient: {
       shadeIntensity: 1,
-      opacityFrom: 0.4,
-      opacityTo: 0.05,
+      opacityFrom: 0.6,
+      opacityTo: 0.1,
       stops: [0, 90, 100]
     }
   },

@@ -75,7 +75,7 @@
                 <div class="flex gap-2 justify-center items-center">
                     <button @click="$emit('expand')">
                         <img src="/images/icons/expand-dark.svg" alt="Pin Chat"
-                            class="w-5 h-5 opacity-70 hover:opacity-100"
+                            class="w-6 h-6 opacity-70 hover:opacity-100"
                             :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'transform scale-x-[-1]' : '']" />
                     </button>
                     <a href="/chat-with-akeel" target="_blank" rel="noopener noreferrer">

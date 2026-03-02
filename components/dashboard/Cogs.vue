@@ -1,5 +1,5 @@
 <template>
-  <div class="col-span-12 md:col-span-6 lg:col-span-3 rounded-[20px] p-4 shadow-sm flex flex-col justify-between h-[225px] relative overflow-hidden group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300 gap-1"
+  <div class="rounded-[20px] p-4 shadow-sm flex flex-col justify-between h-[225px] relative overflow-hidden group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300 gap-1"
     :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
     <!-- Header -->
     <div class="flex items-center justify-between">

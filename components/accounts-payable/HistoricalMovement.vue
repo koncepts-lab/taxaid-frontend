@@ -17,7 +17,7 @@
             <span class="text-[13px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
           </div>
         </div>
-        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-4 h-4 opacity-70 hover:opacity-100 transition-opacity cursor-pointer ml-4" @click="isModalOpen = true" />
+        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-6 h-6 opacity-70 hover:opacity-100 transition-opacity cursor-pointer ml-4" @click="isModalOpen = true" />
       </div>
     </div>
 
