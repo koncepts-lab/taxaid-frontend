@@ -26,7 +26,7 @@
           </div>
         </div>
         <img src="/images/icons/info-white.svg" alt="Info" class="w-5 h-5 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" />
-        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-5 h-5 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
+        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
       </div>
     </div>
 

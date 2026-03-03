@@ -45,7 +45,7 @@
     <!-- Modal -->
     <Teleport to="body">
       <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden transition-all duration-500" :class="isDark ? 'bg-[#002e26]' : 'bg-white'" style="max-width: 1500px; margin: 0 15px;">
+        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden transition-all duration-500" :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff]'" style="max-width: 1500px; margin: 0 15px;">
           <!-- Modal Header -->
           <div class="flex justify-between items-start py-6 px-8 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
             <div class="flex flex-col">
@@ -70,7 +70,7 @@
           </div>
           
           <!-- Modal Body (Chart) -->
-          <div class="flex-1 w-full p-8 relative z-10 bg-white dark:bg-[#00141080] min-h-[350px]">
+          <div class="flex-1 w-full p-8 relative z-10 min-h-[350px]" :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
             <ClientOnly>
               <apexchart
                 type="line"
@@ -82,7 +82,7 @@
           </div>
 
           <!-- Bottom Legend Grid -->
-          <div class="grid grid-cols-2 md:grid-cols-5 gap-y-3 gap-x-4 mt-0 px-8 pb-8 bg-white dark:bg-[#00141080]">
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-y-3 gap-x-4 mt-0 px-8 pb-8" :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
             <div v-for="item in customers" :key="'modal-' + item.id" class="flex items-center gap-1.5 whitespace-nowrap overflow-hidden">
               <span class="text-[12px] font-regular" :style="{ color: item.color }">{{ item.id }}</span>
               <span class="text-[12px] font-regular truncate" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">- {{ item.displayName }}</span>
@@ -158,7 +158,7 @@ const chartOptions = computed(() => ({
   dataLabels: {
     enabled: true,
     enabledOnSeries: [0],
-    offsetY: -30,
+    offsetY: -15,
     style: {
       fontSize: '12px',
       colors: [isDark.value ? '#00E0A5CF' : '#013E32CF'],

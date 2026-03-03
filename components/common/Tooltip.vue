@@ -6,15 +6,16 @@
         <!-- 2. The Tooltip: Teleported to the end of <body> to prevent clipping -->
         <Teleport to="body">
             <div v-if="isVisible" :style="coords"
-                class="fixed z-99999 px-4 py-2.5 bg-[#003d35] text-white text-[12px] font-medium rounded-2xl whitespace-nowrap shadow-xl pointer-events-none transition-opacity duration-300">
+                class="fixed z-99999 px-4 py-2.5 text-[12px] font-medium rounded-2xl whitespace-nowrap shadow-xl pointer-events-none transition-opacity duration-300"
+                :class="isDark ? 'bg-[#fff] text-[#000]' : 'bg-[#003d35] text-white'">
                 {{ text }}
 
                 <!-- Arrow -->
                 <div :class="[
                     'absolute left-1/2 -translate-x-1/2 border-x-[6px] border-x-transparent',
                     position === 'top'
-                        ? '-bottom-1.5 border-t-[6px] border-t-[#003d35]'
-                        : '-top-1.5 border-b-[6px] border-b-[#003d35]'
+                        ? ('-bottom-1.5 border-t-[6px] ' + (isDark ? 'border-t-[#fff]' : 'border-t-[#003d35]'))
+                        : ('-top-1.5 border-b-[6px] ' + (isDark ? 'border-b-[#fff]' : 'border-b-[#003d35]'))
                 ]"></div>
             </div>
         </Teleport>
@@ -23,6 +24,8 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+
+const { isDark } = useTheme()
 
 const props = defineProps({
     text: { type: String, required: true },

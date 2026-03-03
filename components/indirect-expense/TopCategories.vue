@@ -7,7 +7,7 @@
         <h2 class="text-[22px] font-medium text-white">{{ currentLang === 'ar' ? 'أفضل 5 فئات للمصروفات غير المباشرة' : 'Top 5 Indirect Expense Categories' }}</h2>
         <p class="text-[16px] font-normal mt-1 text-white/60">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
-      <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100" @click="isModalOpen = true" />
+      <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100" @click="isModalOpen = true" />
     </div>
 
     <!-- Chart Area -->

@@ -35,7 +35,7 @@
                     <th :class="isCompressed ? 'px-4' : 'px-6'" class="py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'السنة القادمة' : 'Year to Go' }}</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody> 
                 <template v-for="(row, i) in data" :key="i">
                     <!-- Parent Row -->
                     <tr :class="[

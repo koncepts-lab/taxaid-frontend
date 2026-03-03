@@ -23,7 +23,7 @@
              <img 
                :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-white.svg'" 
                alt="Expand" 
-               class="w-5 h-5 cursor-pointer opacity-80 hover:opacity-100"
+               class="w-6 h-6 cursor-pointer hover:opacity-100"
                @click="isModalOpen = true"
              />
       </div>
@@ -103,7 +103,7 @@ const chartOptions = computed(() => ({
   plotOptions: {
     bar: {
       horizontal: false,
-      columnWidth: '15',
+      columnWidth: '30px',
       borderRadius: 5,
       borderRadiusApplication: 'end',
       borderRadiusWhenStacked: 'last',

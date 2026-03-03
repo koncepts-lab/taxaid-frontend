@@ -19,7 +19,7 @@
             <span class="opacity-90 text-[12px] font-regular">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
           </div>
         </div>
-        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-[25px] h-[25px] opacity-60 hover:opacity-100 transition-opacity cursor-pointer ml-4" @click="isModalOpen = true" />
+        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 hover:opacity-100 transition-opacity cursor-pointer ml-4" @click="isModalOpen = true" />
       </div>
     </div>
 
