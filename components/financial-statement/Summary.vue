@@ -99,7 +99,7 @@
                     </div>
                 </div>
                 <button @click="isModalOpen = true" v-if="isCompressed">
-                    <img src="/images/icons/expand-dark.svg" alt="Expand" class="w-5 h-5"
+                    <img src="/images/icons/expand-dark.svg" alt="Expand" class="w-6 h-6"
                         :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
                 </button>
                 <CommonTooltip :text="currentLang === 'ar' ? 'اسأل عقيل' : 'Ask Akeel'" position="top">

@@ -6,7 +6,7 @@
         <h2 class="text-[16px] font-normal leading-tight">{{ currentLang === 'ar' ? 'الإيرادات حسب الفئة' : 'Revenue by category' }}</h2>
         <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
-      <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-5 h-5 cursor-pointer opacity-80" @click="isModalOpen = true" />
+      <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-6 h-6 cursor-pointer opacity-80" @click="isModalOpen = true" />
     </div>
 
     <div class="flex-1 w-full min-h-[400px]"> 
@@ -23,7 +23,7 @@
     <!-- Modal -->
     <Teleport to="body">
       <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden transition-all duration-500" :class="isDark ? 'bg-[#002e26]' : 'bg-white'" style="max-width: 1500px; margin: 0 15px;">
+        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden transition-all duration-500" :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff]'" style="max-width: 1500px; margin: 0 15px;">
           <!-- Modal Header -->
           <div class="flex justify-between items-center py-6 px-8 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
             <div class="flex flex-col">
@@ -36,7 +36,7 @@
           </div>
           
           <!-- Modal Body (Chart) -->
-          <div class="flex-1 w-full p-8 relative z-10 bg-white dark:bg-[#00141080]">
+          <div class="flex-1 w-full p-8 relative z-10" :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
             <ClientOnly>
               <apexchart
                 type="bar"

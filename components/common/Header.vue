@@ -39,7 +39,9 @@
     <div class="flex items-center gap-2 md:gap-7">
       <!-- LANGUAGE TOGGLE -->
       <div class="hidden md:block">
-        <LanguageToggle v-model="currentLang" />
+        <CommonTooltip :text="currentLang === 'ar' ? 'تبديل اللغة' : 'Switch Language'">
+          <LanguageToggle v-model="currentLang" />
+        </CommonTooltip>
       </div>
 
       <!-- FLASH ACTION -->
@@ -57,14 +59,16 @@
       </div>
 
       <!-- THEME TOGGLE (DARK) -->
-      <button @click="toggleTheme"
-        class="action-btn theme-btn w-9 h-9 md:w-11 md:h-11 rounded-full items-center justify-center transition-all duration-300 flex"
-        :class="{ 'shadow-none': isDark }"
-        :style="isDark ? { background: 'linear-gradient(180deg, #057759 0%, #04B788 100%)', boxShadow: 'none' } : {}">
-        <img v-if="!isDark" src="/images/icons/dark.svg" class="w-5 h-5 md:w-6 md:h-6 invert brightness-0"
-          alt="Dark Mode" />
-        <img v-else src="/images/icons/sun.svg" class="w-5 h-5 md:w-6 md:h-6" alt="Light Mode" />
-      </button>
+      <CommonTooltip :text="isDark ? (currentLang === 'ar' ? 'الوضع الفاتح' : 'Light Mode') : (currentLang === 'ar' ? 'الوضع الداكن' : 'Dark Mode')">
+        <button @click="toggleTheme"
+          class="action-btn theme-btn w-9 h-9 md:w-11 md:h-11 rounded-full items-center justify-center transition-all duration-300 flex"
+          :class="{ 'shadow-none': isDark }"
+          :style="isDark ? { background: 'linear-gradient(180deg, #057759 0%, #04B788 100%)', boxShadow: 'none' } : {}">
+          <img v-if="!isDark" src="/images/icons/dark.svg" class="w-5 h-5 md:w-6 md:h-6 invert brightness-0"
+            alt="Dark Mode" />
+          <img v-else src="/images/icons/sun.svg" class="w-5 h-5 md:w-6 md:h-6" alt="Light Mode" />
+        </button>
+      </CommonTooltip>
 
       <!-- SETTINGS -->
       <div class="group relative">

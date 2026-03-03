@@ -26,7 +26,7 @@
           </div>
         </div>
         <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info" class="w-5 h-5 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" />
-        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
+        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
       </div>
     </div>
 
