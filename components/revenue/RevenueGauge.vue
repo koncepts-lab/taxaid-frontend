@@ -7,7 +7,7 @@
         <h2 class="text-[16px] font-normal leading-tight">{{ currentLang === 'ar' ? 'الهدف ، العام الماضي والحالي' : 'Target , Previous Year and Current' }}</h2>
         <p class="text-[12px] opacity-70 font-normal mt-1">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
-      <img src="/images/icons/expand-white.svg" alt="Expand" class="w-5 h-5 opacity-60 hover:opacity-100 transition-opacity cursor-pointer" @click="isModalOpen = true" />
+      <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 hover:opacity-100 transition-opacity cursor-pointer" @click="isModalOpen = true" />
     </div>
 
     <!-- Gauge Area -->
@@ -65,9 +65,9 @@
       <div class="flex flex-col items-center text-center">
         <div class="flex items-center gap-2 mb-1">
           <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: colors.lastYear }"></div>
-          <span class="text-[12px] opacity-70 whitespace-nowrap">{{ currentLang === 'ar' ? 'العام الماضي' : 'Previous Year' }} ({{ lastYearPct }}%)</span>
+          <span class="text-[12px] whitespace-nowrap  font-light" >{{ currentLang === 'ar' ? 'العام الماضي' : 'Previous Year' }} ({{ lastYearPct }}%)</span>
         </div>
-        <div class="text-[18px] font-bold">
+        <div class="text-[18px] font-medium">
           <template v-if="currentLang === 'ar'">0,8 مليون د.إ</template>
           <template v-else>AED 0.8M</template>
         </div>
@@ -75,9 +75,9 @@
       <div class="flex flex-col items-center text-center">
         <div class="flex items-center gap-2 mb-1">
           <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: colors.currentYear }"></div>
-          <span class="text-[12px] opacity-70 whitespace-nowrap">{{ currentLang === 'ar' ? 'الحالي' : 'Current' }} ({{ Math.round(currentYearPct) }}%)</span>
+          <span class="text-[12px] font-light whitespace-nowrap">{{ currentLang === 'ar' ? 'الحالي' : 'Current' }} ({{ Math.round(currentYearPct) }}%)</span>
         </div>
-        <div class="text-[18px] font-bold">
+        <div class="text-[18px] font-medium">
           <template v-if="currentLang === 'ar'">7,8 مليون د.إ</template>
           <template v-else>AED 7.8M</template>
         </div>
@@ -85,9 +85,9 @@
       <div class="flex flex-col items-center text-center">
         <div class="flex items-center gap-2 mb-1">
           <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: colors.balance }"></div>
-          <span class="text-[12px] opacity-70 whitespace-nowrap">{{ currentLang === 'ar' ? 'المستهدف' : 'Target' }} (100%)</span>
+          <span class="text-[12px] font-light whitespace-nowrap">{{ currentLang === 'ar' ? 'المستهدف' : 'Target' }} (100%)</span>
         </div>
-        <div class="text-[18px] font-bold">
+        <div class="text-[18px] font-medium">
           <template v-if="currentLang === 'ar'">8,5 مليون د.إ</template>
           <template v-else>AED 8.5M</template>
         </div>

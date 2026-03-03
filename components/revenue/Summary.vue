@@ -4,9 +4,16 @@
             <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص الإيرادات' : 'Revenue Summary' }}</p>
             <div class="flex gap-4 items-center">
                 <p class="text-[12px] font-normal" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
-                <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon" class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100" @click="isModalOpen = true" />
+                <img
+                    :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'"
+                    alt="Expand Icon"
+                    class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+                    @click="isModalOpen = true"
+                />
             </div>
-        </div> 
+        </div>
+
+        <!-- Inline Table -->
         <table class="w-full text-left rtl:text-right border-collapse min-w-200">
             <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
                 <tr class="transition-all duration-500">
@@ -29,59 +36,277 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(row, i) in data" :key="i" :class="[
-                    row.isSummary ? (isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]') : (isDark ? 'bg-transparent border-b border-white/10' : 'bg-white border-b border-gray-100'),
-                    'text-[14px] font-medium'
-                ]" class="transition-all duration-500">
-                    <td :class="[isCompressed ? 'px-8 py-4' : 'px-8 py-5', isDark ? 'text-white' : 'text-[#000]', 'font-medium']">{{ currentLang === 'ar' ? row.labelAr : row.label }}</td>
-                    <td class="text-right rtl:text-left" :class="[isCompressed ? 'px-4' : 'px-6']">
-                        <span v-if="!row.isSummary" class="underline underline-offset-4 cursor-pointer font-medium" :class="isDark ? 'text-[#00FFBC]' : 'text-[#00b484]'">
-                            {{ row.current }}
-                        </span>
-                        <span v-else :class="isDark ? 'text-white' : 'text-[#000]'">
-                            {{ row.current }}
-                        </span>
-                    </td>
-                    <td :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white/80' : 'text-[#000] opacity-80', 'text-right rtl:text-left font-medium']">{{ row.previous }}</td>
-                    <td :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white/80' : 'text-[#000] opacity-80', 'text-right rtl:text-left font-medium']">{{ row.budget }}</td>
-                    <td class="text-center" :class="[isCompressed ? 'px-4' : 'px-6']">
-                        <span class="px-4 py-1.5 rounded-full text-[13px] font-medium inline-block min-w-[70px] ltr:direction-ltr rtl:direction-ltr"
-                            :class="[
-                                row.variance.startsWith('+') 
-                                    ? (isDark ? 'bg-[#6EFFA0CC] text-[#002B21]' : 'bg-[#6EFFA04D] text-[#00b48d]') 
-                                    : (isDark ? 'bg-[#FB7554CC] text-white' : 'bg-[#FB75544D] text-[#FF582F]')
-                            ]">
-                            {{ row.variance }}
-                        </span>
-                    </td>
-                    <td :class="isCompressed ? 'px-4' : 'px-6'" class="py-5">
-                        <div class="flex justify-center">
-                            <div class="relative w-16 h-8 overflow-hidden">
-                                <svg class="w-16 h-16" viewBox="0 0 100 100">
-                                    <!-- Background Track -->
-                                    <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" :stroke="isDark ? '#FFFFFF1A' : '#f3f4f6'" stroke-width="8" stroke-linecap="round" />
-                                    <!-- Progress Path -->
-                                    <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" 
-                                        :stroke="getProgressColor(row.progress)" 
-                                        stroke-width="8" 
-                                        stroke-linecap="round"
-                                        stroke-dasharray="125.66" 
-                                        :stroke-dashoffset="125.66 * (1 - row.progress / 100)"
-                                        class="transition-all duration-1000 ease-out" />
-                                </svg>
-                                <span class="absolute bottom-0 left-0 w-full text-center text-[10px] font-bold leading-none mb-1" :class="isDark ? 'text-white' : 'text-[#013e32]'">
-                                    {{ row.progress }}%
-                                </span>
+                <template v-for="(row, i) in data" :key="i">
+                    <!-- Parent Row -->
+                    <tr :class="[
+                        row.isSummary
+                            ? (isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]')
+                            : (isDark ? 'bg-transparent border-b border-white/10' : 'bg-white border-b border-gray-100'),
+                        'text-[14px] font-medium transition-all duration-500'
+                    ]">
+                        <!-- Label -->
+                        <td :class="[isCompressed ? 'px-8 py-4' : 'px-8 py-5', isDark ? 'text-white' : 'text-[#000]', 'font-medium']">
+                            <div class="flex items-center gap-2">
+                                <span>{{ currentLang === 'ar' ? row.labelAr : row.label }}</span>
+                                <button v-if="row.children && row.children.length"
+                                    @click="toggleRow(i)"
+                                    class="focus:outline-none transition-transform duration-200">
+                                    <svg v-if="expandedRows[i]" width="10" height="7" viewBox="0 0 10 7" fill="none">
+                                        <path d="M1 6L5 2L9 6" :stroke="isDark ? '#00FFBC' : '#008864'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <svg v-else width="10" height="7" viewBox="0 0 10 7" fill="none">
+                                        <path d="M1 1L5 5L9 1" :stroke="isDark ? '#00FFBC' : '#008864'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
                             </div>
-                        </div>
-                    </td>
-                </tr>
+                        </td>
+                        <!-- Current Year -->
+                        <td class="text-right rtl:text-left" :class="[isCompressed ? 'px-4' : 'px-6']">
+                            <span v-if="!row.isSummary" class="font-medium" :class="isDark ? 'text-[#00FFBC]' : 'text-[#00b484]'">
+                                {{ row.current }}
+                            </span>
+                            <span v-else :class="isDark ? 'text-white' : 'text-[#000]'">
+                                {{ row.current }}
+                            </span>
+                        </td>
+                        <!-- Previous Year -->
+                        <td :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white/80' : 'text-[#000] opacity-80', 'text-right rtl:text-left font-medium']">{{ row.previous }}</td>
+                        <!-- Budget -->
+                        <td :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white/80' : 'text-[#000] opacity-80', 'text-right rtl:text-left font-medium']">{{ row.budget }}</td>
+                        <!-- Variance -->
+                        <td class="text-center" :class="[isCompressed ? 'px-4' : 'px-6']">
+                            <span v-if="row.variance && row.variance !== '-'" class="px-4 py-1.5 rounded-full text-[13px] font-medium inline-block min-w-[70px] ltr:direction-ltr rtl:direction-ltr"
+                                :class="[
+                                    row.variance.startsWith('+')
+                                        ? (isDark ? 'bg-[#6EFFA0CC] text-[#002B21]' : 'bg-[#6EFFA04D] text-[#00b48d]')
+                                        : (isDark ? 'bg-[#FB7554CC] text-white' : 'bg-[#FB75544D] text-[#FF582F]')
+                                ]">
+                                {{ row.variance }}
+                            </span>
+                            <span v-else :class="isDark ? 'text-white/40' : 'text-gray-400'">-</span>
+                        </td>
+                        <!-- Year to Go -->
+                        <td :class="isCompressed ? 'px-4' : 'px-6'" class="py-5">
+                            <div v-if="row.progress !== null && row.progress !== undefined" class="flex justify-center">
+                                <div class="relative w-16 h-8 overflow-hidden">
+                                    <svg class="w-16 h-16" viewBox="0 0 100 100">
+                                        <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" :stroke="isDark ? '#FFFFFF1A' : '#f3f4f6'" stroke-width="8" stroke-linecap="round" />
+                                        <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none"
+                                            :stroke="getProgressColor(row.progress)"
+                                            stroke-width="8"
+                                            stroke-linecap="round"
+                                            stroke-dasharray="125.66"
+                                            :stroke-dashoffset="125.66 * (1 - row.progress / 100)"
+                                            class="transition-all duration-1000 ease-out" />
+                                    </svg>
+                                    <span class="absolute bottom-0 left-0 w-full text-center text-[10px] font-bold leading-none mb-1" :class="isDark ? 'text-white' : 'text-[#013e32]'">
+                                        {{ row.progress }}%
+                                    </span>
+                                </div>
+                            </div>
+                            <div v-else class="flex justify-center">
+                                <span :class="isDark ? 'text-white/40' : 'text-gray-400'">-</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Child Rows -->
+                    <template v-if="row.children && expandedRows[i]">
+                        <tr v-for="(child, j) in row.children" :key="`child-${i}-${j}`"
+                            :class="[
+                                isDark ? 'bg-[#003D2E] border-b border-white/5' : 'bg-[#E8FBF3] border-b border-[#b2edd4]',
+                                'text-[14px] font-medium transition-all duration-500'
+                            ]">
+                            <td :class="[isCompressed ? 'px-8 py-4' : 'px-8 py-5']">
+                                <div class="relative inline-block group ltr:pl-4 rtl:pr-4">
+                                    <!-- Tooltip -->
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none
+                                        opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap">
+                                        <div class="bg-[#013e32] text-white text-[12px] font-medium px-3 py-1.5 rounded-lg shadow-lg">
+                                            {{ currentLang === 'ar' ? 'عرض دفتر الأستاذ' : 'View Ledger' }}
+                                        </div>
+                                        <!-- Sharp Arrow -->
+                                        <div class="mx-auto" style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:8px solid #013e32;"></div>
+                                    </div>
+                                    <span class="underline underline-offset-4 cursor-pointer font-medium"
+                                        :class="isDark ? 'text-[#00FFBC]' : 'text-[#007a57]'"
+                                        @click="openLedger(child)">
+                                        {{ currentLang === 'ar' ? child.labelAr : child.label }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="text-right rtl:text-left font-medium" :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white' : 'text-[#000]']">{{ child.current }}</td>
+                            <td :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white/80' : 'text-[#000] opacity-80', 'text-right rtl:text-left font-medium']">{{ child.previous }}</td>
+                            <td class="text-right rtl:text-left" :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white/40' : 'text-gray-400']">-</td>
+                            <td class="text-center" :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white/40' : 'text-gray-400']">-</td>
+                            <td class="text-center" :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white/40' : 'text-gray-400']">-</td>
+                        </tr>
+                    </template>
+                </template>
             </tbody>
         </table>
     </div>
+
+    <!-- ── Modal Popup ── -->
+    <Teleport to="body">
+        <Transition name="modal-fade">
+            <div v-if="isModalOpen"
+                class="fixed inset-0 z-[10001] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+                @click.self="isModalOpen = false">
+
+                <div class="w-full max-h-[70vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col transition-all duration-300" style="max-width: 1500px;"
+                    :class="isDark ? 'bg-[#001a14] border border-white/10' : 'bg-white'">
+
+                    <!-- Modal Header -->
+                    <div class="flex justify-between items-center py-5 px-8 shrink-0"
+                        :class="isDark ? 'border-b border-white/10' : 'border-b border-gray-100'">
+                        <div>
+                            <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
+                                {{ currentLang === 'ar' ? 'ملخص الإيرادات' : 'Revenue Summary' }}
+                            </p>
+                            <p class="text-[12px] mt-0.5" :class="isDark ? 'text-white/50' : 'text-[#00000096]'">
+                                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+                            </p>
+                        </div>
+                        <button @click="isModalOpen = false"
+                            class="p-1.5 rounded-lg transition-colors"
+                            :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-gray-100 text-[#013e32]'">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-width="2" stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Modal Table -->
+                    <div class="flex-1 overflow-auto no-scrollbar" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+                        <table class="w-full text-left rtl:text-right border-collapse">
+                            <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+                                <tr>
+                                    <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'الإيرادات' : 'Revenue' }}</th>
+                                    <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">
+                                        <div class="flex items-center justify-end rtl:justify-start gap-2">
+                                            {{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                    </th>
+                                    <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }}</th>
+                                    <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</th>
+                                    <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'التباين' : 'Variance' }}</th>
+                                    <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'السنة القادمة' : 'Year to Go' }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template v-for="(row, i) in data" :key="`m-${i}`">
+                                    <tr :class="[
+                                        row.isSummary
+                                            ? (isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]')
+                                            : (isDark ? 'bg-transparent border-b border-white/10' : 'bg-white border-b border-gray-100'),
+                                        'text-[14px] font-medium transition-all duration-500'
+                                    ]">
+                                        <td class="px-8 py-5 font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">
+                                            <div class="flex items-center gap-2">
+                                                <span>{{ currentLang === 'ar' ? row.labelAr : row.label }}</span>
+                                                <button v-if="row.children && row.children.length"
+                                                    @click="toggleModalRow(i)"
+                                                    class="focus:outline-none">
+                                                    <svg v-if="modalExpandedRows[i]" width="10" height="7" viewBox="0 0 10 7" fill="none">
+                                                        <path d="M1 6L5 2L9 6" :stroke="isDark ? '#00FFBC' : '#008864'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                                    </svg>
+                                                    <svg v-else width="10" height="7" viewBox="0 0 10 7" fill="none">
+                                                        <path d="M1 1L5 5L9 1" :stroke="isDark ? '#00FFBC' : '#008864'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-5 text-right rtl:text-left">
+                                            <span v-if="!row.isSummary" class="font-medium" :class="isDark ? 'text-[#00FFBC]' : 'text-[#00b484]'">{{ row.current }}</span>
+                                            <span v-else :class="isDark ? 'text-white' : 'text-[#000]'">{{ row.current }}</span>
+                                        </td>
+                                        <td class="px-6 py-5 text-right rtl:text-left font-medium" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ row.previous }}</td>
+                                        <td class="px-6 py-5 text-right rtl:text-left font-medium" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ row.budget }}</td>
+                                        <td class="px-6 py-5 text-center">
+                                            <span v-if="row.variance && row.variance !== '-'" class="px-4 py-1.5 rounded-full text-[13px] font-medium inline-block min-w-[70px]"
+                                                :class="row.variance.startsWith('+')
+                                                    ? (isDark ? 'bg-[#6EFFA0CC] text-[#002B21]' : 'bg-[#6EFFA04D] text-[#00b48d]')
+                                                    : (isDark ? 'bg-[#FB7554CC] text-white' : 'bg-[#FB75544D] text-[#FF582F]')">
+                                                {{ row.variance }}
+                                            </span>
+                                            <span v-else :class="isDark ? 'text-white/40' : 'text-gray-400'">-</span>
+                                        </td>
+                                        <td class="px-6 py-5">
+                                            <div v-if="row.progress !== null && row.progress !== undefined" class="flex justify-center">
+                                                <div class="relative w-16 h-8 overflow-hidden">
+                                                    <svg class="w-16 h-16" viewBox="0 0 100 100">
+                                                        <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" :stroke="isDark ? '#FFFFFF1A' : '#f3f4f6'" stroke-width="8" stroke-linecap="round" />
+                                                        <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none"
+                                                            :stroke="getProgressColor(row.progress)"
+                                                            stroke-width="8" stroke-linecap="round"
+                                                            stroke-dasharray="125.66"
+                                                            :stroke-dashoffset="125.66 * (1 - row.progress / 100)" />
+                                                    </svg>
+                                                    <span class="absolute bottom-0 left-0 w-full text-center text-[10px] font-bold leading-none mb-1" :class="isDark ? 'text-white' : 'text-[#013e32]'">{{ row.progress }}%</span>
+                                                </div>
+                                            </div>
+                                            <div v-else class="flex justify-center">
+                                                <span :class="isDark ? 'text-white/40' : 'text-gray-400'">-</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Modal Child Rows -->
+                                    <template v-if="row.children && modalExpandedRows[i]">
+                                        <tr v-for="(child, j) in row.children" :key="`mc-${i}-${j}`"
+                                            :class="[
+                                                isDark ? 'bg-[#003D2E] border-b border-white/5' : 'bg-[#E8FBF3] border-b border-[#b2edd4]',
+                                                'text-[14px] font-medium'
+                                            ]">
+                                            <td class="px-8 py-4">
+                                                <div class="relative inline-block group pl-4">
+                                                    <!-- Tooltip -->
+                                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none
+                                                        opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap">
+                                                        <div class="bg-[#013e32] text-white text-[12px] font-medium px-3 py-1.5 rounded-lg shadow-lg">
+                                                            {{ currentLang === 'ar' ? 'عرض دفتر الأستاذ' : 'View Ledger' }}
+                                                        </div>
+                                                        <!-- Sharp Arrow -->
+                                                        <div class="mx-auto" style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:8px solid #013e32;"></div>
+                                                    </div>
+                                                    <span class="underline underline-offset-4 cursor-pointer font-medium"
+                                                        :class="isDark ? 'text-[#00FFBC]' : 'text-[#007a57]'"
+                                                        @click="openLedger(child)">
+                                                        {{ currentLang === 'ar' ? child.labelAr : child.label }}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 text-right font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ child.current }}</td>
+                                            <td class="px-6 py-4 text-right font-medium" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ child.previous }}</td>
+                                            <td class="px-6 py-4 text-right" :class="isDark ? 'text-white/40' : 'text-gray-400'">-</td>
+                                            <td class="px-6 py-4 text-center" :class="isDark ? 'text-white/40' : 'text-gray-400'">-</td>
+                                            <td class="px-6 py-4 text-center" :class="isDark ? 'text-white/40' : 'text-gray-400'">-</td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
+
+    <!-- ── Ledger Detail Modal ── -->
+    <RevenueLedgerModal
+        :is-open="isLedgerOpen"
+        :ledger-name="selectedLedger"
+        @close="isLedgerOpen = false"
+    />
 </template>
 
 <script setup>
+import { ref } from 'vue'
+
 const props = defineProps({
     data: Array,
     isCompressed: Boolean
@@ -89,6 +314,39 @@ const props = defineProps({
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+
+const isModalOpen = ref(false)
+
+// Ledger detail modal
+const isLedgerOpen = ref(false)
+const selectedLedger = ref('')
+
+const openLedger = (child) => {
+    selectedLedger.value = currentLang.value === 'ar' ? child.labelAr : child.label
+    isLedgerOpen.value = true
+}
+
+// Inline table expand state
+const expandedRows = ref({})
+props.data?.forEach((row, i) => {
+    if (row.children && row.children.length) {
+        expandedRows.value[i] = i === 0
+    }
+})
+const toggleRow = (index) => {
+    expandedRows.value[index] = !expandedRows.value[index]
+}
+
+// Modal table expand state (independent)
+const modalExpandedRows = ref({})
+props.data?.forEach((row, i) => {
+    if (row.children && row.children.length) {
+        modalExpandedRows.value[i] = i === 0
+    }
+})
+const toggleModalRow = (index) => {
+    modalExpandedRows.value[index] = !modalExpandedRows.value[index]
+}
 
 const getProgressColor = (progress) => {
     if (progress >= 50) return '#00d28e'
@@ -98,16 +356,17 @@ const getProgressColor = (progress) => {
 </script>
 
 <style scoped>
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Semi-circle transition */
-path {
-    transition: stroke-dashoffset 1s ease-in-out;
+path { transition: stroke-dashoffset 1s ease-in-out; }
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+    opacity: 0;
 }
 </style>
