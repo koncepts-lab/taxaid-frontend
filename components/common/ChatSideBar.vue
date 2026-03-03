@@ -1,8 +1,9 @@
 <template>
-    <div class="z-50 flex items-center pointer-events-auto transition-all duration-500 ease-in-out shrink-0" :class="[
-        isChatOpen ? '2xl:w-120 w-100 h-[85vh]' : 'w-24 h-150',
-        currentLang === 'ar' ? 'justify-end -ml-4' : 'justify-end -mr-4'
-    ]">
+    <div class="z-50 max-lg:hidden flex items-center pointer-events-auto transition-all duration-500 ease-in-out shrink-0"
+        :class="[
+            isChatOpen ? '2xl:w-120 w-100 h-[85vh]' : 'w-24 h-150',
+            currentLang === 'ar' ? 'justify-end -ml-4' : 'justify-end -mr-4'
+        ]">
 
         <div v-if="!isChatOpen" class="relative h-150 w-auto shrink-0 transition-transform duration-500"
             :style="currentLang === 'ar' ? 'transform: scaleX(-1); margin-left:-8px' : 'margin-right: -8px'">
