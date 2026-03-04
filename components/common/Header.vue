@@ -89,7 +89,7 @@
                 <img :src="item.icon" class="w-5 h-5" :alt="item.label" />
               </div>
               <span class="text-[#013E32] font-medium text-[15px]">{{ currentLang === 'ar' ? item.labelAr : item.label
-                }}</span>
+              }}</span>
             </div>
           </div>
         </div>
