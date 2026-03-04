@@ -1,13 +1,13 @@
 <template>
     <NuxtLayout name="dashboard">
-        <ParticleBackground />
+    
 
         <!-- 1. Container fills the screen height and prevents page-level scrolling -->
-        <div v-if="!isFullScreenChat" class="h-screen font-sans flex overflow-hidden relative z-10"
+        <div v-if="!isFullScreenChat" class="font-sans flex relative z-10"
             :class="{ '': isDark }" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
-            <!-- 2. LEFT AREA: Resizes dynamically and handles its own scrolling -->
-            <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out p-8 pt-0" :class="isChatOpen 
+            <!-- 2. LEFT AREA: Resizes dynamically -->
+            <div class="flex-1 transition-all duration-500 ease-in-out px-8 pt-0 pb-[17px]" :class="isChatOpen 
                 ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
                 : (currentLang === 'ar' ? 'ml-[170px]' : 'mr-[170px]')">
                 <div class="mx-auto">
@@ -17,7 +17,7 @@
                     <CashFlowMetrics :is-compressed="isChatOpen" />
 
                     <div class="rounded-3xl mb-8 transition-all duration-500"
-                        :class="isDark ? 'bg-[#00141080] border-none' : 'bg-white shadow-sm border border-gray-100'"
+                        :class="isDark ? 'bg-[#00141080] border-none' : 'bg-white border border-gray-100'"
                         :style="isDark ? { boxShadow: '0px 4px 4px 0px #00000040' } : {}">
                         <CashFlowSummary :data="cashFlowSummaryData" :is-compressed="isChatOpen" />
                     </div>
@@ -28,7 +28,7 @@
                         </div>
                     </div>
 
-                    <div class="mb-8">
+                    <div>
                         <div class="h-[420px]">
                             <CashFlowInflowOutflow />
                         </div>

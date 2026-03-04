@@ -1,7 +1,12 @@
 <template>
   <div 
-    class="rounded-[20px] p-4 shadow-sm flex flex-col h-[225px] relative overflow-hidden group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300"
-    :class="isDark ? 'bg-[#002e26]' : 'bg-white'"
+    class="rounded-[20px] p-4 flex flex-col h-[225px] relative overflow-hidden group cursor-pointer transition-all duration-300 border border-transparent"
+    :class="[
+      isDark ? 'bg-[#002e26]' : 'bg-white',
+      isHovered ? 'shadow-[0_0_15px_#00B794] border-[#00B794]/30' : 'shadow-sm hover:shadow-[0_0_10px_#00B794]'
+    ]"
+    @mouseenter="hoveredMenuItem = 'Tax Queries'"
+    @mouseleave="hoveredMenuItem = null"
     :dir="currentLang === 'ar' ? 'rtl' : 'ltr'"
   >
     <!-- Header -->
@@ -18,7 +23,8 @@
       <img 
         src="/images/icons/right-hover-2.svg" 
         alt="Arrow" 
-        class="w-[35px] h-[35px] opacity-0 group-hover:opacity-100 transition-all duration-300"
+        class="w-[35px] h-[35px] transition-all duration-300"
+        :class="isHovered ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
       />
     </div>
 
@@ -100,9 +106,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
+const hoveredMenuItem = useState('hoveredMenuItem')
+const isHovered = computed(() => hoveredMenuItem.value === 'Tax Queries')
 
 const animProgress = ref(0);
 

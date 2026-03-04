@@ -15,7 +15,7 @@
       </div>
       <div class="flex items-center gap-6">
         <!-- Custom Legend -->
-        <div class="flex items-center gap-4 text-[13px] font-regular">
+        <div class="flex items-center gap-4 text-[13px] font-regular leading-normal">
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full bg-[#FFC107]"></div>
             <span class="opacity-90">{{ currentLang === 'ar' ? 'تكلفة المبيعات' : 'COGS' }}</span>
@@ -58,7 +58,7 @@
             </div>
             <div class="flex items-center gap-6">
               <!-- Custom Legend -->
-              <div class="flex items-center gap-4 text-[13px] font-regular">
+              <div class="flex items-center gap-4 text-[13px] font-regular leading-normal">
                 <div class="flex items-center gap-2">
                   <div class="w-3 h-3 rounded-full bg-[#FFC107]"></div>
                   <span class="opacity-90">{{ currentLang === 'ar' ? 'تكلفة المبيعات' : 'COGS' }}</span>

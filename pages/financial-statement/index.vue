@@ -1,11 +1,11 @@
 <template>
     <NuxtLayout name="dashboard">
-        <ParticleBackground />
+
         <UNotifications />
 
-        <div v-if="!isFullScreenChat" class="h-screen font-sans flex overflow-hidden relative z-10"
+        <div v-if="!isFullScreenChat" class="font-sans flex relative z-10"
             :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-            <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out p-8 pt-8" :class="isChatOpen
+            <div class="flex-1 transition-all duration-500 ease-in-out px-8 pt-8 pb-[17px]" :class="isChatOpen
                 ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
                 : (currentLang === 'ar' ? 'ml-[170px]' : 'mr-[170px]')">
                 <div class="mx-auto">

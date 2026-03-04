@@ -3,13 +3,19 @@
         <div class="container mx-auto">
             <div class="flex items-center justify-between">
                 <!-- Title Section -->
-                <div>
-                    <h1 class="text-2xl font-medium" :class="isDark ? 'text-[#fff]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'تحليل مركز التكلفة' : 'Cost Center Analysis' }}</h1>
-                    <p class="text-sm mt-1" :class="isDark ? 'text-white' : 'text-black/59'">{{ currentLang === 'ar' ? 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' : 'Track Overheads and Optimize Operational Costs' }}</p>
+                <div class="flex items-center gap-4">
+                    <button @click="useRouter().back()" class="p-2 -ml-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
+                        <img src="/images/icons/back.svg" class="w-6 h-6" :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'rotate-180' : '']" />
+                    </button>
+                    <div>
+                        <h1 class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'نظرة عامة على المشاريع السكنية' : 'Residential Projects Overview' }}</h1>
+                        <p class="text-sm mt-1" :class="isDark ? 'text-white' : 'text-black/59'">{{ currentLang === 'ar' ? 'تحليل مفصل للأداء والتفاصيل المالية' : 'Detailed performance and financial breakdown' }}</p>
+                    </div>
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="flex items-center gap-3">
+
                     <!-- Date Filter -->
                     <div class="relative">
                         <button @click="showDateDropdown = !showDateDropdown"

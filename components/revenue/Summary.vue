@@ -1,9 +1,12 @@
 <template>
     <div class="w-full overflow-x-auto no-scrollbar transition-all duration-500 rounded-b-3xl">
         <div class="py-5 px-8 flex justify-between items-center">
-            <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص الإيرادات' : 'Revenue Summary' }}</p>
-            <div class="flex gap-4 items-center">
-                <p class="text-[12px] font-normal" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+            <div>
+                <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص الإيرادات' : 'Revenue Summary' }}</p>
+                <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <img src="/images/icons/info.svg" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
                 <img
                     :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'"
                     alt="Expand Icon"
@@ -23,10 +26,7 @@
                     <th :class="isCompressed ? 'px-4' : 'px-6'" class="py-5 font-medium text-right rtl:text-left text-[14px]">
                         <div class="flex items-center justify-end rtl:justify-start gap-2">
                             {{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
+                          
                         </div>
                     </th>
                     <th :class="isCompressed ? 'px-4' : 'px-6'" class="py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }}</th>

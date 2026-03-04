@@ -21,8 +21,9 @@
     "
     :style="{
       backgroundImage: 'url(/images/bg-Revenue.png)',
-      
     }"
+    @mouseenter="hoveredMenuItem = 'Revenue'"
+    @mouseleave="hoveredMenuItem = null"
   >
     <!-- Header -->
     <div class="w-full flex items-center justify-between px-6 pt-15">
@@ -35,7 +36,8 @@
       <img 
         src="/images/icons/right-hover.svg" 
         alt="Arrow" 
-        class="w-[35px] h-[35px] opacity-0 group-hover:opacity-100 transition-all duration-300"
+        class="w-[35px] h-[35px] transition-all duration-300"
+        :class="isHovered ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
       />
     </div>
 
@@ -128,6 +130,8 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from "vue";
 const currentLang = useState('currentLang')
+const hoveredMenuItem = useState('hoveredMenuItem')
+const isHovered = computed(() => hoveredMenuItem.value === 'Revenue')
 const totalRevenue = 2775000;
 const netRevenue = 988430;
 const currentYearTarget = 3000000;

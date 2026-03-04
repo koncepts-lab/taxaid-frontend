@@ -14,7 +14,7 @@
         <div class="flex items-center gap-6 text-[14px]">
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full bg-[#FB7554]"></div>
-            <span class="text-[13px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
+            <span class="text-[13px] font-normal leading-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
           </div>
         </div>
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-6 h-6 opacity-70 hover:opacity-100 transition-opacity cursor-pointer ml-4" @click="isModalOpen = true" />
@@ -48,7 +48,7 @@
               <div class="flex items-center gap-6 text-[14px]">
                 <div class="flex items-center gap-2">
                   <div class="w-3 h-3 rounded-full bg-[#FB7554]"></div>
-                  <span class="text-[13px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
+                  <span class="text-[13px] font-normal leading-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
                 </div>
               </div>
               <button @click="isModalOpen = false" class="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors flex-shrink-0">

@@ -1,6 +1,11 @@
 <template>
-  <div class="rounded-[20px] p-5 shadow-sm flex flex-col h-[250px] group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300"
-    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
+  <div class="rounded-[20px] p-5 flex flex-col h-[250px] group cursor-pointer transition-all duration-300 border border-transparent"
+    :class="[
+      isDark ? 'bg-[#002e26]' : 'bg-white',
+      isHovered ? 'shadow-[0_0_15px_#00B794] border-[#00B794]/30' : 'shadow-sm hover:shadow-[0_0_10px_#00B794]'
+    ]"
+    @mouseenter="hoveredMenuItem = 'Cashflow'"
+    @mouseleave="hoveredMenuItem = null">
     <!-- Header Area -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
       
@@ -23,10 +28,11 @@
                <span class="w-3 h-3 rounded-full bg-[#00B794]"></span>
                <span class="transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#191919]'">{{ currentLang === 'ar' ? 'سيناريو حقيقي' : 'Real Scenario' }}</span>
              </div>
-             <img 
-               src="/images/icons/right-hover-2.svg" 
-               alt="Arrow" 
-               class="w-[35px] h-[35px] opacity-0 group-hover:opacity-100 transition-all duration-300 ml-2"
+             <img
+               src="/images/icons/right-hover-2.svg"
+               alt="Arrow"
+               class="w-[35px] h-[35px] transition-all duration-300 ml-2"
+               :class="isHovered ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
              />
       </div>
     </div>
@@ -56,6 +62,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 const currentLang = useState('currentLang')
+const hoveredMenuItem = useState('hoveredMenuItem')
+const isHovered = computed(() => hoveredMenuItem.value === 'Cashflow')
 const { isDark } = useTheme()
 
 const seriesData = {

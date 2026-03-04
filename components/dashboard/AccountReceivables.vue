@@ -1,6 +1,11 @@
 <template>
-  <div class="rounded-[20px] p-5 shadow-sm h-[280px] group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300 flex flex-col justify-between"
-    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
+  <div class="rounded-[20px] p-5 h-[280px] group cursor-pointer transition-all duration-300 flex flex-col justify-between border border-transparent"
+    :class="[
+      isDark ? 'bg-[#002e26]' : 'bg-white',
+      isHovered ? 'shadow-[0_0_15px_#00B794] border-[#00B794]/30' : 'shadow-sm hover:shadow-[0_0_10px_#00B794]'
+    ]"
+    @mouseenter="hoveredMenuItem = 'Account Receivables'"
+    @mouseleave="hoveredMenuItem = null">
     <!-- Header -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-2">
       <div class="flex items-center justify-between w-full md:w-auto">
@@ -27,7 +32,8 @@
         <img 
           src="/images/icons/right-hover-2.svg" 
           alt="Arrow" 
-          class="w-[35px] h-[35px] opacity-0 group-hover:opacity-100 transition-all duration-300"
+          class="w-[35px] h-[35px] transition-all duration-300"
+          :class="isHovered ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
         />
       </div>
     </div>
@@ -84,9 +90,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
+const hoveredMenuItem = useState('hoveredMenuItem')
+const isHovered = computed(() => hoveredMenuItem.value === 'Account Receivables')
 
 const animProgress = ref(0);
 

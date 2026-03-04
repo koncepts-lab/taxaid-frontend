@@ -62,7 +62,7 @@
                 <div class="flex justify-between items-start mb-6">
                   <div>
                     <h3 class="text-[16px] font-normal mb-6" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
-                      {{ currentLang === 'ar' ? 'حدد الفواتير لإرسال تذكيرات الدفع' : 'Select invoices to send payment reminders' }}
+                      {{ currentLang === 'ar' ? 'حدد الفواتير لإرسال تذكيرات تعليق الدفع' : 'Select invoices to send hold payment reminders.' }}
                     </h3>
                     <div class="flex items-center gap-3">
                       <input type="checkbox" v-model="selectAll" @change="handleSelectAll" 
@@ -76,7 +76,7 @@
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    {{ currentLang === 'ar' ? 'إرسال تذكير (5)' : 'Send Reminder (5)' }}
+                    {{ currentLang === 'ar' ? 'مراجعة معلقة (5)' : 'Hold for Review (5)' }}
                   </button>
                 </div>
 
@@ -179,7 +179,7 @@
                         <div class="flex justify-between items-start mb-6">
                           <div>
                             <h3 class="text-[16px] font-normal mb-6" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
-                              {{ currentLang === 'ar' ? 'حدد الفواتير لإرسال تذكيرات الدفع' : 'Select invoices to send payment reminders' }}
+                              {{ currentLang === 'ar' ? 'حدد الفواتير لإرسال تذكيرات تعليق الدفع' : 'Select invoices to send hold payment reminders.' }}
                             </h3>
                             <div class="flex items-center gap-3">
                               <input type="checkbox" v-model="selectAll" @change="handleSelectAll" 
@@ -193,7 +193,7 @@
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                            {{ currentLang === 'ar' ? 'إرسال تذكير (5)' : 'Send Reminder (5)' }}
+                            {{ currentLang === 'ar' ? 'مراجعة معلقة (5)' : 'Hold for Review (5)' }}
                           </button>
                         </div>
 

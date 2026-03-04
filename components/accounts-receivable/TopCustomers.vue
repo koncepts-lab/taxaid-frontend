@@ -10,7 +10,7 @@
         <p class="text-[12px] font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
       <div class="flex items-center gap-6">
-        <div class="flex items-center gap-6 text-[14px] font-regular">
+        <div class="flex items-center gap-6 text-[14px] font-regular leading-normal">
           <div class="flex items-center gap-2">
             <div class="w-3.5 h-3.5 rounded-full bg-[#FF886A]"></div>
             <span class="opacity-90">{{ currentLang === 'ar' ? 'نسبة تراكمي' : 'Cumulative %' }}</span>
@@ -55,7 +55,7 @@
               <p class="text-xs font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
             </div>
             <div class="flex items-center gap-6">
-              <div class="flex items-center gap-6 text-[14px] font-regular">
+              <div class="flex items-center gap-6 text-[14px] font-regular leading-normal">
                 <div class="flex items-center gap-2">
                   <div class="w-3.5 h-3.5 rounded-full bg-[#FF886A]"></div>
                   <span class="opacity-90">{{ currentLang === 'ar' ? 'نسبة تراكمي' : 'Cumulative %' }}</span>
