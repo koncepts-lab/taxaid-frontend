@@ -4,7 +4,7 @@
             <div class="flex items-center justify-between">
                 <!-- Title Section -->
                 <div>
-                    <h1 class="text-2xl font-medium">{{ currentLang === 'ar' ? 'تحليل التدفقات النقدية' : 'Cash Flow Analysis' }}</h1>
+                    <h1 class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ currentLang === 'ar' ? 'تحليل التدفقات النقدية' : 'Cash Flow Analysis' }}</h1>
                     <p class="text-sm mt-1" :class="isDark ? 'text-white' : 'text-black/59'">{{ currentLang === 'ar' ? 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' : 'Track Overheads and Optimize Operational Costs' }}</p>
                 </div>
 

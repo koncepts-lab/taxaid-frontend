@@ -4,7 +4,7 @@
             <div class="flex items-center justify-between">
                 <!-- Title Section -->
                 <div>
-                    <h1 class="text-2xl font-medium">{{ currentLang === 'ar' ? 'تحليل حسابات الدفع' : 'Accounts Payable Analysis' }}</h1>
+                    <h1 class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ currentLang === 'ar' ? 'تحليل حسابات الدفع' : 'Accounts Payable Analysis' }}</h1>
                     <p class="text-sm mt-1" :class="isDark ? 'text-white' : 'text-black/59'">{{ currentLang === 'ar' ? 'تتبع شامل لحسابات الدفع ورؤى التقادم' : 'Comprehensive AP tracking and aging insights' }}</p>
                 </div>
 
