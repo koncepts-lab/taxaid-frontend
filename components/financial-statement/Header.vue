@@ -1,7 +1,7 @@
 <template>
     <div :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" class="relative">
         <div class="w-full">
-            <div class="flex items-center justify-between">
+            <div class="flex lg:items-center items-start justify-between lg:flex-row flex-col lg:gap-0 gap-4">
                 <div>
                     <h1 class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-primary-450'">
                         {{ currentLang === 'ar' ? 'تحليل القوائم المالية' : 'Financial Statement Analysis' }}
@@ -38,14 +38,14 @@
                             <div v-if="showDateDropdown"
                                 class="absolute mt-2 border rounded-lg shadow-lg z-50 py-2 px-2 min-w-[200px]" :class="[
                                     isDark ? 'bg-primary-900 border-primary-100 shadow-black/50' : 'bg-white border-primary-100',
-                                    currentLang === 'ar' ? 'left-0' : 'right-0'
+                                    currentLang === 'ar' ? 'left-0' : 'lg:right-0 left-0'
                                 ]">
                                 <div v-for="period in periods" :key="period" class="relative group">
                                     <button @click="selectPeriod(period)"
                                         class="w-full px-3 py-2 font-normal text-sm rounded-lg flex justify-between items-center transition-colors"
                                         :class="[
                                             currentLang === 'ar' ? 'text-right' : 'text-left',
-                                            isDark ? 'text-white hover:bg-white/10' : 'hover:bg-primary-700',
+                                            isDark ? 'text-white hover:bg-white/10' : 'text-black hover:bg-primary-700',
                                             selectedPeriod === period ? (isDark ? 'bg-white/20 text-white' : 'bg-primary-700 text-black') : ''
                                         ]">
                                         <span>{{ getTranslatedPeriod(period) }}</span>
@@ -53,9 +53,9 @@
 
                                     <!-- CUSTOM RANGE POPOVER -->
                                     <div v-if="period === 'Custom Range' && selectedPeriod === 'Custom Range'"
-                                        class="absolute top-0 z-60 shadow-2xl rounded-xl border overflow-hidden "
+                                        class="absolute top-0 z-60 left-0 shadow-2xl rounded-xl border overflow-hidden "
                                         :class="[
-                                            currentLang === 'ar' ? 'left-full ml-2' : 'right-full mr-2',
+                                            currentLang === 'ar' ? 'left-full ml-2' : 'lg:right-full mr-2',
                                             isDark ? 'border-primary-100 bg-primary-900' : 'border-primary-100 bg-white'
                                         ]">
                                         <div class="flex gap-4 justify-center">
@@ -106,7 +106,7 @@
                                     class="w-full px-4 py-2 text-xs rounded-lg flex items-center transition-colors"
                                     :class="[
                                         currentLang === 'ar' ? 'text-right' : 'text-left',
-                                        isDark ? 'text-white hover:bg-white/10' : 'hover:bg-primary-700'
+                                        isDark ? 'text-white hover:bg-white/10' : 'text-black hover:bg-primary-700'
                                     ]">
                                     <span class="font-medium">{{ currentLang === 'ar' ? 'تصدير بصيغة إكسل (.xlsx)' :
                                         'Export as Excel (.xlsx)' }}</span>
@@ -116,7 +116,7 @@
                                     class="w-full px-4 py-2 text-xs rounded-lg flex items-center transition-colors"
                                     :class="[
                                         currentLang === 'ar' ? 'text-right' : 'text-left',
-                                        isDark ? 'text-white hover:bg-white/10' : 'hover:bg-primary-700'
+                                        isDark ? 'text-white hover:bg-white/10' : 'text-black hover:bg-primary-700'
                                     ]">
                                     <span class="font-medium">{{ currentLang === 'ar' ? 'تصدير بصيغة PDF (.pdf)' :
                                         'Export as PDF (.pdf)' }}</span>

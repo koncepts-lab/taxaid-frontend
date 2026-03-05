@@ -41,13 +41,15 @@ const isVisible = ref(false)
 const coords = reactive({ top: '0px', left: '0px' })
 
 const updatePosition = () => {
+    if (window.innerWidth < 768) return
+
+    if (!window.matchMedia('(hover: hover)').matches) return
     if (!trigger.value) return
 
     const rect = trigger.value.getBoundingClientRect()
     const scrollY = window.scrollY
     const scrollX = window.scrollX
 
-    // Calculate horizontal center
     const centerX = rect.left + scrollX + rect.width / 2
 
     if (props.position === 'top') {

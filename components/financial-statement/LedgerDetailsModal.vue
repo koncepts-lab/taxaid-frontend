@@ -2,13 +2,15 @@
     <Teleport to="body">
         <div v-if="isOpen"
             class="fixed inset-0 z-[10001] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div class="w-full max-w-6xl max-h-[90vh] rounded-xl shadow-2xl overflow-hidden flex flex-col"
+            <div class="w-screen md:max-w-6xl md:max-h-[90vh] max-h-screen rounded-xl shadow-2xl overflow-hidden flex flex-col"
                 :class="isDark ? 'bg-[#002e26] border border-white/10' : 'bg-white'">
 
                 <!-- Header -->
-                <div class="flex justify-between items-center py-5 px-8">
+                <div
+                    class="flex md:flex-row flex-col justify-between md:items-center items-start py-5 m md:gap-0 gap-4 d:px-8 px-4 relative">
                     <div class="flex flex-col">
-                        <h3 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-primary-750'">
+                        <h3 class="md:text-xl text-lg font-semibold"
+                            :class="isDark ? 'text-white' : 'text-primary-750'">
                             {{ ledgerName }} - {{ currentLang === 'ar' ? 'دفتر الأستاذ' : 'Ledger' }} ({{ currentLang
                                 === 'ar' ? 'العام الحالي' : 'Current Year' }})
                         </h3>
@@ -18,9 +20,9 @@
                     </div>
                     <div class="flex items-center gap-4">
                         <!-- EXPORT SECTION -->
-                        <div class="relative" ref="exportDropdownRef">
+                        <div class="relative " ref="exportDropdownRef">
                             <button @click="showExportDropdown = !showExportDropdown"
-                                class="flex items-center gap-2 px-4 py-1.5 border rounded-lg text-sm font-medium transition-colors"
+                                class="flex items-center gap-2 px-4 py-1.5 border rounded-lg text-sm font-medium transition-colors md:mr-6 mr-0"
                                 :class="isDark ? 'border-white/10 text-white hover:bg-white/10' : 'border-primary-100 text-gray-700 hover:bg-gray-50'">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M16 8l-4-4m0 0L8 8m4-4v12"
@@ -33,7 +35,7 @@
                                 <div v-if="showExportDropdown"
                                     class="absolute mt-2 w-52 border rounded-xl shadow-xl z-50 py-2 px-2" :class="[
                                         isDark ? 'bg-primary-900 border-primary-100 shadow-black/50' : 'bg-white border-primary-100',
-                                        currentLang === 'ar' ? 'left-0' : 'right-0'
+                                        currentLang === 'ar' ? 'left-0' : 'md:right-0 left-0'
                                     ]">
 
                                     <button @click="triggerExport('excel')"
@@ -59,7 +61,8 @@
                             </Transition>
                         </div>
 
-                        <button @click="$emit('close')" class="hover:opacity-70 transition-opacity">
+                        <button @click="$emit('close')"
+                            class="hover:opacity-70 transition-opacity absolute top-2 right-2">
                             <svg class="w-6 h-6" :class="isDark ? 'text-white' : 'text-black'" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -74,10 +77,12 @@
                         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#029F80]"></div>
                     </div>
 
-                    <table v-else-if="data?.report?.length > 0" class="w-full text-sm border-collapse">
+                    <table v-else-if="data?.report?.length > 0"
+                        class="w-full text-sm border-collapse min-w-150 md:min-w-full">
                         <thead class="sticky top-0 z-10 text-white bg-[#029F80]">
                             <tr>
-                                <th class="ps-8 py-3 text-start font-medium w-1/4">{{ currentLang === 'ar' ? 'التاريخ' :
+                                <th class="md:ps-8 ps-4 py-3 text-start font-medium w-1/4">{{ currentLang === 'ar' ?
+                                    'التاريخ' :
                                     'Date' }}</th>
                                 <th class="px-4 py-3 text-start font-medium w-2/4">{{ currentLang === 'ar' ? 'البيان' :
                                     'Particulars' }}</th>
@@ -90,7 +95,7 @@
                         <tbody>
                             <tr v-for="(row, idx) in data.report.slice(0, -3)" :key="idx"
                                 :class="[row.in_range === 'Yes' ? (isDark ? 'bg-white/5' : 'bg-[#94F0D8]') : '', isDark ? 'text-white/80' : 'text-gray-700']">
-                                <td class="ps-8 py-3.5">{{ row.date }}</td>
+                                <td class="md:ps-8 ps-4 py-3.5">{{ row.date }}</td>
                                 <td class="px-4 py-3.5">{{ row.particulars }}</td>
                                 <td class="px-4 py-3.5 text-end">{{ formatNumber(row.debit) }}</td>
                                 <td class="pe-8 py-3.5 text-end">{{ formatNumber(row.credit) }}</td>
@@ -98,7 +103,8 @@
 
                             <!-- Total Row -->
                             <tr class="bg-[#64E9D1] font-semibold ">
-                                <td colspan="2" class="ps-8 py-3 text-start">{{ currentLang === 'ar' ? 'الإجمالي' :
+                                <td colspan="2" class="md:ps-8 ps-4 py-3 text-start">{{ currentLang === 'ar' ?
+                                    'الإجمالي' :
                                     'Total' }}</td>
                                 <td class="px-4 py-3 text-end">{{ formatNumber(data.report[data.report.length -
                                     3].debit) }}</td>
@@ -108,7 +114,8 @@
 
                             <!-- Closing Balance Row -->
                             <tr class="bg-[#029F80] text-white font-semibold">
-                                <td colspan="2" class="ps-8 py-4 text-center">{{ currentLang === 'ar' ? 'رصيد الإغلاق' :
+                                <td colspan="2" class="md:ps-8 ps-4 py-4 text-start">{{ currentLang === 'ar' ?
+                                    'رصي الإغلاق' :
                                     'Closing balance' }}</td>
                                 <td class="px-4 py-4 text-end">{{ formatNumber(data.report[data.report.length -
                                     2].debit) }}</td>
@@ -118,7 +125,7 @@
 
                             <!-- Final Total Row -->
                             <tr class="bg-[#1EBBA3] font-semibold text-white">
-                                <td colspan="2" class="ps-8 py-3"></td>
+                                <td colspan="2" class="md:ps-8 ps-4 py-3"></td>
                                 <td class="px-4 py-3 text-end">{{ formatNumber(data.report[data.report.length -
                                     1].debit) }}</td>
                                 <td class="pe-8 py-3 text-end">{{ formatNumber(data.report[data.report.length -
