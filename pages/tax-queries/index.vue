@@ -2,7 +2,7 @@
     <NuxtLayout name="dashboard">
         <div class="lg:h-[calc(100vh-90px)] h-auto bg-[#F0F5F4] lg:px-6 px-0 pb-4 font-sans overflow-hidden">
             <div class="flex justify-between items-center mb-4">
-                <h1 class="lg:hidden text-primary-450 font-medium text-2xl lg:mb-0">Tax Queries</h1>
+                <h1 class="lg:hidden font-medium text-2xl lg:mb-0" :class="isDark ? 'text-white' : 'text-[#013E32]'">Tax Queries</h1>
                 <button @click="handleChatOpen">
                     <img src="/images/icons/hamburger.svg" class="w-6 h-6 lg:hidden" />
                 </button>
@@ -25,6 +25,8 @@
 </template>
 
 <script setup>
+import { useTheme } from '#imports'
+const { isDark } = useTheme()
 const activeTabId = ref('vat');
 const isTableMinimized = ref(false);
 const isSideChatOpen = ref(false);

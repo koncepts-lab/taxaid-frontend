@@ -1,5 +1,5 @@
 <template>
-  <div class="revenue-gauge-card rounded-[20px] p-5 md:p-8 text-white h-full flex flex-col items-center justify-between relative overflow-hidden group cursor-pointer transition-all duration-300 shadow-md"
+  <div class="revenue-gauge-card rounded-[20px] p-8 text-white h-full flex flex-col items-center justify-between relative overflow-hidden group cursor-pointer transition-all duration-300 shadow-md"
     :class="{ 'dark-mode': isDark }">
     <!-- Header -->
     <div class="w-full flex items-center justify-between mb-4">
@@ -108,7 +108,7 @@
               <p class="text-xs opacity-70 font-normal mt-1 text-white">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
             </div>
             <div class="flex items-center gap-4">
-              <img src="/images/icons/info-white.svg" alt="Info Icon" class="w-5 h-5 cursor-pointer hover:opacity-100" />
+              <img src="/images/icons/info.svg" alt="Info Icon" class="w-5 h-5 cursor-pointer hover:opacity-100" />
               <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                 <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
               </button>

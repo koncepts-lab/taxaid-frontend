@@ -38,8 +38,23 @@
                 </div>
             </div>
 
+            <!-- 3. RIGHT SIDEBAR: Fixed width, does not scroll with content -->
+            <aside class="fixed z-[1000] transition-all duration-500 ease-in-out" :class="[
+                currentLang === 'ar' ? 'left-0' : 'right-0',
 
-            <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = true" />
+                // 2. Desktop Positioning: Centered vertically on the side
+                'lg:top-1/2 lg:-translate-y-1/2 lg:bottom-auto lg:mt-5',
+
+                // 3. Mobile Positioning: Pinned to bottom, full width
+                isChatOpen
+                    ? 'bottom-0 w-full translate-y-0'
+                    : 'bottom-24 w-[80px]',
+
+                // 4. Desktop Widths
+                isChatOpen ? 'lg:2xl:w-120 lg:w-100' : 'lg:w-[80px]'
+            ]">
+                <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = true" />
+            </aside>
         </div>
 
         <div v-else class="w-full flex overflow-hidden" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">

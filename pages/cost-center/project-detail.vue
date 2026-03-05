@@ -24,9 +24,9 @@
     </div>
     
     <div v-else class="w-full flex overflow-hidden">
-        <aside class="w-80 shrink-0 h-[calc(100vh-90px)]">
+     
           <TaxQueriesLeftSideBar @close="isFullScreenChat = false" />
-        </aside>
+    
         <main class="flex-1">
           <TaxQueriesChatWindow :isMinimized="false" class="flex-1 min-h-0 h-[calc(100vh-90px)] ml-12" />
         </main>

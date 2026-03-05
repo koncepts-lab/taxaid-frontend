@@ -1,14 +1,14 @@
 <template>
-  <div class="rounded-3xl p-5 md:p-8 h-full flex flex-col relative transition-all duration-500"
+  <div class="rounded-3xl p-8 h-full flex flex-col relative transition-all duration-500"
     :class="isDark ? 'bg-[#00141080] border-none shadow-none' : 'bg-white shadow-sm border border-gray-100'">
     <!-- Header -->
-    <div class="flex flex-wrap justify-between items-start mb-4 md:mb-6 gap-3">
+    <div class="flex justify-between items-start mb-6">
       <div class="flex flex-col">
-        <h2 class="text-[14px] md:text-[16px] font-regular leading-tight" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'الإيرادات - أفضل 10 عملاء حسب القيمة' : 'Revenue - Top 10 Customers by value' }}</h2>
+        <h2 class="text-[16px] font-regular leading-tight" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'الإيرادات - أفضل 10 عملاء حسب القيمة' : 'Revenue - Top 10 Customers by value' }}</h2>
         <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
-      <div class="flex items-center gap-3 sm:gap-6">
-        <div class="flex items-center gap-3 sm:gap-4 text-[12px] font-regular">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-4 text-[12px] font-regular">
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full bg-[#FF886A]"></div>
             <span :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'نسبة تراكمي' : 'Cumulative %' }}</span>
@@ -18,7 +18,7 @@
             <span :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
           </div>
         </div>
-        <div class="flex items-center gap-3 sm:gap-4">
+        <div class="flex items-center gap-4">
           <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
           <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-6 h-6 cursor-pointer opacity-60" @click="isModalOpen = true" />
         </div>

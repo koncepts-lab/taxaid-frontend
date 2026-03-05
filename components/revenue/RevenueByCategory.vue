@@ -1,9 +1,9 @@
 <template>
-  <div class="rounded-3xl p-5 md:p-8 h-full flex flex-col transition-all duration-500"
+  <div class="rounded-3xl p-8 h-full flex flex-col transition-all duration-500"
     :class="isDark ? 'bg-[#00141080] border-none shadow-none' : 'bg-white shadow-sm border border-gray-100'">
-    <div class="flex flex-wrap justify-between items-start mb-3 md:mb-4 gap-2">
+    <div class="flex justify-between items-start mb-4">
       <div class="flex flex-col">
-        <h2 class="text-[14px] md:text-[16px] font-normal leading-tight">{{ currentLang === 'ar' ? 'الإيرادات حسب الفئة' : 'Revenue by category' }}</h2>
+        <h2 class="text-[16px] font-normal leading-tight">{{ currentLang === 'ar' ? 'الإيرادات حسب الفئة' : 'Revenue by category' }}</h2>
         <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
       <div class="flex items-center gap-3">

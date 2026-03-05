@@ -1,26 +1,26 @@
 <template>
-    <div class="">
+    <div class=" ">
         <div class="container mx-auto">
-            <div class="flex flex-wrap items-start sm:items-center justify-between gap-3">
+            <div class="flex items-center justify-between">
                 <!-- Title Section -->
                 <div>
-                    <h1 class="text-xl sm:text-2xl font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ currentLang === 'ar' ? 'تحليل الإيرادات' : 'Revenue Analysis' }}</h1>
+                    <h1 class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ currentLang === 'ar' ? 'تحليل الإيرادات' : 'Revenue Analysis' }}</h1>
                     <p class="text-sm mt-1" :class="isDark ? 'text-white' : 'text-black/59'">{{ currentLang === 'ar' ? 'تتبع شامل للإيرادات والرؤى' : 'Comprehensive revenue tracking and insights' }}</p>
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="flex items-center gap-2 sm:gap-3">
+                <div class="flex items-center gap-3">
                     <!-- Date Filter -->
                     <div class="relative">
                         <button @click="showDateDropdown = !showDateDropdown"
-                            class="flex items-center space-x-2 rtl:space-x-reverse px-3 sm:px-4 h-[36px] sm:h-[40px] rounded-lg border transition-colors"
+                            class="flex items-center space-x-2 rtl:space-x-reverse px-4 h-[40px] rounded-lg border transition-colors"
                             :class="isDark ? 'bg-[#002E26] border-[#03D8B0] text-white' : 'bg-white border-primary-100 text-black hover:bg-teal-50'">
-                            <svg class="w-4 h-4 shrink-0" :class="isDark ? 'text-[#03D8B0]' : 'text-black/50'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4" :class="isDark ? 'text-[#03D8B0]' : 'text-black/50'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <span class="text-sm font-normal hidden sm:inline">{{ selectedPeriod }}</span>
-                            <svg class="w-4 h-4 transition-transform duration-300 hidden sm:block" :class="[isDark ? 'text-[#03D8B0]' : 'text-black/50', showDateDropdown ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <span class="text-sm font-normal">{{ selectedPeriod }}</span>
+                            <svg class="w-4 h-4 transition-transform duration-300" :class="[isDark ? 'text-[#03D8B0]' : 'text-black/50', showDateDropdown ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M19 9l-7 7-7-7" />
                             </svg>
@@ -42,14 +42,14 @@
 
                     <!-- Reload Button -->
                     <button
-                        class="w-[36px] h-[36px] sm:w-[40px] sm:h-[40px] flex items-center justify-center border rounded-lg transition-colors"
+                        class="w-[40px] h-[40px] flex items-center justify-center border rounded-lg transition-colors"
                         :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-primary-100 hover:bg-gray-50'">
                         <img :src="isDark ? '/images/icons/reload.svg' : '/images/icons/reload.svg'" alt="Reload Icon" class="w-5 h-5" :class="isDark ? 'invert' : ''" />
                     </button>
 
                     <!-- Export Button -->
                     <button
-                        class="w-[36px] h-[36px] sm:w-[40px] sm:h-[40px] flex items-center justify-center border rounded-lg transition-colors"
+                        class="w-[40px] h-[40px] flex items-center justify-center border rounded-lg transition-colors"
                         :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-primary-100 hover:bg-gray-50'">
                         <img :src="isDark ? '/images/icons/export.svg' : '/images/icons/export.svg'" alt="Export Icon" class="w-5 h-5" :class="isDark ? 'invert' : ''" />
                     </button>

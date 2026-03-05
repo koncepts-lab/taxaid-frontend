@@ -3,40 +3,40 @@
 
 
         <!-- 1. Container fills the screen height and prevents page-level scrolling -->
-        <div v-if="!isFullScreenChat" class="font-sans flex relative z-10"
+        <div v-if="!isFullScreenChat" class="h-screen font-sans flex overflow-hidden relative z-10"
             :class="{ '': isDark }" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
             <!-- 2. LEFT AREA: Resizes dynamically -->
-            <div class="flex-1 transition-all duration-500 ease-in-out px-3 sm:px-5 md:px-8 pt-0 pb-[17px]" :class="isChatOpen 
-                ? (currentLang === 'ar' ? '2xl:ml-[480px] lg:ml-[400px]' : '2xl:mr-[480px] lg:mr-[400px]')
-                : (currentLang === 'ar' ? 'lg:ml-[170px]' : 'lg:mr-[170px]')">
-                <div class="mx-auto">
+            <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" :class="isChatOpen 
+                ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
+                : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
+                <div class="mx-auto pt-8 lg:pt-0">
                     
-                    <RevenueHeader class="mb-5 md:mb-8" />
+                    <RevenueHeader class="mb-8" />
 
-                    <div class="rounded-3xl mb-5 md:mb-8 transition-all duration-500"
+                    <div class="rounded-3xl mb-8 transition-all duration-500"
                         :class="isDark ? 'bg-[#00141080] border-none' : 'bg-white border border-gray-100'"
                         :style="isDark ? { boxShadow: '0px 4px 4px 0px #00000040' } : {}">
                         <RevenueSummary :data="revenueSummaryData" :is-compressed="isChatOpen" />
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5 md:mb-8">
-                        <div class="h-[400px] md:h-[500px]">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+                        <div class="h-[500px]">
                             <RevenueGauge />
                         </div>
-                        <div class="h-[400px] md:h-[500px]">
+                        <div class="h-[500px]">
                             <RevenueByCategory />
                         </div>
                     </div>
 
-                    <div class="mb-5 md:mb-8">
-                        <div class="h-[320px] md:h-[420px]">
+                    <div class="mb-8">
+                        <div class="h-[420px]">
                             <RevenueTrend />
                         </div>
                     </div>
 
                     <div>
-                        <div class="h-[480px] md:h-[600px]">
+                        <div class="h-[600px]">
                             <RevenueTopCustomers />
                         </div>
                     </div>
@@ -45,17 +45,21 @@
             </div>
 
             <!-- 3. RIGHT SIDEBAR -->
-            <aside class="fixed top-1/2 -translate-y-1/2 shrink-0 transition-all duration-500 ease-in-out mt-5" :class="[
+            <aside class="fixed z-[1000] transition-all duration-500 ease-in-out" :class="[
                 currentLang === 'ar' ? 'left-0' : 'right-0',
-                isChatOpen ? '2xl:w-120 w-100' : 'lg:w-[80px] w-0 overflow-hidden'
+                'lg:top-1/2 lg:-translate-y-1/2 lg:bottom-auto lg:mt-5',
+                isChatOpen
+                    ? 'bottom-0 w-full translate-y-0'
+                    : 'bottom-24 w-[80px]',
+                isChatOpen ? 'lg:2xl:w-120 lg:w-100' : 'lg:w-[80px]'
             ]">
                 <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = true" />
             </aside>
         </div>
         
-        <div v-else class="w-full flex overflow-hidden">
-             <!-- Full Sidebar version -->
-             <aside class="w-80 shrink-0 h-[calc(100vh-90px)]">
+        <div v-else class="w-full flex overflow-hidden" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+            <!-- Full Sidebar version -->
+            <aside class="w-80 shrink-0 h-[calc(100vh-90px)]">
                 <TaxQueriesLeftSideBar @close="isFullScreenChat = false" />
             </aside>
 
