@@ -1,7 +1,8 @@
 <template>
+
     <div class="z-50  relative flex items-center pointer-events-auto transition-all duration-500 ease-in-out shrink-0"
         :class="[
-            isChatOpen ? '2xl:w-120 lg:w-100 h-[85vh]' : 'lg:w-24 w-full lg:h-150 h-screen',
+            isChatOpen ? '2xl:w-120 lg:w-100 h-[80vh]' : 'lg:w-24 w-fit lg:h-150 h-screen',
             currentLang === 'ar' ? 'justify-end -ml-4' : 'justify-end -mr-4'
         ]">
 
@@ -40,7 +41,7 @@
             </div>
         </div>
 
-        <div v-else class="fixed bottom-0 inset-x-0 h-[85vh] z-[1000] 
+        <div v-else class="fixed bottom-0 inset-x-0 h-[80vh] z-[1000] 
            lg:relative lg:bottom-auto lg:inset-auto lg:w-full lg:h-full 
            rounded-t-[32px] lg:rounded-3xl shadow-2xl flex flex-col overflow-hidden 
            mobile-chat-sheet border border-primary-100" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" :class="[
