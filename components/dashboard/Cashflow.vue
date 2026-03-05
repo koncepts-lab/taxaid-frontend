@@ -1,25 +1,41 @@
 <template>
-  <div class="rounded-[20px] p-5 flex flex-col h-[250px] group cursor-pointer transition-all duration-300 border border-transparent"
+  <div class="rounded-[20px] p-5 flex flex-col h-auto md:h-[250px] group cursor-pointer transition-all duration-300 border border-transparent"
     :class="[
       isDark ? 'bg-[#002e26]' : 'bg-white',
       isHovered ? 'shadow-[0_0_15px_#00B794] border-[#00B794]/30' : 'shadow-sm hover:shadow-[0_0_10px_#00B794]'
     ]"
     @mouseenter="hoveredMenuItem = 'Cashflow'"
     @mouseleave="hoveredMenuItem = null">
+    
     <!-- Header Area -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
       
        <!-- Title & Icon -->
-      <div class="flex items-center gap-3 mb-4 md:mb-0">
-        <div class="w-10 h-10 rounded-full flex items-center justify-center text-xl" 
-          :style="isDark ? { background: '#00B794' } : { background: 'linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)' }">
-          <img src="/images/icons/Cashflow-black.svg" alt="Cashflow" class="w-5 h-5 object-contain">
+      <div class="flex flex-col gap-2 mb-4 md:mb-0 w-full md:w-auto">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center text-xl shrink-0" 
+            :style="isDark ? { background: '#00B794' } : { background: 'linear-gradient(313.43deg, rgba(223, 255, 248, 0.9) 14.29%, rgba(109, 216, 193, 0.9) 81.93%)' }">
+            <img src="/images/icons/Cashflow-black.svg" alt="Cashflow" class="w-5 h-5 object-contain">
+          </div>
+          <div class="font-medium text-xl" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'التدفق النقدي' : 'Cashflow' }}</div>
         </div>
-        <div class="font-medium text-xl" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'التدفق النقدي' : 'Cashflow' }}</div>
+        
+        <!-- Mobile: Time Filters -->
+        <div class="flex md:hidden gap-2 mt-1">
+          <button v-for="t in ['3M', '6M', '1Y']" :key="t" 
+            class="px-4 h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
+            :class="[
+              t === '6M' 
+                ? (isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35] shadow-lg') 
+                : (isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]')
+            ]">
+            {{ t }}
+          </button>
+        </div>
       </div>
 
-      <!-- Legend & Filters & Hover Icon -->
-      <div class="flex items-center gap-3 text-xs font-medium">
+      <!-- Desktop: Legend & Hover Icon -->
+      <div class="hidden md:flex items-center gap-3 text-xs font-medium">
              <div class="flex items-center gap-1">
                <span class="w-3 h-3 rounded-full bg-[#FF7B5F]"></span>
                <span class="transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#191919]'">{{ currentLang === 'ar' ? 'سيناريو افتراضي' : 'Hypothetical Scenario' }}</span>
@@ -46,8 +62,8 @@
         </ClientOnly>
       </div>
 
-      <!-- Vertical Time Filters -->
-      <div class="flex flex-col gap-2 pt-2 shrink-0">
+      <!-- Desktop: Vertical Time Filters -->
+      <div class="hidden md:flex flex-col gap-2 pt-2 shrink-0">
           <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
             :class="isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]'">3M</button>
           <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors shadow-lg"
@@ -55,6 +71,26 @@
           <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
             :class="isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]'">1Y</button>
       </div>
+    </div>
+
+    <!-- Mobile: Legend -->
+    <div class="flex md:hidden items-center justify-between gap-3 text-xs font-medium mt-2 pt-2 border-t border-gray-100/10 w-full">
+         <div class="flex gap-4">
+           <div class="flex items-center gap-1">
+             <span class="w-2.5 h-2.5 rounded-full bg-[#FF7B5F]"></span>
+             <span class="transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#191919]'">{{ currentLang === 'ar' ? 'افتراضي' : 'Hypothetical' }}</span>
+           </div>
+           <div class="flex items-center gap-1">
+             <span class="w-2.5 h-2.5 rounded-full bg-[#00B794]"></span>
+             <span class="transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#191919]'">{{ currentLang === 'ar' ? 'حقيقي' : 'Real' }}</span>
+           </div>
+         </div>
+         <img
+           src="/images/icons/right-hover-2.svg"
+           alt="Arrow"
+           class="w-[30px] h-[30px] transition-all duration-300"
+           :class="isHovered ? 'opacity-100' : 'opacity-0'"
+         />
     </div>
   </div>
 </template>

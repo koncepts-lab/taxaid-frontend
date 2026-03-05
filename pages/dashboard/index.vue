@@ -7,7 +7,7 @@
       <div class="col-span-12 lg:col-span-3 flex flex-col gap-3">
         <NuxtLink to="/revenue">
           <DashboardRevenue />
-        </NuxtLink>
+        </NuxtLink> 
       </div>
 
       <!-- MAIN CONTENT -->

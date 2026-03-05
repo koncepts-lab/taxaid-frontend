@@ -61,7 +61,7 @@
         <!-- Bars Container -->
         <div class="h-full pb-8 flex items-end justify-around gap-2 transition-opacity duration-700" :style="{ opacity: animProgress / 100 }">
           <div v-for="(month, mIndex) in months" :key="mIndex" class="flex-1 h-full flex items-end justify-center">
-            <div class="relative h-full flex items-end" style="width: 26px; max-width: 26px;">
+            <div class="relative h-full flex items-end w-[13px] max-w-[13px] md:w-[26px] md:max-w-[26px]">
               <!-- Stacked Bars -->
               <div 
                 v-for="(segment, sIndex) in getStackedSegments(mIndex)" 
@@ -96,9 +96,15 @@ const { isDark } = useTheme()
 const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Account Receivables')
 
+const isMobile = ref(false);
 const animProgress = ref(0);
 
 onMounted(() => {
+  isMobile.value = window.innerWidth < 768;
+  window.addEventListener('resize', () => {
+    isMobile.value = window.innerWidth < 768;
+  });
+
   let startTimestamp: number | null = null;
   const duration = 1200;
   const animate = (timestamp: number) => {
@@ -140,8 +146,8 @@ const getStackedSegments = (monthIndex: number) => {
     const heightPercent = (value / maxValue) * 100 * (animProgress.value / 100);
     const currentBottom = cumulativePercent;
     
-    // Applying offsets: 1st: none, others: 20px
-    const offset = seriesIndex === 0 ? 0 : 20; 
+    // Applying offsets: 1st: none, others: based on device
+    const offset = seriesIndex === 0 ? 0 : (isMobile.value ? 13 : 20); 
     
     segments.push({
       height: seriesIndex === 0 ? `${heightPercent}%` : `calc(${heightPercent}% + ${offset}px)`,

@@ -26,9 +26,9 @@
     </div>
 
     <!-- Chart Area -->
-    <div class="flex-1 flex flex-col md:flex-row items-center justify-between gap-1">
+    <div class="flex-1 flex flex-row items-center justify-between gap-1">
        <!-- Custom SVG Irregular Pie Chart -->
-       <div class="relative w-full max-w-[35%] shrink-0 flex items-center justify-center">
+       <div class="relative w-full max-w-[50%] md:max-w-[35%] shrink-0 flex items-center justify-center">
           <!-- Subtle Background Circle for effect -->
           <div class="absolute inset-0 rounded-full opacity-50" :class="isDark ? 'bg-[#005B48]' : 'bg-gray-50'"></div>
           

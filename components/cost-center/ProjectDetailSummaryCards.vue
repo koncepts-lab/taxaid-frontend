@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     <div v-for="(card, idx) in cards" :key="idx" 
       class="p-6 rounded-2xl border transition-all duration-300"
       :class="isDark ? 'bg-[#002B21] border-white/5' : 'bg-white border-[#03D8B0] shadow-sm'">
@@ -23,7 +23,6 @@ const currentLang = useState('currentLang', () => 'en')
 const cards = [
   { label: 'Contract Value', labelAr: 'قيمة العقد', value: 'AED 3.10 M', icon: '/images/icons/Contract-Value.svg' },
   { label: 'Invoiced', labelAr: 'المفوترة', value: 'AED 2.45 M', icon: '/images/icons/Invoiced.svg' },
-  { label: 'Collected', labelAr: 'المحصلة', value: 'AED 1.80 M', icon: '/images/icons/Collected.svg' },
   { label: 'Yet to Invoice', labelAr: 'لم يتم الفوترة بعد', value: 'AED 8.12 M', icon: '/images/icons/Yet-to-Invoice.svg' }
 ]
 </script>

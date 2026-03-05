@@ -42,7 +42,7 @@
     </div>
 
     <!-- Gauge Area -->
-    <div class="relative w-full px-4 mt-4 overflow-hidden" style="max-height: 25vh;">
+    <div class="relative w-full px-4 mt-4 overflow-hidden max-h-[190px] md:max-h-[220px]">
       <div class="relative w-full">
         <svg class="w-full h-auto block" :viewBox="`0 0 ${svgW} ${svgH}`">
           <!-- Ticks -->

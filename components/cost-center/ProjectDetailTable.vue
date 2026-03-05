@@ -25,7 +25,6 @@
             <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
             <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'الفعلي' : 'Actual' }}</th>
             <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</th>
-            <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'التباين' : 'Variance' }}</th>
             <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'المتبقي من السنة' : 'Year to Go' }}</th>
           </tr>
         </thead>
@@ -38,14 +37,6 @@
               </td>
               <td class="px-6 py-5 text-center font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.actual }}</td>
               <td class="px-6 py-5 text-center font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ item.budget }}</td>
-              <td class="px-6 py-5 text-center">
-                <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;" 
-                  :class="item.variance.includes('-') 
-                    ? (isDark ? 'bg-[#FB7554]/20 text-[#FF582F]' : 'bg-[#FB75544D] text-[#FF582F]') 
-                    : (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#68E4C4] text-[#008864]')">
-                  {{ item.variance }}
-                </span>
-              </td>
               <td class="px-6 py-5 text-center">
                   <div class="relative w-12 h-6 overflow-hidden mx-auto">
                       <svg viewBox="0 0 100 50" class="w-full h-full">
@@ -67,11 +58,6 @@
             </td>
             <td class="px-6 py-5 text-center font-bold text-[14px]" :class="isDark ? 'text-white' : 'text-[#013e32]'">17,500,000</td>
             <td class="px-6 py-5 text-center font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#013e32]'">550,000</td>
-            <td class="px-6 py-5 text-center">
-              <span class="inline-block px-3 py-1 text-[13px] font-medium bg-[#FB75544D] text-[#FF582F]" style="border-radius: 19px;">
-                -4.0%
-              </span>
-            </td>
             <td class="px-6 py-5 text-center">
               <div class="relative w-12 h-6 overflow-hidden mx-auto">
                   <svg viewBox="0 0 100 50" class="w-full h-full">
@@ -114,7 +100,6 @@
                   <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
                   <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'الفعلي' : 'Actual' }}</th>
                   <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</th>
-                  <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'التباين' : 'Variance' }}</th>
                   <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'المتبقي من السنة' : 'Year to Go' }}</th>
                 </tr>
               </thead>
@@ -127,14 +112,6 @@
                     </td>
                     <td class="px-6 py-5 text-center font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.actual }}</td>
                     <td class="px-6 py-5 text-center font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ item.budget }}</td>
-                    <td class="px-6 py-5 text-center">
-                        <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;" 
-                            :class="item.variance.includes('-') 
-                            ? (isDark ? 'bg-[#FB7554]/20 text-[#FF582F]' : 'bg-[#FB75544D] text-[#FF582F]') 
-                            : (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#68E4C4] text-[#008864]')">
-                            {{ item.variance }}
-                        </span>
-                    </td>
                     <td class="px-6 py-5 text-center">
                         <div class="relative w-12 h-6 overflow-hidden mx-auto">
                             <svg viewBox="0 0 100 50" class="w-full h-full">
@@ -156,11 +133,6 @@
                     </td>
                     <td class="px-6 py-5 text-center font-bold text-[14px]" :class="isDark ? 'text-black' : 'text-[#013e32]'">17,500,000</td>
                     <td class="px-6 py-5 text-center font-medium text-[14px]" :class="isDark ? 'text-black' : 'text-[#013e32]'">550,000</td>
-                    <td class="px-6 py-5 text-center">
-                      <span class="inline-block px-3 py-1 text-[13px] font-medium bg-[#FB75544D] text-[#FF582F]" style="border-radius: 19px;">
-                        -4.0%
-                      </span>
-                    </td>
                     <td class="px-6 py-5 text-center">
                       <div class="relative w-12 h-6 overflow-hidden mx-auto">
                           <svg viewBox="0 0 100 50" class="w-full h-full">
@@ -191,9 +163,9 @@ const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
 const tableData = [
-  { label: 'Revenue', labelAr: 'الإيرادات', actual: '2,400,000', budget: '2,500,000', variance: '-4.0%', progress: 60, color: '#03D8B0' },
-  { label: 'COGS', labelAr: 'تكلفة المبيعات', actual: '1,500,000', budget: '1,400,000', variance: '+7.1%', progress: 30, color: '#FFBC01' },
-  { label: 'Indirect Expenses', labelAr: 'المصروفات غير المباشرة', actual: '600,000', budget: '550,000', variance: '+9.1%', progress: 10, color: '#FB7554' }
+  { label: 'Revenue', labelAr: 'الإيرادات', actual: '2,400,000', budget: '2,500,000', progress: 60, color: '#03D8B0' },
+  { label: 'COGS', labelAr: 'تكلفة المبيعات', actual: '1,500,000', budget: '1,400,000', progress: 30, color: '#FFBC01' },
+  { label: 'Indirect Expenses', labelAr: 'المصروفات غير المباشرة', actual: '600,000', budget: '550,000', progress: 10, color: '#FB7554' }
 ]
 
 const gaugeColor = (value) => {
