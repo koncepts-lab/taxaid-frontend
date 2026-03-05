@@ -19,7 +19,10 @@
             <span class="opacity-90 text-[12px] font-regular">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
           </div>
         </div>
-        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 hover:opacity-100 transition-opacity cursor-pointer ml-4" @click="isModalOpen = true" />
+        <div class="flex items-center gap-4 ml-4">
+          <img src="/images/icons/info-white.svg" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
+          <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 hover:opacity-100 transition-opacity cursor-pointer" @click="isModalOpen = true" />
+        </div>
       </div>
     </div>
 
@@ -57,9 +60,12 @@
                   <span class="opacity-90 text-[12px] font-regular text-white">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
                 </div>
               </div>
-              <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0 ml-4">
-                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-[25px] h-[25px] invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
-              </button>
+              <div class="flex items-center gap-4 ml-4">
+                <img src="/images/icons/info-white.svg" alt="Info Icon" class="w-5 h-5 cursor-pointer hover:opacity-100" />
+                <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
+                  <img src="/images/icons/expand.svg" alt="Close Modal" class="w-[25px] h-[25px] invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+                </button>
+              </div>
             </div>
           </div>
           

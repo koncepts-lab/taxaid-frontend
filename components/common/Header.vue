@@ -1,9 +1,11 @@
 <template>
   <header class="flex items-center justify-between px-4 md:px-8 py-1 md:py-2 bg-transparent mt-0 mb-2">
-    <!-- LEFT: LOGO -->
+    <!-- LEFT: LOGO --> 
     <div class="flex items-center">
-      <img :src="isDark ? '/images/logo-dark.svg' : '/images/logo.svg'" alt="Taxaid.AI"
-        :class="currentLang === 'ar' ? 'h-10 md:h-14 mr-0 md:mr-[30px]' : 'h-10 md:h-14 ml-0 md:ml-[30px]'" />
+      <NuxtLink to="/dashboard">
+        <img :src="isDark ? '/images/logo-dark.svg' : '/images/logo.svg'" alt="Taxaid.AI"
+          :class="currentLang === 'ar' ? 'h-10 md:h-14 mr-0 md:mr-[30px]' : 'h-10 md:h-14 ml-0 md:ml-[30px]'" />
+      </NuxtLink>
     </div>
 
     <!-- CENTER: NAVIGATION PILL -->

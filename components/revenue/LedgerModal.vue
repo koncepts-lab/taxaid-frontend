@@ -71,7 +71,7 @@
                     </div>
 
                     <!-- ── Scrollable Body ── -->
-                    <div class="flex-1 overflow-y-auto no-scrollbar" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+                    <div class="flex-1 overflow-y-auto" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
                         <table class="w-full text-sm table-fixed">
                             <colgroup>
                                 <col style="width: 18%">
@@ -176,9 +176,6 @@ const totals = computed(() => ({
 </script>
 
 <style scoped>
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
 .ledger-fade-enter-active,
 .ledger-fade-leave-active {
     transition: opacity 0.2s ease;

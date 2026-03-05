@@ -27,7 +27,8 @@
       </thead>
       <tbody>
         <template v-for="(item, idx) in tableData" :key="idx">
-          <tr class="transition-all duration-500 border-b" 
+          <tr class="transition-all duration-500 border-b cursor-pointer" 
+            @mouseenter="onRowEnter" @mouseleave="onRowLeave" @click="goToDetail(item)"
             :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50'">
             <td class="px-8 py-5">
               <span class="font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
@@ -94,7 +95,8 @@
               </thead>
               <tbody class="bg-white">
                 <template v-for="(item, idx) in tableData" :key="'modal-' + idx">
-                  <tr class="transition-all duration-500 border-b border-[#F2F2F2] hover:bg-gray-50">
+                  <tr class="transition-all duration-500 border-b border-[#F2F2F2] hover:bg-gray-50 cursor-pointer"
+                    @mouseenter="onRowEnter" @mouseleave="onRowLeave" @click="goToDetail(item)">
                     <td class="px-8 py-5">
                       <span class="font-normal text-[14px] text-[#333333]">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
                     </td>
@@ -130,6 +132,22 @@
         </div>
       </div>
     </Teleport>
+    
+    <!-- Row Hover Tooltip -->
+    <Teleport to="body">
+      <div v-if="hoveredRowRect" 
+        :style="{ 
+          top: hoveredRowRect.top - 12 + 'px', 
+          left: hoveredRowRect.left + hoveredRowRect.width / 2 + 'px',
+          transform: 'translate(-50%, -100%)'
+        }"
+        class="fixed z-[99999] px-4 py-2 text-[14px] font-normal rounded-2xl whitespace-nowrap shadow-xl pointer-events-none transition-opacity duration-300"
+        :class="isDark ? 'bg-white text-black' : 'bg-[#003228] text-white'">
+        {{ currentLang === 'ar' ? 'انقر لعرض التفاصيل' : 'Click to view details' }}
+        <div class="absolute left-1/2 -translate-x-1/2 -bottom-1.5 border-x-[6px] border-x-transparent border-t-[6px]"
+          :class="isDark ? 'border-t-white' : 'border-t-[#003228]'"></div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -138,8 +156,22 @@ import { ref } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+const router = useRouter()
 
 const isModalOpen = ref(false)
+const hoveredRowRect = ref(null)
+
+const onRowEnter = (e) => {
+  hoveredRowRect.value = e.currentTarget.getBoundingClientRect()
+}
+
+const onRowLeave = () => {
+  hoveredRowRect.value = null
+}
+
+const goToDetail = (item) => {
+  router.push('/cost-center/project-detail')
+}
 
 const tableData = ref([
   {

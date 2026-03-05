@@ -10,17 +10,28 @@
     <!-- NAV ITEMS -->
     <nav class="flex-1 w-full flex flex-col items-start justify-center gap-y-[3vh] md:gap-y-[5vh] lg:gap-y-[3vh]"
       :style="{ transform: currentLang === 'ar' ? 'scaleX(-1)' : 'none' }">
-      <NuxtLink v-for="(item, index) in navItems" :key="index" :to="item.to" class="nav-item group relative side-icons">
-        <!-- Default Icon (w-8) -->
-        <img :src="item.icon" class="w-6 group-hover:hidden group-[.router-link-active]:hidden" :alt="item.label" />
-        <!-- Active Icon (Increased to w-9 to match visual size) -->
-        <img :src="item.activeIcon" class="w-6 hidden group-hover:block group-[.router-link-active]:block"
+      <NuxtLink v-for="(item, index) in navItems" :key="index" :to="item.to" 
+        class="nav-item group relative side-icons"
+        @mouseenter="hoveredMenuItem = item.label"
+        @mouseleave="hoveredMenuItem = null">
+        <!-- Default Icon -->
+        <img :src="item.icon" 
+          class="w-6 group-hover:hidden group-[.router-link-active]:hidden" 
+          :class="{ 'hidden': hoveredMenuItem === item.label }"
+          :alt="item.label" />
+        <!-- Active Icon -->
+        <img :src="item.activeIcon" 
+          class="w-6 hidden group-hover:block group-[.router-link-active]:block"
+          :class="{ '!block': hoveredMenuItem === item.label }"
           :alt="item.label" />
 
         <!-- TOOLTIP -->
         <div
           class="tooltip absolute px-4 py-2 bg-white text-[#009276] text-[16px] font-medium rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 whitespace-nowrap z-50"
-          :class="currentLang === 'ar' ? 'right-full mr-2' : 'left-full ml-2'">
+          :class="[
+            currentLang === 'ar' ? 'right-full mr-2' : 'left-full ml-2',
+            { 'opacity-100 !visible': hoveredMenuItem === item.label }
+          ]">
           {{ currentLang === 'ar' ? item.labelAr : item.label }}
           <!-- Arrow -->
           <div class="absolute top-1/2 -translate-y-1/2 border-8 border-transparent"
@@ -34,6 +45,7 @@
 <script setup>
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
+const hoveredMenuItem = useState('hoveredMenuItem', () => null)
 const navItems = [
   {
     label: 'Revenue',

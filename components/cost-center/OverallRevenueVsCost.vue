@@ -46,22 +46,49 @@
       </ClientOnly>
     </div>
 
-    <!-- Sub Legend mapping (A - Residential, etc.) -->
-    <div class="grid grid-cols-4 gap-y-2 gap-x-4 text-xs text-white/80 w-full xl:w-4/5" style="margin-left: 45px; margin-top: 0;">
-      <div><span class="text-[#03D8B0] font-medium">A</span> - {{ currentLang === 'ar' ? 'سكني' : 'Residential' }}</div>
-      <div><span class="text-[#03D8B0] font-medium">B</span> - {{ currentLang === 'ar' ? 'بنية تحتية' : 'Infrastructure' }}</div>
-      <div><span class="text-[#03D8B0] font-medium">C</span> - {{ currentLang === 'ar' ? 'تجاري' : 'Commercial' }}</div>
-      <div><span class="text-[#03D8B0] font-medium">D</span> - {{ currentLang === 'ar' ? 'لوجستيات' : 'Prime Logistics' }}</div>
-      
-      <div><span class="text-[#03D8B0] font-medium">E</span> - {{ currentLang === 'ar' ? 'تجارة الإمارات' : 'Emirates Trading' }}</div>
-      <div><span class="text-[#03D8B0] font-medium">F</span> - {{ currentLang === 'ar' ? 'ألفا تك' : 'Alpha Tech' }}</div>
-      <div><span class="text-[#03D8B0] font-medium">G</span> - {{ currentLang === 'ar' ? 'مينا للتجزئة' : 'Mena Retail' }}</div>
-      <div><span class="text-[#03D8B0] font-medium">H</span> - {{ currentLang === 'ar' ? 'كريسنت' : 'Crescent' }}</div>
-      
-      <div><span class="text-[#03D8B0] font-medium">I</span> - {{ currentLang === 'ar' ? 'فيرتكس كورب' : 'Vertex Corp' }}</div>
-      <div><span class="text-[#03D8B0] font-medium">J</span> - {{ currentLang === 'ar' ? 'تجارة فيرتكس' : 'Vertex Trading' }}</div>
-      <div><span class="text-[#03D8B0] font-medium">K</span> - {{ currentLang === 'ar' ? 'المستقبل' : 'Future Projects' }}</div>
-      <div><span class="text-[#03D8B0] font-medium">L</span> - {{ currentLang === 'ar' ? 'المدينة' : 'City Center' }}</div>
+    <!-- Sub Legend mapping (A - J) -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-y-4 gap-x-2 text-[13px] text-white/90 w-full px-8 mt-2 relative z-10">
+      <div class="flex items-center gap-1.5 whitespace-nowrap">
+        <span class="text-[#03D8B0] font-semibold">A</span>
+        <span class="opacity-80">- {{ currentLang === 'ar' ? 'سكني' : 'Residential Project' }}</span>
+      </div>
+      <div class="flex items-center gap-1.5 whitespace-nowrap">
+        <span class="text-[#03D8B0] font-semibold">B</span>
+        <span class="opacity-80">- {{ currentLang === 'ar' ? 'بنية تحتية' : 'Infrastructure' }}</span>
+      </div>
+      <div class="flex items-center gap-1.5 whitespace-nowrap">
+        <span class="text-[#03D8B0] font-semibold">C</span>
+        <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجاري' : 'Commercial' }}</span>
+      </div>
+      <div class="flex items-center gap-1.5 whitespace-nowrap">
+        <span class="text-[#03D8B0] font-semibold">D</span>
+        <span class="opacity-80">- {{ currentLang === 'ar' ? 'لوجستيات' : 'Prime Logistics' }}</span>
+      </div>
+      <div class="flex items-center gap-1.5 whitespace-nowrap">
+        <span class="text-[#03D8B0] font-semibold">E</span>
+        <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجارة الإمارات' : 'Emirates Trading' }}</span>
+      </div>
+
+      <div class="flex items-center gap-1.5 whitespace-nowrap">
+        <span class="text-[#03D8B0] font-semibold">F</span>
+        <span class="opacity-80">- {{ currentLang === 'ar' ? 'ألفا تك' : 'Alpha Tech' }}</span>
+      </div>
+      <div class="flex items-center gap-1.5 whitespace-nowrap">
+        <span class="text-[#03D8B0] font-semibold">G</span>
+        <span class="opacity-80">- {{ currentLang === 'ar' ? 'مينا للتجزئة' : 'Mena Retail' }}</span>
+      </div>
+      <div class="flex items-center gap-1.5 whitespace-nowrap">
+        <span class="text-[#03D8B0] font-semibold">H</span>
+        <span class="opacity-80">- {{ currentLang === 'ar' ? 'كريسنت' : 'Crescent' }}</span>
+      </div>
+      <div class="flex items-center gap-1.5 whitespace-nowrap">
+        <span class="text-[#03D8B0] font-semibold">I</span>
+        <span class="opacity-80">- {{ currentLang === 'ar' ? 'فيرتكس كورب' : 'Vertex Corp' }}</span>
+      </div>
+      <div class="flex items-center gap-1.5 whitespace-nowrap">
+        <span class="text-[#03D8B0] font-semibold">J</span>
+        <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجارة فيرتكس' : 'Vertex Trading' }}</span>
+      </div>
     </div>
 
     <!-- Modal -->
@@ -108,21 +135,49 @@
                   />
                 </ClientOnly>
             </div>
-            <div class="grid grid-cols-4 gap-y-2 gap-x-4 text-sm text-white/80 w-full xl:w-4/5" style="margin-left: 45px; margin-top: 0;">
-                <div><span class="text-[#03D8B0] font-medium">A</span> - {{ currentLang === 'ar' ? 'سكني' : 'Residential' }}</div>
-                <div><span class="text-[#03D8B0] font-medium">B</span> - {{ currentLang === 'ar' ? 'بنية تحتية' : 'Infrastructure' }}</div>
-                <div><span class="text-[#03D8B0] font-medium">C</span> - {{ currentLang === 'ar' ? 'تجاري' : 'Commercial' }}</div>
-                <div><span class="text-[#03D8B0] font-medium">D</span> - {{ currentLang === 'ar' ? 'لوجستيات' : 'Prime Logistics' }}</div>
-                
-                <div><span class="text-[#03D8B0] font-medium">E</span> - {{ currentLang === 'ar' ? 'تجارة الإمارات' : 'Emirates Trading' }}</div>
-                <div><span class="text-[#03D8B0] font-medium">F</span> - {{ currentLang === 'ar' ? 'ألفا تك' : 'Alpha Tech' }}</div>
-                <div><span class="text-[#03D8B0] font-medium">G</span> - {{ currentLang === 'ar' ? 'مينا للتجزئة' : 'Mena Retail' }}</div>
-                <div><span class="text-[#03D8B0] font-medium">H</span> - {{ currentLang === 'ar' ? 'كريسنت' : 'Crescent' }}</div>
-                
-                <div><span class="text-[#03D8B0] font-medium">I</span> - {{ currentLang === 'ar' ? 'فيرتكس كورب' : 'Vertex Corp' }}</div>
-                <div><span class="text-[#03D8B0] font-medium">J</span> - {{ currentLang === 'ar' ? 'تجارة فيرتكس' : 'Vertex Trading' }}</div>
-                <div><span class="text-[#03D8B0] font-medium">K</span> - {{ currentLang === 'ar' ? 'المستقبل' : 'Future Projects' }}</div>
-                <div><span class="text-[#03D8B0] font-medium">L</span> - {{ currentLang === 'ar' ? 'المدينة' : 'City Center' }}</div>
+            <!-- Sub Legend mapping (A - J) -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-y-4 gap-x-2 text-[13px] text-white/90 w-full px-8 mt-2 relative z-10">
+                <div class="flex items-center gap-1.5 whitespace-nowrap">
+                  <span class="text-[#03D8B0] font-semibold">A</span>
+                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'سكني' : 'Residential Project' }}</span>
+                </div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap">
+                  <span class="text-[#03D8B0] font-semibold">B</span>
+                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'بنية تحتية' : 'Infrastructure' }}</span>
+                </div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap">
+                  <span class="text-[#03D8B0] font-semibold">C</span>
+                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجاري' : 'Commercial' }}</span>
+                </div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap">
+                  <span class="text-[#03D8B0] font-semibold">D</span>
+                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'لوجستيات' : 'Prime Logistics' }}</span>
+                </div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap">
+                  <span class="text-[#03D8B0] font-semibold">E</span>
+                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجارة الإمارات' : 'Emirates Trading' }}</span>
+                </div>
+
+                <div class="flex items-center gap-1.5 whitespace-nowrap">
+                  <span class="text-[#03D8B0] font-semibold">F</span>
+                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'ألفا تك' : 'Alpha Tech' }}</span>
+                </div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap">
+                  <span class="text-[#03D8B0] font-semibold">G</span>
+                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'مينا للتجزئة' : 'Mena Retail' }}</span>
+                </div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap">
+                  <span class="text-[#03D8B0] font-semibold">H</span>
+                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'كريسنت' : 'Crescent' }}</span>
+                </div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap">
+                  <span class="text-[#03D8B0] font-semibold">I</span>
+                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'فيرتكس كورب' : 'Vertex Corp' }}</span>
+                </div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap">
+                  <span class="text-[#03D8B0] font-semibold">J</span>
+                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجارة فيرتكس' : 'Vertex Trading' }}</span>
+                </div>
             </div>
           </div>
         </div>

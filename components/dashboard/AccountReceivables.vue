@@ -1,6 +1,11 @@
 <template>
-  <div class="rounded-[20px] p-5 shadow-sm h-[280px] group cursor-pointer hover:shadow-[0_0_10px_#00B794] transition-all duration-300 flex flex-col justify-between"
-    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
+  <div class="rounded-[20px] p-5 h-[280px] group cursor-pointer transition-all duration-300 flex flex-col justify-between border border-transparent"
+    :class="[
+      isDark ? 'bg-[#002e26]' : 'bg-white',
+      isHovered ? 'shadow-[0_0_15px_#00B794] border-[#00B794]/30' : 'shadow-sm hover:shadow-[0_0_10px_#00B794]'
+    ]"
+    @mouseenter="hoveredMenuItem = 'Account Receivables'"
+    @mouseleave="hoveredMenuItem = null">
     <!-- Header -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-2">
       <div class="flex items-center justify-between w-full md:w-auto">
@@ -27,7 +32,8 @@
         <img 
           src="/images/icons/right-hover-2.svg" 
           alt="Arrow" 
-          class="w-[35px] h-[35px] opacity-0 group-hover:opacity-100 transition-all duration-300"
+          class="w-[35px] h-[35px] transition-all duration-300"
+          :class="isHovered ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
         />
       </div>
     </div>
@@ -55,7 +61,7 @@
         <!-- Bars Container -->
         <div class="h-full pb-8 flex items-end justify-around gap-2 transition-opacity duration-700" :style="{ opacity: animProgress / 100 }">
           <div v-for="(month, mIndex) in months" :key="mIndex" class="flex-1 h-full flex items-end justify-center">
-            <div class="relative h-full flex items-end" style="width: 26px; max-width: 26px;">
+            <div class="relative h-full flex items-end w-[13px] max-w-[13px] md:w-[26px] md:max-w-[26px]">
               <!-- Stacked Bars -->
               <div 
                 v-for="(segment, sIndex) in getStackedSegments(mIndex)" 
@@ -84,13 +90,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
+const hoveredMenuItem = useState('hoveredMenuItem')
+const isHovered = computed(() => hoveredMenuItem.value === 'Account Receivables')
 
+const isMobile = ref(false);
 const animProgress = ref(0);
 
 onMounted(() => {
+  isMobile.value = window.innerWidth < 768;
+  window.addEventListener('resize', () => {
+    isMobile.value = window.innerWidth < 768;
+  });
+
   let startTimestamp: number | null = null;
   const duration = 1200;
   const animate = (timestamp: number) => {
@@ -132,8 +146,8 @@ const getStackedSegments = (monthIndex: number) => {
     const heightPercent = (value / maxValue) * 100 * (animProgress.value / 100);
     const currentBottom = cumulativePercent;
     
-    // Applying offsets: 1st: none, others: 20px
-    const offset = seriesIndex === 0 ? 0 : 20; 
+    // Applying offsets: 1st: none, others: based on device
+    const offset = seriesIndex === 0 ? 0 : (isMobile.value ? 13 : 20); 
     
     segments.push({
       height: seriesIndex === 0 ? `${heightPercent}%` : `calc(${heightPercent}% + ${offset}px)`,

@@ -14,7 +14,7 @@
             <div class="flex items-end gap-3 mt-0">
                 <h2 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-[#013E32]'">AED 3.45 M</h2>
                 <div class="flex flex-col items-end mb-1 ml-auto">
-                    <div class="flex items-center gap-1 text-[#00D9A4] font-medium">
+                    <div class="flex items-center gap-1 text-[#32c465] font-medium">
                         <img src="/images/icons/up.svg" alt="Up" class="w-4 h-4 object-contain">
                         <span class="text-sm">(+4.2%)</span>
                     </div>

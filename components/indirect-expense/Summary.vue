@@ -1,16 +1,19 @@
 <template>
   <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl"
-    :class="isDark ? 'bg-[#00141080]' : 'bg-white shadow-sm'">
+    :class="isDark ? 'bg-[#00141080]' : 'bg-white'">
     
     <div class="py-5 px-8 flex justify-between items-center">
-      <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
-        {{ currentLang === 'ar' ? 'ملخص المصروفات غير المباشرة' : 'Indirect Expense Summary' }}
-      </p>
-      <div class="flex gap-4 items-center">
-        <p class="text-[12px] font-normal" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
+      <div>
+        <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
+          {{ currentLang === 'ar' ? 'ملخص المصروفات غير المباشرة' : 'Indirect Expense Summary' }}
+        </p>
+        <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
           {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
         </p>
-        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon" class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100" @click="isModalOpen = true" />
+      </div>
+      <div class="flex items-center gap-3">
+        <img src="/images/icons/info.svg" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
+        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon" class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
       </div>
     </div>
 
@@ -21,7 +24,7 @@
           <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">
             <div class="flex items-center gap-1">
                 {{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}
-                <img src="/images/icons/edit-white.svg" alt="Link Icon" class="w-3 h-3 invert" />
+                <!-- <img src="/images/icons/edit-white.svg" alt="Link Icon" class="w-3 h-3 invert" /> -->
             </div>
           </th>
           <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'السنة الماضية' : 'Previous Year' }}</th>
@@ -32,10 +35,11 @@
       </thead>
       <tbody>
         <template v-for="(item, idx) in tableData" :key="idx">
-          <tr class="transition-all duration-500 border-b" 
+          <tr class="transition-all duration-500" 
             :class="[
+                !item.isTotal ? 'border-b' : '',
                 isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50',
-                item.isTotal ? (isDark ? 'bg-[#00D9A4]/20' : 'bg-[#6EFFA04D]') : ''
+                item.isTotal ? (isDark ? 'bg-[#00D9A4]/20' : 'bg-[#68E4C4]') : ''
             ]">
             <td class="px-8 py-5">
               <span class="font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
@@ -46,7 +50,7 @@
             <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]">
                 <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;" 
                     :class="item.variance >= 0 
-                    ? (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]') 
+                    ? (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#68E4C4] text-[#008864]') 
                     : (isDark ? 'bg-[#FB7554]/20 text-[#FF582F]' : 'bg-[#FB75544D] text-[#FF582F]')">
                     {{ item.variance >= 0 ? '+' : '' }}{{ item.variance }}%
                 </span>
@@ -70,7 +74,7 @@
 
     <Teleport to="body">
       <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-        <div class="w-full max-h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden" :class="isDark ? 'bg-[#002e26]' : 'bg-white'" style="max-width: 1500px; margin: 0 15px;">
+        <div class="w-full max-h-[90vh] rounded-xl flex flex-col overflow-hidden" :class="isDark ? 'bg-[#002e26]' : 'bg-white'" style="max-width: 1500px; margin: 0 15px;">
           <div class="flex justify-between items-center py-6 px-8 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
             <div>
               <p class="text-lg font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
@@ -99,10 +103,11 @@
               </thead>
               <tbody :class="isDark ? 'bg-[#00141080]' : 'bg-white'">
                 <template v-for="(item, idx) in tableData" :key="'modal-' + idx">
-                  <tr class="transition-all duration-500 border-b"
+                  <tr class="transition-all duration-500"
                     :class="[
+                        !item.isTotal ? 'border-b' : '',
                         isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50',
-                        item.isTotal ? (isDark ? 'bg-[#00D9A4]/20' : 'bg-[#6EFFA04D]') : ''
+                        item.isTotal ? (isDark ? 'bg-[#00D9A4]/20' : 'bg-[#68E4C4]') : ''
                     ]">
                     <td class="px-8 py-5">
                       <span class="font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
@@ -113,7 +118,7 @@
                     <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]">
                         <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;" 
                             :class="item.variance >= 0 
-                            ? (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]') 
+                            ? (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#68E4C4] text-[#008864]') 
                             : (isDark ? 'bg-[#FB7554]/20 text-[#FF582F]' : 'bg-[#FB75544D] text-[#FF582F]')">
                             {{ item.variance >= 0 ? '+' : '' }}{{ item.variance }}%
                         </span>

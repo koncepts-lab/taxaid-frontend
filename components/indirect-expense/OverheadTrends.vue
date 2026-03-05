@@ -20,9 +20,14 @@
                <span class="text-white">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
              </div>
              <img 
+               src="/images/icons/info-white.svg" 
+               alt="Info" 
+               class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+             />
+             <img 
                src="/images/icons/expand-white.svg" 
                alt="Expand" 
-               class="w-6 h-6 cursor-pointer hover:opacity-100"
+               class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity"
                @click="isModalOpen = true"
              />
       </div>
@@ -58,6 +63,11 @@
                   <span class="text-white">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
                 </div>
               </div>
+               <img 
+                src="/images/icons/info-white.svg" 
+                alt="Info" 
+                class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+              />
               <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                 <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
               </button>

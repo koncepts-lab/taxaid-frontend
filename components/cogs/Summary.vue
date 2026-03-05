@@ -21,7 +21,7 @@
           <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'تكلفة المبيعات' : 'COGS' }}</th>
           <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">
              {{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}
-             <img src="/images/icons/link-white.svg" class="inline-block w-4 h-4 ml-1 opacity-70" alt="" />
+             
           </th>
           <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }}</th>
           <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</th>
@@ -36,7 +36,7 @@
             <td class="px-8 py-5">
               <span class="font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
             </td>
-            <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] underline underline-offset-4 cursor-pointer" :class="isDark ? 'text-[#00FFBC]' : 'text-[#00C9A2]'">{{ item.currentYear }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]  underline-offset-4 cursor-pointer" :class="isDark ? 'text-[#00FFBC]' : 'text-[#00C9A2]'">{{ item.currentYear }}</td>
             <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-semibold" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.previousYear }}</td>
             <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-semibold" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.budget }}</td>
             <td class="px-6 py-5 text-right rtl:text-left">
