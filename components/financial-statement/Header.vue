@@ -3,7 +3,7 @@
         <div class="w-full">
             <div class="flex lg:items-center items-start justify-between lg:flex-row flex-col lg:gap-0 gap-4">
                 <div>
-                    <h1 class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-primary-450'">
+                    <h1 class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">
                         {{ currentLang === 'ar' ? 'تحليل القوائم المالية' : 'Financial Statement Analysis' }}
                     </h1>
                     <p class="text-sm mt-1" :class="isDark ? 'text-white/80' : 'text-black/59'">

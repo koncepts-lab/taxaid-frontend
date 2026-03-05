@@ -1,12 +1,12 @@
 <template>
     <div class="w-full overflow-x-auto no-scrollbar transition-all duration-500 rounded-b-3xl">
-        <div class="py-5 px-8 flex justify-between items-center">
+        <div class="py-4 md:py-5 px-4 md:px-8 flex flex-wrap justify-between items-center gap-2">
             <div>
                 <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص الإيرادات' : 'Revenue Summary' }}</p>
                 <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
             </div>
             <div class="flex items-center gap-3">
-                <img src="/images/icons/info.svg" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
+                <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
                 <img
                     :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'"
                     alt="Expand Icon"

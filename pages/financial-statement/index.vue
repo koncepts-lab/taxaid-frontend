@@ -1,9 +1,9 @@
 <template>
     <NuxtLayout name="dashboard">
-
+        <ParticleBackground />
         <UNotifications />
 
-        <div v-if="!isFullScreenChat" class="font-sans flex relative z-10"
+        <div v-if="!isFullScreenChat" class="h-screen font-sans flex overflow-hidden relative z-10"
             :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
             <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8"
                 :class="isChatOpen
