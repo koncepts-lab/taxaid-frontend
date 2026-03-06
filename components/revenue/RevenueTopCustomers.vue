@@ -2,25 +2,25 @@
   <div class="rounded-3xl p-8 h-full flex flex-col relative transition-all duration-500"
     :class="isDark ? 'bg-[#00141080] border-none shadow-none' : 'bg-white shadow-sm border border-gray-100'">
     <!-- Header -->
-    <div class="flex justify-between items-start mb-6">
+    <div class="flex flex-col lg:flex-row lg:justify-between items-start gap-4 lg:gap-0 mb-6 w-full z-10">
       <div class="flex flex-col">
         <h2 class="text-[16px] font-regular leading-tight" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'الإيرادات - أفضل 10 عملاء حسب القيمة' : 'Revenue - Top 10 Customers by value' }}</h2>
         <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
-      <div class="flex items-center gap-6">
-        <div class="flex items-center gap-4 text-[12px] font-regular">
+      <div class="flex flex-row items-center gap-4 lg:gap-6 w-full lg:w-auto justify-between lg:justify-end">
+        <div class="flex items-center gap-4 lg:gap-6 text-[12px] font-regular">
           <div class="flex items-center gap-2">
-            <div class="w-3 h-3 rounded-full bg-[#FF886A]"></div>
-            <span :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'نسبة تراكمي' : 'Cumulative %' }}</span>
+            <div class="w-3 h-3 shrink-0 rounded-full bg-[#FF886A]"></div>
+            <span :class="isDark ? 'text-white/60' : 'text-[#0000005C]'" class="whitespace-normal text-left">{{ currentLang === 'ar' ? 'نسبة تراكمي' : 'Cumulative %' }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <div class="w-3 h-3 rounded-full bg-[#04C18F]"></div>
-            <span :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
+            <div class="w-3 h-3 shrink-0 rounded-full bg-[#04C18F]"></div>
+            <span :class="isDark ? 'text-white/60' : 'text-[#0000005C]'" class="whitespace-normal text-left">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
           </div>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-4 lg:ml-4">
           <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
-          <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-6 h-6 cursor-pointer opacity-60" @click="isModalOpen = true" />
+          <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-6 h-6 cursor-pointer opacity-60 hidden lg:block" @click="isModalOpen = true" />
         </div>
       </div>
     </div>
@@ -150,8 +150,8 @@ const chartOptions = computed(() => ({
   },
   plotOptions: {
     bar: {
-      columnWidth: '39px',
-      borderRadius: 20,
+      columnWidth: '60%',
+      borderRadius: 8,
       borderRadiusApplication: 'around'
     }
   },
@@ -260,7 +260,55 @@ const chartOptions = computed(() => ({
         </div>
       `
     }
-  }
+  },
+  responsive: [
+    {
+      breakpoint: 640,
+      options: {
+        plotOptions: {
+          bar: {
+            columnWidth: '85%',
+            borderRadius: 5,
+          }
+        },
+        dataLabels: {
+          offsetY: -10,
+          style: {
+            fontSize: '9px'
+          }
+        },
+        xaxis: {
+          labels: {
+            style: {
+              fontSize: '10px'
+            }
+          }
+        },
+        yaxis: [
+          {
+            labels: {
+              style: {
+                fontSize: '10px'
+              },
+              offsetX: -5
+            }
+          },
+          {
+            opposite: true,
+            labels: {
+              style: {
+                fontSize: '10px'
+              },
+              offsetX: 5
+            }
+          }
+        ],
+        markers: {
+          size: 4
+        }
+      }
+    }
+  ]
 }))
 </script>
 

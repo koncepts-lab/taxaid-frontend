@@ -2,26 +2,25 @@
   <div class="revenue-trend-card rounded-[20px] p-8 text-white h-full flex flex-col relative overflow-hidden group cursor-pointer transition-all duration-300 shadow-md"
     :class="{ 'dark-mode': isDark }">
     <!-- Header -->
-    <div class="flex justify-between items-start mb-6 w-full z-10">
+    <div class="flex flex-col lg:flex-row lg:justify-between items-start gap-4 lg:gap-0 mb-6 w-full z-10">
       <div class="flex flex-col">
         <h2 class="text-[16px] font-regular leading-tight">{{ currentLang === 'ar' ? 'آخر 6 أشهر إلى السنة السابقة' : 'Last 6 months to Previous year' }}</h2>
         <p class="text-[12px] opacity-70 font-regular mt-1">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
-      <div class="flex items-center gap-6">
-        <!-- Custom Legend -->
-        <div class="flex items-center gap-6 text-[14px]">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 lg:gap-6 w-full lg:w-auto justify-between lg:justify-end">
+        <div class="flex items-center gap-4 lg:gap-6 text-[14px]">
           <div class="flex items-center gap-2">
-            <div class="w-3 h-3 rounded-full bg-[#FF582F]"></div>
-            <span class="opacity-90 text-[12px] font-regular">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }}</span>
+            <div class="w-3 h-3 shrink-0 rounded-full bg-[#FF582F]"></div>
+            <span class="opacity-90 text-[12px] font-regular whitespace-normal text-left">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <div class="w-3 h-3 rounded-full bg-[#00FFBC]"></div>
-            <span class="opacity-90 text-[12px] font-regular">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
+            <div class="w-3 h-3 shrink-0 rounded-full bg-[#00FFBC]"></div>
+            <span class="opacity-90 text-[12px] font-regular whitespace-normal text-left">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
           </div>
         </div>
-        <div class="flex items-center gap-4 ml-4">
+        <div class="flex items-center gap-4 lg:ml-4">
           <img src="/images/icons/info-white.svg" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
-          <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 hover:opacity-100 transition-opacity cursor-pointer" @click="isModalOpen = true" />
+          <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 hover:opacity-100 transition-opacity cursor-pointer hidden lg:block" @click="isModalOpen = true" />
         </div>
       </div>
     </div>

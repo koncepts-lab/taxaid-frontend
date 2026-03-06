@@ -1,10 +1,10 @@
 <template>
     <div class=" ">
         <div class="container mx-auto">
-            <div class="flex items-center justify-between">
+            <div class="flex lg:flex-row flex-col lg:items-center max-lg:gap-4 justify-between">
                 <!-- Title Section -->
                 <div>
-                    <h1 class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ currentLang === 'ar' ? 'تحليل الإيرادات' : 'Revenue Analysis' }}</h1>
+                    <h1 class="text-2xl font-medium" :class="isDark ? 'text-[#00FFBC]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'تحليل الإيرادات' : 'Revenue Analysis' }}</h1>
                     <p class="text-sm mt-1" :class="isDark ? 'text-white' : 'text-black/59'">{{ currentLang === 'ar' ? 'تتبع شامل للإيرادات والرؤى' : 'Comprehensive revenue tracking and insights' }}</p>
                 </div>
 
@@ -14,7 +14,7 @@
                     <div class="relative">
                         <button @click="showDateDropdown = !showDateDropdown"
                             class="flex items-center space-x-2 rtl:space-x-reverse px-4 h-[40px] rounded-lg border transition-colors"
-                            :class="isDark ? 'bg-[#002E26] border-[#03D8B0] text-white' : 'bg-white border-primary-100 text-black hover:bg-teal-50'">
+                            :class="isDark ? 'bg-[#002E26] border-[#03D8B0] text-white' : 'bg-white border-[#03D8B0] text-black hover:bg-teal-50'">
                             <svg class="w-4 h-4" :class="isDark ? 'text-[#03D8B0]' : 'text-black/50'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -30,7 +30,7 @@
                         <Transition name="dropdown">
                             <div v-if="showDateDropdown"
                                 class="absolute right-0 rtl:left-0 mt-2 border rounded-lg shadow-lg z-10 py-2 px-2 min-w-[160px]"
-                                :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-primary-100'">
+                                :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-[#03D8B0]'">
                                 <button v-for="period in periods" :key="period.en" @click="selectPeriod(period)"
                                     class="w-full text-left rtl:text-right px-4 py-3 font-normal text-sm rounded-lg transition-colors"
                                     :class="getDropdownItemClass(period)">
@@ -43,14 +43,14 @@
                     <!-- Reload Button -->
                     <button
                         class="w-[40px] h-[40px] flex items-center justify-center border rounded-lg transition-colors"
-                        :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-primary-100 hover:bg-gray-50'">
+                        :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-[#03D8B0] hover:bg-gray-50'">
                         <img :src="isDark ? '/images/icons/reload.svg' : '/images/icons/reload.svg'" alt="Reload Icon" class="w-5 h-5" :class="isDark ? 'invert' : ''" />
                     </button>
 
                     <!-- Export Button -->
                     <button
                         class="w-[40px] h-[40px] flex items-center justify-center border rounded-lg transition-colors"
-                        :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-primary-100 hover:bg-gray-50'">
+                        :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-[#03D8B0] hover:bg-gray-50'">
                         <img :src="isDark ? '/images/icons/export.svg' : '/images/icons/export.svg'" alt="Export Icon" class="w-5 h-5" :class="isDark ? 'invert' : ''" />
                     </button>
                 </div>
@@ -96,7 +96,7 @@ const getDropdownItemClass = (period) => {
     } else {
         return isSelected 
             ? 'bg-primary-700 text-black font-medium' 
-            : 'text-black hover:bg-primary-700'
+            : 'text-black hover:bg-teal-50'
     }
 }
 </script>

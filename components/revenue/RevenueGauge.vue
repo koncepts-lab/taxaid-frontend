@@ -9,7 +9,7 @@
       </div>
       <div class="flex items-center gap-3">
         <img src="/images/icons/info-white.svg" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
-        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 hover:opacity-100 transition-opacity cursor-pointer" @click="isModalOpen = true" />
+        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 hover:opacity-100 transition-opacity cursor-pointer hidden lg:block" @click="isModalOpen = true" />
       </div>
     </div>
 
@@ -65,32 +65,32 @@
 
     <!-- Legend (Dashboard Style) -->
     <div class="w-full grid grid-cols-3 gap-2 mt-[-90px] pt-6 border-t border-white/10">
-      <div class="flex flex-col items-center text-center">
-        <div class="flex items-center gap-2 mb-1">
-          <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: colors.lastYear }"></div>
-          <span class="text-[12px] whitespace-nowrap  font-light" >{{ currentLang === 'ar' ? 'العام الماضي' : 'Previous Year' }} ({{ lastYearPct }}%)</span>
+      <div class="flex flex-col items-center lg:text-center">
+        <div class="flex lg:items-center lg:justify-center items-normal gap-2 mb-1 min-h-[36px]">
+          <div class="w-2 h-2 lg:h-3 lg:w-3 rounded-full" :style="{ backgroundColor: colors.lastYear }"></div>
+          <span class="text-[12px] lg:whitespace-nowrap whitespace-normal font-light lg:text-center text-left">{{ currentLang === 'ar' ? 'العام الماضي' : 'Previous Year' }} ({{ lastYearPct }}%)</span>
         </div>
-        <div class="text-[18px] font-medium">
+        <div class="text-[18px] font-medium lg:text-center text-left">
           <template v-if="currentLang === 'ar'">0,8 مليون د.إ</template>
           <template v-else>AED 0.8M</template>
         </div>
       </div>
-      <div class="flex flex-col items-center text-center">
-        <div class="flex items-center gap-2 mb-1">
-          <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: colors.currentYear }"></div>
-          <span class="text-[12px] font-light whitespace-nowrap">{{ currentLang === 'ar' ? 'الحالي' : 'Current' }} ({{ Math.round(currentYearPct) }}%)</span>
+      <div class="flex flex-col items-center lg:text-center">
+        <div class="flex lg:items-center lg:justify-center items-normal gap-2 mb-1 min-h-[36px]">
+          <div class="w-2 h-2 lg:h-3 lg:w-3 rounded-full" :style="{ backgroundColor: colors.currentYear }"></div>
+          <span class="text-[12px] font-light lg:whitespace-nowrap whitespace-normal lg:text-center text-left">{{ currentLang === 'ar' ? 'الحالي' : 'Current' }} ({{ Math.round(currentYearPct) }}%)</span>
         </div>
-        <div class="text-[18px] font-medium">
+        <div class="text-[18px] font-medium lg:text-center text-left">
           <template v-if="currentLang === 'ar'">7,8 مليون د.إ</template>
           <template v-else>AED 7.8M</template>
         </div>
       </div>
-      <div class="flex flex-col items-center text-center">
-        <div class="flex items-center gap-2 mb-1">
-          <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: colors.balance }"></div>
-          <span class="text-[12px] font-light whitespace-nowrap">{{ currentLang === 'ar' ? 'المستهدف' : 'Target' }} (100%)</span>
+      <div class="flex flex-col items-center lg:text-center">
+        <div class="flex lg:items-center lg:justify-center items-normal gap-2 mb-1 min-h-[36px]">
+          <div class="w-2 h-2 lg:h-3 lg:w-3 rounded-full" :style="{ backgroundColor: colors.balance }"></div>
+          <span class="text-[12px] font-light lg:whitespace-nowrap whitespace-normal lg:text-center text-left">{{ currentLang === 'ar' ? 'المستهدف' : 'Target' }} (100%)</span>
         </div>
-        <div class="text-[18px] font-medium">
+        <div class="text-[18px] font-medium lg:text-center text-left">
           <template v-if="currentLang === 'ar'">8,5 مليون د.إ</template>
           <template v-else>AED 8.5M</template>
         </div>
