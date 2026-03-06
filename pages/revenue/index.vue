@@ -21,22 +21,22 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-                        <div class="h-[500px]">
+                        <div class="h-[410px] lg:h-[500px]">
                             <RevenueGauge />
                         </div>
-                        <div class="h-[500px]">
+                        <div class="h-[auto] lg:h-[500px]">
                             <RevenueByCategory />
                         </div>
                     </div>
 
                     <div class="mb-8">
-                        <div class="h-[420px]">
+                        <div class="h-[auto]">
                             <RevenueTrend />
                         </div>
                     </div>
 
                     <div>
-                        <div class="h-[600px]">
+                        <div>
                             <RevenueTopCustomers />
                         </div>
                     </div>

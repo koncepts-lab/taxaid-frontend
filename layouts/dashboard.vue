@@ -11,8 +11,8 @@
         currentLang === 'ar' ? 'lg:mr-[90px] lg:ml-0' : 'lg:ml-[90px] lg:mr-0',
         isDark ? 'bg-transparent' : 'bg-[#F3F4F6]'
       ]">
-        <div class="relative z-10 px-[15px] min-h-[calc(100vh-64px)] flex flex-col">
-          <div class="flex-1">
+        <div class="relative z-10 min-h-full flex flex-col">
+          <div class="flex-1 px-[15px]">
             <slot />
           </div>
           <CommonFooter />
