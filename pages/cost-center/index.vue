@@ -1,11 +1,10 @@
-
 <template>
   <NuxtLayout name="dashboard">
 
 
     <!-- 1. Container fills the screen height and prevents page-level scrolling -->
-    <div v-if="!isFullScreenChat" class="h-screen font-sans flex overflow-hidden relative z-10"
-      :class="{ '': isDark }" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+    <div v-if="!isFullScreenChat" class="h-screen font-sans flex overflow-hidden relative z-10" :class="{ '': isDark }"
+      :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
       <!-- 2. LEFT AREA: Resizes dynamically -->
       <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" :class="isChatOpen
@@ -20,7 +19,7 @@
           </div>
 
           <div>
-            <div class="h-[620px]">
+            <div class="lg:h-155 h-fit ">
               <CostCenterOverallRevenueVsCost />
             </div>
           </div>
@@ -33,11 +32,11 @@
         currentLang === 'ar' ? 'left-0' : 'right-0',
         'lg:top-1/2 lg:-translate-y-1/2 lg:bottom-auto lg:mt-5',
         isChatOpen
-            ? 'bottom-0 w-full translate-y-0'
-            : 'bottom-24 w-[80px]',
+          ? 'bottom-0 w-full translate-y-0'
+          : 'bottom-24 w-[80px]',
         isChatOpen ? 'lg:2xl:w-120 lg:w-100' : 'lg:w-[80px]'
       ]">
-        <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = true" />
+        <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = false" />
       </aside>
     </div>
 
@@ -62,7 +61,7 @@ import CostCenterHeader from '~/components/cost-center/Header.vue'
 import CostCenterSummary from '~/components/cost-center/Summary.vue'
 import CostCenterOverallRevenueVsCost from '~/components/cost-center/OverallRevenueVsCost.vue'
 
-const isChatOpen = ref(true)
+const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
