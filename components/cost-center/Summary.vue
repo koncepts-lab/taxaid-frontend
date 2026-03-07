@@ -15,71 +15,74 @@
       </div>
     </div>
 
-    <table class="w-full text-left rtl:text-right border-collapse overflow-auto max-w-600">
-      <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
-        <tr>
-          <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'الإيرادات' :
-            'Revenue' }}</th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ?
-            'تكلف المبيعات' : 'COGS' }}</th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ?
-            'المصروفات غير المباشرة' : 'Indirect Exp.' }}</th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'الربح' :
-            'Profit' }}</th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'هامش الربح'
-            : 'Profit Margin' }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <template v-for="(item, idx) in tableData" :key="idx">
-          <tr class="transition-all duration-500 border-b cursor-pointer" @mouseenter="onRowEnter"
-            @mouseleave="onRowLeave" @click="goToDetail(item)"
-            :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50'">
-            <td class="px-8 py-5">
-              <span class="font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang ===
-                'ar' ? item.labelAr : item.label }}</span>
-            </td>
+    <!-- 1. Wrap the table in a div with overflow-x-auto -->
+    <div class="w-full overflow-x-auto border rounded-lg no-scrollbar">
+      <!-- 2. Add a min-width (e.g., min-w-[800px]) to force horizontal space -->
+      <table class="w-full text-left rtl:text-right border-collapse min-w-[850px]">
+        <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+          <tr>
+            <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
+            <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ?
+              'الإيرادات' : 'Revenue' }}</th>
+            <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ?
+              'تكلف المبيعات' : 'COGS' }}</th>
+            <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ?
+              'المصروفات غير المباشرة' : 'Indirect Exp.' }}</th>
+            <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'الربح' :
+              'Profit' }}</th>
+            <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ?
+              'هامش الربح' : 'Profit Margin' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template v-for="(item, idx) in tableData" :key="idx">
+            <tr class="transition-all duration-500 border-b"
+              :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50'">
+              <td class="px-8 py-5">
+                <span class="font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang
+                  === 'ar' ? item.labelAr : item.label }}</span>
+              </td>
+              <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+                :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.revenue }}</td>
+              <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+                :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.cogs }}</td>
+              <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+                :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.indirectExp }}</td>
+              <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+                :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.profit }}</td>
+              <td class="px-6 py-5 text-left rtl:text-right">
+                <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;" :class="item.margin >= 0
+                  ? (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]')
+                  : (isDark ? 'bg-[#FB7554]/20 text-[#FF582F]' : 'bg-[#FB75544D] text-[#FF582F]')">
+                  {{ item.margin >= 0 ? '+' : '' }}{{ item.margin }}%
+                </span>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+        <tfoot>
+          <tr :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
+            <td class="px-8 py-5 font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
+              currentLang ===
+                'ar' ? 'إجمالي تكلفة المشروع' : 'Total Project Cost' }}</td>
             <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.revenue }}</td>
+              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">17,500,000</td>
             <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.cogs }}</td>
+              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">12,800,000</td>
             <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.indirectExp }}</td>
+              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">1,030,000</td>
             <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.profit }}</td>
+              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">3,670,000</td>
             <td class="px-6 py-5 text-left rtl:text-right">
-              <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;" :class="item.margin >= 0
-                ? (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]')
-                : (isDark ? 'bg-[#FB7554]/20 text-[#FF582F]' : 'bg-[#FB75544D] text-[#FF582F]')">
-                {{ item.margin >= 0 ? '+' : '' }}{{ item.margin }}%
+              <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;"
+                :class="isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]'">
+                +21.0%
               </span>
             </td>
           </tr>
-        </template>
-      </tbody>
-      <tfoot>
-        <tr :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
-          <td class="px-8 py-5 font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang
-            ===
-            'ar' ? 'إجمالي تكلفة المشروع' : 'Total Project Cost' }}</td>
-          <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-            :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">17,500,000</td>
-          <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-            :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">12,800,000</td>
-          <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-            :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">1,030,000</td>
-          <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-            :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">3,670,000</td>
-          <td class="px-6 py-5 text-left rtl:text-right">
-            <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;"
-              :class="isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]'">
-              +21.0%
-            </span>
-          </td>
-        </tr>
-      </tfoot>
-    </table>
+        </tfoot>
+      </table>
+    </div>
 
     <Teleport to="body">
       <div v-if="isModalOpen"
@@ -125,8 +128,7 @@
               </thead>
               <tbody class="bg-white">
                 <template v-for="(item, idx) in tableData" :key="'modal-' + idx">
-                  <tr class="transition-all duration-500 border-b border-[#F2F2F2] hover:bg-gray-50 cursor-pointer"
-                    @mouseenter="onRowEnter" @mouseleave="onRowLeave" @click="goToDetail(item)">
+                  <tr class="transition-all duration-500 border-b border-[#F2F2F2] hover:bg-gray-50">
                     <td class="px-8 py-5">
                       <span class="font-normal text-[14px] text-[#333333]">{{ currentLang === 'ar' ? item.labelAr :
                         item.label }}</span>
@@ -134,11 +136,11 @@
                     <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px] text-[#1A1A1A]">{{
                       item.revenue }}</td>
                     <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px] text-[#1A1A1A]">{{ item.cogs
-                      }}</td>
+                    }}</td>
                     <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px] text-[#1A1A1A]">{{
                       item.indirectExp }}</td>
                     <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px] text-[#1A1A1A]">{{ item.profit
-                      }}</td>
+                    }}</td>
                     <td class="px-6 py-5 text-left rtl:text-right">
                       <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;"
                         :class="item.margin >= 0 ? 'bg-[#6EFFA04D] text-[#008864]' : 'bg-[#FB75544D] text-[#FF582F]'">
@@ -173,21 +175,6 @@
         </div>
       </div>
     </Teleport>
-
-    <!-- Row Hover Tooltip -->
-    <Teleport to="body">
-      <div v-if="hoveredRowRect" :style="{
-        top: hoveredRowRect.top - 12 + 'px',
-        left: hoveredRowRect.left + hoveredRowRect.width / 2 + 'px',
-        transform: 'translate(-50%, -100%)'
-      }"
-        class="fixed z-[99999] px-4 py-2 text-[14px] font-normal rounded-2xl whitespace-nowrap shadow-xl pointer-events-none transition-opacity duration-300"
-        :class="isDark ? 'bg-white text-black' : 'bg-[#003228] text-white'">
-        {{ currentLang === 'ar' ? 'انقر لعرض التفاصيل' : 'Click to view details' }}
-        <div class="absolute left-1/2 -translate-x-1/2 -bottom-1.5 border-x-[6px] border-x-transparent border-t-[6px]"
-          :class="isDark ? 'border-t-white' : 'border-t-[#003228]'"></div>
-      </div>
-    </Teleport>
   </div>
 </template>
 
@@ -196,22 +183,8 @@ import { ref } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
-const router = useRouter()
 
 const isModalOpen = ref(false)
-const hoveredRowRect = ref(null)
-
-const onRowEnter = (e) => {
-  hoveredRowRect.value = e.currentTarget.getBoundingClientRect()
-}
-
-const onRowLeave = () => {
-  hoveredRowRect.value = null
-}
-
-const goToDetail = (item) => {
-  router.push('/cost-center/project-detail')
-}
 
 const tableData = ref([
   {
