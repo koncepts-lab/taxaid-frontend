@@ -1,13 +1,14 @@
 <template>
   <div
-    class="top-customers-card rounded-3xl p-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-md"
-    :style="isDark ? 'background: #015A49CC !important' : ''"
-  >
+    class="top-customers-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-auto shadow-md"
+    :style="isDark ? 'background: #015A49CC !important' : ''">
     <!-- Header -->
-    <div class="flex justify-between items-start mb-6 text-white relative z-10">
+    <div class="flex lg:flex-row flex-col max-lg:gap-2 justify-between items-start mb-6 text-white relative z-10">
       <div class="flex flex-col">
-        <h2 class="text-[16px] font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات القبض' : 'Top Account Receivable customer wise' }}</h2>
-        <p class="text-[12px] font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+        <h2 class="text-[16px] font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات القبض' :
+          'Top Account Receivable customer wise' }}</h2>
+        <p class="text-[12px] font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بمليون درهم' :
+          'Values in AED Million' }}</p>
       </div>
       <div class="flex items-center gap-6">
         <div class="flex items-center gap-6 text-[14px] font-regular">
@@ -20,25 +21,22 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
           </div>
         </div>
-        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
+        <img src="/images/icons/expand-white.svg" alt="Expand"
+          class="max-lg:hidden w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity"
+          @click="isModalOpen = true" />
       </div>
     </div>
 
     <!-- Chart -->
-    <div class="flex-1 w-full min-h-[350px] relative z-10">
+    <div class="flex-1 w-full min-h-[350px] min-w-175 relative z-10 overflow-auto">
       <ClientOnly>
-        <apexchart
-          type="line"
-          height="100%"
-          :options="chartOptions"
-          :series="series"
-        />
+        <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
     </div>
 
     <!-- Bottom Legend Grid -->
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-y-4 gap-x-6 mt-0 text-white relative z-10">
-      <div v-for="item in customers" :key="item.id" class="flex items-center gap-2 whitespace-nowrap overflow-hidden">
+    <div class="grid grid-cols-5 gap-y-4 gap-x-6 mt-0 text-white relative z-10 min-w-175">
+      <div v-for="item in customers" :key="item.id" class="flex items-center gap-2 whitespace-nowrap ">
         <span class="text-[14px] font-semibold text-[#04C18F]">{{ item.id }}</span>
         <span class="text-[14px] font-regular truncate opacity-90">- {{ item.displayName }}</span>
       </div>
@@ -46,13 +44,19 @@
 
     <!-- Modal -->
     <Teleport to="body">
-      <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden top-customers-card" style="max-width: 1500px; margin: 0 15px;">
+      <div v-if="isModalOpen"
+        class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+        :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden top-customers-card"
+          style="max-width: 1500px; margin: 0 15px;">
           <!-- Modal Header -->
-          <div class="flex justify-between items-center py-6 px-8 border-b border-white/10 text-white relative z-10 w-full">
+          <div
+            class="flex justify-between items-center py-6 px-8 border-b border-white/10 text-white relative z-10 w-full">
             <div class="flex flex-col">
-              <h2 class="text-lg font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات القبض' : 'Top Account Receivable customer wise' }}</h2>
-              <p class="text-xs font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+              <h2 class="text-lg font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات القبض' :
+                'Top Account Receivable customer wise' }}</h2>
+              <p class="text-xs font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بمليون درهم' :
+                'Values in AED Million' }}</p>
             </div>
             <div class="flex items-center gap-6">
               <div class="flex items-center gap-6 text-[14px] font-regular">
@@ -65,27 +69,25 @@
                   <span class="opacity-90">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
                 </div>
               </div>
-              <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
-                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+              <button @click="isModalOpen = false"
+                class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
+                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert"
+                  :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
               </button>
             </div>
           </div>
-          
+
           <!-- Modal Body (Chart) -->
-          <div class="flex-1 w-full p-8 relative z-10 min-h-[350px]">
+          <div class="flex-1 w-full p-8 relative z-10 min-h-[350px] o">
             <ClientOnly>
-              <apexchart
-                type="line"
-                height="100%"
-                :options="chartOptions"
-                :series="series"
-              />
+              <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
             </ClientOnly>
           </div>
 
           <!-- Bottom Legend Grid -->
-          <div class="grid grid-cols-2 lg:grid-cols-5 gap-y-4 gap-x-6 mt-0 text-white relative z-10 px-8 pb-8">
-            <div v-for="item in customers" :key="'modal-' + item.id" class="flex items-center gap-2 whitespace-nowrap overflow-hidden">
+          <div class="grid grid-cols-5 gap-y-4 gap-x-6 mt-0 text-white relative z-10 px-8 pb-8">
+            <div v-for="item in customers" :key="'modal-' + item.id"
+              class="flex items-center gap-2 whitespace-nowrap overflow-hidden">
               <span class="text-[14px] font-semibold text-[#04C18F]">{{ item.id }}</span>
               <span class="text-[14px] font-regular truncate opacity-90">- {{ item.displayName }}</span>
             </div>
@@ -176,7 +178,7 @@ const chartOptions = computed(() => ({
   },
   xaxis: {
     categories: customersData.map(c => c.id),
-    axisBorder: { 
+    axisBorder: {
       show: true,
       color: '#00403333',
       height: 1,
@@ -199,7 +201,7 @@ const chartOptions = computed(() => ({
       min: 0,
       max: 5,
       tickAmount: 5,
-      axisBorder: { 
+      axisBorder: {
         show: true,
         color: '#00403333',
         width: 1,
@@ -239,12 +241,12 @@ const chartOptions = computed(() => ({
     shared: true,
     intersect: false,
     theme: 'light',
-    custom: function({ series, seriesIndex, dataPointIndex, w }) {
+    custom: function ({ series, seriesIndex, dataPointIndex, w }) {
       const customer = customersData[dataPointIndex]
       const customerName = currentLang.value === 'ar' ? customer.nameAr : customer.name
       const bal = series[0][dataPointIndex]
       const cum = series[1][dataPointIndex]
-      
+
       const balLabel = currentLang.value === 'ar' ? 'رصيد حسابات القبض' : 'AR Balance'
       const totLabel = currentLang.value === 'ar' ? '% من الإجمالي' : '% of Total AR'
       const cumLabel = currentLang.value === 'ar' ? 'تراكمي %' : 'Cumulative %'
