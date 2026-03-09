@@ -1,10 +1,9 @@
 <template>
   <div
-    class="last-6-months-card rounded-3xl p-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-md"
-    :style="isDark ? 'background: #00141080 !important' : ''"
-  >
+    class="last-6-months-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-auto shadow-md"
+    :style="isDark ? 'background: #00141080 !important' : ''">
     <!-- Header -->
-    <div class="flex justify-between items-start mb-4 text-white relative z-10">
+    <div class="flex  lg:flex-row flex-col max-lg:gap-4 justify-between items-start mb-4 text-white relative z-10">
       <div class="flex flex-col">
         <h2 class="text-[16px] font-medium leading-tight">
           {{ currentLang === 'ar' ? 'آخر 6 أشهر مقارنة بالعام الماضي' : 'Last 6 months to Previous year' }}
@@ -25,27 +24,28 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
           </div>
         </div>
-        <img src="/images/icons/info-white.svg" alt="Info" class="w-5 h-5 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" />
-        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
+        <img src="/images/icons/info-white.svg" alt="Info"
+          class="w-5 h-5 cursor-pointer opacity-80 hover:opacity-100 transition-opacity max-lg:hidden" />
+        <img src="/images/icons/expand-white.svg" alt="Expand"
+          class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity max-lg:hidden"
+          @click="isModalOpen = true" />
       </div>
     </div>
 
     <!-- Chart -->
-    <div class="flex-1 w-full min-h-[320px] relative z-10 mt-6">
+    <div class="flex-1 w-full min-h-[320px] relative z-10 mt-6 min-w-175">
       <ClientOnly>
-        <apexchart
-          type="line"
-          height="100%"
-          :options="chartOptions"
-          :series="series"
-        />
+        <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
     </div>
 
     <!-- Modal -->
     <Teleport to="body">
-      <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden last-6-months-card" style="max-width: 1500px; margin: 0 15px;">
+      <div v-if="isModalOpen"
+        class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+        :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden last-6-months-card"
+          style="max-width: 1500px; margin: 0 15px;">
           <!-- Modal Header -->
           <div class="flex justify-between items-center py-6 px-8 border-b border-white/10 text-white">
             <div class="flex flex-col">
@@ -68,21 +68,18 @@
                   <span class="opacity-90">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
                 </div>
               </div>
-              <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
-                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+              <button @click="isModalOpen = false"
+                class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
+                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert"
+                  :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
               </button>
             </div>
           </div>
-          
+
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10">
             <ClientOnly>
-              <apexchart
-                type="line"
-                height="100%"
-                :options="chartOptions"
-                :series="series"
-              />
+              <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
             </ClientOnly>
           </div>
         </div>
@@ -108,7 +105,7 @@ const months = [
 ]
 
 const previousYearData = [2.4, 3.0, 1.8, 4.7, 1.0, 2.6]
-const currentYearData  = [0.7, 1.0, 3.5, 4.6, 2.0, 4.2] 
+const currentYearData = [0.7, 1.0, 3.5, 4.6, 2.0, 4.2]
 
 const series = ref([
   {
@@ -160,7 +157,7 @@ const chartOptions = computed(() => ({
     min: 0,
     max: 5,
     tickAmount: 5,
-    axisBorder: { 
+    axisBorder: {
       show: true,
       color: '#004033',
       width: 1
@@ -187,20 +184,20 @@ const chartOptions = computed(() => ({
     shared: true,
     intersect: false,
     theme: 'light',
-    custom: function({ series: s, dataPointIndex }) {
+    custom: function ({ series: s, dataPointIndex }) {
       const cat = months[dataPointIndex]
       const catLabel = currentLang.value === 'ar' ? cat.ar : cat.en
       const pyVal = s[0][dataPointIndex]
       const cyVal = s[1][dataPointIndex]
-      
+
       const decline = (((cyVal - pyVal) / pyVal) * 100).toFixed(1)
       const declineColor = decline < 0 ? '#FB7554' : '#03D8B0'
       const declinePrefix = decline > 0 ? '+' : ''
       const declineText = currentLang.value === 'ar' ? 'التغيير' : 'Decline'
-      
+
       const cyLabel = currentLang.value === 'ar' ? 'السنة الحالية' : 'Current Year'
       const pyLabel = currentLang.value === 'ar' ? 'السنة السابقة' : 'Previous Year'
-      
+
       return `
         <div class="custom-tooltip-line shadow-xl rounded-2xl" style="background:#ffffff; padding: 12px 18px; border:none; color:#1A1A1A;">
           <div style="font-size:13px; margin-bottom:10px; font-weight:600;">${catLabel}</div>
@@ -231,9 +228,10 @@ const chartOptions = computed(() => ({
 :deep(.apexcharts-canvas) {
   margin: 0 auto;
 }
+
 :deep(.apexcharts-tooltip) {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 </style>

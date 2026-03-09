@@ -1,10 +1,9 @@
 <template>
   <div
-    class="aging-graph-card rounded-3xl p-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-md"
-    :style="isDark ? 'background: #00141080 !important' : ''"
-  >
+    class="aging-graph-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-auto shadow-md "
+    :style="isDark ? 'background: #00141080 !important' : ''">
     <!-- Header -->
-    <div class="flex justify-between items-start mb-4 text-white relative z-10">
+    <div class="flex lg:flex-row flex-col max-lg:gap-2 justify-between items-start mb-4 text-white relative z-10">
       <div class="flex flex-col">
         <h2 class="text-[16px] font-regular leading-tight">
           {{ currentLang === 'ar' ? 'الرسم البياني حسب التقادم' : 'Graph based on aging' }}
@@ -15,7 +14,7 @@
       </div>
       <div class="flex items-center gap-6">
         <!-- Custom Legend -->
-        <div class="flex items-center gap-6 text-[13px] font-regular">
+        <div class="flex items-center lg:gap-6 gap-3 lg:text-[13px] text-xs font-regular">
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full bg-[#FB7554]"></div>
             <span class="opacity-90">{{ currentLang === 'ar' ? 'نسبة تراكمية' : 'Cumulative %' }}</span>
@@ -29,26 +28,26 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
           </div>
         </div>
-        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
+        <img src="/images/icons/expand-white.svg" alt="Expand"
+          class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity max-lg:hidden"
+          @click="isModalOpen = true" />
       </div>
     </div>
 
     <!-- Chart -->
-    <div class="flex-1 w-full min-h-[320px] relative z-10">
+    <div class="flex-1 w-full min-h-[320px] relative z-10 min-w-175 overflow-x-auto">
       <ClientOnly>
-        <apexchart
-          type="line"
-          height="100%"
-          :options="chartOptions"
-          :series="series"
-        />
+        <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
     </div>
 
     <!-- Modal -->
     <Teleport to="body">
-      <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden aging-graph-card" style="max-width: 1500px; margin: 0 15px;">
+      <div v-if="isModalOpen"
+        class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+        :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden aging-graph-card"
+          style="max-width: 1500px; margin: 0 15px;">
           <!-- Modal Header -->
           <div class="flex justify-between items-center py-6 px-8 border-b border-white/10 text-white">
             <div class="flex flex-col">
@@ -75,21 +74,18 @@
                   <span class="opacity-90">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
                 </div>
               </div>
-              <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
-                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+              <button @click="isModalOpen = false"
+                class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
+                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert"
+                  :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
               </button>
             </div>
           </div>
-          
+
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10">
             <ClientOnly>
-              <apexchart
-                type="line"
-                height="100%"
-                :options="chartOptions"
-                :series="series"
-              />
+              <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
             </ClientOnly>
           </div>
         </div>
@@ -106,16 +102,16 @@ const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
 const agingCategories = [
-  { en: 'Overdue >30 Days',  ar: 'متأخر أكثر من 30 يوم' },
+  { en: 'Overdue >30 Days', ar: 'متأخر أكثر من 30 يوم' },
   { en: 'Overdue 30-60 Days', ar: 'متأخر 30-60 يوم' },
   { en: 'Overdue 60-90 Days', ar: 'متأخر 60-90 يوم' },
-  { en: 'Overdue <90 Days',  ar: 'متأخر أقل من 90 يوم' }
+  { en: 'Overdue <90 Days', ar: 'متأخر أقل من 90 يوم' }
 ]
 
 const previousYearData = [2.7, 1.9, 2.8, 2.8]
-const currentYearData  = [4.0, 4.7, 2.8, 4.3]
-const cumulativeData   = [45, 65, 75, 88]
-const percentOfTotal   = [16, 16, 10, 15]
+const currentYearData = [4.0, 4.7, 2.8, 4.3]
+const cumulativeData = [45, 65, 75, 88]
+const percentOfTotal = [16, 16, 10, 15]
 
 const series = ref([
   {
@@ -247,16 +243,16 @@ const chartOptions = computed(() => ({
   tooltip: {
     shared: true,
     intersect: false,
-    custom: function({ series: s, dataPointIndex }) {
+    custom: function ({ series: s, dataPointIndex }) {
       const cat = agingCategories[dataPointIndex]
       const catLabel = currentLang.value === 'ar' ? cat.ar : cat.en
       const curYear = s[1][dataPointIndex]
-      const cumPct  = s[2][dataPointIndex]
-      const pctTot  = percentOfTotal[dataPointIndex]
+      const cumPct = s[2][dataPointIndex]
+      const pctTot = percentOfTotal[dataPointIndex]
 
-      const cyrLabel  = currentLang.value === 'ar' ? 'السنة الحالية'   : 'Current year'
-      const totLabel  = currentLang.value === 'ar' ? '% من إجمالي AR'  : '% of Total AR'
-      const cumLabel  = currentLang.value === 'ar' ? 'التراكمي %'      : 'Cumulative %'
+      const cyrLabel = currentLang.value === 'ar' ? 'السنة الحالية' : 'Current year'
+      const totLabel = currentLang.value === 'ar' ? '% من إجمالي AR' : '% of Total AR'
+      const cumLabel = currentLang.value === 'ar' ? 'التراكمي %' : 'Cumulative %'
 
       return `
         <div class="custom-tooltip shadow-xl">
@@ -299,7 +295,7 @@ const chartOptions = computed(() => ({
   font-family: 'Noto Sans Arabic', sans-serif;
   min-width: 210px;
   border: none !important;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.15) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15) !important;
 }
 
 :deep(.tooltip-header) {
