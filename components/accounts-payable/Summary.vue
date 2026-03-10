@@ -19,8 +19,9 @@
       <table class="w-full text-left rtl:text-right border-collapse min-w-175">
         <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
           <tr>
-            <th class="px-8 py-5 font-normal text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
-            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">
+            <th class="lg:px-8 px-4 py-5 font-normal text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars'
+            }}</th>
+            <th class="lg:px-6 px-4 py-5 font-normal text-right rtl:text-left text-[14px]">
               <div class="flex items-center justify-end rtl:justify-start gap-2">
                 {{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}
                 <img src="/images/icons/edit-white.svg" class="w-[21px] h-auto" v-if="!isDark" />
@@ -33,15 +34,18 @@
                 </svg>
               </div>
             </th>
-            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '>30' :
+            <th class="lg:px-6 px-4 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ?
+              '>30' :
               '>30'
             }}</th>
-            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '30-60' :
+            <th class="lg:px-6 px-4 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ?
+              '30-60' :
               '30-60' }}</th>
-            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '60-90' :
+            <th class="lg:px-6 px-4 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ?
+              '60-90' :
               '60-90' }}</th>
-            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '<90'
-              : '<90' }}</th>
+            <th class="lg:px-6 px-4 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ?
+              ' < 90' : ' < 90' }}</th>
           </tr>
         </thead>
         <tbody>
@@ -49,7 +53,7 @@
             <!-- Main Group Row -->
             <tr class="transition-all duration-500 border-b border-white/5"
               :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'">
-              <td class="px-8 py-5">
+              <td class="lg:px-8 px-4 py-5">
                 <div class="flex items-center gap-2 cursor-pointer" @click="toggleGroup(gIdx)">
                   <span class="font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang
                     === 'ar' ? group.labelAr : group.label }}</span>
@@ -61,15 +65,15 @@
                   </svg>
                 </div>
               </td>
-              <td class="px-6 py-5 text-right rtl:text-left font-semibold text-[14px]"
+              <td class="lg:px-6 px-4 py-5 text-right rtl:text-left font-semibold text-[14px]"
                 :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">{{ group.total }}</td>
-              <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium"
+              <td class="lg:px-6 px-4 py-5 text-right rtl:text-left text-[14px] font-medium"
                 :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age30 }}</td>
-              <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium"
+              <td class="lg:px-6 px-4 py-5 text-right rtl:text-left text-[14px] font-medium"
                 :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age3060 }}</td>
-              <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium"
+              <td class="lg:px-6 px-4 py-5 text-right rtl:text-left text-[14px] font-medium"
                 :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age6090 }}</td>
-              <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium"
+              <td class="lg:px-6 px-4 py-5 text-right rtl:text-left text-[14px] font-medium"
                 :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age90plus }}</td>
             </tr>
 
@@ -133,7 +137,7 @@
         </tbody>
         <tfoot>
           <tr :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'" class="transition-all duration-500">
-            <td class="px-8 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
+            <td class="lg:px-8 px-4 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
               currentLang
                 ===
                 'ar' ? 'الإجمالي' : 'Total' }}</td>
