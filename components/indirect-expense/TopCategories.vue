@@ -2,25 +2,24 @@
   <div class="w-full h-full rounded-[30px] p-8 relative flex flex-col overflow-hidden"
     :style="{ background: 'linear-gradient(90.74deg, #008C68 9.63%, #007053 50.16%, #00523D 91.47%)' }">
     <!-- Header Area -->
-    <div class="flex justify-between items-start flex-shrink-0 mb-4 px-2">
-      <div>
+    <div class="flex flex-col lg:flex-row justify-between items-start flex-shrink-0 mb-4 px-2">
+      <div class="mb-4 lg:mb-0">
         <h2 class="text-[22px] font-medium text-white">{{ currentLang === 'ar' ? 'أفضل 5 فئات للمصروفات غير المباشرة' : 'Top 5 Indirect Expense Categories' }}</h2>
         <p class="text-[16px] font-normal mt-1 text-white/60">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 lg:gap-4 w-full lg:w-auto justify-between lg:justify-end">
         <img src="/images/icons/info-white.svg" alt="Info" class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" />
-        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
+        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity hidden lg:block" @click="isModalOpen = true" />
       </div>
     </div>
 
     <!-- Chart Area -->
-    <div class="flex-1 flex flex-col lg:flex-row items-center justify-center gap-4">
+    <div class="flex-1 flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-12">
       <!-- Chart Container -->
-      <div class="relative w-auto flex items-center justify-center">
+      <div class="relative w-full lg:w-auto flex items-center justify-center min-h-[300px] lg:min-h-0">
         <!-- Background decorative circles -->
-
         
-        <div class="w-[380px] h-[380px] relative z-10 flex items-center justify-center flex-shrink-0">
+        <div class="w-[280px] h-[280px] lg:w-[380px] lg:h-[380px] relative z-10 flex items-center justify-center flex-shrink-0">
           <svg viewBox="-110 -110 220 220" class="w-full h-full transform -rotate-42 transition-all duration-700 ease-out" :style="{ opacity: animProgress / 100 }">
             <circle cx="0" cy="0" r="100" fill="#F7FBFD1A" />
             <g v-for="(slice, index) in computedSlices" :key="index">
@@ -55,12 +54,12 @@
       </div>
       
       <!-- Right Legend Box -->
-      <div class="w-full lg:w-[45%] h-full flex items-center">
-        <div class="w-full max-w-[320px] py-8 px-8 rounded-[35px] bg-[#1A8065] flex flex-col gap-6">
+      <div class="w-full lg:w-[45%] flex items-center justify-center">
+        <div class="w-full max-w-[320px] py-6 lg:py-8 px-6 lg:px-8 rounded-[35px] bg-[#1A8065] flex flex-col gap-4 lg:gap-6">
           <div v-for="(label, index) in labels" :key="index" 
             class="flex items-center gap-4">
             <div class="w-[15px] h-[15px] rounded-full flex-shrink-0" :style="{ backgroundColor: colors[index] }"></div>
-            <span class="text-white text-[14px] font-normal tracking-[0.5px]">{{ currentLang === 'ar' ? labelsAr[index] : label }} ({{ series[index] }}%)</span>
+            <span class="text-white text-[13px] lg:text-[14px] font-normal tracking-[0.5px]">{{ currentLang === 'ar' ? labelsAr[index] : label }} ({{ series[index] }}%)</span>
           </div>
         </div>
       </div>

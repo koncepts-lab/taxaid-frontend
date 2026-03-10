@@ -25,13 +25,13 @@
           </div>
 
           <div class="grid grid-cols-1 gap-8 mb-8">
-            <div class="h-[450px]">
+            <div class="h-auto lg:h-[450px]">
               <IndirectExpenseOverheadTrends />
             </div>
           </div>
 
           <div class="grid grid-cols-1 gap-8">
-            <div class="h-[450px]">
+            <div class="h-auto lg:h-[450px]">
               <IndirectExpenseOverheadVsRevenue />
             </div>
           </div>

@@ -23,13 +23,13 @@
                     </div>
 
                     <div class="mb-8">
-                        <div class="h-[420px]">
+                        <div class="h-[auto] lg:h-[420px]">
                             <CashFlowChart />
                         </div>
                     </div>
 
                     <div>
-                        <div class="h-[420px]">
+                        <div class="h-[auto] lg:h-[420px]">
                             <CashFlowInflowOutflow />
                         </div>
                     </div>

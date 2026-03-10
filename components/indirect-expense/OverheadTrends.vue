@@ -4,32 +4,36 @@
     <!-- Header Area -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center flex-shrink-0">
        <!-- Title -->
-      <div class="mb-2">
+      <div class="mb-4 lg:mb-2">
         <h2 class="text-[16px] font-regular text-white">{{ currentLang === 'ar' ? 'اتحاهات النفقات العامة مع السنة السابقة' : 'Overhead Trends with Previous year' }}</h2>
         <p class="text-[12px] font-regular mt-1 text-[#FFFFFFCF]">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
 
       <!-- Legend & Expand Icon -->
-      <div class="flex items-center gap-4 text-xs font-medium">
-             <div class="flex items-center gap-1.5">
-               <span class="w-2.5 h-2.5 rounded-full bg-[#FF7B5F]"></span>
-               <span class="text-white">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }}</span>
+      <div class="flex items-center gap-3 lg:gap-4 text-[10px] lg:text-xs font-medium w-full lg:w-auto justify-between lg:justify-end">
+             <div class="flex items-center gap-3 lg:gap-4">
+               <div class="flex items-center gap-1.5">
+                 <span class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#FF7B5F]"></span>
+                 <span class="text-white">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }}</span>
+               </div>
+               <div class="flex items-center gap-1.5">
+                 <span class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#00FFBC]"></span>
+                 <span class="text-white">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
+               </div>
              </div>
-             <div class="flex items-center gap-1.5">
-               <span class="w-2.5 h-2.5 rounded-full bg-[#00FFBC]"></span>
-               <span class="text-white">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
+             <div class="flex items-center gap-3 lg:gap-4">
+               <img 
+                 src="/images/icons/info-white.svg" 
+                 alt="Info" 
+                 class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+               />
+               <img 
+                 src="/images/icons/expand-white.svg" 
+                 alt="Expand" 
+                 class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity hidden lg:block"
+                 @click="isModalOpen = true"
+               />
              </div>
-             <img 
-               src="/images/icons/info-white.svg" 
-               alt="Info" 
-               class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
-             />
-             <img 
-               src="/images/icons/expand-white.svg" 
-               alt="Expand" 
-               class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity"
-               @click="isModalOpen = true"
-             />
       </div>
     </div>
 
@@ -174,7 +178,38 @@ const chartOptions = computed(() => ({
         '<div class="text-[#333] text-[14px]">' + diffLabel + '<span class="font-bold text-[#FF582F]"> ' + diff + '%</span></div>' +
         '</div>'
     }
-  }
+  },
+  responsive: [
+    {
+      breakpoint: 640,
+      options: {
+        xaxis: {
+          labels: {
+            style: {
+              fontSize: '11px',
+              colors: '#FFFFFF'
+            }
+          }
+        },
+        yaxis: {
+          labels: {
+            formatter: (value: number) => Math.abs(value).toFixed(0) + ' M',
+            style: {
+              fontSize: '11px',
+              colors: '#FFFFFF'
+            }
+          },
+          axisBorder: {
+            show: true,
+            color: 'rgba(255, 255, 255, 0.3)',
+            width: 1,
+            offsetX: -2,
+            offsetY: -2
+          }
+        }
+      }
+    }
+  ]
 }));
 </script>
 

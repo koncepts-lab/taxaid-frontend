@@ -21,19 +21,19 @@
           </div>
 
           <div class="mb-8">
-            <div class="h-[600px]">
+            <div class="h-auto lg:h-[600px]">
               <AccountsReceivableTopCustomers />
             </div>
           </div>
 
           <div class="mb-8">
-            <div class="h-[420px]">
+            <div class="h-auto lg:h-[420px]">
               <AccountsReceivableHistoricalMovement />
             </div>
           </div>
 
           <div>
-            <div class="h-[440px]">
+            <div class="h-auto lg:h-[440px]">
               <AccountsReceivableAgingGraph />
             </div>
           </div>

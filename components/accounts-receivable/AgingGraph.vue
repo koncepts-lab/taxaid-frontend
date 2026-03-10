@@ -4,7 +4,7 @@
     :style="isDark ? 'background: #00141080 !important' : ''"
   >
     <!-- Header -->
-    <div class="flex justify-between items-start mb-4 text-white relative z-10">
+    <div class="flex flex-col lg:flex-row justify-between items-start mb-4 text-white relative z-10 gap-4">
       <div class="flex flex-col">
         <h2 class="text-[16px] font-regular leading-tight">
           {{ currentLang === 'ar' ? 'الرسم البياني حسب التقادم' : 'Graph based on aging' }}
@@ -13,23 +13,23 @@
           {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
         </p>
       </div>
-      <div class="flex items-center gap-6">
+      <div class="flex items-center gap-3 lg:gap-6 w-full lg:w-auto justify-between lg:justify-end">
         <!-- Custom Legend -->
-        <div class="flex items-center gap-6 text-[13px] font-regular">
+        <div class="flex items-center gap-3 lg:gap-6 text-[10px] lg:text-[13px] font-regular">
           <div class="flex items-center gap-2">
-            <div class="w-3 h-3 rounded-full bg-[#FB7554]"></div>
+            <div class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#FB7554]"></div>
             <span class="opacity-90 leading-normal">{{ currentLang === 'ar' ? 'نسبة تراكمية' : 'Cumulative %' }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <div class="w-3 h-3 rounded-full bg-[#FFC107]"></div>
+            <div class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#FFC107]"></div>
             <span class="opacity-90 leading-normal">{{ currentLang === 'ar' ? 'السنة الماضية' : 'Previous Year' }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <div class="w-3 h-3 rounded-full bg-[#04C18F]"></div>
+            <div class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#04C18F]"></div>
             <span class="opacity-90 leading-normal">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
           </div>
         </div>
-        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
+        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity hidden lg:block" @click="isModalOpen = true" />
       </div>
     </div>
 
@@ -278,7 +278,64 @@ const chartOptions = computed(() => ({
         </div>
       `
     }
-  }
+  },
+  responsive: [
+    {
+      breakpoint: 640,
+      options: {
+        plotOptions: {
+          bar: {
+            columnWidth: '45%'
+          }
+        },
+        xaxis: {
+          labels: {
+            style: {
+              fontSize: '11px',
+              colors: '#FFFFFFBF'
+            }
+          }
+        },
+        yaxis: [
+          {
+            labels: {
+              formatter: (val) => Math.abs(val) === 0 ? '0' : Math.abs(val) + 'M',
+              style: {
+                fontSize: '11px',
+                colors: '#FFFFFFBF'
+              }
+            },
+            axisBorder: {
+              show: true,
+              color: 'rgba(255, 255, 255, 0.3)',
+              width: 1,
+              offsetX: -2,
+              offsetY: -2
+            }
+          },
+          {
+            show: false
+          },
+          {
+            opposite: true,
+            labels: {
+              style: {
+                fontSize: '11px',
+                colors: '#FFFFFFBF'
+              }
+            },
+            axisBorder: {
+              show: true,
+              color: 'rgba(255, 255, 255, 0.3)',
+              width: 1,
+              offsetX: 2,
+              offsetY: -2
+            }
+          }
+        ]
+      }
+    }
+  ]
 }))
 </script>
 

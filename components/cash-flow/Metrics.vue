@@ -1,7 +1,7 @@
 <template>
-    <div class="flex flex-col xl:flex-row gap-6 mb-8 items-end"> 
+    <div class="flex flex-col xl:flex-row gap-6 mb-8 items-stretch xl:items-end w-full"> 
         <!-- Cash in Hand Card -->
-        <div class="flex-1 rounded-2xl p-6 relative overflow-hidden transition-all duration-300 group hover:shadow-lg"
+        <div class="w-full xl:flex-1 rounded-2xl p-6 relative overflow-hidden transition-all duration-300 group hover:shadow-lg"
             :class="isDark ? 'bg-[#003A2ECC]' : 'bg-[#fff] text-black'">
             
             <div class="flex justify-between items-start mb-2">
@@ -26,7 +26,7 @@
             <div class="absolute inset-0 border pointer-events-none opacity-100" :class="[isDark ? 'border-[#04C18F]' : 'border-2 border-[#00D9A4]', isCompressed ? 'rounded-[15px]' : 'rounded-3xl']"></div>
         </div>
 
-        <div class="flex-1 p-6 relative overflow-hidden transition-all duration-300 group hover:shadow-lg"
+        <div class="w-full xl:flex-1 p-6 relative overflow-hidden transition-all duration-300 group hover:shadow-lg"
             :class="[isDark ? 'bg-[#003A2ECC]' : 'bg-[#fff] text-black', isCompressed ? 'rounded-[15px]' : 'rounded-3xl']">
             
             <div class="flex justify-between items-start mb-2">

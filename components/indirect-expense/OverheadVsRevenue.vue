@@ -4,32 +4,36 @@
     <!-- Header Area -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center flex-shrink-0">
        <!-- Title -->
-      <div class="mb-2">
+      <div class="mb-4 lg:mb-2">
         <h2 class="text-[16px] font-medium" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang === 'ar' ? 'النفقات العامة مقابل الإيرادات' : 'Overhead vs Revenue' }}</h2>
         <p class="text-[12px] font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#333333BF]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
 
       <!-- Legend & Expand Icon -->
-      <div class="flex items-center gap-4 text-xs font-medium">
-             <div class="flex items-center gap-1.5">
-               <span class="w-2.5 h-2.5 rounded-full bg-[#FFBB00]"></span>
-               <span :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang === 'ar' ? 'النفقات العامة' : 'Overhead' }}</span>
+      <div class="flex items-center gap-3 lg:gap-4 text-[10px] lg:text-xs font-medium w-full lg:w-auto justify-between lg:justify-end">
+             <div class="flex items-center gap-3 lg:gap-4">
+               <div class="flex items-center gap-1.5">
+                 <span class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#FFBB00]"></span>
+                 <span :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang === 'ar' ? 'النفقات العامة' : 'Overhead' }}</span>
+               </div>
+               <div class="flex items-center gap-1.5">
+                 <span class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#007965]"></span>
+                 <span :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang === 'ar' ? 'الإيرادات' : 'Revenue' }}</span>
+               </div>
              </div>
-             <div class="flex items-center gap-1.5">
-               <span class="w-2.5 h-2.5 rounded-full bg-[#007965]"></span>
-               <span :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang === 'ar' ? 'الإيرادات' : 'Revenue' }}</span>
+             <div class="flex items-center gap-3 lg:gap-4">
+               <img 
+                 :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" 
+                 alt="Info" 
+                 class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+               />
+               <img 
+                 :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" 
+                 alt="Expand" 
+                 class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity hidden lg:block"
+                 @click="isModalOpen = true"
+               />
              </div>
-             <img 
-               :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" 
-               alt="Info" 
-               class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
-             />
-             <img 
-               :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" 
-               alt="Expand" 
-               class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
-               @click="isModalOpen = true"
-             />
       </div>
     </div>
 
@@ -181,7 +185,44 @@ const chartOptions = computed(() => ({
         '<div class="text-[#333] text-[14px]">' + ratioLabel + '<span class="font-bold text-[#007965]"> ' + ratio + '%</span></div>' +
         '</div>'
     }
-  }
+  },
+  responsive: [
+    {
+      breakpoint: 640,
+      options: {
+        plotOptions: {
+          bar: {
+            columnWidth: '45%',
+            borderRadius: 4
+          }
+        },
+        xaxis: {
+          labels: {
+            style: {
+              fontSize: '11px',
+              colors: isDark.value ? '#FFFFFF' : '#333333'
+            }
+          }
+        },
+        yaxis: {
+          labels: {
+            formatter: (value: number) => Math.abs(value).toFixed(0) + ' M',
+            style: {
+              fontSize: '11px',
+              colors: isDark.value ? '#FFFFFF' : '#333333'
+            }
+          },
+          axisBorder: {
+            show: true,
+            color: isDark.value ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+            width: 1,
+            offsetX: -2,
+            offsetY: -2
+          }
+        }
+      }
+    }
+  ]
 }));
 </script>
 
