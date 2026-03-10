@@ -9,7 +9,7 @@
     <!-- MAIN ONBOARDING INTERFACE -->
     
     <!-- LANGUAGE TOGGLE -->
-    <div class="absolute top-6 z-50" :class="isRtl ? 'left-6' : 'right-6'">
+    <div class="fixed top-4 z-50" :class="isRtl ? 'left-4 md:left-8' : 'right-4 md:right-8'">
        <LanguageToggle v-model="currentLanguage" />
     </div>
 
@@ -17,7 +17,7 @@
       <div
         v-if="!isFinished"
         key="onboarding"
-        class="relative z-10 w-full max-w-[1400px] grid grid-cols-1 lg:grid-cols-2 gap-8 items-center"
+        class="relative z-10 w-full max-w-[1400px] grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center"
         :class="{ 'content-loaded': pageLoaded }"
       >
         <!-- LEFT COLUMN (Visual Preview) -->
@@ -28,7 +28,15 @@
           <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
             <canvas ref="leftParticleCanvas" class="w-[500px] h-[500px] opacity-70"></canvas>
           </div>
-          <img src="/images/left-image.png" class="relative z-10 w-full max-w-[420px]" alt="Dashboard Preview" />
+          <video 
+  src="/images/left-image.webm" 
+  class="relative z-10 w-full max-w-[420px]"
+  autoplay 
+  loop 
+  muted 
+  playsinline
+>
+</video>
         </div>
 
         <!-- RIGHT COLUMN (Question Box) -->
@@ -38,14 +46,14 @@
               <div class="flex flex-col h-full">
                 
                 <!-- TOP BAR -->
-                <div class="flex justify-between items-center mb-8">
-                  <img src="/images/logo-white.png" class="w-full max-w-[140px] h-auto" alt="Logo" />
-                  <div class="flex items-center gap-3 text-[#04C18F]/70 select-none">
-                    <button class="top-prev-btn" :class="{ disabled: !canGoMainPrevious }" :disabled="!canGoMainPrevious" @click="handleMainPrevious()">
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6 lg:mb-10">
+                  <img src="/images/logo-white.png" class="w-28 md:w-32 lg:w-36 h-auto" alt="Logo" />
+                  <div class="flex items-center gap-2 md:gap-3 text-[#04C18F]/70 select-none">
+                    <button class="top-prev-btn text-sm md:text-base" :class="{ disabled: !canGoMainPrevious }" :disabled="!canGoMainPrevious" @click="handleMainPrevious()">
                       <span v-if="!isRtl">‹</span> {{ t.prev }} <span v-if="isRtl">›</span>
                     </button>
                     <span class="opacity-30">|</span>
-                    <span class="text-[#04C18F] font-medium text-[18px]">{{ step }}/11</span>
+                    <span class="text-[#04C18F] font-medium text-base md:text-lg">{{ step }}/11</span>
                   </div>
                 </div>
 
@@ -188,14 +196,17 @@
         <div class="absolute inset-0 pointer-events-none">
            <canvas ref="successParticleCanvas" class="w-full h-full opacity-60"></canvas>
         </div>
-        <div class="relative mb-10 flex items-center justify-center">
-          <div class="absolute w-[240px] h-[240px] md:w-[380px] md:h-[380px] bg-[#00B794D1] rounded-full blur-[90px] animate-pulse-slow"></div>
-          <img :src="avatarSrc" class="relative z-10 w-32 h-32 md:w-44 md:h-44 object-contain drop-shadow-[0_0_30px_rgba(4,193,143,0.5)]" alt="Success Icon" />
+        
+        <div class="relative mb-8 md:mb-12 flex items-center justify-center">
+          <div class="absolute w-[200px] h-[200px] md:w-[380px] md:h-[380px] bg-[#00B794D1] rounded-full blur-[70px] md:blur-[90px] animate-pulse-slow"></div>
+          <img :src="avatarSrc" class="relative z-10 w-28 h-28 md:w-44 md:h-44 object-contain drop-shadow-[0_0_30px_rgba(4,193,143,0.5)]" alt="Success Icon" />
         </div>
-        <h2 class="relative z-10 text-white text-xl md:text-2xl font-light leading-relaxed max-w-2xl mb-12">
+        
+        <h2 class="relative z-10 text-white text-lg md:text-2xl font-light leading-relaxed max-w-2xl mb-10 md:mb-14 px-4">
           {{ t.successTitle }}
         </h2>
-        <button class="relative z-10 image-next-btn !max-w-[320px] !h-14 !text-xl" @click="goToDashboard()">
+        
+        <button class="relative z-10 image-next-btn !max-w-[280px] md:!max-w-[320px] !h-12 md:!h-14 !text-lg md:!text-xl" @click="goToDashboard()">
           {{ t.goDashboard }} 
           <span class="font-bold mx-1" v-if="!isRtl">→</span>
           <span class="font-bold mx-1" v-if="isRtl">←</span>
@@ -563,23 +574,38 @@ function goToDashboard() { window.location.href = '/dashboard' }
 
 /* QUESTION BOX - RESPONSIVE */
 .question-box { 
-  width: 100%; max-width: 550px; 
-  min-height: 50vh; /* Allow it to be smaller on mobile */
-  padding: 24px; /* Reduced padding for mobile */
-  border-radius: 30px; /* Reduced radius for mobile */
-  background: radial-gradient(ellipse at top left, rgba(0, 88, 71, 0.3) 0%, rgba(0, 50, 43, 0.98) 100%); 
-  border: 1px solid rgba(1, 88, 71, 0.5); backdrop-filter: blur(60px); display: flex; flex-direction: column; 
-  margin: 0 auto; /* Center it */
+  width: 100%; max-width: 580px; 
+  min-height: auto; 
+  padding: 24px; 
+  border-radius: 24px; 
+  background: radial-gradient(ellipse at top left, rgba(0, 88, 71, 0.35) 0%, rgba(0, 40, 34, 0.98) 100%); 
+  border: 1px solid rgba(4, 193, 143, 0.15); 
+  backdrop-filter: blur(40px); 
+  -webkit-backdrop-filter: blur(40px);
+  display: flex; flex-direction: column; 
+  margin: 0 auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+.question-box::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, rgba(4, 193, 143, 0.3), transparent 40%, transparent 60%, rgba(4, 193, 143, 0.1));
+    border-radius: inherit;
+    z-index: -1;
+    pointer-events: none;
 }
 @media (min-width: 768px) {
-    .question-box { min-height: 600px; padding: 35px; border-radius: 45px; }
+    .question-box { min-height: 580px; padding: 36px; border-radius: 40px; }
 }
 @media (min-width: 1024px) { 
-    .question-box { min-height: 700px; padding: 45px; border-radius: 60px; margin: 0; } 
+    .question-box { min-height: 680px; padding: 48px; border-radius: 54px; margin: 0; } 
 }
 
-.step-title { color: #04C18F; font-size: 20px; font-weight: 500; line-height: 1.35; max-width: 480px; }
-@media (min-width: 1024px) { .step-title { font-size: 24px; } }
+.step-title { color: #04C18F; font-size: 1.25rem; font-weight: 500; line-height: 1.4; max-width: 480px; margin-bottom: 0.5rem; }
+@media (min-width: 768px) { .step-title { font-size: 1.5rem; } }
+@media (min-width: 1024px) { .step-title { font-size: 1.75rem; } }
 
 /* IMAGE STYLE: INPUTS */
 .image-input {
@@ -594,7 +620,7 @@ function goToDashboard() { window.location.href = '/dashboard' }
 .image-input:focus { border-color: #04C18F; background: rgba(255, 255, 255, 0.06); }
 
 /* PROGRESS BAR STYLES */
-.entity-progress-wrapper { position: relative; width: 100%; max-width: 320px; display: flex; align-items: center; }
+.entity-progress-wrapper { position: relative; width: 100%; max-width: 400px; display: flex; align-items: center; margin: 0 auto; }
 .progress-line-bg { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255, 255, 255, 0.1); z-index: 1; }
 .progress-line-fill { position: absolute; left: 0; height: 1px; background: #04C18F; z-index: 2; transition: width 0.5s ease; }
 .dots-container { position: relative; width: 100%; display: flex; justify-content: space-between; z-index: 3; }
@@ -614,17 +640,21 @@ function goToDashboard() { window.location.href = '/dashboard' }
 @media (min-width: 1024px) {
     .option-btn { padding: 16px 28px; font-size: 16px; }
 }
-.option-btn.active { border-color: #04C18F; background: rgba(4, 193, 143, 0.15); }
+.option-btn.active { border-color: #04C18F; background: rgba(4, 193, 143, 0.15); box-shadow: 0 0 20px rgba(4, 193, 143, 0.1); }
+.option-btn:hover:not(.active) { border-color: rgba(4, 193, 143, 0.4); background: rgba(255, 255, 255, 0.05); transform: translateX(4px); }
+[dir="rtl"] .option-btn:hover:not(.active) { transform: translateX(-4px); }
 
 /* CTA BUTTON */
 .image-next-btn {
     width: 100%; max-width: 100%; /* Full width on mobile */
     height: 50px; border-radius: 999px; color: white; font-weight: 600; font-size: 16px; border: none;
-    background: linear-gradient(90deg, #00C79F 0%, #0A6B59 100%); cursor: pointer; transition: 0.2s;
+    background: linear-gradient(90deg, #00C79F 0%, #0A6B59 100%); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 @media (min-width: 640px) {
     .image-next-btn { max-width: 240px; height: 54px; font-size: 18px; }
 }
+.image-next-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 199, 159, 0.4); filter: brightness(1.1); }
+.image-next-btn:active:not(:disabled) { transform: translateY(0); }
 .image-next-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .add-entity-pill { display: flex; align-items: center; padding: 10px 24px; border-radius: 999px; border: 1px solid #04C18F; background: rgba(4, 193, 143, 0.05); color: white; transition: 0.3s; }

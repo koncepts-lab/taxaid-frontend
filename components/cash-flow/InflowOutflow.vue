@@ -5,37 +5,41 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center flex-shrink-0">
       
        <!-- Title -->
-      <div class="mb-2">
+      <div class="mb-4 lg:mb-2">
         <h2 class="text-[16px] font-regular text-white">{{ currentLang === 'ar' ? 'التدفق الداخلي مقابل التدفق الخارجي' : 'Inflow vs Outflow' }}</h2>
         <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white' : 'text-[#FFFFFF5C]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
 
       <!-- Legend & Expand Icon -->
-      <div class="flex items-center gap-4 text-xs font-medium">
-             <div class="flex items-center gap-1.5">
-               <span class="w-3 h-3 rounded-full bg-[#FF7B5F]"></span>
-               <span class="text-white font-regular">{{ currentLang === 'ar' ? 'التدفق الخارجي' : 'Outflow' }}</span>
+      <div class="flex items-center gap-3 lg:gap-4 text-[10px] lg:text-xs font-medium w-full lg:w-auto justify-between lg:justify-end">
+             <div class="flex items-center gap-3 lg:gap-4">
+               <div class="flex items-center gap-1.5">
+                 <span class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#FF7B5F]"></span>
+                 <span class="text-white font-regular">{{ currentLang === 'ar' ? 'التدفق الخارجي' : 'Outflow' }}</span>
+               </div>
+               <div class="flex items-center gap-1.5">
+                 <span class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#00FFBC]"></span>
+                 <span class="text-white font-regular">{{ currentLang === 'ar' ? 'التدفق الداخلي' : 'Inflow' }}</span>
+               </div>
              </div>
-             <div class="flex items-center gap-1.5">
-               <span class="w-3 h-3 rounded-full bg-[#00FFBC]"></span>
-               <span class="text-white font-regular">{{ currentLang === 'ar' ? 'التدفق الداخلي' : 'Inflow' }}</span>
+             <div class="flex items-center gap-3 lg:gap-4">
+               <img 
+                 src="/images/icons/info-white.svg" 
+                 alt="Info" 
+                 class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+               />
+               <img 
+                 :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-white.svg'" 
+                 alt="Expand" 
+                 class="w-6 h-6 cursor-pointer hover:opacity-100 hidden lg:block"
+                 @click="isModalOpen = true"
+               />
              </div>
-             <img 
-               src="/images/icons/info-white.svg" 
-               alt="Info" 
-               class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
-             />
-             <img 
-               :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-white.svg'" 
-               alt="Expand" 
-               class="w-6 h-6 cursor-pointer hover:opacity-100"
-               @click="isModalOpen = true"
-             />
       </div>
     </div>
 
     <!-- Chart Area -->
-    <div class="flex-1 min-h-0 mt-0">
+    <div class="flex-1 min-h-[300px] lg:min-h-0 mt-0 lg:mt-0">
       <ClientOnly>
         <apexchart width="100%" height="100%" type="bar" :options="chartOptions" :series="chartSeries"></apexchart>
       </ClientOnly>
@@ -113,7 +117,7 @@ const chartOptions = computed(() => ({
   plotOptions: {
     bar: {
       horizontal: false,
-      columnWidth: '30px',
+      columnWidth: '50%',
       borderRadius: 5,
       borderRadiusApplication: 'end',
       borderRadiusWhenStacked: 'last',
@@ -190,7 +194,44 @@ const chartOptions = computed(() => ({
         '<div class="text-[12px]">' + netCashflowLabel + '<span class="font-semibold text-[#00A176]">+' + netPercentage + '%</span></div>' +
         '</div>'
     }
-  }
+  },
+  responsive: [
+    {
+      breakpoint: 640,
+      options: {
+        plotOptions: {
+          bar: {
+            columnWidth: '45%',
+            borderRadius: 4
+          }
+        },
+        xaxis: {
+          labels: {
+            style: {
+              fontSize: '11px',
+              colors: '#FFFFFF'
+            }
+          }
+        },
+        yaxis: {
+          labels: {
+            formatter: (value: number) => Math.abs(value).toFixed(0) + 'M',
+            style: {
+              fontSize: '11px',
+              colors: '#FFFFFF'
+            }
+          },
+          axisBorder: {
+            show: true,
+            color: 'rgba(255, 255, 255, 0.3)',
+            width: 1,
+            offsetX: -2,
+            offsetY: -2
+          }
+        }
+      }
+    }
+  ]
 }));
 </script>
 

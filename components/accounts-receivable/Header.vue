@@ -1,10 +1,10 @@
 <template>
     <div class=" ">
         <div class="container mx-auto">
-            <div class="flex items-center justify-between">
+            <div class="flex lg:flex-row flex-col lg:items-center max-lg:gap-4 justify-between">
                 <!-- Title Section -->
                 <div>
-                    <h1 class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ currentLang === 'ar' ? 'تحليل حسابات القبض' : 'Accounts Receivable Analysis' }}</h1>
+                    <h1 class="text-2xl font-medium" :class="isDark ? 'text-[#00FFBC]' : 'text-[#013E32]'">{{ currentLang === 'ar' ? 'تحليل حسابات القبض' : 'Accounts Receivable Analysis' }}</h1>
                     <p class="text-sm mt-1" :class="isDark ? 'text-white' : 'text-black/59'">{{ currentLang === 'ar' ? 'تتبع شامل لحسابات القبض ورؤى التقادم' : 'Comprehensive AR tracking and aging insights' }}</p>
                 </div>
 

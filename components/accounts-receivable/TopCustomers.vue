@@ -4,28 +4,28 @@
     :style="isDark ? 'background: #015A49CC !important' : ''"
   >
     <!-- Header -->
-    <div class="flex justify-between items-start mb-6 text-white relative z-10">
+    <div class="flex flex-col lg:flex-row justify-between items-start mb-6 text-white relative z-10 gap-4">
       <div class="flex flex-col">
         <h2 class="text-[16px] font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات القبض' : 'Top Account Receivable customer wise' }}</h2>
         <p class="text-[12px] font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
-      <div class="flex items-center gap-6">
-        <div class="flex items-center gap-6 text-[14px] font-regular leading-normal">
+      <div class="flex items-center gap-3 lg:gap-6 w-full lg:w-auto justify-between lg:justify-end">
+        <div class="flex items-center gap-3 lg:gap-6 text-[10px] lg:text-[14px] font-regular leading-normal">
           <div class="flex items-center gap-2">
-            <div class="w-3.5 h-3.5 rounded-full bg-[#FF886A]"></div>
+            <div class="w-2.5 h-2.5 lg:w-3.5 lg:h-3.5 rounded-full bg-[#FF886A]"></div>
             <span class="opacity-90">{{ currentLang === 'ar' ? 'نسبة تراكمي' : 'Cumulative %' }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <div class="w-3.5 h-3.5 rounded-full bg-[#04C18F]"></div>
+            <div class="w-2.5 h-2.5 lg:w-3.5 lg:h-3.5 rounded-full bg-[#04C18F]"></div>
             <span class="opacity-90">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
           </div>
         </div>
-        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
+        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity hidden lg:block" @click="isModalOpen = true" />
       </div>
     </div>
 
     <!-- Chart -->
-    <div class="flex-1 w-full min-h-[350px] relative z-10">
+    <div class="flex-1 w-full min-h-[300px] lg:min-h-[350px] relative z-10">
       <ClientOnly>
         <apexchart
           type="line"
@@ -37,10 +37,10 @@
     </div>
 
     <!-- Bottom Legend Grid -->
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-y-4 gap-x-6 mt-0 text-white relative z-10">
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-y-3 lg:gap-y-4 gap-x-4 lg:gap-x-6 mt-0 text-white relative z-10 text-[12px] lg:text-[14px]">
       <div v-for="item in customers" :key="item.id" class="flex items-center gap-2 whitespace-nowrap overflow-hidden">
-        <span class="text-[14px] font-semibold text-[#04C18F]">{{ item.id }}</span>
-        <span class="text-[14px] font-regular truncate opacity-90">- {{ item.displayName }}</span>
+        <span class="font-semibold text-[#04C18F]">{{ item.id }}</span>
+        <span class="font-regular truncate opacity-90">- {{ item.displayName }}</span>
       </div>
     </div>
 
@@ -269,8 +269,62 @@ const chartOptions = computed(() => ({
         </div>
       `
     }
-  }
-}))
+  },
+  responsive: [
+    {
+      breakpoint: 640,
+      options: {
+        plotOptions: {
+          bar: {
+            columnWidth: '45%'
+          }
+        },
+        xaxis: {
+          labels: {
+            style: {
+              fontSize: '11px',
+              colors: '#FFFFFF'
+            }
+          }
+        },
+        yaxis: [
+          {
+            labels: {
+              formatter: (val) => Math.abs(val) === 0 ? '0' : Math.abs(val) + 'M',
+              style: {
+                fontSize: '11px',
+                colors: '#FFFFFF'
+              }
+            },
+            axisBorder: {
+              show: true,
+              color: 'rgba(255, 255, 255, 0.3)',
+              width: 1,
+              offsetX: -2,
+              offsetY: -2
+            }
+          },
+          {
+            opposite: true,
+            labels: {
+              style: {
+                fontSize: '11px',
+                colors: '#FFFFFF'
+              }
+            },
+            axisBorder: {
+              show: true,
+              color: 'rgba(255, 255, 255, 0.3)',
+              width: 1,
+              offsetX: 2,
+              offsetY: -2
+            }
+          }
+        ]
+      }
+    }
+  ]
+}));
 </script>
 
 <style scoped>

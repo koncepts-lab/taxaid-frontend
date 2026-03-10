@@ -2,7 +2,7 @@
   <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl"
     :class="isDark ? 'bg-[#00141080]' : 'bg-white'">
     
-    <div class="py-5 px-8 flex justify-between items-center">
+    <div class="lg:px-8 px-4 py-5 flex justify-between items-center text-left rtl:text-right">
       <div>
         <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
           {{ currentLang === 'ar' ? 'ملخص المصروفات غير المباشرة' : 'Indirect Expense Summary' }}
@@ -12,27 +12,27 @@
         </p>
       </div>
       <div class="flex items-center gap-3">
-        <img src="/images/icons/info.svg" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
-        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon" class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
+        <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
+        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon" class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity hidden lg:block" @click="isModalOpen = true" />
       </div>
     </div>
 
-    <table class="w-full text-left rtl:text-right border-collapse">
-      <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
-        <tr>
-          <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'المصروفات غير المباشرة' : 'Indirect Expenses' }}</th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">
-            <div class="flex items-center gap-1">
-                {{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}
-                <!-- <img src="/images/icons/edit-white.svg" alt="Link Icon" class="w-3 h-3 invert" /> -->
-            </div>
-          </th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'السنة الماضية' : 'Previous Year' }}</th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'الانحراف' : 'Variance' }}</th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'المتبقي من السنة' : 'Year to Go' }}</th>
-        </tr>
-      </thead>
+    <div class="w-full overflow-x-auto no-scrollbar">
+      <table class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px]">
+        <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+          <tr>
+            <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'المصروفات غير المباشرة' : 'Indirect Expenses' }}</th>
+            <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">
+              <div class="flex items-center gap-1">
+                  {{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}
+              </div>
+            </th>
+            <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'السنة الماضية' : 'Previous Year' }}</th>
+            <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</th>
+            <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'الانحراف' : 'Variance' }}</th>
+            <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'المتبقي من السنة' : 'Year to Go' }}</th>
+          </tr>
+        </thead>
       <tbody>
         <template v-for="(item, idx) in tableData" :key="idx">
           <tr class="transition-all duration-500" 
@@ -71,6 +71,7 @@
         </template>
       </tbody>
     </table>
+  </div>
 
     <Teleport to="body">
       <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">

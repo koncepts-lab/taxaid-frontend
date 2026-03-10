@@ -4,20 +4,20 @@
     :style="isDark ? 'background: #00141080 !important' : ''"
   >
     <!-- Header -->
-    <div class="flex justify-between items-start mb-6 relative z-10 w-full" :class="isDark ? 'text-white' : 'text-[#000000]'">
+    <div class="flex flex-col lg:flex-row justify-between items-start mb-6 relative z-10 w-full gap-4" :class="isDark ? 'text-white' : 'text-[#000000]'">
       <div class="flex flex-col">
         <h2 class="text-[17px] font-medium leading-tight">{{ currentLang === 'ar' ? 'حركة حسابات القبض التاريخية' : 'AR balances historical movement' }}</h2>
         <p class="text-[13px] font-normal mt-1" :class="isDark ? 'text-white opacity-60' : 'text-[#00000091]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
-      <div class="flex items-center gap-6">
+      <div class="flex items-center gap-3 lg:gap-6 w-full lg:w-auto justify-between lg:justify-end">
         <!-- Custom Legend -->
-        <div class="flex items-center gap-6 text-[14px]">
+        <div class="flex items-center gap-3 lg:gap-6 text-[10px] lg:text-[14px]">
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full bg-[#FB7554]"></div>
-            <span class="text-[13px] font-normal leading-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
+            <span class="text-[11px] lg:text-[13px] font-normal leading-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
           </div>
         </div>
-        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-6 h-6 opacity-70 hover:opacity-100 transition-opacity cursor-pointer ml-4" @click="isModalOpen = true" />
+        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-6 h-6 opacity-70 hover:opacity-100 transition-opacity cursor-pointer ml-4 hidden lg:block" @click="isModalOpen = true" />
       </div>
     </div>
 
@@ -194,8 +194,58 @@ const chartOptions = computed(() => ({
         </div>
       `
     }
-  }
-}))
+  },
+  responsive: [
+    {
+      breakpoint: 640,
+      options: {
+        xaxis: {
+          labels: {
+            style: {
+              fontSize: '11px',
+              colors: isDark.value ? '#FFFFFFBF' : '#00000091'
+            }
+          }
+        },
+        yaxis: [
+          {
+            labels: {
+              formatter: (val) => Math.abs(val) === 0 ? '0' : Math.abs(val) + 'M',
+              style: {
+                fontSize: '11px',
+                colors: isDark.value ? '#FFFFFFBF' : '#00000091'
+              }
+            },
+            axisBorder: {
+              show: true,
+              color: isDark.value ? '#FFFFFF0F' : '#EFEFEF',
+              width: 1,
+              offsetX: -2,
+              offsetY: -2
+            }
+          },
+          {
+            opposite: true,
+            labels: {
+              formatter: (val) => Math.abs(val) === 0 ? '0' : Math.abs(val) + '%',
+              style: {
+                fontSize: '11px',
+                colors: isDark.value ? '#FFFFFFBF' : '#00000091'
+              }
+            },
+            axisBorder: {
+              show: true,
+              color: isDark.value ? '#FFFFFF0F' : '#EFEFEF',
+              width: 1,
+              offsetX: 2,
+              offsetY: -2
+            }
+          }
+        ]
+      }
+    }
+  ]
+}));
 </script>
 
 <style scoped>

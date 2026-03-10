@@ -1,21 +1,23 @@
 <template>
-    <div class="w-full overflow-x-auto no-scrollbar transition-all duration-500 rounded-b-3xl">
-        <div class="py-5 px-8 flex justify-between items-center">
+    <div class="w-full transition-all duration-500 rounded-3xl overflow-hidden">
+        <div class="py-5 lg:px-8 px-4 flex justify-between items-center">
             <div>
                 <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص التدفقات النقدية' : 'Cashflow Summary' }}</p>
                 <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
             </div>
             <div class="flex items-center gap-3">
-                <img src="/images/icons/info.svg" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
+                <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
                 <img
                     :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'"
                     alt="Expand Icon"
-                    class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+                    class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity hidden lg:block"
                     @click="isModalOpen = true"
                 />
             </div>
         </div>
-        <table class="w-full text-left rtl:text-right border-collapse overflow-hidden">
+
+        <div class="w-full overflow-x-auto no-scrollbar">
+            <table class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px]">
             <thead class="text-white" :class="isDark ? 'bg-[#002118]' : 'bg-[#008A6F]'">
                 <tr class="transition-all duration-500">
                     <th :class="isCompressed ? 'px-8 py-4' : 'px-8 py-5'" class="font-medium text-[14px]">
@@ -153,6 +155,7 @@
             </tbody>
         </table>
     </div>
+</div>
 
     <!-- Modal -->
     <Teleport to="body">

@@ -2,7 +2,7 @@
   <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl"
     :class="isDark ? 'bg-[#00141080]' : 'bg-white shadow-sm'">
     
-    <div class="py-5 px-8 flex justify-between items-center">
+    <div class="lg:px-8 px-4 py-5 flex justify-between items-center text-left rtl:text-right">
       <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
         {{ currentLang === 'ar' ? 'ملخص حسابات القبض' : 'Accounts Receivable Summary' }}
       </p>
@@ -10,30 +10,31 @@
         <p class="text-[12px] font-normal" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
           {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
         </p>
-        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon" class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100" @click="isModalOpen = true" />
+        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon" class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 hidden lg:block" @click="isModalOpen = true" />
       </div>
     </div>
 
-    <table class="w-full text-left rtl:text-right border-collapse">
-      <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
-        <tr>
-          <th class="px-8 py-5 font-normal text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
-          <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">
-            <div class="flex items-center justify-end rtl:justify-start gap-2">
-              {{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}
-              <img src="/images/icons/edit-white.svg" class="w-[21px] h-auto" v-if="!isDark" />
-              <svg v-else width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="opacity-70">
-                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </th>
-          <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '>30' : '>30' }}</th>
-          <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '30-60' : '30-60' }}</th>
-          <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '60-90' : '60-90' }}</th>
-          <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '<90' : '<90' }}</th>
-        </tr>
-      </thead>
+    <div class="w-full overflow-x-auto no-scrollbar">
+      <table class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1000px]">
+        <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+          <tr>
+            <th class="px-8 py-5 font-normal text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
+            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">
+              <div class="flex items-center justify-end rtl:justify-start gap-2">
+                {{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}
+                <img src="/images/icons/edit-white.svg" class="w-[21px] h-auto" v-if="!isDark" />
+                <svg v-else width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="opacity-70">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </th>
+            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '>30' : '>30' }}</th>
+            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '30-60' : '30-60' }}</th>
+            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '60-90' : '60-90' }}</th>
+            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '<90' : '<90' }}</th>
+          </tr>
+        </thead>
       <tbody>
         <template v-for="(group, gIdx) in arData" :key="gIdx">
           <!-- Main Group Row -->
@@ -113,6 +114,7 @@
         </tr>
       </tfoot>
     </table>
+  </div>
 
     <Teleport to="body">
       <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
