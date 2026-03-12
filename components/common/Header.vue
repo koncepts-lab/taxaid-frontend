@@ -48,22 +48,22 @@
       :style="isDark ? {} : { background: 'linear-gradient(271.49deg, rgba(164, 227, 214, 0.485) 30.96%, rgba(109, 216, 193, 0.5) 109.26%)', boxShadow: '0px 4px 4px 0px #D0F7EF80' }">
       <NuxtLink to="/dashboard" class="px-8 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/dashboard')
         ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
-        : (isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black')">
+        : (isDark ? 'text-white hover:text-white/80' : 'text-black hover:text-black')">
         {{ currentLang === 'ar' ? 'لوحة القيادة' : 'Dashboard' }}
       </NuxtLink>
       <NuxtLink to="/data-source" class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/data-source')
         ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
-        : (isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black')">
+        : (isDark ? 'text-white hover:text-white/80' : 'text-black hover:text-black')">
         {{ currentLang === 'ar' ? 'مصدر البيانات' : 'Data Source' }}
       </NuxtLink>
       <NuxtLink to="/alerts" class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/alerts')
         ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
-        : (isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black')">
+        : (isDark ? 'text-white hover:text-white/80' : 'text-black hover:text-black')">
         {{ currentLang === 'ar' ? 'التنبيهات' : 'Alerts' }}
       </NuxtLink>
       <NuxtLink to="/appointment" class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/appointment')
         ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
-        : (isDark ? 'text-white hover:text-white/80' : 'text-black/70 hover:text-black')">
+        : (isDark ? 'text-white hover:text-white/80' : 'text-black hover:text-black')">
         {{ currentLang === 'ar' ? 'المواعيد' : 'Appointment' }}
       </NuxtLink>
     </div>
@@ -116,7 +116,7 @@
                 <img :src="item.icon" class="w-5 h-5" :alt="item.label" />
               </div>
               <span class="text-[#013E32] font-medium text-[15px]">{{ currentLang === 'ar' ? item.labelAr : item.label
-                }}</span>
+              }}</span>
             </div>
           </div>
         </div>
@@ -157,10 +157,10 @@
           <div class="flex justify-between items-center mb-3">
             <span class="font-normal text-sm text-[#013E32]">{{ currentLang === 'ar' ? 'اختيار الشركات' :
               'Select Companies'
-            }}</span>
+              }}</span>
             <button @click="toggleAllCompanies" class="text-[#00B68D] text-sm font-normal">{{ currentLang === 'ar' ?
               'تحديد الكل' : 'Select all'
-            }}</button>
+              }}</button>
           </div>
 
           <div class="bg-[#EEF4FF] p-3 rounded-xl flex gap-3 mb-4">
@@ -329,10 +329,10 @@
           <div class="flex justify-between items-center mb-3">
             <span class="font-normal text-sm text-[#013E32]">{{ currentLang === 'ar' ? 'اختيار الشركات' :
               'Select Companies'
-            }}</span>
+              }}</span>
             <button @click="toggleAllCompanies" class="text-[#00B68D] text-sm font-normal">{{ currentLang === 'ar' ?
               'تحديد الكل' : 'Select all'
-            }}</button>
+              }}</button>
           </div>
           <div class="bg-[#EEF4FF] p-3 rounded-xl flex gap-3 mb-4">
             <div class="mt-0.5">
