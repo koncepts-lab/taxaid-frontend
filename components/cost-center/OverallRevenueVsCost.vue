@@ -1,15 +1,8 @@
 <template>
   <div
-    class="rounded-3xl p-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-sm"
-    :class="isDark ? 'bg-[#003d35]' : 'bg-[#014235]'"
-  >
-    <!-- Background styling to match the dark green background of the card in the design.
-         Wait, the design shows this specific card having a dark green bg (#014235) in dark/light mode probably. 
-         Let's stick to standard theming if it's meant to be consistent or just apply the specific color. 
-         I will use text-white for this entire block to match the design. -->
-         
-    <!-- Header -->
-    <div class="flex justify-between items-start mb-4 relative z-10 text-white">
+    class="rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-auto shadow-sm "
+    :class="isDark ? 'bg-[#003d35]' : 'bg-[#014235]'">
+    <div class="flex lg:flex-row flex-col max-lg:gap-4 justify-between items-start mb-4 relative z-10 text-white">
       <div class="flex flex-col">
         <h2 class="text-[18px] font-medium leading-tight">
           {{ currentLang === 'ar' ? 'إجمالي الإيرادات مقابل التكلفة' : 'Overall Revenue vs Cost' }}
@@ -19,7 +12,6 @@
         </p>
       </div>
       <div class="flex items-center gap-6">
-        <!-- Custom Legend -->
         <div class="flex items-center gap-4 text-[13px] font-regular">
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full bg-[#FB7554]"></div>
@@ -30,24 +22,20 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'الإيرادات' : 'Revenue' }}</span>
           </div>
         </div>
-        <img :src="'/images/icons/expand-white.svg'" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
+        <img :src="'/images/icons/expand-white.svg'" alt="Expand"
+          class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity max-lg:hidden"
+          @click="isModalOpen = true" />
       </div>
     </div>
 
-    <!-- Chart -->
-    <div class="flex-1 w-full min-h-[350px] relative z-10 mt-0">
+    <div class="w-full min-w-0 min-h-[350px] relative z-10 mt-0 flex-shrink-0 min-w-175">
       <ClientOnly>
-        <apexchart
-          type="bar"
-          height="100%"
-          :options="chartOptions"
-          :series="series"
-        />
+        <apexchart type="bar" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
     </div>
 
-    <!-- Sub Legend mapping (A - J) -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-y-4 gap-x-2 text-[13px] text-white/90 w-full px-8 mt-2 relative z-10">
+    <div
+      class=" min-w-175 grid grid-cols-5 md:grid-cols-3 lg:grid-cols-5 gap-y-4 gap-x-2 lg:text-[13px] text-[10px] text-white/90 w-full px-8 mt-2 relative z-10">
       <div class="flex items-center gap-1.5 whitespace-nowrap">
         <span class="text-[#03D8B0] font-semibold">A</span>
         <span class="opacity-80">- {{ currentLang === 'ar' ? 'سكني' : 'Residential Project' }}</span>
@@ -93,8 +81,11 @@
 
     <!-- Modal -->
     <Teleport to="body">
-      <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden" :class="isDark ? 'bg-[#002e26]' : 'bg-[#014235]'" style="max-width: 1500px; margin: 0 15px;">
+      <div v-if="isModalOpen"
+        class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+        :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden"
+          :class="isDark ? 'bg-[#002e26]' : 'bg-[#014235]'" style="max-width: 1500px; margin: 0 15px;">
           <!-- Modal Header -->
           <div class="flex justify-between items-center py-6 px-8 border-b border-white/10 text-white">
             <div class="flex flex-col">
@@ -117,67 +108,65 @@
                   <span class="opacity-90">{{ currentLang === 'ar' ? 'الإيرادات' : 'Revenue' }}</span>
                 </div>
               </div>
-              <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
-                <img :src="'/images/icons/expand-white.svg'" alt="Close Modal" class="w-5 h-5 flex-shrink-0" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+              <button @click="isModalOpen = false"
+                class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
+                <img :src="'/images/icons/expand-white.svg'" alt="Close Modal" class="w-5 h-5 flex-shrink-0"
+                  :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
               </button>
             </div>
           </div>
-          
+
           <!-- Modal Body (Chart) -->
-          <div class="flex-1 w-full p-8 relative z-10 flex flex-col justify-between" style="background-color: transparent;">
+          <div class="flex-1 w-full p-8 relative z-10 flex flex-col justify-between"
+            style="background-color: transparent;">
             <div class="flex-1">
-                <ClientOnly>
-                  <apexchart
-                    type="bar"
-                    height="100%"
-                    :options="chartOptions"
-                    :series="series"
-                  />
-                </ClientOnly>
+              <ClientOnly>
+                <apexchart type="bar" height="100%" :options="chartOptions" :series="series" />
+              </ClientOnly>
             </div>
             <!-- Sub Legend mapping (A - J) -->
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-y-4 gap-x-2 text-[13px] text-white/90 w-full px-8 mt-2 relative z-10">
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">A</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'سكني' : 'Residential Project' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">B</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'بنية تحتية' : 'Infrastructure' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">C</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجاري' : 'Commercial' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">D</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'لوجستيات' : 'Prime Logistics' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">E</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجارة الإمارات' : 'Emirates Trading' }}</span>
-                </div>
+            <div class="grid grid-cols-5 gap-y-4 gap-x-2 text-[13px] text-white/90 w-full px-8 mt-2 relative z-10">
+              <div class="flex items-center gap-1.5 whitespace-nowrap">
+                <span class="text-[#03D8B0] font-semibold">A</span>
+                <span class="opacity-80">- {{ currentLang === 'ar' ? 'سكني' : 'Residential Project' }}</span>
+              </div>
+              <div class="flex items-center gap-1.5 whitespace-nowrap">
+                <span class="text-[#03D8B0] font-semibold">B</span>
+                <span class="opacity-80">- {{ currentLang === 'ar' ? 'بنية تحتية' : 'Infrastructure' }}</span>
+              </div>
+              <div class="flex items-center gap-1.5 whitespace-nowrap">
+                <span class="text-[#03D8B0] font-semibold">C</span>
+                <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجاري' : 'Commercial' }}</span>
+              </div>
+              <div class="flex items-center gap-1.5 whitespace-nowrap">
+                <span class="text-[#03D8B0] font-semibold">D</span>
+                <span class="opacity-80">- {{ currentLang === 'ar' ? 'لوجستيات' : 'Prime Logistics' }}</span>
+              </div>
+              <div class="flex items-center gap-1.5 whitespace-nowrap">
+                <span class="text-[#03D8B0] font-semibold">E</span>
+                <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجارة الإمارات' : 'Emirates Trading' }}</span>
+              </div>
 
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">F</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'ألفا تك' : 'Alpha Tech' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">G</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'مينا للتجزئة' : 'Mena Retail' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">H</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'كريسنت' : 'Crescent' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">I</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'فيرتكس كورب' : 'Vertex Corp' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">J</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجارة فيرتكس' : 'Vertex Trading' }}</span>
-                </div>
+              <div class="flex items-center gap-1.5 whitespace-nowrap">
+                <span class="text-[#03D8B0] font-semibold">F</span>
+                <span class="opacity-80">- {{ currentLang === 'ar' ? 'ألفا تك' : 'Alpha Tech' }}</span>
+              </div>
+              <div class="flex items-center gap-1.5 whitespace-nowrap">
+                <span class="text-[#03D8B0] font-semibold">G</span>
+                <span class="opacity-80">- {{ currentLang === 'ar' ? 'مينا للتجزئة' : 'Mena Retail' }}</span>
+              </div>
+              <div class="flex items-center gap-1.5 whitespace-nowrap">
+                <span class="text-[#03D8B0] font-semibold">H</span>
+                <span class="opacity-80">- {{ currentLang === 'ar' ? 'كريسنت' : 'Crescent' }}</span>
+              </div>
+              <div class="flex items-center gap-1.5 whitespace-nowrap">
+                <span class="text-[#03D8B0] font-semibold">I</span>
+                <span class="opacity-80">- {{ currentLang === 'ar' ? 'فيرتكس كورب' : 'Vertex Corp' }}</span>
+              </div>
+              <div class="flex items-center gap-1.5 whitespace-nowrap">
+                <span class="text-[#03D8B0] font-semibold">J</span>
+                <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجارة فيرتكس' : 'Vertex Trading' }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -187,30 +176,39 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { is } from 'date-fns/locale'
+import { ref, computed, onMounted } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
+const isMobile = ref(false)
 
+onMounted(() => {
+  const checkMobile = () => {
+    isMobile.value = window.innerWidth < 1024
+  }
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
 const categories = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
 
 const costData = [1.6, 3.8, 3.4, 2.4, 2.5, 4.0, 3.1, 3.5, 4.5, 4.8, 4.0, 3.6]
 const revenueData = [1.8, 4.5, 2.8, 2.8, 1.7, 5.0, 3.5, 4.0, 5.0, 5.0, 4.8, 4.6]
 
 const mappingFullNames = {
-    'A': 'Residential Project',
-    'B': 'Infrastructure',
-    'C': 'Commercial',
-    'D': 'Prime Logistics',
-    'E': 'Emirates Trading',
-    'F': 'Alpha Tech',
-    'G': 'Mena Retail',
-    'H': 'Crescent',
-    'I': 'Vertex Corp',
-    'J': 'Vertex Trading',
-    'K': 'Future Projects',
-    'L': 'City Center'
+  'A': 'Residential Project',
+  'B': 'Infrastructure',
+  'C': 'Commercial',
+  'D': 'Prime Logistics',
+  'E': 'Emirates Trading',
+  'F': 'Alpha Tech',
+  'G': 'Mena Retail',
+  'H': 'Crescent',
+  'I': 'Vertex Corp',
+  'J': 'Vertex Trading',
+  'K': 'Future Projects',
+  'L': 'City Center'
 }
 
 const series = ref([
@@ -226,6 +224,8 @@ const series = ref([
 
 const chartOptions = computed(() => ({
   chart: {
+    width: '100%', // ✅ should be this, not a pixel value
+
     fontFamily: 'Noto Sans Arabic, sans-serif',
     toolbar: { show: false },
     zoom: { enabled: false }
@@ -243,13 +243,25 @@ const chartOptions = computed(() => ({
   colors: ['#FB7554', '#03D8B0'],
   dataLabels: {
     enabled: true,
-    offsetY: -35,
+    offsetY: isMobile.value ? -20 : -35,
     style: {
-      fontSize: '11px',
+      fontSize: isMobile.value ? '8px' : '11px',
       colors: ['#FB7554', '#03D8B0']
     },
     formatter: (val) => val === 0 ? '' : val.toString().replace('.', ',') + 'M'
   },
+  responsive: [
+    {
+      breakpoint: 1024,
+      options: {
+        grid: {
+
+          padding: { top: 20, right: 10, bottom: 0, left: 5 }
+        },
+
+      }
+    }
+  ],
   xaxis: {
     categories: categories,
     axisBorder: {
@@ -272,7 +284,7 @@ const chartOptions = computed(() => ({
     min: 0,
     max: 6,
     tickAmount: 6,
-    axisBorder: { 
+    axisBorder: {
       show: true,
       color: 'rgba(255, 255, 255, 0.1)',
       width: 1
@@ -303,7 +315,7 @@ const chartOptions = computed(() => ({
     shared: true,
     intersect: false,
     theme: 'light',
-    custom: function({ series: s, dataPointIndex }) {
+    custom: function ({ series: s, dataPointIndex }) {
       const cat = categories[dataPointIndex]
       const fullName = mappingFullNames[cat]
       const cVal = s[0][dataPointIndex]
@@ -328,14 +340,20 @@ const chartOptions = computed(() => ({
   }
 }))
 </script>
-
 <style scoped>
 :deep(.apexcharts-canvas) {
   margin: 0 auto;
 }
+
 :deep(.apexcharts-tooltip) {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+#chart {
+  min-width: 760px;
+  margin: 35px auto;
+  opacity: 0.9;
 }
 </style>

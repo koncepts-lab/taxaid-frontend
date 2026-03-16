@@ -1,71 +1,75 @@
 <template>
   <div
-    :class="['historical-movement-card rounded-3xl p-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-sm', isDark ? '' : 'border border-[#EFEFEF]']"
-    :style="isDark ? 'background: #00141080 !important' : ''"
-  >
+    :class="['historical-movement-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-auto shadow-sm', isDark ? '' : 'border border-[#EFEFEF]']"
+    :style="isDark ? 'background: #00141080 !important' : ''">
     <!-- Header -->
-    <div class="flex justify-between items-start mb-6 relative z-10 w-full" :class="isDark ? 'text-white' : 'text-[#000000]'">
+    <div class="flex lg:flex-row flex-col max-lg:gap-2 justify-between items-start mb-6 relative z-10 w-full"
+      :class="isDark ? 'text-white' : 'text-[#000000]'">
       <div class="flex flex-col">
-        <h2 class="text-[17px] font-medium leading-tight">{{ currentLang === 'ar' ? 'حركة حسابات القبض التاريخية' : 'AR balances historical movement' }}</h2>
-        <p class="text-[13px] font-normal mt-1" :class="isDark ? 'text-white opacity-60' : 'text-[#00000091]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+        <h2 class="text-[17px] font-medium leading-tight">{{ currentLang === 'ar' ? 'حركة حسابات القبض التاريخية' :
+          'AR balances historical movement' }}</h2>
+        <p class="text-[13px] font-normal mt-1" :class="isDark ? 'text-white opacity-60' : 'text-[#00000091]'">{{
+          currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
       <div class="flex items-center gap-6">
         <!-- Custom Legend -->
         <div class="flex items-center gap-6 text-[14px]">
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full bg-[#FB7554]"></div>
-            <span class="text-[13px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
+            <span class="text-[13px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang ===
+              'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
           </div>
         </div>
-        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-6 h-6 opacity-70 hover:opacity-100 transition-opacity cursor-pointer ml-4" @click="isModalOpen = true" />
+        <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand"
+          class="w-6 h-6 opacity-70 hover:opacity-100 transition-opacity cursor-pointer ml-4 max-lg:hidden"
+          @click="isModalOpen = true" />
       </div>
     </div>
 
     <!-- Chart -->
-    <div class="flex-1 w-full relative z-10 min-h-[300px]">
+    <div class="flex-1 w-full relative z-10 min-h-[300px] min-w-175 overflow-auto">
       <ClientOnly>
-        <apexchart
-          type="line"
-          height="100%"
-          :options="chartOptions"
-          :series="series"
-        />
+        <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
     </div>
 
     <!-- Modal -->
     <Teleport to="body">
-      <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden" :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff]'" style="max-width: 1500px; margin: 0 15px;">
+      <div v-if="isModalOpen"
+        class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+        :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+        <div class="w-full h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden"
+          :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff]'" style="max-width: 1500px; margin: 0 15px;">
           <!-- Modal Header -->
-          <div class="flex justify-between items-center py-6 px-8 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
+          <div class="flex justify-between items-center py-6 px-8 border-b"
+            :class="isDark ? 'border-white/5' : 'border-gray-100'">
             <div class="flex flex-col">
-              <h2 class="text-lg font-medium leading-tight" :class="isDark ? 'text-white' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'حركة حسابات القبض التاريخية' : 'AR balances historical movement' }}</h2>
-              <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+              <h2 class="text-lg font-medium leading-tight" :class="isDark ? 'text-white' : 'text-[#013e32]'">{{
+                currentLang === 'ar' ? 'حركة حسابات القبض التاريخية' : 'AR balances historical movement' }}</h2>
+              <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang
+                === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
             </div>
             <div class="flex items-center gap-6">
               <!-- Custom Legend -->
               <div class="flex items-center gap-6 text-[14px]">
                 <div class="flex items-center gap-2">
                   <div class="w-3 h-3 rounded-full bg-[#FB7554]"></div>
-                  <span class="text-[13px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
+                  <span class="text-[13px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang
+                    === 'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
                 </div>
               </div>
-              <button @click="isModalOpen = false" class="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
-                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5" :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+              <button @click="isModalOpen = false"
+                class="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
+                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5"
+                  :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
               </button>
             </div>
           </div>
-          
+
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10" :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
             <ClientOnly>
-              <apexchart
-                type="line"
-                height="100%"
-                :options="chartOptions"
-                :series="series"
-              />
+              <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
             </ClientOnly>
           </div>
         </div>
@@ -123,7 +127,7 @@ const chartOptions = computed(() => ({
   xaxis: {
     categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
     tickPlacement: 'between',
-    axisBorder: { 
+    axisBorder: {
       show: true,
       color: isDark.value ? '#FFFFFF0F' : '#EFEFEF',
       height: 1
@@ -143,7 +147,7 @@ const chartOptions = computed(() => ({
       min: 0,
       max: 5,
       tickAmount: 5,
-      axisBorder: { 
+      axisBorder: {
         show: true,
         color: isDark.value ? '#FFFFFF0F' : '#EFEFEF',
         width: 1
@@ -161,7 +165,7 @@ const chartOptions = computed(() => ({
       min: 0,
       max: 100,
       tickAmount: 5,
-      axisBorder: { 
+      axisBorder: {
         show: true,
         color: isDark.value ? '#FFFFFF0F' : '#EFEFEF',
         width: 1
@@ -178,10 +182,10 @@ const chartOptions = computed(() => ({
   legend: { show: false },
   tooltip: {
     theme: 'light',
-    custom: function({ series, seriesIndex, dataPointIndex, w }) {
+    custom: function ({ series, seriesIndex, dataPointIndex, w }) {
       const monthLabel = w.globals.categoryLabels[dataPointIndex]
       const bal = series[0][dataPointIndex]
-      
+
       return `
         <div class="custom-tooltip">
           <div class="tooltip-header">${monthLabel}</div>

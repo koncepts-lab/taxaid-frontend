@@ -1,10 +1,8 @@
 <template>
   <NuxtLayout name="dashboard">
     <div v-if="!isFullScreenChat" class="font-sans flex relative z-10" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-      <div class="flex-1 transition-all duration-500 ease-in-out px-8 pt-0 pb-[17px]" :class="isChatOpen 
-        ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
-        : (currentLang === 'ar' ? 'ml-[170px]' : 'mr-[170px]')">
-        
+      <div class="flex-1 transition-all duration-500 ease-in-out px-8 pt-0 pb-[17px]">
+
         <div class="mx-auto max-w-[1600px] flex flex-col gap-8 pt-4">
           <ProjectDetailHeader />
           <ProjectDetailSummaryCards />
@@ -22,14 +20,14 @@
         <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = true" />
       </aside>
     </div>
-    
+
     <div v-else class="w-full flex overflow-hidden">
-     
-          <TaxQueriesLeftSideBar @close="isFullScreenChat = false" />
-    
-        <main class="flex-1">
-          <TaxQueriesChatWindow :isMinimized="false" class="flex-1 min-h-0 h-[calc(100vh-90px)] ml-12" />
-        </main>
+
+      <TaxQueriesLeftSideBar @close="isFullScreenChat = false" />
+
+      <main class="flex-1">
+        <TaxQueriesChatWindow :isMinimized="false" class="flex-1 min-h-0 h-[calc(100vh-90px)] ml-12" />
+      </main>
     </div>
   </NuxtLayout>
 </template>

@@ -5,7 +5,7 @@
 
         <div v-if="!isFullScreenChat" class="h-screen font-sans flex overflow-hidden relative z-10"
             :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-            <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-0"
+            <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8  p-4 pt-8"
                 :class="isChatOpen
                     ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
                     : (currentLang === 'ar' ? 'lg:ml-[170px] mr-0' : 'lg:mr-[170px] mr-0')">
@@ -59,13 +59,11 @@
 
         <div v-else class="w-full flex overflow-hidden" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
             <!-- Full Sidebar version -->
-            <aside class="w-80 shrink-0 h-[calc(100vh-90px)]">
-                <TaxQueriesLeftSideBar @close="isFullScreenChat = false" />
-            </aside>
+            <TaxQueriesLeftSideBar @close="isFullScreenChat = false" />
             <!-- Main Chat Window -->
-            <main class="flex-1">
+            <!-- <main class="flex-1">
                 <TaxQueriesChatWindow :isMinimized="false" class="flex-1 min-h-0 h-[calc(100vh-90px)] ml-12" />
-            </main>
+            </main> -->
         </div>
     </NuxtLayout>
 </template>
