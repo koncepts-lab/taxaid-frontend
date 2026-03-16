@@ -7,7 +7,8 @@
                 <div class="mx-auto">
                     <AlertsHeader />
                     <AlertsSummary :type="activeCategory" :data="filteredData" :isDark="isDark"
-                        @view="openModal('details', $event)" @resolve="openModal('resolve', $event)" />
+                        @view="openModal('details', $event)" @resolve="openModal('resolve', $event)"
+                        @chat="openModal('chat', $event)" />
                 </div>
             </div>
         </div>
@@ -15,6 +16,8 @@
             :currentLang="currentLang" @close="closeModal" />
         <AlertsResolveModal :isOpen="activeModal === 'resolve'" :alert="selectedAlert" :isDark="isDark"
             :currentLang="currentLang" @close="closeModal" @submit="handleActionSubmit" @ignore="handleIgnore" />
+        <AlertsChatModal :isOpen="activeModal === 'chat'" :alert="selectedAlert" :isDark="isDark"
+            :currentLang="currentLang" @close="closeModal" />
         <AlertsWheel v-model:activeIndex="activeIndex" />
     </NuxtLayout>
 </template>

@@ -1,7 +1,7 @@
 <template>
     <!-- Root container with dynamic key for animation and height limits -->
     <div :key="type"
-        class="relative z-10 mt-6 w-full overflow-auto rounded-2xl  transition-all duration-500 animate-expand max-h-[370px]"
+        class="relative z-10 mt-6 w-full overflow-auto rounded-2xl  transition-all duration-500 animate-expand 2xl:max-h-92.5 max-h-62.5"
         :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
         <table class="w-full text-left rtl:text-right border-collapse min-w-[1000px]">
@@ -63,7 +63,7 @@
                             </button>
 
                             <!-- Chat Button -->
-                            <button
+                            <button @click="$emit('chat', row)"
                                 class="flex items-center gap-2 bg-[#333333] hover:bg-black text-white px-4 py-1.5 rounded text-sm transition-all shadow-sm">
                                 <svg width="14" height="15" viewBox="0 0 14 15" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
