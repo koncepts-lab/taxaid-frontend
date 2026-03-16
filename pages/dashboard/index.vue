@@ -1,8 +1,8 @@
 <template>
   <NuxtLayout name="dashboard">
-    <div class="relative z-10 px-6 pb-4 font-sans bg-[#F0F5F4] min-h-[calc(100vh-90px)]" :class="{ '': isDark }" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+    <div class="relative z-10 px-0 lg:px-6 pb-0 lg:pb-4 font-sans min-h-[calc(100vh-90px)]" :class="{ '': isDark }" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
       <!-- Main Grid Wrapper -->
-      <div class="grid grid-cols-12 gap-3 pb-4 pt-4">
+      <div class="grid grid-cols-12 gap-3 pb-0 lg:pb-4 pt-4">
         
         <!-- LEFT SIDEBAR -->
         <div class="col-span-12 lg:col-span-3 flex flex-col gap-3">
@@ -36,7 +36,7 @@
         </div>
 
         <!-- ROW 3 (Full Width Bottom Row) -->
-        <div class="col-span-12 grid grid-cols-12 gap-3 pb-4">
+        <div class="col-span-12 grid grid-cols-12 gap-3 pb-0 lg:pb-4">
           <NuxtLink to="/cogs" class="col-span-12 md:col-span-6 lg:col-span-3">
             <DashboardCogs />
           </NuxtLink>

@@ -1,5 +1,5 @@
 <template>
-  <footer class="pt-8 pb-8 px-8 transition-colors duration-300"
+  <footer class="p-[15px] lg:pt-8 lg:pb-8 lg:px-8 transition-colors duration-300"
     :class="[isDark ? 'text-white/30' : 'text-[#666666]/60']">
     <div class="flex flex-col md:flex-row justify-between items-center gap-2 md:gap-4 text-[12px] font-normal px-2">
       <div>

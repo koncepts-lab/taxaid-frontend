@@ -14,11 +14,11 @@
 
           <CogsHeader class="mb-8" />
 
-          <div class="mb-8">
+          <div class="mb-4 lg:mb-8">
             <CogsSummary />
           </div>
 
-          <div class="mb-8">
+          <div class="mb-4 lg:mb-8">
             <div class="h-[500px]">
               <CogsBreakdownByCategory />
             </div>

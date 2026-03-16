@@ -7,24 +7,24 @@
       :class="{ '': isDark }" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
       <!-- 2. LEFT AREA: Resizes dynamically -->
-      <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" :class="isChatOpen 
+      <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-0" :class="isChatOpen 
         ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
         : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
-        <div class="mx-auto pt-8 lg:pt-0">
+        <div class="mx-auto pt-0 lg:pt-0">
           
-          <IndirectExpenseHeader class="mb-8" />
+          <IndirectExpenseHeader class="mb-4 lg:mb-8" />
 
-          <div class="mb-8">
+          <div class="mb-4 lg:mb-8">
             <IndirectExpenseSummary />
           </div>
 
-          <div class="grid grid-cols-1 gap-8 mb-8">
+          <div class="grid grid-cols-1 gap-8 mb-4 lg:mb-8">
             <div>
               <IndirectExpenseTopCategories />
             </div>
           </div>
 
-          <div class="grid grid-cols-1 gap-8 mb-8">
+          <div class="grid grid-cols-1 gap-8 mb-4 lg:mb-8">
             <div class="h-auto lg:h-[450px]">
               <IndirectExpenseOverheadTrends />
             </div>

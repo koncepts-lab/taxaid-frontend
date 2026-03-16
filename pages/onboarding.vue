@@ -79,7 +79,7 @@
                     <div class="entity-progress-wrapper py-4">
                         <div v-if="entitiesCount > 1" class="progress-line-bg"></div>
                         <div v-if="entitiesCount > 1" class="progress-line-fill" :style="{ width: entitiesCount > 1 ? ((currentEntity - 1) / (entitiesCount - 1)) * 100 + '%' : '0%' }"></div>
-                        <div class="dots-container">
+                        <div class="dots-container" :class="{ 'justify-center': entitiesCount === 1 }">
                            <div v-for="n in entitiesCount" :key="n" class="img-dot" :class="{ 'done': n < currentEntity, 'active': n === currentEntity }" @click="jumpToEntity(n)">{{ n }}</div>
                         </div>
                     </div>
@@ -92,7 +92,7 @@
                       </div>
                     </div>
                     
-                    <button v-if="selectedLabel === 'Multiple Entities' && entitiesCount < 3" class="add-entity-pill mt-4" @click="addAnotherEntity">
+                    <button v-if="selectedLabel === 'Multiple Entities' && entitiesCount < 10" class="add-entity-pill mt-4" @click="addAnotherEntity">
                         <span class="text-[20px] leading-none mr-2">+</span> {{ t.addEntity }}
                     </button>
 
@@ -494,7 +494,7 @@ function handleSubPrevious() {
 }
 
 function addAnotherEntity() {
-  if (entitiesCount.value < 3) {
+  if (entitiesCount.value < 10) {
     entitiesCount.value++
     entityForms.value.push({ legalName: '', nickName: '' })
     currentEntity.value = entitiesCount.value
@@ -524,11 +524,52 @@ function initParticles(canvas, count, color, speed = 1) {
   const ctx = canvas.getContext('2d'); let w, h, pts = []
   const res = () => { w = canvas.clientWidth; h = canvas.clientHeight; canvas.width = w * 2; canvas.height = h * 2; ctx.scale(2, 2) }
   res(); window.addEventListener('resize', res)
-  for (let i = 0; i < count; i++) pts.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * speed, vy: (Math.random() - 0.5) * speed, r: Math.random() * 1.5, a: Math.random(), t: Math.random() * 10 })
+  
+  const cX = w / 2, cY = h / 2
+  const maxD = Math.min(w, h) * 0.5
+
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2
+    const distance = Math.random() * maxD * 0.8
+    pts.push({ 
+      x: cX + Math.cos(angle) * distance, 
+      y: cY + Math.sin(angle) * distance, 
+      vx: (Math.random() - 0.5) * speed * 0.4, 
+      vy: (Math.random() - 0.5) * speed * 0.4, 
+      r: Math.random() * 2.5 + 1, // Increased size
+      a: Math.random() * 0.5 + 0.2, 
+      t: Math.random() * 10,
+      angle,
+      dist: distance
+    })
+  }
+
   const anim = () => {
-    ctx.clearRect(0, 0, w, h); pts.forEach(p => {
-      p.x += p.vx; p.y += p.vy; p.t += 0.02; if (p.x < 0) p.x = w; if (p.x > w) p.x = 0; if (p.y < 0) p.y = h; if (p.y > h) p.y = 0
-      ctx.beginPath(); ctx.fillStyle = `rgba(${color}, ${p.a * (0.5 + Math.sin(p.t) * 0.5)})`; ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill()
+    ctx.clearRect(0, 0, w, h);
+    
+    // Draw subtle radial glow
+    const grad = ctx.createRadialGradient(cX, cY, 0, cX, cY, maxD);
+    grad.addColorStop(0, `rgba(${color}, 0.15)`);
+    grad.addColorStop(0.5, `rgba(${color}, 0.05)`);
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    pts.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.t += 0.02
+      
+      const dx = p.x - cX, dy = p.y - cY, d = Math.sqrt(dx*dx + dy*dy)
+      if (d > maxD) {
+        const ang = Math.atan2(dy, dx)
+        p.vx -= Math.cos(ang) * 0.015
+        p.vy -= Math.sin(ang) * 0.015
+      }
+      p.vx *= 0.995; p.vy *= 0.995; p.vx += (Math.random() - 0.5) * 0.01; p.vy += (Math.random() - 0.5) * 0.01
+
+      ctx.beginPath(); 
+      ctx.fillStyle = `rgba(${color}, ${p.a * (0.4 + Math.sin(p.t) * 0.3)})`; 
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); 
+      ctx.fill()
     })
     rafs.push(requestAnimationFrame(anim))
   }
@@ -557,8 +598,8 @@ function initSuccessParticles(canvas, count, color) {
 
 onMounted(() => {
   setTimeout(() => pageLoaded.value = true, 100)
-  initParticles(bgParticleCanvas.value, 150, '49, 224, 200', 0.4)
-  initParticles(leftParticleCanvas.value, 80, '255, 255, 255', 0.6)
+  initParticles(bgParticleCanvas.value, 250, '49, 224, 200', 0.4)
+  initParticles(leftParticleCanvas.value, 120, '255, 255, 255', 0.6)
 })
 watch(isFinished, (v) => { if (v) setTimeout(() => initSuccessParticles(successParticleCanvas.value, 300, '4, 193, 143'), 200) })
 onBeforeUnmount(() => rafs.forEach(cancelAnimationFrame))
@@ -583,7 +624,7 @@ function goToDashboard() { window.location.href = '/dashboard' }
   backdrop-filter: blur(40px); 
   -webkit-backdrop-filter: blur(40px);
   display: flex; flex-direction: column; 
-  margin: 0 auto;
+  margin: 51px auto 0 auto;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   position: relative;
 }

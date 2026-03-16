@@ -16,17 +16,17 @@
 
           <AccountsPayableAlert />
 
-          <div class="mb-8">
+          <div class="mb-4 lg:mb-8">
             <AccountsPayableSummary />
           </div>
 
-          <div class="mb-8">
+          <div class="mb-4 lg:mb-8">
             <div class="h-[600px]">
               <AccountsPayableTopCustomers />
             </div>
           </div>
 
-          <div class="mb-8">
+          <div class="mb-4 lg:mb-8">
             <div class="h-[420px]">
               <AccountsPayableHistoricalMovement />
             </div>
