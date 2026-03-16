@@ -7,22 +7,22 @@
             :class="{ '': isDark }" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
             <!-- 2. LEFT AREA: Resizes dynamically -->
-            <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" :class="isChatOpen 
+            <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-0" :class="isChatOpen 
                 ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
                 : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
-                <div class="mx-auto pt-8 lg:pt-0">
+                <div class="mx-auto pt-0">
                     
-                    <CashFlowHeader class="mb-8" />
+                    <CashFlowHeader class="mb-4 lg:mb-8" />
 
                     <CashFlowMetrics :is-compressed="isChatOpen" />
 
-                    <div class="rounded-3xl mb-8 transition-all duration-500"
+                    <div class="rounded-3xl mb-4 lg:mb-8 transition-all duration-500"
                         :class="isDark ? 'bg-[#00141080] border-none' : 'bg-white border border-gray-100'"
                         :style="isDark ? { boxShadow: '0px 4px 4px 0px #00000040' } : {}">
                         <CashFlowSummary :data="cashFlowSummaryData" :is-compressed="isChatOpen" />
                     </div>
 
-                    <div class="mb-8">
+                    <div class="mb-4 lg:mb-8">
                         <div class="h-[auto] lg:h-[420px]">
                             <CashFlowChart />
                         </div>
