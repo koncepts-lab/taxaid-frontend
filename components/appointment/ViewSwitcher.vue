@@ -59,7 +59,7 @@ import { ref } from 'vue'
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const activeView = ref('calendar')
+const activeView = useState('appointment_active_view', () => 'calendar')
 const showFilter = ref(false)
 
 const activeStatus = ref('All Statuses')

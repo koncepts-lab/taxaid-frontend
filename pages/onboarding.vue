@@ -25,9 +25,7 @@
           <div class="absolute inset-0 flex items-center justify-center">
             <div class="w-[600px] h-[600px] bg-gradient-radial from-[#00B794]/20 to-transparent blur-3xl"></div>
           </div>
-          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <canvas ref="leftParticleCanvas" class="w-[500px] h-[500px] opacity-70"></canvas>
-          </div>
+
           <video 
   src="/images/left-image.webm" 
   class="relative z-10 w-full max-w-[420px]"
@@ -53,7 +51,7 @@
                       <span v-if="!isRtl">‹</span> {{ t.prev }} <span v-if="isRtl">›</span>
                     </button>
                     <span class="opacity-30">|</span>
-                    <span class="text-[#04C18F] font-medium text-base md:text-lg">{{ step }}/11</span>
+                    <span class="text-[#04C18F] font-medium text-base md:text-lg">{{ step }}/12</span>
                   </div>
                 </div>
 
@@ -71,7 +69,7 @@
                   <!-- Step 2: Company Details (Image Style) -->
                   <div v-else-if="step === 2" class="space-y-6">
                     <div class="space-y-1">
-                      <h2 class="step-title !text-[22px]">{{ t.step2Title }}</h2>
+                      <h2 class="step-title">{{ t.step2Title }}</h2>
                       <p class="text-white/70 text-[16px]">{{ t.entity }} {{ currentEntity }}</p>
                     </div>
 
@@ -128,14 +126,32 @@
                   <div v-else-if="step === 5" class="space-y-8">
                     <h2 class="step-title">{{ t.step5Title }}</h2>
                     <div class="space-y-4 max-w-[400px]">
-                      <button v-for="opt in challengeOptions" :key="opt.value" @click="selectedChallenge = opt.value" class="option-btn" :class="{ active: selectedChallenge === opt.value }">{{ opt.label }}</button>
+                      <button 
+                        v-for="opt in challengeOptions" 
+                        :key="opt.value" 
+                        @click="toggleChallenge(opt.value)" 
+                        class="option-btn" 
+                        :class="{ active: selectedChallenge.includes(opt.value) }"
+                      >
+                        {{ opt.label }}
+                      </button>
                     </div>
                   </div>
 
                   <!-- Step 6: Improvements -->
                   <div v-else-if="step === 6" class="space-y-8">
                     <h2 class="step-title">{{ t.step6Title }}</h2>
-                    <div class="space-y-4 max-w-[400px]"><button v-for="opt in improvementOptions" :key="opt.value" @click="selectedImprovement = opt.value" class="option-btn" :class="{ active: selectedImprovement === opt.value }">{{ opt.label }}</button></div>
+                    <div class="space-y-4 max-w-[400px]">
+                      <button 
+                        v-for="opt in improvementOptions" 
+                        :key="opt.value" 
+                        @click="toggleImprovement(opt.value)" 
+                        class="option-btn" 
+                        :class="{ active: selectedImprovement.includes(opt.value) }"
+                      >
+                        {{ opt.label }}
+                      </button>
+                    </div>
                   </div>
 
                   <!-- Step 7: Frequency -->
@@ -146,11 +162,24 @@
 
                   <!-- Step 8: ERP -->
                   <div v-else-if="step === 8" class="space-y-8">
-                    <h2 class="step-title">{{ t.step8Title }}</h2>
+                    <h2 class="step-title">
+                      {{ t.step8Title }}
+                      <span v-if="selectedLabel === 'Multiple Entities'" class="block mt-1 text-sm font-light opacity-80 italic">Select all that apply.</span>
+                    </h2>
                     <div class="space-y-4 max-w-[400px]">
                       <div v-for="opt in erpOptions" :key="opt.value" class="space-y-3">
-                        <button @click="selectedERP = opt.value" class="option-btn" :class="{ active: selectedERP === opt.value }">{{ opt.label }}</button>
-                        <Transition name="panel"><div v-if="opt.value === 'Other' && selectedERP === 'Other'" class="pt-1"><input v-model="otherERPDescription" class="image-input" :placeholder="t.otherERPPh" /></div></Transition>
+                        <button 
+                          @click="toggleERP(opt.value)" 
+                          class="option-btn" 
+                          :class="{ active: selectedERP.includes(opt.value) }"
+                        >
+                          {{ opt.label }}
+                        </button>
+                        <Transition name="panel">
+                          <div v-if="opt.value === 'Other' && selectedERP.includes('Other')" class="pt-1">
+                            <input v-model="otherERPDescription" class="image-input" :placeholder="t.otherERPPh" />
+                          </div>
+                        </Transition>
                       </div>
                     </div>
                   </div>
@@ -158,7 +187,17 @@
                   <!-- Step 9: Insights -->
                   <div v-else-if="step === 9" class="space-y-8">
                     <h2 class="step-title">{{ t.step9Title }}</h2>
-                    <div class="space-y-4 max-w-[400px]"><button v-for="opt in insightOptions" :key="opt.value" @click="selectedInsight = opt.value" class="option-btn" :class="{ active: selectedInsight === opt.value }">{{ opt.label }}</button></div>
+                    <div class="space-y-4 max-w-[400px]">
+                      <button 
+                        v-for="opt in insightOptions" 
+                        :key="opt.value" 
+                        @click="toggleInsight(opt.value)" 
+                        class="option-btn" 
+                        :class="{ active: selectedInsight.includes(opt.value) }"
+                      >
+                        {{ opt.label }}
+                      </button>
+                    </div>
                   </div>
 
                   <!-- Step 10: Compliance -->
@@ -173,14 +212,67 @@
                   <!-- Step 11: Goal -->
                   <div v-else-if="step === 11" class="space-y-8">
                     <h2 class="step-title">{{ t.step11Title }}</h2>
-                    <div class="space-y-4 max-w-[400px]"><button v-for="opt in goalOptions" :key="opt.value" @click="selectedGoal = opt.value" class="option-btn" :class="{ active: selectedGoal === opt.value }">{{ opt.label }}</button></div>
+                    <div class="space-y-4 max-w-[400px]">
+                      <button 
+                        v-for="opt in goalOptions" 
+                        :key="opt.value" 
+                        @click="toggleGoal(opt.value)" 
+                        class="option-btn" 
+                        :class="{ active: selectedGoal.includes(opt.value) }"
+                      >
+                        {{ opt.label }}
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Step 12: Base Currency -->
+                  <div v-else-if="step === 12" class="space-y-6">
+                    <h2 class="step-title">{{ t.step12Title }}</h2>
+                    <div class="space-y-4 max-w-[400px]">
+                        <button @click="selectedBaseCurrency = 'Yes'; selectedSpecificCurrency = 'AED'" class="option-btn" :class="{ active: selectedBaseCurrency === 'Yes' }">{{ t.yes }}</button>
+                        <button @click="selectedBaseCurrency = 'No'" class="option-btn" :class="{ active: selectedBaseCurrency === 'No' }">{{ t.no }}</button>
+                    </div>
+
+                    <!-- SELECT DROPDOWN (ONLY IF NO) -->
+                    <Transition name="panel">
+                      <div v-if="selectedBaseCurrency === 'No'" class="relative max-w-[400px] z-20">
+                        <div 
+                          class="image-input flex items-center justify-between cursor-pointer select-none"
+                          @click="showCurrencyDropdown = !showCurrencyDropdown"
+                        >
+                          <span :class="{ 'text-white/40': !selectedSpecificCurrency }">
+                            {{ selectedSpecificCurrency || t.selectCurrencyPh }}
+                          </span>
+                          <span class="text-white/40 transition-transform duration-300" :class="{ 'rotate-180': showCurrencyDropdown }">
+                            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </span>
+                        </div>
+
+                        <!-- DROPDOWN OPTIONS -->
+                        <Transition name="fade-scale-fast">
+                          <div v-if="showCurrencyDropdown" class="currency-dropdown-list">
+                            <div 
+                              v-for="curr in currencyOptions" 
+                              :key="curr" 
+                              class="currency-item"
+                              :class="{ active: selectedSpecificCurrency === curr }"
+                              @click="selectedSpecificCurrency = curr; showCurrencyDropdown = false"
+                            >
+                              {{ curr }}
+                            </div>
+                          </div>
+                        </Transition>
+                      </div>
+                    </Transition>
                   </div>
                 </div>
 
                 <!-- BOTTOM NEXT BUTTON -->
                 <div class="mt-auto pt-8">
                   <button class="image-next-btn" :disabled="nextDisabled" @click="handleNext()">
-                    {{ step === 11 ? t.finish : t.next }} 
+                    {{ t.next }} 
                     <span class="font-bold mx-1" v-if="!isRtl">→</span>
                     <span class="font-bold mx-1" v-if="isRtl">←</span>
                   </button>
@@ -235,14 +327,17 @@ const entityForms = ref([{ legalName: '', nickName: '' }])
 const commonGroupNickname = ref('')
 const selectedBusiness = ref(null)
 const otherBusinessDescription = ref('')
-const selectedChallenge = ref(null)
-const selectedImprovement = ref(null)
+const selectedChallenge = ref([])
+const selectedImprovement = ref([])
 const selectedFrequency = ref(null)
-const selectedERP = ref(null)
+const selectedERP = ref([])
 const otherERPDescription = ref('')
-const selectedInsight = ref(null)
+const selectedInsight = ref([])
 const selectedCompliance = ref(null)
-const selectedGoal = ref(null)
+const selectedGoal = ref([])
+const selectedBaseCurrency = ref(null)
+const selectedSpecificCurrency = ref(null)
+const showCurrencyDropdown = ref(false)
 
 // Option Lists (RESTORED)
 const isRtl = computed(() => currentLanguage.value === 'ar')
@@ -267,16 +362,18 @@ const translations = {
     step4Title: 'How would you describe your business in one line?',
     other: 'Other',
     otherBusinessPh: 'Please specify your business type',
-    step5Title: 'What’s the biggest financial challenge you’re facing right now?',
-    step6Title: 'Which of these areas do you want to improve the most?',
+    step5Title: 'What are the biggest financial challenge you’re facing right now? Select all that apply.',
+    step6Title: 'Which of these areas do you want to improve the most? Select all that apply.',
     step7Title: 'How frequently do you review your financial reports?',
     step8Title: 'Do you use any accounting or ERP system currently?',
     otherERPPh: 'Enter System Name',
-    step9Title: 'What’s your preferred way to view insights?',
+    step9Title: 'What’s your preferred way to view insights? Select all that apply.',
     step10Title: 'Would you like me to keep an eye on compliance changes for you?',
+    selectCurrencyPh: 'Select your base currency',
     yes: 'Yes',
     no: 'No',
-    step11Title: 'What’s your ultimate goal with TAXAID.AI?',
+    step11Title: 'What’s your ultimate goal with TAXAID.AI? Select all that apply.',
+    step12Title: 'Is AED your base currency?',
     successTitle: "You're all set! Our implementation team will reach out soon to help you set up and start exploring insights with Akeel.",
     businessOpts: {
       Trading: 'Trading',
@@ -344,15 +441,17 @@ const translations = {
     other: 'أخرى',
     otherBusinessPh: 'الرجاء تحديد نوع عملك',
     step5Title: 'ما هو أكبر تحدي مالي تواجهه الآن؟',
-    step6Title: 'أي من هذه المجالات تريد تحسينه أكثر؟',
+    step6Title: 'أي من هذه المجالات تريد تحسينه أكثر؟ اختر كل ما ينطبق.',
     step7Title: 'كم مرة تراجع تقاريرك المالية؟',
     step8Title: 'هل تستخدم أي نظام محاسبة أو تخطيط موارد المؤسسات حاليًا؟',
     otherERPPh: 'أدخل اسم النظام',
-    step9Title: 'ما هي طريقتك المفضلة لعرض الرؤى؟',
+    step9Title: 'ما هي طريقتك المفضلة لعرض الرؤى؟ اختر كل ما ينطبق.',
     step10Title: 'هل ترغب في أن أراقب تغييرات الامتثال نيابةً عنك؟',
+    selectCurrencyPh: 'اختر عملتك الأساسية',
     yes: 'نعم',
     no: 'لا',
-    step11Title: 'ما هو هدفك النهائي مع TAXAID.AI؟',
+    step11Title: 'ما هو هدفك النهائي مع TAXAID.AI؟ اختر كل ما ينطبق.',
+    step12Title: 'هل الدرهم الإماراتي هو عملتك الأساسية؟',
     successTitle: 'أنت جاهز تمامًا! سيتواصل معك فريق التنفيذ قريبًا لمساعدتك في الإعداد والبدء في استكشاف الرؤى مع عقيل.',
     businessOpts: {
       Trading: 'تداول',
@@ -438,6 +537,8 @@ const goalOptions = computed(() => [
   'Save Time', 'Increase Profit', 'Ensure Compliance', 'Prepare for Growth'
 ].map(k => ({ value: k, label: t.value.goals[k] })))
 
+const currencyOptions = ['USD', 'EUR', 'SAR', 'GBP', 'INR', 'Other']
+
 const transitionName = computed(() => direction.value === 'next' ? 'box-slide-next' : 'box-slide-prev')
 const canGoMainPrevious = computed(() => step.value > 1)
 
@@ -464,7 +565,7 @@ function handleNext() {
     else { step.value = 3 }
     return
   }
-  if (step.value === 11) { isFinished.value = true; return }
+  if (step.value === 12) { isFinished.value = true; return }
   step.value++
 }
 
@@ -503,106 +604,193 @@ function addAnotherEntity() {
 
 function jumpToEntity(n) { direction.value = n > currentEntity.value ? 'next' : 'prev'; currentEntity.value = n }
 
+function toggleChallenge(val) {
+  const idx = selectedChallenge.value.indexOf(val)
+  if (idx > -1) {
+    selectedChallenge.value.splice(idx, 1)
+  } else {
+    selectedChallenge.value.push(val)
+  }
+}
+
+function toggleImprovement(val) {
+  const idx = selectedImprovement.value.indexOf(val)
+  if (idx > -1) {
+    selectedImprovement.value.splice(idx, 1)
+  } else {
+    selectedImprovement.value.push(val)
+  }
+}
+
+function toggleInsight(val) {
+  const idx = selectedInsight.value.indexOf(val)
+  if (idx > -1) {
+    selectedInsight.value.splice(idx, 1)
+  } else {
+    selectedInsight.value.push(val)
+  }
+}
+
+function toggleGoal(val) {
+  const idx = selectedGoal.value.indexOf(val)
+  if (idx > -1) {
+    selectedGoal.value.splice(idx, 1)
+  } else {
+    selectedGoal.value.push(val)
+  }
+}
+
+function toggleERP(val) {
+  if (selectedLabel.value === 'Single Entity') {
+    // Single-select mode: Replace current selection or clear it
+    if (selectedERP.value.length === 1 && selectedERP.value[0] === val) {
+      selectedERP.value = []
+    } else {
+      selectedERP.value = [val]
+    }
+  } else {
+    // Multi-select mode: Toggle selection
+    const idx = selectedERP.value.indexOf(val)
+    if (idx > -1) {
+      selectedERP.value.splice(idx, 1)
+    } else {
+      selectedERP.value.push(val)
+    }
+  }
+}
+
 const nextDisabled = computed(() => {
   if (step.value === 1) return !selectedLabel.value
   if (step.value === 2) return !entityForms.value[currentEntity.value - 1].legalName || !entityForms.value[currentEntity.value - 1].nickName
   if (step.value === 3) return !commonGroupNickname.value.trim()
   if (step.value === 4) return selectedBusiness.value === 'Other' ? !otherBusinessDescription.value.trim() : !selectedBusiness.value
-  if (step.value === 8 && selectedERP.value === 'Other') return !otherERPDescription.value.trim()
+  if (step.value === 8) {
+    if (selectedERP.value.length === 0) return true
+    if (selectedERP.value.includes('Other')) return !otherERPDescription.value.trim()
+    return false
+  }
+  if (step.value === 12) {
+    if (selectedBaseCurrency.value === 'Yes') return false
+    if (selectedBaseCurrency.value === 'No') return !selectedSpecificCurrency.value
+    return true
+  }
   
-  const map = { 5: selectedChallenge, 6: selectedImprovement, 7: selectedFrequency, 8: selectedERP, 9: selectedInsight, 10: selectedCompliance, 11: selectedGoal }
+  if (step.value === 5) return selectedChallenge.value.length === 0
+  if (step.value === 6) return selectedImprovement.value.length === 0
+  if (step.value === 9) return selectedInsight.value.length === 0
+  if (step.value === 11) return selectedGoal.value.length === 0
+  
+  const map = { 7: selectedFrequency, 10: selectedCompliance }
   if (map[step.value]) return !map[step.value].value
   return false
 })
 
-/** PARTICLE ENGINES */
-const bgParticleCanvas = ref(null); const leftParticleCanvas = ref(null); const successParticleCanvas = ref(null);
-let rafs = []
+const bgParticleCanvas = ref(null); const successParticleCanvas = ref(null);
 
-function initParticles(canvas, count, color, speed = 1) {
-  if (!canvas) return
-  const ctx = canvas.getContext('2d'); let w, h, pts = []
-  const res = () => { w = canvas.clientWidth; h = canvas.clientHeight; canvas.width = w * 2; canvas.height = h * 2; ctx.scale(2, 2) }
-  res(); window.addEventListener('resize', res)
-  
-  const cX = w / 2, cY = h / 2
-  const maxD = Math.min(w, h) * 0.5
+/** REFINED PARTICLE ENGINE (Same as home.vue) */
+let activeStopFunctions = []
 
-  for (let i = 0; i < count; i++) {
-    const angle = Math.random() * Math.PI * 2
-    const distance = Math.random() * maxD * 0.8
-    pts.push({ 
-      x: cX + Math.cos(angle) * distance, 
-      y: cY + Math.sin(angle) * distance, 
-      vx: (Math.random() - 0.5) * speed * 0.4, 
-      vy: (Math.random() - 0.5) * speed * 0.4, 
-      r: Math.random() * 2.5 + 1, // Increased size
-      a: Math.random() * 0.5 + 0.2, 
-      t: Math.random() * 10,
-      angle,
-      dist: distance
-    })
+function startParticleEngine(canvas, { count = 160, color = '0, 229, 176', speedMult = 1, sizeMult = 1, opacity = 0.75 } = {}) {
+  if (!canvas) return () => {}
+  const ctx = canvas.getContext('2d')
+  let W = 0, H = 0
+  let animId = null
+
+  function resize() {
+    W = canvas.width  = canvas.offsetWidth
+    H = canvas.height = canvas.offsetHeight
   }
 
-  const anim = () => {
-    ctx.clearRect(0, 0, w, h);
-    
-    // Draw subtle radial glow
-    const grad = ctx.createRadialGradient(cX, cY, 0, cX, cY, maxD);
-    grad.addColorStop(0, `rgba(${color}, 0.15)`);
-    grad.addColorStop(0.5, `rgba(${color}, 0.05)`);
-    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, w, h);
+  const ro = new ResizeObserver(resize)
+  ro.observe(canvas)
+  resize()
 
-    pts.forEach(p => {
-      p.x += p.vx; p.y += p.vy; p.t += 0.02
-      
-      const dx = p.x - cX, dy = p.y - cY, d = Math.sqrt(dx*dx + dy*dy)
-      if (d > maxD) {
-        const ang = Math.atan2(dy, dx)
-        p.vx -= Math.cos(ang) * 0.015
-        p.vy -= Math.sin(ang) * 0.015
+  function createParticle() {
+    const angle   = Math.random() * Math.PI * 2
+    const isFar   = Math.random() < 0.2
+    const maxDist = isFar
+      ? Math.hypot(W, H) * (0.9 + Math.random() * 0.8)
+      : Math.hypot(W, H) * (0.15 + Math.random() * 0.35)
+
+    const speed = (0.18 + Math.random() * 0.37) * speedMult
+    const size  = (0.5 + Math.random() * 1.5) * sizeMult
+    const life  = maxDist / speed
+    const delay = Math.random() * 180
+
+    return {
+      x: W / 2, y: H / 2,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      size,
+      life,
+      maxLife: life,
+      delay,
+      age: -delay
+    }
+  }
+
+  let particles = Array.from({ length: count }, createParticle)
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H)
+    particles.forEach((p, i) => {
+      p.age++
+      if (p.age < 0) return
+      if (p.age > p.maxLife) {
+        particles[i] = createParticle()
+        return
       }
-      p.vx *= 0.995; p.vy *= 0.995; p.vx += (Math.random() - 0.5) * 0.01; p.vy += (Math.random() - 0.5) * 0.01
+      p.x += p.vx
+      p.y += p.vy
+      const progress = p.age / p.maxLife
+      const alpha = progress < 0.1  ? progress / 0.1
+                  : progress > 0.7  ? (1 - progress) / 0.3
+                  : 1
 
-      ctx.beginPath(); 
-      ctx.fillStyle = `rgba(${color}, ${p.a * (0.4 + Math.sin(p.t) * 0.3)})`; 
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); 
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(${color}, ${alpha * opacity})`
       ctx.fill()
     })
-    rafs.push(requestAnimationFrame(anim))
+    animId = requestAnimationFrame(draw)
   }
-  anim()
-}
 
-function initSuccessParticles(canvas, count, color) {
-  if (!canvas) return
-  const ctx = canvas.getContext('2d'); let w, h, pts = []
-  const res = () => { w = canvas.clientWidth; h = canvas.clientHeight; canvas.width = w * 2; canvas.height = h * 2; ctx.scale(2, 2) }
-  res(); const cX = w / 2, cY = h / 2
-  for (let i = 0; i < count; i++) {
-    const ang = Math.random() * Math.PI * 2, dst = (Math.random() * (w * 0.5)) * Math.pow(Math.random(), 2)
-    pts.push({ x: cX + Math.cos(ang) * dst, y: cY + Math.sin(ang) * dst, ang, dst, vx: (Math.random() - 0.5) * 0.2, vy: (Math.random() - 0.5) * 0.2, r: Math.random() * 2, a: Math.random(), t: Math.random() * 10 })
+  draw()
+  const stop = () => {
+    ro.disconnect()
+    cancelAnimationFrame(animId)
   }
-  const anim = () => {
-    ctx.clearRect(0, 0, w, h); pts.forEach(p => {
-      p.x += p.vx; p.y += p.vy; p.t += 0.01; const dx = p.x - cX, dy = p.y - cY, d = Math.sqrt(dx*dx+dy*dy)
-      if (d > w * 0.6) { p.x = cX; p.y = cY }
-      ctx.beginPath(); ctx.fillStyle = `rgba(${color}, ${p.a * (1 - d/(w*0.6))})`; ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill()
-    })
-    rafs.push(requestAnimationFrame(anim))
-  }
-  anim()
+  activeStopFunctions.push(stop)
+  return stop
 }
 
 onMounted(() => {
   setTimeout(() => pageLoaded.value = true, 100)
-  initParticles(bgParticleCanvas.value, 250, '49, 224, 200', 0.4)
-  initParticles(leftParticleCanvas.value, 120, '255, 255, 255', 0.6)
+  
+  // Background particles
+  startParticleEngine(bgParticleCanvas.value, { 
+    count: 180, 
+    color: '0, 229, 176', 
+    opacity: 0.5 
+  })
 })
-watch(isFinished, (v) => { if (v) setTimeout(() => initSuccessParticles(successParticleCanvas.value, 300, '4, 193, 143'), 200) })
-onBeforeUnmount(() => rafs.forEach(cancelAnimationFrame))
+
+watch(isFinished, (v) => { 
+  if (v) {
+    setTimeout(() => {
+      startParticleEngine(successParticleCanvas.value, { 
+        count: 250, 
+        color: '4, 193, 143', 
+        opacity: 0.8,
+        speedMult: 1.5
+      })
+    }, 200)
+  } 
+})
+
+onBeforeUnmount(() => {
+  activeStopFunctions.forEach(stop => stop())
+})
 function goToDashboard() { window.location.href = '/dashboard' }
 </script>
 
@@ -616,37 +804,41 @@ function goToDashboard() { window.location.href = '/dashboard' }
 /* QUESTION BOX - RESPONSIVE */
 .question-box { 
   width: 100%; max-width: 580px; 
-  min-height: auto; 
+  min-height: 85vh;
+  max-height: 85vh;
   padding: 24px; 
   border-radius: 24px; 
-  background: radial-gradient(ellipse at top left, rgba(0, 88, 71, 0.35) 0%, rgba(0, 40, 34, 0.98) 100%); 
-  border: 1px solid rgba(4, 193, 143, 0.15); 
-  backdrop-filter: blur(40px); 
-  -webkit-backdrop-filter: blur(40px);
+  background: #0F0F0F4A;
+  backdrop-filter: blur(72.9000015258789px); 
+  -webkit-backdrop-filter: blur(72.9000015258789px);
   display: flex; flex-direction: column; 
-  margin: 51px auto 0 auto;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0px 4px 4px 0px #00000040;
   position: relative;
+  border: 1px solid transparent; 
 }
 .question-box::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    background: linear-gradient(135deg, rgba(4, 193, 143, 0.3), transparent 40%, transparent 60%, rgba(4, 193, 143, 0.1));
-    border-radius: inherit;
-    z-index: -1;
-    pointer-events: none;
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px; /* Border thickness */
+  background: linear-gradient(125.98deg, #02362D 0%, #01362D 93.88%),
+              linear-gradient(124.6deg, rgba(0, 114, 92, 0.28) 6.57%, rgba(0, 112, 90, 0.28) 99.94%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
 }
 @media (min-width: 768px) {
-    .question-box { min-height: 580px; padding: 36px; border-radius: 40px; }
+    .question-box { padding: 36px; border-radius: 40px; }
 }
 @media (min-width: 1024px) { 
-    .question-box { min-height: 680px; padding: 48px; border-radius: 54px; margin: 0; } 
+    .question-box { padding: 48px; border-radius: 54px; margin: 0; } 
 }
 
-.step-title { color: #04C18F; font-size: 1.25rem; font-weight: 500; line-height: 1.4; max-width: 480px; margin-bottom: 0.5rem; }
-@media (min-width: 768px) { .step-title { font-size: 1.5rem; } }
-@media (min-width: 1024px) { .step-title { font-size: 1.75rem; } }
+.step-title { color: #04C18F; font-size: 22px; font-weight: 500; line-height: 1.4; max-width: 480px; margin-bottom: 25px; }
 
 /* IMAGE STYLE: INPUTS */
 .image-input {
@@ -688,13 +880,20 @@ function goToDashboard() { window.location.href = '/dashboard' }
 /* CTA BUTTON */
 .image-next-btn {
     width: 100%; max-width: 100%; /* Full width on mobile */
-    height: 50px; border-radius: 999px; color: white; font-weight: 600; font-size: 16px; border: none;
-    background: linear-gradient(90deg, #00C79F 0%, #0A6B59 100%); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 50px; border-radius: 999px; color: white; font-weight: 500; font-size: 16px; border: none;
+    background: linear-gradient(90deg, #00C79F 0%, #0A6B59 57.14%, #175C50 100%);
+    background-size: 200% auto;
+    background-position: 0% 0%;
+    cursor: pointer; 
+    transition: background-position 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease, opacity 0.3s ease;
 }
 @media (min-width: 640px) {
     .image-next-btn { max-width: 240px; height: 54px; font-size: 18px; }
 }
-.image-next-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 199, 159, 0.4); filter: brightness(1.1); }
+.image-next-btn:hover:not(:disabled) { 
+    background-position: 100% 0%;
+    transform: translateY(-2px); 
+}
 .image-next-btn:active:not(:disabled) { transform: translateY(0); }
 .image-next-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -719,6 +918,63 @@ function goToDashboard() { window.location.href = '/dashboard' }
 .panel-enter-active, .panel-leave-active { transition: all 0.3s ease; }
 .panel-enter-from { opacity: 0; transform: translateY(10px); }
 
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(4, 193, 143, 0.2); border-radius: 10px; }
+/* SCROLLBAR - Higher specificity to override main.css */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px !important;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border-radius: 10px !important;
+  margin-block: 8px !important;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #04C18F !important;
+  border-radius: 10px !important;
+}
+.custom-scrollbar::-webkit-scrollbar-button {
+  display: none !important;
+}
+/* Firefox support */
+.custom-scrollbar {
+  scrollbar-width: thin !important;
+  scrollbar-color: #04C18F rgba(0, 0, 0, 0.2) !important;
+}
+
+/* CURRENCY DROPDOWN */
+.currency-dropdown-list {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: rgba(0, 43, 35, 0.95);
+  border: 1px solid rgba(4, 193, 143, 0.2);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  backdrop-filter: blur(20px);
+  padding: 8px;
+}
+.currency-item {
+  padding: 12px 20px;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.2s;
+  border-radius: 12px;
+}
+.currency-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.currency-item.active {
+  background: rgba(4, 193, 143, 0.2);
+  color: #04C18F;
+}
+
+.fade-scale-fast-enter-active, .fade-scale-fast-leave-active {
+  transition: all 0.2s ease;
+}
+.fade-scale-fast-enter-from, .fade-scale-fast-leave-to {
+  opacity: 0;
+  transform: scale(0.95) translateY(-10px);
+}
 </style>

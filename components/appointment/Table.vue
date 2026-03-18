@@ -4,7 +4,7 @@
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr :class="isDark ? 'bg-[#00FFBC]/10' : 'bg-[#018E71]'">
-                    <th v-for="col in columns" :key="col" 
+                    <th v-for="col in columns" :key="col"
                         class="px-6 py-4 text-[14px] font-semibold"
                         :class="isDark ? 'text-[#00FFBC]' : 'text-white'">
                         {{ col }}
@@ -12,10 +12,10 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, idx) in data" :key="idx" 
+                <tr v-for="(item, idx) in data" :key="idx"
                     class="border-b last:border-0 transition-colors"
                     :class="isDark ? 'border-[#03D8B0]/10 hover:bg-white/5' : 'border-gray-50 hover:bg-gray-50'">
-                    
+
                     <!-- Date -->
                     <td class="px-6 py-4">
                         <div class="flex flex-row gap-[10px] items-center">
@@ -52,7 +52,8 @@
 
                     <!-- Action -->
                     <td class="px-6 py-4">
-                        <button class="flex items-center gap-2 px-4 py-1.5 rounded-lg border border-[#04C18F]/30 text-[#04C18F] hover:bg-[#04C18F]/10 transition-all cursor-pointer">
+                        <button @click="openDetails(item)"
+                            class="flex items-center gap-2 px-4 py-1.5 rounded-lg border border-[#04C18F]/30 text-[#04C18F] hover:bg-[#04C18F]/10 transition-all cursor-pointer">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -64,9 +65,18 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Appointment Details Modal -->
+    <AppointmentDetailsModal
+        v-model="isDetailsOpen"
+        :appointment="selectedAppointment"
+        @cancel="handleCancelAppointment"
+    />
 </template>
 
 <script setup>
+import { ref } from 'vue'
+
 const props = defineProps({
     data: Array
 })
@@ -74,6 +84,19 @@ const props = defineProps({
 const { isDark } = useTheme()
 
 const columns = ['Date', 'Consultant', 'Type', 'Duration', 'Status', 'Action']
+
+const isDetailsOpen = ref(false)
+const selectedAppointment = ref(null)
+
+const openDetails = (item) => {
+    selectedAppointment.value = item
+    isDetailsOpen.value = true
+}
+
+const handleCancelAppointment = (appointment) => {
+    // Optionally handle cancellation logic here
+    console.log('Cancel appointment:', appointment)
+}
 
 const getTypeStyle = (type) => {
     if (type === 'Monthly Review') return 'bg-[#D6F5ED] text-[#018E71]'

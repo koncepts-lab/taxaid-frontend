@@ -1,30 +1,20 @@
 <template>
   <!-- WELCOME OVERLAY SCREEN -->
   <div v-if="showWelcome" class="min-h-screen w-full bg-[#002B23] flex items-center justify-center relative overflow-hidden text-center p-4 bg-cover bg-center bg-no-repeat" style="background-image: url('/images/welcome-bg.webp')">
-    <!-- Dynamic Particles from Center -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none flex items-center justify-center">
-      <div v-for="i in 100" :key="i" 
-           class="absolute w-1 h-1 bg-[#00E5B0] rounded-full opacity-0 animate-particle"
-           :style="{
-             '--x': `${(Math.random() - 0.5) * 100}vw`,
-             '--y': `${(Math.random() - 0.5) * 100}vh`,
-             '--duration': `${10 + Math.random() * 10}s`,
-             '--delay': `${Math.random() * 5}s`
-           }">
-      </div>
-    </div>
+    <!-- Canvas Particle System -->
+    <canvas ref="welcomeCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
 
-    <div class="relative z-10 flex flex-col items-center max-w-2xl w-full animate-fade-in">
+    <div v-if="showWelcomeCard" class="relative z-10 flex flex-col items-center max-w-2xl w-full animate-slide-in-right">
       
 
       <!-- Content Card -->
-      <div class="bg-[#04332A]/50 backdrop-blur-sm border border-white/5 rounded-[40px] p-10 md:p-16 w-full shadow-2xl relative overflow-hidden">
+      <div class="welcome-card rounded-[40px] p-10 md:p-16 w-full relative overflow-hidden">
         <!-- Glow effect -->
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[#0C5B55]/40 blur-[100px] rounded-full pointer-events-none"></div>
 
         <div class="relative z-10 flex flex-col items-center">
            <!-- Logo -->
-           <img :src="welcomeLogoPath" alt="Taxaid" class="w-full max-w-[250px] mb-8" />
+           <img :src="welcomeLogoPath" alt="Taxaid" class="w-full max-w-[200px] mb-8" />
 
            <h1 class="text-[48px] font-semibold text-[#53FFDE] mb-2 leading-tight">
              {{ t.welcomeTitle }}
@@ -39,7 +29,7 @@
 
            <button 
              @click="router.push('/onboarding')"
-             class="group relative inline-flex items-center justify-center w-full max-w-[250px] py-3.5 text-[16px] font-medium text-white transition-all duration-200 bg-[linear-gradient(90deg,#00C79F_0%,#0A6B59_57.14%,#175C50_100%)] rounded-full hover:opacity-90 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(12,91,85,0.4)] cursor-pointer"
+             class="group relative inline-flex items-center justify-center w-full max-w-[250px] py-3.5 text-[16px] font-medium text-white rounded-full btn-premium cursor-pointer"
            >
              {{ t.getStarted }}
              <svg class="w-5 h-5 ml-2 transition-transform duration-200 group-hover:translate-x-1" 
@@ -127,6 +117,20 @@
               />
             </div>
             
+            <!-- Contact Number (Signup Only) -->
+            <div v-if="!isLogin" class="relative group">
+              <span class="absolute top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#013E32] transition-colors"
+                    :class="isRtl ? 'right-5' : 'left-5'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              </span>
+              <input 
+                v-model="form.contactNumber" 
+                type="tel" 
+                :placeholder="t.contactNumberPlaceholder" 
+                class="h-[56px] w-full rounded-[35px] border border-[#D1D5DB] bg-white px-14 outline-none focus:border-[#013E32] transition-all text-[15px] placeholder:text-gray-400" 
+              />
+            </div>
+            
             <!-- Password -->
             <div class="relative group">
               <span class="absolute top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#013E32] transition-colors"
@@ -186,7 +190,7 @@
             <!-- Submit Button -->
             <button 
               type="submit" 
-              class="group relative inline-flex items-center justify-center mt-6 h-[52px] w-full rounded-full text-[20px] font-semibold text-white transition-all duration-200 bg-[linear-gradient(90deg,#00C79F_0%,#0A6B59_57.14%,#175C50_100%)] hover:opacity-90 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(12,91,85,0.4)] cursor-pointer" 
+              class="group relative inline-flex items-center justify-center mt-6 h-[52px] w-full rounded-full text-[20px] font-medium text-white btn-premium cursor-pointer" 
             >
               {{ isLogin ? t.loginBtn : t.signupBtn }}
               <svg class="w-6 h-6 ml-2 transition-transform duration-200 group-hover:translate-x-1" 
@@ -208,22 +212,6 @@
               </button>
             </p>
 
-            <!-- Divider -->
-            <div class="relative flex items-center py-6">
-              <div class="flex-grow border-t border-gray-200"></div>
-              <span class="flex-shrink mx-4 text-[18px] font-medium text-[#00000078] bg-[#fff] px-2">{{ t.or }}</span>
-              <div class="flex-grow border-t border-gray-200"></div>
-            </div>
-
-            <!-- Social Logins -->
-            <div class="flex justify-center gap-4">
-              <button type="button" class="w-[52px] h-[52px] rounded-full bg-white border border-transparent shadow-[0_2px_10px_rgba(0,0,0,0.05)] flex items-center justify-center hover:bg-gray-50 transition-transform hover:scale-105 active:scale-95 cursor-pointer">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6" alt="Google" />
-              </button>
-              <button type="button" class="w-[52px] h-[52px] rounded-full bg-white border border-transparent shadow-[0_2px_10px_rgba(0,0,0,0.05)] flex items-center justify-center hover:bg-gray-50 transition-transform hover:scale-105 active:scale-95 cursor-pointer">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="#000"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74s2.57-.91 3.84-.75c.52.01 2.04.13 3 1.57-2.6.76-2.16 3.81.36 4.95-.56 2-1.35 3.98-2.28 6.46zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
-              </button>
-            </div>
           </form>
 
           <!-- Forgot Password Steps -->
@@ -239,7 +227,7 @@
                       class="h-[56px] w-full rounded-[35px] border border-[#D1D5DB] bg-white px-14 outline-none focus:border-[#013E32] transition-all text-[#000] placeholder:text-gray-400" 
                    />
                 </div>
-                <button @click="handleResetPassword()" class="h-[52px] w-full rounded-full text-[20px] font-semibold text-white transition-all bg-[linear-gradient(90deg,#00C79F_0%,#0A6B59_57.14%,#175C50_100%)] hover:opacity-90 active:scale-[0.98] cursor-pointer">
+                <button @click="handleResetPassword()" class="h-[52px] w-full rounded-full text-[20px] font-medium text-white btn-premium cursor-pointer">
                    {{ t.resetPassword }}
                 </button>
              </div>
@@ -251,7 +239,7 @@
                       class="w-[80px] h-[80px] rounded-[20px] border border-[#009276] !text-[#009276] outline-none bg-white text-center text-[32px] font-medium transition-all focus:border-[#013E32]" 
                    />
                 </div>
-                <button @click="handleResetPassword()" class="h-[52px] w-full rounded-full text-[20px] font-semibold text-white transition-all bg-[linear-gradient(90deg,#00C79F_0%,#0A6B59_57.14%,#175C50_100%)] hover:opacity-90 active:scale-[0.98] cursor-pointer">
+                <button @click="handleResetPassword()" class="h-[52px] w-full rounded-full text-[20px] font-medium text-white btn-premium cursor-pointer">
                    {{ t.continue }}
                 </button>
                 <p class="text-[18px] font-medium text-[#00000080]">
@@ -289,7 +277,7 @@
                       <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                    </button>
                 </div>
-                <button @click="handleResetPassword()" class="h-[52px] w-full rounded-full text-[20px] font-semibold text-white transition-all bg-[linear-gradient(90deg,#00C79F_0%,#0A6B59_57.14%,#175C50_100%)] hover:opacity-90 active:scale-[0.98] cursor-pointer">
+                <button @click="handleResetPassword()" class="h-[52px] w-full rounded-full text-[20px] font-medium text-white btn-premium cursor-pointer">
                    {{ t.resetPassword }}
                 </button>
                 <p class="text-[18px] font-medium text-[#00000080] text-center">
@@ -302,7 +290,7 @@
                 <div class="w-20 h-20 rounded-full border-2 border-[#00B389] flex items-center justify-center mb-8">
                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-[#00B389]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                 </div>
-                <button @click="backToLogin()" class="h-[54px] w-full rounded-full text-[20px] font-semibold text-white transition-all bg-[linear-gradient(90deg,#00C79F_0%,#0A6B59_57.14%,#175C50_100%)] hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer">
+                 <button @click="backToLogin()" class="h-[54px] w-full rounded-full text-[20px] font-medium text-white btn-premium flex items-center justify-center gap-2 cursor-pointer">
                    <svg v-if="!isRtl" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                    {{ t.backToLogin }}
                    <svg v-if="isRtl" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
@@ -329,14 +317,14 @@
           </div>
 
           <div class="relative z-10 flex flex-col items-center w-full px-10">
-             <div class="mb-14 text-center">
+             <div class="mb-5 text-center">
                 <p class="text-[24px] font-light text-[#FFFFFFB2] tracking-wide mb-2">{{ t.heroSub }}</p>
                 <h2 class="text-[26px] font-medium text-white leading-tight">{{ t.heroMain }}</h2>
              </div>
              <img 
-               src="/images/login-hero.png" 
-               class="drop-shadow-2xl transition-transform hover:scale-[1.02] duration-500" 
-               style="max-width: 85%; width: 100%" 
+               src="/images/login-hero.webp" 
+               class="drop-shadow-2xl" 
+               style="max-width: 75%; width: 100%" 
                alt="Dashboard"
              />
           </div>
@@ -348,13 +336,103 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import LanguageToggle from '@/components/common/LanguageToggle.vue'
+
+// ---------- Canvas Particle System ----------
+const welcomeCanvas = ref(null)
+let animFrameId = null
+
+function startWelcomeParticles(canvas) {
+  const ctx = canvas.getContext('2d')
+  let W = 0, H = 0
+
+  function resize() {
+    W = canvas.width  = canvas.offsetWidth
+    H = canvas.height = canvas.offsetHeight
+  }
+
+  const ro = new ResizeObserver(resize)
+  ro.observe(canvas)
+  resize()
+
+  // Particle factory
+  function createParticle() {
+    const angle   = Math.random() * Math.PI * 2
+    // 20% of particles go far outside (1.2x–2x screen diagonal), rest stay near center
+    const isFar   = Math.random() < 0.2
+    const maxDist = isFar
+      ? Math.hypot(W, H) * (0.9 + Math.random() * 0.8)   // far-flier
+      : Math.hypot(W, H) * (0.15 + Math.random() * 0.35)  // near-center
+
+    // Reduced speed: 0.18 – 0.55 px/frame (was ~0.5–1.5)
+    const speed   = 0.18 + Math.random() * 0.37
+
+    const size    = 0.5 + Math.random() * 1.5
+    const life    = maxDist / speed          // frames to live
+    const delay   = Math.random() * 180      // stagger in frames
+
+    return {
+      x: W / 2, y: H / 2,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      size,
+      life,
+      maxLife: life,
+      delay,
+      age: -delay,   // negative = waiting to spawn
+      done: false
+    }
+  }
+
+  const POOL = 160
+  let particles = Array.from({ length: POOL }, createParticle)
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H)
+
+    particles.forEach((p, i) => {
+      p.age++
+      if (p.age < 0) return   // still in delay
+
+      if (p.done || p.age > p.maxLife) {
+        particles[i] = createParticle()   // recycle
+        return
+      }
+
+      p.x += p.vx
+      p.y += p.vy
+
+      const progress = p.age / p.maxLife            // 0 → 1
+      // Fade in for first 10%, fade out for last 30%
+      const alpha = progress < 0.1  ? progress / 0.1
+                  : progress > 0.7  ? (1 - progress) / 0.3
+                  : 1
+
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(0, 229, 176, ${alpha * 0.75})`
+      ctx.fill()
+    })
+
+    animFrameId = requestAnimationFrame(draw)
+  }
+
+  draw()
+
+  return () => {
+    ro.disconnect()
+    cancelAnimationFrame(animFrameId)
+  }
+}
+
+let stopParticles = null
 
 const router = useRouter()
 const isLogin = ref(true)
 const showWelcome = ref(false)
+const showWelcomeCard = ref(false)
 const showPassword = ref(true)
 const showConfirmPassword = ref(false)
 const currentLanguage = ref('en')
@@ -362,6 +440,24 @@ const isForgotPassword = ref(false)
 const forgotPasswordStep = ref(1) // 1: Email, 2: OTP, 3: New Password, 4: Success
 const otp = ref(['', '', '', ''])
 const forgotEmail = ref('')
+
+// Start particles as soon as the welcome screen is shown (must be after showWelcome is declared)
+watch(
+  () => showWelcome.value,
+  (val) => {
+    if (val) {
+      setTimeout(() => {
+        if (welcomeCanvas.value) {
+          stopParticles = startWelcomeParticles(welcomeCanvas.value)
+        }
+      }, 50)
+    } else {
+      stopParticles?.()
+    }
+  }
+)
+
+onUnmounted(() => stopParticles?.())
 
 // Using dynamic path to avoid any potential static analysis weirdness
 const welcomeLogoPath = '/images/welcome-logo.png'
@@ -376,6 +472,7 @@ const translations = {
     signupDesc: 'Create your account to access smart financial dashboards and AI-powered analytics.',
     namePlaceholder: 'Company Name',
     emailPlaceholder: 'Email',
+    contactNumberPlaceholder: 'Contact Number',
     passwordPlaceholder: 'Password',
     confirmPlaceholder: 'Confirm Password',
     rememberMe: 'Remember me',
@@ -386,7 +483,7 @@ const translations = {
     alreadyHaveAccount: 'Already have an account?',
     signUpLink: 'Sign up here',
     signInLink: 'Sign in here',
-    or: 'or',
+
     heroSub: 'Analyze deeper.',
     heroMain: 'Decide faster. Grow smarter.',
     welcomeTitle: 'Welcome to',
@@ -415,6 +512,7 @@ const translations = {
     signupDesc: 'أنشئ حسابك للوصول إلى لوحات المعلومات المالية الذكية والتحليلات المدعومة بالذكاء الاصطناعي.',
     namePlaceholder: 'اسم الشركة',
     emailPlaceholder: 'بريد إلكتروني',
+    contactNumberPlaceholder: 'رقم الاتصال',
     passwordPlaceholder: 'كلمة المرور',
     confirmPlaceholder: 'تأكيد كلمة المرور',
     rememberMe: 'تذكرنى',
@@ -425,7 +523,6 @@ const translations = {
     alreadyHaveAccount: 'هل لديك حساب بالفعل؟',
     signUpLink: 'قم بالتسجيل هنا',
     signInLink: 'تسجيل الدخول هنا',
-    or: 'أو',
     heroSub: 'تحليل أعمق.',
     heroMain: 'قرر بشكل أسرع. كن أكثر ذكاءً.',
     welcomeTitle: 'مرحبًا بك في',
@@ -454,6 +551,7 @@ const t = computed(() => translations[currentLanguage.value])
 const form = reactive({
   name: '',
   email: '',
+  contactNumber: '',
   password: '',
   confirmPassword: ''
 })
@@ -462,6 +560,11 @@ function onSubmit() {
   console.log('Submitting', isLogin.value ? 'Login' : 'Signup', form)
   // Show welcome screen instead of immediate routing
   showWelcome.value = true
+  
+  // Show the content card with a delay so particles are seen first
+  setTimeout(() => {
+    showWelcomeCard.value = true
+  }, 2000)
 }
 
 const handleResetPassword = () => {
@@ -492,6 +595,19 @@ input:-webkit-autofill:active {
     -webkit-box-shadow: 0 0 0 30px white inset !important;
     -webkit-text-fill-color: #000 !important;
 }
+/* Premium Button Styles */
+.btn-premium {
+  background: linear-gradient(90deg, #003228 0%, #0E6B60 50%, #003228 100%);
+  background-size: 200% auto;
+  background-position: 0% 0%;
+  font-weight: 500;
+  transition: background-position 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-premium:hover {
+  background-position: 100% 0%;
+}
+
 /* Custom Scrollbar for form section if needed */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -507,22 +623,48 @@ input:-webkit-autofill:active {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-particle {
-  animation: particle-move var(--duration) linear infinite;
-  animation-delay: var(--delay);
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(150px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-@keyframes particle-move {
-  0% {
-    transform: translate(0, 0) scale(0);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translate(var(--x), var(--y)) scale(1);
-    opacity: 0;
-  }
+.animate-slide-in-right {
+  animation: slideInRight 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Canvas particle system handles its own rendering — no CSS keyframes needed */
+
+/* Welcome card — gradient border + glass effect */
+.welcome-card {
+  background: #0F0F0F4A;
+  backdrop-filter: blur(72.9px);
+  -webkit-backdrop-filter: blur(72.9px);
+  box-shadow: 0px 4px 4px 0px #00000040;
+}
+
+/* Gradient border via pseudo-element (border-image breaks border-radius) */
+.welcome-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 40px;
+  padding: 1px;
+  background: linear-gradient(125.98deg, rgba(0, 114, 92, 0.28) 0%, rgba(0, 112, 90, 0.28) 93.88%);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 0;
 }
 </style>
