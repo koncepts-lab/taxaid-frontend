@@ -64,16 +64,16 @@
               </td>
               <td class="lg:px-6 px-4 py-3 text-center">
                 <!-- Half Circular Progress -->
-                <div class="relative w-[55px] h-[36px] mx-auto flex items-end justify-center">
-                  <svg class="w-[55px] h-[36px]" viewBox="0 0 48 32">
+                <div class="relative w-[65px] h-[32px] mx-auto flex items-end justify-center">
+                  <svg class="w-[65px] h-[32px]" viewBox="0 0 48 32">
                     <path d="M 4 28 A 20 20 0 0 1 44 28" :class="isDark ? 'text-[#ffffff1a]' : 'text-[#F2F2F2]'"
                       stroke-width="4" stroke="currentColor" fill="none" stroke-linecap="round" />
                     <path d="M 4 28 A 20 20 0 0 1 44 28"
-                      :style="{ color: item.color, strokeDasharray: 62.83, strokeDashoffset: 62.83 - (62.83 * item.progress) / 100 }"
+                      :style="{ color: getProgressColor(item.progress), strokeDasharray: 62.83, strokeDashoffset: 62.83 - (62.83 * item.progress) / 100 }"
                       stroke-width="4" stroke="currentColor" fill="none" stroke-linecap="round"
                       class="transition-all duration-500" />
                   </svg>
-                  <span class="absolute bottom-0 text-[11px] font-semibold"
+                  <span class="absolute bottom-0 text-[10px] font-bold"
                     :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.progress }}%</span>
                 </div>
               </td>
@@ -100,15 +100,15 @@
               </span>
             </td>
             <td class="lg:px-6 px-4 py-3 text-center">
-              <div class="relative w-[55px] h-[36px] mx-auto flex items-end justify-center">
-                <svg class="w-[55px] h-[36px]" viewBox="0 0 48 32">
+              <div class="relative w-[65px] h-[32px] mx-auto flex items-end justify-center">
+                <svg class="w-[65px] h-[32px]" viewBox="0 0 48 32">
                   <path d="M 4 28 A 20 20 0 0 1 44 28" class="text-white/30" stroke-width="4" stroke="currentColor"
                     fill="none" stroke-linecap="round" />
                   <path d="M 4 28 A 20 20 0 0 1 44 28"
-                    style="color: #FB7554; stroke-dasharray: 62.83; stroke-dashoffset: 47.1225" stroke-width="4"
+                    :style="{ color: getProgressColor(25), strokeDasharray: 62.83, strokeDashoffset: 47.1225 }" stroke-width="4"
                     stroke="currentColor" fill="none" stroke-linecap="round" />
                 </svg>
-                <span class="absolute bottom-0 text-[11px] font-semibold"
+                <span class="absolute bottom-0 text-[10px] font-bold"
                   :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">25%</span>
               </div>
             </td>
@@ -189,16 +189,16 @@
                       </span>
                     </td>
                     <td class="px-6 py-3 text-center">
-                      <div class="relative w-[55px] h-[36px] mx-auto flex items-end justify-center">
-                        <svg class="w-[55px] h-[36px]" viewBox="0 0 48 32">
+                      <div class="relative w-[65px] h-[32px] mx-auto flex items-end justify-center">
+                        <svg class="w-[65px] h-[32px]" viewBox="0 0 48 32">
                           <path d="M 4 28 A 20 20 0 0 1 44 28" :class="isDark ? 'text-[#ffffff1a]' : 'text-[#F2F2F2]'"
                             stroke-width="4" stroke="currentColor" fill="none" stroke-linecap="round" />
                           <path d="M 4 28 A 20 20 0 0 1 44 28"
-                            :style="{ color: item.color, strokeDasharray: 62.83, strokeDashoffset: 62.83 - (62.83 * item.progress) / 100 }"
+                            :style="{ color: getProgressColor(item.progress), strokeDasharray: 62.83, strokeDashoffset: 62.83 - (62.83 * item.progress) / 100 }"
                             stroke-width="4" stroke="currentColor" fill="none" stroke-linecap="round"
                             class="transition-all duration-500" />
                         </svg>
-                        <span class="absolute bottom-0 text-[11px] font-semibold"
+                        <span class="absolute bottom-0 text-[10px] font-bold"
                           :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.progress }}%</span>
                       </div>
                     </td>
@@ -222,15 +222,15 @@
                     </span>
                   </td>
                   <td class="px-6 py-3 text-center">
-                    <div class="relative w-[55px] h-[36px] mx-auto flex items-end justify-center">
-                      <svg class="w-[55px] h-[36px]" viewBox="0 0 48 32">
+                    <div class="relative w-[65px] h-[32px] mx-auto flex items-end justify-center">
+                      <svg class="w-[65px] h-[32px]" viewBox="0 0 48 32">
                         <path d="M 4 28 A 20 20 0 0 1 44 28" class="text-white/30" stroke-width="4"
                           stroke="currentColor" fill="none" stroke-linecap="round" />
                         <path d="M 4 28 A 20 20 0 0 1 44 28"
-                          style="color: #FB7554; stroke-dasharray: 62.83; stroke-dashoffset: 47.1225" stroke-width="4"
+                          :style="{ color: getProgressColor(25), strokeDasharray: 62.83, strokeDashoffset: 47.1225 }" stroke-width="4"
                           stroke="currentColor" fill="none" stroke-linecap="round" />
                       </svg>
-                      <span class="absolute bottom-0 text-[11px] font-semibold"
+                      <span class="absolute bottom-0 text-[10px] font-bold"
                         :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">25%</span>
                     </div>
                   </td>
@@ -252,6 +252,12 @@ const currentLang = useState('currentLang', () => 'en')
 
 const isModalOpen = ref(false)
 
+const getProgressColor = (progress) => {
+  if (progress >= 50) return '#00d28e'
+  if (progress >= 25) return '#ffb74d'
+  return '#fb7554'
+}
+
 const tableData = ref([
   {
     label: 'Product Sales',
@@ -260,8 +266,7 @@ const tableData = ref([
     previousYear: '1,620,000',
     budget: '1,900,000',
     variance: 14.2,
-    progress: 50,
-    color: '#00A176'
+    progress: 50
   },
   {
     label: 'Service',
@@ -270,8 +275,7 @@ const tableData = ref([
     previousYear: '380,000',
     budget: '480,000',
     variance: 18.4,
-    progress: 30,
-    color: '#FFC107'
+    progress: 30
   },
   {
     label: 'Subscriptions',
@@ -280,8 +284,7 @@ const tableData = ref([
     previousYear: '240,000',
     budget: '300,000',
     variance: -16.7,
-    progress: 20,
-    color: '#FB7554'
+    progress: 20
   }
 ])
 </script>

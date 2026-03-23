@@ -1,10 +1,14 @@
 <template>
   <NuxtLayout name="dashboard">
-    <div v-if="!isFullScreenChat" class="relative z-10 flex h-screen overflow-hidden" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+
+    <div v-if="!isFullScreenChat" class="relative z-10 flex min-h-screen" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
       <!-- LEFT AREA: Resizes dynamically -->
-      <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" :class="isChatOpen 
-        ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
-        : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
+      <div class="flex-1 no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" 
+        :class="[
+          isChatOpen 
+            ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
+            : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')
+        ]">
         
         <div class="data-source-container pt-8 lg:pt-0">
           <!-- Page Title & Description -->
@@ -275,6 +279,9 @@ const activeSubTab = ref('settings')
 // Search
 const searchQuery = ref('')
 
+
+
+
 // Main tabs
 const mainTabs = [
   { 
@@ -380,21 +387,6 @@ const getPDCStatusClass = (status) => {
 </script>
 
 <style scoped>
-.data-source-container {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .sub-tabs-container::-webkit-scrollbar {
   height: 6px;
 }
@@ -425,4 +417,6 @@ table {
   border-collapse: separate;
   border-spacing: 0;
 }
+
+
 </style>

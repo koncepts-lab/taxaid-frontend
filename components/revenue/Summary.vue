@@ -89,8 +89,8 @@
                         <!-- Year to Go -->
                         <td :class="isCompressed ? 'px-4' : 'px-6'" class="py-5">
                             <div v-if="row.progress !== null && row.progress !== undefined" class="flex justify-center">
-                                <div class="relative w-16 h-8 overflow-hidden">
-                                    <svg class="w-16 h-16" viewBox="0 0 100 100">
+                                <div class="relative w-[65px] h-[32px] overflow-hidden">
+                                    <svg class="w-[65px] h-[65px]" viewBox="0 0 100 100">
                                         <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" :stroke="isDark ? '#FFFFFF1A' : '#f3f4f6'" stroke-width="8" stroke-linecap="round" />
                                         <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none"
                                             :stroke="getProgressColor(row.progress)"
@@ -240,8 +240,8 @@
                                         </td>
                                         <td class="px-6 py-5">
                                             <div v-if="row.progress !== null && row.progress !== undefined" class="flex justify-center">
-                                                <div class="relative w-16 h-8 overflow-hidden">
-                                                    <svg class="w-16 h-16" viewBox="0 0 100 100">
+                                                <div class="relative w-[65px] h-[32px] overflow-hidden">
+                                                    <svg class="w-[65px] h-[65px]" viewBox="0 0 100 100">
                                                         <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" :stroke="isDark ? '#FFFFFF1A' : '#f3f4f6'" stroke-width="8" stroke-linecap="round" />
                                                         <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none"
                                                             :stroke="getProgressColor(row.progress)"
@@ -352,7 +352,7 @@ const toggleModalRow = (index) => {
 
 const getProgressColor = (progress) => {
     if (progress >= 50) return '#00d28e'
-    if (progress >= 30) return '#ffb74d'
+    if (progress >= 25) return '#ffb74d'
     return '#fb7554'
 }
 </script>

@@ -56,7 +56,7 @@
                 </span>
             </td>
             <td class="px-6 py-5 text-left rtl:text-right">
-                <div class="relative w-12 h-6 overflow-hidden">
+                <div class="relative w-[65px] h-[32px] overflow-hidden">
                     <svg viewBox="0 0 100 50" class="w-full h-full">
                         <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none" :stroke="isDark ? '#FFFFFF20' : '#E5E7EB'" stroke-width="12" stroke-linecap="round" />
                         <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none" :stroke="gaugeColor(item.yearToGo)" stroke-width="12" stroke-linecap="round" 
@@ -125,7 +125,7 @@
                         </span>
                     </td>
                     <td class="px-6 py-5 text-left rtl:text-right">
-                        <div class="relative w-12 h-6 overflow-hidden">
+                        <div class="relative w-[65px] h-[32px] overflow-hidden">
                             <svg viewBox="0 0 100 50" class="w-full h-full">
                                 <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none" :stroke="isDark ? '#FFFFFF20' : '#E5E7EB'" stroke-width="12" stroke-linecap="round" />
                                 <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none" :stroke="gaugeColor(item.yearToGo)" stroke-width="12" stroke-linecap="round" 
@@ -196,9 +196,9 @@ const tableData = ref([
 ])
 
 const gaugeColor = (value) => {
-    if (value >= 50) return '#03D8B0'
-    if (value >= 30) return '#FFBB00'
-    return '#FF582F'
+    if (value >= 50) return '#00d28e'
+    if (value >= 25) return '#ffb74d'
+    return '#fb7554'
 }
 </script>
 

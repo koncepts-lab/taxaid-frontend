@@ -1,53 +1,59 @@
 <template>
-  <!-- WELCOME OVERLAY SCREEN -->
-  <div v-if="showWelcome" class="min-h-screen w-full bg-[#002B23] flex items-center justify-center relative overflow-hidden text-center p-4 bg-cover bg-center bg-no-repeat" style="background-image: url('/images/welcome-bg.webp')">
-    <!-- Canvas Particle System -->
-    <canvas ref="welcomeCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+  <div class="relative min-h-screen w-full bg-[#fff] overflow-hidden" :dir="isRtl ? 'rtl' : 'ltr'">
+    <!-- WELCOME OVERLAY SCREEN -->
+    <div v-if="showWelcome" class="absolute inset-0 z-50 min-h-screen w-full flex items-center justify-center overflow-hidden text-center animate-expand-bg" style="background: radial-gradient(circle at center, #0C5B55 0%, #002B23 100%)">
+      <!-- Canvas Particle System -->
+      <canvas ref="welcomeCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
 
-    <div v-if="showWelcomeCard" class="relative z-10 flex flex-col items-center max-w-2xl w-full animate-slide-in-right">
-      
+      <div v-if="showWelcomeCard" class="relative z-[55] flex flex-col items-center max-w-2xl w-full animate-slide-in-right-far">
+        
 
-      <!-- Content Card -->
-      <div class="welcome-card rounded-[40px] p-10 md:p-16 w-full relative overflow-hidden">
-        <!-- Glow effect -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[#0C5B55]/40 blur-[100px] rounded-full pointer-events-none"></div>
+        <!-- Content Card -->
+        <div class="welcome-card rounded-[40px] p-10 md:p-16 w-full relative overflow-hidden">
+          <!-- Glow effect -->
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[#0C5B55]/40 blur-[100px] rounded-full pointer-events-none"></div>
 
-        <div class="relative z-10 flex flex-col items-center">
-           <!-- Logo -->
-           <img :src="welcomeLogoPath" alt="Taxaid" class="w-full max-w-[200px] mb-8" />
+          <div class="relative z-10 flex flex-col items-center">
+             <!-- Logo -->
+             <img :src="welcomeLogoPath" alt="Taxaid" class="w-full max-w-[200px] mb-8" />
 
-           <h1 class="text-[48px] font-semibold text-[#53FFDE] mb-2 leading-tight">
-             {{ t.welcomeTitle }}
-           </h1>
-           <h2 class="text-[36px] font-normal text-[#DEFFF9] mb-6">
-             {{ t.welcomeSubtitle }}
-           </h2>
+             <h1 class="text-[48px] font-semibold text-[#53FFDE] mb-2 leading-tight">
+               {{ t.welcomeTitle }}
+             </h1>
+             <h2 class="text-[36px] font-normal text-[#DEFFF9] mb-6">
+               {{ t.welcomeSubtitle }}
+             </h2>
 
-           <p class="text-[18px] font-light text-[#FFFFFFFA] leading-relaxed mb-10 max-w-lg mx-auto">
-             {{ t.welcomeDesc }}
-           </p>
+             <p class="text-[18px] font-light text-[#FFFFFFFA] leading-relaxed mb-10 max-w-lg mx-auto">
+               {{ t.welcomeDesc }}
+             </p>
 
-           <button 
-             @click="router.push('/onboarding')"
-             class="group relative inline-flex items-center justify-center w-full max-w-[250px] py-3.5 text-[16px] font-medium text-white rounded-full btn-premium cursor-pointer"
-           >
-             {{ t.getStarted }}
-             <svg class="w-5 h-5 ml-2 transition-transform duration-200 group-hover:translate-x-1" 
-                  :class="isRtl ? 'rotate-180 group-hover:-translate-x-1 group-hover:translate-x-0' : ''"
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-             </svg>
-           </button>
+             <button 
+               @click="router.push('/onboarding')"
+               class="group relative inline-flex items-center justify-center w-full max-w-[250px] py-3.5 text-[16px] font-medium text-white rounded-full btn-premium cursor-pointer"
+             >
+               {{ t.getStarted }}
+               <svg class="w-5 h-5 ml-2 transition-transform duration-200 group-hover:translate-x-1" 
+                    :class="isRtl ? 'rotate-180 group-hover:-translate-x-1 group-hover:translate-x-0' : ''"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+               </svg>
+             </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div v-else class="min-h-screen w-full bg-[#fff] flex items-center justify-center" :dir="isRtl ? 'rtl' : 'ltr'">
-    <div class="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2 overflow-hidden">
+    <!-- MAIN SCREEN -->
+    <div class="w-full min-h-screen flex items-center justify-center relative z-10">
+      <div class="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2 overflow-hidden">
       
       <!-- LEFT : FORM SECTION -->
-      <section class="flex flex-col justify-center items-center px-6 lg:px-20 py-10 order-2 lg:order-1 relative bg-[#fff]">
+      <section class="flex flex-col justify-center items-center px-6 lg:px-20 py-10 order-2 lg:order-1 relative bg-[#fff]"
+               :style="{
+                 transform: showWelcome ? (isRtl ? 'translateX(100vw)' : 'translateX(-100vw)') : 'translateX(0)',
+                 transition: 'transform 1s cubic-bezier(0.65, 0, 0.15, 1)'
+               }">
         <!-- Logo (Absolute Top-Left on Desktop, Relative on Mobile) -->
         <!-- Logic: in RTL, this should be Top-Right? Usually logos stay or flip. Let's flip it for mirroring. -->
         <div class="absolute top-10 hidden lg:block" :class="isRtl ? 'right-10' : 'left-10'">
@@ -331,6 +337,7 @@
         </div>
       </section>
 
+      </div>
     </div>
   </div>
 </template>
@@ -561,10 +568,10 @@ function onSubmit() {
   // Show welcome screen instead of immediate routing
   showWelcome.value = true
   
-  // Show the content card with a delay so particles are seen first
+  // Show the content card with a delay so background sweep finishes first
   setTimeout(() => {
     showWelcomeCard.value = true
-  }, 2000)
+  }, 1200)
 }
 
 const handleResetPassword = () => {
@@ -623,10 +630,10 @@ input:-webkit-autofill:active {
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes slideInRight {
+@keyframes slideInRightFar {
   from {
     opacity: 0;
-    transform: translateX(150px);
+    transform: translateX(100vw);
   }
   to {
     opacity: 1;
@@ -634,8 +641,17 @@ input:-webkit-autofill:active {
   }
 }
 
-.animate-slide-in-right {
-  animation: slideInRight 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+.animate-slide-in-right-far {
+  animation: slideInRightFar 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes expandFromRight {
+  0% { clip-path: inset(0 0 0 100%); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+
+.animate-expand-bg {
+  animation: expandFromRight 1s cubic-bezier(0.65, 0, 0.15, 1) forwards;
 }
 
 /* Canvas particle system handles its own rendering — no CSS keyframes needed */

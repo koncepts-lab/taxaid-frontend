@@ -38,7 +38,7 @@
               <td class="px-6 py-5 text-center font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.actual }}</td>
               <td class="px-6 py-5 text-center font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ item.budget }}</td>
               <td class="px-6 py-5 text-center">
-                  <div class="relative w-12 h-6 overflow-hidden mx-auto">
+                  <div class="relative w-[65px] h-[32px] overflow-hidden mx-auto">
                       <svg viewBox="0 0 100 50" class="w-full h-full">
                           <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none" :stroke="isDark ? '#FFFFFF20' : '#E5E7EB'" stroke-width="12" stroke-linecap="round" />
                           <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none" :stroke="gaugeColor(item.progress)" stroke-width="12" stroke-linecap="round" 
@@ -59,10 +59,10 @@
             <td class="px-6 py-5 text-center font-bold text-[14px]" :class="isDark ? 'text-white' : 'text-[#013e32]'">17,500,000</td>
             <td class="px-6 py-5 text-center font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#013e32]'">550,000</td>
             <td class="px-6 py-5 text-center">
-              <div class="relative w-12 h-6 overflow-hidden mx-auto">
+              <div class="relative w-[65px] h-[32px] overflow-hidden mx-auto">
                   <svg viewBox="0 0 100 50" class="w-full h-full">
                       <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none" :stroke="isDark ? '#FFFFFF20' : '#E5E7EB'" stroke-width="12" stroke-linecap="round" />
-                      <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none" stroke="#FF582F" stroke-width="12" stroke-linecap="round" 
+                      <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none" :stroke="gaugeColor(10)" stroke-width="12" stroke-linecap="round" 
                           :stroke-dasharray="251" :stroke-dashoffset="251 - (251 * 10 / 100)" />
                   </svg>
                   <div class="absolute inset-x-0 bottom-0 text-[10px] text-center font-bold" :class="isDark ? 'text-white' : 'text-[#013e32]'">
@@ -113,7 +113,7 @@
                     <td class="px-6 py-5 text-center font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.actual }}</td>
                     <td class="px-6 py-5 text-center font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ item.budget }}</td>
                     <td class="px-6 py-5 text-center">
-                        <div class="relative w-12 h-6 overflow-hidden mx-auto">
+                        <div class="relative w-[65px] h-[32px] overflow-hidden mx-auto">
                             <svg viewBox="0 0 100 50" class="w-full h-full">
                                 <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none" :stroke="isDark ? '#FFFFFF20' : '#E5E7EB'" stroke-width="12" stroke-linecap="round" />
                                 <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none" :stroke="gaugeColor(item.progress)" stroke-width="12" stroke-linecap="round" 
@@ -134,10 +134,10 @@
                     <td class="px-6 py-5 text-center font-bold text-[14px]" :class="isDark ? 'text-black' : 'text-[#013e32]'">17,500,000</td>
                     <td class="px-6 py-5 text-center font-medium text-[14px]" :class="isDark ? 'text-black' : 'text-[#013e32]'">550,000</td>
                     <td class="px-6 py-5 text-center">
-                      <div class="relative w-12 h-6 overflow-hidden mx-auto">
+                      <div class="relative w-[65px] h-[32px] overflow-hidden mx-auto">
                           <svg viewBox="0 0 100 50" class="w-full h-full">
                               <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none" :stroke="isDark ? '#FFFFFF20' : '#E5E7EB'" stroke-width="12" stroke-linecap="round" />
-                              <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none" stroke="#FF582F" stroke-width="12" stroke-linecap="round" 
+                              <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none" :stroke="gaugeColor(10)" stroke-width="12" stroke-linecap="round" 
                                   :stroke-dasharray="251" :stroke-dashoffset="251 - (251 * 10 / 100)" />
                           </svg>
                           <div class="absolute inset-x-0 bottom-0 text-[10px] text-center font-bold" :class="isDark ? 'text-black' : 'text-[#013e32]'">
@@ -169,8 +169,8 @@ const tableData = [
 ]
 
 const gaugeColor = (value) => {
-    if (value >= 50) return '#03D8B0'
-    if (value >= 30) return '#FFBB00'
-    return '#FF582F'
+    if (value >= 50) return '#00d28e'
+    if (value >= 25) return '#ffb74d'
+    return '#fb7554'
 }
 </script>

@@ -146,8 +146,7 @@
                                     <td class="pe-8 py-2">
                                         <div class="flex justify-center items-end">
                                             <div v-if="row.progress !== '-'"
-                                                :class="[isCompressed ? 'w-14 h-8' : 'w-16 h-10', currentLang === 'ar' ? 'scale-x-[-1]' : '']"
-                                                class="relative transition-all duration-500">
+                                                class="relative transition-all duration-500 w-[65px] h-[32px]">
                                                 <svg class="w-full h-full" viewBox="0 0 36 22">
                                                     <circle cx="18" cy="18" r="15" fill="none"
                                                         :class="isDark ? 'stroke-white/10' : 'stroke-gray-100'"
@@ -161,7 +160,7 @@
                                                         class="transition-all duration-1000" />
                                                 </svg>
                                                 <span
-                                                    :class="[isDark ? 'text-white/80' : 'text-black', currentLang === 'ar' ? 'scale-x-[-1]' : '']"
+                                                    :class="isDark ? 'text-white/80' : 'text-black'"
                                                     class="absolute bottom-0 text-[10px] inset-x-0 flex items-center justify-center font-bold leading-none">{{
                                                         row.progress }}%</span>
                                             </div>
@@ -204,9 +203,9 @@ const handleRatioSelect = (option) => {
 };
 
 const getProgressColor = (progress) => {
-    if (progress >= 75) return `#029F80`;
-    if (progress >= 50) return `#FFBC01`;
-    return `#FB7554`;
+    if (progress >= 50) return '#00d28e'
+    if (progress >= 25) return '#ffb74d'
+    return '#fb7554'
 };
 </script>
 

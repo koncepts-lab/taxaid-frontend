@@ -28,7 +28,7 @@
 
           <video 
   src="/images/left-image.webm" 
-  class="relative z-10 w-full max-w-[420px]"
+  class="relative z-10 w-full max-w-[420px] animate-zoom-fade-up"
   autoplay 
   loop 
   muted 
@@ -39,8 +39,14 @@
 
         <!-- RIGHT COLUMN (Question Box) -->
         <div class="flex justify-center lg:justify-end right-content relative">
-          <Transition :name="transitionName" mode="out-in">
-            <div :key="step + '-' + currentEntity" class="question-box">
+          <Transition 
+            :name="transitionName" 
+            mode="out-in" 
+            appear
+            appear-active-class="box-appear-enter-active"
+            appear-from-class="box-appear-enter-from"
+          >
+            <div v-if="pageLoaded" :key="step + '-' + currentEntity" class="question-box">
               <div class="flex flex-col h-full">
                 
                 <!-- TOP BAR -->
@@ -316,7 +322,7 @@ const isFinished = ref(false)
 const pageLoaded = ref(false)
 const step = ref(1)
 const currentEntity = ref(1)
-const direction = ref('next')
+const direction = ref('appear')
 const avatarSrc = ref('/images/icon.png')
 const currentLanguage = ref('en')
 
@@ -539,7 +545,10 @@ const goalOptions = computed(() => [
 
 const currencyOptions = ['USD', 'EUR', 'SAR', 'GBP', 'INR', 'Other']
 
-const transitionName = computed(() => direction.value === 'next' ? 'box-slide-next' : 'box-slide-prev')
+const transitionName = computed(() => {
+  if (direction.value === 'appear') return 'box-appear'
+  return direction.value === 'next' ? 'box-slide-next' : 'box-slide-prev'
+})
 const canGoMainPrevious = computed(() => step.value > 1)
 
 function selectEntityOption(opt) {
@@ -903,6 +912,9 @@ function goToDashboard() { window.location.href = '/dashboard' }
 .nav-text-btn { background: none; border: none; color: white; opacity: 0.6; cursor: pointer; }
 
 /* TRANSITIONS */
+.box-appear-enter-active { transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
+.box-appear-enter-from { opacity: 0; transform: translateX(50vw); }
+
 .box-slide-next-enter-active, .box-slide-next-leave-active, 
 .box-slide-prev-enter-active, .box-slide-prev-leave-active { transition: all 0.4s ease; }
 .box-slide-next-enter-from { opacity: 0; transform: translateX(30px); }
@@ -914,6 +926,12 @@ function goToDashboard() { window.location.href = '/dashboard' }
 @keyframes pulse-slow { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
 .animate-fade-in { animation: fadeIn 1s ease forwards; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.animate-zoom-fade-up { animation: zoomFadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; transform-origin: center; }
+@keyframes zoomFadeUp {
+  0% { opacity: 0; transform: scale(0); }
+  100% { opacity: 1; transform: scale(1); }
+}
 
 .panel-enter-active, .panel-leave-active { transition: all 0.3s ease; }
 .panel-enter-from { opacity: 0; transform: translateY(10px); }

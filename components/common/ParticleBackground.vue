@@ -1,7 +1,8 @@
 <template>
   <div class="particle-background" :class="{ 'is-dark': isDark }">
+    <!-- Center Glow Overlay -->
+    <div class="center-glow-overlay"></div>
     <canvas ref="canvas" class="particle-canvas"></canvas>
-    <div class="particle-canvas-overlay"></div>
   </div>
 </template>
 
@@ -12,48 +13,64 @@ const { isDark } = useTheme()
 
 const canvas = ref(null)
 let ctx = null
-let particles = []
 let animationId = null
+let particles = []
 
-class Particle {
-  constructor(canvasWidth, canvasHeight, centerX, centerY) {
-    const angle = Math.random() * Math.PI * 2
-    const distance = Math.random() * Math.min(canvasWidth, canvasHeight) * 0.4
+class SpreadingParticle {
+  constructor(W, H) {
+    this.W = W
+    this.H = H
+    this.reset()
+  }
 
-    this.x = centerX + Math.cos(angle) * distance
-    this.y = centerY + Math.sin(angle) * distance
-    this.vx = (Math.random() - 0.5) * 0.5
-    this.vy = (Math.random() - 0.5) * 0.5
-    this.size = Math.random() * 2 + 0.5
-    this.opacity = Math.random() * 0.5 + 0.1
+  reset(immediate = false) {
+    this.angle = Math.random() * Math.PI * 2
+    this.x = this.W / 2
+    this.y = this.H / 2
+    
+    // Spread further 
+    const isFar = Math.random() < 0.4
+    const maxDist = isFar
+      ? Math.hypot(this.W, this.H) * (1.5 + Math.random() * 1.5)
+      : Math.hypot(this.W, this.H) * (0.6 + Math.random() * 0.8)
 
-    this.centerX = centerX
-    this.centerY = centerY
-    this.maxDistance = Math.min(canvasWidth, canvasHeight) * 0.5
+    // Fast movement
+    const speed = 1.5 + Math.random() * 3.5
+    this.vx = Math.cos(this.angle) * speed
+    this.vy = Math.sin(this.angle) * speed
+    
+    this.size = 0.8 + Math.random() * 1.5
+    this.maxLife = maxDist / speed
+    this.delay = immediate ? 0 : Math.random() * 100
+    this.age = -this.delay
   }
 
   update() {
+    this.age++
+    if (this.age < 0) return
+
+    if (this.age > this.maxLife) {
+      this.reset(true)
+      return
+    }
+
     this.x += this.vx
     this.y += this.vy
-
-    const dx = this.x - this.centerX
-    const dy = this.y - this.centerY
-    const distance = Math.sqrt(dx * dx + dy * dy)
-
-    if (distance > this.maxDistance) {
-      const angle = Math.atan2(dy, dx)
-      this.vx -= Math.cos(angle) * 0.02
-      this.vy -= Math.sin(angle) * 0.02
-    }
-    this.vx *= 0.99
-    this.vy *= 0.99
   }
 
   draw(ctx, isDark) {
-    // Particles should be subtle white in dark mode, teal in light mode
+    if (this.age < 0) return
+
+    const progress = this.age / this.maxLife
+    const alpha = progress < 0.1 ? progress / 0.1
+      : progress > 0.7 ? (1 - progress) / 0.3
+        : 1
+
+    // Use #04C18F (4, 193, 143)
     ctx.fillStyle = isDark
-      ? `rgba(255, 255, 255, ${this.opacity * 0.6})`
-      : `rgba(0, 183, 148, ${this.opacity * 0.8})`
+      ? `rgba(255, 255, 255, ${alpha * 0.4})` // Subtle white in dark mode
+      : `rgba(4, 193, 143, ${alpha * 0.7})`
+      
     ctx.beginPath()
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
     ctx.fill()
@@ -72,12 +89,13 @@ const resizeCanvas = () => {
   canvas.value.width = window.innerWidth
   canvas.value.height = window.innerHeight
 
-  const centerX = canvas.value.width / 2
-  const centerY = canvas.value.height / 2
-
   particles = []
-  for (let i = 0; i < 200; i++) {
-    particles.push(new Particle(canvas.value.width, canvas.value.height, centerX, centerY))
+  const count = 350 // High density for 'everywhere' feel
+  for (let i = 0; i < count; i++) {
+    const p = new SpreadingParticle(canvas.value.width, canvas.value.height)
+    // Randomize initial age to fill the screen immediately
+    p.age = Math.random() * p.maxLife
+    particles.push(p)
   }
 }
 
@@ -85,10 +103,9 @@ const animate = () => {
   if (!ctx || !canvas.value) return
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height)
 
-  // We removed the background drawing from JS to let CSS handle it more smoothly
-  particles.forEach(particle => {
-    particle.update()
-    particle.draw(ctx, isDark.value)
+  particles.forEach(p => {
+    p.update()
+    p.draw(ctx, isDark.value)
   })
 
   animationId = requestAnimationFrame(animate)
@@ -107,28 +124,12 @@ onUnmounted(() => {
 
 <style scoped>
 .particle-background {
-  /* 1. FIXED POSITIONING: Starts at the very top of the viewport */
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   overflow: hidden;
   pointer-events: none;
-  z-index: -1;
-  /* Behind content */
-
-  /* 2. FEATHERED MASK: Softly fades the top 15% to hide the line near the header */
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
-  mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
-
-  /* Base background color */
-  background-color: #f0fdfa;
-  transition: background-color 0.5s ease;
-}
-
-.is-dark.particle-background {
-  background-color: #001a16;
+  z-index: 0;
+  background: transparent;
 }
 
 .particle-canvas {
@@ -137,12 +138,18 @@ onUnmounted(() => {
   display: block;
 }
 
-.particle-canvas-overlay {
+.center-glow-overlay {
   position: absolute;
-  inset: 0;
-  background: radial-gradient(circle,
-      #00B794D1 0%,
-      transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120vw;
+  height: 120vw;
+  max-width: 1200px;
+  max-height: 1200px;
+  background: radial-gradient(circle, rgba(4, 193, 143, 0.12) 0%, transparent 75%);
+  filter: blur(80px);
   pointer-events: none;
+  z-index: -1;
 }
-</style>
+</style>

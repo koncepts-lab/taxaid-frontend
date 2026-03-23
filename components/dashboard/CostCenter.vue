@@ -24,7 +24,7 @@
         :class="isHovered ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
       />
     </div>
-
+ 
     <!-- Main Content -->
     <div class="flex justify-between items-end">
       <div class="flex flex-col">

@@ -223,8 +223,7 @@
                         <td class="lg:pe-8 pe-4 py-2">
                             <div class="flex justify-center items-end">
                                 <div v-if="row.progress !== '-'"
-                                    :class="[isCompressed ? 'w-14 h-8' : 'w-16 h-10', currentLang === 'ar' ? 'scale-x-[-1]' : '']"
-                                    class="relative transition-all duration-500">
+                                    class="relative transition-all duration-500 w-[65px] h-[32px]">
                                     <svg class="w-full h-full" viewBox="0 0 36 22">
                                         <circle cx="18" cy="18" r="15" fill="none"
                                             :class="isDark ? 'stroke-white/10' : 'stroke-gray-100'" stroke-width="3"
@@ -238,8 +237,8 @@
                                             class="transition-all duration-1000" />
                                     </svg>
                                     <span
-                                        :class="[isDark ? 'text-white/80' : 'text-black', currentLang === 'ar' ? 'scale-x-[-1]' : '']"
-                                        class="absolute bottom-0 text-sm inset-x-0 flex items-center justify-center font-medium leading-none">
+                                        :class="isDark ? 'text-white/80' : 'text-black'"
+                                        class="absolute bottom-0 text-[10px] inset-x-0 flex items-center justify-center font-bold leading-none">
                                         {{ row.progress }}%
                                     </span>
                                 </div>
@@ -362,9 +361,9 @@ const bsOptions = [`Schedule S1 – Current Assets`, `Schedule S2 – Non-Curren
 const ratioOptions = [`All Ratios`, `Profitability Ratios`, `Liquidity Ratios`, `Valuation Ratios`, `Efficiency Ratios`, `Leverage Ratios`];
 
 const getProgressColor = (progress) => {
-    if (progress >= 75) return `#029F80`;
-    if (progress >= 50) return `#FFBC01`;
-    return `#FB7554`;
+    if (progress >= 50) return '#00d28e'
+    if (progress >= 25) return '#ffb74d'
+    return '#fb7554'
 };
 
 const handleInfoClick = () => {
@@ -409,9 +408,9 @@ const handleSchedule = async (row) => {
 const getProgressBgClass = (progress) => {
     if (progress === '-') return 'bg-gray-300';
     const val = parseFloat(progress);
-    if (val >= 75) return 'bg-[#029F80]'; // Green
-    if (val >= 50) return 'bg-[#FFBC01]'; // Yellow/Orange
-    return 'bg-[#FB7554]'; // Red
+    if (val >= 50) return 'bg-[#00d28e]'; 
+    if (val >= 25) return 'bg-[#ffb74d]'; 
+    return 'bg-[#fb7554]'; 
 };
 watch(selectedRatio, (newVal) => {
     emit('ratio-change', newVal);
