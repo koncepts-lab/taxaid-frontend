@@ -218,6 +218,12 @@
               </button>
             </p>
 
+            <p class="pt-2 text-center text-[16px] font-medium">
+              <NuxtLink to="/revenue-partnership-login" class="text-[#00705a] hover:underline cursor-pointer">
+                {{ t.partnershipLogin }}
+              </NuxtLink>
+            </p>
+
           </form>
 
           <!-- Forgot Password Steps -->
@@ -510,7 +516,8 @@ const translations = {
     setNewPass: 'Set new password',
     minChar: 'Must be atleast 8 characters',
     allDone: 'All Done!',
-    passResetSuccess: 'Your password has been reset.'
+    passResetSuccess: 'Your password has been reset.',
+    partnershipLogin: 'Partnership Login'
   },
   ar: {
     welcome: 'مرحباً',
@@ -549,7 +556,8 @@ const translations = {
     setNewPass: 'تعيين كلمة مرور جديدة',
     minChar: 'يجب أن يكون على الأقل 8 أحرف',
     allDone: 'تم بنجاح!',
-    passResetSuccess: 'لقد تم إعادة تعيين كلمة المرور الخاصة بك.'
+    passResetSuccess: 'لقد تم إعادة تعيين كلمة المرور الخاصة بك.',
+    partnershipLogin: 'تسجيل دخول الشركاء'
   }
 }
 
