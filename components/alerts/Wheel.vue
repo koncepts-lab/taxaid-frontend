@@ -1,6 +1,6 @@
 <template>
     <div
-        class="absolute bottom-0 left-1/2 h-fit -translate-x-1/2 w-full max-w-4xl mx-auto flex flex-col items-center justify-end min-h-[400px] font-sans">
+        class="relative lg:absolute lg:bottom-0 left-1/2 h-fit -translate-x-1/2 w-full max-w-4xl mx-auto flex flex-col items-center justify-end min-h-[400px] font-sans lg:mt-0 mt-10">
 
         <button @click="prevCategory"
             class="absolute left-4 lg:-left-30 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white/90 shadow-md flex items-center justify-center transition-all z-20 hover:bg-primary-250 border  hover:border-primary-800">
@@ -10,7 +10,7 @@
         </button>
 
         <div class="relative w-full flex flex-col items-center">
-            <div class="relative w-full max-w-[600px] h-[300px] lg:h-[350px]">
+            <div class="relative w-full max-w-[600px] h-[300px] lg:h-[340px]">
 
                 <img :key="activeIndex" :src="categories[activeIndex].wheel" alt="Gauge Background"
                     class="w-full h-auto block absolute inset-0" />
