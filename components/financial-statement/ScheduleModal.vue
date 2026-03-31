@@ -109,21 +109,21 @@
                                             <td class="pe-8 py-2">
                                                 <!-- Existing Gauge Logic -->
                                                 <div class="flex justify-center items-center">
-                                                    <div v-if="item.ytg_percent !== null" class="w-12 h-8 relative">
+                                                    <div v-if="item.ytg_percent !== null" class="w-[65px] h-[32px] relative">
                                                         <svg class="w-full h-full" viewBox="0 0 36 22">
                                                             <circle cx="18" cy="18" r="15" fill="none"
                                                                 :stroke="isDark ? '#ffffff1a' : '#f1f1f1'"
                                                                 stroke-width="3" stroke-dasharray="47.1 94.2"
                                                                 transform="rotate(-180 18 18)" stroke-linecap="round" />
-                                                            <circle cx="18" cy="18" r="15" fill="none" stroke="#FB7554"
+                                                            <circle cx="18" cy="18" r="15" fill="none" :stroke="getProgressColor(item.ytg_percent)"
                                                                 stroke-width="3.5" stroke-dasharray="47.1 94.2"
                                                                 :stroke-dashoffset="47.1 - (parseFloat(item.ytg_percent) / 100) * 47.1"
                                                                 transform="rotate(-180 18 18)" stroke-linecap="round" />
                                                         </svg>
                                                         <span
-                                                            class="absolute bottom-0 inset-x-0 flex items-center justify-center text-[9px] font-bold"
+                                                            class="absolute bottom-0 inset-x-0 flex items-center justify-center text-[10px] font-bold"
                                                             :class="isDark ? 'text-white' : 'text-black'">{{
-                                                                item.ytg_percent }}</span>
+                                                                item.ytg_percent }}%</span>
                                                     </div>
                                                 </div>
                                             </td>
@@ -227,6 +227,13 @@ defineEmits(['close']);
 const expandedRows = ref([]);      // Tracks which subgroups are open
 const ledgerDataMap = ref({});     // Stores API results: { "Subgroup Name": [data] }
 const rowLoading = ref({});        // Tracks loading state per row: { "Subgroup Name": true/false }
+
+const getProgressColor = (progress) => {
+    const val = parseFloat(progress);
+    if (val >= 50) return '#00d28e';
+    if (val >= 25) return '#ffb74d';
+    return '#fb7554';
+};
 
 const formatNumber = (num) => {
     if (num === null || num === undefined) return '0';

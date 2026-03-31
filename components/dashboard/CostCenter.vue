@@ -24,7 +24,7 @@
         :class="isHovered ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
       />
     </div>
-
+ 
     <!-- Main Content -->
     <div class="flex justify-between items-end">
       <div class="flex flex-col">
@@ -37,7 +37,7 @@
       </div>
 
       <!-- Mini Wave Chart -->
-      <div class="w-28 h-16 mb-2 animate-sweep-right">
+      <div class="w-52 h-16 mb-2 animate-sweep-right">
         <svg viewBox="0 0 120 60" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="costCenterGradient" x1="0" y1="0" x2="0" y2="1">

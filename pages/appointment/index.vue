@@ -20,8 +20,13 @@
                 <AppointmentViewSwitcher />
 
                 <div class="flex flex-col min-h-[500px] mb-12">
-                    <AppointmentEmptyState v-if="appointments.length === 0" @schedule="isModalOpen = true" />
-                    <AppointmentTable v-else :data="appointments" />
+                    <template v-if="appointments.length === 0">
+                        <AppointmentEmptyState @schedule="isModalOpen = true" />
+                    </template>
+                    <template v-else>
+                        <AppointmentCalendarView v-if="activeView === 'calendar'" :data="appointments" />
+                        <AppointmentTable v-else :data="appointments" />
+                    </template>
                 </div>
 
                 <!-- Schedule Modal -->
@@ -41,6 +46,7 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
 const isModalOpen = useState('isScheduleModalOpen', () => false)
+const activeView = useState('appointment_active_view', () => 'calendar')
 
 const appointments = useState('appointments_list', () => [])
 
