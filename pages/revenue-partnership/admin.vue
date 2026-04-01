@@ -51,7 +51,7 @@ definePageMeta({
 })
 
 function navigateToRevenue() {
-  navigateTo('/admin/overview')
+  navigateTo('/select-dashboard/revenue-partnership')
 }
 </script>
 
