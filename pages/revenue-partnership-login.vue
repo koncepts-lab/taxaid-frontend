@@ -142,12 +142,12 @@ function onLogin() {
   console.log('Logging in as:', selectedRole.value, email.value)
   
   if (selectedRole.value === 'Partner') {
-    navigateTo('/revenue-partnership/partner-dashboard')
+    navigateTo('/revenue-partnership/partner')
   } else if (selectedRole.value === 'Accounts') {
     navigateTo('/revenue-partnership/accounts')
   } else {
-    // For Admin, currently navigating to the main dashboard
-    navigateTo('/dashboard')
+    // For Admin, currently navigating to the select dashboard
+    navigateTo('/revenue-partnership/admin')
   }
 }
 </script>

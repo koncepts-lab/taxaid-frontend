@@ -12,12 +12,18 @@
 
     <!-- Right: Profile & Actions -->
     <div class="flex items-center gap-6">
-      <div class="text-right flex flex-col items-end pr-4 border-r border-[#ffffff33] h-8 justify-center">
-        <span class="text-[16px] font-normal text-white leading-tight">Partner</span>
-        <span class="text-[16px] font-normal text-[#ffffff80]">PARTNER-001</span>
+      <div class="flex items-center gap-4 border-r border-[#ffffff33] pr-4 h-[44px]">
+        <div class="text-right flex flex-col items-end justify-center">
+          <span class="text-[14px] font-medium text-white leading-tight mb-1">{{ userName }}</span>
+          <span class="text-[14px] font-normal text-[#e6f1ef]">{{ userId }}</span>
+        </div>
+        
+        <NuxtLink v-if="showChangeProfile" to="/profile" class="text-[13px] text-white hover:text-gray-200 underline underline-offset-2 transition-colors flex items-center h-full pt-1.5 ml-1">
+          Change Profile
+        </NuxtLink>
       </div>
 
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-4 ml-[-8px]">
         <!-- Night Mode Toggle -->
         <CommonTooltip 
           :text="isDark ? (currentLang === 'ar' ? 'الوضع الفاتح' : 'Light Mode') : (currentLang === 'ar' ? 'الوضع الداكن' : 'Dark Mode')">
@@ -46,6 +52,21 @@
 </template>
 
 <script setup>
+const props = defineProps({
+  userName: {
+    type: String,
+    default: 'Partner'
+  },
+  userId: {
+    type: String,
+    default: 'PARTNER-001'
+  },
+  showChangeProfile: {
+    type: Boolean,
+    default: false
+  }
+})
+
 const currentLang = useState('currentLang')
 const { isDark, toggleTheme } = useTheme()
 </script>
