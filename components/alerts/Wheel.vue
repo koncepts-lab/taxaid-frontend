@@ -1,9 +1,9 @@
 <template>
     <div
-        class="relative lg:absolute lg:bottom-0 left-1/2 h-fit -translate-x-1/2 w-full max-w-4xl mx-auto flex flex-col items-center justify-end min-h-[400px] font-sans lg:mt-0 mt-10">
+        class="relative lg:absolute z-50 lg:bottom-0 left-1/2 h-fit -translate-x-1/2 w-full max-w-4xl mx-auto flex flex-col items-center justify-end min-h-[400px] font-sans lg:mt-0 mt-10">
 
         <button @click="prevCategory"
-            class="absolute left-4 lg:-left-30 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white/90 shadow-md flex items-center justify-center transition-all z-20 hover:bg-primary-250 border  hover:border-primary-800">
+            class="absolute left-4 lg:-left-30 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white/90 shadow-md flex items-center justify-center transition-all z-50 hover:bg-primary-250 border  hover:border-primary-800">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5">
                 <path d="M15 18l-6-6 6-6" />
             </svg>
@@ -39,7 +39,7 @@
         </div>
 
         <button @click="nextCategory"
-            class="absolute right-4 lg:-right-30 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center  transition-all z-20 hover:bg-primary-250   hover:border-primary-800 border">
+            class="absolute z-30 right-4 lg:-right-30 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center  transition-all z-20 hover:bg-primary-250   hover:border-primary-800 border">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5">
                 <path d="M9 18l6-6-6-6" />
             </svg>
@@ -80,6 +80,7 @@ const setCategory = (index) => {
 };
 
 const nextCategory = () => {
+    alert('clicked')
     direction.value = 'next';
     const nextIdx = (props.activeIndex + 1) % categories.length;
     emit('update:activeIndex', nextIdx);
