@@ -1,14 +1,15 @@
 <template>
-  <div class="min-h-screen w-full bg-[#f3f4f6] relative flex flex-col font-sans">
+  <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300"
+    :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
 
     <!-- HEADER -->
-    <DashboardHeader role="Partner" name="PARTNER-001" />
+    <DashboardHeader />
 
     <!-- CONTENT -->
-    <main class="flex-1 px-8 pb-[80px] space-y-6 overflow-y-auto">
+    <main class="flex-1 px-8 pb-[0px] pt-8 space-y-6 overflow-y-auto" style="margin-top: -18px;">
 
       <!-- Alert Banner -->
-      <div
+      <div v-if="showAlert"
         class="bg-[#FEFCE8] border border-[#FFF085] rounded-[16px] p-4 flex items-center justify-between shadow-sm relative pr-12">
         <div class="flex items-center gap-4">
           <div class="w-10 h-10 bg-[#FFBB0D] rounded-full flex items-center justify-center flex-shrink-0">
@@ -25,7 +26,7 @@
             </p>
           </div>
         </div>
-        <button class="text-[#854D0E] hover:text-black transition-colors cursor-pointer">
+        <button @click="showAlert = false" class="text-[#854D0E] hover:text-black transition-colors cursor-pointer">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -78,7 +79,7 @@
                 <div v-for="(val, label) in partner.metrics" :key="label">
                   <div v-if="label === 'Collection Rate:'" class="border-t border-[#04C18F40] mt-3 pt-3 mb-1"></div>
                   <div class="flex justify-between items-center">
-                    <span class="text-[14px] text-[#000000B2]">{{ label }}</span>
+                    <span class="text-[14px]" :class="isDark ? 'text-white' : 'text-[#000000B2]'">{{ label }}</span>
                     <span class="text-[14px] font-medium flex items-center gap-1"
                       :class="label === 'Collection Rate:' ? 'text-[#155DFC]' : (label === 'Collected:' ? 'text-[#00A63E]' : 'text-[#1a1a1a]')">
                       <img v-if="label === 'Revenue:'" src="/images/icons/dirham-black.svg" alt="AED"
@@ -264,6 +265,7 @@ definePageMeta({
 const currentLang = useState('currentLang', () => 'en')
 const { isDark, toggleTheme } = useTheme()
 
+const showAlert = ref(true)
 const isStatusDropdownOpen = ref(false)
 const selectedStatus = ref('All Statuses')
 const isPartnerMenuOpen = ref(false)
@@ -284,7 +286,7 @@ const mainStats = [
     title: 'Total Revenue',
     value: '808,000',
     subtext: 'All partner revenue',
-    icon: '/images/icons/doller.svg',
+    icon: '/images/icons/doller-green.svg',
     iconColor: 'p-0',
     isCurrency: true
   },
@@ -292,11 +294,11 @@ const mainStats = [
     title: 'Amount Collected',
     value: '714,500',
     subtext: 'Collection rate: 88.4%',
-    icon: '/images/icons/Amount-Collected.svg',
+    icon: '/images/icons/amt_collected.svg',
     iconColor: 'p-0',
     isCurrency: true
   },
-  { title: 'Settlements', value: '714,500', subtext: 'Total disbursed', icon: '/images/icons/Amount-Collected.svg', isCurrency: true }
+  { title: 'Settlements', value: '714,500', subtext: 'Total disbursed', icon: '/images/icons/settlement.svg', isCurrency: true }
 ]
 
 const partnerCards = [

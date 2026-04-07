@@ -2,23 +2,24 @@
   <header class="h-[110px] w-full flex items-center justify-between px-8 bg-transparent relative z-20">
     <!-- Background Image -->
     <div class="absolute inset-y-0 right-0 w-full max-w-[90%] pointer-events-none z-[-1] float-right">
-      <img src="/images/partnership-bg.png" alt="Header Background" class="w-full h-full object-fill" />
+      <img :src="isDark ? '/images/partnership-dark-bg.png' : '/images/partnership-bg.png'" alt="Header Background"
+        class="w-full h-full object-fill" />
     </div>
 
     <!-- Left: Logo -->
     <div class="flex items-center mt-2">
-      <img src="/images/logo.svg" alt="Taxaid.AI" class="w-[180px] h-auto" />
+      <img :src="isDark ? '/images/logo-dark.svg' : '/images/logo.svg'" alt="Taxaid.AI" class="w-[180px] h-auto" />
     </div>
 
     <!-- Right: Profile & Actions -->
     <div class="flex items-center gap-6">
-      <div class="flex items-center gap-4 border-r border-[#ffffff33] pr-4 h-[44px]">
-        <div class="text-right flex flex-col items-end justify-center">
+      <div class="flex items-center gap-4 h-[44px]">
+        <div class="text-right flex flex-col items-end justify-center border-r border-[#ffffff33] pr-4">
           <span class="text-[14px] font-medium text-white leading-tight mb-1">{{ userName }}</span>
           <span class="text-[14px] font-normal text-[#e6f1ef]">{{ userId }}</span>
         </div>
 
-        <NuxtLink v-if="showChangeProfile" to="/profile"
+        <NuxtLink v-if="showChangeProfile" :to="changeProfileLink"
           class="text-[13px] text-white hover:text-gray-200 underline underline-offset-2 transition-colors flex items-center h-full pt-1.5 ml-1">
           Change Profile
         </NuxtLink>
@@ -37,20 +38,20 @@
           </button>
         </CommonTooltip>
         <!-- Notifications -->
-        <button
-          class="w-[38px] h-[38px] rounded-full bg-[#00896F]/40 border border-[#ffffff1A] flex items-center justify-center text-white hover:bg-[#00896F]/60 transition-colors cursor-pointer">
-          <img src="/images/icons/Notifications.svg" alt="Notifications" class="w-5 h-5 invert brightness-0" />
-        </button>
+        <CommonTooltip :text="currentLang === 'ar' ? 'التنبيهات' : 'Notifications'">
+          <NuxtLink to="/revenue-partnership/notifications"
+            class="w-[38px] h-[38px] rounded-full bg-[#00896F]/40 border border-[#ffffff1A] flex items-center justify-center text-white hover:bg-[#00896F]/60 transition-colors cursor-pointer">
+            <img src="/images/icons/Notifications.svg" alt="Notifications" class="w-5 h-5 invert brightness-0" />
+          </NuxtLink>
+        </CommonTooltip>
 
-        <NuxtLink to="/revenue-partnership-login"
-          class="flex items-center gap-2 bg-white h-[38px] px-4 rounded-[8px] hover:bg-gray-50 transition-colors shadow-sm text-[13px] font-medium text-[#1a1a1a] cursor-pointer">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-[16px] w-[16px] text-[#1a1a1a]" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Logout
-        </NuxtLink>
+        <!-- Logout -->
+        <CommonTooltip :text="currentLang === 'ar' ? 'تسجيل الخروج' : 'Logout'">
+          <NuxtLink to="/revenue-partnership-login"
+            class="w-[38px] h-[38px] rounded-full bg-[#00896F]/40 border border-[#ffffff1A] flex items-center justify-center text-white hover:bg-[#00896F]/60 transition-colors cursor-pointer">
+            <img src="/images/icons/logout-icon.svg" alt="Logout" class="w-5 h-5 invert brightness-0" />
+          </NuxtLink>
+        </CommonTooltip>
       </div>
     </div>
   </header>
@@ -60,15 +61,19 @@
 const props = defineProps({
   userName: {
     type: String,
-    default: 'Partner'
+    default: 'Account'
   },
   userId: {
     type: String,
-    default: 'PARTNER-001'
+    default: 'ACCOUNT-001'
   },
   showChangeProfile: {
     type: Boolean,
     default: false
+  },
+  changeProfileLink: {
+    type: String,
+    default: '/profile'
   }
 })
 
