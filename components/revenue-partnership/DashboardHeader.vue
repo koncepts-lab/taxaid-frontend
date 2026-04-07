@@ -79,10 +79,5 @@ const props = defineProps({
 
 const currentLang = useState('currentLang')
 const { isDark, toggleTheme } = useTheme()
-defineProps({
-  isDark: Boolean,
-  currentLang: { type: String, default: 'en' },
-  role: { type: String, default: 'Admin' },
-  name: { type: String, default: 'Admin' }
-})
+
 </script>

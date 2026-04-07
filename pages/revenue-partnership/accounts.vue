@@ -114,9 +114,9 @@
               </div>
               <p class="text-[16px] font-normal flex items-center gap-2">
                 <span class="text-[24px] font-normal" :style="{ color: stat.textColor || '#045E40' }">{{ stat.count
-                  }}</span>
+                }}</span>
                 <span class="text-[14px] font-normal" :style="{ color: stat.textColor || '#045E40' }">{{ stat.subtext
-                  }}</span>
+                }}</span>
               </p>
             </div>
           </div>
@@ -304,8 +304,8 @@
           class="p-8 rounded-[24px] border shadow-sm overflow-hidden">
           <div class="pb-4 flex items-center justify-between">
             <h2 class="text-[22px] font-normal" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">
-              {{ activeCustomerSubTab === 'User Master Info' ? 'Customer Details & Management' : 'Payment Details &
-              Management' }}
+              {{ activeCustomerSubTab === 'User Master Info' ? 'Customer Details & Management' :
+                'Payment Details & Management' }}
             </h2>
             <span class="text-[12px] text-gray-400">Values in AED Million</span>
           </div>
@@ -371,7 +371,7 @@
                   <td class="px-8 py-6 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.code }}
                   </td>
                   <td class="px-8 py-6 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.source
-                    }}</td>
+                  }}</td>
                   <td class="px-8 py-6 text-[14px] text-center" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{
                     row.company }}</td>
                   <td class="px-8 py-6 text-[14px] text-center" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{

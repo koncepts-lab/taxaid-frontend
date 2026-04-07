@@ -11,10 +11,10 @@
                     </svg>
                 </span>
                 <input type="text" placeholder="Search by consultant name or consultant Id..."
-                    class="w-full pl-12 pr-4 py-3 bg-white border border-[#04C18F] rounded-xl text-sm focus:ring-1 focus:ring-[#00896F] outline-none shadow-sm transition-all placeholder:text-[#717182] text-black" />
+                    class="w-full pl-12 pr-4 py-3 bg-white/50 border border-[#04C18F] rounded-xl text-sm focus:ring-1 focus:ring-[#00896F] outline-none shadow-sm transition-all placeholder:text-[#717182] text-black" />
             </div>
             <button
-                class="p-3 bg-white border border-[#04C18F] rounded-xl hover:bg-gray-50 transition-all shadow-sm text-[#00896F]">
+                class="p-3 bg-white/50 hover:bg-[#86E4CB] border border-[#04C18F] rounded-xl hover:bg-gray-50 transition-all shadow-sm text-[#00896F]">
                 <img src="/images/icons/reload.svg" alt="Refresh" class="w-5 h-5">
             </button>
         </div>
@@ -40,9 +40,9 @@
                         <tr v-for="item in tableData" :key="item.id"
                             class="group hover:bg-gray-50/50 transition-colors">
                             <td class="px-6 py-5 text-sm text-black font-normal whitespace-nowrap">{{ item.clientId
-                                }}</td>
+                            }}</td>
                             <td class="px-6 py-5 text-sm font-normal text-gray-900 whitespace-nowrap">{{ item.name
-                                }}</td>
+                            }}</td>
                             <td class="px-6 py-5 text-sm text-black whitespace-nowrap">{{ item.date }}</td>
                             <td class="px-6 py-5 text-sm text-black whitespace-nowrap">{{ item.erp }}</td>
                             <td class="px-6 py-5 text-sm text-black whitespace-nowrap">{{ item.industry }}</td>
@@ -56,7 +56,7 @@
                                             :class="getProgressColor(item.progress)"></div>
                                     </div>
                                     <span class="text-xs font-bold text-gray-700 tabular-nums">{{ item.progress
-                                        }}/15</span>
+                                    }}/15</span>
                                 </div>
                             </td>
 
