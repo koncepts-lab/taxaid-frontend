@@ -1,6 +1,7 @@
 <template>
-  <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
-    
+  <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300"
+    :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
+
     <!-- HEADER -->
     <DashboardHeader userName="Admin User" userId="ADMIN-001" :showChangeProfile="true" />
 
@@ -9,39 +10,27 @@
       <!-- Header Text -->
       <div class="text-center mb-10 mt-[-50px]">
         <h1 class="text-[30px] font-normal mb-2" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">Select Dashboard</h1>
-        <p class="text-[18px] font-normal" :class="isDark ? 'text-white/70' : 'text-[#00000080]'">Choose which dashboard you'd like to access</p>
+        <p class="text-[18px] font-normal" :class="isDark ? 'text-white/70' : 'text-[#00000080]'">Choose which dashboard
+          you'd like to access</p>
       </div>
 
       <!-- Cards Container -->
       <div class="w-full flex flex-col md:flex-row items-center justify-center gap-6 px-4">
 
         <!-- Card 1: Ticketing System -->
-        <SelectDashboardCard
-          icon="/images/icons/Ticketing-System.svg"
-          title="Ticketing System"
+        <SelectDashboardCard icon="/images/icons/Ticketing-System.svg" title="Ticketing System"
           description="Manage customer support tickets, track issues, and monitor resolution times"
-          buttonLabel="Access Ticketing Dashboard"
-        />
+          buttonLabel="Access Ticketing Dashboard" />
 
         <!-- Card 2: Revenue Partnership -->
-        <SelectDashboardCard
-          icon="/images/icons/Revenue-Partnership.svg"
-          title="Revenue Partnership"
+        <SelectDashboardCard icon="/images/icons/Revenue-Partnership.svg" title="Revenue Partnership"
           description="Track revenue, manage partners, analyze costs, and monitor financial metrics"
-          buttonLabel="Access Revenue Dashboard"
-          @click="navigateToRevenue"
-        />
+          buttonLabel="Access Revenue Dashboard" @click="navigateToRevenue" />
 
       </div>
     </main>
 
-    <!-- Page Footer (Relative to screen) -->
-    <div class="fixed bottom-6 left-6 text-[#999] text-[13px] font-normal z-0 hidden md:block">
-      Copyright Reserved @2025
-    </div>
-    <div class="fixed bottom-6 right-6 text-[#999] text-[13px] font-normal z-0 hidden md:block">
-      Last Sync: 19 Oct 2025, 10:45 AM IST
-    </div>
+
   </div>
 </template>
 
@@ -59,5 +48,4 @@ function navigateToRevenue() {
 }
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
