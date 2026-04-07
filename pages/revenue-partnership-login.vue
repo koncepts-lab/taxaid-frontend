@@ -146,8 +146,8 @@ function onLogin() {
   } else if (selectedRole.value === 'Accounts') {
     navigateTo('/revenue-partnership/accounts')
   } else {
-    // For Admin, currently navigating to the select dashboard
-    navigateTo('/revenue-partnership/admin')
+    // For Admin, nav to the select dashboard
+    navigateTo('/revenue-partnership/select-dashboard')
   }
 }
 </script>

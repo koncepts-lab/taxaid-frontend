@@ -86,3 +86,102 @@ body {
 tbody tr:hover td {
   background-color: transparent !important;
 }
+
+/* Dashboard Dark Mode Component Overrides */
+.dark-mode-bg .bg-white {
+  background-color: #00141080 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-mode-bg .text-\[\#0A0A0A\],
+.dark-mode-bg .text-\[\#1a1a1a\],
+.dark-mode-bg .text-black,
+.dark-mode-bg .text-\[\#000\] {
+  color: #ffffff !important;
+}
+
+.dark-mode-bg .border-gray-100,
+.dark-mode-bg .border-\[\#04C18F80\],
+.dark-mode-bg .border-\[\#0000001A\] {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.dark-mode-bg p.text-\[\#854D0E\],
+.dark-mode-bg h4.text-\[\#854D0E\] {
+  color: #fbcf7a !important; 
+}
+
+.dark-mode-bg .bg-\[\#FEFCE8\] {
+  background-color: #00141080 !important;
+  border-color: rgba(255, 187, 13, 0.3) !important;
+}
+
+.dark-mode-bg .text-\[\#00000080\],
+.dark-mode-bg .text-\[\#999\],
+.dark-mode-bg .text-gray-400,
+.dark-mode-bg .text-gray-600,
+.dark-mode-bg .text-gray-700 {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.dark-mode-bg .bg-\[\#E7FBF3\],
+.dark-mode-bg .bg-\[\#E4FFF6B0\],
+.dark-mode-bg .bg-\[\#F0FDF4\],
+.dark-mode-bg .bg-\[\#FEF2F2\],
+.dark-mode-bg .bg-\[\#DFF4FF\] {
+  background-color: #00141080 !important;
+}
+
+.dark-mode-bg .bg-\[\#F9FAFB\]\/50 {
+  background-color: #00141080 !important;
+}
+
+.dark-mode-bg table th {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.dark-mode-bg table tr:hover td {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-mode-bg table td {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.dark-mode-bg .bg-transparent {
+  background-color: transparent !important;
+}
+
+/* Fix dropdowns in dark mode */
+.dark-mode-bg .bg-white.absolute {
+  background-color: #001410 !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.dark-mode-bg .hover\:bg-gray-50:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-mode-bg .divide-gray-50 > :not([hidden]) ~ :not([hidden]),
+.dark-mode-bg .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Fix inputs in dark mode */
+.dark-mode-bg input.bg-white,
+.dark-mode-bg textarea.bg-white {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  color: white !important;
+}
+.dark-mode-bg input.bg-white::placeholder,
+.dark-mode-bg textarea.bg-white::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Overriding SVG icons without breaking normal variants */
+.dark-mode-bg img[src*="dirham-black"],
+.dark-mode-bg img[src*="Total-Customers"],
+.dark-mode-bg img[src*="Amount-Collected"] {
+  filter: brightness(0) invert(1) !important;
+}
