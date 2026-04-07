@@ -13,7 +13,7 @@ export default defineNuxtConfig({
   // so <DashboardHeader> and <DashboardFooter> continue to work everywhere
   components: [
     { path: "~/components", pathPrefix: true },
-    { path: "~/components/common", pathPrefix: false },
+    // { path: "~/components/common", pathPrefix: false },
     { path: "~/components/revenue-partnership", pathPrefix: false },
   ],
 
