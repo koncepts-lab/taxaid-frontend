@@ -21,6 +21,12 @@
         <NuxtLink v-if="showChangeProfile" :to="changeProfileLink" class="text-[13px] text-white hover:text-gray-200 underline underline-offset-2 transition-colors flex items-center h-full pt-1.5 ml-1">
           Change Profile
         </NuxtLink>
+
+        <!-- Manage Access Button -->
+        <button v-if="showManageAccess" class="flex items-center gap-2 px-5 py-2 rounded-full bg-white text-[#000000] text-[14px] font-medium hover:bg-gray-100 transition-colors cursor-pointer ml-1">
+          <img src="/images/icons/manage-access.svg" class="w-4 h-4" alt="manage" />
+          Manage Access
+        </button>
       </div>
 
       <div class="flex items-center gap-4 ml-[-8px]">
@@ -70,6 +76,10 @@ const props = defineProps({
   changeProfileLink: {
     type: String,
     default: '/profile'
+  },
+  showManageAccess: {
+    type: Boolean,
+    default: false
   }
 })
 

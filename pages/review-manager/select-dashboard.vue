@@ -2,7 +2,7 @@
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
     
     <!-- HEADER -->
-    <DashboardHeader userName="Admin User" userId="ADMIN-001" :showChangeProfile="true" />
+    <DashboardHeader userName="Review Manager" userId="Welcome, Akhil" :showChangeProfile="true" />
 
     <!-- CONTENT -->
     <main class="flex-1 flex flex-col items-center justify-center p-4 relative z-10 w-full">
@@ -19,17 +19,17 @@
         <SelectDashboardCard
           icon="/images/icons/Ticketing-System.svg"
           title="Ticketing System"
-          description="Manage customer support tickets, track issues, and monitor resolution times"
+          description="Review and approve tickets raised by the team, track progress, and manage development priorities."
           buttonLabel="Access Ticketing Dashboard"
         />
 
-        <!-- Card 2: Revenue Partnership -->
+        <!-- Card 2: Review Dashboard -->
         <SelectDashboardCard
           icon="/images/icons/Revenue-Partnership.svg"
-          title="Revenue Partnership"
-          description="Track revenue, manage partners, analyze costs, and monitor financial metrics"
-          buttonLabel="Access Revenue Dashboard"
-          @click="navigateToReview"
+          title="Review Dashboard"
+          description="Monitor consultant productivity, track client review progress, and manage workload across your team."
+          buttonLabel="Access Review Dashboard"
+          @click="navigateToDashboard"
         />
 
       </div>
@@ -54,10 +54,14 @@ definePageMeta({
 
 import SelectDashboardCard from '@/components/revenue-partnership/SelectDashboardCard.vue'
 
-function navigateToReview() {
-  navigateTo('/revenue-partnership/admin')
+function navigateToDashboard() {
+  navigateTo('/review-manager/dashboard')
 }
 </script>
 
 <style scoped>
+.dark-mode-bg {
+  background-color: #000c0a;
+}
 </style>
+

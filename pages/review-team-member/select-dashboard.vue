@@ -2,7 +2,13 @@
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
     
     <!-- HEADER -->
-    <DashboardHeader userName="Admin User" userId="ADMIN-001" :showChangeProfile="true" />
+    <DashboardHeader
+      userName="Team Member Dashboard"
+      userId="Welcome, Akhil"
+      :showChangeProfile="true"
+      :showManageAccess="true"
+      changeProfileLink="/profile"
+    />
 
     <!-- CONTENT -->
     <main class="flex-1 flex flex-col items-center justify-center p-4 relative z-10 w-full">
@@ -19,23 +25,24 @@
         <SelectDashboardCard
           icon="/images/icons/Ticketing-System.svg"
           title="Ticketing System"
-          description="Manage customer support tickets, track issues, and monitor resolution times"
+          description="Raise tickets, track the status of your submissions, and stay updated on review and approval progress."
           buttonLabel="Access Ticketing Dashboard"
+          @click="navigateToTicketing"
         />
 
-        <!-- Card 2: Revenue Partnership -->
+        <!-- Card 2: Review Dashboard -->
         <SelectDashboardCard
           icon="/images/icons/Revenue-Partnership.svg"
-          title="Revenue Partnership"
-          description="Track revenue, manage partners, analyze costs, and monitor financial metrics"
-          buttonLabel="Access Revenue Dashboard"
-          @click="navigateToReview"
+          title="Review Dashboard"
+          description="Log daily activity, manage client appointments, and track review progress across assigned projects."
+          buttonLabel="Access Review Dashboard"
+          @click="navigateToDashboard"
         />
 
       </div>
     </main>
 
-    <!-- Page Footer (Relative to screen) -->
+    <!-- Page Footer -->
     <div class="fixed bottom-6 left-6 text-[#999] text-[13px] font-normal z-0 hidden md:block">
       Copyright Reserved @2025
     </div>
@@ -54,10 +61,17 @@ definePageMeta({
 
 import SelectDashboardCard from '@/components/revenue-partnership/SelectDashboardCard.vue'
 
-function navigateToReview() {
-  navigateTo('/revenue-partnership/admin')
+function navigateToDashboard() {
+  navigateTo('/review-team-member/dashboard')
+}
+
+function navigateToTicketing() {
+  navigateTo('/review-team-member/ticketing-dashboard')
 }
 </script>
 
 <style scoped>
+.dark-mode-bg {
+  background-color: #000c0a;
+}
 </style>
