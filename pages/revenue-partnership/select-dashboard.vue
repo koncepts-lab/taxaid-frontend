@@ -25,7 +25,9 @@
         <!-- Card 2: Revenue Partnership -->
         <SelectDashboardCard icon="/images/icons/Revenue-Partnership.svg" title="Revenue Partnership"
           description="Track revenue, manage partners, analyze costs, and monitor financial metrics"
-          buttonLabel="Access Revenue Dashboard" @click="navigateToRevenue" />
+          buttonLabel="Access Revenue Dashboard"
+          @click="navigateToReview"
+        />
 
       </div>
     </main>
@@ -43,7 +45,7 @@ definePageMeta({
 
 import SelectDashboardCard from '@/components/revenue-partnership/SelectDashboardCard.vue'
 
-function navigateToRevenue() {
+function navigateToReview() {
   navigateTo('/revenue-partnership/admin')
 }
 </script>
