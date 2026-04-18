@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300 pb-10" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
+  <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
     
     <!-- HEADER -->
-    <DashboardHeader userName="Team Member Dashboard" userId="Welcome, Akhil" :showChangeProfile="true" :showManageAccess="true" changeProfileLink="/profile" />
+    <DashboardHeader userName="Team Member Dashboard" userId="Welcome, Akhil" :showChangeProfile="false" :showManageAccess="false" changeProfileLink="/profile" />
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 py-4 space-y-6 overflow-y-auto">
@@ -11,7 +11,7 @@
       <div :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-gray-100'" class="flex items-center justify-between overflow-x-auto no-scrollbar rounded-[35px] p-[10px] border shadow-sm mb-8 max-w-max">
         <button v-for="tab in mainTabs" :key="tab"
                 @click="navigateTab(tab)"
-                class="px-8 py-2.5 rounded-full text-[14px] transition-all cursor-pointer whitespace-nowrap font-medium"
+                class="min-w-[300px] py-2.5 rounded-full text-[14px] transition-all cursor-pointer whitespace-nowrap font-medium text-center flex items-center justify-center px-4"
                 :class="activeMainTab === tab 
                   ? (isDark ? 'bg-[#1b5e50] text-[#fff] shadow-sm' : 'bg-[#82FFE0] text-[#0A0A0A]') 
                   : (isDark ? 'bg-transparent text-white/70' : 'bg-transparent text-[#0A0A0A]')">
@@ -44,7 +44,7 @@
             <div class="flex justify-between items-start">
               <h5 class="text-[14px] font-normal opacity-50">Number of Active Clients</h5>
               <div class="w-6 h-6 flex items-center justify-center opacity-70">
-                <img src="/images/icons/Number-Clients.svg" alt="clients" class="w-5 h-5 object-contain" />
+                <img :src="isDark ? '/images/icons/Number-Clients-white.svg' : '/images/icons/Number-Clients.svg'" alt="clients" class="w-5 h-5 object-contain" />
               </div>
             </div>
             <div class="flex items-baseline mb-2">
@@ -57,7 +57,7 @@
             <div class="flex justify-between items-start">
               <h5 class="text-[14px] font-normal opacity-50">Average Productive Hours</h5>
               <div class="w-6 h-6 flex items-center justify-center opacity-70">
-                <img src="/images/icons/Average-Hours.svg" alt="hours" class="w-5 h-5 object-contain opacity-80" />
+                <img :src="isDark ? '/images/icons/Average-Hours-light.svg' : '/images/icons/Average-Hours.svg'" alt="hours" class="w-5 h-5 object-contain opacity-80" />
               </div>
             </div>
             <div class="flex items-baseline mb-2">
@@ -75,7 +75,7 @@
                 <div class="flex justify-between items-center">
                   <span class="text-[15px] font-medium" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">Logged in at: 1:24:12 PM</span>
                   <div class="flex items-center gap-2">
-                    <img src="/images/icons/Average-Hours.svg" class="w-5 h-5 opacity-60" :class="isDark ? 'invert' : ''" alt="clock" />
+                    <img :src="isDark ? '/images/icons/Average-Hours-light.svg' : '/images/icons/Average-Hours.svg'" class="w-5 h-5 opacity-60" alt="clock" />
                     <span class="text-[15px] font-medium" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">0h 2m</span>
                   </div>
                 </div>
@@ -104,7 +104,7 @@
                     Start Session
                   </button>
                   <div class="flex items-center gap-2 opacity-30">
-                    <img src="/images/icons/Average-Hours.svg" class="w-4 h-4" alt="not logged in" />
+                    <img :src="isDark ? '/images/icons/Average-Hours-light.svg' : '/images/icons/Average-Hours.svg'" class="w-4 h-4" alt="not logged in" />
                     <span class="text-[13px]">Not logged in</span>
                   </div>
                 </div>
@@ -315,30 +315,32 @@
 
           <!-- Search + Filter -->
           <div class="flex items-center gap-3">
-            <div class="flex items-center gap-2 flex-1 px-4 py-2.5 rounded-[10px] shadow-sm"
-                 :class="isDark ? 'bg-white/5' : 'bg-[#F5F7F9]'">
-              <img src="/images/icons/search.svg" class="w-4 h-4 opacity-40" :class="isDark ? 'invert' : ''" alt="search" />
+            <!-- Search Input -->
+            <div class="flex items-center gap-2 flex-1 px-4 py-2.5 rounded-[10px] border"
+                 :class="isDark ? 'bg-white/5 border-white/20' : 'bg-white border-[#04C18F80]'">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" :class="isDark ? 'text-white/40' : 'text-[#04C18F]'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" /></svg>
               <input v-model="requestSearch" type="text" placeholder="Search by Client name or client id..."
                      class="flex-1 bg-transparent border-none outline-none text-[14px]"
                      :class="isDark ? 'text-white placeholder-white/30' : 'text-[#0A0A0A] placeholder-[#0A0A0A]/40'" />
             </div>
+            <!-- Refresh Button -->
             <button @click="requestSearch = ''"
-                    class="w-10 h-10 flex items-center justify-center rounded-[10px] shadow-sm border cursor-pointer transition-all hover:opacity-80"
-                    :class="isDark ? 'bg-white/5 border-white/10' : 'bg-[#F5F7F9] border-transparent'">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" :class="isDark ? 'text-white/50' : 'text-[#717182]'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    class="w-10 h-10 flex items-center justify-center rounded-[10px] border cursor-pointer transition-all hover:opacity-80"
+                    :class="isDark ? 'bg-white/5 border-white/20' : 'bg-white border-[#04C18F]'">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" :class="isDark ? 'text-white/50' : 'text-[#04C18F]'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </button>
             <!-- Status Filter Dropdown -->
-            <div class="relative">
+            <div class="relative max-w-[300px]">
               <div @click="showRequestStatusDd = !showRequestStatusDd"
-                   class="flex items-center gap-2 px-4 py-2.5 rounded-[10px] shadow-sm cursor-pointer text-[14px] border min-w-[160px] justify-between"
-                   :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-[#F5F7F9] border-transparent text-[#0A0A0A]'">
+                   class="flex items-center gap-2 px-4 py-2.5 rounded-[10px] cursor-pointer text-[14px] border w-full max-w-[300px] justify-between"
+                   :class="isDark ? 'bg-white/5 border-white/20 text-white' : 'bg-white border-[#04C18F80] text-[#0A0A0A]'">
                 <div class="flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" /></svg>
                   <span>{{ requestStatusFilter || 'All Statuses' }}</span>
                 </div>
                 <img src="/images/icons/down-select.svg" class="w-2.5 h-2.5 transition-transform" :class="[showRequestStatusDd ? 'rotate-180' : '', isDark ? 'invert' : '']" alt="v" />
               </div>
-              <div v-if="showRequestStatusDd" class="absolute z-50 right-0 top-full mt-1.5 py-2 rounded-[12px] shadow-lg min-w-[160px]"
+              <div v-if="showRequestStatusDd" class="absolute z-50 right-0 top-full mt-1.5 py-2 rounded-[12px] shadow-lg w-full max-w-[300px]"
                    :class="isDark ? 'bg-[#1a2e2a] text-white' : 'bg-white text-[#0A0A0A]'">
                 <div v-for="s in ['All Statuses', 'Pending', 'Rescheduled', 'Scheduled', 'Completed']" :key="s"
                      @click="requestStatusFilter = s === 'All Statuses' ? '' : s; showRequestStatusDd = false"
@@ -382,25 +384,28 @@
                   </td>
                   <td class="py-4 px-6">
                     <div class="flex items-center gap-2">
-                      <!-- Eye icon -->
-                      <button class="w-8 h-8 flex items-center justify-center rounded-[8px] border cursor-pointer transition-all hover:opacity-80"
+                      <button @click="openAppointmentModal(req)"
+                              class="w-8 h-8 flex items-center justify-center rounded-[8px] border cursor-pointer transition-all hover:opacity-80"
                               :class="isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                       </button>
                       <!-- Rescheduled / Pending: Reschedule + Confirm -->
                       <template v-if="req.status === 'Rescheduled' || req.status === 'Pending'">
-                        <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] border text-[13px] cursor-pointer transition-all hover:opacity-80"
+                        <button @click="openRescheduleModal(req)"
+                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] border text-[13px] cursor-pointer transition-all hover:opacity-80"
                                 :class="isDark ? 'border-white/10 text-white/70 hover:bg-white/5' : 'border-gray-200 text-[#717182] hover:bg-gray-50'">
                           <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                           Reschedule
                         </button>
-                        <button class="flex items-center gap-1.5 px-4 py-1.5 rounded-[8px] bg-[#00896F] text-white text-[13px] cursor-pointer transition-all hover:opacity-90">
+                        <button @click="confirmAppointment(req)"
+                                class="flex items-center gap-1.5 px-4 py-1.5 rounded-[8px] bg-[#00896F] text-white text-[13px] cursor-pointer transition-all hover:opacity-90 active:scale-[0.98]">
                           Confirm
                         </button>
                       </template>
                       <!-- Scheduled: Mark as Completed -->
                       <template v-else-if="req.status === 'Scheduled'">
-                        <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] border text-[13px] cursor-pointer transition-all hover:opacity-80"
+                        <button @click="markAsCompleted(req)"
+                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] border text-[13px] cursor-pointer transition-all hover:opacity-80"
                                 :class="isDark ? 'border-white/10 text-white/70 hover:bg-white/5' : 'border-gray-200 text-[#717182] hover:bg-gray-50'">
                           <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                           Mark as Completed
@@ -433,30 +438,32 @@
 
           <!-- Search + Filter -->
           <div class="flex items-center gap-3">
-            <div class="flex items-center gap-2 flex-1 px-4 py-2.5 rounded-[10px] shadow-sm"
-                 :class="isDark ? 'bg-white/5' : 'bg-[#F5F7F9]'">
-              <img src="/images/icons/search.svg" class="w-4 h-4 opacity-40" :class="isDark ? 'invert' : ''" alt="search" />
+            <!-- Search Input -->
+            <div class="flex items-center gap-2 flex-1 px-4 py-2.5 rounded-[10px] border"
+                 :class="isDark ? 'bg-white/5 border-white/20' : 'bg-white border-[#04C18F80]'">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" :class="isDark ? 'text-white/40' : 'text-[#04C18F]'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" /></svg>
               <input v-model="summarySearch" type="text" placeholder="Search by Client name or client id..."
                      class="flex-1 bg-transparent border-none outline-none text-[14px]"
                      :class="isDark ? 'text-white placeholder-white/30' : 'text-[#0A0A0A] placeholder-[#0A0A0A]/40'" />
             </div>
+            <!-- Refresh Button -->
             <button @click="summarySearch = ''"
-                    class="w-10 h-10 flex items-center justify-center rounded-[10px] shadow-sm border cursor-pointer transition-all hover:opacity-80"
-                    :class="isDark ? 'bg-white/5 border-white/10' : 'bg-[#F5F7F9] border-transparent'">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" :class="isDark ? 'text-white/50' : 'text-[#717182]'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    class="w-10 h-10 flex items-center justify-center rounded-[10px] border cursor-pointer transition-all hover:opacity-80"
+                    :class="isDark ? 'bg-white/5 border-white/20' : 'bg-white border-[#04C18F]'">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" :class="isDark ? 'text-white/50' : 'text-[#04C18F]'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </button>
             <!-- Status Filter -->
-            <div class="relative">
+            <div class="relative max-w-[300px]">
               <div @click="showSummaryStatusDd = !showSummaryStatusDd"
-                   class="flex items-center gap-2 px-4 py-2.5 rounded-[10px] shadow-sm cursor-pointer text-[14px] border min-w-[160px] justify-between"
-                   :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-[#F5F7F9] border-transparent text-[#0A0A0A]'">
+                   class="flex items-center gap-2 px-4 py-2.5 rounded-[10px] cursor-pointer text-[14px] border w-full max-w-[300px] justify-between"
+                   :class="isDark ? 'bg-white/5 border-white/20 text-white' : 'bg-white border-[#04C18F80] text-[#0A0A0A]'">
                 <div class="flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" /></svg>
                   <span>{{ summaryStatusFilter || 'All Statuses' }}</span>
                 </div>
                 <img src="/images/icons/down-select.svg" class="w-2.5 h-2.5 transition-transform" :class="[showSummaryStatusDd ? 'rotate-180' : '', isDark ? 'invert' : '']" alt="v" />
               </div>
-              <div v-if="showSummaryStatusDd" class="absolute z-50 right-0 top-full mt-1.5 py-2 rounded-[12px] shadow-lg min-w-[160px]"
+              <div v-if="showSummaryStatusDd" class="absolute z-50 right-0 top-full mt-1.5 py-2 rounded-[12px] shadow-lg w-full max-w-[300px]"
                    :class="isDark ? 'bg-[#1a2e2a] text-white' : 'bg-white text-[#0A0A0A]'">
                 <div v-for="s in ['All Statuses', 'Ongoing', 'Planned', 'Completed']" :key="s"
                      @click="summaryStatusFilter = s === 'All Statuses' ? '' : s; showSummaryStatusDd = false"
@@ -521,18 +528,278 @@
 
       </div>
 
-      <!-- Masterlist Placeholder -->
-      <div v-else class="min-h-[400px] flex items-center justify-center opacity-40 italic">
-        {{ activeMainTab }} content coming soon...
+      <!-- Masterlist Section -->
+      <div v-else-if="activeMainTab === 'Masterlist'" class="space-y-6">
+        
+        <!-- Section Header -->
+        <div class="space-y-1">
+          <h1 class="text-[24px] font-semibold" :class="isDark ? 'text-[#10FFD4]' : 'text-[#004D40]'">Masterlist - Client Projects</h1>
+          <p class="text-[14px] text-[#717182]" :class="isDark ? 'text-white/60' : ''">Review and manage client projects</p>
+        </div>
+
+        <!-- Sub-Tabs -->
+        <div class="flex items-center justify-between no-scrollbar p-[10px] w-full max-w-full rounded-[50px] border shadow-sm mb-4"
+             :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-white'">
+          <button v-for="tab in masterTabs" :key="tab"
+                  @click="activeMasterTab = tab"
+                  class="w-[25%] py-3 rounded-full text-[14px] font-medium transition-all whitespace-nowrap cursor-pointer"
+                  :class="activeMasterTab === tab 
+                    ? (isDark ? 'bg-[#1b5e50] text-white shadow-sm' : 'bg-[#82FFE0] text-[#0A0A0A]') 
+                    : (isDark ? 'bg-transparent text-white/50' : 'bg-transparent text-[#0A0A0A]')">
+            {{ tab }}
+          </button>
+        </div>
+
+        <!-- Card Container -->
+        <div :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-[#E5E5E5]'" class="rounded-[20px] border shadow-sm p-8 space-y-6">
+          
+          <!-- Search Row -->
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 flex-1 px-4 py-2.5 rounded-[10px] border"
+                 :class="isDark ? 'bg-white/5 border-white/20' : 'bg-white border-[#04C18F80]'">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" :class="isDark ? 'text-white/40' : 'text-[#04C18F]'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" /></svg>
+              <input v-model="masterSearch" type="text" placeholder="Search by consultant name or consultant Id..."
+                     class="flex-1 bg-transparent border-none outline-none text-[14px]"
+                     :class="isDark ? 'text-white placeholder-white/30' : 'text-[#0A0A0A] placeholder-[#0A0A0A]/40'" />
+            </div>
+            <button @click="masterSearch = ''"
+                    class="w-10 h-10 flex items-center justify-center rounded-[10px] border cursor-pointer transition-all hover:opacity-80"
+                    :class="isDark ? 'bg-white/5 border-white/20' : 'bg-white border-[#04C18F]'">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" :class="isDark ? 'text-white/50' : 'text-[#04C18F]'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            </button>
+          </div>
+
+          <!-- Table -->
+          <div class="overflow-hidden rounded-[8px] border" :class="isDark ? 'border-white/10' : 'border-[#E5E5E5]'">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-[#00896F] text-white">
+                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Client ID</th>
+                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Client Name</th>
+                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Date of Appointment</th>
+                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Type of Appointment</th>
+                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Progress Indicator</th>
+                  <th class="py-4 px-6 font-normal text-[14px] whitespace-nowrap">Notes</th>
+                </tr>
+              </thead>
+              <tbody :class="isDark ? 'bg-transparent' : 'bg-white'">
+                <tr v-for="(p, i) in filteredMasterlist" :key="i"
+                    class="transition-colors border-b"
+                    :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50'">
+                  <td class="py-4 px-6 text-[14px]">{{ p.clientId }}</td>
+                  <td class="py-4 px-6 text-[14px]">{{ p.clientName }}</td>
+                  <td class="py-4 px-6 text-[14px]">{{ p.date }}</td>
+                  <td class="py-4 px-6 text-[14px]">{{ p.type }}</td>
+                  <td class="py-4 px-6">
+                    <div v-if="p.current !== null" class="flex items-center gap-3">
+                      <div class="w-24 h-2 rounded-full overflow-hidden" :class="isDark ? 'bg-white/10' : 'bg-[#E5E5E5]'">
+                        <div class="h-full rounded-full transition-all duration-500"
+                             :style="{ width: (p.current / p.total * 100) + '%' }"
+                             :class="getProgressColor(p.current, p.total)"></div>
+                      </div>
+                      <span class="text-[14px] font-semibold" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ p.current }}/{{ p.total }}</span>
+                    </div>
+                    <span v-else class="opacity-40">-</span>
+                  </td>
+
+                  <td class="py-4 px-6 min-w-[250px]">
+                    <div class="px-3 py-2 rounded-[8px] border text-[12px] transition-all"
+                         :class="isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-[#F3F4F6] border-transparent text-[#717182] hover:bg-gray-100'">
+                      <input type="text" placeholder="Click to add delay reason..." class="bg-transparent border-none outline-none w-full placeholder-current" />
+                    </div>
+                  </td>
+                </tr>
+                <tr v-if="filteredMasterlist.length === 0">
+                  <td colspan="6" class="py-16 text-center text-[14px] opacity-40">No records found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
     </main>
 
-    <!-- Footer -->
-    <footer class="px-8 pb-6 flex justify-between text-[#999] text-[13px] mt-auto hidden md:flex">
-      <div>Copyright Reserved @2025</div>
-      <div>Last Sync: 19 Oct 2025, 10:45 AM IST</div>
-    </footer>
+
+
+    <!-- APPOINTMENT DETAILS MODAL -->
+    <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100"
+                leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+      <div v-if="showAppointmentModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div :class="isDark ? 'bg-[#002e26] border-white/10' : 'bg-white border-gray-100'" 
+             class="w-full max-w-[550px] rounded-[24px] shadow-2xl overflow-hidden relative border animate-in fade-in zoom-in duration-300">
+          
+          <!-- Modal Header -->
+          <div class="px-8 pt-8 pb-4 flex justify-between items-center">
+            <h2 class="text-[22px] font-semibold" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">Appointment Details</h2>
+            <button @click="showAppointmentModal = false" class="p-2 rounded-full hover:bg-black/5 transition-colors cursor-pointer" :class="isDark ? 'hover:bg-white/10' : ''">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="px-8 pb-8 space-y-7">
+            
+            <!-- Grid Info -->
+            <div class="grid grid-cols-3 gap-6">
+              <div class="space-y-1.5">
+                <span class="text-[13px] opacity-50 block">Appointment Type</span>
+                <span class="inline-block px-3 py-1 rounded-full text-[12px] font-medium" 
+                      :class="isDark ? 'bg-[#04C18F22] text-[#10FFD4]' : 'bg-[#E6FAF5] text-[#00896F]'">
+                  Monthly Review
+                </span>
+              </div>
+              <div class="space-y-1.5">
+                <span class="text-[13px] opacity-50 block">Consultant</span>
+                <span class="text-[15px] font-medium" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">John Mathew</span>
+              </div>
+              <div class="space-y-1.5">
+                <span class="text-[13px] opacity-50 block">Status</span>
+                <span class="inline-block px-3 py-1 rounded-full text-[12px] font-medium"
+                      :class="selectedAppointment?.status === 'Rescheduled' ? (isDark ? 'bg-red-500/20 text-red-400' : 'bg-[#FFE4E6] text-[#9F1239]') : (isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-700')">
+                  {{ selectedAppointment?.status || 'Scheduled' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Rescheduled Banner (Conditional) -->
+            <div v-if="selectedAppointment?.status === 'Rescheduled'" 
+                 :class="isDark ? 'bg-[#ff3b3b10] border-[#ff3b3b30]' : 'bg-[#FFF1F2] border-[#FDA4AF]'"
+                 class="rounded-[16px] p-5 border space-y-3">
+              <div class="flex items-center gap-2 text-[#FB2C36]" :class="isDark ? 'text-[#ff5c5c]' : ''">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span class="text-[14px] font-semibold">Appointment Rescheduled by Admin</span>
+              </div>
+              <div class="flex items-center gap-3 text-[14px]">
+                <span class="line-through opacity-40">Monday, Nov 25, 2025</span>
+                <span class="text-[#FB2C36] font-bold" :class="isDark ? 'text-[#ff5c5c]' : ''">Wednesday, Nov 27, 2025</span>
+              </div>
+              <p class="text-[13px] opacity-60 italic">Please make note of the updated date and time.</p>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="space-y-3">
+              <h4 class="text-[15px] font-semibold" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">Notes</h4>
+              <div :class="isDark ? 'bg-white/5 border-white/10 text-white/80' : 'bg-[#F2FAF8] border-[#E0F2EF] text-[#333]'"
+                   class="p-5 rounded-[16px] border text-[14px] leading-relaxed min-h-[100px]">
+                Quarterly business review and strategic planning session
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- RESCHEDULE MODAL -->
+    <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+      <div v-if="showRescheduleModal" class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div :class="isDark ? 'bg-[#002e26] border-white/10' : 'bg-white border-gray-100'" 
+             class="w-full max-w-[420px] rounded-[24px] shadow-2xl overflow-hidden relative border animate-in fade-in zoom-in duration-300">
+          
+          <!-- Modal Header -->
+          <div class="px-7 pt-7 pb-4 flex justify-between items-center">
+            <div class="flex items-center gap-2 text-[14px]">
+              <span class="font-semibold" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">March</span>
+              <img src="/images/icons/down-select.svg" class="w-2.5 h-2.5 opacity-40" :class="isDark ? 'invert' : ''" alt="v" />
+              <span class="font-semibold ml-2" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">2026</span>
+              <img src="/images/icons/down-select.svg" class="w-2.5 h-2.5 opacity-40" :class="isDark ? 'invert' : ''" alt="v" />
+            </div>
+            <button @click="showRescheduleModal = false" class="p-2 rounded-full hover:bg-black/5 transition-colors cursor-pointer" :class="isDark ? 'hover:bg-white/10' : ''">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+
+          <!-- Calendar View -->
+          <div class="px-7 pb-6">
+            <div class="grid grid-cols-7 gap-1 text-center bg-[#F8FAFB] rounded-[12px] p-2" :class="isDark ? 'bg-white/5' : ''">
+              <!-- Days Header -->
+              <div v-for="d in ['S','M','T','W','T','F','S']" :key="d" class="py-3 text-[12px] font-medium opacity-40">{{ d }}</div>
+              
+              <!-- Previous Month Days -->
+              <div v-for="d in [24,25,26,27,28,1,2]" :key="'prev'+d" class="py-2 text-[13px] opacity-20">{{ d }}</div>
+              
+              <!-- Current Month Days -->
+              <div v-for="d in 31" :key="d" 
+                   @click="selectedRescheduleDate = d"
+                   class="relative py-2 text-[13px] cursor-pointer rounded-[8px] transition-all"
+                   :class="[
+                     selectedRescheduleDate === d ? 'bg-[#00896F] text-white shadow-md' : (isDark ? 'text-white/80 hover:bg-white/10' : 'text-[#1a1a1a] hover:bg-gray-100'),
+                     d === 4 ? 'text-[#00896F] font-bold' : ''
+                   ]">
+                {{ d }}
+                <!-- Today Dot -->
+                <div v-if="d === 4" class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#00896F]"></div>
+              </div>
+              
+              <!-- Next Month Days -->
+              <div v-for="d in [1,2,3,4,5,6]" :key="'next'+d" class="py-2 text-[13px] opacity-20">{{ d }}</div>
+            </div>
+          </div>
+
+          <div class="border-t border-gray-100 mx-7" :class="isDark ? 'border-white/5' : ''"></div>
+
+          <!-- Time Picker Section -->
+          <div class="px-7 py-6 space-y-5">
+            <div class="space-y-4">
+              <h4 class="text-[15px] font-semibold" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">Select Time</h4>
+              
+              <!-- Time Dropdown -->
+              <div class="relative">
+                <div @click="showTimeSlotDropdown = !showTimeSlotDropdown"
+                     :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-gray-200 text-[#1a1a1a]'"
+                     class="w-full flex items-center justify-between px-4 py-3 border rounded-[12px] cursor-pointer transition-all hover:border-[#00896F]">
+                  <div class="flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span class="text-[14px]" :class="!selectedTimeSlot ? 'opacity-40' : ''">{{ selectedTimeSlot || 'Select Time Slot' }}</span>
+                  </div>
+                  <img src="/images/icons/down-select.svg" class="w-2.5 h-2.5 transition-transform" :class="[showTimeSlotDropdown ? 'rotate-180' : '', isDark ? 'invert' : '']" alt="v" />
+                </div>
+
+                <!-- Dropdown Menu -->
+                <transition enter-active-class="transition duration-100 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
+                  <div v-if="showTimeSlotDropdown" 
+                       class="absolute bottom-full left-0 right-0 mb-2 py-2 rounded-[16px] shadow-2xl z-[130] border border-gray-100"
+                       :class="isDark ? 'bg-[#1a2e2a] border-white/10 text-white' : 'bg-white text-[#1a1a1a]'">
+                    <div v-for="slot in timeSlots" :key="slot"
+                         @click="selectedTimeSlot = slot; showTimeSlotDropdown = false"
+                         class="px-5 py-3 text-[14px] cursor-pointer transition-colors"
+                         :class="[
+                           isDark ? 'hover:bg-white/5' : 'hover:bg-[#E6FAF5]',
+                           selectedTimeSlot === slot ? (isDark ? 'bg-white/10 text-[#04C18F]' : 'bg-[#E6FAF5] text-[#00896F] font-medium') : ''
+                         ]">
+                      {{ slot }}
+                    </div>
+                  </div>
+                </transition>
+              </div>
+            </div>
+
+            <!-- Reschedule Confirmation Text -->
+            <p class="text-[14px] text-center" :class="isDark ? 'text-white/60' : 'text-[#1a1a1a]'">
+              Rescheduling to <span class="text-[#FB2C36] font-semibold">Mar {{ selectedRescheduleDate }}, 2026, {{ selectedTimeSlot || '03:30 PM' }}</span>
+            </p>
+
+            <!-- Buttons -->
+            <div class="flex gap-3">
+              <button @click="showRescheduleModal = false" 
+                      class="flex-1 px-4 py-3 rounded-[12px] border text-[14px] font-semibold cursor-pointer transition-all hover:bg-black/5"
+                      :class="isDark ? 'border-white/10 text-white hover:bg-white/5' : 'border-gray-100 text-[#1a1a1a]'">
+                Cancel
+              </button>
+              <button @click="showRescheduleModal = false"
+                      class="flex-[1.5] flex items-center justify-center gap-2 px-6 py-3 rounded-[12px] bg-[#00896F] text-white text-[14px] font-semibold cursor-pointer transition-all hover:opacity-90 active:scale-[0.98]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                Confirm Reschedule
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </transition>
+    <DashboardFooter />
   </div>
 </template>
 
@@ -542,6 +809,102 @@ import { ref, computed } from 'vue'
 const { isDark } = useTheme()
 
 const activeMainTab = ref('Activity Tracking')
+
+// Appointment Modal State
+const showAppointmentModal = ref(false)
+const selectedAppointment = ref(null)
+
+const openAppointmentModal = (appointment) => {
+  selectedAppointment.value = appointment
+  showAppointmentModal.value = true
+}
+
+// Reschedule Modal State
+const showRescheduleModal = ref(false)
+const selectedRescheduleReq = ref(null)
+const selectedRescheduleDate = ref(21) // March 21
+const showTimeSlotDropdown = ref(false)
+const selectedTimeSlot = ref('')
+
+const openRescheduleModal = (req) => {
+  selectedRescheduleReq.value = req
+  showRescheduleModal.value = true
+}
+
+const timeSlots = [
+  '9:00 AM - 10:00 AM',
+  '10:00 AM - 11:00 AM',
+  '11:00 AM - 12:00 PM',
+  '01:30 PM - 02:30 PM',
+  '2:30 PM - 03:30 PM'
+]
+
+const markAsCompleted = (req) => {
+  req.status = 'Completed'
+}
+
+const confirmAppointment = (req) => {
+  req.status = 'Scheduled'
+}
+
+// ── Masterlist ───────────────────────────────────────────────
+const activeMasterTab = ref('Client Fixed (4)')
+const masterTabs = [
+  'Client Fixed (4)',
+  'Client Review (3)',
+  'Client Analysis (4)',
+  'All Appointments (10)'
+]
+const masterSearch = ref('')
+
+const masterlistProjects = ref([
+  // Client Fixed
+  { clientId: 'client-7', clientName: 'Logistics Express Inc.', date: '01/10/2026', type: 'Client Fixed', current: 8, total: 14, notes: '' },
+  { clientId: 'client-4', clientName: 'Food Services Group',   date: '01/10/2026', type: 'Client Fixed', current: 10, total: 14, notes: '' },
+  { clientId: 'client-4', clientName: 'Food Services Group',   date: '01/10/2026', type: 'Client Fixed', current: 3, total: 14, notes: '' },
+  { clientId: 'client-9', clientName: 'Retail Supply Co.',      date: '01/10/2026', type: 'Client Fixed', current: 5, total: 14, notes: '' },
+  
+  // Client Review
+  { clientId: 'client-7', clientName: 'Logistics Express Inc.', date: '01/10/2026', type: 'Client Review', current: null, total: null, notes: '' },
+  { clientId: 'client-4', clientName: 'Food Services Group',   date: '01/10/2026', type: 'Client Review', current: null, total: null, notes: '' },
+  { clientId: 'client-4', clientName: 'Food Services Group',   date: '01/10/2026', type: 'Client Review', current: null, total: null, notes: '' },
+  
+  // Client Analysis
+  { clientId: 'client-1', clientName: 'Global Tech',           date: '02/10/2026', type: 'Client Analysis', current: 12, total: 14, notes: '' },
+  { clientId: 'client-2', clientName: 'Energy Corp',           date: '02/10/2026', type: 'Client Analysis', current: 1, total: 14, notes: '' },
+  { clientId: 'client-3', clientName: 'Pharma Ltd',            date: '02/10/2026', type: 'Client Analysis', current: 7, total: 14, notes: '' },
+])
+
+const getProgressColor = (current, total) => {
+  if (!current && current !== 0) return ''
+  const p = (current / total) * 100
+  if (p < 30) return 'bg-[#FB2C36]'
+  if (p < 70) return 'bg-[#FDC700]'
+  return 'bg-[#00896F]'
+}
+
+const filteredMasterlist = computed(() => {
+  let list = masterlistProjects.value
+  
+  // Filter by Sub-tab
+  if (activeMasterTab.value.includes('Client Fixed')) {
+    list = list.filter(p => p.type === 'Client Fixed')
+  } else if (activeMasterTab.value.includes('Client Review')) {
+    list = list.filter(p => p.type === 'Client Review')
+  } else if (activeMasterTab.value.includes('Client Analysis')) {
+    return []
+  } else if (activeMasterTab.value.includes('All Appointments')) {
+    // Show all
+  }
+
+  // Filter by Search
+  const q = masterSearch.value.toLowerCase()
+  if (q) {
+    list = list.filter(p => p.clientId.toLowerCase().includes(q) || p.clientName.toLowerCase().includes(q))
+  }
+  
+  return list
+})
 const mainTabs = [
   'Activity Tracking',
   'Client Management',
