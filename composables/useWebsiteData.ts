@@ -1,7 +1,7 @@
 /**
  * useWebsiteData
  * ──────────────────────────────────────────────────────────────────────────
- * Fetches /data/website-data.json (served from /public) once and caches it
+ * Fetches /data/data.json (served from /public) once and caches it
  * for the lifetime of the Nuxt app. Components call a section-specific
  * helper instead of importing JSON directly so that a single source of
  * truth drives all pages.
@@ -22,7 +22,7 @@ async function fetchData(): Promise<Record<string, any>> {
   if (_cache) return _cache
   if (_pending) return _pending
 
-  _pending = $fetch<Record<string, any>>('/data/website-data.json').then((data) => {
+  _pending = $fetch<Record<string, any>>('/data/data.json').then((data) => {
     _cache = data
     return data
   })
@@ -44,7 +44,7 @@ export function useWebsiteData() {
     try {
       data.value = await fetchData()
     } catch (e: any) {
-      error.value = e?.message ?? 'Failed to load website-data.json'
+      error.value = e?.message ?? 'Failed to load data.json'
     } finally {
       loading.value = false
     }
@@ -242,5 +242,59 @@ export function useCashFlowPage() {
     metrics:        computed(() => cp.value?.metrics        ?? {}),
     scenarioChart:  computed(() => cp.value?.scenarioChart  ?? {}),
     inflowOutflow:  computed(() => cp.value?.inflowOutflow  ?? {}),
+  }
+}
+
+/** Accounts Receivable detail page: /accounts-receivable */
+export function useAccountsReceivablePage() {
+  const { data, loading, error } = useWebsiteData()
+  const ar = computed(() => data.value?.accountsReceivablePage ?? {})
+  return {
+    loading, error,
+    summary:            computed(() => ar.value?.summary            ?? []),
+    topCustomers:       computed(() => ar.value?.topCustomers       ?? {}),
+    historicalMovement: computed(() => ar.value?.historicalMovement ?? {}),
+    agingGraph:         computed(() => ar.value?.agingGraph         ?? {}),
+  }
+}
+
+/** COGS detail page: /cogs */
+export function useCogsPage() {
+  const { data, loading, error } = useWebsiteData()
+  const cp = computed(() => data.value?.cogsPage ?? {})
+  return {
+    loading, error,
+    summary:        computed(() => cp.value?.summary        ?? []),
+    summaryTotal:   computed(() => cp.value?.summaryTotal   ?? {}),
+    breakdown:      computed(() => cp.value?.breakdown      ?? {}),
+    last6Months:    computed(() => cp.value?.last6Months    ?? {}),
+    revenueToCogs:  computed(() => cp.value?.revenueToCogs  ?? {}),
+  }
+}
+
+/** Accounts Payable detail page: /accounts-payable */
+export function useAccountsPayablePage() {
+  const { data, loading, error } = useWebsiteData()
+  const ap = computed(() => data.value?.accountsPayablePage ?? {})
+  return {
+    loading, error,
+    summary:            computed(() => ap.value?.summary            ?? []),
+    summaryTotal:       computed(() => ap.value?.summaryTotal       ?? {}),
+    topCustomers:       computed(() => ap.value?.topCustomers       ?? {}),
+    historicalMovement: computed(() => ap.value?.historicalMovement ?? {}),
+    agingGraph:         computed(() => ap.value?.agingGraph         ?? {}),
+  }
+}
+
+/** Cost Center detail page: /cost-center */
+export function useCostCenterPage() {
+  const { data, loading, error } = useWebsiteData()
+  const cc = computed(() => data.value?.costCenterPage ?? {})
+  return {
+    loading, error,
+    summary:                computed(() => cc.value?.summary               ?? []),
+    summaryTotal:           computed(() => cc.value?.summaryTotal          ?? {}),
+    overallRevenueVsCost:   computed(() => cc.value?.overallRevenueVsCost  ?? {}),
+    projectDetail:          computed(() => cc.value?.projectDetail         ?? {}),
   }
 }

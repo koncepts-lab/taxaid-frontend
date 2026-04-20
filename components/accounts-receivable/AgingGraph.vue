@@ -105,33 +105,32 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const agingCategories = [
+const { agingGraph } = useAccountsReceivablePage()
+
+const agingCategories = computed(() => agingGraph.value?.agingCategories ?? [
   { en: 'Overdue >30 Days',  ar: 'متأخر أكثر من 30 يوم' },
   { en: 'Overdue 30-60 Days', ar: 'متأخر 30-60 يوم' },
   { en: 'Overdue 60-90 Days', ar: 'متأخر 60-90 يوم' },
   { en: 'Overdue <90 Days',  ar: 'متأخر أقل من 90 يوم' }
-]
+])
 
-const previousYearData = [2.7, 1.9, 2.8, 2.8]
-const currentYearData  = [4.0, 4.7, 2.8, 4.3]
-const cumulativeData   = [45, 65, 75, 88]
-const percentOfTotal   = [16, 16, 10, 15]
+const percentOfTotal = computed(() => agingGraph.value?.percentOfTotal ?? [16, 16, 10, 15])
 
-const series = ref([
+const series = computed(() => [
   {
     name: 'Previous Year',
     type: 'bar',
-    data: previousYearData
+    data: agingGraph.value?.previousYearData ?? []
   },
   {
     name: 'Current Year',
     type: 'bar',
-    data: currentYearData
+    data: agingGraph.value?.currentYearData ?? []
   },
   {
     name: 'Cumulative %',
     type: 'line',
-    data: cumulativeData
+    data: agingGraph.value?.cumulativeData ?? []
   }
 ])
 
@@ -176,7 +175,7 @@ const chartOptions = computed(() => ({
     hover: { size: 8 }
   },
   xaxis: {
-    categories: agingCategories.map(c => currentLang.value === 'ar' ? c.ar : c.en),
+    categories: agingCategories.value.map(c => currentLang.value === 'ar' ? c.ar : c.en),
     axisBorder: {
       show: true,
       color: '#00403399',
@@ -248,11 +247,11 @@ const chartOptions = computed(() => ({
     shared: true,
     intersect: false,
     custom: function({ series: s, dataPointIndex }) {
-      const cat = agingCategories[dataPointIndex]
+      const cat = agingCategories.value[dataPointIndex]
       const catLabel = currentLang.value === 'ar' ? cat.ar : cat.en
       const curYear = s[1][dataPointIndex]
       const cumPct  = s[2][dataPointIndex]
-      const pctTot  = percentOfTotal[dataPointIndex]
+      const pctTot  = percentOfTotal.value[dataPointIndex]
 
       const cyrLabel  = currentLang.value === 'ar' ? 'السنة الحالية'   : 'Current year'
       const totLabel  = currentLang.value === 'ar' ? '% من إجمالي AR'  : '% of Total AR'

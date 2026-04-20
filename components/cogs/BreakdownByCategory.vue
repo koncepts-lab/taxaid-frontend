@@ -1,6 +1,6 @@
 <template>
   <div
-    class="breakdown-chart-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-auto shadow-md"
+    class="breakdown-chart-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-md"
     :style="isDark ? 'background: #00141080 !important' : ''">
     <!-- Header -->
     <div class="flex lg:flex-row flex-col max-lg:gap-4 justify-between items-start mb-4 text-white relative z-10">
@@ -33,7 +33,7 @@
     </div>
 
     <!-- Chart -->
-    <div class="flex-1 w-full min-h-[320px] relative z-10 min-w-175 ">
+    <div class="flex-1 w-full min-h-[320px] relative z-10">
       <ClientOnly>
         <apexchart type="bar" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
@@ -95,7 +95,9 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const categories = [
+const { breakdown } = useCogsPage()
+
+const categories = computed(() => breakdown.value?.categories ?? [
   { en: 'Product Sales', ar: 'مبيعات المنتجات' },
   { en: 'Service', ar: 'خدمة' },
   { en: 'Consulting', ar: 'استشارات' },
@@ -106,19 +108,16 @@ const categories = [
   { en: 'Licensing', ar: 'الترخيص' },
   { en: 'Logistics', ar: 'الخدمات اللوجستية' },
   { en: 'Manufacturing', ar: 'التصنيع' }
-]
+])
 
-const previousYearData = [1.6, 3.8, 3.4, 2.4, 2.5, 4.5, 2.7, 3.5, 4.5, 4.8]
-const currentYearData = [1.8, 4.5, 2.8, 2.8, 1.7, 5.0, 3.0, 4.0, 5.0, 5.0]
-
-const series = ref([
+const series = computed(() => [
   {
     name: 'Previous Year',
-    data: previousYearData
+    data: breakdown.value?.previousYearData ?? []
   },
   {
     name: 'Current Year',
-    data: currentYearData
+    data: breakdown.value?.currentYearData ?? []
   }
 ])
 
@@ -149,7 +148,7 @@ const chartOptions = computed(() => ({
     formatter: (val) => val.toString().replace('.', ',') + 'M'
   },
   xaxis: {
-    categories: categories.map(c => currentLang.value === 'ar' ? c.ar : c.en),
+    categories: categories.value.map(c => currentLang.value === 'ar' ? c.ar : c.en),
     axisBorder: {
       show: true,
       color: '#004033',

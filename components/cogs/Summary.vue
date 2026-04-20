@@ -81,22 +81,22 @@
           </template>
         </tbody>
         <tfoot>
-          <tr :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
+          <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
             <td class="lg:py-5 lg:px-6 px-4 font-semibold text-[14px]"
               :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
               {{
                 currentLang ===
                   'ar' ? 'إجمالي تكلفة المبيعات' : 'Total COGS' }}</td>
             <td class="lg:px-6 px-4 py-5 text-right rtl:text-left font-semibold text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">2,775,000</td>
+              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.currentYear }}</td>
             <td class="lg:px-6 px-4 py-5 text-right rtl:text-left font-semibold text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">2,405,000</td>
+              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.previousYear }}</td>
             <td class="lg:px-6 px-4 py-5 text-right rtl:text-left font-semibold text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">2,890,000</td>
+              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.budget }}</td>
             <td class="lg:px-6 px-4 py-5 text-right rtl:text-left">
               <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;"
-                :class="isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]'">
-                +15.4%
+                :class="summaryTotal.variance >= 0 ? (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]') : (isDark ? 'bg-[#FB7554]/20 text-[#FF582F]' : 'bg-[#FB75544D] text-[#FF582F]')">
+                {{ summaryTotal.variance >= 0 ? '+' : '' }}{{ summaryTotal.variance }}%
               </span>
             </td>
             <td class="lg:px-6 px-4 py-3 text-center">
@@ -105,11 +105,11 @@
                   <path d="M 4 28 A 20 20 0 0 1 44 28" class="text-white/30" stroke-width="4" stroke="currentColor"
                     fill="none" stroke-linecap="round" />
                   <path d="M 4 28 A 20 20 0 0 1 44 28"
-                    :style="{ color: getProgressColor(25), strokeDasharray: 62.83, strokeDashoffset: 47.1225 }" stroke-width="4"
-                    stroke="currentColor" fill="none" stroke-linecap="round" />
+                    :style="{ color: getProgressColor(summaryTotal.progress), strokeDasharray: 62.83, strokeDashoffset: 62.83 - (62.83 * summaryTotal.progress) / 100 }" stroke-width="4"
+                    stroke="currentColor" fill="none" stroke-linecap="round" class="transition-all duration-500" />
                 </svg>
                 <span class="absolute bottom-0 text-[10px] font-bold"
-                  :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">25%</span>
+                  :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.progress }}%</span>
               </div>
             </td>
           </tr>
@@ -206,19 +206,19 @@
                 </template>
               </tbody>
               <tfoot class="sticky bottom-0 z-10">
-                <tr :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
+                <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
                   <td class="lg: py-5 font-semibold text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
                     currentLang === 'ar' ? 'إجمالي تكلفة المبيعات' : 'Total COGS' }}</td>
                   <td class="px-6 py-5 text-right rtl:text-left font-semibold text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">2,775,000</td>
+                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.currentYear }}</td>
                   <td class="px-6 py-5 text-right rtl:text-left font-semibold text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">2,405,000</td>
+                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.previousYear }}</td>
                   <td class="px-6 py-5 text-right rtl:text-left font-semibold text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">2,890,000</td>
+                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.budget }}</td>
                   <td class="px-6 py-5 text-right rtl:text-left">
                     <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;"
-                      :class="isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]'">
-                      +15.4%
+                      :class="summaryTotal.variance >= 0 ? (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]') : (isDark ? 'bg-[#FB7554]/20 text-[#FF582F]' : 'bg-[#FB75544D] text-[#FF582F]')">
+                      {{ summaryTotal.variance >= 0 ? '+' : '' }}{{ summaryTotal.variance }}%
                     </span>
                   </td>
                   <td class="px-6 py-3 text-center">
@@ -227,11 +227,11 @@
                         <path d="M 4 28 A 20 20 0 0 1 44 28" class="text-white/30" stroke-width="4"
                           stroke="currentColor" fill="none" stroke-linecap="round" />
                         <path d="M 4 28 A 20 20 0 0 1 44 28"
-                          :style="{ color: getProgressColor(25), strokeDasharray: 62.83, strokeDashoffset: 47.1225 }" stroke-width="4"
-                          stroke="currentColor" fill="none" stroke-linecap="round" />
+                          :style="{ color: getProgressColor(summaryTotal.progress), strokeDasharray: 62.83, strokeDashoffset: 62.83 - (62.83 * summaryTotal.progress) / 100 }" stroke-width="4"
+                          stroke="currentColor" fill="none" stroke-linecap="round" class="transition-all duration-500" />
                       </svg>
                       <span class="absolute bottom-0 text-[10px] font-bold"
-                        :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">25%</span>
+                        :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.progress }}%</span>
                     </div>
                   </td>
                 </tr>
@@ -258,33 +258,5 @@ const getProgressColor = (progress) => {
   return '#fb7554'
 }
 
-const tableData = ref([
-  {
-    label: 'Product Sales',
-    labelAr: 'مبيعات المنتجات',
-    currentYear: '1,850,000',
-    previousYear: '1,620,000',
-    budget: '1,900,000',
-    variance: 14.2,
-    progress: 50
-  },
-  {
-    label: 'Service',
-    labelAr: 'خدمة',
-    currentYear: '450,000',
-    previousYear: '380,000',
-    budget: '480,000',
-    variance: 18.4,
-    progress: 30
-  },
-  {
-    label: 'Subscriptions',
-    labelAr: 'الاشتراكات',
-    currentYear: '280,000',
-    previousYear: '240,000',
-    budget: '300,000',
-    variance: -16.7,
-    progress: 20
-  }
-])
+const { summary: tableData, summaryTotal } = useCogsPage()
 </script>

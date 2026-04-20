@@ -100,14 +100,15 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const categories = ['Revenue', 'COGS', 'Indirect Expense']
-const actualData = [2.4, 2.5, 4.5]
-const budgetData = [2.8, 1.7, 4.7]
+const { projectDetail } = useCostCenterPage()
+const actualVsBudget = computed(() => projectDetail.value?.actualVsBudget ?? {})
 
-const series = [
-  { name: 'Actual', data: actualData },
-  { name: 'Budget', data: budgetData }
-]
+const categories = computed(() => actualVsBudget.value?.categories?.map(c => currentLang.value === 'ar' ? c.ar : c.en) ?? [])
+
+const series = computed(() => [
+  { name: 'Actual', data: actualVsBudget.value?.actualData ?? [] },
+  { name: 'Budget', data: actualVsBudget.value?.budgetData ?? [] }
+])
 
 const chartOptions = computed(() => ({
   chart: {
@@ -132,7 +133,7 @@ const chartOptions = computed(() => ({
     formatter: (val) => val === 0 ? '' : val.toString().replace('.', ',') + 'M'
   },
   xaxis: {
-    categories: categories,
+    categories: categories.value,
     axisBorder: { show: false },
     axisTicks: { show: false },
     labels: { style: { fontSize: '13px', colors: '#FFFFFF', fontWeight: 500 } }

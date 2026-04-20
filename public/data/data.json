@@ -1,1 +1,2845 @@
-{}
+{
+    "_meta": {
+        "version": "1.0.0",
+        "description": "TaxAid Financial Analytics — Complete website data for API integration",
+        "lastUpdated": "2026-04-18",
+        "_pageMap": {
+            "mainDashboard": "pages/dashboard/index.vue  →  http://localhost:3000/dashboard",
+            "auth": "pages/home.vue",
+            "onboarding": "pages/onboarding.vue",
+            "teamMember": "pages/review-team-member/*.vue",
+            "reviewManager": "pages/review-manager/*.vue",
+            "revenuePartnership": "pages/revenue-partnership/*.vue"
+        }
+    },
+    "__comment: main dashboard": "============================================================",
+    "__comment: main dashboard": "  PAGE → pages/dashboard/index.vue  |  URL → /dashboard    ",
+    "__comment: main dashboard": "  9 widget components assembled in a 12-col grid layout     ",
+    "__comment: main dashboard": "============================================================",
+    "mainDashboard": {
+        "_page": "pages/dashboard/index.vue",
+        "_url": "http://localhost:3000/dashboard",
+        "_note": "Root dashboard page. Composed of 9 widget components rendered in a 12-column grid. Each widget links to its own detail page.",
+        "layout": {
+            "leftSidebar": [
+                "Revenue"
+            ],
+            "row1": [
+                "Cashflow",
+                "FinancialStatements"
+            ],
+            "row2": [
+                "IndirectExpense",
+                "AccountReceivables"
+            ],
+            "row3_bottom": [
+                "COGS",
+                "AccountsPayable",
+                "CostCenter",
+                "TaxQueries"
+            ]
+        },
+        "widgets": {
+            "revenue": {
+                "_page": "components/dashboard/Revenue.vue",
+                "_detailPage": "pages/revenue/index.vue  →  /revenue",
+                "_note": "Semi-circle gauge showing current-year revenue achievement vs target. Left sidebar widget.",
+                "totalRevenue": 2775000,
+                "netRevenue": 988430,
+                "currentYearTarget": 3000000,
+                "currentYearAchieved": 2860000,
+                "gaugeColors": {
+                    "lastYear": "#21E669",
+                    "currentYear": "#03D8B0",
+                    "balance": "#0A7C4B"
+                },
+                "labels": {
+                    "title": "Revenue",
+                    "totalRevenue": "Total Revenue",
+                    "netRevenue": "Net Revenue (After Returns)",
+                    "targetLabel": "Target Achieved"
+                },
+                "labelsAr": {
+                    "title": "الإيرادات",
+                    "totalRevenue": "إجمالي الإيرادات",
+                    "netRevenue": "صافي الإيرادات (بعد المرتجعات)",
+                    "targetLabel": "تم تحقيق الهدف"
+                }
+            },
+            "cashflow": {
+                "_page": "components/dashboard/Cashflow.vue",
+                "_detailPage": "pages/cash-flow/index.vue  →  /cash-flow",
+                "_note": "Area chart showing Real vs Hypothetical cash-flow scenarios over 6 months (May–Oct). Animated sweep-right entry.",
+                "periodFilters": [
+                    "3M",
+                    "6M",
+                    "1M"
+                ],
+                "defaultFilter": "6M",
+                "months": [
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct"
+                ],
+                "monthsAr": [
+                    "مايو",
+                    "يونيو",
+                    "يوليو",
+                    "أغسطس",
+                    "سبتمبر",
+                    "أكتوبر"
+                ],
+                "chartCategories": [
+                    "May",
+                    "",
+                    "",
+                    "Jun",
+                    "",
+                    "",
+                    "Jul",
+                    "",
+                    "",
+                    "Aug",
+                    "",
+                    "",
+                    "Sep",
+                    "",
+                    "",
+                    "Oct"
+                ],
+                "series": {
+                    "realScenario": [
+                        2.6,
+                        2.1,
+                        2.5,
+                        1.7,
+                        2.5,
+                        4.0,
+                        2.9,
+                        3.6,
+                        2.8,
+                        1.4,
+                        1.9,
+                        1.5,
+                        3.2,
+                        2.6,
+                        4.1,
+                        4.0
+                    ],
+                    "hypotheticalScenario": [
+                        1.4,
+                        0.8,
+                        1.2,
+                        0.9,
+                        1.1,
+                        2.8,
+                        2.0,
+                        2.3,
+                        1.8,
+                        1.3,
+                        0.5,
+                        1.5,
+                        0.3,
+                        2.0,
+                        1.9,
+                        2.9
+                    ]
+                },
+                "colors": {
+                    "realScenario": "#00B794",
+                    "hypotheticalScenario": "#FF7B5F"
+                },
+                "yAxis": {
+                    "min": 0,
+                    "max": 4.5,
+                    "unit": "M"
+                },
+                "annotationMonth": "Jul",
+                "tooltipSample": {
+                    "month": "July",
+                    "real": "AED 2.5M",
+                    "hypothetical": "AED 1.2M"
+                },
+                "labels": {
+                    "real": "Real Scenario",
+                    "hypothetical": "Hypothetical Scenario"
+                },
+                "labelsAr": {
+                    "real": "سيناريو حقيقي",
+                    "hypothetical": "سيناريو افتراضي"
+                }
+            },
+            "financialStatements": {
+                "_page": "components/dashboard/Financials.vue",
+                "_detailPage": "pages/financial-statement/index.vue  →  /financial-statement",
+                "_note": "Three circular-arc gauges showing Revenue Growth, Net Profit Margin, and Liquidity Status.",
+                "gauges": [
+                    {
+                        "label": "Revenue Growth",
+                        "labelAr": "نمو الإيرادات",
+                        "value": "+8.2%",
+                        "progress": 75,
+                        "color": "#009848"
+                    },
+                    {
+                        "label": "Net Profit Margin",
+                        "labelAr": "هامش الربح الصافي",
+                        "value": "+4.8%",
+                        "progress": 60,
+                        "color": "#036192"
+                    },
+                    {
+                        "label": "Liquidity Status",
+                        "labelAr": "حالة السيولة",
+                        "value": "+2.2%",
+                        "progress": 35,
+                        "color": "#F1B208"
+                    }
+                ]
+            },
+            "indirectExpense": {
+                "_page": "components/dashboard/IndirectExpense.vue",
+                "_detailPage": "pages/indirect-expense/index.vue  →  /indirect-expense",
+                "_note": "Irregular pie chart with percentage labels showing breakdown of indirect operating expenses.",
+                "labels": [
+                    "Rent & Utilities",
+                    "Salaries & Wages",
+                    "Marketing & Advertising",
+                    "Office Supplies",
+                    "Others"
+                ],
+                "labelsAr": [
+                    "الإيجار والمرافق",
+                    "الرواتب والأجور",
+                    "التسويق والإعلان",
+                    "اللوازم المكتبية",
+                    "أخرى"
+                ],
+                "series": [
+                    35,
+                    30,
+                    20,
+                    10,
+                    5
+                ],
+                "colors": [
+                    "#004D41",
+                    "#00966C",
+                    "#FFB100",
+                    "#D29600",
+                    "#FF7E5B"
+                ]
+            },
+            "accountReceivables": {
+                "_page": "components/dashboard/AccountReceivables.vue",
+                "_detailPage": "pages/accounts-receivable/index.vue  →  /accounts-receivable",
+                "_note": "Stacked bar chart showing aging-bucket receivables (Jan–Jun) across 4 buckets: <30, 31-60, 61-90, >90 days.",
+                "months": [
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun"
+                ],
+                "monthsAr": [
+                    "يناير",
+                    "فبراير",
+                    "مارس",
+                    "أبريل",
+                    "مايو",
+                    "يونيو"
+                ],
+                "legendItems": [
+                    "< 30 Days",
+                    "31-60 Days",
+                    "61-90 Days",
+                    "> 90 Days"
+                ],
+                "legendItemsAr": [
+                    "أقل من 30 يوماً",
+                    "31-60 يوماً",
+                    "61-90 يوماً",
+                    "أكثر من 90 يوماً"
+                ],
+                "colors": [
+                    "#003328",
+                    "#00966C",
+                    "#B2EDE3",
+                    "#E6EBEB"
+                ],
+                "yAxisMax": 60,
+                "yAxisUnit": "M",
+                "series": {
+                    "lt30Days": [
+                        12,
+                        26,
+                        13,
+                        18,
+                        15,
+                        25
+                    ],
+                    "d31to60": [
+                        20,
+                        16,
+                        10,
+                        16,
+                        10,
+                        12
+                    ],
+                    "d61to90": [
+                        12,
+                        10,
+                        15,
+                        12,
+                        18,
+                        15
+                    ],
+                    "gt90Days": [
+                        18,
+                        10,
+                        12,
+                        11,
+                        8,
+                        10
+                    ]
+                }
+            },
+            "cogs": {
+                "_page": "components/dashboard/Cogs.vue",
+                "_detailPage": "pages/cogs/index.vue  →  /cogs",
+                "_note": "KPI card showing COGS-to-Revenue ratio (65%) with a mini wave sparkline. Links to full COGS detail page.",
+                "cogsToRevenueRatio": "65%",
+                "vsLastMonth": "+2%",
+                "trend": "up",
+                "footerText": "Achieved greater operational efficiency.\nNow unlocking higher profit margins.",
+                "footerTextAr": "تم تحقيق كفاءة تشغيلية أكبر.\nوالآن يتم فتح هوامش ربح أعلى."
+            },
+            "accountsPayable": {
+                "_page": "components/dashboard/AccountsPayable.vue",
+                "_detailPage": "pages/accounts-payable/index.vue  →  /accounts-payable",
+                "_note": "KPI card showing total outstanding payables with a mini bar sparkline and overdue/upcoming breakdown.",
+                "totalOutstandingPayables": 140175,
+                "currency": "AED",
+                "vsLastMonth": "-8%",
+                "trend": "down",
+                "overdue": "₹ 35L",
+                "dueInNext30Days": "₹ 90L",
+                "labels": {
+                    "totalOutstanding": "Total Outstanding Payables",
+                    "overdue": "Overdue:",
+                    "dueNext30": "Due in next 30 days:"
+                },
+                "labelsAr": {
+                    "totalOutstanding": "إجمالي الذمم الدائنة المستحقة",
+                    "overdue": "تجاوزت موعد الاستحقاق:",
+                    "dueNext30": "مستحقة في الـ 30 يوم القادمة:"
+                }
+            },
+            "costCenter": {
+                "_page": "components/dashboard/CostCenter.vue",
+                "_detailPage": "pages/cost-center/index.vue  →  /cost-center",
+                "_note": "KPI card showing active project count with a mini wave sparkline and a contextual note about recent additions.",
+                "activeProjects": 12,
+                "vsLastMonth": "+2%",
+                "trend": "up",
+                "footerText": "Atria.co recently added 2 new projects.\nStrengthening operational activity.",
+                "footerTextAr": "أضافت Atria.co مؤخرًا مشروعين جديدين.\nتعزيز النشاط التشغيلي.",
+                "labels": {
+                    "activeProjects": "Active Projects"
+                },
+                "labelsAr": {
+                    "activeProjects": "المشاريع النشطة"
+                }
+            },
+            "taxQueries": {
+                "_page": "components/dashboard/TaxQueries.vue",
+                "_detailPage": "pages/tax-queries/index.vue  →  /tax-queries",
+                "_note": "KPI card showing AI token usage with a donut gauge and upcoming VAT / Corporate Tax return due dates.",
+                "tokenUsed": 8021,
+                "tokenTotal": 10485,
+                "tokenUsagePercent": "+9.4%",
+                "trend": "up",
+                "vatReturnDue": "28 Jan 2026",
+                "ctReturnDue": "30 Jun 2026",
+                "vatReturnDueAr": "28 يناير 2026",
+                "ctReturnDueAr": "30 يونيو 2026",
+                "donut": {
+                    "usedColor": "#F1B208",
+                    "remainingColor": "#C5E1DB",
+                    "markerColor": "#DCAA06"
+                },
+                "labels": {
+                    "tokenUsage": "Token Usage",
+                    "vatDue": "VAT Return Due:",
+                    "ctDue": "CT Return Due:"
+                },
+                "labelsAr": {
+                    "tokenUsage": "استخدام الرموز",
+                    "vatDue": "موعد تقديم ضريبة القيمة المضافة:",
+                    "ctDue": "موعد تقديم ضريبة الشركات:"
+                }
+            }
+        }
+    },
+    "__comment: revenue page": "============================================================",
+    "__comment: revenue page": "  PAGE → pages/revenue/index.vue   |  URL → /revenue      ",
+    "__comment: revenue page": "  Summary, Gauge, By Category, Trend, and Top Customers    ",
+    "__comment: revenue page": "============================================================",
+    "revenuePage": {
+        "summary": [
+            {
+                "label": "Product Sales",
+                "labelAr": "مبيعات المنتجات",
+                "current": "1,850,000",
+                "previous": "1,620,000",
+                "budget": "1,900,000",
+                "variance": "+14.2%",
+                "progress": 50,
+                "children": [
+                    {
+                        "label": "SST 001",
+                        "labelAr": "SST 01",
+                        "current": "2,100,000",
+                        "previous": "1,900,000"
+                    },
+                    {
+                        "label": "SST 02",
+                        "labelAr": "SST 02",
+                        "current": "2,100,000",
+                        "previous": "1,900,000"
+                    },
+                    {
+                        "label": "SST 03",
+                        "labelAr": "SST 03",
+                        "current": "2,100,000",
+                        "previous": "1,900,000"
+                    }
+                ]
+            },
+            {
+                "label": "Service",
+                "labelAr": "الخدمات",
+                "current": "450,000",
+                "previous": "380,000",
+                "budget": "480,000",
+                "variance": "+18.4%",
+                "progress": 30
+            },
+            {
+                "label": "Subscriptions",
+                "labelAr": "الاشتراكات",
+                "current": "280,000",
+                "previous": "240,000",
+                "budget": "300,000",
+                "variance": "-16.7%",
+                "progress": 20
+            },
+            {
+                "label": "Total Revenue",
+                "labelAr": "إجمالي الإيرادات",
+                "current": "2,775,000",
+                "previous": "2,405,000",
+                "budget": "2,890,000",
+                "variance": "+15.4%",
+                "progress": 25,
+                "isSummary": true
+            }
+        ],
+        "gauge": {
+            "target": 8500000,
+            "achieved": 7820000,
+            "previousYearPct": 9
+        },
+        "byCategory": {
+            "categories": [
+                "Consulting",
+                "SaaS",
+                "Training",
+                "Support",
+                "Other"
+            ],
+            "categoriesAr": [
+                "استشارات",
+                "ساس",
+                "تدريب",
+                "دعم",
+                "أخرى"
+            ],
+            "series": [
+                {
+                    "name": "Previous Year",
+                    "nameAr": "السنة السابقة",
+                    "data": [
+                        2.8,
+                        3.1,
+                        3.4,
+                        1.5,
+                        2.5
+                    ]
+                },
+                {
+                    "name": "Current Year",
+                    "nameAr": "السنة الحالية",
+                    "data": [
+                        4.2,
+                        3.5,
+                        2.8,
+                        2.0,
+                        1.7
+                    ]
+                }
+            ]
+        },
+        "trend": {
+            "categories": [
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep"
+            ],
+            "series": [
+                {
+                    "name": "Previous Year",
+                    "data": [
+                        2.5,
+                        1.2,
+                        2.8,
+                        1.8,
+                        1.2,
+                        1.8,
+                        2.6
+                    ]
+                },
+                {
+                    "name": "Current Year",
+                    "data": [
+                        0.8,
+                        2.2,
+                        1.2,
+                        3.8,
+                        2.8,
+                        4.2,
+                        4.4
+                    ]
+                }
+            ]
+        },
+        "topCustomers": {
+            "customers": [
+                {
+                    "id": "A",
+                    "name": "Horizon Global",
+                    "nameAr": "هورايزون جلوبال",
+                    "value": 3.5,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "B",
+                    "name": "Orion Tech",
+                    "nameAr": "أوريون تك",
+                    "value": 4.0,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "C",
+                    "name": "Gulf Trading",
+                    "nameAr": "جلف تريدينج",
+                    "value": 2.9,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "D",
+                    "name": "Prime Logistics",
+                    "nameAr": "برايم لوجيستكس",
+                    "value": 3.7,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "E",
+                    "name": "Emirates Trading",
+                    "nameAr": "الإمارات للتجارة",
+                    "value": 4.5,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "F",
+                    "name": "Alpha Tech",
+                    "nameAr": "ألفا تك",
+                    "value": 1.9,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "G",
+                    "name": "Mena Retail",
+                    "nameAr": "مينا لتجارة التجزئة",
+                    "value": 3.3,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "H",
+                    "name": "Crescent",
+                    "nameAr": "كريسنت",
+                    "value": 4.0,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "I",
+                    "name": "Vertex Corp",
+                    "nameAr": "فيرتكس كورب",
+                    "value": 2.8,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "J",
+                    "name": "Vertex Trading",
+                    "nameAr": "فيرتكس للتجارة",
+                    "value": 3.2,
+                    "color": "#04C18F"
+                }
+            ],
+            "cumulativePct": [
+                40,
+                62,
+                70,
+                78,
+                85,
+                88,
+                92,
+                95,
+                97,
+                100
+            ]
+        }
+    },
+    "__comment: cash-flow page": "============================================================",
+    "__comment: cash-flow page": "  PAGE → pages/cash-flow/index.vue |  URL → /cash-flow   ",
+    "__comment: cash-flow page": "  Summary, Metrics, Chart, and Inflow/Outflow              ",
+    "__comment: cash-flow page": "============================================================",
+    "cashFlowPage": {
+        "summary": [
+            {
+                "label": "Operating Activities",
+                "labelAr": "أنشطة التشغيل",
+                "current": "1,200,000",
+                "previous": "1,100,000",
+                "budget": "1,250,000",
+                "variance": "+9.1%",
+                "progress": 60
+            },
+            {
+                "label": "Investing Activities",
+                "labelAr": "أنشطة الاستثمار",
+                "current": "-400,000",
+                "previous": "-350,000",
+                "budget": "-450,000",
+                "variance": "-14.3%",
+                "progress": 30
+            },
+            {
+                "label": "Financing Activities",
+                "labelAr": "أنشطة التمويل",
+                "current": "-200,000",
+                "previous": "-150,000",
+                "budget": "-200,000",
+                "variance": "-33.3%",
+                "progress": 20
+            },
+            {
+                "label": "Net Cash Flow",
+                "labelAr": "صافي التدفق النقدي",
+                "current": "600,000",
+                "previous": "600,000",
+                "budget": "600,000",
+                "variance": "0.0%",
+                "progress": 40,
+                "isSummary": true
+            }
+        ],
+        "metrics": {
+            "cashInHand": "AED 3.45 M",
+            "cashInHandChange": "+4.2%",
+            "ar30Days": "AED 2.95 M",
+            "ar30DaysChange": "-3.1%",
+            "scenarios": [
+                {
+                    "en": "100% Scenario",
+                    "ar": "سيناريو 100%"
+                },
+                {
+                    "en": "Future Contract",
+                    "ar": "عقد مستقبلي"
+                }
+            ]
+        },
+        "scenarioChart": {
+            "categories": [
+                "May",
+                "",
+                "",
+                "Jun",
+                "",
+                "",
+                "Jul",
+                "",
+                "",
+                "Aug",
+                "",
+                "",
+                "Sep",
+                "",
+                "",
+                "Oct",
+                "",
+                ""
+            ],
+            "categoriesAr": [
+                "مايو",
+                "",
+                "",
+                "يونيو",
+                "",
+                "",
+                "يوليو",
+                "",
+                "",
+                "أغسطس",
+                "",
+                "",
+                "سبتمبر",
+                "",
+                "",
+                "أكتوبر",
+                "",
+                ""
+            ],
+            "series": [
+                {
+                    "name": "Real Scenario",
+                    "nameAr": "سيناريو حقيقي",
+                    "data": [
+                        2.6,
+                        2.8,
+                        2.9,
+                        3.1,
+                        2.4,
+                        2.0,
+                        2.5,
+                        3.5,
+                        3.8,
+                        3.2,
+                        3.5,
+                        3.8,
+                        3.5,
+                        3.8,
+                        4.0,
+                        3.5,
+                        3.8,
+                        2.5
+                    ]
+                },
+                {
+                    "name": "Hypothetical Scenario",
+                    "nameAr": "سيناريو افتراضي",
+                    "data": [
+                        2.6,
+                        2.2,
+                        1.8,
+                        1.2,
+                        0.8,
+                        1.5,
+                        2.5,
+                        3.2,
+                        3.5,
+                        2.8,
+                        1.0,
+                        0.8,
+                        1.2,
+                        1.8,
+                        1.5,
+                        1.2,
+                        0.8,
+                        2.5
+                    ]
+                }
+            ]
+        },
+        "inflowOutflow": {
+            "categories": [
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct"
+            ],
+            "categoriesAr": [
+                "مايو",
+                "يونيو",
+                "يوليو",
+                "أغسطس",
+                "سبتمبر",
+                "أكتوبر"
+            ],
+            "series": [
+                {
+                    "name": "Outflow",
+                    "nameAr": "التدفق الخارجي",
+                    "data": [
+                        1.6,
+                        1.6,
+                        1.8,
+                        2.0,
+                        2.1,
+                        2.3
+                    ]
+                },
+                {
+                    "name": "Inflow",
+                    "nameAr": "التدفق الداخلي",
+                    "data": [
+                        2.6,
+                        2.6,
+                        3.0,
+                        3.7,
+                        3.8,
+                        3.9
+                    ]
+                }
+            ]
+        }
+    },
+    "__comment: financial-statement page": "============================================================",
+    "__comment: financial-statement page": "  PAGE → pages/financial-statement/index.vue | URL → /financial-statement ",
+    "__comment: financial-statement page": "  Income Statement, Balance Sheet, Ratios                  ",
+    "__comment: financial-statement page": "============================================================",
+    "financialStatementPage": {
+        "tabs": [
+            {
+                "id": "profit-loss",
+                "label": "Profit & Loss",
+                "labelAr": "الأرباح والخسائر"
+            },
+            {
+                "id": "balance-sheet",
+                "label": "Balance Sheet",
+                "labelAr": "الميزانية العمومية"
+            },
+            {
+                "id": "ratios",
+                "label": "Ratios",
+                "labelAr": "النسب المالية"
+            }
+        ],
+        "profitLoss": [
+            {
+                "label": "Revenue",
+                "current": "1,850,000",
+                "previous": "1,620,000",
+                "budget": "1,900,000",
+                "variance": "+14.2%",
+                "progress": 50,
+                "isHeader": true
+            },
+            {
+                "label": "Product Sales",
+                "current": "1,400,000",
+                "previous": "1,200,000",
+                "budget": "1,450,000",
+                "variance": "+16.7%",
+                "progress": 60,
+                "schedule": "01"
+            },
+            {
+                "label": "Service Revenue",
+                "current": "450,000",
+                "previous": "420,000",
+                "budget": "450,000",
+                "variance": "+7.1%",
+                "progress": 40,
+                "schedule": "02"
+            },
+            {
+                "label": "Gross Profit",
+                "current": "1,150,000",
+                "previous": "1,000,000",
+                "budget": "1,200,000",
+                "variance": "+15.0%",
+                "progress": 45,
+                "isSummary": true
+            },
+            {
+                "label": "Operating Expenses",
+                "current": "650,000",
+                "previous": "600,000",
+                "budget": "680,000",
+                "variance": "-8.3%",
+                "progress": 30,
+                "isHeader": true
+            },
+            {
+                "label": "Salaries",
+                "current": "400,000",
+                "previous": "380,000",
+                "budget": "410,000",
+                "variance": "-5.3%",
+                "progress": 25,
+                "schedule": "03"
+            },
+            {
+                "label": "Rent",
+                "current": "150,000",
+                "previous": "150,000",
+                "budget": "150,000",
+                "variance": "0.0%",
+                "progress": 50,
+                "schedule": "04"
+            },
+            {
+                "label": "Utilities",
+                "current": "100,000",
+                "previous": "70,000",
+                "budget": "120,000",
+                "variance": "-42.9%",
+                "progress": 20,
+                "schedule": "05"
+            },
+            {
+                "label": "Net Profit",
+                "current": "500,000",
+                "previous": "400,000",
+                "budget": "520,000",
+                "variance": "+25.0%",
+                "progress": 35,
+                "isTotal": true
+            }
+        ],
+        "balanceSheet": [
+            {
+                "label": "Assets",
+                "current": "3,450,000",
+                "previous": "3,200,000",
+                "budget": "3,500,000",
+                "variance": "+7.8%",
+                "progress": 65,
+                "isHeader": true
+            },
+            {
+                "label": "Cash & Equivalents",
+                "current": "1,200,000",
+                "previous": "1,100,000",
+                "budget": "1,250,000",
+                "variance": "+9.1%",
+                "progress": 60,
+                "schedule": "S1"
+            },
+            {
+                "label": "Accounts Receivable",
+                "current": "800,000",
+                "previous": "750,000",
+                "budget": "850,000",
+                "variance": "+6.7%",
+                "progress": 55,
+                "schedule": "S2"
+            },
+            {
+                "label": "Fixed Assets",
+                "current": "1,450,000",
+                "previous": "1,350,000",
+                "budget": "1,400,000",
+                "variance": "+7.4%",
+                "progress": 70,
+                "schedule": "S3"
+            },
+            {
+                "label": "Total Assets",
+                "current": "3,450,000",
+                "previous": "3,200,000",
+                "budget": "3,500,000",
+                "variance": "+7.8%",
+                "progress": 65,
+                "isSummary": true
+            },
+            {
+                "label": "Liabilities",
+                "current": "1,800,000",
+                "previous": "1,700,000",
+                "budget": "1,850,000",
+                "variance": "-5.9%",
+                "progress": 40,
+                "isHeader": true
+            },
+            {
+                "label": "Accounts Payable",
+                "current": "600,000",
+                "previous": "550,000",
+                "budget": "620,000",
+                "variance": "-9.1%",
+                "progress": 35,
+                "schedule": "S4"
+            },
+            {
+                "label": "Loans",
+                "current": "1,200,000",
+                "previous": "1,150,000",
+                "budget": "1,230,000",
+                "variance": "-4.3%",
+                "progress": 45,
+                "schedule": "S5"
+            },
+            {
+                "label": "Total Liabilities",
+                "current": "1,800,000",
+                "previous": "1,700,000",
+                "budget": "1,850,000",
+                "variance": "-5.9%",
+                "progress": 40,
+                "isSummary": true
+            },
+            {
+                "label": "Equity",
+                "current": "1,650,000",
+                "previous": "1,500,000",
+                "budget": "1,650,000",
+                "variance": "+10.0%",
+                "progress": 50,
+                "isTotal": true
+            }
+        ],
+        "ratios": [
+            {
+                "label": "Gross Margin",
+                "current": "62.1%",
+                "previous": "61.7%",
+                "budget": "63.2%",
+                "variance": "+0.6%",
+                "progress": 85,
+                "category": "Profitability"
+            },
+            {
+                "label": "Net Margin",
+                "current": "27.0%",
+                "previous": "24.7%",
+                "budget": "27.4%",
+                "variance": "+9.3%",
+                "progress": 75,
+                "category": "Profitability"
+            },
+            {
+                "label": "Current Ratio",
+                "current": "1.52",
+                "previous": "1.45",
+                "budget": "1.50",
+                "variance": "+4.8%",
+                "progress": 90,
+                "category": "Liquidity"
+            },
+            {
+                "label": "Quick Ratio",
+                "current": "1.20",
+                "previous": "1.15",
+                "budget": "1.18",
+                "variance": "+4.3%",
+                "progress": 88,
+                "category": "Liquidity"
+            },
+            {
+                "label": "Asset Turnover",
+                "current": "0.54",
+                "previous": "0.51",
+                "budget": "0.55",
+                "variance": "+5.9%",
+                "progress": 80,
+                "category": "Efficiency"
+            }
+        ]
+    },
+    "__comment: indirect-expense page": "============================================================",
+    "__comment: indirect-expense page": "  PAGE → pages/indirect-expense/index.vue | URL → /indirect-expense ",
+    "__comment: indirect-expense page": "  Summary, Top Categories, Trends, Overhead Vs Revenue     ",
+    "__comment: indirect-expense page": "============================================================",
+    "indirectExpensePage": {
+        "summary": [
+            {
+                "label": "Rent & Utilities",
+                "labelAr": "الإيجار والمرافق",
+                "currentYear": "1,850,000",
+                "previousYear": "1,620,000",
+                "budget": "1,900,000",
+                "variance": 14.2,
+                "yearToGo": 50
+            },
+            {
+                "label": "Office Salaries & Wages",
+                "labelAr": "رواتب وأجور المكتب",
+                "currentYear": "450,000",
+                "previousYear": "380,000",
+                "budget": "480,000",
+                "variance": 18.4,
+                "yearToGo": 30
+            },
+            {
+                "label": "Travel & Training",
+                "labelAr": "السفر والتدريب",
+                "currentYear": "280,000",
+                "previousYear": "240,000",
+                "budget": "300,000",
+                "variance": -16.7,
+                "yearToGo": 20
+            },
+            {
+                "label": "Total Indirect Expenses",
+                "labelAr": "إجمالي المصروفات غير المباشرة",
+                "currentYear": "2,775,000",
+                "previousYear": "2,405,000",
+                "budget": "2,890,000",
+                "variance": 15.4,
+                "yearToGo": 25,
+                "isTotal": true
+            }
+        ],
+        "topCategories": {
+            "labels": [
+                "Rent & Utilities",
+                "Salaries & Wages",
+                "Marketing & Advertising",
+                "Office Supplies",
+                "Others"
+            ],
+            "labelsAr": [
+                "الإيجار والمرافق",
+                "الرواتب والأجور",
+                "التسويق والإعلان",
+                "اللوازم المكتبية",
+                "أخرى"
+            ],
+            "series": [
+                35,
+                30,
+                20,
+                10,
+                5
+            ],
+            "values": [
+                "0.61",
+                "0.42",
+                "0.28",
+                "0.19",
+                "0.05"
+            ]
+        },
+        "overheadTrends": {
+            "series": [
+                {
+                    "name": "Current Year",
+                    "nameAr": "السنة الحالية",
+                    "data": [
+                        0.8,
+                        1.2,
+                        3.8,
+                        1.5,
+                        3.8,
+                        2.5,
+                        4.0
+                    ]
+                },
+                {
+                    "name": "Previous Year",
+                    "nameAr": "السنة السابقة",
+                    "data": [
+                        2.5,
+                        1.5,
+                        3.5,
+                        0.8,
+                        2.5,
+                        1.5,
+                        2.6
+                    ]
+                }
+            ],
+            "categories": [
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct"
+            ],
+            "categoriesAr": [
+                "أبريل",
+                "مايو",
+                "يونيو",
+                "يوليو",
+                "أغسطس",
+                "سبتمبر",
+                "أكتوبر"
+            ]
+        },
+        "overheadVsRevenue": {
+            "series": [
+                {
+                    "name": "Overhead",
+                    "nameAr": "النفقات العامة",
+                    "data": [
+                        1.6,
+                        1.7,
+                        1.8,
+                        1.9,
+                        2.0,
+                        2.1
+                    ]
+                },
+                {
+                    "name": "Revenue",
+                    "nameAr": "الإيرادات",
+                    "data": [
+                        2.6,
+                        2.8,
+                        3.0,
+                        3.2,
+                        3.4,
+                        3.6
+                    ]
+                }
+            ],
+            "categories": [
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct"
+            ],
+            "categoriesAr": [
+                "مايو",
+                "يونيو",
+                "يوليو",
+                "أغسطس",
+                "سبتمبر",
+                "أكتوبر"
+            ]
+        }
+    },
+    "__comment: accounts-receivable": "============================================================",
+    "__comment: accounts-receivable": "  PAGE → pages/accounts-receivable/index.vue | URL → /accounts-receivable ",
+    "__comment: accounts-receivable": "  Summary, Top Customers, Historical Movement, Aging Graph ",
+    "__comment: accounts-receivable": "============================================================",
+    "accountsReceivablePage": {
+        "summary": [
+            {
+                "label": "Corporate Clients",
+                "labelAr": "عملاء الشركات",
+                "total": "550,000",
+                "age30": "250,000",
+                "age3060": "150,000",
+                "age6090": "90,000",
+                "age90plus": "60,000",
+                "invoices": [
+                    {
+                        "id": "Invoice 1",
+                        "total": "550,000",
+                        "age30": "250,000",
+                        "age3060": "150,000",
+                        "age6090": "90,000",
+                        "age90plus": "60,000",
+                        "selected": true
+                    },
+                    {
+                        "id": "Invoice 2",
+                        "total": "550,000",
+                        "age30": "250,000",
+                        "age3060": "150,000",
+                        "age6090": "90,000",
+                        "age90plus": "60,000",
+                        "selected": true
+                    },
+                    {
+                        "id": "Invoice 3",
+                        "total": "550,000",
+                        "age30": "250,000",
+                        "age3060": "150,000",
+                        "age6090": "90,000",
+                        "age90plus": "60,000",
+                        "selected": false
+                    },
+                    {
+                        "id": "Invoice 4",
+                        "total": "550,000",
+                        "age30": "250,000",
+                        "age3060": "150,000",
+                        "age6090": "90,000",
+                        "age90plus": "60,000",
+                        "selected": false
+                    }
+                ]
+            },
+            {
+                "label": "Retail Customers",
+                "labelAr": "عملاء التجزئة",
+                "total": "265,000",
+                "age30": "120,000",
+                "age3060": "80,000",
+                "age6090": "40,000",
+                "age90plus": "25,000",
+                "invoices": []
+            },
+            {
+                "label": "Export Clients",
+                "labelAr": "عملاء التصدير",
+                "total": "145,000",
+                "age30": "70,000",
+                "age3060": "40,000",
+                "age6090": "25,000",
+                "age90plus": "10,000",
+                "invoices": []
+            }
+        ],
+        "topCustomers": {
+            "customersData": [
+                {
+                    "id": "A",
+                    "name": "Horizon Global",
+                    "nameAr": "هورايزون جلوبال",
+                    "value": 3.3,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "B",
+                    "name": "Orion Tech",
+                    "nameAr": "أوريون تك",
+                    "value": 4.1,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "C",
+                    "name": "Gulf Trading",
+                    "nameAr": "جلف تريدينج",
+                    "value": 2.9,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "D",
+                    "name": "Prime Logistics",
+                    "nameAr": "برايم لوجيستكس",
+                    "value": 3.7,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "E",
+                    "name": "Emirates Trading",
+                    "nameAr": "الإمارات للتجارة",
+                    "value": 4.4,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "F",
+                    "name": "Alpha Tech",
+                    "nameAr": "ألفا تك",
+                    "value": 1.9,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "G",
+                    "name": "Mena Retail",
+                    "nameAr": "مينا لتجارة التجزئة",
+                    "value": 3.7,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "H",
+                    "name": "Crescent",
+                    "nameAr": "كريسنت",
+                    "value": 4.0,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "I",
+                    "name": "Vertex Corp",
+                    "nameAr": "فيرتكس كورب",
+                    "value": 2.8,
+                    "color": "#04C18F"
+                },
+                {
+                    "id": "J",
+                    "name": "Vertex Trading",
+                    "nameAr": "فيرتكس للتجارة",
+                    "value": 3.2,
+                    "color": "#04C18F"
+                }
+            ],
+            "cumulativeLine": [
+                40,
+                62,
+                70,
+                78,
+                85,
+                88,
+                92,
+                95,
+                97,
+                100
+            ]
+        },
+        "historicalMovement": {
+            "arBalance": [
+                1.6,
+                3.2,
+                3.8,
+                4.3,
+                4.6,
+                4.8
+            ],
+            "percentage": [],
+            "categories": [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun"
+            ]
+        },
+        "agingGraph": {
+            "agingCategories": [
+                {
+                    "en": "Overdue >30 Days",
+                    "ar": "متأخر أكثر من 30 يوم"
+                },
+                {
+                    "en": "Overdue 30-60 Days",
+                    "ar": "متأخر 30-60 يوم"
+                },
+                {
+                    "en": "Overdue 60-90 Days",
+                    "ar": "متأخر 60-90 يوم"
+                },
+                {
+                    "en": "Overdue <90 Days",
+                    "ar": "متأخر أقل من 90 يوم"
+                }
+            ],
+            "previousYearData": [
+                2.7,
+                1.9,
+                2.8,
+                2.8
+            ],
+            "currentYearData": [
+                4.0,
+                4.7,
+                2.8,
+                4.3
+            ],
+            "cumulativeData": [
+                45,
+                65,
+                75,
+                88
+            ],
+            "percentOfTotal": [
+                16,
+                16,
+                10,
+                15
+            ]
+        }
+    },
+  "__comment: cogs": "============================================================",
+  "__comment: cogs": "  PAGE → pages/cogs/index.vue | URL → /cogs ",
+  "__comment: cogs": "  Summary, Breakdown, Last 6 Months, Revenue to COGS Monthly ",
+  "__comment: cogs": "============================================================",
+  "cogsPage": {
+  "summary": [
+    {
+      "label": "Product Sales",
+      "labelAr": "مبيعات المنتجات",
+      "currentYear": "1,850,000",
+      "previousYear": "1,620,000",
+      "budget": "1,900,000",
+      "variance": 14.2,
+      "progress": 50
+    },
+    {
+      "label": "Service",
+      "labelAr": "خدمة",
+      "currentYear": "450,000",
+      "previousYear": "380,000",
+      "budget": "480,000",
+      "variance": 18.4,
+      "progress": 30
+    },
+    {
+      "label": "Subscriptions",
+      "labelAr": "الاشتراكات",
+      "currentYear": "280,000",
+      "previousYear": "240,000",
+      "budget": "300,000",
+      "variance": -16.7,
+      "progress": 20
+    }
+  ],
+  "summaryTotal": {
+    "currentYear": "2,775,000",
+    "previousYear": "2,405,000",
+    "budget": "2,890,000",
+    "variance": 15.4,
+    "progress": 25
+  },
+  "breakdown": {
+    "categories": [
+      {
+        "en": "Product Sales",
+        "ar": "مبيعات المنتجات"
+      },
+      {
+        "en": "Service",
+        "ar": "خدمة"
+      },
+      {
+        "en": "Consulting",
+        "ar": "استشارات"
+      },
+      {
+        "en": "Subscription",
+        "ar": "الاشتراك"
+      },
+      {
+        "en": "SaaS",
+        "ar": "برمجيات"
+      },
+      {
+        "en": "Training",
+        "ar": "التدريب"
+      },
+      {
+        "en": "Support",
+        "ar": "دعم"
+      },
+      {
+        "en": "Licensing",
+        "ar": "الترخيص"
+      },
+      {
+        "en": "Logistics",
+        "ar": "الخدمات اللوجستية"
+      },
+      {
+        "en": "Manufacturing",
+        "ar": "التصنيع"
+      }
+    ],
+    "previousYearData": [
+      1.6,
+      3.8,
+      3.4,
+      2.4,
+      2.5,
+      4.5,
+      2.7,
+      3.5,
+      4.5,
+      4.8
+    ],
+    "currentYearData": [
+      1.8,
+      4.5,
+      2.8,
+      2.8,
+      1.7,
+      5.0,
+      3.0,
+      4.0,
+      5.0,
+      5.0
+    ]
+  },
+  "last6Months": {
+    "months": [
+      {
+        "en": "Apr",
+        "ar": "أبريل"
+      },
+      {
+        "en": "May",
+        "ar": "مايو"
+      },
+      {
+        "en": "Jun",
+        "ar": "يونيو"
+      },
+      {
+        "en": "Jul",
+        "ar": "يوليو"
+      },
+      {
+        "en": "Aug",
+        "ar": "أغسطس"
+      },
+      {
+        "en": "Sep",
+        "ar": "سبتمبر"
+      }
+    ],
+    "previousYearData": [
+      2.4,
+      3.0,
+      1.8,
+      4.7,
+      1.0,
+      2.6
+    ],
+    "currentYearData": [
+      0.7,
+      1.0,
+      3.5,
+      4.6,
+      2.0,
+      4.2
+    ]
+  },
+  "revenueToCogs": {
+    "months": [
+      {
+        "en": "Apr",
+        "ar": "أبريل"
+      },
+      {
+        "en": "May",
+        "ar": "مايو"
+      },
+      {
+        "en": "Jun",
+        "ar": "يونيو"
+      },
+      {
+        "en": "Jul",
+        "ar": "يوليو"
+      },
+      {
+        "en": "Aug",
+        "ar": "أغسطس"
+      },
+      {
+        "en": "Sep",
+        "ar": "سبتمبر"
+      }
+    ],
+    "cogsData": [
+      1.5,
+      1.6,
+      1.7,
+      1.8,
+      1.9,
+      2.0
+    ],
+    "revenueData": [
+      2.4,
+      2.6,
+      2.1,
+      3.0,
+      3.2,
+      3.4
+    ]
+  },
+  "__comment: accounts-payable page": "============================================================",
+  "__comment: accounts-payable page": "  PAGE → pages/accounts-payable/index.vue | URL → /accounts-payable ",
+  "__comment: accounts-payable page": "  Summary, Top Customers, Historical Movement, Aging Graph ",
+  "__comment: accounts-payable page": "============================================================",
+  "accountsPayablePage": {
+  "summary": [
+    {
+      "label": "Corporate Clients",
+      "labelAr": "عملاء الشركات",
+      "total": "550,000",
+      "age30": "250,000",
+      "age3060": "150,000",
+      "age6090": "90,000",
+      "age90plus": "60,000",
+      "invoices": [
+        {
+          "id": "Invoice 1",
+          "total": "550,000",
+          "age30": "250,000",
+          "age3060": "150,000",
+          "age6090": "90,000",
+          "age90plus": "60,000",
+          "selected": true
+        },
+        {
+          "id": "Invoice 2",
+          "total": "550,000",
+          "age30": "250,000",
+          "age3060": "150,000",
+          "age6090": "90,000",
+          "age90plus": "60,000",
+          "selected": true
+        },
+        {
+          "id": "Invoice 3",
+          "total": "550,000",
+          "age30": "250,000",
+          "age3060": "150,000",
+          "age6090": "90,000",
+          "age90plus": "60,000",
+          "selected": false
+        },
+        {
+          "id": "Invoice 4",
+          "total": "550,000",
+          "age30": "250,000",
+          "age3060": "150,000",
+          "age6090": "90,000",
+          "age90plus": "60,000",
+          "selected": false
+        }
+      ]
+    },
+    {
+      "label": "Retail Customers",
+      "labelAr": "عملاء التجزئة",
+      "total": "265,000",
+      "age30": "120,000",
+      "age3060": "80,000",
+      "age6090": "40,000",
+      "age90plus": "25,000",
+      "invoices": []
+    },
+    {
+      "label": "Export Clients",
+      "labelAr": "عملاء التصدير",
+      "total": "145,000",
+      "age30": "70,000",
+      "age3060": "40,000",
+      "age6090": "25,000",
+      "age90plus": "10,000",
+      "invoices": []
+    }
+  ],
+  "summaryTotal": {
+    "total": "960,000",
+    "age30": "525,000",
+    "age3060": "330,000",
+    "age6090": "205,000",
+    "age90plus": "125,000"
+  },
+  "topCustomers": {
+    "customersData": [
+      {
+        "id": "A",
+        "name": "Horizon Global",
+        "nameAr": "هورايزون جلوبال",
+        "value": 3.3,
+        "color": "#04C18F"
+      },
+      {
+        "id": "B",
+        "name": "Orion Tech",
+        "nameAr": "أوريون تك",
+        "value": 4.1,
+        "color": "#04C18F"
+      },
+      {
+        "id": "C",
+        "name": "Gulf Trading",
+        "nameAr": "جلف تريدينج",
+        "value": 2.9,
+        "color": "#04C18F"
+      },
+      {
+        "id": "D",
+        "name": "Prime Logistics",
+        "nameAr": "برايم لوجيستكس",
+        "value": 3.7,
+        "color": "#04C18F"
+      },
+      {
+        "id": "E",
+        "name": "Emirates Trading",
+        "nameAr": "الإمارات للتجارة",
+        "value": 4.4,
+        "color": "#04C18F"
+      },
+      {
+        "id": "F",
+        "name": "Alpha Tech",
+        "nameAr": "ألفا تك",
+        "value": 1.9,
+        "color": "#04C18F"
+      },
+      {
+        "id": "G",
+        "name": "Mena Retail",
+        "nameAr": "مينا لتجارة التجزئة",
+        "value": 3.7,
+        "color": "#04C18F"
+      },
+      {
+        "id": "H",
+        "name": "Crescent",
+        "nameAr": "كريسنت",
+        "value": 4.0,
+        "color": "#04C18F"
+      },
+      {
+        "id": "I",
+        "name": "Vertex Corp",
+        "nameAr": "فيرتكس كورب",
+        "value": 2.8,
+        "color": "#04C18F"
+      },
+      {
+        "id": "J",
+        "name": "Vertex Trading",
+        "nameAr": "فيرتكس للتجارة",
+        "value": 3.2,
+        "color": "#04C18F"
+      }
+    ],
+    "cumulativeLine": [
+      40,
+      62,
+      70,
+      78,
+      85,
+      88,
+      92,
+      95,
+      97,
+      100
+    ]
+  },
+  "historicalMovement": {
+    "apBalance": [
+      1.6,
+      3.2,
+      3.8,
+      4.3,
+      4.6,
+      4.8
+    ],
+    "percentage": [],
+    "categories": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun"
+    ]
+  },
+  "agingGraph": {
+    "agingCategories": [
+      {
+        "en": "Overdue >30 Days",
+        "ar": "متأخر أكثر من 30 يوم"
+      },
+      {
+        "en": "Overdue 30-60 Days",
+        "ar": "متأخر 30-60 يوم"
+      },
+      {
+        "en": "Overdue 60-90 Days",
+        "ar": "متأخر 60-90 يوم"
+      },
+      {
+        "en": "Overdue <90 Days",
+        "ar": "متأخر أقل من 90 يوم"
+      }
+    ],
+    "previousYearData": [
+      2.7,
+      1.9,
+      2.8,
+      2.8
+    ],
+    "currentYearData": [
+      4.0,
+      4.7,
+      2.8,
+      4.3
+    ],
+    "cumulativeData": [
+      45,
+      65,
+      75,
+      88
+    ],
+    "percentOfTotal": [
+      16,
+      16,
+      10,
+      15
+    ]
+  },
+  "__comment: cost-center page": "============================================================",
+  "__comment: cost-center page": "  PAGE → pages/cost-center/index.vue | URL → /cost-center ",
+  "__comment: cost-center page": "  Summary, Overall Revenue vs Cost, Project Detail components ",
+  "__comment: cost-center page": "============================================================",
+  "costCenterPage": {
+  "summary": [
+    {
+      "label": "Residential Projects",
+      "labelAr": "المشاريع السكنية",
+      "revenue": "2,400,000",
+      "cogs": "1,500,000",
+      "indirectExp": "600,000",
+      "profit": "300,000",
+      "margin": 12.5
+    },
+    {
+      "label": "Commercial Projects",
+      "labelAr": "المشاريع التجارية",
+      "revenue": "1,800,000",
+      "cogs": "1,100,000",
+      "indirectExp": "400,000",
+      "profit": "300,000",
+      "margin": 16.7
+    },
+    {
+      "label": "Infrastructure",
+      "labelAr": "البنية التحتية",
+      "revenue": "2,000,000",
+      "cogs": "1,200,000",
+      "indirectExp": "500,000",
+      "profit": "300,000",
+      "margin": 15.0
+    }
+  ],
+  "summaryTotal": {
+    "label": "Total Project Cost",
+    "labelAr": "إجمالي تكلفة المشروع",
+    "revenue": "17,500,000",
+    "cogs": "12,800,000",
+    "indirectExp": "1,030,000",
+    "profit": "3,670,000",
+    "margin": 21.0
+  },
+  "overallRevenueVsCost": {
+    "categories": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L"
+    ],
+    "costData": [
+      1.6,
+      3.8,
+      3.4,
+      2.4,
+      2.5,
+      4.0,
+      3.1,
+      3.5,
+      4.5,
+      4.8,
+      4.0,
+      3.6
+    ],
+    "revenueData": [
+      1.8,
+      4.5,
+      2.8,
+      2.8,
+      1.7,
+      5.0,
+      3.5,
+      4.0,
+      5.0,
+      5.0,
+      4.8,
+      4.6
+    ],
+    "mappingFullNames": {
+      "A": "Residential Project",
+      "B": "Infrastructure",
+      "C": "Commercial",
+      "D": "Prime Logistics",
+      "E": "Emirates Trading",
+      "F": "Alpha Tech",
+      "G": "Mena Retail",
+      "H": "Crescent",
+      "I": "Vertex Corp",
+      "J": "Vertex Trading",
+      "K": "Future Projects",
+      "L": "City Center"
+    }
+  },
+  "projectDetail": {
+    "tableData": [
+      {
+        "label": "Revenue",
+        "labelAr": "الإيرادات",
+        "actual": "2,400,000",
+        "budget": "2,500,000",
+        "progress": 60,
+        "color": "#03D8B0"
+      },
+      {
+        "label": "COGS",
+        "labelAr": "تكلفة المبيعات",
+        "actual": "1,500,000",
+        "budget": "1,400,000",
+        "progress": 30,
+        "color": "#FFBC01"
+      },
+      {
+        "label": "Indirect Expenses",
+        "labelAr": "المصروفات غير المباشرة",
+        "actual": "600,000",
+        "budget": "550,000",
+        "progress": 10,
+        "color": "#FB7554"
+      }
+    ],
+    "grossProfit": {
+      "label": "Gross Profit",
+      "labelAr": "إجمالي الربح",
+      "actual": "17,500,000",
+      "budget": "550,000",
+      "progress": 10
+    },
+    "actualVsBudget": {
+      "categories": [
+        {
+          "en": "Revenue",
+          "ar": "الإيرادات"
+        },
+        {
+          "en": "COGS",
+          "ar": "تكلفة المبيعات"
+        },
+        {
+          "en": "Indirect Expense",
+          "ar": "المصروفات غير المباشرة"
+        }
+      ],
+      "actualData": [
+        2.4,
+        2.5,
+        4.5
+      ],
+      "budgetData": [
+        2.8,
+        1.7,
+        4.7
+      ]
+    },
+    "summaryCards": [
+      {
+        "label": "Contract Value",
+        "labelAr": "قيمة العقد",
+        "value": "AED 3.10 M",
+        "icon": "/images/icons/Contract-Value.svg"
+      },
+      {
+        "label": "Invoiced",
+        "labelAr": "المفوترة",
+        "value": "AED 2.45 M",
+        "icon": "/images/icons/Invoiced.svg"
+      },
+      {
+        "label": "Yet to Invoice",
+        "labelAr": "لم يتم الفوترة بعد",
+        "value": "AED 8.12 M",
+        "icon": "/images/icons/Yet-to-Invoice.svg"
+      }
+    ]
+  }
+}
+},
+  "__comment: cost-center page": "============================================================",
+  "__comment: cost-center page": "  PAGE → pages/cost-center/index.vue | URL → /cost-center ",
+  "__comment: cost-center page": "  Summary, Overall Revenue vs Cost, Project Detail components ",
+  "__comment: cost-center page": "============================================================",
+  "costCenterPage": {
+  "summary": [
+    {
+      "label": "Residential Projects",
+      "labelAr": "المشاريع السكنية",
+      "revenue": "2,400,000",
+      "cogs": "1,500,000",
+      "indirectExp": "600,000",
+      "profit": "300,000",
+      "margin": 12.5
+    },
+    {
+      "label": "Commercial Projects",
+      "labelAr": "المشاريع التجارية",
+      "revenue": "1,800,000",
+      "cogs": "1,100,000",
+      "indirectExp": "400,000",
+      "profit": "300,000",
+      "margin": 16.7
+    },
+    {
+      "label": "Infrastructure",
+      "labelAr": "البنية التحتية",
+      "revenue": "2,000,000",
+      "cogs": "1,200,000",
+      "indirectExp": "500,000",
+      "profit": "300,000",
+      "margin": 15.0
+    }
+  ],
+  "summaryTotal": {
+    "label": "Total Project Cost",
+    "labelAr": "إجمالي تكلفة المشروع",
+    "revenue": "17,500,000",
+    "cogs": "12,800,000",
+    "indirectExp": "1,030,000",
+    "profit": "3,670,000",
+    "margin": 21.0
+  },
+  "overallRevenueVsCost": {
+    "categories": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L"
+    ],
+    "costData": [
+      1.6,
+      3.8,
+      3.4,
+      2.4,
+      2.5,
+      4.0,
+      3.1,
+      3.5,
+      4.5,
+      4.8,
+      4.0,
+      3.6
+    ],
+    "revenueData": [
+      1.8,
+      4.5,
+      2.8,
+      2.8,
+      1.7,
+      5.0,
+      3.5,
+      4.0,
+      5.0,
+      5.0,
+      4.8,
+      4.6
+    ],
+    "mappingFullNames": {
+      "A": "Residential Project",
+      "B": "Infrastructure",
+      "C": "Commercial",
+      "D": "Prime Logistics",
+      "E": "Emirates Trading",
+      "F": "Alpha Tech",
+      "G": "Mena Retail",
+      "H": "Crescent",
+      "I": "Vertex Corp",
+      "J": "Vertex Trading",
+      "K": "Future Projects",
+      "L": "City Center"
+    }
+  },
+  "projectDetail": {
+    "tableData": [
+      {
+        "label": "Revenue",
+        "labelAr": "الإيرادات",
+        "actual": "2,400,000",
+        "budget": "2,500,000",
+        "progress": 60,
+        "color": "#03D8B0"
+      },
+      {
+        "label": "COGS",
+        "labelAr": "تكلفة المبيعات",
+        "actual": "1,500,000",
+        "budget": "1,400,000",
+        "progress": 30,
+        "color": "#FFBC01"
+      },
+      {
+        "label": "Indirect Expenses",
+        "labelAr": "المصروفات غير المباشرة",
+        "actual": "600,000",
+        "budget": "550,000",
+        "progress": 10,
+        "color": "#FB7554"
+      }
+    ],
+    "grossProfit": {
+      "label": "Gross Profit",
+      "labelAr": "إجمالي الربح",
+      "actual": "17,500,000",
+      "budget": "550,000",
+      "progress": 10
+    },
+    "actualVsBudget": {
+      "categories": [
+        {
+          "en": "Revenue",
+          "ar": "الإيرادات"
+        },
+        {
+          "en": "COGS",
+          "ar": "تكلفة المبيعات"
+        },
+        {
+          "en": "Indirect Expense",
+          "ar": "المصروفات غير المباشرة"
+        }
+      ],
+      "actualData": [
+        2.4,
+        2.5,
+        4.5
+      ],
+      "budgetData": [
+        2.8,
+        1.7,
+        4.7
+      ]
+    },
+    "summaryCards": [
+      {
+        "label": "Contract Value",
+        "labelAr": "قيمة العقد",
+        "value": "AED 3.10 M",
+        "icon": "/images/icons/Contract-Value.svg"
+      },
+      {
+        "label": "Invoiced",
+        "labelAr": "المفوترة",
+        "value": "AED 2.45 M",
+        "icon": "/images/icons/Invoiced.svg"
+      },
+      {
+        "label": "Yet to Invoice",
+        "labelAr": "لم يتم الفوترة بعد",
+        "value": "AED 8.12 M",
+        "icon": "/images/icons/Yet-to-Invoice.svg"
+      }
+    ]
+  }
+}
+},
+  "__comment: accounts-payable page": "============================================================",
+  "__comment: accounts-payable page": "  PAGE → pages/accounts-payable/index.vue | URL → /accounts-payable ",
+  "__comment: accounts-payable page": "  Summary, Top Customers, Historical Movement, Aging Graph ",
+  "__comment: accounts-payable page": "============================================================",
+  "accountsPayablePage": {
+  "summary": [
+    {
+      "label": "Corporate Clients",
+      "labelAr": "عملاء الشركات",
+      "total": "550,000",
+      "age30": "250,000",
+      "age3060": "150,000",
+      "age6090": "90,000",
+      "age90plus": "60,000",
+      "invoices": [
+        {
+          "id": "Invoice 1",
+          "total": "550,000",
+          "age30": "250,000",
+          "age3060": "150,000",
+          "age6090": "90,000",
+          "age90plus": "60,000",
+          "selected": true
+        },
+        {
+          "id": "Invoice 2",
+          "total": "550,000",
+          "age30": "250,000",
+          "age3060": "150,000",
+          "age6090": "90,000",
+          "age90plus": "60,000",
+          "selected": true
+        },
+        {
+          "id": "Invoice 3",
+          "total": "550,000",
+          "age30": "250,000",
+          "age3060": "150,000",
+          "age6090": "90,000",
+          "age90plus": "60,000",
+          "selected": false
+        },
+        {
+          "id": "Invoice 4",
+          "total": "550,000",
+          "age30": "250,000",
+          "age3060": "150,000",
+          "age6090": "90,000",
+          "age90plus": "60,000",
+          "selected": false
+        }
+      ]
+    },
+    {
+      "label": "Retail Customers",
+      "labelAr": "عملاء التجزئة",
+      "total": "265,000",
+      "age30": "120,000",
+      "age3060": "80,000",
+      "age6090": "40,000",
+      "age90plus": "25,000",
+      "invoices": []
+    },
+    {
+      "label": "Export Clients",
+      "labelAr": "عملاء التصدير",
+      "total": "145,000",
+      "age30": "70,000",
+      "age3060": "40,000",
+      "age6090": "25,000",
+      "age90plus": "10,000",
+      "invoices": []
+    }
+  ],
+  "summaryTotal": {
+    "total": "960,000",
+    "age30": "525,000",
+    "age3060": "330,000",
+    "age6090": "205,000",
+    "age90plus": "125,000"
+  },
+  "topCustomers": {
+    "customersData": [
+      {
+        "id": "A",
+        "name": "Horizon Global",
+        "nameAr": "هورايزون جلوبال",
+        "value": 3.3,
+        "color": "#04C18F"
+      },
+      {
+        "id": "B",
+        "name": "Orion Tech",
+        "nameAr": "أوريون تك",
+        "value": 4.1,
+        "color": "#04C18F"
+      },
+      {
+        "id": "C",
+        "name": "Gulf Trading",
+        "nameAr": "جلف تريدينج",
+        "value": 2.9,
+        "color": "#04C18F"
+      },
+      {
+        "id": "D",
+        "name": "Prime Logistics",
+        "nameAr": "برايم لوجيستكس",
+        "value": 3.7,
+        "color": "#04C18F"
+      },
+      {
+        "id": "E",
+        "name": "Emirates Trading",
+        "nameAr": "الإمارات للتجارة",
+        "value": 4.4,
+        "color": "#04C18F"
+      },
+      {
+        "id": "F",
+        "name": "Alpha Tech",
+        "nameAr": "ألفا تك",
+        "value": 1.9,
+        "color": "#04C18F"
+      },
+      {
+        "id": "G",
+        "name": "Mena Retail",
+        "nameAr": "مينا لتجارة التجزئة",
+        "value": 3.7,
+        "color": "#04C18F"
+      },
+      {
+        "id": "H",
+        "name": "Crescent",
+        "nameAr": "كريسنت",
+        "value": 4.0,
+        "color": "#04C18F"
+      },
+      {
+        "id": "I",
+        "name": "Vertex Corp",
+        "nameAr": "فيرتكس كورب",
+        "value": 2.8,
+        "color": "#04C18F"
+      },
+      {
+        "id": "J",
+        "name": "Vertex Trading",
+        "nameAr": "فيرتكس للتجارة",
+        "value": 3.2,
+        "color": "#04C18F"
+      }
+    ],
+    "cumulativeLine": [
+      40,
+      62,
+      70,
+      78,
+      85,
+      88,
+      92,
+      95,
+      97,
+      100
+    ]
+  },
+  "historicalMovement": {
+    "apBalance": [
+      1.6,
+      3.2,
+      3.8,
+      4.3,
+      4.6,
+      4.8
+    ],
+    "percentage": [],
+    "categories": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun"
+    ]
+  },
+  "agingGraph": {
+    "agingCategories": [
+      {
+        "en": "Overdue >30 Days",
+        "ar": "متأخر أكثر من 30 يوم"
+      },
+      {
+        "en": "Overdue 30-60 Days",
+        "ar": "متأخر 30-60 يوم"
+      },
+      {
+        "en": "Overdue 60-90 Days",
+        "ar": "متأخر 60-90 يوم"
+      },
+      {
+        "en": "Overdue <90 Days",
+        "ar": "متأخر أقل من 90 يوم"
+      }
+    ],
+    "previousYearData": [
+      2.7,
+      1.9,
+      2.8,
+      2.8
+    ],
+    "currentYearData": [
+      4.0,
+      4.7,
+      2.8,
+      4.3
+    ],
+    "cumulativeData": [
+      45,
+      65,
+      75,
+      88
+    ],
+    "percentOfTotal": [
+      16,
+      16,
+      10,
+      15
+    ]
+  },
+  "__comment: cost-center page": "============================================================",
+  "__comment: cost-center page": "  PAGE → pages/cost-center/index.vue | URL → /cost-center ",
+  "__comment: cost-center page": "  Summary, Overall Revenue vs Cost, Project Detail components ",
+  "__comment: cost-center page": "============================================================",
+  "costCenterPage": {
+  "summary": [
+    {
+      "label": "Residential Projects",
+      "labelAr": "المشاريع السكنية",
+      "revenue": "2,400,000",
+      "cogs": "1,500,000",
+      "indirectExp": "600,000",
+      "profit": "300,000",
+      "margin": 12.5
+    },
+    {
+      "label": "Commercial Projects",
+      "labelAr": "المشاريع التجارية",
+      "revenue": "1,800,000",
+      "cogs": "1,100,000",
+      "indirectExp": "400,000",
+      "profit": "300,000",
+      "margin": 16.7
+    },
+    {
+      "label": "Infrastructure",
+      "labelAr": "البنية التحتية",
+      "revenue": "2,000,000",
+      "cogs": "1,200,000",
+      "indirectExp": "500,000",
+      "profit": "300,000",
+      "margin": 15.0
+    }
+  ],
+  "summaryTotal": {
+    "label": "Total Project Cost",
+    "labelAr": "إجمالي تكلفة المشروع",
+    "revenue": "17,500,000",
+    "cogs": "12,800,000",
+    "indirectExp": "1,030,000",
+    "profit": "3,670,000",
+    "margin": 21.0
+  },
+  "overallRevenueVsCost": {
+    "categories": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L"
+    ],
+    "costData": [
+      1.6,
+      3.8,
+      3.4,
+      2.4,
+      2.5,
+      4.0,
+      3.1,
+      3.5,
+      4.5,
+      4.8,
+      4.0,
+      3.6
+    ],
+    "revenueData": [
+      1.8,
+      4.5,
+      2.8,
+      2.8,
+      1.7,
+      5.0,
+      3.5,
+      4.0,
+      5.0,
+      5.0,
+      4.8,
+      4.6
+    ],
+    "mappingFullNames": {
+      "A": "Residential Project",
+      "B": "Infrastructure",
+      "C": "Commercial",
+      "D": "Prime Logistics",
+      "E": "Emirates Trading",
+      "F": "Alpha Tech",
+      "G": "Mena Retail",
+      "H": "Crescent",
+      "I": "Vertex Corp",
+      "J": "Vertex Trading",
+      "K": "Future Projects",
+      "L": "City Center"
+    }
+  },
+  "projectDetail": {
+    "tableData": [
+      {
+        "label": "Revenue",
+        "labelAr": "الإيرادات",
+        "actual": "2,400,000",
+        "budget": "2,500,000",
+        "progress": 60,
+        "color": "#03D8B0"
+      },
+      {
+        "label": "COGS",
+        "labelAr": "تكلفة المبيعات",
+        "actual": "1,500,000",
+        "budget": "1,400,000",
+        "progress": 30,
+        "color": "#FFBC01"
+      },
+      {
+        "label": "Indirect Expenses",
+        "labelAr": "المصروفات غير المباشرة",
+        "actual": "600,000",
+        "budget": "550,000",
+        "progress": 10,
+        "color": "#FB7554"
+      }
+    ],
+    "grossProfit": {
+      "label": "Gross Profit",
+      "labelAr": "إجمالي الربح",
+      "actual": "17,500,000",
+      "budget": "550,000",
+      "progress": 10
+    },
+    "actualVsBudget": {
+      "categories": [
+        {
+          "en": "Revenue",
+          "ar": "الإيرادات"
+        },
+        {
+          "en": "COGS",
+          "ar": "تكلفة المبيعات"
+        },
+        {
+          "en": "Indirect Expense",
+          "ar": "المصروفات غير المباشرة"
+        }
+      ],
+      "actualData": [
+        2.4,
+        2.5,
+        4.5
+      ],
+      "budgetData": [
+        2.8,
+        1.7,
+        4.7
+      ]
+    },
+    "summaryCards": [
+      {
+        "label": "Contract Value",
+        "labelAr": "قيمة العقد",
+        "value": "AED 3.10 M",
+        "icon": "/images/icons/Contract-Value.svg"
+      },
+      {
+        "label": "Invoiced",
+        "labelAr": "المفوترة",
+        "value": "AED 2.45 M",
+        "icon": "/images/icons/Invoiced.svg"
+      },
+      {
+        "label": "Yet to Invoice",
+        "labelAr": "لم يتم الفوترة بعد",
+        "value": "AED 8.12 M",
+        "icon": "/images/icons/Yet-to-Invoice.svg"
+      }
+    ]
+  }
+}
+},
+  "__comment: cost-center page": "============================================================",
+  "__comment: cost-center page": "  PAGE → pages/cost-center/index.vue | URL → /cost-center ",
+  "__comment: cost-center page": "  Summary, Overall Revenue vs Cost, Project Detail components ",
+  "__comment: cost-center page": "============================================================",
+  "costCenterPage": {
+  "summary": [
+    {
+      "label": "Residential Projects",
+      "labelAr": "المشاريع السكنية",
+      "revenue": "2,400,000",
+      "cogs": "1,500,000",
+      "indirectExp": "600,000",
+      "profit": "300,000",
+      "margin": 12.5
+    },
+    {
+      "label": "Commercial Projects",
+      "labelAr": "المشاريع التجارية",
+      "revenue": "1,800,000",
+      "cogs": "1,100,000",
+      "indirectExp": "400,000",
+      "profit": "300,000",
+      "margin": 16.7
+    },
+    {
+      "label": "Infrastructure",
+      "labelAr": "البنية التحتية",
+      "revenue": "2,000,000",
+      "cogs": "1,200,000",
+      "indirectExp": "500,000",
+      "profit": "300,000",
+      "margin": 15.0
+    }
+  ],
+  "summaryTotal": {
+    "label": "Total Project Cost",
+    "labelAr": "إجمالي تكلفة المشروع",
+    "revenue": "17,500,000",
+    "cogs": "12,800,000",
+    "indirectExp": "1,030,000",
+    "profit": "3,670,000",
+    "margin": 21.0
+  },
+  "overallRevenueVsCost": {
+    "categories": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L"
+    ],
+    "costData": [
+      1.6,
+      3.8,
+      3.4,
+      2.4,
+      2.5,
+      4.0,
+      3.1,
+      3.5,
+      4.5,
+      4.8,
+      4.0,
+      3.6
+    ],
+    "revenueData": [
+      1.8,
+      4.5,
+      2.8,
+      2.8,
+      1.7,
+      5.0,
+      3.5,
+      4.0,
+      5.0,
+      5.0,
+      4.8,
+      4.6
+    ],
+    "mappingFullNames": {
+      "A": "Residential Project",
+      "B": "Infrastructure",
+      "C": "Commercial",
+      "D": "Prime Logistics",
+      "E": "Emirates Trading",
+      "F": "Alpha Tech",
+      "G": "Mena Retail",
+      "H": "Crescent",
+      "I": "Vertex Corp",
+      "J": "Vertex Trading",
+      "K": "Future Projects",
+      "L": "City Center"
+    }
+  },
+  "projectDetail": {
+    "tableData": [
+      {
+        "label": "Revenue",
+        "labelAr": "الإيرادات",
+        "actual": "2,400,000",
+        "budget": "2,500,000",
+        "progress": 60,
+        "color": "#03D8B0"
+      },
+      {
+        "label": "COGS",
+        "labelAr": "تكلفة المبيعات",
+        "actual": "1,500,000",
+        "budget": "1,400,000",
+        "progress": 30,
+        "color": "#FFBC01"
+      },
+      {
+        "label": "Indirect Expenses",
+        "labelAr": "المصروفات غير المباشرة",
+        "actual": "600,000",
+        "budget": "550,000",
+        "progress": 10,
+        "color": "#FB7554"
+      }
+    ],
+    "grossProfit": {
+      "label": "Gross Profit",
+      "labelAr": "إجمالي الربح",
+      "actual": "17,500,000",
+      "budget": "550,000",
+      "progress": 10
+    },
+    "actualVsBudget": {
+      "categories": [
+        {
+          "en": "Revenue",
+          "ar": "الإيرادات"
+        },
+        {
+          "en": "COGS",
+          "ar": "تكلفة المبيعات"
+        },
+        {
+          "en": "Indirect Expense",
+          "ar": "المصروفات غير المباشرة"
+        }
+      ],
+      "actualData": [
+        2.4,
+        2.5,
+        4.5
+      ],
+      "budgetData": [
+        2.8,
+        1.7,
+        4.7
+      ]
+    },
+    "summaryCards": [
+      {
+        "label": "Contract Value",
+        "labelAr": "قيمة العقد",
+        "value": "AED 3.10 M",
+        "icon": "/images/icons/Contract-Value.svg"
+      },
+      {
+        "label": "Invoiced",
+        "labelAr": "المفوترة",
+        "value": "AED 2.45 M",
+        "icon": "/images/icons/Invoiced.svg"
+      },
+      {
+        "label": "Yet to Invoice",
+        "labelAr": "لم يتم الفوترة بعد",
+        "value": "AED 8.12 M",
+        "icon": "/images/icons/Yet-to-Invoice.svg"
+      }
+    ]
+  }
+}
+}
