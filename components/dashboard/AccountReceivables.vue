@@ -96,6 +96,9 @@ const { isDark } = useTheme()
 const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Account Receivables')
 
+// ── Pull values from website-data.json ────────────────────────────────────
+const { accountReceivables } = useMainDashboard()
+
 const isMobile = ref(false);
 const animProgress = ref(0);
 
@@ -117,48 +120,39 @@ onMounted(() => {
   };
   requestAnimationFrame(animate);
 });
-const legendItems = ['< 30 Days', '31-60 Days', '61-90 Days', '> 90 Days'];
-const legendItemsAr = ['أقل من 30 يوماً', '31-60 يوماً', '61-90 يوماً', 'أكثر من 90 يوماً'];
-const colors = ['#003328', '#00966C', '#B2EDE3', '#E6EBEB'];
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-const monthsAr = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'];
+const legendItems   = computed(() => accountReceivables.value?.legendItems   ?? ['< 30 Days', '31-60 Days', '61-90 Days', '> 90 Days'])
+const legendItemsAr = computed(() => accountReceivables.value?.legendItemsAr ?? ['أقل من 30 يوماً', '31-60 يوماً', '61-90 يوماً', 'أكثر من 90 يوماً'])
+const colors        = computed(() => accountReceivables.value?.colors        ?? ['#003328', '#00966C', '#B2EDE3', '#E6EBEB'])
+const months        = computed(() => accountReceivables.value?.months        ?? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'])
+const monthsAr      = computed(() => accountReceivables.value?.monthsAr      ?? ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'])
 
-// Data for each aging bucket (in millions)
-const series = [
-  [12, 26, 13, 18, 15, 25], // < 30 Days (bottom, darkest)
-  [20, 16, 10, 16, 10, 12], // 31-60 Days
-  [12, 10, 15, 12, 18, 15], // 61-90 Days
-  [18, 10, 12, 11, 8, 10]   // > 90 Days (top, lightest)
-];
+// Series as a flat array of arrays for stacked bar rendering
+const series = computed(() => {
+  const s = accountReceivables.value?.series
+  return s
+    ? [s.lt30Days, s.d31to60, s.d61to90, s.gt90Days]
+    : [[12, 26, 13, 18, 15, 25], [20, 16, 10, 16, 10, 12], [12, 10, 15, 12, 18, 15], [18, 10, 12, 11, 8, 10]]
+})
 
 const getStackedSegments = (monthIndex: number) => {
-  const maxValue = 60; // 60M max on y-axis
+  const maxValue = accountReceivables.value?.yAxisMax ?? 60;
   const segments: Array<{ height: string; bottom: string; index: number; zIndex: number }> = [];
   const zIndexes = [10000, 1000, 100, 10];
-  
   let cumulativePercent = 0;
-  
-  // Build from bottom to top
-  series.forEach((seriesData, seriesIndex) => {
+  series.value.forEach((seriesData: number[], seriesIndex: number) => {
     const value = seriesData[monthIndex];
     if (value === undefined) return;
-    
     const heightPercent = (value / maxValue) * 100 * (animProgress.value / 100);
     const currentBottom = cumulativePercent;
-    
-    // Applying offsets: 1st: none, others: based on device
-    const offset = seriesIndex === 0 ? 0 : (isMobile.value ? 13 : 20); 
-    
+    const offset = seriesIndex === 0 ? 0 : (isMobile.value ? 13 : 20);
     segments.push({
       height: seriesIndex === 0 ? `${heightPercent}%` : `calc(${heightPercent}% + ${offset}px)`,
       bottom: seriesIndex === 0 ? `${currentBottom}%` : `calc(${currentBottom}% - ${offset}px)`,
       index: seriesIndex,
       zIndex: zIndexes[seriesIndex] ?? 10
     });
-    
     cumulativePercent += heightPercent;
   });
-  
   return segments;
 };
 

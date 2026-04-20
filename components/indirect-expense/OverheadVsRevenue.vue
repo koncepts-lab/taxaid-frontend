@@ -96,16 +96,15 @@ const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 const isModalOpen = ref(false)
 
-const chartSeries = [
-  {
-    name: 'Overhead',
-    data: [1.6, 1.7, 1.8, 1.9, 2.0, 2.1]
-  },
-  {
-    name: 'Revenue',
-    data: [2.6, 2.8, 3.0, 3.2, 3.4, 3.6]
-  }
-];
+const { overheadVsRevenue } = useIndirectExpensePage()
+
+const chartSeries = computed(() => {
+  const dataSeries = overheadVsRevenue.value?.series ?? []
+  return dataSeries.map(s => ({
+    name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
+    data: s.data
+  }))
+})
 
 const chartOptions = computed(() => ({
   chart: {
@@ -140,8 +139,8 @@ const chartOptions = computed(() => ({
   legend: { show: false },
   xaxis: {
     categories: currentLang.value === 'ar' 
-      ? ['مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر']
-      : ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+      ? (overheadVsRevenue.value?.categoriesAr || [])
+      : (overheadVsRevenue.value?.categories || []),
     labels: {
         style: { colors: isDark.value ? '#FFFFFFBF' : '#333333BF', fontSize: '13px', fontWeight: 400 }
     },
@@ -166,8 +165,8 @@ const chartOptions = computed(() => ({
   tooltip: {
     custom: function({series, seriesIndex, dataPointIndex, w}: any) {
       const months = currentLang.value === 'ar' 
-        ? ['مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر']
-        : ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+        ? (overheadVsRevenue.value?.categoriesAr || [])
+        : (overheadVsRevenue.value?.categories || []);
       const monthName = months[dataPointIndex];
       
       const overhead = series[0][dataPointIndex];

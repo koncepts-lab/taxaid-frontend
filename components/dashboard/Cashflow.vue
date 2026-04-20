@@ -22,10 +22,10 @@
         
         <!-- Mobile: Time Filters -->
         <div class="flex md:hidden gap-2 mt-1">
-          <button v-for="t in ['3M', '6M', '1Y']" :key="t" 
+          <button v-for="t in (cashflow?.periodFilters ?? ['3M', '6M', '1Y'])" :key="t" 
             class="px-4 h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
             :class="[
-              t === '6M' 
+              t === (cashflow?.defaultFilter ?? '6M') 
                 ? (isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35] shadow-lg') 
                 : (isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]')
             ]">
@@ -37,12 +37,12 @@
       <!-- Desktop: Legend & Hover Icon -->
       <div class="hidden md:flex items-center gap-3 text-xs font-medium">
              <div class="flex items-center gap-1">
-               <span class="w-3 h-3 rounded-full bg-[#FF7B5F]"></span>
-               <span class="transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#191919]'">{{ currentLang === 'ar' ? 'سيناريو افتراضي' : 'Hypothetical Scenario' }}</span>
+               <span class="w-3 h-3 rounded-full" :style="{ background: hypoColor }"></span>
+               <span class="transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#191919]'">{{ currentLang === 'ar' ? (cashflow?.labelsAr?.hypothetical ?? 'سيناريو افتراضي') : (cashflow?.labels?.hypothetical ?? 'Hypothetical Scenario') }}</span>
              </div>
              <div class="flex items-center gap-1">
-               <span class="w-3 h-3 rounded-full bg-[#00B794]"></span>
-               <span class="transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#191919]'">{{ currentLang === 'ar' ? 'سيناريو حقيقي' : 'Real Scenario' }}</span>
+               <span class="w-3 h-3 rounded-full" :style="{ background: realColor }"></span>
+               <span class="transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#191919]'">{{ currentLang === 'ar' ? (cashflow?.labelsAr?.real ?? 'سيناريو حقيقي') : (cashflow?.labels?.real ?? 'Real Scenario') }}</span>
              </div>
              <img
                src="/images/icons/right-hover-2.svg"
@@ -64,12 +64,15 @@
 
       <!-- Desktop: Vertical Time Filters -->
       <div class="hidden md:flex flex-col gap-2 pt-2 shrink-0">
-          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
-            :class="isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]'">3M</button>
-          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors shadow-lg"
-            :class="isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35]'">6M</button>
-          <button class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
-            :class="isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]'">1Y</button>
+          <button v-for="t in (cashflow?.periodFilters ?? ['3M', '6M', '1Y'])" :key="t"
+            class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
+            :class="[
+              t === (cashflow?.defaultFilter ?? '6M')
+                ? (isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35] shadow-lg')
+                : (isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]')
+            ]">
+            {{ t }}
+          </button>
       </div>
     </div>
 
@@ -102,24 +105,27 @@ const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Cashflow')
 const { isDark } = useTheme()
 
-const seriesData = {
-  real: [2.8, 2.1, 2.5, 1.7, 2.3, 4.0, 4.2, 3.1, 3.6, 3.0, 3.0, 1.4, 1.9, 1.5, 1.8, 3.0, 3.4, 3.6, 4.1, 3.9],
-  hypothetical: [1.5, 0.8, 0.9, 1.2, 1.0, 0.9, 1.3, 2.7, 2.8, 2.2, 2.3, 1.8, 2.2, 1.2, 0.6, 1.8, 1.4, 0.4, 1.0, 1.0]
-};
+// ── Pull values from website-data.json ────────────────────────────────────
+const { cashflow } = useMainDashboard()
 
-// Rebuilding data to roughly match the curve visualization
-const months = ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
-
-const chartSeries = [
+const chartSeries = computed(() => [
   {
-    name: 'Real Scenario',
-    data: [2.6, 2.1, 2.5, 1.7, 2.5, 4.0, 2.9, 3.6, 2.8, 1.4, 1.9, 1.5, 3.2, 2.6, 4.1, 4.0]
+    name: cashflow.value?.labels?.real ?? 'Real Scenario',
+    data: cashflow.value?.series?.realScenario ?? [2.6, 2.1, 2.5, 1.7, 2.5, 4.0, 2.9, 3.6, 2.8, 1.4, 1.9, 1.5, 3.2, 2.6, 4.1, 4.0]
   },
   {
-    name: 'Hypothetical Scenario',
-    data: [1.4, 0.8, 1.2, 0.9, 1.1, 2.8, 2.0, 2.3, 1.8, 1.3, 0.5, 1.5, 0.3, 2.0, 1.9, 2.9]
+    name: cashflow.value?.labels?.hypothetical ?? 'Hypothetical Scenario',
+    data: cashflow.value?.series?.hypotheticalScenario ?? [1.4, 0.8, 1.2, 0.9, 1.1, 2.8, 2.0, 2.3, 1.8, 1.3, 0.5, 1.5, 0.3, 2.0, 1.9, 2.9]
   }
-];
+])
+
+const chartCategories = computed(() =>
+  cashflow.value?.chartCategories ?? ['May','','','Jun','','','Jul','','','Aug','','','Sep','','','Oct']
+)
+
+const realColor = computed(() => cashflow.value?.colors?.realScenario ?? '#00B794')
+const hypoColor = computed(() => cashflow.value?.colors?.hypotheticalScenario ?? '#FF7B5F')
+const yMax      = computed(() => cashflow.value?.yAxis?.max ?? 4.5)
 
 const chartOptions = computed(() => ({
   chart: {
@@ -129,7 +135,7 @@ const chartOptions = computed(() => ({
     zoom: { enabled: false }
   },
   legend: { show: false },
-  colors: ['#00B794', '#FF7B5F'],
+  colors: [realColor.value, hypoColor.value],
   fill: {
     type: 'gradient',
     gradient: {
@@ -140,26 +146,25 @@ const chartOptions = computed(() => ({
     }
   },
   dataLabels: { enabled: false },
-  stroke: {
-    curve: 'smooth',
-    width: 3
-  },
-    xaxis: {
-    categories: currentLang.value === 'ar' 
-      ? ['مايو', '', '', 'يونيو', '', '', 'يوليو', '', '', 'أغسطس', '', '', 'سبتمبر', '', '', 'أكتوبر']
-      : ['May', '','', 'Jun', '','', 'Jul', '','', 'Aug', '','', 'Sep', '','', 'Oct'],
+  stroke: { curve: 'smooth', width: 3 },
+  xaxis: {
+    categories: currentLang.value === 'ar'
+      ? (cashflow.value?.chartCategories?.map((_: string, i: number) =>
+          ['مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر'].flatMap((m: string) => [m,'',''])[i] ?? '')
+        ?? ['مايو','','','يونيو','','','يوليو','','','أغسطس','','','سبتمبر','','','أكتوبر'])
+      : chartCategories.value,
     labels: {
-        style: { colors: isDark.value ? '#9CA3AF' : '#9CA3AF', fontSize: '12px' }
+      style: { colors: isDark.value ? '#9CA3AF' : '#9CA3AF', fontSize: '12px' }
     },
     axisBorder: { show: false },
     axisTicks: { show: false }
   },
   yaxis: {
     min: 0,
-    max: 4.5,
+    max: yMax.value,
     tickAmount: 5,
     labels: {
-      formatter: (value: number) => value.toFixed(0) + 'M',
+      formatter: (value: number) => value.toFixed(0) + (cashflow.value?.yAxis?.unit ?? 'M'),
       style: { colors: isDark.value ? '#6B7280' : '#9CA3AF', fontSize: '12px' }
     }
   },
@@ -171,48 +176,24 @@ const chartOptions = computed(() => ({
   },
   tooltip: {
     custom: function({series, seriesIndex, dataPointIndex, w}: any) {
-      const month = currentLang.value === 'ar' ? 'يوليو' : 'July';
+      const month = currentLang.value === 'ar' ? 'يوليو' : (cashflow.value?.tooltipSample?.month ?? 'July');
       const realLabel = currentLang.value === 'ar' ? 'حقيقي: ' : 'Real: ';
       const hypoLabel = currentLang.value === 'ar' ? 'افتراضي: ' : 'Hypothetical: ';
-      return '<div class="px-3 py-2 bg-[#DFFFF6] text-[#003d35] rounded-lg shadow-lg border-none text-xs">' +
-        '<div class="font-bold mb-1">' + month + '</div>' +
-        '<div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 rounded-full bg-[#00B794]"></span><span>' + realLabel + 'AED 2.5M</span></div>' +
-        '<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#FF7B5F]"></span><span>' + hypoLabel + 'AED 1.2M</span></div>' +
-        '</div>'
+      const realVal = cashflow.value?.tooltipSample?.real ?? 'AED 2.5M';
+      const hypoVal = cashflow.value?.tooltipSample?.hypothetical ?? 'AED 1.2M';
+      return `<div class="px-3 py-2 bg-[#DFFFF6] text-[#003d35] rounded-lg shadow-lg border-none text-xs">
+        <div class="font-bold mb-1">${month}</div>
+        <div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 rounded-full" style="background:${realColor.value}"></span><span>${realLabel}${realVal}</span></div>
+        <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background:${hypoColor.value}"></span><span>${hypoLabel}${hypoVal}</span></div>
+      </div>`
     }
   },
   annotations: {
-      xaxis: [
-          {
-              x: 'Jul',
-              borderColor: '#00B794',
-              strokeDashArray: 0,
-              borderWidth: 2,
-              opacity: 1,
-          }
-      ],
-      points: [
-          {
-              x: 'Jul',
-              y: 3.6,
-              marker: {
-                  size: 6,
-                  fillColor: '#fff',
-                  strokeColor: '#00B794',
-                  strokeWidth: 3
-              }
-          },
-          {
-              x: 'Jul',
-              y: 2.3,
-              marker: {
-                  size: 6,
-                  fillColor: '#fff',
-                  strokeColor: '#00B794', // Using green stroke for both markers on the green line/vertical line
-                  strokeWidth: 3
-              }
-          }
-      ]
+    xaxis: [{ x: cashflow.value?.annotationMonth ?? 'Jul', borderColor: realColor.value, strokeDashArray: 0, borderWidth: 2, opacity: 1 }],
+    points: [
+      { x: cashflow.value?.annotationMonth ?? 'Jul', y: 3.6, marker: { size: 6, fillColor: '#fff', strokeColor: realColor.value, strokeWidth: 3 } },
+      { x: cashflow.value?.annotationMonth ?? 'Jul', y: 2.3, marker: { size: 6, fillColor: '#fff', strokeColor: realColor.value, strokeWidth: 3 } }
+    ]
   }
 }));
 </script>

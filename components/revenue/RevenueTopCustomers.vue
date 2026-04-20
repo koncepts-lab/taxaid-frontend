@@ -108,37 +108,28 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const customersData = [
-  { id: 'A', name: 'Horizon Global', nameAr: 'هورايزون جلوبال', value: 3.5, color: '#04C18F' },
-  { id: 'B', name: 'Orion Tech', nameAr: 'أوريون تك', value: 4.0, color: '#04C18F' },
-  { id: 'C', name: 'Gulf Trading', nameAr: 'جلف تريدينج', value: 2.9, color: '#04C18F' },
-  { id: 'D', name: 'Prime Logistics', nameAr: 'برايم لوجيستكس', value: 3.7, color: '#04C18F' },
-  { id: 'E', name: 'Emirates Trading', nameAr: 'الإمارات للتجارة', value: 4.5, color: '#04C18F' },
-  { id: 'F', name: 'Alpha Tech', nameAr: 'ألفا تك', value: 1.9, color: '#04C18F' },
-  { id: 'G', name: 'Mena Retail', nameAr: 'مينا لتجارة التجزئة', value: 3.3, color: '#04C18F' },
-  { id: 'H', name: 'Crescent', nameAr: 'كريسنت', value: 4.0, color: '#04C18F' },
-  { id: 'I', name: 'Vertex Corp', nameAr: 'فيرتكس كورب', value: 2.8, color: '#04C18F' },
-  { id: 'J', name: 'Vertex Trading', nameAr: 'فيرتكس للتجارة', value: 3.2, color: '#04C18F' }
-]
+const { topCustomers } = useRevenuePage()
+
+const customersData = computed(() => topCustomers.value?.customers ?? [])
 
 const customers = computed(() => {
-  return customersData.map(c => ({
+  return customersData.value.map(c => ({
     ...c,
     displayName: currentLang.value === 'ar' ? c.nameAr : c.name
   }))
 })
 
 // Data series for Chart
-const series = ref([
+const series = computed(() => [
   {
     name: 'Revenue',
     type: 'column',
-    data: customersData.map(c => c.value)
+    data: customersData.value.map(c => c.value)
   },
   {
     name: 'Cumulative %',
     type: 'line',
-    data: [40, 62, 70, 78, 85, 88, 92, 95, 97, 100] // Simplified cumulative %
+    data: topCustomers.value?.cumulativePct ?? []
   }
 ])
 
@@ -183,7 +174,7 @@ const chartOptions = computed(() => ({
     hover: { size: 7 }
   },
   xaxis: {
-    categories: customersData.map(c => c.id),
+    categories: customersData.value.map(c => c.id),
     axisBorder: { show: false },
     axisTicks: { show: false },
     labels: {
@@ -236,7 +227,7 @@ const chartOptions = computed(() => ({
     intersect: false,
     theme: 'light',
     custom: function({ series, seriesIndex, dataPointIndex, w }) {
-      const customer = customersData[dataPointIndex]
+      const customer = customersData.value[dataPointIndex]
       const customerName = currentLang.value === 'ar' ? customer.nameAr : customer.name
       const rev = series[0][dataPointIndex]
       const cum = series[1][dataPointIndex]

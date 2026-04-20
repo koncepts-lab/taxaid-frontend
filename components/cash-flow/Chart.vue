@@ -95,16 +95,15 @@ const currentLang = useState('currentLang')
 const { isDark } = useTheme()
 const isModalOpen = ref(false)
 
-const chartSeries = [
-  {
-    name: 'Real Scenario',
-    data: [2.6, 2.8, 2.9, 3.1, 2.4, 2.0, 2.5, 3.5, 3.8, 3.2, 3.5, 3.8, 3.5, 3.8, 4.0, 3.5, 3.8, 2.5]
-  },
-  {
-    name: 'Hypothetical Scenario',
-    data: [2.6, 2.2, 1.8, 1.2, 0.8, 1.5, 2.5, 3.2, 3.5, 2.8, 1.0, 0.8, 1.2, 1.8, 1.5, 1.2, 0.8, 2.5]
-  }
-];
+const { scenarioChart } = useCashFlowPage()
+
+const chartSeries = computed(() => {
+  const dataSeries = scenarioChart.value?.series ?? []
+  return dataSeries.map(s => ({
+    name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
+    data: s.data
+  }))
+})
 
 const chartOptions = computed(() => ({
   chart: {
@@ -127,8 +126,8 @@ const chartOptions = computed(() => ({
   },
   xaxis: {
     categories: currentLang.value === 'ar' 
-      ? ['مايو', '', '', 'يونيو', '', '', 'يوليو', '', '', 'أغسطس', '', '', 'سبتمبر', '', '', 'أكتوبر', '', '']
-      : ['May', '', '', 'Jun', '', '', 'Jul', '', '', 'Aug', '', '', 'Sep', '', '', 'Oct', '', ''],
+      ? (scenarioChart.value?.categoriesAr || [])
+      : (scenarioChart.value?.categories || []),
     labels: {
         style: { colors: '#FFFFFF', fontSize: '13px', fontWeight: 500 }
     },

@@ -73,6 +73,7 @@ import { ref, computed, watch } from 'vue'
 import ParticleBackground from '~/components/common/ParticleBackground.vue'
 import * as XLSX from 'xlsx'
 import { format } from 'date-fns' // Ensure date-fns is installed
+// financial-statement page
 const isFullScreenChat = ref(false)
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
@@ -82,11 +83,13 @@ const activeTab = ref('profit-loss')
 const isLoading = ref(false)
 const selectedRatioType = ref('All Ratios');
 
+const { profitLoss, balanceSheet, ratios, tabs: jsonTabs } = useFinancialStatementPage()
+
 // --- 1. INITIAL FILTER STATE ---
 const today = new Date()
 const startOfYear = new Date(today.getFullYear(), 0, 1)
 const toast = useToast()
-const reportInfo = ref({ current: '', previous: '' });
+const reportInfo = ref({ current: '01 Jan 2025 – 12 May 2025', previous: '01 Jan 2024 – 12 May 2024' });
 
 const filters = ref({
     "range_option": "Year to Date",
@@ -94,121 +97,20 @@ const filters = ref({
     "custom_to": null
 })
 
-const dashboardData = ref({
-    'profit-loss': { rows: [] },
-    'balance-sheet': { rows: [] },
-    'schedules': { rows: [] },
-    'ratios': { rows: [] }
-})
+const dashboardData = computed(() => ({
+    'profit-loss': { rows: profitLoss.value },
+    'balance-sheet': { rows: balanceSheet.value },
+    'ratios': { rows: ratios.value },
+    'schedules': { rows: [] }
+}))
 
 const handleInfo = () => {
     isChatOpen.value = true
 }
 
 const fetchTabData = async (tabId) => {
-    const apiEndpoints = {
-        'profit-loss': '/financial-analysis/pl-maingroup-totals',
-        'balance-sheet': '/financial-analysis/bs-maingroup-totals',
-        'ratios': 'financial-ratios/comparative-report'
-    }
-
-    isLoading.value = true
-    const isYTD = filters.value.range_option === "Year to Date";
-
-    try {
-        const requestBody = {
-            "range_option": isYTD ? "Custom Dates" : filters.value.range_option,
-            "custom_from": isYTD ? "01-01-2025" : filters.value.custom_from,
-            "custom_to": isYTD ? "12-05-2025" : filters.value.custom_to,
-        };
-
-        // Add the extra parameter ONLY for ratios
-        if (tabId === 'ratios') {
-            requestBody.ratio_type = selectedRatioType.value;
-            // Note: If your API strictly requires "range_options" (plural) for ratios:
-            // requestBody.range_options = filters.value.range_option;
-        }
-
-        // Inside index.vue -> fetchTabData
-        const response = await $fetch(apiEndpoints[tabId], {
-            baseURL: config.public.apiBase,
-            method: 'POST',
-            body: requestBody
-        })
-
-        // 1. Updated Success Check (to handle boolean "success: true")
-        if (response.success === true || response.status === 'success') {
-            const formatter = new Intl.NumberFormat('en-US');
-
-            // 2. Updated Data Access (Ratio API uses "report")
-            const dataToMap = response.report || response.data || [];
-            // Helper to format "2025-01-01" to "01 Jan 2025"
-            const formatDate = (dateStr) => {
-                if (!dateStr) return '';
-                return new Date(dateStr).toLocaleDateString('en-GB', {
-                    day: '2-digit', month: 'short', year: 'numeric'
-                });
-            };
-
-            if (response.info) {
-                const cy = response.info.current_range;
-                const py = response.info.previous_range;
-                reportInfo.value = {
-                    current: `${formatDate(cy.from)} – ${formatDate(cy.to)}`,
-                    previous: `${formatDate(py.from)} – ${formatDate(py.to)}`
-                };
-            }
-            let detailRowCounter = 0;
-
-            dashboardData.value[tabId].rows = dataToMap.map(item => {
-                const isRatioTab = tabId === 'ratios';
-
-                // Formatting logic
-                let schedule = item.schedule || '';
-                if (!isRatioTab && !item.isSummary && !item.isHeader && !item.isTotal) {
-                    detailRowCounter += 1;
-                    schedule = String(detailRowCounter).padStart(2, '0');
-                }
-
-                // RETURN DATA STRUCTURE
-                return {
-                    // Label mapping
-                    label: isRatioTab ? item.key_metric : item.label,
-                    category: item.category || '', // Needed for "All Ratios" column
-
-                    // Numbers (formatted only for non-ratio tabs)
-                    current: isRatioTab ? item.current_year : formatter.format(item.current_year || 0),
-                    previous: isRatioTab ? item.previous_year : formatter.format(item.previous_year || 0),
-                    budget: isRatioTab ? item.budget : formatter.format(item.budget || 0),
-
-                    // Variance: Handles the decimal percent from your JSON
-                    variance: (item.variance_percent || 0),
-
-                    // Progress: Strips the "%" from "0%" in your JSON to make it a number
-                    progress: isRatioTab ? (parseFloat(item.year_to_go) || 0) : (item.progress || 0),
-
-                    // Flags
-                    isHeader: item.isHeader || false,
-                    isSummary: item.isSummary || false,
-                    isTotal: item.isTotal || false,
-                    schedule: isRatioTab ? '-' : schedule
-                };
-            });
-        }
-    } catch (err) {
-        toast.add({
-            title: currentLang.value === 'ar' ? 'خطأ' : 'Error',
-            description: currentLang.value === 'ar' ? 'فشل جلب البيانات. تم العودة للوضع الافتراضي.' : 'Failed to fetch data. Resetting to Year to Date.',
-            color: 'red',
-            icon: 'i-heroicons-exclamation-circle',
-            timeout: 4000
-        })
-
-        filters.value = { ...YTD_DEFAULTS }
-
-    } finally {
-        isLoading.value = false
-    }
+    // API logic disabled - data now coming from website-data.json
+    console.log(`Switching to tab: ${tabId}`)
 }
 
 // --- 3. HANDLE DATE CHANGE FROM HEADER ---

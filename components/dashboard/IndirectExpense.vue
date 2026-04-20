@@ -74,10 +74,14 @@ const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Indirect Expense')
-const labels = ['Rent & Utilities', 'Salaries & Wages', 'Marketing & Advertising', 'Office Supplies', 'Others'];
-const labelsAr = ['الإيجار والمرافق', 'الرواتب والأجور', 'التسويق والإعلان', 'اللوازم المكتبية', 'أخرى'];
-const series = [35, 30, 20, 10, 5];
-const colors = ['#004D41', '#00966C', '#FFB100', '#D29600', '#FF7E5B'];
+
+// ── Pull values from website-data.json ────────────────────────────────────
+const { indirectExpense } = useMainDashboard()
+
+const labels   = computed(() => indirectExpense.value?.labels   ?? ['Rent & Utilities', 'Salaries & Wages', 'Marketing & Advertising', 'Office Supplies', 'Others'])
+const labelsAr = computed(() => indirectExpense.value?.labelsAr ?? ['الإيجار والمرافق', 'الرواتب والأجور', 'التسويق والإعلان', 'اللوازم المكتبية', 'أخرى'])
+const series   = computed(() => indirectExpense.value?.series   ?? [35, 30, 20, 10, 5])
+const colors   = computed(() => indirectExpense.value?.colors   ?? ['#004D41', '#00966C', '#FFB100', '#D29600', '#FF7E5B'])
 
 const animProgress = ref(0);
 
@@ -98,37 +102,25 @@ onMounted(() => {
 const radii = [100, 96, 88, 80, 72];
 
 const computedSlices = computed(() => {
-  let currentAngle = 90; // Start at top (90 degrees)
-  return series.map((val, index) => {
+  let currentAngle = 90;
+  return series.value.map((val: number, index: number) => {
     const value = val * (animProgress.value / 100);
     const angle = (value / 100) * 360;
     const r = radii[index] || 100;
     const startAngle = currentAngle;
     const endAngle = currentAngle + angle;
-    
-    // Path calculation
     const startRad = (startAngle * Math.PI) / 180;
-    const endRad = (endAngle * Math.PI) / 180;
-    
-    const x1 = r * Math.cos(startRad);
-    const y1 = r * Math.sin(startRad);
-    const x2 = r * Math.cos(endRad);
-    const y2 = r * Math.sin(endRad);
-    
+    const endRad   = (endAngle   * Math.PI) / 180;
+    const x1 = r * Math.cos(startRad); const y1 = r * Math.sin(startRad);
+    const x2 = r * Math.cos(endRad);   const y2 = r * Math.sin(endRad);
     const largeArc = angle > 180 ? 1 : 0;
     const path = `M 0 0 L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
-    
-    // Text position (centered in slice)
     const textAngle = startAngle + angle / 2;
     const textRad = (textAngle * Math.PI) / 180;
     const tr = r * 0.65;
-    const textPos = {
-      x: tr * Math.cos(textRad),
-      y: tr * Math.sin(textRad)
-    };
-    
+    const textPos = { x: tr * Math.cos(textRad), y: tr * Math.sin(textRad) };
     currentAngle += angle;
-    return { path, textPos, color: colors[index], value };
+    return { path, textPos, color: colors.value[index], value };
   });
 });
 </script>

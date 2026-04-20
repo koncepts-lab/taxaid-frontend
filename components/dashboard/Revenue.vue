@@ -132,12 +132,16 @@ import { computed, ref, onMounted } from "vue";
 const currentLang = useState('currentLang')
 const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Revenue')
-const totalRevenue = 2775000;
-const netRevenue = 988430;
-const currentYearTarget = 3000000;
-const currentYearAchieved = 2760000;
 
-const colors = { lastYear: "#21E669", currentYear: "#03D8B0", balance: "#0A7C4B" };
+// ── Pull values from website-data.json ───────────────────────────────────
+const { revenue } = useMainDashboard()
+
+const totalRevenue        = computed(() => revenue.value?.totalRevenue        ?? 2775000)
+const netRevenue          = computed(() => revenue.value?.netRevenue          ?? 988430)
+const currentYearTarget   = computed(() => revenue.value?.currentYearTarget   ?? 3000000)
+const currentYearAchieved = computed(() => revenue.value?.currentYearAchieved ?? 2760000)
+
+const colors = computed(() => revenue.value?.gaugeColors ?? { lastYear: "#21E669", currentYear: "#03D8B0", balance: "#0A7C4B" })
 const svgW = 400; const svgH = 330;
 const cx = 200;   const cy = 180;  const r = 170;
 const strokeW = 18; const startDeg = -180; const endDeg = 0;
@@ -159,7 +163,7 @@ onMounted(() => {
   requestAnimationFrame(animate);
 });
 
-const currentYearPct = computed(() => Math.min(100, (currentYearAchieved / currentYearTarget) * 100));
+const currentYearPct = computed(() => Math.min(100, (currentYearAchieved.value / currentYearTarget.value) * 100));
 const remainingSpan = computed(() => (endDeg - startDeg) - lastYearSpanDeg - (gapDeg * 2));
 
 const polarToCartesian = (angleDeg: number, radius = r) => {

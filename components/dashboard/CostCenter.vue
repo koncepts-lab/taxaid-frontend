@@ -29,10 +29,10 @@
     <div class="flex justify-between items-end">
       <div class="flex flex-col">
         <div class="text-[12px] font-medium transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? 'المشاريع النشطة' : 'Active Projects' }}</div>
-         <div class="text-[34px] font-semibold mt-1 flex items-center transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">12</div>
+         <div class="text-[34px] font-semibold mt-1 flex items-center transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">{{ activeProjects }}</div>
         <div class="flex items-center gap-1 text-[#05B743] font-medium text-[14px] mt-2">
-           <span><img src="/images/icons/up.svg" alt="Up" class="w-4 h-4" /></span>
-           <span>{{ currentLang === 'ar' ? '2% مقارنة بالشهر الماضي' : '2% vs last month' }}</span>
+           <span><img :src="trend === 'up' ? '/images/icons/up.svg' : '/images/icons/down-right.svg'" alt="trend" class="w-4 h-4" /></span>
+           <span>{{ vsLastMonth }} vs last month</span>
         </div>
       </div>
 
@@ -68,10 +68,10 @@
     <div class="mt-auto transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">
       <p class="text-[12px] font-regular">
         <template v-if="currentLang === 'ar'">
-          أضافت <span :class="isDark ? 'text-white' : 'text-[#000]'">Atria.co</span> مؤخرًا مشروعين جديدين. <br/>تعزيز النشاط التشغيلي.
+          {{ footerLine1.replace('Atria.co', '') }}<span :class="isDark ? 'text-white' : 'text-[#000]'">{{ companyName }}</span>{{ '' }} <br/>{{ footerLine2 }}
         </template>
         <template v-else>
-          <span :class="isDark ? 'text-white' : 'text-[#000]'">Atria.co</span> recently added 2 new projects. <br/>Strengthening operational activity.
+          <span :class="isDark ? 'text-white' : 'text-[#000]'">{{ companyName }}</span> {{ footerLine1.replace(companyName + ' ', '') }}<br/>{{ footerLine2 }}
         </template>
       </p>
     </div>
@@ -84,6 +84,20 @@ const currentLang = useState('currentLang')
 const { isDark } = useTheme()
 const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Cost Center')
+
+// ── Pull values from website-data.json ────────────────────────────────────
+const { costCenter } = useMainDashboard()
+
+const activeProjects = computed(() => costCenter.value?.activeProjects ?? 12)
+const vsLastMonth    = computed(() => costCenter.value?.vsLastMonth ?? '+2%')
+const trend          = computed(() => costCenter.value?.trend ?? 'up')
+const footerLine1    = computed(() => currentLang.value === 'ar'
+  ? (costCenter.value?.footerTextAr?.split('\n')[0] ?? 'أضافت Atria.co مؤخرًا مشروعين جديدين.')
+  : (costCenter.value?.footerText?.split('\n')[0]   ?? 'Atria.co recently added 2 new projects.'))
+const footerLine2    = computed(() => currentLang.value === 'ar'
+  ? (costCenter.value?.footerTextAr?.split('\n')[1] ?? 'تعزيز النشاط التشغيلي.')
+  : (costCenter.value?.footerText?.split('\n')[1]   ?? 'Strengthening operational activity.'))
+const companyName    = computed(() => 'Atria.co')
 </script>
 
 <style scoped>

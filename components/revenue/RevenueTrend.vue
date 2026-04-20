@@ -92,24 +92,24 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const series = ref([
-  {
-    name: 'Previous Year',
-    data: [2.5, 1.2, 2.8, 1.8, 1.2, 1.8, 2.6]
-  },
-  {
-    name: 'Current Year',
-    data: [0.8, 2.2, 1.2, 3.8, 2.8, 4.2, 4.4]
-  }
-])
+const { trend } = useRevenuePage()
 
-const chartOptions = {
+const series = computed(() => {
+  const dataSeries = trend.value?.series ?? []
+  return dataSeries.map(s => ({
+    name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
+    data: s.data
+  }))
+})
+
+const chartOptions = computed(() => ({
   chart: {
     type: 'line',
     toolbar: { show: false },
     sparkline: { enabled: false },
     fontFamily: 'Noto Sans Arabic, sans-serif',
-    zoom: { enabled: false }
+    zoom: { enabled: false },
+    rtl: currentLang.value === 'ar'
   },
   stroke: {
     curve: 'smooth',
@@ -136,7 +136,7 @@ const chartOptions = {
     }
   },
   xaxis: {
-    categories: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+    categories: trend.value?.categories ?? ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
     axisBorder: { show: false },
     axisTicks: { show: false },
     crosshairs: {
@@ -160,6 +160,7 @@ const chartOptions = {
     min: 0,
     max: 4,
     tickAmount: 4,
+    opposite: currentLang.value === 'ar',
     labels: {
       style: {
         colors: 'rgba(255, 255, 255, 0.7)',
@@ -179,21 +180,25 @@ const chartOptions = {
       const diff = preYearValue - curYearValue
       const decline = ((diff / preYearValue) * 100).toFixed(1)
       
+      const curLabel = currentLang.value === 'ar' ? 'السنة الحالية:' : 'Current Year:'
+      const preLabel = currentLang.value === 'ar' ? 'السنة السابقة:' : 'Previous Year:'
+      const decLabel = currentLang.value === 'ar' ? 'انخفاض:' : 'Decline:'
+
       return `
         <div class="custom-tooltip shadow-2xl">
           <div class="tooltip-header">${monthLabel}</div>
           <div class="tooltip-body">
             <div class="tooltip-row">
-              <span class="label">Current Year:</span>
+              <span class="label">${curLabel}</span>
               <span class="value">AED ${curYearValue.toString().replace('.', ',')}M</span>
             </div>
             <div class="tooltip-row">
-              <span class="label">Previous Year:</span>
+              <span class="label">${preLabel}</span>
               <span class="value">AED ${preYearValue.toString().replace('.', ',')}M</span>
             </div>
             <div class="tooltip-divider"></div>
             <div class="tooltip-row">
-              <span class="label">Decline:</span>
+              <span class="label">${decLabel}</span>
               <span class="value highlight">-${decline}%</span>
             </div>
           </div>
@@ -201,7 +206,7 @@ const chartOptions = {
       `
     }
   }
-}
+}))
 </script>
 
 <style scoped>

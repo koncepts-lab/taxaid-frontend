@@ -31,18 +31,18 @@
     <!-- Main Content -->
     <div class="flex justify-between items-center">
       <div class="flex flex-col">
-        <div class="text-[12px] font-medium transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? 'استخدام الرموز' : 'Token Usage' }}</div>
-        <div class="text-[34px] font-semibold mt-1 flex items-center transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">8,001 / 10,485</div>
-       <div class="flex items-center gap-1 text-[#05B743] font-medium text-[14px] mt-2">
-           <span><img src="/images/icons/up.svg" alt="Up" class="w-4 h-4" /></span>
-           <span>+8.4% vs last month</span>
+        <div class="text-[12px] font-medium transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? (taxQueries?.labelsAr?.tokenUsage ?? 'استخدام الرموز') : (taxQueries?.labels?.tokenUsage ?? 'Token Usage') }}</div>
+        <div class="text-[34px] font-semibold mt-1 flex items-center transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatNumber(tokenUsed) }} / {{ formatNumber(tokenTotal) }}</div>
+       <div class="flex items-center gap-1 font-medium text-[14px] mt-2" :class="trend === 'up' ? 'text-[#05B743]' : 'text-red-500'">
+           <span><img :src="trend === 'up' ? '/images/icons/up.svg' : '/images/icons/down-right.svg'" alt="Trend" class="w-4 h-4" /></span>
+           <span>{{ tokenUsagePercent }} vs last month</span>
         </div>
       </div>
 
       <!-- Donut Chart -->
       <div class="relative w-24 h-24">
         <svg class="w-full h-full" viewBox="0 0 100 100">
-          <!-- Yellow/Gold segment (about 75% - bottom and sides) -->
+          <!-- Main usage segment (Dynamic) -->
           <circle 
             cx="50" 
             cy="50" 
@@ -50,13 +50,13 @@
             fill="none" 
             stroke="#F1B208" 
             stroke-width="10" 
-            :stroke-dasharray="`${(animProgress / 100) * 188.4} ${(1 - (animProgress / 100) * 0.75) * 251.3}`" 
+            :stroke-dasharray="`${(animProgress / 100) * usagePctValue * 2.513} 251.3`" 
             stroke-dashoffset="0" 
             stroke-linecap="round" 
             transform="rotate(-90 50 50)"
           />
           
-          <!-- Light teal segment (about 25% - top) -->
+          <!-- Remaining capacity segment -->
           <circle 
             cx="50" 
             cy="50" 
@@ -64,10 +64,11 @@
             fill="none" 
             stroke="#C5E1DB" 
             stroke-width="10" 
-            stroke-dasharray="62.8 188.4" 
-            stroke-dashoffset="-188.4"
+            :stroke-dasharray="`251.3`" 
+            :stroke-dashoffset="`${- (animProgress / 100) * usagePctValue * 2.513}`"
             stroke-linecap="round" 
             transform="rotate(-90 50 50)"
+            style="transition: stroke-dashoffset 0.3s ease-out;"
           />
           
           <!-- Marker circle at the leading junction -->
@@ -84,8 +85,8 @@
         
         <div class="absolute inset-0 flex items-center justify-center">
           <div class="flex items-center gap-1 font-semibold text-[14px] transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">
-            <span><img src="/images/icons/up.svg" alt="Up" class="w-4 h-4" /></span>
-            <span>8.4%</span>
+            <span><img :src="trend === 'up' ? '/images/icons/up.svg' : '/images/icons/down-right.svg'" alt="Trend" class="w-4 h-4" /></span>
+            <span>{{ tokenUsagePercent.replace('+', '').replace('-', '') }}</span>
           </div>
         </div>
       </div>
@@ -94,12 +95,12 @@
     <!-- Footer Stats -->
     <div class="flex flex-col gap-1 mt-auto">
       <div class="text-[12px] flex justify-start">
-        <span  class="text-[12px] font-regular transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? 'موعد تقديم ضريبة القيمة المضافة:' : 'VAT Return Due:' }}</span>
-        <span class="font-medium transition-colors duration-300" :class="[currentLang === 'ar' ? 'mr-2' : 'ml-2', isDark ? 'text-white' : 'text-[#000]']">  {{ currentLang === 'ar' ? '28 يناير 2026' : '28 Jan 2026' }}</span>
+        <span  class="text-[12px] font-regular transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? (taxQueries?.labelsAr?.vatDue ?? 'موعد تقديم ضريبة القيمة المضافة:') : (taxQueries?.labels?.vatDue ?? 'VAT Return Due:') }}</span>
+        <span class="font-medium transition-colors duration-300" :class="[currentLang === 'ar' ? 'mr-2' : 'ml-2', isDark ? 'text-white' : 'text-[#000]']">{{ vatReturnDue }}</span>
       </div>
       <div class="text-[12px] flex justify-start">
-        <span class="text-[12px] font-regular transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? 'موعد تقديم ضريبة الشركات:' : 'CT Return Due:' }}</span>
-        <span class="font-medium transition-colors duration-300" :class="[currentLang === 'ar' ? 'mr-2' : 'ml-2', isDark ? 'text-white' : 'text-[#000]']">  {{ currentLang === 'ar' ? '30 يونيو 2026' : '30 Jun 2026' }}</span>
+        <span class="text-[12px] font-regular transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? (taxQueries?.labelsAr?.ctDue ?? 'موعد تقديم ضريبة الشركات:') : (taxQueries?.labels?.ctDue ?? 'CT Return Due:') }}</span>
+        <span class="font-medium transition-colors duration-300" :class="[currentLang === 'ar' ? 'mr-2' : 'ml-2', isDark ? 'text-white' : 'text-[#000]']">{{ ctReturnDue }}</span>
       </div>
     </div>
   </div>
@@ -111,6 +112,24 @@ const currentLang = useState('currentLang')
 const { isDark } = useTheme()
 const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Tax Queries')
+
+// ── Pull values from website-data.json ────────────────────────────────────
+const { taxQueries } = useMainDashboard()
+
+const tokenUsed        = computed(() => taxQueries.value?.tokenUsed ?? 8001)
+const tokenTotal       = computed(() => taxQueries.value?.tokenTotal ?? 10485)
+const tokenUsagePercent = computed(() => taxQueries.value?.tokenUsagePercent ?? '+8.4%')
+const trend            = computed(() => taxQueries.value?.trend ?? 'up')
+const vatReturnDue     = computed(() => currentLang.value === 'ar' ? (taxQueries.value?.vatReturnDueAr ?? '28 يناير 2026') : (taxQueries.value?.vatReturnDue ?? '28 Jan 2026'))
+const ctReturnDue      = computed(() => currentLang.value === 'ar' ? (taxQueries.value?.ctReturnDueAr ?? '30 يونيو 2026') : (taxQueries.value?.ctReturnDue ?? '30 Jun 2026'))
+
+const formatNumber = (n: number) => new Intl.NumberFormat().format(n)
+
+// Parse numeric percentage for the gauge (e.g., "+2.4%" -> 2.4)
+const usagePctValue = computed(() => {
+  const match = tokenUsagePercent.value.match(/[\d.]+/);
+  return match ? parseFloat(match[0]) : 75;
+});
 
 const animProgress = ref(0);
 
@@ -130,9 +149,8 @@ onMounted(() => {
 
 const getMarkerPos = (progress: number) => {
   // Start at -90deg (12 o'clock)
-  // End at 180deg (9 o'clock)
-  // Total span = 270deg (75% of 360)
-  const angleDeg = -90 + (progress / 100) * 270;
+  // Total span = 360deg. Percentage of span is usagePctValue.
+  const angleDeg = -90 + (progress / 100) * usagePctValue.value * 3.6;
   const rad = (angleDeg * Math.PI) / 180;
   return {
     x: 50 + 40 * Math.cos(rad),

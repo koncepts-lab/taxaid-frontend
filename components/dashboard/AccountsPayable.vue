@@ -30,11 +30,11 @@
       <div class="flex flex-col">
         <div class="text-[12px] font-medium transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? 'إجمالي الذمم الدائنة المستحقة' : 'Total Outstanding Payables' }}</div>
         <div class="text-[34px] font-semibold mt-1 flex items-center transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">
-          <span class="mr-1"><img :src="isDark ? '/images/icons/AED-dark.svg' : '/images/icons/AED.svg'" alt="AED" class="w-7" /></span>140,175
+          <span class="mr-1"><img :src="isDark ? '/images/icons/AED-dark.svg' : '/images/icons/AED.svg'" alt="AED" class="w-7" /></span>{{ formatNumber(totalPayables) }}
         </div>
-        <div class="flex items-center gap-1 text-[#FB7554] font-medium text-[14px] mt-2">
-           <span><img src="/images/icons/down-right.svg" alt="Down" class="w-4 h-4" /></span>
-           <span>8% vs last month</span>
+        <div class="flex items-center gap-1 font-medium text-[14px] mt-2" :class="trend === 'down' ? 'text-[#FB7554]' : 'text-[#05B743]'">
+           <span><img :src="trend === 'down' ? '/images/icons/down-right.svg' : '/images/icons/up.svg'" alt="trend" class="w-4 h-4" /></span>
+           <span>{{ vsLastMonth }} vs last month</span>
         </div>
       </div>
 
@@ -51,11 +51,11 @@
     <div class="flex flex-col gap-1">
       <div class="text-[12px]">
         <span class="text-gray-400 transition-colors duration-300" :class="isDark ? 'text-white/40' : 'text-gray-400'">{{ currentLang === 'ar' ? 'تجاوزت موعد الاستحقاق: ' : 'Overdue: ' }}</span>
-        <span class="font-bold transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">₹ 35L</span>
+        <span class="font-bold transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">{{ overdue }}</span>
       </div>
       <div class="text-[12px]">
         <span class="text-gray-400 transition-colors duration-300" :class="isDark ? 'text-white/40' : 'text-gray-400'">{{ currentLang === 'ar' ? 'مستحقة في الـ 30 يوم القادمة: ' : 'Due in next 30 days: ' }}</span>
-        <span class="font-bold transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">₹ 90L</span>
+        <span class="font-bold transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">{{ dueInNext30Days }}</span>
       </div>
     </div>
   </div>
@@ -67,6 +67,17 @@ const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Accounts Payable')
+
+// ── Pull values from website-data.json ────────────────────────────────────
+const { accountsPayable } = useMainDashboard()
+
+const totalPayables   = computed(() => accountsPayable.value?.totalOutstandingPayables ?? 140175)
+const vsLastMonth     = computed(() => accountsPayable.value?.vsLastMonth ?? '-8%')
+const trend           = computed(() => accountsPayable.value?.trend ?? 'down')
+const overdue         = computed(() => accountsPayable.value?.overdue ?? '₹ 35L')
+const dueInNext30Days = computed(() => accountsPayable.value?.dueInNext30Days ?? '₹ 90L')
+
+const formatNumber = (n: number) => new Intl.NumberFormat('en-AE').format(n)
 </script>
 
 <style scoped>

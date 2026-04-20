@@ -95,16 +95,15 @@ const currentLang = useState('currentLang')
 const { isDark } = useTheme()
 const isModalOpen = ref(false)
 
-const chartSeries = [
-  {
-    name: 'Outflow',
-    data: [1.6, 1.6, 1.8, 2.0, 2.1, 2.3]
-  },
-  {
-    name: 'Inflow',
-    data: [2.6, 2.6, 3.0, 3.7, 3.8, 3.9]
-  }
-];
+const { inflowOutflow } = useCashFlowPage()
+
+const chartSeries = computed(() => {
+  const dataSeries = inflowOutflow.value?.series ?? []
+  return dataSeries.map(s => ({
+    name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
+    data: s.data
+  }))
+})
 
 const chartOptions = computed(() => ({
   chart: {
@@ -145,8 +144,8 @@ const chartOptions = computed(() => ({
   },
   xaxis: {
     categories: currentLang.value === 'ar' 
-      ? ['مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر']
-      : ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+      ? (inflowOutflow.value?.categoriesAr || [])
+      : (inflowOutflow.value?.categories || []),
     labels: {
         style: { colors: '#FFFFFF', fontSize: '13px', fontWeight: 500 }
     },

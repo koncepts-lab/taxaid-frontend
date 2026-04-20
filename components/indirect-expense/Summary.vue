@@ -155,45 +155,22 @@ const currentLang = useState('currentLang', () => 'en')
 
 const isModalOpen = ref(false)
 
-const tableData = ref([
-  {
-    label: 'Rent & Utilities',
-    labelAr: 'الإيجار والمرافق',
-    currentYear: '1,850,000',
-    previousYear: '1,620,000',
-    budget: '1,900,000',
-    variance: 14.2,
-    yearToGo: 50,
-  },
-  {
-    label: 'Office Salaries & Wages',
-    labelAr: 'رواتب وأجور المكتب',
-    currentYear: '450,000',
-    previousYear: '380,000',
-    budget: '480,000',
-    variance: 18.4,
-    yearToGo: 30,
-  },
-  {
-    label: 'Travel & Training',
-    labelAr: 'السفر والتدريب',
-    currentYear: '280,000',
-    previousYear: '240,000',
-    budget: '300,000',
-    variance: -16.7,
-    yearToGo: 20,
-  },
-  {
-    label: 'Total Indirect Expenses',
-    labelAr: 'إجمالي المصروفات غير المباشرة',
-    currentYear: '2,775,000',
-    previousYear: '2,405,000',
-    budget: '2,890,000',
-    variance: 15.4,
-    yearToGo: 25,
-    isTotal: true
-  }
-])
+const { summary } = useIndirectExpensePage()
+
+const tableData = computed(() => {
+  return summary.value.map(item => ({
+    ...item,
+    // Ensure all required fields exist
+    label: item.label,
+    labelAr: item.labelAr,
+    currentYear: item.currentYear,
+    previousYear: item.previousYear,
+    budget: item.budget,
+    variance: item.variance,
+    yearToGo: item.yearToGo,
+    isTotal: item.isTotal || false
+  }))
+})
 
 const gaugeColor = (value) => {
     if (value >= 50) return '#00d28e'
