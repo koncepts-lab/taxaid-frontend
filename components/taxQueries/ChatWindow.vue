@@ -47,10 +47,5 @@
 <script setup>
 defineProps(['isMinimized']);
 
-const suggestions = [
-    { label: 'How strong is your business?', icon: '/images/icons/chat-1.svg' },
-    { label: 'What areas need attention?', icon: '/images/icons/chat-2.svg' },
-    { label: 'How to improve cash flow?', icon: '/images/icons/chat-3.svg' },
-    { label: 'Revenue growth analysis?', icon: '/images/icons/chat-1.svg' },
-];
+const { suggestions } = useTaxQueriesPage()
 </script>

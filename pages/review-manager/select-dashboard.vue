@@ -8,28 +8,21 @@
     <main class="flex-1 flex flex-col items-center justify-center p-4 relative z-10 w-full">
       <!-- Header Text -->
       <div class="text-center mb-10 mt-[-50px]">
-        <h1 class="text-[30px] font-normal mb-2" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">Select Dashboard</h1>
-        <p class="text-[18px] font-normal" :class="isDark ? 'text-white/70' : 'text-[#00000080]'">Choose which dashboard you'd like to access</p>
+        <h1 class="text-[30px] font-normal mb-2" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ title }}</h1>
+        <p class="text-[18px] font-normal" :class="isDark ? 'text-white/70' : 'text-[#00000080]'">{{ subtitle }}</p>
       </div>
 
       <!-- Cards Container -->
       <div class="w-full flex flex-col md:flex-row items-center justify-center gap-6 px-4">
 
-        <!-- Card 1: Ticketing System -->
         <SelectDashboardCard
-          icon="/images/icons/Ticketing-System.svg"
-          title="Ticketing System"
-          description="Review and approve tickets raised by the team, track progress, and manage development priorities."
-          buttonLabel="Access Ticketing Dashboard"
-        />
-
-        <!-- Card 2: Review Dashboard -->
-        <SelectDashboardCard
-          icon="/images/icons/Revenue-Partnership.svg"
-          title="Review Dashboard"
-          description="Monitor consultant productivity, track client review progress, and manage workload across your team."
-          buttonLabel="Access Review Dashboard"
-          @click="navigateToDashboard"
+          v-for="card in cards"
+          :key="card.title"
+          :icon="card.icon"
+          :title="card.title"
+          :description="card.description"
+          :buttonLabel="card.buttonLabel"
+          @click="card.title === 'Review Dashboard' ? navigateToDashboard() : null"
         />
 
       </div>
@@ -46,7 +39,11 @@
 </template>
 
 <script setup>
+import { useReviewManagerSelectDashboardPage } from '@/composables/useWebsiteData'
+
 const { isDark } = useTheme()
+const { title, subtitle, cards } = useReviewManagerSelectDashboardPage()
+
 
 definePageMeta({
   layout: false

@@ -19,7 +19,7 @@
             :currentLang="currentLang" @close="closeModal" @submit="handleActionSubmit" @ignore="handleIgnore" />
         <AlertsChatModal :isOpen="activeModal === 'chat'" :alert="selectedAlert" :isDark="isDark"
             :currentLang="currentLang" @close="closeModal" />
-        <AlertsWheel v-model:activeIndex="activeIndex" />
+        <AlertsWheel v-model:activeIndex="activeIndex" :categories="enrichedCategories" />
     </NuxtLayout>
 </template>
 
@@ -30,91 +30,29 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isChatOpen = ref(false)
 
-// 1. Track which tab is active (0: All, 1: Pending, 2: Resolved, 3: Ignored)
+// 1. Fetch dynamic data from composable
+const { categories: categoriesFromDs, statusMap, alerts: masterAlerts, loading, error } = useAlertsPage()
+
+// 2. Track which tab is active (index in categories array)
 const activeIndex = ref(0)
 
-// 2. Category mapping to match your Table's "type" prop
-const categoryIds = ['all', 'pending', 'resolved', 'ignored']
-const activeCategory = computed(() => categoryIds[activeIndex.value])
+// 3. Category mapping derived from dynamic categories
+const activeCategory = computed(() => categoriesFromDs.value[activeIndex.value]?.id || 'all')
 
-// 3. Sample Master Data
-const masterAlerts = ref([
-    {
-        module: "Revenue Analysis",
-        title: "Revenue Variance Detected",
-        date: "Nov 14, 2025",
-        status: "Completed",
-        description: "Q3 revenue decreased by 12% compared to Q2 - requires analysis",
-        fullModuleName: "Revenue Analysis Module",
-        actionTitle: "Action Taken",
-        actionNote: "Detailed variance analysis completed and presented to management",
-        assignee: "Sarah Johnson - Financial Analyst",
-        actionDate: "Nov 14, 2025"
-    }, {
-        module: "COGS Analysis", title: "COGS Increase Alert", date: "Nov 14, 2025", status: "Awaiting Action", description: "Q3 revenue decreased by 12% compared to Q2 - requires analysis",
-        fullModuleName: "Revenue Analysis Module",
-        actionTitle: "Action Taken",
-        actionNote: "Detailed variance analysis completed and presented to management",
-        assignee: "Sarah Johnson - Financial Analyst",
-        actionDate: "Nov 14, 2025"
-    },
-    {
-        module: "Financial statement", title: "Monthly Statements Pending", date: "Nov 14, 2025", status: "Awaiting Action", description: "Q3 revenue decreased by 12% compared to Q2 - requires analysis",
-        fullModuleName: "Revenue Analysis Module",
-        actionTitle: "Action Taken",
-        actionNote: "Detailed variance analysis completed and presented to management",
-        assignee: "Sarah Johnson - Financial Analyst",
-        actionDate: "Nov 14, 2025"
-    },
-    {
-        module: "Revenue Analysis", title: "Revenue Variance Detected", date: "Nov 14, 2025", status: "Ignored", description: "Q3 revenue decreased by 12% compared to Q2 - requires analysis",
-        fullModuleName: "Revenue Analysis Module",
-        actionTitle: "Action Taken",
-        actionNote: "Detailed variance analysis completed and presented to management",
-        assignee: "Sarah Johnson - Financial Analyst",
-        actionDate: "Nov 14, 2025"
-    },
-    {
-        module: "Tax Compliance", title: "VAT Filing Deadline", date: "Nov 15, 2025", status: "Awaiting Action", description: "Q3 revenue decreased by 12% compared to Q2 - requires analysis",
-        fullModuleName: "Revenue Analysis Module",
-        actionTitle: "Action Taken",
-        actionNote: "Detailed variance analysis completed and presented to management",
-        assignee: "Sarah Johnson - Financial Analyst",
-        actionDate: "Nov 14, 2025"
-    },
-    {
-        module: "COGS Analysis", title: "COGS Variance", date: "Nov 10, 2025", status: "Completed", description: "Q3 revenue decreased by 12% compared to Q2 - requires analysis",
-        fullModuleName: "Revenue Analysis Module",
-        actionTitle: "Action Taken",
-        actionNote: "Detailed variance analysis completed and presented to management",
-        assignee: "Sarah Johnson - Financial Analyst",
-        actionDate: "Nov 14, 2025"
-    },
-    {
-        module: "Revenue Analysis", title: "Revenue Variance Detected", date: "Nov 14, 2025", status: "Completed", description: "Q3 revenue decreased by 12% compared to Q2 - requires analysis",
-        fullModuleName: "Revenue Analysis Module",
-        actionTitle: "Action Taken",
-        actionNote: "Detailed variance analysis completed and presented to management",
-        assignee: "Sarah Johnson - Financial Analyst",
-        actionDate: "Nov 14, 2025"
-    },
-    {
-        module: "COGS Analysis", title: "COGS Increase Alert", date: "Nov 14, 2025", status: "Awaiting Action", description: "Q3 revenue decreased by 12% compared to Q2 - requires analysis",
-        fullModuleName: "Revenue Analysis Module",
-        actionTitle: "Action Taken",
-        actionNote: "Detailed variance analysis completed and presented to management",
-        assignee: "Sarah Johnson - Financial Analyst",
-        actionDate: "Nov 14, 2025"
-    },
-    {
-        module: "Financial statement", title: "Monthly Statements Pending", date: "Nov 14, 2025", status: "Awaiting Action", description: "Q3 revenue decreased by 12% compared to Q2 - requires analysis",
-        fullModuleName: "Revenue Analysis Module",
-        actionTitle: "Action Taken",
-        actionNote: "Detailed variance analysis completed and presented to management",
-        assignee: "Sarah Johnson - Financial Analyst",
-        actionDate: "Nov 14, 2025"
-    }
-])
+// 4. Enrich categories with dynamic counts
+const enrichedCategories = computed(() => {
+    return categoriesFromDs.value.map(cat => {
+        let count = 0
+        if (cat.id === 'all') {
+            count = masterAlerts.value.length
+        } else {
+            const statusToMatch = statusMap.value[cat.id]
+            count = masterAlerts.value.filter(a => a.status === statusToMatch).length
+        }
+        return { ...cat, count }
+    })
+})
+
 const activeModal = ref(null); // stores 'details', 'resolve', 'delete', etc.
 const selectedAlert = ref({});
 
@@ -125,23 +63,26 @@ const openModal = (type, data) => {
 
 const closeModal = () => {
     activeModal.value = null;
-    // selectedAlert.value = {}; // optional: clear data on close
 };
+
 const handleActionSubmit = (updatedData) => {
     console.log("Action recorded:", updatedData);
-    // Here you would typically call your API to save the resolution
     closeModal();
-}; const filteredData = computed(() => {
+};
+
+const handleIgnore = (alert) => {
+    console.log("Alert ignored:", alert);
+    closeModal();
+};
+
+const filteredData = computed(() => {
     const type = activeCategory.value
     if (type === 'all') return masterAlerts.value
 
-    const typeMap = {
-        pending: 'Awaiting Action',
-        resolved: 'Completed',
-        ignored: 'Ignored'
-    }
+    const statusToMatch = statusMap.value[type]
+    if (!statusToMatch) return masterAlerts.value
 
-    return masterAlerts.value.filter(item => item.status === typeMap[type])
+    return masterAlerts.value.filter(item => item.status === statusToMatch)
 })
 </script>
 

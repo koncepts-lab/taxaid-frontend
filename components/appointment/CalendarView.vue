@@ -204,34 +204,23 @@ const getAppointmentsForDay = (day) => {
 }
 
 // ─── Status colours ───────────────────────────────────────────────────────────
+const { legend: dynamicLegend, statusStyles } = useAppointmentsPage()
+
 const getStatusBg = (status) => {
-    switch (status) {
-        case 'Completed':  return '#D6F5ED'
-        case 'Pending':    return '#FFF4E5'
-        case 'Scheduled':  return '#E5F1FF'
-        case 'Cancelled':  return '#FFE8E8'
-        default:           return '#F3F4F6'
-    }
+    return statusStyles.value[status]?.bg || '#F3F4F6'
 }
 
 const getStatusText = (status) => {
-    switch (status) {
-        case 'Completed':  return '#018E71'
-        case 'Pending':    return '#D97706'
-        case 'Scheduled':  return '#3B82F6'
-        case 'Cancelled':  return '#EF4444'
-        default:           return '#6B7280'
-    }
+    return statusStyles.value[status]?.text || '#6B7280'
 }
 
 // ─── Legend ───────────────────────────────────────────────────────────────────
-const legend = [
-    { label: 'Pending',     color: '#D97706' },
-    { label: 'Scheduled',   color: '#3B82F6' },
-    { label: 'Extra Hours', color: '#F97316' },
-    { label: 'Cancelled',   color: '#991B1B' },
-    { label: 'Completed',   color: '#018E71' },
-]
+const legend = computed(() => {
+    return dynamicLegend.value.map(item => ({
+        label: currentLang.value === 'ar' ? item.labelAr : item.label,
+        color: item.color
+    }))
+})
 </script>
 
 <style scoped>

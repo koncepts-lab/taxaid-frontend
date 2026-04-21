@@ -48,7 +48,15 @@ const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = useState('isScheduleModalOpen', () => false)
 const activeView = useState('appointment_active_view', () => 'calendar')
 
+const { appointments: dynamicAppointments, loading, error } = useAppointmentsPage()
 const appointments = useState('appointments_list', () => [])
+
+// Initialize state from dynamic data when ready
+watchEffect(() => {
+  if (dynamicAppointments.value?.length > 0 && appointments.value.length === 0) {
+    appointments.value = [...dynamicAppointments.value]
+  }
+})
 
 const addAppointment = (newApp) => {
   appointments.value.push(newApp)

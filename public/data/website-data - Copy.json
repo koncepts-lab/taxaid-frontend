@@ -12,10 +12,6 @@
       "revenuePartnership": "pages/revenue-partnership/*.vue"
     }
   },
-  "__comment: main dashboard": "============================================================",
-  "__comment: main dashboard": "  PAGE → pages/dashboard/index.vue  |  URL → /dashboard    ",
-  "__comment: main dashboard": "  9 widget components assembled in a 12-col grid layout     ",
-  "__comment: main dashboard": "============================================================",
   "mainDashboard": {
     "_page": "pages/dashboard/index.vue",
     "_url": "http://localhost:3000/dashboard",
@@ -117,7 +113,7 @@
             2.5,
             1.7,
             2.5,
-            4.0,
+            4,
             2.9,
             3.6,
             2.8,
@@ -127,7 +123,7 @@
             3.2,
             2.6,
             4.1,
-            4.0
+            4
           ],
           "hypotheticalScenario": [
             1.4,
@@ -136,14 +132,14 @@
             0.9,
             1.1,
             2.8,
-            2.0,
+            2,
             2.3,
             1.8,
             1.3,
             0.5,
             1.5,
             0.3,
-            2.0,
+            2,
             1.9,
             2.9
           ]
@@ -385,10 +381,6 @@
       }
     }
   },
-  "__comment: revenue page": "============================================================",
-  "__comment: revenue page": "  PAGE → pages/revenue/index.vue   |  URL → /revenue      ",
-  "__comment: revenue page": "  Summary, Gauge, By Category, Trend, and Top Customers    ",
-  "__comment: revenue page": "============================================================",
   "revenuePage": {
     "summary": [
       {
@@ -488,7 +480,7 @@
             4.2,
             3.5,
             2.8,
-            2.0,
+            2,
             1.7
           ]
         }
@@ -543,7 +535,7 @@
           "id": "B",
           "name": "Orion Tech",
           "nameAr": "أوريون تك",
-          "value": 4.0,
+          "value": 4,
           "color": "#04C18F"
         },
         {
@@ -585,7 +577,7 @@
           "id": "H",
           "name": "Crescent",
           "nameAr": "كريسنت",
-          "value": 4.0,
+          "value": 4,
           "color": "#04C18F"
         },
         {
@@ -617,10 +609,6 @@
       ]
     }
   },
-  "__comment: cash-flow page": "============================================================",
-  "__comment: cash-flow page": "  PAGE → pages/cash-flow/index.vue |  URL → /cash-flow   ",
-  "__comment: cash-flow page": "  Summary, Metrics, Chart, and Inflow/Outflow              ",
-  "__comment: cash-flow page": "============================================================",
   "cashFlowPage": {
     "summary": [
       {
@@ -728,7 +716,7 @@
             2.9,
             3.1,
             2.4,
-            2.0,
+            2,
             2.5,
             3.5,
             3.8,
@@ -737,7 +725,7 @@
             3.8,
             3.5,
             3.8,
-            4.0,
+            4,
             3.5,
             3.8,
             2.5
@@ -757,7 +745,7 @@
             3.2,
             3.5,
             2.8,
-            1.0,
+            1,
             0.8,
             1.2,
             1.8,
@@ -794,7 +782,7 @@
             1.6,
             1.6,
             1.8,
-            2.0,
+            2,
             2.1,
             2.3
           ]
@@ -805,7 +793,7 @@
           "data": [
             2.6,
             2.6,
-            3.0,
+            3,
             3.7,
             3.8,
             3.9
@@ -814,10 +802,6 @@
       ]
     }
   },
-  "__comment: financial-statement page": "============================================================",
-  "__comment: financial-statement page": "  PAGE → pages/financial-statement/index.vue |  URL → /financial-statement   ",
-  "__comment: financial-statement page": "  Profit & Loss, Balance Sheet, Ratios, and Tabs           ",
-  "__comment: financial-statement page": "============================================================",
   "financialStatementPage": {
     "tabs": [
       {
@@ -1059,10 +1043,6 @@
       }
     ]
   },
-  "__comment: indirect-expense page": "============================================================",
-  "__comment: indirect-expense page": "  PAGE → pages/indirect-expense/index.vue |  URL → /indirect-expense      ",
-  "__comment: indirect-expense page": "  Summary, Top Categories, Overhead Trends, and Revenue Comparison ",
-  "__comment: indirect-expense page": "============================================================",
   "indirectExpensePage": {
     "summary": [
       {
@@ -1145,7 +1125,7 @@
             1.5,
             3.8,
             2.5,
-            4.0
+            4
           ]
         },
         {
@@ -1191,7 +1171,7 @@
             1.7,
             1.8,
             1.9,
-            2.0,
+            2,
             2.1
           ]
         },
@@ -1201,7 +1181,7 @@
           "data": [
             2.6,
             2.8,
-            3.0,
+            3,
             3.2,
             3.4,
             3.6

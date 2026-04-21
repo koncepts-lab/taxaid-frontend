@@ -5,7 +5,7 @@
             <img src="/images/icons/bulb.svg" class="w-5 h-5" :class="isDark ? 'invert' : ''" />
         </div>
         <p class="text-[16px] font-normal leading-relaxed">
-            {{ currentLang === 'ar' ? 'يمكنك طلب ما يصل إلى 3 ساعات إضافية شهرياً، وتخضع لتوفر المستشار.' : 'You can request up to 3 extra hours per month, subject to consultant availability.' }}
+            {{ currentLang === 'ar' ? banner.textAr : banner.text }}
         </p>
     </div>
 </template>
@@ -13,6 +13,7 @@
 <script setup>
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+const { banner } = useAppointmentsPage()
 </script>
 
 <style scoped>

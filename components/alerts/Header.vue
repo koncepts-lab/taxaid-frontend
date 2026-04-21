@@ -96,7 +96,7 @@ const selectedLabel = computed(() => {
         return format(selectedDate.value, 'dd MMMM, yyyy');
     }
     const active = periodOptions.find(o => o.id === selected.value);
-    return currentLang === 'ar' ? active?.labelAr : active?.label;
+    return currentLang.value === 'ar' ? active?.labelAr : active?.label;
 });
 
 const handleSelect = (option) => {

@@ -16,8 +16,8 @@
             </svg>
           </div>
           <div>
-            <h4 class="text-[16px] font-semibold" :class="isDark ? 'text-white' : 'text-[#854D0E]'">Upcoming Card Expiries</h4>
-            <p class="text-[14px] font-normal" :class="isDark ? 'text-white/70' : 'text-[#854D0E]'">3 customer cards are due to expire soon. Accounts has been alerted for action.</p>
+            <h4 class="text-[16px] font-semibold" :class="isDark ? 'text-white' : 'text-[#854D0E]'">{{ dynamicAdminAlert.title }}</h4>
+            <p class="text-[14px] font-normal" :class="isDark ? 'text-white/70' : 'text-[#854D0E]'">{{ dynamicAdminAlert.text }}</p>
           </div>
         </div>
         <button @click="showAlertBanner = false" class="transition-colors cursor-pointer absolute right-4 top-1/2 -translate-y-1/2" :class="isDark ? 'text-white/50 hover:text-white' : 'text-[#854D0E] hover:text-black'">
@@ -109,7 +109,7 @@
 
         <!-- Sub Tabs -->
         <div :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-gray-100'" class="flex items-center justify-between overflow-x-auto no-scrollbar rounded-[35px] p-[10px] border shadow-sm">
-          <template v-for="(tab, index) in operationsSubTabs" :key="tab.name">
+          <template v-for="tab in operationsSubTabs" :key="tab.name">
             <button
               @click="activeOperationsSubTab = tab.name"
               class="px-5 py-2 rounded-full text-[14px] transition-all cursor-pointer whitespace-nowrap"
@@ -172,26 +172,18 @@
         <!-- Partner Approvals Sub Bar -->
         <div v-if="activeOperationsSubTab === 'Partner Approvals'" class="flex items-center justify-between gap-4 bg-[#E7FBF3] border border-[#04C18F20] rounded-[16px] p-2 mt-6">
           <div class="flex items-center gap-2 w-[75%] p-1 bg-transparent rounded-[14px] border border-[#04C18F20]">
+            <template v-for="tab in approvalSubTabs" :key="tab.name">
             <button 
-              @click="activeApprovalSubTab = 'Partner Registration'"
+              @click="activeApprovalSubTab = tab.name"
               class="flex items-center justify-start gap-3 w-1/2 py-2.5 px-4 rounded-[12px] text-[15px] font-medium transition-all"
-              :class="activeApprovalSubTab === 'Partner Registration' ? 'bg-[#00835D] text-white shadow-sm' : 'text-[#1a1a1a] bg-transparent'"
+              :class="activeApprovalSubTab === tab.name ? 'bg-[#00835D] text-white shadow-sm' : 'text-[#1a1a1a] bg-transparent'"
             >
-              <img src="/images/icons/Partner.svg" class="w-5 h-5 flex-shrink-0" :class="activeApprovalSubTab === 'Partner Registration' ? 'brightness-0 invert' : ''" alt="" />
-              <span>Partner Registration</span>
+              <img :src="tab.icon || (tab.name === 'Partner Registration' ? '/images/icons/Partner.svg' : '/images/icons/doller-black.svg')" class="w-5 h-5 flex-shrink-0" :class="activeApprovalSubTab === tab.name ? 'brightness-0 invert' : ''" alt="" />
+              <span>{{ tab.name }}</span>
               <span class="w-6 h-6 flex items-center justify-center rounded-full text-[12px] text-center font-semibold"
-                    :class="activeApprovalSubTab === 'Partner Registration' ? 'bg-white text-[#00835D]' : 'bg-[#00835D] text-white'">2</span>
+                    :class="activeApprovalSubTab === tab.name ? 'bg-white text-[#00835D]' : 'bg-[#00835D] text-white'">{{ tab.count ?? '' }}</span>
             </button>
-            <button 
-              @click="activeApprovalSubTab = 'Payment Requests'"
-              class="flex items-center justify-start gap-3 w-1/2 py-2.5 px-4 rounded-[12px] text-[15px] font-medium transition-all"
-              :class="activeApprovalSubTab === 'Payment Requests' ? 'bg-[#00835D] text-white shadow-sm' : 'text-[#1a1a1a] bg-transparent'"
-            >
-              <img src="/images/icons/doller-black.svg" class="w-5 h-5 flex-shrink-0" :class="activeApprovalSubTab === 'Payment Requests' ? 'brightness-0 invert' : ''" alt="" />
-              <span>Payment Requests</span>
-              <span class="w-6 h-6 flex items-center justify-center rounded-full text-[12px] text-center font-semibold"
-                    :class="activeApprovalSubTab === 'Payment Requests' ? 'bg-white text-[#00835D]' : 'bg-[#00835D] text-white'">3</span>
-            </button>
+          </template>
           </div>
           
           <div class="flex items-center w-[25%]">
@@ -209,7 +201,7 @@
               <!-- Dropdown Menu -->
               <div v-if="showStatusesDropdown" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-gray-100 p-2 z-20 flex flex-col gap-1">
                 <button 
-                  v-for="status in ['All Statuses', 'Pending', 'Approved', 'Rejected']" 
+                  v-for="status in dynamicStatusFilters" 
                   :key="status"
                   @click="activeStatusFilter = status; showStatusesDropdown = false"
                   class="text-left px-4 py-2.5 rounded-[8px] text-[15px] transition-colors"
@@ -242,9 +234,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useRevenuePartnershipAdminPage } from '@/composables/useWebsiteData'
 
 const { isDark } = useTheme()
+const {
+  alert: dynamicAdminAlert,
+  overviewMetrics: dynamicOverviewMetrics,
+  paymentStatusMetrics: dynamicPaymentStatusMetrics,
+  operationsSubTabs: dynamicOperationsSubTabs,
+  approvalSubTabs: dynamicApprovalSubTabs,
+  statusFilters: dynamicStatusFilters
+} = useRevenuePartnershipAdminPage()
 
 definePageMeta({
   layout: false
@@ -252,80 +253,12 @@ definePageMeta({
 
 const activeTab = ref('Overview')
 
-const overviewMetrics = [
-  { 
-    title: 'Total Customers', 
-    value: '5', 
-    subtext: 'Partner-sourced clients', 
-    icon: '/images/icons/Total-Customers.svg', 
-    iconColor: 'p-0',
-    isCurrency: false 
-  },
-  { 
-    title: 'Total Revenue', 
-    value: '808,000', 
-    subtext: 'All partner revenue', 
-    icon: '/images/icons/doller-green.svg', 
-    iconColor: 'p-0',
-    isCurrency: true  
-  },
-  { 
-    title: 'Amount Collected', 
-    value: '714,500', 
-    subtext: 'Collection rate: 88.4%', 
-    icon: '/images/icons/amt_collected.svg', 
-    iconColor: 'p-0',
-    isCurrency: true 
-  }
-]
+const overviewMetrics = computed(() => dynamicOverviewMetrics.value.cards ?? [])
+const paymentStatusMetrics = computed(() => dynamicPaymentStatusMetrics.value.cards ?? [])
+const operationsSubTabs = computed(() => dynamicOperationsSubTabs.value)
 
-const paymentStatusMetrics = [
-  { 
-    title: 'Paid', 
-    value: '808,000', 
-    count: '3',
-    subtext: 'Completed payments', 
-    icon: '/images/icons/green-tick.svg', 
-    iconColor: 'p-0',
-    bgClass: 'bg-[#F0FDF4]',
-    borderColor: 'border-[#04C18F80]'
-  },
-  { 
-    title: 'Failed', 
-    value: '808,000', 
-    count: '3',
-    subtext: 'Failed Payments', 
-    icon: '/images/icons/close.svg', 
-    iconColor: 'p-0',
-    bgClass: 'bg-[#FEF2F2]',
-    borderColor: 'border-[#FFA6A6]',
-    textColor: '#C10007'
-  },
-  { 
-    title: 'Settlements', 
-    value: '808,000', 
-    count: '3',
-    subtext: 'Total Partner Payments', 
-    icon: '/images/icons/Settlements-blue.svg', 
-    iconColor: 'p-0',
-    bgClass: 'bg-[#DFF4FF]',
-    borderColor: 'border-[#1FB2FF]',
-    textColor: '#005B8A'
-  }
-]
-
-const operationsSubTabs = [
-  { name: 'All Customers', count: 21 },
-  { name: 'Partners', count: 0 },
-  { name: 'Direct Customers', count: 2 },
-  { name: 'Resource Consumption' },
-  { name: 'Partner Approvals' },
-  { name: 'Uploaded Reports', count: 2 },
-  { name: 'User Master Info', count: 2 }
-]
-
-const activeOperationsSubTab = ref('All Customers')
-const activeApprovalSubTab = ref('Partner Registration')
+const activeOperationsSubTab = ref(dynamicOperationsSubTabs.value?.[0]?.name ?? 'All Customers')
+const activeApprovalSubTab = ref(dynamicApprovalSubTabs.value?.[0]?.name ?? 'Partner Registration')
 
 const showStatusesDropdown = ref(false)
 const activeStatusFilter = ref('All Statuses')

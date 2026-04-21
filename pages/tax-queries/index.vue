@@ -32,19 +32,7 @@ const isTableMinimized = ref(false);
 const isSideChatOpen = ref(false);
 const isChatOpen = ref(false);
 
-const tableData = {
-    vat: [
-        { quarter: 'Q1 2025', budgeted: 1200000, recorded: 1150000, variance: 50000, variancePercent: -4.2 },
-        { quarter: 'Q2 2025', budgeted: 1200000, recorded: 1150000, variance: 130000, variancePercent: -9.0 },
-        { quarter: 'Q3 2025', budgeted: 1200000, recorded: 1150000, variance: 20000, variancePercent: -1.2 },
-        { quarter: 'Q4 2025', budgeted: 1200000, recorded: 1150000, variance: 130000, variancePercent: -7.4 },
-    ],
-    corporate: [
-        { quarter: 'FY 2025', budgeted: 5000000, recorded: 4800000, variance: 200000, variancePercent: -4.0 },
-    ],
-    ifrs: [],
-    accounting: []
-};
+const { tableData } = useTaxQueriesPage()
 
 const currentTitle = computed(() => {
     const titles = {
@@ -56,7 +44,7 @@ const currentTitle = computed(() => {
     return titles[activeTabId.value] || 'Tax Data';
 });
 
-const currentTableData = computed(() => tableData[activeTabId.value] || []);
+const currentTableData = computed(() => tableData.value[activeTabId.value] || []);
 
 const handleChatOpen = () => {
     isSideChatOpen.value = true;

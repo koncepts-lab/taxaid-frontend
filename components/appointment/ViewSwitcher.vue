@@ -62,8 +62,14 @@ const currentLang = useState('currentLang', () => 'en')
 const activeView = useState('appointment_active_view', () => 'calendar')
 const showFilter = ref(false)
 
+const { legend } = useAppointmentsPage()
+
 const activeStatus = ref('All Statuses')
-const statuses = ['All Statuses', 'Pending', 'Scheduled', 'Completed', 'Cancelled']
+const statuses = computed(() => {
+    const base = currentLang.value === 'ar' ? ['كل الحالات'] : ['All Statuses']
+    const fromLegend = legend.value.map(l => currentLang.value === 'ar' ? l.labelAr : l.label)
+    return [...base, ...fromLegend]
+})
 </script>
 
 <style scoped>

@@ -298,3 +298,166 @@ export function useCostCenterPage() {
     projectDetail:          computed(() => cc.value?.projectDetail         ?? {}),
   }
 }
+
+/** Tax Queries page: /tax-queries */
+export function useTaxQueriesPage() {
+  const { data, loading, error } = useWebsiteData()
+  const tq = computed(() => data.value?.taxQueriesPage ?? {})
+  return {
+    loading, error,
+    tableData:      computed(() => tq.value?.tableData      ?? {}),
+    suggestions:    computed(() => tq.value?.suggestions    ?? []),
+    tabs:           computed(() => tq.value?.tabs           ?? []),
+    historyGroups:  computed(() => tq.value?.historyGroups  ?? []),
+    deadlines:      computed(() => tq.value?.deadlines      ?? []),
+  }
+}
+
+/** Data Source Management page: /data-source */
+export function useDataSourcePage() {
+  const { data, loading, error } = useWebsiteData()
+  const ds = computed(() => data.value?.dataSourcePage ?? {})
+  return {
+    loading, error,
+    mainTabs:           computed(() => ds.value?.mainTabs           ?? []),
+    subTabsFinancial:   computed(() => ds.value?.subTabsFinancial   ?? []),
+    subTabsContacts:    computed(() => ds.value?.subTabsContacts    ?? []),
+    settings:           computed(() => ds.value?.settings           ?? {}),
+    arData:             computed(() => ds.value?.arData             ?? []),
+    apData:             computed(() => ds.value?.apData             ?? []),
+    logs:               computed(() => ds.value?.logs               ?? {}),
+    pdcSummaryData:     computed(() => ds.value?.pdcSummaryData     ?? []),
+    pdcDetailedData:    computed(() => ds.value?.pdcDetailedData    ?? []),
+    interCompanyData:   computed(() => ds.value?.interCompanyData   ?? []),
+    dataInItems:        computed(() => ds.value?.dataInItems        ?? []),
+    costCenterReports:  computed(() => ds.value?.costCenterReports  ?? {}),
+    budget:             computed(() => ds.value?.budget             ?? {}),
+    salesForecast:      computed(() => ds.value?.salesForecast      ?? {}),
+  }
+}
+
+export function useAlertsPage() {
+  const { data, loading, error } = useWebsiteData()
+  const pageData = computed(() => data.value?.alertsPage ?? {})
+
+  return {
+    loading,
+    error,
+    categories: computed(() => pageData.value?.categories ?? []),
+    statusMap:  computed(() => pageData.value?.statusMap  ?? {}),
+    alerts:     computed(() => pageData.value?.alerts     ?? []),
+  }
+}
+
+export function useAppointmentsPage() {
+  const { data, loading, error } = useWebsiteData()
+  const pageData = computed(() => data.value?.appointmentsPage ?? {})
+
+  return {
+    loading,
+    error,
+    stats:        computed(() => pageData.value?.stats        ?? []),
+    banner:       computed(() => pageData.value?.banner       ?? {}),
+    legend:       computed(() => pageData.value?.legend       ?? []),
+    statusStyles: computed(() => pageData.value?.statusStyles ?? {}),
+    typeStyles:   computed(() => pageData.value?.typeStyles   ?? {}),
+    columns:      computed(() => pageData.value?.columns      ?? []),
+    columnsAr:    computed(() => pageData.value?.columnsAr    ?? []),
+    appointments: computed(() => pageData.value?.appointments ?? []),
+  }
+}
+export function useRevenuePartnershipLogin() {
+  const { data, loading, error } = useWebsiteData()
+  const pageData = computed(() => data.value?.revenuePartnershipLoginPage ?? {})
+
+  return {
+    loading,
+    error,
+    title:        computed(() => pageData.value?.title        ?? ''),
+    titleAr:      computed(() => pageData.value?.titleAr      ?? ''),
+    subtitle:     computed(() => pageData.value?.subtitle     ?? ''),
+    subtitleAr:    computed(() => pageData.value?.subtitleAr    ?? ''),
+    roles:        computed(() => pageData.value?.roles        ?? []),
+    rolesAr:      computed(() => pageData.value?.rolesAr      ?? []),
+    labels:       computed(() => pageData.value?.labels       ?? {}),
+    placeholders: computed(() => pageData.value?.placeholders ?? {}),
+    footer:       computed(() => pageData.value?.footer       ?? {}),
+  }
+}
+
+export function useRevenuePartnershipPartnerPage() {
+  const { data, loading, error } = useWebsiteData()
+  const pageData = computed(() => data.value?.revenuePartnershipPartnerPage ?? {})
+
+  return {
+    loading,
+    error,
+    alert:          computed(() => pageData.value?.alert          ?? {}),
+    mainStats:      computed(() => pageData.value?.mainStats      ?? []),
+    partnerSummary: computed(() => pageData.value?.partnerSummary ?? {}),
+    paymentDetails: computed(() => pageData.value?.paymentDetails ?? {}),
+  }
+}
+
+export function useRevenuePartnershipSelectDashboardPage() {
+  const { data, loading, error } = useWebsiteData()
+  const pageData = computed(() => data.value?.revenuePartnershipSelectDashboardPage ?? {})
+
+  return {
+    loading,
+    error,
+    pageData,
+    title:    computed(() => pageData.value?.title    ?? ''),
+    subtitle: computed(() => pageData.value?.subtitle ?? ''),
+    cards:    computed(() => pageData.value?.cards    ?? []),
+  }
+}
+
+export function useRevenuePartnershipAdminPage() {
+  const { data, loading, error } = useWebsiteData()
+  const pageData = computed(() => data.value?.revenuePartnershipAdminPage ?? {})
+
+  return {
+    loading,
+    error,
+    pageData,
+    alert:               computed(() => pageData.value?.alert               ?? {}),
+    overviewMetrics:     computed(() => pageData.value?.overviewMetrics     ?? {}),
+    paymentStatusMetrics:computed(() => pageData.value?.paymentStatusMetrics ?? {}),
+    operationsSubTabs:   computed(() => pageData.value?.operationsSubTabs   ?? []),
+    approvalSubTabs:     computed(() => pageData.value?.approvalSubTabs     ?? []),
+    statusFilters:       computed(() => pageData.value?.statusFilters       ?? []),
+  }
+}
+
+export function useReviewManagerSelectDashboardPage() {
+  const { data, loading, error } = useWebsiteData()
+  const pageData = computed(() => data.value?.reviewManagerSelectDashboardPage ?? {})
+
+  return {
+    loading,
+    error,
+    title:    computed(() => pageData.value?.title    ?? ''),
+    subtitle: computed(() => pageData.value?.subtitle ?? ''),
+    cards:    computed(() => pageData.value?.cards    ?? []),
+  }
+}
+
+export function useReviewManagerDashboardPage() {
+  const { data, loading, error } = useWebsiteData()
+  const pageData = computed(() => data.value?.reviewManagerDashboardPage ?? {})
+
+  return {
+    loading,
+    error,
+    productivityMetrics:   computed(() => pageData.value?.productivityMetrics?.cards ?? []),
+    tabs:                  computed(() => pageData.value?.tabs ?? []),
+    consultants:           computed(() => pageData.value?.consultants ?? []),
+    syncData:              computed(() => pageData.value?.syncData ?? []),
+    clientFixedProgressData: computed(() => pageData.value?.clientFixedProgressData ?? []),
+    consultantWorkloadData: computed(() => pageData.value?.consultantWorkloadData ?? []),
+    assignConsultantData:  computed(() => pageData.value?.assignConsultantData ?? []),
+    clientReviewAnalysisData: computed(() => pageData.value?.clientReviewAnalysisData ?? []),
+    consultantList:        computed(() => pageData.value?.consultantList ?? []),
+  }
+}
