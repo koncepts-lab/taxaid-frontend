@@ -2,11 +2,8 @@
   <div class="relative min-h-screen w-full bg-[#fff] overflow-hidden" :dir="isRtl ? 'rtl' : 'ltr'">
     <!-- WELCOME OVERLAY SCREEN -->
     <div v-if="showWelcome" class="absolute inset-0 z-50 min-h-screen w-full flex items-center justify-center overflow-hidden text-center animate-expand-bg" style="background: radial-gradient(circle at center, #0C5B55 0%, #002B23 100%)">
-      <!-- Canvas Particle System -->
-      <canvas ref="welcomeCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
-
       <div v-if="showWelcomeCard" class="relative z-[55] flex flex-col items-center max-w-2xl w-full animate-slide-in-right-far">
-        
+        <CommonParticleBackground/>
 
         <!-- Content Card -->
         <div class="welcome-card rounded-[40px] p-10 md:p-16 w-full relative overflow-hidden">
@@ -29,7 +26,7 @@
              </p>
 
              <button 
-               @click="router.push('/onboarding')"
+               @click="handleGetStarted"
                class="group relative inline-flex items-center justify-center w-full max-w-[250px] py-3.5 text-[16px] font-medium text-white rounded-full btn-premium cursor-pointer"
              >
                {{ t.getStarted }}
@@ -66,8 +63,11 @@
         <div class="w-full max-w-[430px] pt-10">
           <!-- Dynamic Title -->
           <h1 class="text-center text-[32px] font-semibold text-[#000] mb-3">
-            <template v-if="!isForgotPassword">
+            <template v-if="!isForgotPassword && !isEmailVerification">
               {{ isLogin ? t.welcome : t.createAccount }}
+            </template>
+            <template v-else-if="isEmailVerification">
+              {{ t.emailVerifyTitle }}
             </template>
             <template v-else>
               <template v-if="forgotPasswordStep === 1">{{ t.forgotPassTitle }}</template>
@@ -79,8 +79,11 @@
 
           <!-- Dynamic Description -->
           <p class="text-center text-[16px] text-[#00000052] font-normal leading-relaxed mb-10 px-4">
-            <template v-if="!isForgotPassword">
+            <template v-if="!isForgotPassword && !isEmailVerification">
               {{ isLogin ? t.loginDesc : t.signupDesc }}
+            </template>
+            <template v-else-if="isEmailVerification">
+              <!-- {{ t.emailVerifySub }} <span class="font-normal text-[#000000B2]">{{ form.email }}</span> -->
             </template>
             <template v-else>
               <template v-if="forgotPasswordStep === 1">{{ t.forgotPassSub }}</template>
@@ -90,7 +93,15 @@
             </template>
           </p>
 
-          <form v-if="!isForgotPassword" class="space-y-4" @submit.prevent="onSubmit">
+          <div v-if="errorMessage" class="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm text-center font-medium">
+            {{ errorMessage }}
+          </div>
+
+          <div v-if="isEmailVerification" class="w-full">
+            <CommonEmailVerify :email="form.email" :password="form.password" :lang="currentLanguage" @verified="onEmailVerified" @back="isEmailVerification = false" />
+          </div>
+
+          <form v-else-if="!isForgotPassword" class="space-y-4" @submit.prevent="onSubmit">
             
             <!-- Signup Name -->
             <div v-if="!isLogin">
@@ -184,7 +195,7 @@
             <div v-if="isLogin" class="flex items-center justify-between px-2 pt-1">
               <label class="flex items-center gap-2 cursor-pointer select-none">
                 <div class="relative">
-                  <input type="checkbox" class="peer sr-only" checked />
+                  <input type="checkbox" v-model="rememberMe" class="peer sr-only"/>
                   <div class="w-5 h-5 border-2 border-[#0C5B55] rounded-md peer-checked:bg-[#0C5B55] transition-colors"></div>
                   <svg class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                 </div>
@@ -196,10 +207,12 @@
             <!-- Submit Button -->
             <button 
               type="submit" 
-              class="group relative inline-flex items-center justify-center mt-6 h-[52px] w-full rounded-full text-[20px] font-medium text-white btn-premium cursor-pointer" 
+              :disabled="loading"
+              class="group relative inline-flex items-center justify-center mt-6 h-[52px] w-full rounded-full text-[20px] font-medium text-white btn-premium cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed" 
             >
-              {{ isLogin ? t.loginBtn : t.signupBtn }}
-              <svg class="w-6 h-6 ml-2 transition-transform duration-200 group-hover:translate-x-1" 
+              <span v-if="!loading">{{ isLogin ? t.loginBtn : t.signupBtn }}</span>
+              <UIcon v-else name="i-heroicons-arrow-path" class="animate-spin w-6 h-6" />
+              <svg v-if="!loading" class="w-6 h-6 ml-2 transition-transform duration-200 group-hover:translate-x-1" 
                    :class="isRtl ? 'rotate-180 group-hover:-translate-x-1 group-hover:translate-x-0' : ''"
                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -211,7 +224,7 @@
               {{ isLogin ? t.dontHaveAccount : t.alreadyHaveAccount }}
               <button 
                 type="button" 
-                @click="isLogin = !isLogin" 
+                @click="isLogin = !isLogin; errorMessage = ''" 
                 class="font-semibold text-[#00B389] hover:underline ml-1 cursor-pointer"
               >
                 {{ isLogin ? t.signUpLink : t.signInLink }}
@@ -352,125 +365,26 @@
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import LanguageToggle from '@/components/common/LanguageToggle.vue'
-
-// ---------- Canvas Particle System ----------
-const welcomeCanvas = ref(null)
-let animFrameId = null
-
-function startWelcomeParticles(canvas) {
-  const ctx = canvas.getContext('2d')
-  let W = 0, H = 0
-
-  function resize() {
-    W = canvas.width  = canvas.offsetWidth
-    H = canvas.height = canvas.offsetHeight
-  }
-
-  const ro = new ResizeObserver(resize)
-  ro.observe(canvas)
-  resize()
-
-  // Particle factory
-  function createParticle() {
-    const angle   = Math.random() * Math.PI * 2
-    // 20% of particles go far outside (1.2x–2x screen diagonal), rest stay near center
-    const isFar   = Math.random() < 0.2
-    const maxDist = isFar
-      ? Math.hypot(W, H) * (0.9 + Math.random() * 0.8)   // far-flier
-      : Math.hypot(W, H) * (0.15 + Math.random() * 0.35)  // near-center
-
-    // Reduced speed: 0.18 – 0.55 px/frame (was ~0.5–1.5)
-    const speed   = 0.18 + Math.random() * 0.37
-
-    const size    = 0.5 + Math.random() * 1.5
-    const life    = maxDist / speed          // frames to live
-    const delay   = Math.random() * 180      // stagger in frames
-
-    return {
-      x: W / 2, y: H / 2,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      size,
-      life,
-      maxLife: life,
-      delay,
-      age: -delay,   // negative = waiting to spawn
-      done: false
-    }
-  }
-
-  const POOL = 160
-  let particles = Array.from({ length: POOL }, createParticle)
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H)
-
-    particles.forEach((p, i) => {
-      p.age++
-      if (p.age < 0) return   // still in delay
-
-      if (p.done || p.age > p.maxLife) {
-        particles[i] = createParticle()   // recycle
-        return
-      }
-
-      p.x += p.vx
-      p.y += p.vy
-
-      const progress = p.age / p.maxLife            // 0 → 1
-      // Fade in for first 10%, fade out for last 30%
-      const alpha = progress < 0.1  ? progress / 0.1
-                  : progress > 0.7  ? (1 - progress) / 0.3
-                  : 1
-
-      ctx.beginPath()
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-      ctx.fillStyle = `rgba(0, 229, 176, ${alpha * 0.75})`
-      ctx.fill()
-    })
-
-    animFrameId = requestAnimationFrame(draw)
-  }
-
-  draw()
-
-  return () => {
-    ro.disconnect()
-    cancelAnimationFrame(animFrameId)
-  }
-}
-
-let stopParticles = null
+// ---------- AUTH LOGIC ----------
+const { login, user } = useAuth()
+const config = useRuntimeConfig()
+const loading = ref(false)
+const errorMessage = ref('')
+const isEmailVerification = ref(false)
+const nextRedirect = ref('') // Store where the user should go after welcome screen 
 
 const router = useRouter()
 const isLogin = ref(true)
 const showWelcome = ref(false)
 const showWelcomeCard = ref(false)
-const showPassword = ref(true)
+const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 const currentLanguage = ref('en')
 const isForgotPassword = ref(false)
 const forgotPasswordStep = ref(1) // 1: Email, 2: OTP, 3: New Password, 4: Success
 const otp = ref(['', '', '', ''])
 const forgotEmail = ref('')
-
-// Start particles as soon as the welcome screen is shown (must be after showWelcome is declared)
-watch(
-  () => showWelcome.value,
-  (val) => {
-    if (val) {
-      setTimeout(() => {
-        if (welcomeCanvas.value) {
-          stopParticles = startWelcomeParticles(welcomeCanvas.value)
-        }
-      }, 50)
-    } else {
-      stopParticles?.()
-    }
-  }
-)
-
-onUnmounted(() => stopParticles?.())
+const rememberMe = ref(true)
 
 // Using dynamic path to avoid any potential static analysis weirdness
 const welcomeLogoPath = '/images/welcome-logo.png'
@@ -517,7 +431,9 @@ const translations = {
     minChar: 'Must be atleast 8 characters',
     allDone: 'All Done!',
     passResetSuccess: 'Your password has been reset.',
-    partnershipLogin: 'Partnership Login'
+    partnershipLogin: 'Partnership Login',
+    emailVerifyTitle: 'Verification Required',
+    emailVerifySub: 'A verification link has been sent to',
   },
   ar: {
     welcome: 'مرحباً',
@@ -557,7 +473,9 @@ const translations = {
     minChar: 'يجب أن يكون على الأقل 8 أحرف',
     allDone: 'تم بنجاح!',
     passResetSuccess: 'لقد تم إعادة تعيين كلمة المرور الخاصة بك.',
-    partnershipLogin: 'تسجيل دخول الشركاء'
+    partnershipLogin: 'تسجيل دخول الشركاء',
+    emailVerifyTitle: 'التحقق من البريد الإلكتروني',
+    emailVerifySub: 'تم إرسال رابط التحقق إلى',
   }
 }
 
@@ -571,12 +489,64 @@ const form = reactive({
   confirmPassword: ''
 })
 
-function onSubmit() {
-  console.log('Submitting', isLogin.value ? 'Login' : 'Signup', form)
-  // Show welcome screen instead of immediate routing
-  showWelcome.value = true
+async function onSubmit() {
+  errorMessage.value = ''
+  loading.value = true
   
-  // Show the content card with a delay so background sweep finishes first
+  try {
+    if (isLogin.value) {
+      // LOGIN
+      const res = await login({
+        email: form.email,
+        password: form.password
+      }, rememberMe.value)
+
+      const status = res?.data?.tenant?.status      
+      if (status === 'pending_onboarding') {// NEW USER / ONBOARDING: Show Welcome Card journey        
+        nextRedirect.value = '/onboarding'
+        showWelcome.value = true
+        setTimeout(() => { showWelcomeCard.value = true }, 1200)
+      } else {// NORMAL USER: Skip Welcome Card, go directly to Dashboard
+        router.push('/dashboard')
+      }
+
+    } else {      // REGISTER
+      await $fetch('/auth/register', {
+        baseURL: config.public.apiBase,
+        method: 'POST',
+        body: {
+          company_name: form.name,
+          email: form.email,
+          contact_number: form.contactNumber,
+          password: form.password,
+          password_confirmation: form.confirmPassword
+        }
+      })
+      
+      // After registration, show verification
+      isEmailVerification.value = true
+    }
+  } catch (err) {
+    if (err.status === 403 && err.data?.message?.includes('verify your email')) {
+      isEmailVerification.value = true
+    } else {
+      errorMessage.value = err.data?.message || err.message || 'Authentication failed' ///remove the err msg later in live
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+function handleGetStarted() {
+  router.push(nextRedirect.value)
+}
+
+function onEmailVerified() {
+  isEmailVerification.value = false
+  
+//email verified destination()
+  nextRedirect.value = '/onboarding'  
+  showWelcome.value = true
   setTimeout(() => {
     showWelcomeCard.value = true
   }, 1200)
@@ -661,8 +631,6 @@ input:-webkit-autofill:active {
 .animate-expand-bg {
   animation: expandFromRight 1s cubic-bezier(0.65, 0, 0.15, 1) forwards;
 }
-
-/* Canvas particle system handles its own rendering — no CSS keyframes needed */
 
 /* Welcome card — gradient border + glass effect */
 .welcome-card {

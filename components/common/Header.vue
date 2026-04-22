@@ -212,7 +212,7 @@
               </svg>
               {{ currentLang === 'ar' ? 'التبديل إلى لوحة الشركاء' : 'Switch to Partnership' }}
             </NuxtLink>
-            <button class="flex items-center gap-3 text-[#013E32] text-sm font-normal group/btn">
+            <button @click="onLogoutClick" class="flex items-center gap-3 text-[#013E32] text-sm font-normal group/btn">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 class="group-hover/btn:text-red-500">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-linecap="round"
@@ -413,6 +413,10 @@ const currentLang = useState('currentLang', () => 'en')
 const { isDark, toggleTheme } = useTheme()
 const isMenuOpen = ref(false)
 
+const { logout } = useAuth()//logout Logic
+const onLogoutClick = () => {
+  logout()
+}
 const settingsItems = [
   { label: 'Subscription Management', labelAr: 'إدارة الاشتراك', icon: '/images/icons/Subscription-Management.svg' },
   { label: 'Support', labelAr: 'الدعم', icon: '/images/icons/Support.svg' },

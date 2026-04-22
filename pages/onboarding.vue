@@ -1,16 +1,12 @@
 <template>
   <div class="min-h-screen w-full bg-[#003d35] overflow-x-hidden flex items-center justify-center p-4 lg:p-12 relative font-sans" :dir="isRtl ? 'rtl' : 'ltr'">
     <!-- BACKGROUND LAYERS -->
-    <div v-if="!isFinished" class="absolute inset-0 z-0 bg-layer"></div>
-    <div v-if="!isFinished" class="absolute inset-0 z-0">
-      <canvas ref="bgParticleCanvas" class="w-full h-full opacity-60"></canvas>
-    </div>
-
+      <CommonParticleBackground/>
     <!-- MAIN ONBOARDING INTERFACE -->
     
     <!-- LANGUAGE TOGGLE -->
     <div class="fixed top-4 z-50" :class="isRtl ? 'left-4 md:left-8' : 'right-4 md:right-8'">
-       <LanguageToggle v-model="currentLanguage" />
+        <LanguageToggle v-model="currentLanguage" />
     </div>
 
     <Transition name="fade-scale" mode="out-in">
@@ -27,14 +23,14 @@
           </div>
 
           <video 
-  src="/images/left-image.webm" 
-  class="relative z-10 w-full max-w-[420px] animate-zoom-fade-up"
-  autoplay 
-  loop 
-  muted 
-  playsinline
->
-</video>
+            src="/images/left-image.webm" 
+            class="relative z-10 w-full max-w-[420px] animate-zoom-fade-up"
+            autoplay 
+            loop 
+            muted 
+            playsinline
+          >
+          </video>
         </div>
 
         <!-- RIGHT COLUMN (Question Box) -->
@@ -46,7 +42,7 @@
             appear-active-class="box-appear-enter-active"
             appear-from-class="box-appear-enter-from"
           >
-            <div v-if="pageLoaded" :key="step + '-' + currentEntity" class="question-box">
+            <div v-if="pageLoaded && questions.length > 0" :key="step + '-' + currentEntity" class="question-box">
               <div class="flex flex-col h-full">
                 
                 <!-- TOP BAR -->
@@ -57,25 +53,23 @@
                       <span v-if="!isRtl">‹</span> {{ t.prev }} <span v-if="isRtl">›</span>
                     </button>
                     <span class="opacity-30">|</span>
-                    <span class="text-[#04C18F] font-medium text-base md:text-lg">{{ step }}/12</span>
+                    <span class="text-[#04C18F] font-medium text-base md:text-lg">{{ step }}/{{ questions.length }}</span>
                   </div>
                 </div>
 
                 <!-- CONTENT AREA -->
                 <div class="flex-1 overflow-y-auto pr-1 custom-scrollbar">
                   
-                  <!-- Step 1: Entity Registration -->
-                  <div v-if="step === 1" class="space-y-8">
-                    <h2 class="step-title">{{ t.step1Title }}</h2>
+                  <h2 class="step-title mb-6">{{ questions[step-1].question_text }}</h2>
+
+                  <div v-if="questions[step-1].maps_to_config_key === 'company_structure'" class="space-y-8">
                     <div class="space-y-4 max-w-[400px]">
-                      <button v-for="opt in entityOptions" :key="opt.value" @click="selectEntityOption(opt)" class="option-btn" :class="{ active: selectedLabel === opt.value }">{{ opt.label }}</button>
+                      <button v-for="opt in questions[step-1].options" :key="opt" @click="selectEntityOption(opt)" class="option-btn" :class="{ active: selectedLabel === opt }">{{ opt }}</button>
                     </div>
                   </div>
-
                   <!-- Step 2: Company Details (Image Style) -->
-                  <div v-else-if="step === 2" class="space-y-6">
+                  <div v-else-if="questions[step-1].maps_to_config_key === 'company_name'" class="space-y-6">
                     <div class="space-y-1">
-                      <h2 class="step-title">{{ t.step2Title }}</h2>
                       <p class="text-white/70 text-[16px]">{{ t.entity }} {{ currentEntity }}</p>
                     </div>
 
@@ -89,9 +83,9 @@
                     </div>
 
                     <div class="space-y-5">
-                      <input v-model="entityForms[currentEntity - 1].legalName" class="image-input" :placeholder="t.legalNamePh" />
+                      <input v-model="entityForms[currentEntity - 1].legalName" class="image-input" :placeholder="questions[step-1].options[0]" />
                       <div>
-                        <input v-model="entityForms[currentEntity - 1].nickName" class="image-input" :placeholder="t.nickNamePh" />
+                        <input v-model="entityForms[currentEntity - 1].nickName" class="image-input" :placeholder="questions[step-1].options[1]" />
                         <p class="text-white/30 text-[13px] mt-2 ml-5">{{ t.nickNameHint }}</p>
                       </div>
                     </div>
@@ -111,131 +105,9 @@
                     </div>
                   </div>
 
-                  <!-- Step 3: Group Nickname -->
-                  <div v-else-if="step === 3" class="space-y-10">
-                    <h2 class="step-title">{{ t.step3Title }}</h2>
-                    <input v-model="commonGroupNickname" class="image-input max-w-[450px]" :placeholder="t.groupNickPh" />
-                  </div>
-
-                  <!-- Step 4: Business Type -->
-                  <div v-else-if="step === 4" class="space-y-8">
-                    <h2 class="step-title">{{ t.step4Title }}</h2>
+                  <div v-else-if="questions[step-1].maps_to_config_key === 'currency'" class="space-y-6">
                     <div class="space-y-4 max-w-[400px]">
-                      <div v-for="opt in businessDescriptions" :key="opt.value" class="space-y-3">
-                        <button @click="selectedBusiness = opt.value" class="option-btn" :class="{ active: selectedBusiness === opt.value }">{{ opt.label }}</button>
-                        <Transition name="panel"><div v-if="opt.value === 'Other' && selectedBusiness === 'Other'" class="pt-1"><input v-model="otherBusinessDescription" class="image-input" :placeholder="t.otherBusinessPh" /></div></Transition>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Step 5: Financial Challenge -->
-                  <div v-else-if="step === 5" class="space-y-8">
-                    <h2 class="step-title">{{ t.step5Title }}</h2>
-                    <div class="space-y-4 max-w-[400px]">
-                      <button 
-                        v-for="opt in challengeOptions" 
-                        :key="opt.value" 
-                        @click="toggleChallenge(opt.value)" 
-                        class="option-btn" 
-                        :class="{ active: selectedChallenge.includes(opt.value) }"
-                      >
-                        {{ opt.label }}
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Step 6: Improvements -->
-                  <div v-else-if="step === 6" class="space-y-8">
-                    <h2 class="step-title">{{ t.step6Title }}</h2>
-                    <div class="space-y-4 max-w-[400px]">
-                      <button 
-                        v-for="opt in improvementOptions" 
-                        :key="opt.value" 
-                        @click="toggleImprovement(opt.value)" 
-                        class="option-btn" 
-                        :class="{ active: selectedImprovement.includes(opt.value) }"
-                      >
-                        {{ opt.label }}
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Step 7: Frequency -->
-                  <div v-else-if="step === 7" class="space-y-8">
-                    <h2 class="step-title">{{ t.step7Title }}</h2>
-                    <div class="space-y-4 max-w-[400px]"><button v-for="opt in frequencyOptions" :key="opt.value" @click="selectedFrequency = opt.value" class="option-btn" :class="{ active: selectedFrequency === opt.value }">{{ opt.label }}</button></div>
-                  </div>
-
-                  <!-- Step 8: ERP -->
-                  <div v-else-if="step === 8" class="space-y-8">
-                    <h2 class="step-title">
-                      {{ t.step8Title }}
-                      <span v-if="selectedLabel === 'Multiple Entities'" class="block mt-1 text-sm font-light opacity-80 italic">Select all that apply.</span>
-                    </h2>
-                    <div class="space-y-4 max-w-[400px]">
-                      <div v-for="opt in erpOptions" :key="opt.value" class="space-y-3">
-                        <button 
-                          @click="toggleERP(opt.value)" 
-                          class="option-btn" 
-                          :class="{ active: selectedERP.includes(opt.value) }"
-                        >
-                          {{ opt.label }}
-                        </button>
-                        <Transition name="panel">
-                          <div v-if="opt.value === 'Other' && selectedERP.includes('Other')" class="pt-1">
-                            <input v-model="otherERPDescription" class="image-input" :placeholder="t.otherERPPh" />
-                          </div>
-                        </Transition>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Step 9: Insights -->
-                  <div v-else-if="step === 9" class="space-y-8">
-                    <h2 class="step-title">{{ t.step9Title }}</h2>
-                    <div class="space-y-4 max-w-[400px]">
-                      <button 
-                        v-for="opt in insightOptions" 
-                        :key="opt.value" 
-                        @click="toggleInsight(opt.value)" 
-                        class="option-btn" 
-                        :class="{ active: selectedInsight.includes(opt.value) }"
-                      >
-                        {{ opt.label }}
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Step 10: Compliance -->
-                  <div v-else-if="step === 10" class="space-y-8">
-                    <h2 class="step-title">{{ t.step10Title }}</h2>
-                    <div class="space-y-4 max-w-[400px]">
-                        <button @click="selectedCompliance = 'Yes'" class="option-btn" :class="{ active: selectedCompliance === 'Yes' }">{{ t.yes }}</button>
-                        <button @click="selectedCompliance = 'No'" class="option-btn" :class="{ active: selectedCompliance === 'No' }">{{ t.no }}</button>
-                    </div>
-                  </div>
-
-                  <!-- Step 11: Goal -->
-                  <div v-else-if="step === 11" class="space-y-8">
-                    <h2 class="step-title">{{ t.step11Title }}</h2>
-                    <div class="space-y-4 max-w-[400px]">
-                      <button 
-                        v-for="opt in goalOptions" 
-                        :key="opt.value" 
-                        @click="toggleGoal(opt.value)" 
-                        class="option-btn" 
-                        :class="{ active: selectedGoal.includes(opt.value) }"
-                      >
-                        {{ opt.label }}
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Step 12: Base Currency -->
-                  <div v-else-if="step === 12" class="space-y-6">
-                    <h2 class="step-title">{{ t.step12Title }}</h2>
-                    <div class="space-y-4 max-w-[400px]">
-                        <button @click="selectedBaseCurrency = 'Yes'; selectedSpecificCurrency = 'AED'" class="option-btn" :class="{ active: selectedBaseCurrency === 'Yes' }">{{ t.yes }}</button>
+                        <button @click="selectedBaseCurrency = 'Yes'; selectedSpecificCurrency = questions[step-1].options.default" class="option-btn" :class="{ active: selectedBaseCurrency === 'Yes' }">{{ t.yes }}</button>
                         <button @click="selectedBaseCurrency = 'No'" class="option-btn" :class="{ active: selectedBaseCurrency === 'No' }">{{ t.no }}</button>
                     </div>
 
@@ -260,7 +132,7 @@
                         <Transition name="fade-scale-fast">
                           <div v-if="showCurrencyDropdown" class="currency-dropdown-list">
                             <div 
-                              v-for="curr in currencyOptions" 
+                              v-for="curr in questions[step-1].options.alternatives" 
                               :key="curr" 
                               class="currency-item"
                               :class="{ active: selectedSpecificCurrency === curr }"
@@ -273,17 +145,41 @@
                       </div>
                     </Transition>
                   </div>
+
+                  <div v-else class="space-y-8">
+                    <div v-if="questions[step-1].type === 'text'">
+                       <input v-model="dynamicAnswers[questions[step-1].id]" class="image-input max-w-[450px]" placeholder="Type your answer..." />
+                    </div>
+
+                    <div v-else class="space-y-4 max-w-[400px]">
+                      <div v-for="opt in questions[step-1].options" :key="opt" class="space-y-3">
+                        <button @click="toggleDynamicOption(questions[step-1], opt)" class="option-btn" :class="{ active: isOptionSelected(questions[step-1], opt) }">{{ opt }}</button>
+                        <Transition name="panel">
+                           <div v-if="opt === 'Other' && isOptionSelected(questions[step-1], opt)" class="pt-1">
+                              <input v-model="otherDescriptions[questions[step-1].id]" class="image-input" :placeholder="t.otherBusinessPh" />
+                           </div>
+                        </Transition>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
 
                 <!-- BOTTOM NEXT BUTTON -->
                 <div class="mt-auto pt-8">
-                  <button class="image-next-btn" :disabled="nextDisabled" @click="handleNext()">
-                    {{ t.next }} 
-                    <span class="font-bold mx-1" v-if="!isRtl">→</span>
-                    <span class="font-bold mx-1" v-if="isRtl">←</span>
+                  <button class="image-next-btn" :disabled="nextDisabled || submitting" @click="handleNext()">
+                    <span v-if="submitting">Saving...</span>
+                    <template v-else>
+                      {{ step === questions.length ? t.finish : t.next }} 
+                      <span class="font-bold mx-1" v-if="!isRtl">→</span>
+                      <span class="font-bold mx-1" v-if="isRtl">←</span>
+                    </template>
                   </button>
                 </div>
               </div>
+            </div>
+            <div v-else class="flex items-center justify-center min-h-[400px]">
+                <UIcon name="i-heroicons-arrow-path" class="w-12 h-12 animate-spin text-[#04C18F]" />
             </div>
           </Transition>
         </div>
@@ -314,38 +210,39 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import LanguageToggle from '@/components/common/LanguageToggle.vue'
 
 const isFinished = ref(false)
 const pageLoaded = ref(false)
+const submitting = ref(false)
 const step = ref(1)
 const currentEntity = ref(1)
 const direction = ref('appear')
 const avatarSrc = ref('/images/icon.png')
 const currentLanguage = ref('en')
 
-// State for steps
+// Questions from Backend
+interface Question {
+  id: number;
+  question_text: string;
+  type: string;
+  options: any;
+  maps_to_config_key: string;
+}
+const questions = ref<Question[]>([])
+
+// Logic States
+const dynamicAnswers = ref<Record<number, any>>({})
+const otherDescriptions = ref<Record<number, string>>({})
 const selectedLabel = ref('Single Entity')
 const entitiesCount = ref(1)
 const entityForms = ref([{ legalName: '', nickName: '' }])
-const commonGroupNickname = ref('')
-const selectedBusiness = ref(null)
-const otherBusinessDescription = ref('')
-const selectedChallenge = ref([])
-const selectedImprovement = ref([])
-const selectedFrequency = ref(null)
-const selectedERP = ref([])
-const otherERPDescription = ref('')
-const selectedInsight = ref([])
-const selectedCompliance = ref(null)
-const selectedGoal = ref([])
-const selectedBaseCurrency = ref(null)
-const selectedSpecificCurrency = ref(null)
+const selectedBaseCurrency = ref<string | null>(null)
+const selectedSpecificCurrency = ref<string | null>(null)
 const showCurrencyDropdown = ref(false)
 
-// Option Lists (RESTORED)
 const isRtl = computed(() => currentLanguage.value === 'ar')
 
 const translations = {
@@ -354,196 +251,32 @@ const translations = {
     next: 'Next',
     finish: 'Finish',
     goDashboard: 'Go to Dashboard',
-    step1Title: 'How many entities would you like to register?',
-    singleEntity: 'Single Entity',
-    multiEntity: 'Multiple Entities',
-    step2Title: 'Please enter your company details.',
     entity: 'Entity',
-    legalNamePh: 'Enter Company Legal Name',
-    nickNamePh: 'Enter Company Nick Name',
     nickNameHint: 'e.g. HQ (Max 15 characters)',
     addEntity: 'Add Another Entity',
-    step3Title: 'Set a common group nickname to refer to all your entities together.',
-    groupNickPh: 'Enter Common Group Nick Name',
-    step4Title: 'How would you describe your business in one line?',
-    other: 'Other',
-    otherBusinessPh: 'Please specify your business type',
-    step5Title: 'What are the biggest financial challenge you’re facing right now? Select all that apply.',
-    step6Title: 'Which of these areas do you want to improve the most? Select all that apply.',
-    step7Title: 'How frequently do you review your financial reports?',
-    step8Title: 'Do you use any accounting or ERP system currently?',
-    otherERPPh: 'Enter System Name',
-    step9Title: 'What’s your preferred way to view insights? Select all that apply.',
-    step10Title: 'Would you like me to keep an eye on compliance changes for you?',
+    otherBusinessPh: 'Please specify...',
     selectCurrencyPh: 'Select your base currency',
     yes: 'Yes',
     no: 'No',
-    step11Title: 'What’s your ultimate goal with TAXAID.AI? Select all that apply.',
-    step12Title: 'Is AED your base currency?',
-    successTitle: "You're all set! Our implementation team will reach out soon to help you set up and start exploring insights with Akeel.",
-    businessOpts: {
-      Trading: 'Trading',
-      'Professional Services': 'Professional Services',
-      Medical: 'Medical',
-      Construction: 'Construction',
-      Other: 'Other'
-    },
-    challenges: {
-      'Cash Flow': 'Cash Flow',
-      Compliance: 'Compliance',
-      Profitability: 'Profitability',
-      'Cost Control': 'Cost Control',
-      Growth: 'Growth'
-    },
-    improvements: {
-      Profitability: 'Profitability',
-      Liquidity: 'Liquidity',
-      'Debt Management': 'Debt Management',
-      Growth: 'Growth',
-      Efficiency: 'Efficiency'
-    },
-    frequencies: {
-      Daily: 'Daily',
-      Weekly: 'Weekly',
-      Monthly: 'Monthly',
-      Quarterly: 'Quarterly'
-    },
-    erps: {
-      Tally: 'Tally',
-      'Zoho Books': 'Zoho Books',
-      QuickBooks: 'QuickBooks',
-      Odoo: 'Odoo',
-      Other: 'Other'
-    },
-    insights: {
-      'Chat-based Summaries': 'Chat-based Summaries',
-      'Graphical Dashboards': 'Graphical Dashboards',
-      'Alerts & Notifications': 'Alerts & Notifications'
-    },
-    goals: {
-      'Save Time': 'Save Time',
-      'Increase Profit': 'Increase Profit',
-      'Ensure Compliance': 'Ensure Compliance',
-      'Prepare for Growth': 'Prepare for Growth'
-    }
+    successTitle: "You're all set! Our implementation team will reach out soon to help you set up and start exploring insights with Akeel."
   },
   ar: {
     prev: 'سابق',
     next: 'التالي',
     finish: 'إنهاء',
     goDashboard: 'الذهاب إلى لوحة القيادة',
-    step1Title: 'كم عدد الكيانات التي ترغب في تسجيلها؟',
-    singleEntity: 'كيان واحد',
-    multiEntity: 'كيانات متعددة',
-    step2Title: 'الرجاء إدخال تفاصيل شركتك.',
     entity: 'الكيان',
-    legalNamePh: 'أدخل الاسم القانوني للشركة',
-    nickNamePh: 'أدخل اسم الشركة نيك',
     nickNameHint: 'مثلاً: المقر الرئيسي (الحد الأقصى 15 حرفًا)',
     addEntity: 'إضافة كيان آخر',
-    step3Title: 'قم بتعيين لقب مجموعة مشترك للإشارة إلى جميع كياناتك معًا.',
-    groupNickPh: 'أدخل اسم المجموعة المشترك',
-    step4Title: 'كيف تصف عملك في سطر واحد؟',
-    other: 'أخرى',
-    otherBusinessPh: 'الرجاء تحديد نوع عملك',
-    step5Title: 'ما هو أكبر تحدي مالي تواجهه الآن؟',
-    step6Title: 'أي من هذه المجالات تريد تحسينه أكثر؟ اختر كل ما ينطبق.',
-    step7Title: 'كم مرة تراجع تقاريرك المالية؟',
-    step8Title: 'هل تستخدم أي نظام محاسبة أو تخطيط موارد المؤسسات حاليًا؟',
-    otherERPPh: 'أدخل اسم النظام',
-    step9Title: 'ما هي طريقتك المفضلة لعرض الرؤى؟ اختر كل ما ينطبق.',
-    step10Title: 'هل ترغب في أن أراقب تغييرات الامتثال نيابةً عنك؟',
+    otherBusinessPh: 'الرجاء تحديد...',
     selectCurrencyPh: 'اختر عملتك الأساسية',
     yes: 'نعم',
     no: 'لا',
-    step11Title: 'ما هو هدفك النهائي مع TAXAID.AI؟ اختر كل ما ينطبق.',
-    step12Title: 'هل الدرهم الإماراتي هو عملتك الأساسية؟',
-    successTitle: 'أنت جاهز تمامًا! سيتواصل معك فريق التنفيذ قريبًا لمساعدتك في الإعداد والبدء في استكشاف الرؤى مع عقيل.',
-    businessOpts: {
-      Trading: 'تداول',
-      'Professional Services': 'خدمات احترافية',
-      Medical: 'طبي',
-      Construction: 'بناء',
-      Other: 'أخرى'
-    },
-    challenges: {
-      'Cash Flow': 'تدفق نقدي',
-      Compliance: 'امتثال',
-      Profitability: 'ربحية',
-      'Cost Control': 'التحكم في التكاليف',
-      Growth: 'نمو'
-    },
-    improvements: {
-      Profitability: 'ربحية',
-      Liquidity: 'سيولة',
-      'Debt Management': 'إدارة الديون',
-      Growth: 'نمو',
-      Efficiency: 'كفاءة'
-    },
-    frequencies: {
-      Daily: 'يومي',
-      Weekly: 'أسبوعي',
-      Monthly: 'شهري',
-      Quarterly: 'ربع سنوي'
-    },
-    erps: {
-      Tally: 'تالي',
-      'Zoho Books': 'كتب زوهو',
-      QuickBooks: 'كويك بوكس',
-      Odoo: 'أودو',
-      Other: 'أخرى'
-    },
-    insights: {
-      'Chat-based Summaries': 'ملخصات قائمة على الدردشة',
-      'Graphical Dashboards': 'لوحات معلومات رسومية',
-      'Alerts & Notifications': 'تنبيهات وإشعارات'
-    },
-    goals: {
-      'Save Time': 'توفير الوقت',
-      'Increase Profit': 'زيادة الربح',
-      'Ensure Compliance': 'ضمان الامتثال',
-      'Prepare for Growth': 'الاستعداد للنمو'
-    }
+    successTitle: 'أنت جاهز تمامًا! سيتواصل معك فريق التنفيذ قريبًا لمساعدتك في الإعداد والبدء في استكشاف الرؤى مع عقيل.'
   }
 }
 
 const t = computed(() => translations[currentLanguage.value])
-
-// COMPUTED OPTIONS (Preserve English Values for logic)
-const entityOptions = computed(() => [
-  { label: t.value.singleEntity, value: 'Single Entity' },
-  { label: t.value.multiEntity, value: 'Multiple Entities' }
-])
-
-const businessDescriptions = computed(() => [
-  'Trading', 'Professional Services', 'Medical', 'Construction', 'Other'
-].map(k => ({ value: k, label: t.value.businessOpts[k] })))
-
-const challengeOptions = computed(() => [
-  'Cash Flow', 'Compliance', 'Profitability', 'Cost Control', 'Growth'
-].map(k => ({ value: k, label: t.value.challenges[k] })))
-
-const improvementOptions = computed(() => [
-  'Profitability', 'Liquidity', 'Debt Management', 'Growth', 'Efficiency'
-].map(k => ({ value: k, label: t.value.improvements[k] })))
-
-const frequencyOptions = computed(() => [
-  'Daily', 'Weekly', 'Monthly', 'Quarterly'
-].map(k => ({ value: k, label: t.value.frequencies[k] })))
-
-const erpOptions = computed(() => [
-  'Tally', 'Zoho Books', 'QuickBooks', 'Odoo', 'Other'
-].map(k => ({ value: k, label: t.value.erps[k] })))
-
-const insightOptions = computed(() => [
-  'Chat-based Summaries', 'Graphical Dashboards', 'Alerts & Notifications'
-].map(k => ({ value: k, label: t.value.insights[k] })))
-
-const goalOptions = computed(() => [
-  'Save Time', 'Increase Profit', 'Ensure Compliance', 'Prepare for Growth'
-].map(k => ({ value: k, label: t.value.goals[k] })))
-
-const currencyOptions = ['USD', 'EUR', 'SAR', 'GBP', 'INR', 'Other']
 
 const transitionName = computed(() => {
   if (direction.value === 'appear') return 'box-appear'
@@ -551,30 +284,101 @@ const transitionName = computed(() => {
 })
 const canGoMainPrevious = computed(() => step.value > 1)
 
-function selectEntityOption(opt) {
-  selectedLabel.value = opt.value
-  if (opt.value === 'Single Entity') {
+/** * BACKEND INTEGRATION LOGIC */
+
+const initOnboarding = async () => {
+  const langQuery = currentLanguage.value === 'ar' ? 'arb' : 'en'
+  try {
+    // 1. Check Status
+    const status: any = await useApi(`/status?`)
+    if (status?.completed) {
+       return navigateTo('/dashboard')
+    }
+
+    // 2. Fetch Questions
+    const response: any = await useApi(`/questions?lang=${langQuery}`)
+    questions.value = response.data || []
+
+    // Initialize answer models
+    questions.value.forEach(q => {
+       if (q.type === 'select') dynamicAnswers.value[q.id] = []
+       else dynamicAnswers.value[q.id] = ""
+    })
+  } catch (error: any) {
+    console.error("Init Error:", error)
+    // If unauthorized/unauthenticated, redirect home
+    if (error.response?.status === 401) navigateTo('/')
+  }
+}
+
+const syncWithBackend = async () => {
+  if (questions.value.length === 0) return
+  submitting.value = true
+  const langQuery = currentLanguage.value === 'ar' ? 'arb' : 'en'
+  
+  try {
+    const finalCurrency = selectedSpecificCurrency.value || 'AED'
+    const payload = {
+      company_name: entityForms.value[0].legalName,
+      country: 'UAE',
+      currency: finalCurrency,
+      answers: questions.value.map((q, idx) => {
+          let ans = dynamicAnswers.value[q.id]
+          
+          // Custom mapping based on UI logic
+          if (q.maps_to_config_key === 'company_structure') ans = selectedLabel.value
+          if (q.maps_to_config_key === 'company_name') ans = JSON.stringify(entityForms.value)
+          if (q.maps_to_config_key === 'currency') ans = finalCurrency
+          
+          // Handle 'Other' inputs
+          if (ans === 'Other') ans = otherDescriptions.value[q.id] || 'Other'
+          if (Array.isArray(ans)) ans = ans.join(', ')
+
+          return { question_id: q.id, answer: String(ans || 'N/A') }
+      })
+    }
+
+    await useApi(`/submit?lang=${langQuery}`, { method: 'POST', body: payload })
+    isFinished.value = true
+  } catch (error) {
+    console.error("Submission failed:", error)
+  } finally {
+    submitting.value = false
+  }
+}
+
+// Navigation Functions
+function selectEntityOption(opt: any) {
+  selectedLabel.value = opt
+  if (opt === 'Single Entity') {
     entitiesCount.value = 1
     entityForms.value = [{ legalName: '', nickName: '' }]
-  } else {
-    // Keep existing count/forms if already > 1, otherwise ensure at least 1 (which it is).
-    // Do not force 2. User must add manually.
   }
 }
 
 function handleNext() {
   direction.value = 'next'
-  if (step.value === 1) {
-    if (selectedLabel.value === 'Single Entity') { step.value = 4 } // JUMP TO 4
-    else { step.value = 2 }
-    return
+  const currentQ = questions.value[step.value - 1]
+  
+  // Custom Flow: Step 1 (Structure)
+  if (currentQ.maps_to_config_key === 'company_structure') {
+     step.value = (selectedLabel.value === 'Single Entity') ? 4 : 2
+     return
   }
-  if (step.value === 2) {
+  
+  // Custom Flow: Step 2 (Entity Details)
+  if (currentQ.maps_to_config_key === 'company_name') {
     if (currentEntity.value < entitiesCount.value) { currentEntity.value++ } 
     else { step.value = 3 }
     return
   }
-  if (step.value === 12) { isFinished.value = true; return }
+
+  // Final Step check
+  if (step.value === questions.value.length) { 
+     syncWithBackend()
+     return 
+  }
+  
   step.value++
 }
 
@@ -588,10 +392,10 @@ function handleSubNext() {
 function handleMainPrevious() {
   direction.value = 'prev'
   if (step.value > 1) {
-    step.value--
-    // Reset to first entity if leaving step 2? Or keep state? Usually reset is safer for navigation flow context.
-    // However, if users go back to check, keeping state might be nicer. But user asked for "Main" navigation.
-    // Let's safe reset if stepping back FROM step 2 into 1.
+    // Jump back logic
+    if (step.value === 4 && selectedLabel.value === 'Single Entity') step.value = 1
+    else step.value--
+    
     if (step.value === 1) currentEntity.value = 1
   }
 }
@@ -611,190 +415,44 @@ function addAnotherEntity() {
   }
 }
 
-function jumpToEntity(n) { direction.value = n > currentEntity.value ? 'next' : 'prev'; currentEntity.value = n }
-
-function toggleChallenge(val) {
-  const idx = selectedChallenge.value.indexOf(val)
-  if (idx > -1) {
-    selectedChallenge.value.splice(idx, 1)
-  } else {
-    selectedChallenge.value.push(val)
-  }
+function jumpToEntity(n: number) { 
+   direction.value = n > currentEntity.value ? 'next' : 'prev'; 
+   currentEntity.value = n 
 }
 
-function toggleImprovement(val) {
-  const idx = selectedImprovement.value.indexOf(val)
-  if (idx > -1) {
-    selectedImprovement.value.splice(idx, 1)
-  } else {
-    selectedImprovement.value.push(val)
-  }
+// Helper Toggles for Generic Questions
+function toggleDynamicOption(q: Question, val: string) {
+   if (q.type === 'radio') {
+      dynamicAnswers.value[q.id] = val
+   } else {
+      const current = dynamicAnswers.value[q.id] || []
+      const idx = current.indexOf(val)
+      if (idx > -1) current.splice(idx, 1); else current.push(val)
+      dynamicAnswers.value[q.id] = [...current]
+   }
 }
 
-function toggleInsight(val) {
-  const idx = selectedInsight.value.indexOf(val)
-  if (idx > -1) {
-    selectedInsight.value.splice(idx, 1)
-  } else {
-    selectedInsight.value.push(val)
-  }
-}
-
-function toggleGoal(val) {
-  const idx = selectedGoal.value.indexOf(val)
-  if (idx > -1) {
-    selectedGoal.value.splice(idx, 1)
-  } else {
-    selectedGoal.value.push(val)
-  }
-}
-
-function toggleERP(val) {
-  if (selectedLabel.value === 'Single Entity') {
-    // Single-select mode: Replace current selection or clear it
-    if (selectedERP.value.length === 1 && selectedERP.value[0] === val) {
-      selectedERP.value = []
-    } else {
-      selectedERP.value = [val]
-    }
-  } else {
-    // Multi-select mode: Toggle selection
-    const idx = selectedERP.value.indexOf(val)
-    if (idx > -1) {
-      selectedERP.value.splice(idx, 1)
-    } else {
-      selectedERP.value.push(val)
-    }
-  }
+function isOptionSelected(q: Question, val: string) {
+   if (q.type === 'radio') return dynamicAnswers.value[q.id] === val
+   return (dynamicAnswers.value[q.id] || []).includes(val)
 }
 
 const nextDisabled = computed(() => {
-  if (step.value === 1) return !selectedLabel.value
-  if (step.value === 2) return !entityForms.value[currentEntity.value - 1].legalName || !entityForms.value[currentEntity.value - 1].nickName
-  if (step.value === 3) return !commonGroupNickname.value.trim()
-  if (step.value === 4) return selectedBusiness.value === 'Other' ? !otherBusinessDescription.value.trim() : !selectedBusiness.value
-  if (step.value === 8) {
-    if (selectedERP.value.length === 0) return true
-    if (selectedERP.value.includes('Other')) return !otherERPDescription.value.trim()
-    return false
-  }
-  if (step.value === 12) {
-    if (selectedBaseCurrency.value === 'Yes') return false
-    if (selectedBaseCurrency.value === 'No') return !selectedSpecificCurrency.value
-    return true
-  }
+  if (questions.value.length === 0) return true
+  const q = questions.value[step.value - 1]
   
-  if (step.value === 5) return selectedChallenge.value.length === 0
-  if (step.value === 6) return selectedImprovement.value.length === 0
-  if (step.value === 9) return selectedInsight.value.length === 0
-  if (step.value === 11) return selectedGoal.value.length === 0
+  if (q.maps_to_config_key === 'company_structure') return !selectedLabel.value
+  if (q.maps_to_config_key === 'company_name') return !entityForms.value[currentEntity.value - 1].legalName
+  if (q.maps_to_config_key === 'currency') return selectedBaseCurrency.value === null
   
-  const map = { 7: selectedFrequency, 10: selectedCompliance }
-  if (map[step.value]) return !map[step.value].value
-  return false
+  if (q.type === 'select') return (dynamicAnswers.value[q.id] || []).length === 0
+  return !dynamicAnswers.value[q.id]
 })
 
-const bgParticleCanvas = ref(null); const successParticleCanvas = ref(null);
-
-/** REFINED PARTICLE ENGINE (Same as home.vue) */
-let activeStopFunctions = []
-
-function startParticleEngine(canvas, { count = 160, color = '0, 229, 176', speedMult = 1, sizeMult = 1, opacity = 0.75 } = {}) {
-  if (!canvas) return () => {}
-  const ctx = canvas.getContext('2d')
-  let W = 0, H = 0
-  let animId = null
-
-  function resize() {
-    W = canvas.width  = canvas.offsetWidth
-    H = canvas.height = canvas.offsetHeight
-  }
-
-  const ro = new ResizeObserver(resize)
-  ro.observe(canvas)
-  resize()
-
-  function createParticle() {
-    const angle   = Math.random() * Math.PI * 2
-    const isFar   = Math.random() < 0.2
-    const maxDist = isFar
-      ? Math.hypot(W, H) * (0.9 + Math.random() * 0.8)
-      : Math.hypot(W, H) * (0.15 + Math.random() * 0.35)
-
-    const speed = (0.18 + Math.random() * 0.37) * speedMult
-    const size  = (0.5 + Math.random() * 1.5) * sizeMult
-    const life  = maxDist / speed
-    const delay = Math.random() * 180
-
-    return {
-      x: W / 2, y: H / 2,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      size,
-      life,
-      maxLife: life,
-      delay,
-      age: -delay
-    }
-  }
-
-  let particles = Array.from({ length: count }, createParticle)
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H)
-    particles.forEach((p, i) => {
-      p.age++
-      if (p.age < 0) return
-      if (p.age > p.maxLife) {
-        particles[i] = createParticle()
-        return
-      }
-      p.x += p.vx
-      p.y += p.vy
-      const progress = p.age / p.maxLife
-      const alpha = progress < 0.1  ? progress / 0.1
-                  : progress > 0.7  ? (1 - progress) / 0.3
-                  : 1
-
-      ctx.beginPath()
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-      ctx.fillStyle = `rgba(${color}, ${alpha * opacity})`
-      ctx.fill()
-    })
-    animId = requestAnimationFrame(draw)
-  }
-
-  draw()
-  const stop = () => {
-    ro.disconnect()
-    cancelAnimationFrame(animId)
-  }
-  activeStopFunctions.push(stop)
-  return stop
-}
 
 onMounted(() => {
   setTimeout(() => pageLoaded.value = true, 100)
-  
-  // Background particles
-  startParticleEngine(bgParticleCanvas.value, { 
-    count: 180, 
-    color: '0, 229, 176', 
-    opacity: 0.5 
-  })
-})
-
-watch(isFinished, (v) => { 
-  if (v) {
-    setTimeout(() => {
-      startParticleEngine(successParticleCanvas.value, { 
-        count: 250, 
-        color: '4, 193, 143', 
-        opacity: 0.8,
-        speedMult: 1.5
-      })
-    }, 200)
-  } 
+  initOnboarding()
 })
 
 onBeforeUnmount(() => {
