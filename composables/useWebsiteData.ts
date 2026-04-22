@@ -76,7 +76,7 @@ export function useMainDashboard() {
 }
 
 /** Auth: pages/home.vue */
-export function useAuth() {
+export function useAuthData() {
   const { data, loading, error } = useWebsiteData()
   return {
     loading, error,
