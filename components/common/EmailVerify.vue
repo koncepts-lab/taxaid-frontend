@@ -104,7 +104,7 @@ const checkStatus = async () => {
     if (err.status === 403) {
       localError.value = 'auth_error'
     } else {
-      localError.value = err.data?.message || 'auth_error'
+      localError.value = err.data?.message || err.message || 'auth_error' ///remove the err msg later in live
     }
   } finally {
     loading.value = false

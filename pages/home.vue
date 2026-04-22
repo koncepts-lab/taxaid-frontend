@@ -501,7 +501,7 @@ async function onSubmit() {
         password: form.password
       }, rememberMe.value)
 
-      const status = res.data.tenant.status      
+      const status = res?.data?.tenant?.status      
       if (status === 'pending_onboarding') {// NEW USER / ONBOARDING: Show Welcome Card journey        
         nextRedirect.value = '/onboarding'
         showWelcome.value = true
@@ -530,7 +530,7 @@ async function onSubmit() {
     if (err.status === 403 && err.data?.message?.includes('verify your email')) {
       isEmailVerification.value = true
     } else {
-      errorMessage.value = err.data?.message || 'Authentication failed'
+      errorMessage.value = err.data?.message || err.message || 'Authentication failed' ///remove the err msg later in live
     }
   } finally {
     loading.value = false
