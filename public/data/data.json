@@ -1,0 +1,3696 @@
+{
+  "_meta": {
+    "version": "2.0.0",
+    "description": "TaxAid Financial Analytics — data for 10 dashboard pages",
+    "lastUpdated": "2026-04-21",
+    "_pageMap": {
+      "mainDashboard": "/dashboard",
+      "revenuePage": "/revenue",
+      "cashFlowPage": "/cash-flow",
+      "financialStatementPage": "/financial-statement",
+      "indirectExpensePage": "/indirect-expense",
+      "accountsReceivablePage": "/accounts-receivable",
+      "cogsPage": "/cogs",
+      "accountsPayablePage": "/accounts-payable",
+      "costCenterPage": "/cost-center",
+      "taxQueriesPage": "/tax-queries",
+      "alertsPage": "/alerts",
+      "appointmentsPage": "/appointment"
+    }
+  },
+  "mainDashboard": {
+    "_page": "pages/dashboard/index.vue",
+    "_url": "http://localhost:3000/dashboard",
+    "_note": "Root dashboard page. Composed of 9 widget components rendered in a 12-column grid.",
+    "layout": {
+      "leftSidebar": [
+        "Revenue"
+      ],
+      "row1": [
+        "Cashflow",
+        "FinancialStatements"
+      ],
+      "row2": [
+        "IndirectExpense",
+        "AccountReceivables"
+      ],
+      "row3_bottom": [
+        "COGS",
+        "AccountsPayable",
+        "CostCenter",
+        "TaxQueries"
+      ]
+    },
+    "widgets": {
+      "revenue": {
+        "_page": "components/dashboard/Revenue.vue",
+        "_detailPage": "/revenue",
+        "totalRevenue": 2775000,
+        "netRevenue": 988430,
+        "currentYearTarget": 3000000,
+        "currentYearAchieved": 2860000,
+        "gaugeColors": {
+          "lastYear": "#21E669",
+          "currentYear": "#03D8B0",
+          "balance": "#0A7C4B"
+        },
+        "labels": {
+          "title": "Revenue",
+          "totalRevenue": "Total Revenue",
+          "netRevenue": "Net Revenue (After Returns)",
+          "targetLabel": "Target Achieved"
+        },
+        "labelsAr": {
+          "title": "الإيرادات",
+          "totalRevenue": "إجمالي الإيرادات",
+          "netRevenue": "صافي الإيرادات (بعد المرتجعات)",
+          "targetLabel": "تم تحقيق الهدف"
+        }
+      },
+      "cashflow": {
+        "_page": "components/dashboard/Cashflow.vue",
+        "_detailPage": "/cash-flow",
+        "periodFilters": [
+          "3M",
+          "6M",
+          "1M"
+        ],
+        "defaultFilter": "6M",
+        "months": [
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct"
+        ],
+        "monthsAr": [
+          "مايو",
+          "يونيو",
+          "يوليو",
+          "أغسطس",
+          "سبتمبر",
+          "أكتوبر"
+        ],
+        "chartCategories": [
+          "May",
+          "",
+          "",
+          "Jun",
+          "",
+          "",
+          "Jul",
+          "",
+          "",
+          "Aug",
+          "",
+          "",
+          "Sep",
+          "",
+          "",
+          "Oct"
+        ],
+        "series": {
+          "realScenario": [
+            2.6,
+            2.1,
+            2.5,
+            1.7,
+            2.5,
+            4,
+            2.9,
+            3.6,
+            2.8,
+            1.4,
+            1.9,
+            1.5,
+            3.2,
+            2.6,
+            4.1,
+            4
+          ],
+          "hypotheticalScenario": [
+            1.4,
+            0.8,
+            1.2,
+            0.9,
+            1.1,
+            2.8,
+            2,
+            2.3,
+            1.8,
+            1.3,
+            0.5,
+            1.5,
+            0.3,
+            2,
+            1.9,
+            2.9
+          ]
+        },
+        "colors": {
+          "realScenario": "#00B794",
+          "hypotheticalScenario": "#FF7B5F"
+        },
+        "yAxis": {
+          "min": 0,
+          "max": 4.5,
+          "unit": "M"
+        },
+        "annotationMonth": "Jul",
+        "labels": {
+          "real": "Real Scenario",
+          "hypothetical": "Hypothetical Scenario"
+        },
+        "labelsAr": {
+          "real": "سيناريو حقيقي",
+          "hypothetical": "سيناريو افتراضي"
+        }
+      },
+      "financialStatements": {
+        "_page": "components/dashboard/Financials.vue",
+        "_detailPage": "/financial-statement",
+        "gauges": [
+          {
+            "label": "Revenue Growth",
+            "labelAr": "نمو الإيرادات",
+            "value": "+8.2%",
+            "progress": 75,
+            "color": "#009848"
+          },
+          {
+            "label": "Net Profit Margin",
+            "labelAr": "هامش الربح الصافي",
+            "value": "+4.8%",
+            "progress": 60,
+            "color": "#036192"
+          },
+          {
+            "label": "Liquidity Status",
+            "labelAr": "حالة السيولة",
+            "value": "+2.2%",
+            "progress": 35,
+            "color": "#F1B208"
+          }
+        ]
+      },
+      "indirectExpense": {
+        "_page": "components/dashboard/IndirectExpense.vue",
+        "_detailPage": "/indirect-expense",
+        "labels": [
+          "Rent & Utilities",
+          "Salaries & Wages",
+          "Marketing & Advertising",
+          "Office Supplies",
+          "Others"
+        ],
+        "labelsAr": [
+          "الإيجار والمرافق",
+          "الرواتب والأجور",
+          "التسويق والإعلان",
+          "اللوازم المكتبية",
+          "أخرى"
+        ],
+        "series": [
+          35,
+          30,
+          20,
+          10,
+          5
+        ],
+        "colors": [
+          "#004D41",
+          "#00966C",
+          "#FFB100",
+          "#D29600",
+          "#FF7E5B"
+        ]
+      },
+      "accountReceivables": {
+        "_page": "components/dashboard/AccountReceivables.vue",
+        "_detailPage": "/accounts-receivable",
+        "months": [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun"
+        ],
+        "monthsAr": [
+          "يناير",
+          "فبراير",
+          "مارس",
+          "أبريل",
+          "مايو",
+          "يونيو"
+        ],
+        "legendItems": [
+          "< 30 Days",
+          "31-60 Days",
+          "61-90 Days",
+          "> 90 Days"
+        ],
+        "legendItemsAr": [
+          "أقل من 30 يوماً",
+          "31-60 يوماً",
+          "61-90 يوماً",
+          "أكثر من 90 يوماً"
+        ],
+        "colors": [
+          "#003328",
+          "#00966C",
+          "#B2EDE3",
+          "#E6EBEB"
+        ],
+        "yAxisMax": 60,
+        "yAxisUnit": "M",
+        "series": {
+          "lt30Days": [
+            12,
+            26,
+            13,
+            18,
+            15,
+            25
+          ],
+          "d31to60": [
+            20,
+            16,
+            10,
+            16,
+            10,
+            12
+          ],
+          "d61to90": [
+            12,
+            10,
+            15,
+            12,
+            18,
+            15
+          ],
+          "gt90Days": [
+            18,
+            10,
+            12,
+            11,
+            8,
+            10
+          ]
+        }
+      },
+      "cogs": {
+        "_page": "components/dashboard/Cogs.vue",
+        "_detailPage": "/cogs",
+        "cogsToRevenueRatio": "65%",
+        "vsLastMonth": "+2%",
+        "trend": "up",
+        "footerText": "Achieved greater operational efficiency.\nNow unlocking higher profit margins.",
+        "footerTextAr": "تم تحقيق كفاءة تشغيلية أكبر.\nوالآن يتم فتح هوامش ربح أعلى."
+      },
+      "accountsPayable": {
+        "_page": "components/dashboard/AccountsPayable.vue",
+        "_detailPage": "/accounts-payable",
+        "totalOutstandingPayables": 140175,
+        "currency": "AED",
+        "vsLastMonth": "-8%",
+        "trend": "down",
+        "overdue": "₹ 35L",
+        "dueInNext30Days": "₹ 90L",
+        "labels": {
+          "totalOutstanding": "Total Outstanding Payables",
+          "overdue": "Overdue:",
+          "dueNext30": "Due in next 30 days:"
+        },
+        "labelsAr": {
+          "totalOutstanding": "إجمالي الذمم الدائنة المستحقة",
+          "overdue": "تجاوزت موعد الاستحقاق:",
+          "dueNext30": "مستحقة في الـ 30 يوم القادمة:"
+        }
+      },
+      "costCenter": {
+        "_page": "components/dashboard/CostCenter.vue",
+        "_detailPage": "/cost-center",
+        "activeProjects": 12,
+        "vsLastMonth": "+2%",
+        "trend": "up",
+        "footerText": "Atria.co recently added 2 new projects.\nStrengthening operational activity.",
+        "footerTextAr": "أضافت Atria.co مؤخرًا مشروعين جديدين.\nتعزيز النشاط التشغيلي.",
+        "labels": {
+          "activeProjects": "Active Projects"
+        },
+        "labelsAr": {
+          "activeProjects": "المشاريع النشطة"
+        }
+      },
+      "taxQueries": {
+        "_page": "components/dashboard/TaxQueries.vue",
+        "_detailPage": "/tax-queries",
+        "tokenUsed": 8021,
+        "tokenTotal": 10485,
+        "tokenUsagePercent": "+9.4%",
+        "trend": "up",
+        "vatReturnDue": "28 Jan 2026",
+        "ctReturnDue": "30 Jun 2026",
+        "vatReturnDueAr": "28 يناير 2026",
+        "ctReturnDueAr": "30 يونيو 2026",
+        "donut": {
+          "usedColor": "#F1B208",
+          "remainingColor": "#C5E1DB",
+          "markerColor": "#DCAA06"
+        },
+        "labels": {
+          "tokenUsage": "Token Usage",
+          "vatDue": "VAT Return Due:",
+          "ctDue": "CT Return Due:"
+        },
+        "labelsAr": {
+          "tokenUsage": "استخدام الرموز",
+          "vatDue": "موعد تقديم ضريبة القيمة المضافة:",
+          "ctDue": "موعد تقديم ضريبة الشركات:"
+        }
+      }
+    }
+  },
+  "revenuePage": {
+    "_url": "http://localhost:3000/revenue",
+    "summary": [
+      {
+        "label": "Product Sales",
+        "labelAr": "مبيعات المنتجات",
+        "current": "1,850,000",
+        "previous": "1,620,000",
+        "budget": "1,900,000",
+        "variance": "+14.2%",
+        "progress": 50,
+        "children": [
+          {
+            "label": "SST 001",
+            "labelAr": "SST 01",
+            "current": "2,100,000",
+            "previous": "1,900,000"
+          },
+          {
+            "label": "SST 02",
+            "labelAr": "SST 02",
+            "current": "2,100,000",
+            "previous": "1,900,000"
+          },
+          {
+            "label": "SST 03",
+            "labelAr": "SST 03",
+            "current": "2,100,000",
+            "previous": "1,900,000"
+          }
+        ]
+      },
+      {
+        "label": "Service",
+        "labelAr": "الخدمات",
+        "current": "450,000",
+        "previous": "380,000",
+        "budget": "480,000",
+        "variance": "+18.4%",
+        "progress": 30
+      },
+      {
+        "label": "Subscriptions",
+        "labelAr": "الاشتراكات",
+        "current": "280,000",
+        "previous": "240,000",
+        "budget": "300,000",
+        "variance": "-16.7%",
+        "progress": 20
+      },
+      {
+        "label": "Total Revenue",
+        "labelAr": "إجمالي الإيرادات",
+        "current": "2,775,000",
+        "previous": "2,405,000",
+        "budget": "2,890,000",
+        "variance": "+15.4%",
+        "progress": 25,
+        "isSummary": true
+      }
+    ],
+    "gauge": {
+      "target": 8500000,
+      "achieved": 7820000,
+      "previousYearPct": 9
+    },
+    "byCategory": {
+      "categories": [
+        "Consulting",
+        "SaaS",
+        "Training",
+        "Support",
+        "Other"
+      ],
+      "categoriesAr": [
+        "استشارات",
+        "ساس",
+        "تدريب",
+        "دعم",
+        "أخرى"
+      ],
+      "series": [
+        {
+          "name": "Previous Year",
+          "nameAr": "السنة السابقة",
+          "data": [
+            2.8,
+            3.1,
+            3.4,
+            1.5,
+            2.5
+          ]
+        },
+        {
+          "name": "Current Year",
+          "nameAr": "السنة الحالية",
+          "data": [
+            4.2,
+            3.5,
+            2.8,
+            2.0,
+            1.7
+          ]
+        }
+      ]
+    },
+    "trend": {
+      "categories": [
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep"
+      ],
+      "series": [
+        {
+          "name": "Previous Year",
+          "data": [
+            2.5,
+            1.2,
+            2.8,
+            1.8,
+            1.2,
+            1.8
+          ]
+        },
+        {
+          "name": "Current Year",
+          "data": [
+            0.8,
+            2.2,
+            1.2,
+            3.8,
+            2.8,
+            4.2
+          ]
+        }
+      ]
+    },
+    "topCustomers": {
+      "customers": [
+        {
+          "id": "A",
+          "name": "Horizon Global",
+          "nameAr": "هورايزون جلوبال",
+          "value": 3.5,
+          "color": "#04C18F"
+        },
+        {
+          "id": "B",
+          "name": "Orion Tech",
+          "nameAr": "أوريون تك",
+          "value": 4.0,
+          "color": "#04C18F"
+        },
+        {
+          "id": "C",
+          "name": "Gulf Trading",
+          "nameAr": "جلف تريدينج",
+          "value": 2.9,
+          "color": "#04C18F"
+        },
+        {
+          "id": "D",
+          "name": "Prime Logistics",
+          "nameAr": "برايم لوجيستكس",
+          "value": 3.7,
+          "color": "#04C18F"
+        },
+        {
+          "id": "E",
+          "name": "Emirates Trading",
+          "nameAr": "الإمارات للتجارة",
+          "value": 4.5,
+          "color": "#04C18F"
+        },
+        {
+          "id": "F",
+          "name": "Alpha Tech",
+          "nameAr": "ألفا تك",
+          "value": 1.9,
+          "color": "#04C18F"
+        },
+        {
+          "id": "G",
+          "name": "Mena Retail",
+          "nameAr": "مينا لتجارة التجزئة",
+          "value": 3.3,
+          "color": "#04C18F"
+        },
+        {
+          "id": "H",
+          "name": "Crescent",
+          "nameAr": "كريسنت",
+          "value": 4.0,
+          "color": "#04C18F"
+        },
+        {
+          "id": "I",
+          "name": "Vertex Corp",
+          "nameAr": "فيرتكس كورب",
+          "value": 2.8,
+          "color": "#04C18F"
+        },
+        {
+          "id": "J",
+          "name": "Vertex Trading",
+          "nameAr": "فيرتكس للتجارة",
+          "value": 3.2,
+          "color": "#04C18F"
+        }
+      ],
+      "cumulativePct": [
+        40,
+        62,
+        70,
+        78,
+        85,
+        88,
+        92,
+        95,
+        97,
+        100
+      ]
+    }
+  },
+  "cashFlowPage": {
+    "_url": "http://localhost:3000/cash-flow",
+    "summary": [
+      {
+        "label": "Operating Activities",
+        "labelAr": "أنشطة التشغيل",
+        "current": "1,200,000",
+        "previous": "1,100,000",
+        "budget": "1,250,000",
+        "variance": "+9.1%",
+        "progress": 60
+      },
+      {
+        "label": "Investing Activities",
+        "labelAr": "أنشطة الاستثمار",
+        "current": "-400,000",
+        "previous": "-350,000",
+        "budget": "-450,000",
+        "variance": "-14.3%",
+        "progress": 30
+      },
+      {
+        "label": "Financing Activities",
+        "labelAr": "أنشطة التمويل",
+        "current": "-200,000",
+        "previous": "-150,000",
+        "budget": "-200,000",
+        "variance": "-33.3%",
+        "progress": 20
+      },
+      {
+        "label": "Net Cash Flow",
+        "labelAr": "صافي التدفق النقدي",
+        "current": "600,000",
+        "previous": "600,000",
+        "budget": "600,000",
+        "variance": "0.0%",
+        "progress": 40,
+        "isSummary": true
+      }
+    ],
+    "metrics": {
+      "cashInHand": "AED 3.45 M",
+      "cashInHandChange": "+4.2%",
+      "ar30Days": "AED 2.95 M",
+      "ar30DaysChange": "-3.1%",
+      "scenarios": [
+        {
+          "en": "100% Scenario",
+          "ar": "سيناريو 100%"
+        },
+        {
+          "en": "Future Contract",
+          "ar": "عقد مستقبلي"
+        }
+      ]
+    },
+    "scenarioChart": {
+      "categories": [
+        "May",
+        "",
+        "",
+        "Jun",
+        "",
+        "",
+        "Jul",
+        "",
+        "",
+        "Aug",
+        "",
+        "",
+        "Sep",
+        "",
+        "",
+        "Oct",
+        "",
+        ""
+      ],
+      "categoriesAr": [
+        "مايو",
+        "",
+        "",
+        "يونيو",
+        "",
+        "",
+        "يوليو",
+        "",
+        "",
+        "أغسطس",
+        "",
+        "",
+        "سبتمبر",
+        "",
+        "",
+        "أكتوبر",
+        "",
+        ""
+      ],
+      "series": [
+        {
+          "name": "Real Scenario",
+          "nameAr": "سيناريو حقيقي",
+          "data": [
+            2.6,
+            2.8,
+            2.9,
+            3.1,
+            2.4,
+            2.0,
+            2.5,
+            3.5,
+            3.8,
+            3.2,
+            3.5,
+            3.8,
+            3.5,
+            3.8,
+            4.0,
+            3.5,
+            3.8,
+            2.5
+          ]
+        },
+        {
+          "name": "Hypothetical Scenario",
+          "nameAr": "سيناريو افتراضي",
+          "data": [
+            2.6,
+            2.2,
+            1.8,
+            1.2,
+            0.8,
+            1.5,
+            2.5,
+            3.2,
+            3.5,
+            2.8,
+            1.0,
+            0.8,
+            1.2,
+            1.8,
+            1.5,
+            1.2,
+            0.8,
+            2.5
+          ]
+        }
+      ]
+    },
+    "inflowOutflow": {
+      "categories": [
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct"
+      ],
+      "categoriesAr": [
+        "مايو",
+        "يونيو",
+        "يوليو",
+        "أغسطس",
+        "سبتمبر",
+        "أكتوبر"
+      ],
+      "series": [
+        {
+          "name": "Outflow",
+          "nameAr": "التدفق الخارجي",
+          "data": [
+            1.6,
+            1.6,
+            1.8,
+            2.0,
+            2.1,
+            2.3
+          ]
+        },
+        {
+          "name": "Inflow",
+          "nameAr": "التدفق الداخلي",
+          "data": [
+            2.6,
+            2.6,
+            3.0,
+            3.7,
+            3.8,
+            3.9
+          ]
+        }
+      ]
+    }
+  },
+  "financialStatementPage": {
+    "_url": "http://localhost:3000/financial-statement",
+    "tabs": [
+      {
+        "id": "profit-loss",
+        "label": "Profit & Loss",
+        "labelAr": "الأرباح والخسائر"
+      },
+      {
+        "id": "balance-sheet",
+        "label": "Balance Sheet",
+        "labelAr": "الميزانية العمومية"
+      },
+      {
+        "id": "ratios",
+        "label": "Ratios",
+        "labelAr": "النسب المالية"
+      }
+    ],
+    "profitLoss": [
+      {
+        "label": "Revenue",
+        "current": "1,850,000",
+        "previous": "1,620,000",
+        "budget": "1,900,000",
+        "variance": "+14.2%",
+        "progress": 50,
+        "isHeader": true
+      },
+      {
+        "label": "Product Sales",
+        "current": "1,400,000",
+        "previous": "1,200,000",
+        "budget": "1,450,000",
+        "variance": "+16.7%",
+        "progress": 60,
+        "schedule": "01"
+      },
+      {
+        "label": "Service Revenue",
+        "current": "450,000",
+        "previous": "420,000",
+        "budget": "450,000",
+        "variance": "+7.1%",
+        "progress": 40,
+        "schedule": "02"
+      },
+      {
+        "label": "Gross Profit",
+        "current": "1,150,000",
+        "previous": "1,000,000",
+        "budget": "1,200,000",
+        "variance": "+15.0%",
+        "progress": 45,
+        "isSummary": true
+      },
+      {
+        "label": "Operating Expenses",
+        "current": "650,000",
+        "previous": "600,000",
+        "budget": "680,000",
+        "variance": "-8.3%",
+        "progress": 30,
+        "isHeader": true
+      },
+      {
+        "label": "Salaries",
+        "current": "400,000",
+        "previous": "380,000",
+        "budget": "410,000",
+        "variance": "-5.3%",
+        "progress": 25,
+        "schedule": "03"
+      },
+      {
+        "label": "Rent",
+        "current": "150,000",
+        "previous": "150,000",
+        "budget": "150,000",
+        "variance": "0.0%",
+        "progress": 50,
+        "schedule": "04"
+      },
+      {
+        "label": "Utilities",
+        "current": "100,000",
+        "previous": "70,000",
+        "budget": "120,000",
+        "variance": "-42.9%",
+        "progress": 20,
+        "schedule": "05"
+      },
+      {
+        "label": "Net Profit",
+        "current": "500,000",
+        "previous": "400,000",
+        "budget": "520,000",
+        "variance": "+25.0%",
+        "progress": 35,
+        "isTotal": true
+      }
+    ],
+    "balanceSheet": [
+      {
+        "label": "Assets",
+        "current": "3,450,000",
+        "previous": "3,200,000",
+        "budget": "3,500,000",
+        "variance": "+7.8%",
+        "progress": 65,
+        "isHeader": true
+      },
+      {
+        "label": "Cash & Equivalents",
+        "current": "1,200,000",
+        "previous": "1,100,000",
+        "budget": "1,250,000",
+        "variance": "+9.1%",
+        "progress": 60,
+        "schedule": "S1"
+      },
+      {
+        "label": "Accounts Receivable",
+        "current": "800,000",
+        "previous": "750,000",
+        "budget": "850,000",
+        "variance": "+6.7%",
+        "progress": 55,
+        "schedule": "S2"
+      },
+      {
+        "label": "Fixed Assets",
+        "current": "1,450,000",
+        "previous": "1,350,000",
+        "budget": "1,400,000",
+        "variance": "+7.4%",
+        "progress": 70,
+        "schedule": "S3"
+      },
+      {
+        "label": "Total Assets",
+        "current": "3,450,000",
+        "previous": "3,200,000",
+        "budget": "3,500,000",
+        "variance": "+7.8%",
+        "progress": 65,
+        "isSummary": true
+      },
+      {
+        "label": "Liabilities",
+        "current": "1,800,000",
+        "previous": "1,700,000",
+        "budget": "1,850,000",
+        "variance": "-5.9%",
+        "progress": 40,
+        "isHeader": true
+      },
+      {
+        "label": "Accounts Payable",
+        "current": "600,000",
+        "previous": "550,000",
+        "budget": "620,000",
+        "variance": "-9.1%",
+        "progress": 35,
+        "schedule": "S4"
+      },
+      {
+        "label": "Loans",
+        "current": "1,200,000",
+        "previous": "1,150,000",
+        "budget": "1,230,000",
+        "variance": "-4.3%",
+        "progress": 45,
+        "schedule": "S5"
+      },
+      {
+        "label": "Total Liabilities",
+        "current": "1,800,000",
+        "previous": "1,700,000",
+        "budget": "1,850,000",
+        "variance": "-5.9%",
+        "progress": 40,
+        "isSummary": true
+      },
+      {
+        "label": "Equity",
+        "current": "1,650,000",
+        "previous": "1,500,000",
+        "budget": "1,650,000",
+        "variance": "+10.0%",
+        "progress": 50,
+        "isTotal": true
+      }
+    ],
+    "ratios": [
+      {
+        "label": "Gross Margin",
+        "current": "62.1%",
+        "previous": "61.7%",
+        "budget": "63.2%",
+        "variance": "+0.6%",
+        "progress": 85,
+        "category": "Profitability"
+      },
+      {
+        "label": "Net Margin",
+        "current": "27.0%",
+        "previous": "24.7%",
+        "budget": "27.4%",
+        "variance": "+9.3%",
+        "progress": 75,
+        "category": "Profitability"
+      },
+      {
+        "label": "Current Ratio",
+        "current": "1.52",
+        "previous": "1.45",
+        "budget": "1.50",
+        "variance": "+4.8%",
+        "progress": 90,
+        "category": "Liquidity"
+      },
+      {
+        "label": "Quick Ratio",
+        "current": "1.20",
+        "previous": "1.15",
+        "budget": "1.18",
+        "variance": "+4.3%",
+        "progress": 88,
+        "category": "Liquidity"
+      },
+      {
+        "label": "Asset Turnover",
+        "current": "0.54",
+        "previous": "0.51",
+        "budget": "0.55",
+        "variance": "+5.9%",
+        "progress": 80,
+        "category": "Efficiency"
+      }
+    ]
+  },
+  "indirectExpensePage": {
+    "_url": "http://localhost:3000/indirect-expense",
+    "summary": [
+      {
+        "label": "Rent & Utilities",
+        "labelAr": "الإيجار والمرافق",
+        "currentYear": "1,850,000",
+        "previousYear": "1,620,000",
+        "budget": "1,900,000",
+        "variance": 14.2,
+        "yearToGo": 50
+      },
+      {
+        "label": "Office Salaries & Wages",
+        "labelAr": "رواتب وأجور المكتب",
+        "currentYear": "450,000",
+        "previousYear": "380,000",
+        "budget": "480,000",
+        "variance": 18.4,
+        "yearToGo": 30
+      },
+      {
+        "label": "Travel & Training",
+        "labelAr": "السفر والتدريب",
+        "currentYear": "280,000",
+        "previousYear": "240,000",
+        "budget": "300,000",
+        "variance": -16.7,
+        "yearToGo": 20
+      },
+      {
+        "label": "Total Indirect Expenses",
+        "labelAr": "إجمالي المصروفات غير المباشرة",
+        "currentYear": "2,775,000",
+        "previousYear": "2,405,000",
+        "budget": "2,890,000",
+        "variance": 15.4,
+        "yearToGo": 25,
+        "isTotal": true
+      }
+    ],
+    "topCategories": {
+      "labels": [
+        "Rent & Utilities",
+        "Salaries & Wages",
+        "Marketing & Advertising",
+        "Office Supplies",
+        "Others"
+      ],
+      "labelsAr": [
+        "الإيجار والمرافق",
+        "الرواتب والأجور",
+        "التسويق والإعلان",
+        "اللوازم المكتبية",
+        "أخرى"
+      ],
+      "series": [
+        35,
+        30,
+        20,
+        10,
+        5
+      ],
+      "values": [
+        "0.61",
+        "0.42",
+        "0.28",
+        "0.19",
+        "0.05"
+      ]
+    },
+    "overheadTrends": {
+      "series": [
+        {
+          "name": "Current Year",
+          "nameAr": "السنة الحالية",
+          "data": [
+            0.8,
+            1.2,
+            3.8,
+            1.5,
+            3.8,
+            2.5,
+            4.0
+          ]
+        },
+        {
+          "name": "Previous Year",
+          "nameAr": "السنة السابقة",
+          "data": [
+            2.5,
+            1.5,
+            3.5,
+            0.8,
+            2.5,
+            1.5,
+            2.6
+          ]
+        }
+      ],
+      "categories": [
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct"
+      ],
+      "categoriesAr": [
+        "أبريل",
+        "مايو",
+        "يونيو",
+        "يوليو",
+        "أغسطس",
+        "سبتمبر",
+        "أكتوبر"
+      ]
+    },
+    "overheadVsRevenue": {
+      "series": [
+        {
+          "name": "Overhead",
+          "nameAr": "النفقات العامة",
+          "data": [
+            1.6,
+            1.7,
+            1.8,
+            1.9,
+            2.0,
+            2.1
+          ]
+        },
+        {
+          "name": "Revenue",
+          "nameAr": "الإيرادات",
+          "data": [
+            2.6,
+            2.8,
+            3.0,
+            3.2,
+            3.4,
+            3.6
+          ]
+        }
+      ],
+      "categories": [
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct"
+      ],
+      "categoriesAr": [
+        "مايو",
+        "يونيو",
+        "يوليو",
+        "أغسطس",
+        "سبتمبر",
+        "أكتوبر"
+      ]
+    }
+  },
+  "accountsReceivablePage": {
+    "_url": "http://localhost:3000/accounts-receivable",
+    "summary": [
+      {
+        "label": "Corporate Clients",
+        "labelAr": "عملاء الشركات",
+        "total": "550,000",
+        "age30": "250,000",
+        "age3060": "150,000",
+        "age6090": "90,000",
+        "age90plus": "60,000",
+        "invoices": [
+          {
+            "id": "Invoice 1",
+            "total": "550,000",
+            "age30": "250,000",
+            "age3060": "150,000",
+            "age6090": "90,000",
+            "age90plus": "60,000",
+            "selected": true
+          },
+          {
+            "id": "Invoice 2",
+            "total": "550,000",
+            "age30": "250,000",
+            "age3060": "150,000",
+            "age6090": "90,000",
+            "age90plus": "60,000",
+            "selected": true
+          },
+          {
+            "id": "Invoice 3",
+            "total": "550,000",
+            "age30": "250,000",
+            "age3060": "150,000",
+            "age6090": "90,000",
+            "age90plus": "60,000",
+            "selected": false
+          },
+          {
+            "id": "Invoice 4",
+            "total": "550,000",
+            "age30": "250,000",
+            "age3060": "150,000",
+            "age6090": "90,000",
+            "age90plus": "60,000",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "label": "Retail Customers",
+        "labelAr": "عملاء التجزئة",
+        "total": "265,000",
+        "age30": "120,000",
+        "age3060": "80,000",
+        "age6090": "40,000",
+        "age90plus": "25,000",
+        "invoices": []
+      },
+      {
+        "label": "Export Clients",
+        "labelAr": "عملاء التصدير",
+        "total": "145,000",
+        "age30": "70,000",
+        "age3060": "40,000",
+        "age6090": "25,000",
+        "age90plus": "10,000",
+        "invoices": []
+      }
+    ],
+    "topCustomers": {
+      "customersData": [
+        {
+          "id": "A",
+          "name": "Horizon Global",
+          "nameAr": "هورايزون جلوبال",
+          "value": 3.3,
+          "color": "#04C18F"
+        },
+        {
+          "id": "B",
+          "name": "Orion Tech",
+          "nameAr": "أوريون تك",
+          "value": 4.1,
+          "color": "#04C18F"
+        },
+        {
+          "id": "C",
+          "name": "Gulf Trading",
+          "nameAr": "جلف تريدينج",
+          "value": 2.9,
+          "color": "#04C18F"
+        },
+        {
+          "id": "D",
+          "name": "Prime Logistics",
+          "nameAr": "برايم لوجيستكس",
+          "value": 3.7,
+          "color": "#04C18F"
+        },
+        {
+          "id": "E",
+          "name": "Emirates Trading",
+          "nameAr": "الإمارات للتجارة",
+          "value": 4.4,
+          "color": "#04C18F"
+        },
+        {
+          "id": "F",
+          "name": "Alpha Tech",
+          "nameAr": "ألفا تك",
+          "value": 1.9,
+          "color": "#04C18F"
+        },
+        {
+          "id": "G",
+          "name": "Mena Retail",
+          "nameAr": "مينا لتجارة التجزئة",
+          "value": 3.7,
+          "color": "#04C18F"
+        },
+        {
+          "id": "H",
+          "name": "Crescent",
+          "nameAr": "كريسنت",
+          "value": 4.0,
+          "color": "#04C18F"
+        },
+        {
+          "id": "I",
+          "name": "Vertex Corp",
+          "nameAr": "فيرتكس كورب",
+          "value": 2.8,
+          "color": "#04C18F"
+        },
+        {
+          "id": "J",
+          "name": "Vertex Trading",
+          "nameAr": "فيرتكس للتجارة",
+          "value": 3.2,
+          "color": "#04C18F"
+        }
+      ],
+      "cumulativeLine": [
+        40,
+        62,
+        70,
+        78,
+        85,
+        88,
+        92,
+        95,
+        97,
+        100
+      ]
+    },
+    "historicalMovement": {
+      "arBalance": [
+        1.6,
+        3.2,
+        3.8,
+        4.3,
+        4.6,
+        4.8
+      ],
+      "percentage": [],
+      "categories": [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun"
+      ]
+    },
+    "agingGraph": {
+      "agingCategories": [
+        {
+          "en": "Overdue >30 Days",
+          "ar": "متأخر أكثر من 30 يوم"
+        },
+        {
+          "en": "Overdue 30-60 Days",
+          "ar": "متأخر 30-60 يوم"
+        },
+        {
+          "en": "Overdue 60-90 Days",
+          "ar": "متأخر 60-90 يوم"
+        },
+        {
+          "en": "Overdue <90 Days",
+          "ar": "متأخر أقل من 90 يوم"
+        }
+      ],
+      "previousYearData": [
+        2.7,
+        1.9,
+        2.8,
+        2.8
+      ],
+      "currentYearData": [
+        4.0,
+        4.7,
+        2.8,
+        4.3
+      ],
+      "cumulativeData": [
+        45,
+        65,
+        75,
+        88
+      ],
+      "percentOfTotal": [
+        16,
+        16,
+        10,
+        15
+      ]
+    }
+  },
+  "cogsPage": {
+    "_url": "http://localhost:3000/cogs",
+    "summary": [
+      {
+        "label": "Product Sales",
+        "labelAr": "مبيعات المنتجات",
+        "currentYear": "1,850,000",
+        "previousYear": "1,620,000",
+        "budget": "1,900,000",
+        "variance": 14.2,
+        "progress": 50
+      },
+      {
+        "label": "Service",
+        "labelAr": "خدمة",
+        "currentYear": "450,000",
+        "previousYear": "380,000",
+        "budget": "480,000",
+        "variance": 18.4,
+        "progress": 30
+      },
+      {
+        "label": "Subscriptions",
+        "labelAr": "الاشتراكات",
+        "currentYear": "280,000",
+        "previousYear": "240,000",
+        "budget": "300,000",
+        "variance": -16.7,
+        "progress": 20
+      }
+    ],
+    "summaryTotal": {
+      "currentYear": "2,775,000",
+      "previousYear": "2,405,000",
+      "budget": "2,890,000",
+      "variance": 15.4,
+      "progress": 25
+    },
+    "breakdown": {
+      "categories": [
+        {
+          "en": "Product Sales",
+          "ar": "مبيعات المنتجات"
+        },
+        {
+          "en": "Service",
+          "ar": "خدمة"
+        },
+        {
+          "en": "Consulting",
+          "ar": "استشارات"
+        },
+        {
+          "en": "Subscription",
+          "ar": "الاشتراك"
+        },
+        {
+          "en": "SaaS",
+          "ar": "برمجيات"
+        },
+        {
+          "en": "Training",
+          "ar": "التدريب"
+        },
+        {
+          "en": "Support",
+          "ar": "دعم"
+        },
+        {
+          "en": "Licensing",
+          "ar": "الترخيص"
+        },
+        {
+          "en": "Logistics",
+          "ar": "الخدمات اللوجستية"
+        },
+        {
+          "en": "Manufacturing",
+          "ar": "التصنيع"
+        }
+      ],
+      "previousYearData": [
+        1.6,
+        3.8,
+        3.4,
+        2.4,
+        2.5,
+        4.5,
+        2.7,
+        3.5,
+        4.5,
+        4.8
+      ],
+      "currentYearData": [
+        1.8,
+        4.5,
+        2.8,
+        2.8,
+        1.7,
+        5.0,
+        3.0,
+        4.0,
+        5.0,
+        5.0
+      ]
+    },
+    "last6Months": {
+      "months": [
+        {
+          "en": "Apr",
+          "ar": "أبريل"
+        },
+        {
+          "en": "May",
+          "ar": "مايو"
+        },
+        {
+          "en": "Jun",
+          "ar": "يونيو"
+        },
+        {
+          "en": "Jul",
+          "ar": "يوليو"
+        },
+        {
+          "en": "Aug",
+          "ar": "أغسطس"
+        },
+        {
+          "en": "Sep",
+          "ar": "سبتمبر"
+        }
+      ],
+      "previousYearData": [
+        2.4,
+        3.0,
+        1.8,
+        4.7,
+        1.0,
+        2.6
+      ],
+      "currentYearData": [
+        0.7,
+        1.0,
+        3.5,
+        4.6,
+        2.0,
+        4.2
+      ]
+    },
+    "revenueToCogs": {
+      "months": [
+        {
+          "en": "Apr",
+          "ar": "أبريل"
+        },
+        {
+          "en": "May",
+          "ar": "مايو"
+        },
+        {
+          "en": "Jun",
+          "ar": "يونيو"
+        },
+        {
+          "en": "Jul",
+          "ar": "يوليو"
+        },
+        {
+          "en": "Aug",
+          "ar": "أغسطس"
+        },
+        {
+          "en": "Sep",
+          "ar": "سبتمبر"
+        }
+      ],
+      "cogsData": [
+        1.5,
+        1.6,
+        1.7,
+        1.8,
+        1.9,
+        2.0
+      ],
+      "revenueData": [
+        2.4,
+        2.6,
+        2.1,
+        3.0,
+        3.2,
+        3.4
+      ]
+    }
+  },
+  "accountsPayablePage": {
+    "_url": "http://localhost:3000/accounts-payable",
+    "summary": [
+      {
+        "label": "Corporate Clients",
+        "labelAr": "عملاء الشركات",
+        "total": "550,000",
+        "age30": "250,000",
+        "age3060": "150,000",
+        "age6090": "90,000",
+        "age90plus": "60,000",
+        "invoices": [
+          {
+            "id": "Invoice 1",
+            "total": "550,000",
+            "age30": "250,000",
+            "age3060": "150,000",
+            "age6090": "90,000",
+            "age90plus": "60,000",
+            "selected": true
+          },
+          {
+            "id": "Invoice 2",
+            "total": "550,000",
+            "age30": "250,000",
+            "age3060": "150,000",
+            "age6090": "90,000",
+            "age90plus": "60,000",
+            "selected": true
+          },
+          {
+            "id": "Invoice 3",
+            "total": "550,000",
+            "age30": "250,000",
+            "age3060": "150,000",
+            "age6090": "90,000",
+            "age90plus": "60,000",
+            "selected": false
+          },
+          {
+            "id": "Invoice 4",
+            "total": "550,000",
+            "age30": "250,000",
+            "age3060": "150,000",
+            "age6090": "90,000",
+            "age90plus": "60,000",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "label": "Retail Customers",
+        "labelAr": "عملاء التجزئة",
+        "total": "265,000",
+        "age30": "120,000",
+        "age3060": "80,000",
+        "age6090": "40,000",
+        "age90plus": "25,000",
+        "invoices": []
+      },
+      {
+        "label": "Export Clients",
+        "labelAr": "عملاء التصدير",
+        "total": "145,000",
+        "age30": "70,000",
+        "age3060": "40,000",
+        "age6090": "25,000",
+        "age90plus": "10,000",
+        "invoices": []
+      }
+    ],
+    "summaryTotal": {
+      "total": "960,000",
+      "age30": "525,000",
+      "age3060": "330,000",
+      "age6090": "205,000",
+      "age90plus": "125,000"
+    },
+    "topCustomers": {
+      "customersData": [
+        {
+          "id": "A",
+          "name": "Horizon Global",
+          "nameAr": "هورايزون جلوبال",
+          "value": 3.3,
+          "color": "#04C18F"
+        },
+        {
+          "id": "B",
+          "name": "Orion Tech",
+          "nameAr": "أوريون تك",
+          "value": 4.1,
+          "color": "#04C18F"
+        },
+        {
+          "id": "C",
+          "name": "Gulf Trading",
+          "nameAr": "جلف تريدينج",
+          "value": 2.9,
+          "color": "#04C18F"
+        },
+        {
+          "id": "D",
+          "name": "Prime Logistics",
+          "nameAr": "برايم لوجيستكس",
+          "value": 3.7,
+          "color": "#04C18F"
+        },
+        {
+          "id": "E",
+          "name": "Emirates Trading",
+          "nameAr": "الإمارات للتجارة",
+          "value": 4.4,
+          "color": "#04C18F"
+        },
+        {
+          "id": "F",
+          "name": "Alpha Tech",
+          "nameAr": "ألفا تك",
+          "value": 1.9,
+          "color": "#04C18F"
+        },
+        {
+          "id": "G",
+          "name": "Mena Retail",
+          "nameAr": "مينا لتجارة التجزئة",
+          "value": 3.7,
+          "color": "#04C18F"
+        },
+        {
+          "id": "H",
+          "name": "Crescent",
+          "nameAr": "كريسنت",
+          "value": 4.0,
+          "color": "#04C18F"
+        },
+        {
+          "id": "I",
+          "name": "Vertex Corp",
+          "nameAr": "فيرتكس كورب",
+          "value": 2.8,
+          "color": "#04C18F"
+        },
+        {
+          "id": "J",
+          "name": "Vertex Trading",
+          "nameAr": "فيرتكس للتجارة",
+          "value": 3.2,
+          "color": "#04C18F"
+        }
+      ],
+      "cumulativeLine": [
+        40,
+        62,
+        70,
+        78,
+        85,
+        88,
+        92,
+        95,
+        97,
+        100
+      ]
+    },
+    "historicalMovement": {
+      "apBalance": [
+        1.6,
+        3.2,
+        3.8,
+        4.3,
+        4.6,
+        4.8
+      ],
+      "percentage": [],
+      "categories": [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun"
+      ]
+    },
+    "agingGraph": {
+      "agingCategories": [
+        {
+          "en": "Overdue >30 Days",
+          "ar": "متأخر أكثر من 30 يوم"
+        },
+        {
+          "en": "Overdue 30-60 Days",
+          "ar": "متأخر 30-60 يوم"
+        },
+        {
+          "en": "Overdue 60-90 Days",
+          "ar": "متأخر 60-90 يوم"
+        },
+        {
+          "en": "Overdue <90 Days",
+          "ar": "متأخر أقل من 90 يوم"
+        }
+      ],
+      "previousYearData": [
+        2.7,
+        1.9,
+        2.8,
+        2.8
+      ],
+      "currentYearData": [
+        4.0,
+        4.7,
+        2.8,
+        4.3
+      ],
+      "cumulativeData": [
+        45,
+        65,
+        75,
+        88
+      ],
+      "percentOfTotal": [
+        16,
+        16,
+        10,
+        15
+      ]
+    }
+  },
+  "costCenterPage": {
+    "_url": "http://localhost:3000/cost-center",
+    "summary": [
+      {
+        "label": "Residential Projects",
+        "labelAr": "المشاريع السكنية",
+        "revenue": "2,400,000",
+        "cogs": "1,500,000",
+        "indirectExp": "600,000",
+        "profit": "300,000",
+        "margin": 12.5
+      },
+      {
+        "label": "Commercial Projects",
+        "labelAr": "المشاريع التجارية",
+        "revenue": "1,800,000",
+        "cogs": "1,100,000",
+        "indirectExp": "400,000",
+        "profit": "300,000",
+        "margin": 16.7
+      },
+      {
+        "label": "Infrastructure",
+        "labelAr": "البنية التحتية",
+        "revenue": "2,000,000",
+        "cogs": "1,200,000",
+        "indirectExp": "500,000",
+        "profit": "300,000",
+        "margin": 15.0
+      }
+    ],
+    "summaryTotal": {
+      "label": "Total Project Cost",
+      "labelAr": "إجمالي تكلفة المشروع",
+      "revenue": "17,500,000",
+      "cogs": "12,800,000",
+      "indirectExp": "1,030,000",
+      "profit": "3,670,000",
+      "margin": 21
+    },
+    "overallRevenueVsCost": {
+      "categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L"
+      ],
+      "costData": [
+        1.6,
+        3.8,
+        3.4,
+        2.4,
+        2.5,
+        4.0,
+        3.1,
+        3.5,
+        4.5,
+        4.8,
+        4.0,
+        3.6
+      ],
+      "revenueData": [
+        1.8,
+        4.5,
+        2.8,
+        2.8,
+        1.7,
+        5.0,
+        3.5,
+        4.0,
+        5.0,
+        5.0,
+        4.8,
+        4.6
+      ],
+      "mappingFullNames": {
+        "A": "Residential Project",
+        "B": "Infrastructure",
+        "C": "Commercial",
+        "D": "Prime Logistics",
+        "E": "Emirates Trading",
+        "F": "Alpha Tech",
+        "G": "Mena Retail",
+        "H": "Crescent",
+        "I": "Vertex Corp",
+        "J": "Vertex Trading",
+        "K": "Future Projects",
+        "L": "City Center"
+      }
+    },
+    "projectDetail": {
+      "tableData": [
+        {
+          "label": "Revenue",
+          "labelAr": "الإيرادات",
+          "actual": "2,400,000",
+          "budget": "2,500,000",
+          "progress": 60,
+          "color": "#03D8B0"
+        },
+        {
+          "label": "COGS",
+          "labelAr": "تكلفة المبيعات",
+          "actual": "1,500,000",
+          "budget": "1,400,000",
+          "progress": 30,
+          "color": "#FFBC01"
+        },
+        {
+          "label": "Indirect Expenses",
+          "labelAr": "المصروفات غير المباشرة",
+          "actual": "600,000",
+          "budget": "550,000",
+          "progress": 10,
+          "color": "#FB7554"
+        }
+      ],
+      "grossProfit": {
+        "label": "Gross Profit",
+        "labelAr": "إجمالي الربح",
+        "actual": "17,500,000",
+        "budget": "550,000",
+        "progress": 10
+      },
+      "actualVsBudget": {
+        "categories": [
+          {
+            "en": "Revenue",
+            "ar": "الإيرادات"
+          },
+          {
+            "en": "COGS",
+            "ar": "تكلفة المبيعات"
+          },
+          {
+            "en": "Indirect Expense",
+            "ar": "المصروفات غير المباشرة"
+          }
+        ],
+        "actualData": [
+          2.4,
+          2.5,
+          4.5
+        ],
+        "budgetData": [
+          2.8,
+          1.7,
+          4.7
+        ]
+      },
+      "summaryCards": [
+        {
+          "label": "Contract Value",
+          "labelAr": "قيمة العقد",
+          "value": "AED 3.10 M",
+          "icon": "/images/icons/Contract-Value.svg"
+        },
+        {
+          "label": "Invoiced",
+          "labelAr": "المفوترة",
+          "value": "AED 2.45 M",
+          "icon": "/images/icons/Invoiced.svg"
+        },
+        {
+          "label": "Yet to Invoice",
+          "labelAr": "لم يتم الفوترة بعد",
+          "value": "AED 8.12 M",
+          "icon": "/images/icons/Yet-to-Invoice.svg"
+        }
+      ]
+    }
+  },
+  "taxQueriesPage": {
+    "_url": "http://localhost:3000/tax-queries",
+    "tabs": [
+      {
+        "id": "vat",
+        "name": "VAT Queries",
+        "icon": "/images/icons/vat.svg"
+      },
+      {
+        "id": "corporate",
+        "name": "Corporate Tax",
+        "icon": "/images/icons/corporate-tax.svg"
+      },
+      {
+        "id": "ifrs",
+        "name": "IFRS",
+        "icon": "/images/icons/ifrs.svg"
+      },
+      {
+        "id": "accounting",
+        "name": "General Accounting",
+        "icon": "/images/icons/general.svg"
+      }
+    ],
+    "tableData": {
+      "vat": [
+        {
+          "quarter": "Q1 2025",
+          "budgeted": 1200000,
+          "recorded": 1150000,
+          "variance": 50000,
+          "variancePercent": -4.2
+        },
+        {
+          "quarter": "Q2 2025",
+          "budgeted": 1200000,
+          "recorded": 1150000,
+          "variance": 130000,
+          "variancePercent": -9.0
+        },
+        {
+          "quarter": "Q3 2025",
+          "budgeted": 1200000,
+          "recorded": 1150000,
+          "variance": 20000,
+          "variancePercent": -1.2
+        },
+        {
+          "quarter": "Q4 2025",
+          "budgeted": 1200000,
+          "recorded": 1150000,
+          "variance": 130000,
+          "variancePercent": -7.4
+        }
+      ],
+      "corporate": [
+        {
+          "quarter": "FY 2025",
+          "budgeted": 5000000,
+          "recorded": 4800000,
+          "variance": 200000,
+          "variancePercent": -4.0
+        }
+      ],
+      "ifrs": [],
+      "accounting": []
+    },
+    "suggestions": [
+      {
+        "label": "How strong is your business?",
+        "icon": "/images/icons/chat-1.svg"
+      },
+      {
+        "label": "What areas need attention?",
+        "icon": "/images/icons/chat-2.svg"
+      },
+      {
+        "label": "How to improve cash flow?",
+        "icon": "/images/icons/chat-3.svg"
+      },
+      {
+        "label": "Revenue growth analysis?",
+        "icon": "/images/icons/chat-1.svg"
+      }
+    ],
+    "historyGroups": [
+      {
+        "label": "Today",
+        "queries": [
+          "How can I claim input VAT on business...",
+          "What are the UAE VAT return filing...",
+          "Why is my VAT refund taking longer...",
+          "How to handle VAT for export services..."
+        ]
+      },
+      {
+        "label": "Previous 7 Days",
+        "queries": [
+          "How can I claim input VAT on business...",
+          "What are the UAE VAT return filing...",
+          "Why is my VAT refund taking longer...",
+          "How to handle VAT for export services..."
+        ]
+      },
+      {
+        "label": "Previous 30 Days",
+        "queries": [
+          "How can I claim input VAT on business...",
+          "What are the UAE VAT return filing...",
+          "Why is my VAT refund taking longer...",
+          "How to handle VAT for export services..."
+        ]
+      }
+    ],
+    "deadlines": [
+      {
+        "label": "VAT Return Date",
+        "date": "28 Jan 2026",
+        "color": "orange-50"
+      },
+      {
+        "label": "CT Return Date",
+        "date": "20 Jun 2026",
+        "color": "orange-50"
+      }
+    ]
+  },
+  "dataSourcePage": {
+    "_url": "http://localhost:3000/data-source",
+    "mainTabs": [
+      {
+        "id": "financial",
+        "label": "Financial Data Sources",
+        "labelAr": "مصادر البيانات المالية",
+        "icon": "/images/icons/Financial-Data-Sources.svg"
+      },
+      {
+        "id": "contacts",
+        "label": "Contacts & Customers",
+        "labelAr": "جهات الاتصال والعملاء",
+        "icon": "/images/icons/Contacts-Customers.svg"
+      },
+      {
+        "id": "certificate",
+        "label": "Upload Certificate",
+        "labelAr": "تحميل الشهادة",
+        "icon": "/images/icons/Upload-Certificate.svg"
+      }
+    ],
+    "subTabsFinancial": [
+      {
+        "id": "settings",
+        "label": "Settings",
+        "labelAr": "الإعدادات"
+      },
+      {
+        "id": "data-in",
+        "label": "Data In",
+        "labelAr": "إدخال البيانات"
+      },
+      {
+        "id": "trial-balance",
+        "label": "Trial balance",
+        "labelAr": "ميزان المراجعة"
+      },
+      {
+        "id": "accounts-receivable",
+        "label": "Accounts Receivable",
+        "labelAr": "حسابات القبض"
+      },
+      {
+        "id": "accounts-payable",
+        "label": "Accounts Payable",
+        "labelAr": "حسابات الدفع"
+      },
+      {
+        "id": "inter-company",
+        "label": "Inter Company",
+        "labelAr": "بين الشركات"
+      },
+      {
+        "id": "sales-forecast",
+        "label": "Sales Forecast",
+        "labelAr": "توقعات المبيعات"
+      },
+      {
+        "id": "pdc",
+        "label": "PDC",
+        "labelAr": "الشيكات المؤجلة"
+      },
+      {
+        "id": "cost-center",
+        "label": "Cost Center",
+        "labelAr": "مركز التكلفة"
+      },
+      {
+        "id": "budget",
+        "label": "Budget",
+        "labelAr": "الميزانية"
+      }
+    ],
+    "subTabsContacts": [
+      {
+        "id": "contacts",
+        "label": "Contacts",
+        "labelAr": "جهات الاتصال"
+      },
+      {
+        "id": "internal-email",
+        "label": "Internal Email",
+        "labelAr": "البريد الإلكتروني الداخلي"
+      },
+      {
+        "id": "customers",
+        "label": "Customers",
+        "labelAr": "العملاء"
+      }
+    ],
+    "settings": {
+      "currencyColumns": [
+        {
+          "label": "Currency Code",
+          "labelAr": "رمز العملة",
+          "key": "code"
+        },
+        {
+          "label": "Currency Name",
+          "labelAr": "اسم العملة",
+          "key": "name"
+        }
+      ],
+      "currencyData": [
+        {
+          "code": "INR",
+          "name": "Indian Rupee"
+        },
+        {
+          "code": "AED",
+          "name": "UAE Dirham"
+        },
+        {
+          "code": "SAR",
+          "name": "Saudi Riyal"
+        },
+        {
+          "code": "USD",
+          "name": "US Dollar"
+        }
+      ]
+    },
+    "arData": [
+      {
+        "customer": "AI Dhabi Contracting LLC",
+        "amount": "1,678,295.5",
+        "age1": "1,678,295.5",
+        "age2": "-",
+        "age3": "-",
+        "age4": "-"
+      },
+      {
+        "customer": "AI Dhabi Contracting LLC",
+        "amount": "1,678,295.5",
+        "age1": "1,678,295.5",
+        "age2": "-",
+        "age3": "-",
+        "age4": "-"
+      },
+      {
+        "customer": "AI Dhabi Contracting LLC",
+        "amount": "1,678,295.5",
+        "age1": "1,678,295.5",
+        "age2": "-",
+        "age3": "-",
+        "age4": "-"
+      }
+    ],
+    "apData": [
+      {
+        "customer": "Global Suppliers Ltd",
+        "amount": "850,000.00",
+        "age1": "400,000.00",
+        "age2": "450,000.00",
+        "age3": "-",
+        "age4": "-"
+      },
+      {
+        "customer": "Dubai Logistics Co",
+        "amount": "120,500.00",
+        "age1": "-",
+        "age2": "120,500.00",
+        "age3": "-",
+        "age4": "-"
+      }
+    ],
+    "logs": {
+      "ar": [
+        {
+          "date": "06-Mar-2025",
+          "time": "14:23:45",
+          "user": "consultant@taxaid.com",
+          "details": "Historical AR data year set to 2022 and table locked"
+        }
+      ],
+      "ap": [
+        {
+          "date": "10-Mar-2025",
+          "time": "09:15:22",
+          "user": "admin@taxaid.com",
+          "details": "Vendor payment terms updated for Global Suppliers"
+        }
+      ],
+      "pdc": [
+        {
+          "date": "11-Mar-2025",
+          "time": "16:45:10",
+          "user": "manager@taxaid.com",
+          "details": "Bulk import of 50 received PDCs completed and verified"
+        }
+      ],
+      "costCenter": [
+        {
+          "date": "11-Mar-2025",
+          "time": "16:45:10",
+          "user": "manager@taxaid.com",
+          "details": "Bulk import of 50 received PDCs completed and verified"
+        }
+      ],
+      "trialBalance": [
+        {
+          "date": "11-Mar-2025",
+          "time": "16:45:10",
+          "user": "manager@taxaid.com",
+          "details": "Bulk import of 50 received PDCs completed and verified"
+        }
+      ],
+      "budget": [
+        {
+          "date": "15-Mar-2026",
+          "time": "11:20:05",
+          "user": "cfo@masterline.com",
+          "details": "Revised Fixed Assets budget for Q3 2026"
+        },
+        {
+          "date": "12-Mar-2026",
+          "time": "09:05:44",
+          "user": "admin@taxaid.com",
+          "details": "Initial budget templates generated for all cost centers"
+        }
+      ],
+      "salesForecast": [
+        {
+          "date": "19-Mar-2026",
+          "time": "15:10:22",
+          "user": "cfo@masterline.com",
+          "details": "Updated Q3 sales targets based on market shift"
+        }
+      ]
+    },
+    "pdcSummaryData": [
+      {
+        "type": "issued",
+        "label": "PDC Issued",
+        "labelAr": "الشيكات المؤجلة الصادرة",
+        "totalLabel": "Total PDC issued",
+        "totalAmount": "1,250,000",
+        "due30": "1,250,000",
+        "due45": "1,250,000"
+      },
+      {
+        "type": "received",
+        "label": "PDC Received",
+        "labelAr": "الشيكات المؤجلة الواردة",
+        "totalLabel": "Total PDC received",
+        "totalAmount": "1,250,000",
+        "due30": "1,250,000",
+        "due45": "1,250,000"
+      }
+    ],
+    "pdcDetailedData": [
+      {
+        "issueDate": "-",
+        "chequeDate": "-",
+        "bankName": "-",
+        "chequeNo": "-",
+        "partyName": "-",
+        "amount": "-"
+      },
+      {
+        "issueDate": "-",
+        "chequeDate": "-",
+        "bankName": "-",
+        "chequeNo": "-",
+        "partyName": "-",
+        "amount": "-"
+      }
+    ],
+    "interCompanyData": [
+      {
+        "id": 1,
+        "entryId": "TRX-9001",
+        "date": "10-Mar-2025",
+        "counterparty": "Masterline Trading",
+        "description": "Management Fee Transfer",
+        "fx": "1.00",
+        "dueType": "Due From (+)",
+        "amountBase": "50,000.00",
+        "settlementDate": "30-Mar-2025",
+        "status": "Pending",
+        "notes": "Awaiting bank confirmation"
+      },
+      {
+        "id": 2,
+        "entryId": "TRX-9002",
+        "date": "11-Mar-2025",
+        "counterparty": "Apex Logistics",
+        "description": "Shared Office Rent",
+        "fx": "3.67",
+        "dueType": "Due To (-)",
+        "amountBase": "12,500.00",
+        "settlementDate": "25-Mar-2025",
+        "status": "Settled",
+        "notes": ""
+      }
+    ],
+    "dataInItems": [
+      {
+        "id": "ar",
+        "label": "Account Receivable",
+        "labelAr": "حسابات القبض",
+        "isUploaded": true,
+        "uploadDate": "Mar 07, 2026, 09:51 PM",
+        "pdfUrl": "/reports/Sales - SST 35 Community Hub_Ledger.pdf"
+      },
+      {
+        "id": "ap",
+        "label": "Account Payable",
+        "labelAr": "حسابات الدفع",
+        "isUploaded": true,
+        "uploadDate": "Mar 07, 2026, 09:51 PM",
+        "pdfUrl": "/reports/Sales - SST 35 Community Hub_Ledger.pdf"
+      },
+      {
+        "id": "pdcin",
+        "label": "PDC In",
+        "labelAr": "شيكات واردة",
+        "isUploaded": false,
+        "uploadDate": "",
+        "pdfUrl": ""
+      },
+      {
+        "id": "pdcout",
+        "label": "PDC Out",
+        "labelAr": "شيكات صادرة",
+        "isUploaded": true,
+        "uploadDate": "Mar 07, 2026, 09:51 PM",
+        "pdfUrl": "/reports/Sales - SST 35 Community Hub_Ledger.pdf"
+      },
+      {
+        "id": "forecast",
+        "label": "Sales Forecast",
+        "labelAr": "توقعات المبيعات",
+        "isUploaded": true,
+        "uploadDate": "Mar 07, 2026, 09:51 PM",
+        "pdfUrl": "/reports/Sales - SST 35 Community Hub_Ledger.pdf"
+      },
+      {
+        "id": "budget",
+        "label": "Budget",
+        "labelAr": "الميزانية",
+        "isUploaded": true,
+        "uploadDate": "Mar 07, 2026, 09:51 PM",
+        "pdfUrl": "/reports/Sales - SST 35 Community Hub_Ledger.pdf"
+      },
+      {
+        "id": "cc_mapping",
+        "label": "Cost Center Mapping",
+        "labelAr": "تخطيط مراكز التكلفة",
+        "isUploaded": true,
+        "uploadDate": "Mar 07, 2026, 09:51 PM",
+        "pdfUrl": "/reports/Sales - SST 35 Community Hub_Ledger.pdf"
+      },
+      {
+        "id": "cc_master",
+        "label": "Cost Center Master",
+        "labelAr": "سجل مراكز التكلفة الرئيسي",
+        "isUploaded": true,
+        "uploadDate": "Mar 07, 2026, 09:51 PM",
+        "pdfUrl": "/reports/cost_center_master.pdf"
+      },
+      {
+        "id": "cc_budget",
+        "label": "Cost Center Budget",
+        "labelAr": "ميزانية مراكز التكلفة",
+        "isUploaded": true,
+        "uploadDate": "Mar 07, 2026, 09:51 PM",
+        "pdfUrl": "/reports/Sales - SST 35 Community Hub_Ledger.pdf"
+      },
+      {
+        "id": "prepaid",
+        "label": "Prepaid Adjustments",
+        "labelAr": "تسويات المصاريف المدفوعة مقدماً",
+        "isUploaded": true,
+        "uploadDate": "Mar 07, 2026, 09:51 PM",
+        "pdfUrl": "/reports/Sales - SST 35 Community Hub_Ledger.pdf"
+      },
+      {
+        "id": "ct_returns",
+        "label": "CT Returns",
+        "labelAr": "إقرارات ضريبة الشركات",
+        "isUploaded": true,
+        "uploadDate": "Mar 07, 2026, 09:51 PM",
+        "pdfUrl": "/reports/Sales - SST 35 Community Hub_Ledger.pdf"
+      },
+      {
+        "id": "vat_returns",
+        "label": "VAT Returns",
+        "labelAr": "إقرارات ضريبة القيمة المضافة",
+        "isUploaded": true,
+        "uploadDate": "Mar 07, 2026, 09:51 PM",
+        "pdfUrl": "/reports/Sales - SST 35 Community Hub_Ledger.pdf"
+      },
+      {
+        "id": "opening_bal",
+        "label": "Opening Balance",
+        "labelAr": "الرصيد الافتتاحي",
+        "isUploaded": true,
+        "uploadDate": "Mar 07, 2026, 09:51 PM",
+        "pdfUrl": "/reports/Sales - SST 35 Community Hub_Ledger.pdf"
+      }
+    ],
+    "costCenterReports": {
+      "mappingColumns": [
+        {
+          "label": "Cost Center Name",
+          "labelAr": "اسم مركز التكلفة",
+          "key": "ccName"
+        },
+        {
+          "label": "FS Code",
+          "labelAr": "كود FS",
+          "key": "fsCode"
+        },
+        {
+          "label": "Main Group",
+          "labelAr": "المجموعة الرئيسية",
+          "key": "mainGroup"
+        },
+        {
+          "label": "Sub Group",
+          "labelAr": "المجموعة الفرعية",
+          "key": "subGroup"
+        },
+        {
+          "label": "Ledger Name",
+          "labelAr": "اسم الأستاذ",
+          "key": "ledger"
+        }
+      ],
+      "mappingData": [
+        {
+          "ccName": "TS 17 - Al Ain Zoo",
+          "fsCode": "FS-001",
+          "mainGroup": "Operations",
+          "subGroup": "Direct Cost",
+          "ledger": "Project A Ledger"
+        },
+        {
+          "ccName": "TS 18 - Dubai Mall",
+          "fsCode": "FS-002",
+          "mainGroup": "Operations",
+          "subGroup": "Direct Cost",
+          "ledger": "Project B Ledger"
+        }
+      ],
+      "contractColumns": [
+        {
+          "label": "Project Name As Tally",
+          "labelAr": "اسم المشروع (تارلي)",
+          "key": "projectName"
+        },
+        {
+          "label": "Status in 2025",
+          "labelAr": "الحالة في 2025",
+          "key": "status"
+        },
+        {
+          "label": "Project Value",
+          "labelAr": "قيمة المشروع",
+          "key": "value"
+        },
+        {
+          "label": "Variation",
+          "labelAr": "الاختلاف",
+          "key": "variation"
+        },
+        {
+          "label": "Final Project Value",
+          "labelAr": "قيمة المشروع النهائية",
+          "key": "finalValue"
+        }
+      ],
+      "contractData": [
+        {
+          "projectName": "TS 17 - Al Ain Zoo",
+          "status": "Closed",
+          "value": "3,43,000.00",
+          "variation": "-",
+          "finalValue": "3,43,000.00"
+        },
+        {
+          "projectName": "TS 17 - Al Ain Zoo",
+          "status": "Closed",
+          "value": "3,43,000.00",
+          "variation": "-",
+          "finalValue": "3,43,000.00"
+        },
+        {
+          "projectName": "TS 17 - Al Ain Zoo",
+          "status": "Closed",
+          "value": "3,43,000.00",
+          "variation": "-",
+          "finalValue": "3,43,000.00"
+        }
+      ],
+      "budgetColumns": [
+        {
+          "label": "Project Name As Tally",
+          "labelAr": "اسم المشروع (تارلي)",
+          "key": "projectName"
+        },
+        {
+          "label": "Status in 2025",
+          "labelAr": "الحالة في 2025",
+          "key": "status"
+        },
+        {
+          "label": "Budgeted Cost",
+          "labelAr": "التكلفة المرصودة",
+          "key": "budgeted"
+        },
+        {
+          "label": "Material Purchased",
+          "labelAr": "المواد المشتراة",
+          "key": "material"
+        },
+        {
+          "label": "Labor Cost",
+          "labelAr": "تكلفة العمالة",
+          "key": "labor"
+        }
+      ],
+      "budgetData": [
+        {
+          "projectName": "TS 17 - Al Ain Zoo",
+          "status": "Closed",
+          "budgeted": "3,43,000.00",
+          "material": "-",
+          "labor": "3,43,000.00"
+        },
+        {
+          "projectName": "TS 17 - Al Ain Zoo",
+          "status": "Closed",
+          "budgeted": "3,43,000.00",
+          "material": "-",
+          "labor": "3,43,000.00"
+        }
+      ],
+      "contractTotal": "1,250,000",
+      "budgetTotal": "840,000"
+    },
+    "budget": {
+      "reportColumns": [
+        {
+          "label": "Particulars",
+          "labelAr": "التفاصيل",
+          "key": "name"
+        },
+        {
+          "label": "Budgeted",
+          "labelAr": "الميزانية",
+          "key": "budgeted"
+        },
+        {
+          "label": "Actual",
+          "labelAr": "الفعلي",
+          "key": "actual"
+        },
+        {
+          "label": "Variance",
+          "labelAr": "التباين",
+          "key": "variance"
+        },
+        {
+          "label": "Utilized %",
+          "labelAr": "نسبة الاستخدام",
+          "key": "percent"
+        }
+      ],
+      "reportData": [
+        {
+          "name": "Sales Department",
+          "budgeted": "1,200,000.00",
+          "actual": "1,150,000.00",
+          "variance": "50,000.00",
+          "percent": "95.8%"
+        },
+        {
+          "name": "Marketing & PR",
+          "budgeted": "450,000.00",
+          "actual": "480,000.00",
+          "variance": "-30,000.00",
+          "percent": "106.6%"
+        },
+        {
+          "name": "Operations",
+          "budgeted": "2,500,000.00",
+          "actual": "2,400,000.00",
+          "variance": "100,000.00",
+          "percent": "96.0%"
+        },
+        {
+          "name": "Human Resources",
+          "budgeted": "300,000.00",
+          "actual": "290,000.00",
+          "variance": "10,000.00",
+          "percent": "96.6%"
+        }
+      ],
+      "reportTotal": "4,450,000.00"
+    },
+    "salesForecast": {
+      "data": [
+        {
+          "id": "2025",
+          "label": "2025",
+          "quarters": [
+            {
+              "id": "q1",
+              "label": "1st Quarter",
+              "months": [
+                {
+                  "label": "January",
+                  "actual": "1,250,000",
+                  "income": "1,300,000",
+                  "forecast": "1,200,000",
+                  "possible": "1,280,000",
+                  "budget": "1,200,000",
+                  "diff": "+100,000"
+                },
+                {
+                  "label": "February",
+                  "actual": "",
+                  "income": "",
+                  "forecast": "",
+                  "possible": "",
+                  "budget": "",
+                  "diff": ""
+                },
+                {
+                  "label": "March",
+                  "actual": "",
+                  "income": "",
+                  "forecast": "",
+                  "possible": "",
+                  "budget": "",
+                  "diff": ""
+                }
+              ]
+            },
+            {
+              "id": "q2",
+              "label": "2nd Quarter",
+              "months": [
+                {
+                  "label": "April",
+                  "actual": "1,250,000",
+                  "income": "1,300,000",
+                  "forecast": "1,200,000",
+                  "possible": "1,280,000",
+                  "budget": "1,200,000",
+                  "diff": "+100,000"
+                },
+                {
+                  "label": "May",
+                  "actual": "",
+                  "income": "",
+                  "forecast": "",
+                  "possible": "",
+                  "budget": "",
+                  "diff": ""
+                },
+                {
+                  "label": "June",
+                  "actual": "",
+                  "income": "",
+                  "forecast": "",
+                  "possible": "",
+                  "budget": "",
+                  "diff": ""
+                }
+              ]
+            },
+            {
+              "id": "q3",
+              "label": "3rd Quarter",
+              "months": [
+                {
+                  "label": "July",
+                  "actual": "1,250,000",
+                  "income": "1,300,000",
+                  "forecast": "1,200,000",
+                  "possible": "1,280,000",
+                  "budget": "1,200,000",
+                  "diff": "+100,000"
+                },
+                {
+                  "label": "August",
+                  "actual": "",
+                  "income": "",
+                  "forecast": "",
+                  "possible": "",
+                  "budget": "",
+                  "diff": ""
+                },
+                {
+                  "label": "September",
+                  "actual": "",
+                  "income": "",
+                  "forecast": "",
+                  "possible": "",
+                  "budget": "",
+                  "diff": ""
+                }
+              ]
+            },
+            {
+              "id": "q4",
+              "label": "4th Quarter",
+              "months": [
+                {
+                  "label": "October",
+                  "actual": "1,250,000",
+                  "income": "1,300,000",
+                  "forecast": "1,200,000",
+                  "possible": "1,280,000",
+                  "budget": "1,200,000",
+                  "diff": "+100,000"
+                },
+                {
+                  "label": "November",
+                  "actual": "",
+                  "income": "",
+                  "forecast": "",
+                  "possible": "",
+                  "budget": "",
+                  "diff": ""
+                },
+                {
+                  "label": "December",
+                  "actual": "",
+                  "income": "",
+                  "forecast": "",
+                  "possible": "",
+                  "budget": "",
+                  "diff": ""
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "detailedData": [
+        {
+          "projectName": "SST-34 Animal Shelter",
+          "customer": "Lazourdy Contracting & Gen Maintanance",
+          "possibility": "100%",
+          "date": "3-Jan-25",
+          "amount": "6,12,147.91"
+        },
+        {
+          "projectName": "SST-34 Animal Shelter",
+          "customer": "Lazourdy Contracting & Gen Maintanance",
+          "possibility": "100%",
+          "date": "3-Jan-25",
+          "amount": "6,12,147.91"
+        },
+        {
+          "projectName": "SST-34 Animal Shelter",
+          "customer": "Lazourdy Contracting & Gen Maintanance",
+          "possibility": "100%",
+          "date": "3-Jan-25",
+          "amount": "6,12,147.91"
+        }
+      ]
+    }
+  },
+  "alertsPage": {
+    "_url": "http://localhost:3000/alerts",
+    "categories": [
+      {
+        "id": "all",
+        "label": "All Alerts",
+        "labelAr": "الكل",
+        "title": "(Last 30 days)",
+        "wheel": "/images/all-alerts.webp",
+        "color": "#009276",
+        "textColor": "#00FFBC"
+      },
+      {
+        "id": "pending",
+        "label": "Pending Actions",
+        "labelAr": "قيد الانتظار",
+        "title": "(Required Action)",
+        "wheel": "/images/pending.webp",
+        "color": "#B78700",
+        "textColor": "#FFBC00"
+      },
+      {
+        "id": "resolved",
+        "label": "Resolved",
+        "labelAr": "تم الحل",
+        "title": "(Resolved Alerts)",
+        "wheel": "/images/resolved.webp",
+        "color": "#10612A",
+        "textColor": "#29B356"
+      },
+      {
+        "id": "ignored",
+        "label": "Ignored",
+        "labelAr": "تم التجاهل",
+        "title": "(Dismissed Alerts)",
+        "wheel": "/images/ignored.webp",
+        "color": "#666666",
+        "textColor": "#D0D0D0"
+      }
+    ],
+    "statusMap": {
+      "pending": "Awaiting Action",
+      "resolved": "Completed",
+      "ignored": "Ignored"
+    },
+    "alerts": [
+      {
+        "module": "Revenue Analysis",
+        "title": "Revenue Variance Detected",
+        "titleAr": "تم اكتشاف اختلاف في الإيرادات",
+        "date": "Nov 14, 2025",
+        "status": "Completed",
+        "description": "Q3 revenue decreased by 12% compared to Q2 - requires analysis",
+        "descriptionAr": "انخفضت إيرادات الربع الثالث بنسبة 12٪ مقارنة بالربع الثاني - تتطلب تحليلاً",
+        "fullModuleName": "Revenue Analysis Module",
+        "actionTitle": "Action Taken",
+        "actionNote": "Detailed variance analysis completed and presented to management",
+        "assignee": "Sarah Johnson - Financial Analyst",
+        "actionDate": "Nov 14, 2025"
+      },
+      {
+        "module": "COGS Analysis",
+        "title": "COGS Increase Alert",
+        "titleAr": "تنبيه بزيادة تكلفة المبيعات",
+        "date": "Nov 14, 2025",
+        "status": "Awaiting Action",
+        "description": "Significant increase in production costs for flagship product",
+        "descriptionAr": "زيادة كبيرة في تكاليف الإنتاج للمنتج الرئيسي",
+        "fullModuleName": "COGS Analysis Module",
+        "actionTitle": "Action Taken",
+        "actionNote": "-",
+        "assignee": "Sarah Johnson - Financial Analyst",
+        "actionDate": "Nov 14, 2025"
+      },
+      {
+        "module": "Financial statement",
+        "title": "Monthly Statements Pending",
+        "titleAr": "البيانات الشهرية معلقة",
+        "date": "Nov 14, 2025",
+        "status": "Awaiting Action",
+        "description": "Consolidated financial statements for October require final review",
+        "descriptionAr": "البيانات المالية الموحدة لشهر أكتوبر تتطلب مراجعة نهائية",
+        "fullModuleName": "Financial Statement Module",
+        "actionTitle": "Action Taken",
+        "actionNote": "-",
+        "assignee": "Sarah Johnson - Financial Analyst",
+        "actionDate": "Nov 14, 2025"
+      }
+    ]
+  },
+  "appointmentsPage": {
+    "_url": "http://localhost:3000/appointment",
+    "stats": [
+      {
+        "label": "Total Hours (This Month)",
+        "labelAr": "إجمالي الساعات (هذا الشهر)",
+        "value": "20 hrs",
+        "icon": "/images/icons/Hours.svg"
+      },
+      {
+        "label": "Hours Used",
+        "labelAr": "الساعات المستخدمة",
+        "value": "3 hrs",
+        "sublabel": "Completed meetings",
+        "sublabelAr": "الاجتماعات المكتملة",
+        "icon": "/images/icons/Hours-Used.svg"
+      },
+      {
+        "label": "Hours Remaining",
+        "labelAr": "الساعات المتبقية",
+        "value": "17 hrs",
+        "sublabel": "Balance Available",
+        "sublabelAr": "الرصيد المتاح",
+        "icon": "/images/icons/Hours-Remaining.svg"
+      },
+      {
+        "label": "Next Review",
+        "labelAr": "المراجعة القادمة",
+        "value": "Nov 10, 2–4 PM",
+        "sublabel": "Upcoming",
+        "sublabelAr": "قادم",
+        "icon": "/images/icons/Next-Review.svg"
+      }
+    ],
+    "banner": {
+      "text": "You can request up to 3 extra hours per month, subject to consultant availability.",
+      "textAr": "يمكنك طلب ما يصل إلى 3 ساعات إضافية شهرياً، وتخضع لتوفر المستشار."
+    },
+    "legend": [
+      {
+        "label": "Pending",
+        "labelAr": "قيد الانتظار",
+        "color": "#D97706"
+      },
+      {
+        "label": "Scheduled",
+        "labelAr": "مجدول",
+        "color": "#3B82F6"
+      },
+      {
+        "label": "Extra Hours",
+        "labelAr": "ساعات إضافية",
+        "color": "#F97316"
+      },
+      {
+        "label": "Cancelled",
+        "labelAr": "ملغي",
+        "color": "#991B1B"
+      },
+      {
+        "label": "Completed",
+        "labelAr": "مكتمل",
+        "color": "#018E71"
+      }
+    ],
+    "statusStyles": {
+      "Completed": {
+        "bg": "#D6F5ED",
+        "text": "#018E71"
+      },
+      "Pending": {
+        "bg": "#FFF4E5",
+        "text": "#D97706"
+      },
+      "Scheduled": {
+        "bg": "#E5F1FF",
+        "text": "#3B82F6"
+      },
+      "Cancelled": {
+        "bg": "#FFE8E8",
+        "text": "#EF4444"
+      }
+    },
+    "typeStyles": {
+      "Monthly Review": {
+        "bg": "#D6F5ED",
+        "text": "#018E71"
+      },
+      "Consultation": {
+        "bg": "#FFE8E8",
+        "text": "#FF5B5B"
+      }
+    },
+    "columns": [
+      "Date",
+      "Consultant",
+      "Type",
+      "Duration",
+      "Status",
+      "Action"
+    ],
+    "columnsAr": [
+      "التاريخ",
+      "المستشار",
+      "النوع",
+      "المدة",
+      "الحالة",
+      "إجراء"
+    ],
+    "appointments": [
+      {
+        "date": "Nov 10, 2025",
+        "time": "2-4 PM",
+        "consultant": "Sarah Al-Fahad",
+        "type": "Monthly Review",
+        "duration": "2 hrs",
+        "status": "Scheduled"
+      },
+      {
+        "date": "Nov 05, 2025",
+        "time": "10-11 AM",
+        "consultant": "Ahmed Mansour",
+        "type": "Consultation",
+        "duration": "1 hr",
+        "status": "Completed"
+      },
+      {
+        "date": "Nov 15, 2025",
+        "time": "11-12 PM",
+        "consultant": "Sarah Al-Fahad",
+        "type": "Monthly Review",
+        "duration": "1 hr",
+        "status": "Pending"
+      }
+    ]
+  },
+  "revenuePartnershipLoginPage": {
+    "_url": "http://localhost:3000/revenue-partnership-login",
+    "title": "Revenue Partnership Login",
+    "titleAr": "تسجيل دخول شراكة الإيرادات",
+    "subtitle": "Track Client Revenue, Partner Performance & Shared Earnings",
+    "subtitleAr": "تتبع إيرادات العملاء وأداء الشركاء والأرباح المشتركة",
+    "roles": [
+      "Partner",
+      "Accounts",
+      "Admin"
+    ],
+    "rolesAr": [
+      "شريك",
+      "حسابات",
+      "مسؤول"
+    ],
+    "labels": {
+      "loginAs": "Login as",
+      "loginAsAr": "تسجيل الدخول كـ",
+      "email": "Email Address *",
+      "emailAr": "عنوان البريد الإلكتروني *",
+      "password": "Password *",
+      "passwordAr": "كلمة المرور *",
+      "submit": "Login to Dashboard",
+      "submitAr": "تسجيل الدخول إلى لوحة التحكم"
+    },
+    "placeholders": {
+      "email": "your.email@company.com",
+      "password": "Min. 6 characters",
+      "passwordAr": "6 أحرف كحد أدنى"
+    },
+    "footer": {
+      "copyright": "Copyright Reserved @2025",
+      "copyrightAr": "جميع الحقوق محفوظة @2025",
+      "lastSync": "Last Sync: 19 Oct 2025, 10:45 AM IST",
+      "lastSyncAr": "آخر تزامن: 19 أكتوبر 2025، 10:45 صباحًا بتوقيت IST"
+    }
+  },
+  "revenuePartnership": {
+    "partnerInfo": {
+      "_page": "pages/revenue-partnership/accounts.vue",
+      "_note": "Logged-in partner identity shown in the dashboard header",
+      "role": "Partner",
+      "partnerId": "PARTNER-001"
+    },
+    "overviewMetrics": {
+      "_page": "pages/revenue-partnership/accounts.vue → tab: Overview → Overview Metrics section",
+      "_note": "Three summary KPI cards shown at the top of the Overview tab",
+      "cards": [
+        {
+          "title": "Total Customers",
+          "value": "5",
+          "subtext": "Partner-sourced clients",
+          "isCurrency": false
+        },
+        {
+          "title": "Total Revenue",
+          "value": "808,000",
+          "subtext": "All partner revenue",
+          "isCurrency": true
+        },
+        {
+          "title": "Amount Collected",
+          "value": "714,500",
+          "subtext": "Collection rate: 88.4%",
+          "isCurrency": true
+        }
+      ]
+    },
+    "paymentStatusMetrics": {
+      "_page": "pages/revenue-partnership/accounts.vue → tab: Overview → Payment Status Overview section",
+      "_note": "Three payment-status summary cards (Paid, Failed, Settlements)",
+      "cards": [
+        {
+          "title": "Paid",
+          "value": "808,000",
+          "count": "3",
+          "subtext": "Completed payments"
+        },
+        {
+          "title": "Failed",
+          "value": "808,000",
+          "count": "3",
+          "subtext": "Failed Payments"
+        },
+        {
+          "title": "Settlements",
+          "value": "808,000",
+          "count": "3",
+          "subtext": "Total Partner Payments"
+        }
+      ]
+    },
+    "customerManagement": {
+      "_page": "pages/revenue-partnership/accounts.vue → tab: Operations → Customer Management section",
+      "_note": "Four sub-tabs each rendering a different table: Partners, Direct Customers, Notify Customers, User Master Info",
+      "subTabs": [
+        {
+          "name": "Partners",
+          "count": 3
+        },
+        {
+          "name": "Direct Customers",
+          "count": 2
+        },
+        {
+          "name": "Notify Customers",
+          "count": 2
+        },
+        {
+          "name": "User Master Info",
+          "count": 2
+        }
+      ],
+      "partnerSourceOptions": [
+        "PT-001",
+        "PT-002",
+        "PT-003"
+      ],
+      "partners": {
+        "_page": "pages/revenue-partnership/accounts.vue → Operations → Customer Management → Partners sub-tab",
+        "data": [
+          {
+            "code": "CUST-001",
+            "source": "PT-001",
+            "company": "TechCorp Solutions Inc.",
+            "period": "125,000",
+            "year": "1",
+            "revenue": "125,000",
+            "collected": "125,000",
+            "settlement": "125,000",
+            "date": "11/5/2024",
+            "status": "Paid"
+          },
+          {
+            "code": "CUST-002",
+            "source": "PT-002",
+            "company": "Global Finance LLC",
+            "period": "89,000",
+            "year": "2",
+            "revenue": "89,000",
+            "collected": "89,000",
+            "settlement": "89,000",
+            "date": "11/5/2024",
+            "status": "Failed"
+          },
+          {
+            "code": "CUST-001",
+            "source": "PT-003",
+            "company": "TechCorp Solutions Inc.",
+            "period": "125,000",
+            "year": "3+",
+            "revenue": "125,000",
+            "collected": "125,000",
+            "settlement": "125,000",
+            "date": "11/5/2024",
+            "status": "Failed"
+          }
+        ]
+      },
+      "directCustomers": {
+        "_page": "pages/revenue-partnership/accounts.vue → Operations → Customer Management → Direct Customers sub-tab",
+        "data": [
+          {
+            "code": "CUST-001",
+            "source": "DC-001",
+            "company": "TechCorp Solutions Inc.",
+            "revenue": "125,000",
+            "collected": "125,000",
+            "date": "11/5/2024",
+            "status": "Paid",
+            "reason": "-"
+          },
+          {
+            "code": "CUST-002",
+            "source": "DC-002",
+            "company": "Global Finance LLC",
+            "revenue": "89,000",
+            "collected": "89,000",
+            "date": "11/5/2024",
+            "status": "Failed",
+            "reason": "Invoice not received"
+          },
+          {
+            "code": "CUST-001",
+            "source": "DC-003",
+            "company": "TechCorp Solutions Inc.",
+            "revenue": "125,000",
+            "collected": "125,000",
+            "date": "11/5/2024",
+            "status": "Failed",
+            "reason": "Card limit exceeded"
+          }
+        ]
+      },
+      "notifyCustomers": {
+        "_page": "pages/revenue-partnership/accounts.vue → Operations → Customer Management → Notify Customers sub-tab",
+        "_note": "Cards expiring in under 30 days — triggers the yellow alert banner at the top of the page",
+        "data": [
+          {
+            "code": "CUST-001",
+            "source": "DC-001",
+            "company": "TechCorp Solutions Inc.",
+            "contact": "+123456789",
+            "cardType": "Visa",
+            "last4": "4432",
+            "expiry": "12/2024",
+            "status": "Expiring",
+            "action": "Notify"
+          },
+          {
+            "code": "CUST-002",
+            "source": "DC-002",
+            "company": "Global Finance LLC",
+            "contact": "+123456789",
+            "cardType": "Mastercard",
+            "last4": "9921",
+            "expiry": "11/2024",
+            "status": "Expiring",
+            "action": "Notified"
+          }
+        ]
+      },
+      "userMasterInfo": {
+        "_page": "pages/revenue-partnership/accounts.vue → Operations → Customer Management → User Master Info sub-tab",
+        "_note": "Full customer contact and payment method details",
+        "data": [
+          {
+            "code": "CUST-001",
+            "source": "DC-001",
+            "company": "TechCorp Solutions Inc.",
+            "bank": "Chase Bank *****1234",
+            "card": "**** 4532",
+            "contactPerson": "John Smith",
+            "contactNo": "+1-555-0101",
+            "email": "john.smith@techcorp.com"
+          },
+          {
+            "code": "CUST-001",
+            "source": "DC-001",
+            "company": "TechCorp Solutions Inc.",
+            "bank": "Chase Bank *****1234",
+            "card": "**** 4532",
+            "contactPerson": "John Smith",
+            "contactNo": "+1-555-0101",
+            "email": "john.smith@techcorp.com"
+          },
+          {
+            "code": "CUST-001",
+            "source": "DC-001",
+            "company": "TechCorp Solutions Inc.",
+            "bank": "Chase Bank *****1234",
+            "card": "**** 4532",
+            "contactPerson": "John Smith",
+            "contactNo": "+1-555-0101",
+            "email": "john.smith@techcorp.com"
+          }
+        ]
+      }
+    },
+    "paymentToPartnerModal": {
+      "_page": "pages/revenue-partnership/accounts.vue → Operations tab → 'Payment to Partner' button → modal",
+      "_note": "List of partners available in the Select Partner dropdown inside the payment modal",
+      "partnerOptions": [
+        "TechCorp Solutions Inc.",
+        "Innovate System Ltd.",
+        "Enterprise Holdings"
+      ]
+    },
+    "alerts": {
+      "_page": "pages/revenue-partnership/accounts.vue → Alert Banner (top of page)",
+      "_note": "Yellow warning banner shown when expiring cards are detected",
+      "expiringCardsCount": 3,
+      "expiringCardsDaysThreshold": 30
+    }
+  },
+  "revenuePartnershipSelectDashboardPage": {
+    "_url": "http://localhost:3000/revenue-partnership/select-dashboard",
+    "title": "Select Dashboard",
+    "subtitle": "Choose which dashboard you'd like to access",
+    "cards": [
+      {
+        "icon": "/images/icons/Ticketing-System.svg",
+        "title": "Ticketing System",
+        "description": "Manage customer support tickets, track issues, and monitor resolution times",
+        "buttonLabel": "Access Ticketing Dashboard"
+      },
+      {
+        "icon": "/images/icons/Revenue-Partnership.svg",
+        "title": "Revenue Partnership",
+        "description": "Track revenue, manage partners, analyze costs, and monitor financial metrics",
+        "buttonLabel": "Access Revenue Dashboard",
+        "route": "/revenue-partnership/admin"
+      }
+    ]
+  },
+  "revenuePartnershipAdminPage": {
+    "_url": "http://localhost:3000/revenue-partnership/admin",
+    "alert": {
+      "title": "Upcoming Card Expiries",
+      "text": "3 customer cards are due to expire soon. Accounts has been alerted for action."
+    },
+    "overviewMetrics": {
+      "cards": [
+        {
+          "title": "Total Customers",
+          "value": "5",
+          "subtext": "Partner-sourced clients",
+          "icon": "/images/icons/Total-Customers.svg",
+          "isCurrency": false
+        },
+        {
+          "title": "Total Revenue",
+          "value": "808,000",
+          "subtext": "All partner revenue",
+          "icon": "/images/icons/doller-green.svg",
+          "isCurrency": true
+        },
+        {
+          "title": "Amount Collected",
+          "value": "714,500",
+          "subtext": "Collection rate: 88.4%",
+          "icon": "/images/icons/amt_collected.svg",
+          "isCurrency": true
+        }
+      ]
+    },
+    "paymentStatusMetrics": {
+      "cards": [
+        {
+          "title": "Paid",
+          "value": "808,000",
+          "count": "3",
+          "subtext": "Completed payments",
+          "icon": "/images/icons/green-tick.svg",
+          "bgClass": "bg-[#F0FDF4]",
+          "borderColor": "border-[#04C18F80]"
+        },
+        {
+          "title": "Failed",
+          "value": "808,000",
+          "count": "3",
+          "subtext": "Failed Payments",
+          "icon": "/images/icons/close.svg",
+          "bgClass": "bg-[#FEF2F2]",
+          "borderColor": "border-[#FFA6A6]",
+          "textColor": "#C10007"
+        },
+        {
+          "title": "Settlements",
+          "value": "808,000",
+          "count": "3",
+          "subtext": "Total Partner Payments",
+          "icon": "/images/icons/Settlements-blue.svg",
+          "bgClass": "bg-[#DFF4FF]",
+          "borderColor": "border-[#1FB2FF]",
+          "textColor": "#005B8A"
+        }
+      ]
+    },
+    "operationsSubTabs": [
+      { "name": "All Customers", "count": 21 },
+      { "name": "Partners", "count": 0 },
+      { "name": "Direct Customers", "count": 2 },
+      { "name": "Resource Consumption" },
+      { "name": "Partner Approvals" },
+      { "name": "Uploaded Reports", "count": 2 },
+      { "name": "User Master Info", "count": 2 }
+    ],
+    "approvalSubTabs": [
+      { "name": "Partner Registration", "count": 2 },
+      { "name": "Payment Requests", "count": 3 }
+    ],
+    "statusFilters": ["All Statuses", "Pending", "Approved", "Rejected"]
+  },
+  "reviewManagerSelectDashboardPage": {
+    "_url": "http://localhost:3000/review-manager/select-dashboard",
+    "title": "Select Dashboard",
+    "subtitle": "Choose which dashboard you'd like to access",
+    "cards": [
+      {
+        "icon": "/images/icons/Ticketing-System.svg",
+        "title": "Ticketing System",
+        "description": "Review and approve tickets raised by the team, track progress, and manage development priorities.",
+        "buttonLabel": "Access Ticketing Dashboard"
+      },
+      {
+        "icon": "/images/icons/Revenue-Partnership.svg",
+        "title": "Review Dashboard",
+        "description": "Monitor consultant productivity, track client review progress, and manage workload across your team.",
+        "buttonLabel": "Access Review Dashboard"
+      }
+    ]
+  },
+  "reviewManagerDashboardPage": {
+    "_url": "http://localhost:3000/review-manager/dashboard",
+    "productivityMetrics": {
+      "cards": [
+        {
+          "title": "Number of Active Clients",
+          "value": "3",
+          "icon": "/images/icons/Number-of-Active-Clients.svg",
+          "bgClass": "bg-[#EFF6FF]",
+          "borderClass": "border-[#BFDBFE]",
+          "textClass": "text-blue-600"
+        },
+        {
+          "title": "Number of open requests from clients",
+          "value": "3",
+          "icon": "/images/icons/Number-of-open-requests-from-clients.svg",
+          "bgClass": "bg-[#FFF1F2]",
+          "borderClass": "border-[#FECACA]",
+          "textClass": "text-red-500"
+        },
+        {
+          "title": "Number of active consultants",
+          "value": "3",
+          "icon": "/images/icons/Number-of-active-consultants.svg",
+          "bgClass": "bg-[#ECFDF5]",
+          "borderClass": "border-[#D1FAE5]",
+          "textClass": "text-[#10B981]"
+        },
+        {
+          "title": "Clients with data not synced",
+          "value": "3",
+          "icon": "/images/icons/Clients-with-data-not-synced.svg",
+          "bgClass": "bg-[#FFFBEB]",
+          "borderClass": "border-[#FEF3C7]",
+          "textClass": "text-[#F59E0B]"
+        }
+      ]
+    },
+    "tabs": [
+      "Productivity tracker",
+      "Data Sync Status",
+      "Client fixed progress",
+      "Consultant workload",
+      "Assign Consultant",
+      "Client review analysis progress"
+    ],
+    "consultants": [
+      { "id": "C001", "name": "Arjun Mehta", "fixed": 2, "adhoc": 4 },
+      { "id": "C002", "name": "Priya Nair", "fixed": 2, "adhoc": 10 },
+      { "id": "C003", "name": "Rahul Das", "fixed": 1, "adhoc": 3 },
+      { "id": "C004", "name": "Vikram Iyer", "fixed": 3, "adhoc": 20 }
+    ],
+    "syncData": [
+      { "id": "C001", "name": "Arjun Enterprises", "date": "19 Oct 2025, 10:45 AM", "status": "Synced", "consultant": "Arjun Mehta" },
+      { "id": "C002", "name": "Bloom Tech Pvt Ltd", "date": "19 Oct 2025, 09:12 AM", "status": "Synced", "consultant": "Priya Nair" },
+      { "id": "C003", "name": "Coastline Exports", "date": "15 Oct 2025, 06:45 AM", "status": "Not Synced", "consultant": "Rahul Das", "daysAgo": 4 },
+      { "id": "C004", "name": "Delta Logistics", "date": "14 Oct 2025, 02:10 PM", "status": "Not Synced", "consultant": "Vikram Iyer", "daysAgo": 4 }
+    ],
+    "clientFixedProgressData": [
+      { "id": "C001", "consultantName": "Arjun Mehta", "clientName": "Logistics Express Inc.", "progressValue": 10, "progressTotal": 15, "delay": "Final review pending" },
+      { "id": "C002", "consultantName": "Priya Nair", "clientName": "Food Services Group", "progressValue": 8, "progressTotal": 15, "delay": "-" },
+      { "id": "C003", "consultantName": "Rahul Das", "clientName": "Food Services Group", "progressValue": 3, "progressTotal": 15, "delay": "-" },
+      { "id": "C004", "consultantName": "Vikram Iyer", "clientName": "Food Services Group", "progressValue": 8, "progressTotal": 15, "delay": "-" }
+    ],
+    "consultantWorkloadData": [
+      { "id": "C001", "name": "Arjun Mehta", "avgHours": "142 hrs", "clientFixed": "4 hrs 36 min", "clientRequest": "4 hrs 36 min", "clientAnalysis": "4 hrs 36 min" },
+      { "id": "C002", "name": "Priya Nair", "avgHours": "142 hrs", "clientFixed": "4 hrs 36 min", "clientRequest": "4 hrs 36 min", "clientAnalysis": "4 hrs 36 min" },
+      { "id": "C003", "name": "Rahul Das", "avgHours": "142 hrs", "clientFixed": "4 hrs 36 min", "clientRequest": "4 hrs 36 min", "clientAnalysis": "4 hrs 36 min" },
+      { "id": "C004", "name": "Vikram Iyer", "avgHours": "142 hrs", "clientFixed": "4 hrs 36 min", "clientRequest": "4 hrs 36 min", "clientAnalysis": "4 hrs 36 min" }
+    ],
+    "assignConsultantData": [
+      { "id": "client-7", "clientName": "Logistics Express Inc.", "completedDate": "01/10/2026", "mobile": "+ 123 123 123", "email": "sarahjoseph@gmail.com", "selectedConsultant": "" },
+      { "id": "client-4", "clientName": "Food Services Group", "completedDate": "01/10/2026", "mobile": "+ 123 123 123", "email": "sarahmathew@gmail.com", "selectedConsultant": "" },
+      { "id": "client-4", "clientName": "Food Services Group", "completedDate": "01/10/2026", "mobile": "+ 123 123 123", "email": "sarahjoseph@gmail.com", "selectedConsultant": "" },
+      { "id": "client-4", "clientName": "Food Services Group", "completedDate": "01/10/2026", "mobile": "+ 123 123 123", "email": "sarahjoseph@gmail.com", "selectedConsultant": "" }
+    ],
+    "clientReviewAnalysisData": [
+      { "id": "C001", "consultantName": "Arjun Mehta", "clientName": "Logistics Express Inc.", "appointmentType": "Client Review", "delay": "Final review pending" },
+      { "id": "C002", "consultantName": "Priya Nair", "clientName": "Food Services Group", "appointmentType": "Client Analysis", "delay": "-" },
+      { "id": "C003", "consultantName": "Rahul Das", "clientName": "Food Services Group", "appointmentType": "Client Review", "delay": "-" },
+      { "id": "C004", "consultantName": "Vikram Iyer", "clientName": "Food Services Group", "appointmentType": "Client Review", "delay": "-" }
+    ],
+    "consultantList": [
+      { "name": "Consultant A", "activeCount": 3 },
+      { "name": "Consultant B", "activeCount": 5 },
+      { "name": "Consultant C", "activeCount": 6 }
+    ]
+  },
+  "revenuePartnershipPartnerPage": {
+    "_url": "http://localhost:3000/revenue-partnership/partner",
+    "alert": {
+      "title": "Expiring cards detected",
+      "titleAr": "تم اكتشاف بطاقات منتهية الصلاحية",
+      "text": "You have {CUST-005,CUST-007} customers with credit cards expiring within the next 30 days. Kindly reach out to them and ensure their payment details are updated.",
+      "textAr": "لديك عملاء {CUST-005, CUST-007} تنتهي صلاحية بطاقاتهم الائتمانية خلال الثلاثين يومًا القادمة. يرجى التواصل معهم والتأكد من تحديث تفاصيل الدفع الخاصة بهم."
+    },
+    "mainStats": [
+      { "title": "Total Customers", "titleAr": "إجمالي العملاء", "value": "5", "subtext": "Partner-sourced clients", "subtextAr": "العملاء المصدرون من قبل الشركاء", "icon": "/images/icons/Total-Customers.svg", "isCurrency": false },
+      { "title": "Total Revenue", "titleAr": "إجمالي الإيرادات", "value": "808,000", "subtext": "All partner revenue", "subtextAr": "إجمالي إيرادات الشركاء", "icon": "/images/icons/doller-green.svg", "isCurrency": true },
+      { "title": "Amount Collected", "titleAr": "المبلغ المحصل", "value": "714,500", "subtext": "Collection rate: 88.4%", "subtextAr": "معدل التحصيل: 88.4٪", "icon": "/images/icons/amt_collected.svg", "isCurrency": true },
+      { "title": "Settlements", "titleAr": "التسويات", "value": "714,500", "subtext": "Total disbursed", "subtextAr": "إجمالي المبالغ المصروفة", "icon": "/images/icons/settlement.svg", "isCurrency": true }
+    ],
+    "partnerSummary": {
+      "title": "Partner Summary",
+      "titleAr": "ملخص الشريك",
+      "exportBtn": "Export to Excel",
+      "exportBtnAr": "تصدير إلى إكسل",
+      "partners": [
+        {
+          "name": "Acme Partners",
+          "metrics": [
+            { "label": "Customers:", "labelAr": "العملاء:", "value": "3" },
+            { "label": "Revenue:", "labelAr": "الإيرادات:", "value": "510,000", "isCurrency": true },
+            { "label": "Collected:", "labelAr": "المحصل:", "value": "416,500", "isCurrency": true },
+            { "label": "Collection Rate:", "labelAr": "معدل التحصيل:", "value": "81.7%", "isRate": true }
+          ]
+        },
+        {
+          "name": "Beta Consulting",
+          "metrics": [
+            { "label": "Customers:", "labelAr": "العملاء:", "value": "2" },
+            { "label": "Revenue:", "labelAr": "الإيرادات:", "value": "298,000", "isCurrency": true },
+            { "label": "Collected:", "labelAr": "المحصل:", "value": "298,000", "isCurrency": true },
+            { "label": "Collection Rate:", "labelAr": "معدل التحصيل:", "value": "100.0%", "isRate": true }
+          ]
+        }
+      ]
+    },
+    "paymentDetails": {
+      "title": "Payment Details & Management",
+      "titleAr": "تفاصيل وإدارة الدفع",
+      "unitText": "Values in AED Million",
+      "unitTextAr": "القيم بملايين الدراهم الإماراتية",
+      "searchPlaceholder": "Search by company name, customer code, or source...",
+      "searchPlaceholderAr": "البحث عن طريق اسم الشركة أو كود العميل أو المصدر...",
+      "statusPlaceholder": "All Statuses",
+      "statusPlaceholderAr": "كل الحالات",
+      "statuses": ["All Statuses", "Paid", "Failed"],
+      "statusesAr": ["كل الحالات", "مدفوع", "فشل"],
+      "exportBtn": "Export to Excel",
+      "exportBtnAr": "تصدير إلى إكسل",
+      "table": {
+        "columns": ["Customer Code", "Partner Name", "Company Name", "Contract Period", "Year", "Revenue", "Collected", "Settlement", "Payment Status"],
+        "columnsAr": ["كود العميل", "اسم الشريك", "اسم الشركة", "فترة العقد", "السنة", "الإيرادات", "المحصل", "التسوية", "حالة الدفع"],
+        "rows": [
+          { "code": "CUST-002", "partner": "Acme Partners", "company": "TechCorp Solutions Inc.", "period": "12 months", "year": "1", "revenue": "125,000", "collected": "125,000", "settlement": "15,000", "status": "Paid" },
+          { "code": "CUST-004", "partner": "Beta Consulting", "company": "Innovate Systems Ltd.", "period": "24 months", "year": "2", "revenue": "156,000", "collected": "156,000", "settlement": "26,000", "status": "Paid" },
+          { "code": "CUST-001", "partner": "Acme Partners", "company": "Enterprise Holdings", "period": "36 months", "year": "3+", "revenue": "198,000", "collected": "198,000", "settlement": "38,000", "status": "Paid" },
+          { "code": "CUST-002", "partner": "Beta Consulting", "company": "Healthcare Plus", "period": "24 months", "year": "2", "revenue": "142,000", "collected": "142,000", "settlement": "12,000", "status": "Failed" }
+        ]
+      }
+    }
+  }
+}

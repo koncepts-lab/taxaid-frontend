@@ -29,10 +29,10 @@
       <!-- Left Content -->
       <div class="flex flex-col">
         <div class="text-[12px] font-medium transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? 'نسبة تكلفة البضائع المباعة إلى الإيرادات' : 'COGS to Revenue Ratio' }}</div>
-        <div class="text-[40px] font-semibold leading-tight transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">65%</div>
+        <div class="text-[40px] font-semibold leading-tight transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">{{ cogsRatio }}</div>
         <div class="flex items-center gap-1 text-[#05B743] font-medium text-[14px] mt-1">
-          <span><img src="/images/icons/up.svg" alt="C.O.G.S" class="w-4 h-4 object-contain" /></span>
-          <span class="text-[12px] font-Regular transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? '2% مقارنة بالشهر الماضي' : '2% vs last month' }}</span>
+          <span><img :src="trend === 'up' ? '/images/icons/up.svg' : '/images/icons/down-right.svg'" alt="trend" class="w-4 h-4 object-contain" /></span>
+          <span class="text-[12px] font-Regular transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ vsLastMonth }} {{ currentLang === 'ar' ? 'مقارنة بالشهر الماضي' : 'vs last month' }}</span>
         </div>
       </div>
 
@@ -72,8 +72,8 @@
     </div>
 
     <div class="text-[12px] leading-snug transition-colors duration-300" :class="isDark ? 'text-white/40' : 'text-gray-400'">
-      {{ currentLang === 'ar' ? 'تم تحقيق كفاءة تشغيلية أكبر.' : 'Achieved greater operational efficiency.' }}<br>
-      {{ currentLang === 'ar' ? 'والآن يتم فتح هوامش ربح أعلى.' : 'Now unlocking higher profit margins.' }}
+      {{ footerText.split('\n')[0] }}<br>
+      {{ footerText.split('\n')[1] }}
     </div>
   </div>
 </template>
@@ -84,6 +84,17 @@ const currentLang = useState('currentLang')
 const { isDark } = useTheme()
 const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'COGS')
+
+// ── Pull values from website-data.json ────────────────────────────────────
+const { cogs } = useMainDashboard()
+
+const cogsRatio   = computed(() => cogs.value?.cogsToRevenueRatio ?? '65%')
+const vsLastMonth = computed(() => cogs.value?.vsLastMonth ?? '+2%')
+const trend       = computed(() => cogs.value?.trend ?? 'up')
+const footerText  = computed(() => currentLang.value === 'ar'
+  ? (cogs.value?.footerTextAr ?? 'تم تحقيق كفاءة تشغيلية أكبر.\nوالآن يتم فتح هوامش ربح أعلى.')
+  : (cogs.value?.footerText   ?? 'Achieved greater operational efficiency.\nNow unlocking higher profit margins.')
+)
 </script>
 
 <style scoped>

@@ -59,12 +59,9 @@
                             <img src="/images/icons/calendar.svg" class="w-4 h-4 inline-block mr-2" />
                             <p class="text-black/50 text-xs font-medium">Upcoming Tax Deadlines</p>
                         </div>
-                        <div class="text-black text-xs">VAT Return Date: <span class="text-orange-50 font-semibold">28
-                                Jan
-                                2026</span></div>
-                        <div class="text-black text-xs">CT Return Date: <span class="text-orange-50 font-semibold">20
-                                Jun
-                                2026</span></div>
+                        <div v-for="deadline in deadlines" :key="deadline.label" class="text-black text-xs">
+                          {{ deadline.label }}: <span class="text-orange-50 font-semibold" :class="'text-' + deadline.color">{{ deadline.date }}</span>
+                        </div>
                     </div>
 
                     <button
@@ -177,52 +174,9 @@ watch(() => props.isSideChatOpen, (val) => {
     if (!val) setTimeout(() => viewMode.value = 'menu', 300);
 });
 
-const tabs = [
-    { id: 'vat', name: 'VAT Queries', icon: '/images/icons/vat.svg' },
-    { id: 'corporate', name: 'Corporate Tax', icon: '/images/icons/corporate-tax.svg' },
-    { id: 'ifrs', name: 'IFRS', icon: '/images/icons/ifrs.svg' },
-    { id: 'accounting', name: 'General Accounting', icon: '/images/icons/general.svg' }
-];
+const { tabs, historyGroups, deadlines } = useTaxQueriesPage()
 
-const historyGroups = [
-    {
-        label: 'Today',
-        queries: [
-            "How can I claim input VAT on business...",
-            "What are the UAE VAT return filing...",
-            "Why is my VAT refund taking longer...",
-            "How to handle VAT for export services..."
-        ]
-    },
-    {
-        label: 'Previous 7 Days',
-        queries: [
-            "How can I claim input VAT on business...",
-            "What are the UAE VAT return filing...",
-            "Why is my VAT refund taking longer...",
-            "How to handle VAT for export services..."
-        ]
-    },
-    {
-        label: 'Previous 30 Days',
-        queries: [
-            "How can I claim input VAT on business...",
-            "What are the UAE VAT return filing...",
-            "Why is my VAT refund taking longer...",
-            "How to handle VAT for export services..."
-        ]
-    }
-];
-watch(() => props.isSideChatOpen, (val) => {
-    if (!val) {
-        setTimeout(() => {
-            viewMode.value = 'menu';
-            searchQuery.value = ''; // Clear search when sidebar closes
-        }, 300);
-    }
-});
-// Reference for Step 1
-const recentQueries = historyGroups[0].queries;
+const recentQueries = computed(() => historyGroups.value[0]?.queries ?? []);
 </script>
 
 <style scoped>

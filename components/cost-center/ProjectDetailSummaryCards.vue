@@ -20,9 +20,6 @@
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const cards = [
-  { label: 'Contract Value', labelAr: 'قيمة العقد', value: 'AED 3.10 M', icon: '/images/icons/Contract-Value.svg' },
-  { label: 'Invoiced', labelAr: 'المفوترة', value: 'AED 2.45 M', icon: '/images/icons/Invoiced.svg' },
-  { label: 'Yet to Invoice', labelAr: 'لم يتم الفوترة بعد', value: 'AED 8.12 M', icon: '/images/icons/Yet-to-Invoice.svg' }
-]
+const { projectDetail } = useCostCenterPage()
+const cards = computed(() => projectDetail.value?.summaryCards ?? [])
 </script>

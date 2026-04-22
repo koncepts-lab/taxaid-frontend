@@ -249,43 +249,7 @@ const expandedGroups = ref([0]) // Default expand first group
 const selectAll = ref(false)
 const isModalOpen = ref(false)
 
-const arData = ref([
-  {
-    label: 'Corporate Clients',
-    labelAr: 'عملاء الشركات',
-    total: '550,000',
-    age30: '250,000',
-    age3060: '150,000',
-    age6090: '90,000',
-    age90plus: '60,000',
-    invoices: [
-      { id: 'Invoice 1', total: '550,000', age30: '250,000', age3060: '150,000', age6090: '90,000', age90plus: '60,000', selected: true },
-      { id: 'Invoice 2', total: '550,000', age30: '250,000', age3060: '150,000', age6090: '90,000', age90plus: '60,000', selected: true },
-      { id: 'Invoice 3', total: '550,000', age30: '250,000', age3060: '150,000', age6090: '90,000', age90plus: '60,000', selected: false },
-      { id: 'Invoice 4', total: '550,000', age30: '250,000', age3060: '150,000', age6090: '90,000', age90plus: '60,000', selected: false },
-    ]
-  },
-  {
-    label: 'Retail Customers',
-    labelAr: 'عملاء التجزئة',
-    total: '265,000',
-    age30: '120,000',
-    age3060: '80,000',
-    age6090: '40,000',
-    age90plus: '25,000',
-    invoices: []
-  },
-  {
-    label: 'Export Clients',
-    labelAr: 'عملاء التصدير',
-    total: '145,000',
-    age30: '70,000',
-    age3060: '40,000',
-    age6090: '25,000',
-    age90plus: '10,000',
-    invoices: []
-  }
-])
+const { summary: arData } = useAccountsReceivablePage()
 
 const toggleGroup = (idx) => {
   const index = expandedGroups.value.indexOf(idx)

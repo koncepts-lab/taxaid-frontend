@@ -212,10 +212,12 @@ const { isDark } = useTheme();
 const currentLang = useState('currentLang', () => 'en');
 const isModalOpen = ref(false);
 
+const { gauge } = useRevenuePage()
+
 // Data
-const currentYearTarget = 8500000;
-const currentYearAchieved = 7820000;
-const lastYearPct = 9; // Based on the provided image legend
+const currentYearTarget   = computed(() => gauge.value?.target          ?? 8500000);
+const currentYearAchieved = computed(() => gauge.value?.achieved        ?? 7820000);
+const lastYearPct         = computed(() => gauge.value?.previousYearPct ?? 9); // Based on the provided image legend
 
 // Dashboard Logic Constants
 const colors = { lastYear: "#21E669", currentYear: "#03D8B0", balance: "#0A7C4B" };
@@ -240,7 +242,7 @@ onMounted(() => {
   requestAnimationFrame(animate);
 });
 
-const currentYearPct = computed(() => Math.min(100, (currentYearAchieved / currentYearTarget) * 100));
+const currentYearPct = computed(() => Math.min(100, (currentYearAchieved.value / currentYearTarget.value) * 100));
 const remainingSpan = computed(() => (endDeg - startDeg) - lastYearSpanDeg - (gapDeg * 2));
 
 const polarToCartesian = (angleDeg: number, radius = r) => {

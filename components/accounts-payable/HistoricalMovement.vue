@@ -1,6 +1,6 @@
 <template>
   <div
-    :class="['historical-movement-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-auto shadow-sm', isDark ? '' : 'border border-[#EFEFEF]']"
+    :class="['historical-movement-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-sm', isDark ? '' : 'border border-[#EFEFEF]']"
     :style="isDark ? 'background: #00141080 !important' : ''">
     <!-- Header -->
     <div class="flex lg:flex-row flex-col max-lg:gap-2 justify-between items-start mb-6 relative z-10 w-full"
@@ -27,7 +27,7 @@
     </div>
 
     <!-- Chart -->
-    <div class="flex-1 w-full relative z-10 min-h-[300px] min-w-175 overflow-auto">
+    <div class="flex-1 w-full relative z-10 min-h-[300px]">
       <ClientOnly>
         <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
@@ -85,14 +85,16 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const series = ref([
+const { historicalMovement } = useAccountsPayablePage()
+
+const series = computed(() => [
   {
     name: 'AR Balance',
-    data: [1.6, 3.2, 3.8, 4.3, 4.6, 4.8]
+    data: historicalMovement.value?.apBalance ?? []
   },
   {
     name: 'Percentage',
-    data: []
+    data: historicalMovement.value?.percentage ?? []
   }
 ])
 
@@ -125,7 +127,7 @@ const chartOptions = computed(() => ({
     hover: { size: 7 }
   },
   xaxis: {
-    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    categories: historicalMovement.value?.categories ?? [],
     tickPlacement: 'between',
     axisBorder: {
       show: true,

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="top-customers-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-auto shadow-md"
+    class="top-customers-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-md"
     :style="isDark ? 'background: #015A49CC !important' : ''">
     <!-- Header -->
     <div class="flex lg:flex-row flex-col max-lg:gap-2 justify-between items-start mb-6 text-white relative z-10">
@@ -28,14 +28,14 @@
     </div>
 
     <!-- Chart -->
-    <div class="flex-1 w-full min-h-[350px] min-w-175 relative z-10 overflow-auto">
+    <div class="flex-1 w-full min-h-[350px] relative z-10">
       <ClientOnly>
         <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
     </div>
 
     <!-- Bottom Legend Grid -->
-    <div class="grid grid-cols-5 gap-y-4 gap-x-6 mt-0 text-white relative z-10 min-w-175">
+    <div class="grid grid-cols-5 gap-y-4 gap-x-6 mt-0 text-white relative z-10">
       <div v-for="item in customers" :key="item.id" class="flex items-center gap-2 whitespace-nowrap ">
         <span class="text-[14px] font-semibold text-[#04C18F]">{{ item.id }}</span>
         <span class="text-[14px] font-regular truncate opacity-90">- {{ item.displayName }}</span>
@@ -105,36 +105,27 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const customersData = [
-  { id: 'A', name: 'Horizon Global', nameAr: 'هورايزون جلوبال', value: 3.3, color: '#04C18F' },
-  { id: 'B', name: 'Orion Tech', nameAr: 'أوريون تك', value: 4.1, color: '#04C18F' },
-  { id: 'C', name: 'Gulf Trading', nameAr: 'جلف تريدينج', value: 2.9, color: '#04C18F' },
-  { id: 'D', name: 'Prime Logistics', nameAr: 'برايم لوجيستكس', value: 3.7, color: '#04C18F' },
-  { id: 'E', name: 'Emirates Trading', nameAr: 'الإمارات للتجارة', value: 4.4, color: '#04C18F' },
-  { id: 'F', name: 'Alpha Tech', nameAr: 'ألفا تك', value: 1.9, color: '#04C18F' },
-  { id: 'G', name: 'Mena Retail', nameAr: 'مينا لتجارة التجزئة', value: 3.7, color: '#04C18F' },
-  { id: 'H', name: 'Crescent', nameAr: 'كريسنت', value: 4.0, color: '#04C18F' },
-  { id: 'I', name: 'Vertex Corp', nameAr: 'فيرتكس كورب', value: 2.8, color: '#04C18F' },
-  { id: 'J', name: 'Vertex Trading', nameAr: 'فيرتكس للتجارة', value: 3.2, color: '#04C18F' }
-]
+const { topCustomers } = useAccountsPayablePage()
+
+const customersData = computed(() => topCustomers.value?.customersData ?? [])
 
 const customers = computed(() => {
-  return customersData.map(c => ({
+  return customersData.value.map((c) => ({
     ...c,
     displayName: currentLang.value === 'ar' ? c.nameAr : c.name
   }))
 })
 
-const series = ref([
+const series = computed(() => [
   {
     name: 'AR Balance',
     type: 'column',
-    data: customersData.map(c => c.value)
+    data: customersData.value.map((c) => c.value)
   },
   {
     name: 'Cumulative %',
     type: 'line',
-    data: [40, 62, 70, 78, 85, 88, 92, 95, 97, 100]
+    data: topCustomers.value?.cumulativeLine ?? []
   }
 ])
 
@@ -177,7 +168,7 @@ const chartOptions = computed(() => ({
     hover: { size: 7 }
   },
   xaxis: {
-    categories: customersData.map(c => c.id),
+    categories: customersData.value.map(c => c.id),
     axisBorder: {
       show: true,
       color: '#00403333',
@@ -242,7 +233,7 @@ const chartOptions = computed(() => ({
     intersect: false,
     theme: 'light',
     custom: function ({ series, seriesIndex, dataPointIndex, w }) {
-      const customer = customersData[dataPointIndex]
+      const customer = customersData.value[dataPointIndex]
       const customerName = currentLang.value === 'ar' ? customer.nameAr : customer.name
       const bal = series[0][dataPointIndex]
       const cum = series[1][dataPointIndex]

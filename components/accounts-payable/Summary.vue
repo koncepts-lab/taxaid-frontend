@@ -136,21 +136,21 @@
           </template>
         </tbody>
         <tfoot>
-          <tr :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'" class="transition-all duration-500">
+          <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'" class="transition-all duration-500">
             <td class="lg:px-8 px-4 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
               currentLang
                 ===
                 'ar' ? 'الإجمالي' : 'Total' }}</td>
             <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">960,000</td>
+              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.total }}</td>
             <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">525,000</td>
+              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age30 }}</td>
             <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">330,000</td>
+              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age3060 }}</td>
             <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">205,000</td>
+              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age6090 }}</td>
             <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">125,000</td>
+              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age90plus }}</td>
           </tr>
         </tfoot>
       </table>
@@ -300,20 +300,20 @@
                 </template>
               </tbody>
               <tfoot>
-                <tr :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'"
+                <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'"
                   class="transition-all duration-500 sticky bottom-0 z-10">
                   <td class="px-8 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
                     currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
                   <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">960,000</td>
+                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.total }}</td>
                   <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">525,000</td>
+                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age30 }}</td>
                   <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">330,000</td>
+                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age3060 }}</td>
                   <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">205,000</td>
+                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age6090 }}</td>
                   <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">125,000</td>
+                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age90plus }}</td>
                 </tr>
               </tfoot>
             </table>
@@ -334,43 +334,8 @@ const expandedGroups = ref([0]) // Default expand first group
 const selectAll = ref(false)
 const isModalOpen = ref(false)
 
-const arData = ref([
-  {
-    label: 'Corporate Clients',
-    labelAr: 'عملاء الشركات',
-    total: '550,000',
-    age30: '250,000',
-    age3060: '150,000',
-    age6090: '90,000',
-    age90plus: '60,000',
-    invoices: [
-      { id: 'Invoice 1', total: '550,000', age30: '250,000', age3060: '150,000', age6090: '90,000', age90plus: '60,000', selected: true },
-      { id: 'Invoice 2', total: '550,000', age30: '250,000', age3060: '150,000', age6090: '90,000', age90plus: '60,000', selected: true },
-      { id: 'Invoice 3', total: '550,000', age30: '250,000', age3060: '150,000', age6090: '90,000', age90plus: '60,000', selected: false },
-      { id: 'Invoice 4', total: '550,000', age30: '250,000', age3060: '150,000', age6090: '90,000', age90plus: '60,000', selected: false },
-    ]
-  },
-  {
-    label: 'Retail Customers',
-    labelAr: 'عملاء التجزئة',
-    total: '265,000',
-    age30: '120,000',
-    age3060: '80,000',
-    age6090: '40,000',
-    age90plus: '25,000',
-    invoices: []
-  },
-  {
-    label: 'Export Clients',
-    labelAr: 'عملاء التصدير',
-    total: '145,000',
-    age30: '70,000',
-    age3060: '40,000',
-    age6090: '25,000',
-    age90plus: '10,000',
-    invoices: []
-  }
-])
+const { summary, summaryTotal } = useAccountsPayablePage()
+const arData = summary
 
 const toggleGroup = (idx) => {
   const index = expandedGroups.value.indexOf(idx)
@@ -382,7 +347,7 @@ const toggleGroup = (idx) => {
 }
 
 const handleSelectAll = () => {
-  arData.value.forEach(group => {
+  summary.value.forEach(group => {
     group.invoices.forEach(inv => {
       inv.selected = selectAll.value
     })

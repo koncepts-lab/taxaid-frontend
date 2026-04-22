@@ -65,16 +65,15 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const series = computed(() => [
-  {
-    name: currentLang.value === 'ar' ? 'السنة السابقة' : 'Previous Year',
-    data: [2.8, 3.1, 3.4, 1.5, 2.5]
-  },
-  {
-    name: currentLang.value === 'ar' ? 'السنة الحالية' : 'Current Year',
-    data: [4.2, 3.5, 2.8, 2.0, 1.7]
-  }
-])
+const { byCategory } = useRevenuePage()
+
+const series = computed(() => {
+  const dataSeries = byCategory.value?.series ?? []
+  return dataSeries.map(s => ({
+    name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
+    data: s.data
+  }))
+})
 
 const chartOptions = computed(() => ({
   chart: {
@@ -117,7 +116,7 @@ const chartOptions = computed(() => ({
     colors: ['transparent']
   },
   xaxis: {
-    categories: currentLang.value === 'ar' ? ['استشارات', 'ساس', 'تدريب', 'دعم', 'أخرى'] : ['Consulting', 'SaaS', 'Training', 'Support', 'Other'],
+    categories: currentLang.value === 'ar' ? (byCategory.value?.categoriesAr || []) : (byCategory.value?.categories || []),
     axisBorder: {
       show: false
     },

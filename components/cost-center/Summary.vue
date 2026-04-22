@@ -15,7 +15,7 @@
       </div>
     </div>
 
-    <table class="w-full text-left rtl:text-right border-collapse overflow-auto max-w-600">
+    <table class="w-full text-left rtl:text-right border-collapse">
       <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
         <tr>
           <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
@@ -59,22 +59,21 @@
         </template>
       </tbody>
       <tfoot>
-        <tr :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
-          <td class="px-8 py-5 font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang
-            ===
-            'ar' ? 'إجمالي تكلفة المشروع' : 'Total Project Cost' }}</td>
+        <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
+          <td class="px-8 py-5 font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ 
+            currentLang === 'ar' ? summaryTotal.labelAr : summaryTotal.label }}</td>
           <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-            :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">17,500,000</td>
+            :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.revenue }}</td>
           <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-            :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">12,800,000</td>
+            :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.cogs }}</td>
           <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-            :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">1,030,000</td>
+            :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.indirectExp }}</td>
           <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-            :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">3,670,000</td>
+            :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.profit }}</td>
           <td class="px-6 py-5 text-left rtl:text-right">
             <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;"
-              :class="isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]'">
-              +21.0%
+              :class="summaryTotal.margin >= 0 ? (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]') : (isDark ? 'bg-[#FB7554]/20 text-[#FF582F]' : 'bg-[#FB75544D] text-[#FF582F]')">
+              {{ summaryTotal.margin >= 0 ? '+' : '' }}{{ summaryTotal.margin }}%
             </span>
           </td>
         </tr>
@@ -149,21 +148,21 @@
                 </template>
               </tbody>
               <tfoot class="sticky bottom-0 z-10">
-                <tr :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
+                <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
                   <td class="px-8 py-5 font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
-                    currentLang === 'ar' ? 'إجمالي تكلفة المشروع' : 'Total Project Cost' }}</td>
+                    currentLang === 'ar' ? summaryTotal.labelAr : summaryTotal.label }}</td>
                   <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">17,500,000</td>
+                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.revenue }}</td>
                   <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">12,800,000</td>
+                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.cogs }}</td>
                   <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">1,030,000</td>
+                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.indirectExp }}</td>
                   <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">3,670,000</td>
+                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.profit }}</td>
                   <td class="px-6 py-5 text-left rtl:text-right">
                     <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;"
-                      :class="isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]'">
-                      +21.0%
+                      :class="summaryTotal.margin >= 0 ? (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]') : (isDark ? 'bg-[#FB7554]/20 text-[#FF582F]' : 'bg-[#FB75544D] text-[#FF582F]')">
+                      {{ summaryTotal.margin >= 0 ? '+' : '' }}{{ summaryTotal.margin }}%
                     </span>
                   </td>
                 </tr>
@@ -213,33 +212,5 @@ const goToDetail = (item) => {
   router.push('/cost-center/project-detail')
 }
 
-const tableData = ref([
-  {
-    label: 'Residential Projects',
-    labelAr: 'المشاريع السكنية',
-    revenue: '2,400,000',
-    cogs: '1,500,000',
-    indirectExp: '600,000',
-    profit: '300,000',
-    margin: 12.5,
-  },
-  {
-    label: 'Commercial Projects',
-    labelAr: 'المشاريع التجارية',
-    revenue: '1,800,000',
-    cogs: '1,100,000',
-    indirectExp: '400,000',
-    profit: '300,000',
-    margin: 16.7,
-  },
-  {
-    label: 'Infrastructure',
-    labelAr: 'البنية التحتية',
-    revenue: '2,000,000',
-    cogs: '1,200,000',
-    indirectExp: '500,000',
-    profit: '300,000',
-    margin: 15.0,
-  }
-])
+const { summary: tableData, summaryTotal } = useCostCenterPage()
 </script>

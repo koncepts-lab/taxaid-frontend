@@ -1,6 +1,6 @@
 <template>
   <div
-    class="last-6-months-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-auto shadow-md"
+    class="last-6-months-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-md"
     :style="isDark ? 'background: #00141080 !important' : ''">
     <!-- Header -->
     <div class="flex  lg:flex-row flex-col max-lg:gap-4 justify-between items-start mb-4 text-white relative z-10">
@@ -33,7 +33,7 @@
     </div>
 
     <!-- Chart -->
-    <div class="flex-1 w-full min-h-[320px] relative z-10 mt-6 min-w-175">
+    <div class="flex-1 w-full min-h-[320px] relative z-10 mt-6">
       <ClientOnly>
         <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
@@ -95,26 +95,25 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const months = [
+const { last6Months } = useCogsPage()
+
+const months = computed(() => last6Months.value?.months ?? [
   { en: 'Apr', ar: 'أبريل' },
   { en: 'May', ar: 'مايو' },
   { en: 'Jun', ar: 'يونيو' },
   { en: 'Jul', ar: 'يوليو' },
   { en: 'Aug', ar: 'أغسطس' },
   { en: 'Sep', ar: 'سبتمبر' }
-]
+])
 
-const previousYearData = [2.4, 3.0, 1.8, 4.7, 1.0, 2.6]
-const currentYearData = [0.7, 1.0, 3.5, 4.6, 2.0, 4.2]
-
-const series = ref([
+const series = computed(() => [
   {
     name: 'Previous Year',
-    data: previousYearData
+    data: last6Months.value?.previousYearData ?? []
   },
   {
     name: 'Current Year',
-    data: currentYearData
+    data: last6Months.value?.currentYearData ?? []
   }
 ])
 
@@ -141,7 +140,7 @@ const chartOptions = computed(() => ({
     hover: { size: 7 }
   },
   xaxis: {
-    categories: months.map(m => currentLang.value === 'ar' ? m.ar : m.en),
+    categories: months.value.map(m => currentLang.value === 'ar' ? m.ar : m.en),
     axisBorder: { show: false },
     axisTicks: { show: false },
     tooltip: { enabled: false },
@@ -185,7 +184,7 @@ const chartOptions = computed(() => ({
     intersect: false,
     theme: 'light',
     custom: function ({ series: s, dataPointIndex }) {
-      const cat = months[dataPointIndex]
+      const cat = months.value[dataPointIndex]
       const catLabel = currentLang.value === 'ar' ? cat.ar : cat.en
       const pyVal = s[0][dataPointIndex]
       const cyVal = s[1][dataPointIndex]

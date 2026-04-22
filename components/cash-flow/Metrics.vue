@@ -12,11 +12,11 @@
             </div>
 
             <div class="flex items-end gap-3 mt-0">
-                <h2 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-[#013E32]'">AED 3.45 M</h2>
+                <h2 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ cashInHand }}</h2>
                 <div class="flex flex-col items-end mb-1 ml-auto">
                     <div class="flex items-center gap-1 text-[#32c465] font-medium">
                         <img src="/images/icons/up.svg" alt="Up" class="w-4 h-4 object-contain">
-                        <span class="text-sm">(+4.2%)</span>
+                        <span class="text-sm">({{ cashInHandChange }})</span>
                     </div>
                     <span class="text-xs" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ currentLang === 'ar' ? 'مقارنة بالشهر الماضي' : 'vs last month' }}</span>
                 </div>
@@ -37,11 +37,11 @@
             </div>
 
             <div class="flex items-end gap-3 mt-0">
-                <h2 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-[#013E32]'">AED 2.95 M</h2>
+                <h2 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ ar30Days }}</h2>
                 <div class="flex flex-col items-end mb-1 ml-auto">
                     <div class="flex items-center gap-1 text-[#FF6B6B] font-medium">
                         <img src="/images/icons/down-right.svg" alt="Down" class="w-4 h-4">
-                        <span class="text-sm">(-3.1%)</span>
+                        <span class="text-sm">({{ ar30DaysChange }})</span>
                     </div>
                     <span class="text-xs" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ currentLang === 'ar' ? 'مقارنة بالشهر الماضي' : 'vs last month' }}</span>
                 </div>
@@ -100,15 +100,23 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const showScenarioDropdown = ref(false)
 
-const scenarios = [
+const { metrics } = useCashFlowPage()
+
+const cashInHand = computed(() => metrics.value?.cashInHand ?? 'AED 0.0 M')
+const cashInHandChange = computed(() => metrics.value?.cashInHandChange ?? '0.0%')
+const ar30Days = computed(() => metrics.value?.ar30Days ?? 'AED 0.0 M')
+const ar30DaysChange = computed(() => metrics.value?.ar30DaysChange ?? '0.0%')
+
+const scenarios = computed(() => metrics.value?.scenarios ?? [
     { en: '100% Scenario', ar: 'سيناريو 100%' },
     { en: 'Future Contract', ar: 'عقد مستقبلي' }
-]
+])
 
 const selectedScenarioKey = ref('100% Scenario')
 
 const selectedScenario = computed(() => {
-    const scenario = scenarios.find(s => s.en === selectedScenarioKey.value)
+    const scenario = scenarios.value.find(s => s.en === selectedScenarioKey.value)
+    if (!scenario) return ''
     return currentLang.value === 'ar' ? scenario.ar : scenario.en
 })
 
@@ -129,4 +137,4 @@ const selectScenario = (scenario) => {
     opacity: 0;
     transform: translateY(-10px);
 }
-</style>
+</style> 

@@ -193,34 +193,19 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const categories = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+const { overallRevenueVsCost } = useCostCenterPage()
 
-const costData = [1.6, 3.8, 3.4, 2.4, 2.5, 4.0, 3.1, 3.5, 4.5, 4.8, 4.0, 3.6]
-const revenueData = [1.8, 4.5, 2.8, 2.8, 1.7, 5.0, 3.5, 4.0, 5.0, 5.0, 4.8, 4.6]
+const categories = computed(() => overallRevenueVsCost.value?.categories ?? [])
+const mappingFullNames = computed(() => overallRevenueVsCost.value?.mappingFullNames ?? {})
 
-const mappingFullNames = {
-    'A': 'Residential Project',
-    'B': 'Infrastructure',
-    'C': 'Commercial',
-    'D': 'Prime Logistics',
-    'E': 'Emirates Trading',
-    'F': 'Alpha Tech',
-    'G': 'Mena Retail',
-    'H': 'Crescent',
-    'I': 'Vertex Corp',
-    'J': 'Vertex Trading',
-    'K': 'Future Projects',
-    'L': 'City Center'
-}
-
-const series = ref([
+const series = computed(() => [
   {
     name: 'Cost',
-    data: costData
+    data: overallRevenueVsCost.value?.costData ?? []
   },
   {
     name: 'Revenue',
-    data: revenueData
+    data: overallRevenueVsCost.value?.revenueData ?? []
   }
 ])
 
@@ -251,7 +236,7 @@ const chartOptions = computed(() => ({
     formatter: (val) => val === 0 ? '' : val.toString().replace('.', ',') + 'M'
   },
   xaxis: {
-    categories: categories,
+    categories: categories.value,
     axisBorder: {
       show: false
     },
@@ -304,8 +289,8 @@ const chartOptions = computed(() => ({
     intersect: false,
     theme: 'light',
     custom: function({ series: s, dataPointIndex }) {
-      const cat = categories[dataPointIndex]
-      const fullName = mappingFullNames[cat]
+      const cat = categories.value[dataPointIndex]
+      const fullName = mappingFullNames.value[cat]
       const cVal = s[0][dataPointIndex]
       const rVal = s[1][dataPointIndex]
       const variance = (((rVal - cVal) / cVal) * 100).toFixed(1)

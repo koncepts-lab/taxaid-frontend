@@ -69,20 +69,14 @@
 <script setup>
 import { ref, computed } from 'vue'
 
+// cash-flow page
 const isChatOpen = ref(true)
 const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-
-const cashFlowSummaryData = computed(() => [
-    { label: 'Operating Activities', labelAr: 'أنشطة التشغيل', current: '1,200,000', previous: '1,100,000', budget: '1,250,000', variance: '+9.1%', progress: 60 },
-    { label: 'Investing Activities', labelAr: 'أنشطة الاستثمار', current: '-400,000', previous: '-350,000', budget: '-450,000', variance: '-14.3%', progress: 30 },
-    { label: 'Financing Activities', labelAr: 'أنشطة التمويل', current: '-200,000', previous: '-150,000', budget: '-200,000', variance: '-33.3%', progress: 20 },
-    { label: 'Net Cash Flow', labelAr: 'صافي التدفق النقدي', current: '600,000', previous: '600,000', budget: '600,000', variance: '0.0%', progress: 40, isSummary: true },
-])
-
-
+const { summary } = useCashFlowPage()
+const cashFlowSummaryData = summary
 </script>
 
 <style scoped>

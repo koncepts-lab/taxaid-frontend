@@ -96,16 +96,15 @@ const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 const isModalOpen = ref(false)
 
-const chartSeries = [
-  {
-    name: 'Current Year',
-    data: [0.8, 1.2, 3.8, 1.5, 3.8, 2.5, 4.0]
-  },
-  {
-    name: 'Previous Year',
-    data: [2.5, 1.5, 3.5, 0.8, 2.5, 1.5, 2.6]
-  }
-];
+const { overheadTrends } = useIndirectExpensePage()
+
+const chartSeries = computed(() => {
+  const dataSeries = overheadTrends.value?.series ?? []
+  return dataSeries.map(s => ({
+    name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
+    data: s.data
+  }))
+})
 
 const chartOptions = computed(() => ({
   chart: {
@@ -124,8 +123,8 @@ const chartOptions = computed(() => ({
   },
   xaxis: {
     categories: currentLang.value === 'ar' 
-      ? ['أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر']
-      : ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+      ? (overheadTrends.value?.categoriesAr || [])
+      : (overheadTrends.value?.categories || []),
     labels: {
         style: { colors: '#FFFFFFBF', fontSize: '13px', fontWeight: 400 }
     },
@@ -159,8 +158,8 @@ const chartOptions = computed(() => ({
   tooltip: {
     custom: function({series, seriesIndex, dataPointIndex, w}: any) {
       const months = currentLang.value === 'ar' 
-        ? ['أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر']
-        : ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+        ? (overheadTrends.value?.categoriesAr || [])
+        : (overheadTrends.value?.categories || []);
       const monthName = months[dataPointIndex];
       
       const currentYearVal = series[0][dataPointIndex];

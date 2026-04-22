@@ -1,6 +1,6 @@
 <template>
   <div
-    class="rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-auto shadow-sm"
+    class="rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-sm"
     :class="isDark ? 'bg-[#00141080]' : 'bg-white'">
     <!-- Header -->
     <div class="flex lg:flex-row flex-col max-lg:gap-4 justify-between items-start mb-4 relative z-10"
@@ -34,7 +34,7 @@
     </div>
 
     <!-- Chart -->
-    <div class="flex-1 w-full min-h-[320px] relative z-10 mt-0 min-w-175">
+    <div class="flex-1 w-full min-h-[320px] relative z-10 mt-0">
       <ClientOnly>
         <apexchart type="bar" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
@@ -97,26 +97,25 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const months = [
+const { revenueToCogs } = useCogsPage()
+
+const months = computed(() => revenueToCogs.value?.months ?? [
   { en: 'Apr', ar: 'أبريل' },
   { en: 'May', ar: 'مايو' },
   { en: 'Jun', ar: 'يونيو' },
   { en: 'Jul', ar: 'يوليو' },
   { en: 'Aug', ar: 'أغسطس' },
   { en: 'Sep', ar: 'سبتمبر' }
-]
+])
 
-const cogsData = [1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
-const revenueData = [2.4, 2.6, 2.1, 3.0, 3.2, 3.4]
-
-const series = ref([
+const series = computed(() => [
   {
     name: 'COGS',
-    data: cogsData
+    data: revenueToCogs.value?.cogsData ?? []
   },
   {
     name: 'Revenue',
-    data: revenueData
+    data: revenueToCogs.value?.revenueData ?? []
   }
 ])
 
@@ -147,7 +146,7 @@ const chartOptions = computed(() => ({
     formatter: (val) => val.toString().replace('.', ',') + 'M'
   },
   xaxis: {
-    categories: months.map(m => currentLang.value === 'ar' ? m.ar : m.en),
+    categories: months.value.map(m => currentLang.value === 'ar' ? m.ar : m.en),
     axisBorder: {
       show: false
     },
@@ -208,7 +207,7 @@ const chartOptions = computed(() => ({
     intersect: false,
     theme: isDark.value ? 'dark' : 'light',
     custom: function ({ series: s, dataPointIndex }) {
-      const cat = months[dataPointIndex]
+      const cat = months.value[dataPointIndex]
       const catLabel = currentLang.value === 'ar' ? cat.ar : cat.en
       const rVal = s[1][dataPointIndex]
       const cVal = s[0][dataPointIndex]

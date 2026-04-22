@@ -7,7 +7,6 @@
     <!-- CONTENT -->
     <main class="flex-1 px-8 py-8 space-y-8 overflow-y-auto" style="margin-top: -18px;">
       
-      <!-- Metrics Cards (Always show productivity metrics) -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div v-for="(metric, idx) in productivityMetrics" :key="idx" 
              :class="[isDark ? 'bg-[#00141080] border-white/10' : metric.bgClass + ' ' + metric.borderClass]"
@@ -82,7 +81,7 @@
               </tr>
             </thead>
             <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-              <tr v-for="(consultant, idx) in consultants" :key="idx" 
+              <tr v-for="(consultant, idx) in consultantsList" :key="idx" 
                   class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
                 <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ consultant.id }}</td>
                 <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ consultant.name }}</td>
@@ -484,115 +483,40 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
+import { useReviewManagerDashboardPage } from '@/composables/useWebsiteData'
 
 const { isDark } = useTheme()
 
 const route = useRoute()
+const {
+  productivityMetrics,
+  tabs,
+  consultants,
+  syncData,
+  clientFixedProgressData,
+  consultantWorkloadData,
+  assignConsultantData: initialAssignConsultantData,
+  clientReviewAnalysisData,
+  consultantList
+} = useReviewManagerDashboardPage()
+
 const activeTab = ref(route.query.tab || 'Productivity tracker')
+const assignConsultantData = ref([])
 
-const productivityMetrics = [
-  { 
-    title: 'Number of Active Clients', 
-    value: '3', 
-    icon: '/images/icons/Number-of-Active-Clients.svg', 
-    bgClass: 'bg-[#EFF6FF]', 
-    borderClass: 'border-[#BFDBFE]',
-    textClass: 'text-blue-600'
-  },
-  { 
-    title: 'Number of open requests from clients', 
-    value: '3', 
-    icon: '/images/icons/Number-of-open-requests-from-clients.svg', 
-    bgClass: 'bg-[#FFF1F2]', 
-    borderClass: 'border-[#FECACA]',
-    textClass: 'text-red-500'
-  },
-  { 
-    title: 'Number of active consultants', 
-    value: '3', 
-    icon: '/images/icons/Number-of-active-consultants.svg', 
-    bgClass: 'bg-[#ECFDF5]', 
-    borderClass: 'border-[#D1FAE5]',
-    textClass: 'text-[#10B981]'
-  },
-  { 
-    title: 'Clients with data not synced', 
-    value: '3', 
-    icon: '/images/icons/Clients-with-data-not-synced.svg', 
-    bgClass: 'bg-[#FFFBEB]', 
-    borderClass: 'border-[#FEF3C7]',
-    textClass: 'text-[#F59E0B]'
+watchEffect(() => {
+  if (initialAssignConsultantData.value?.length) {
+    assignConsultantData.value = initialAssignConsultantData.value.map((item) => ({ ...item }))
   }
-]
+})
 
-const syncMetrics = [
-  { 
-    title: 'Total Clients', 
-    value: '8', 
-    icon: '/images/icons/Number-of-Active-Clients.svg'
-  },
-  { 
-    title: 'Data Synced', 
-    value: '2', 
-    icon: '/images/icons/active.svg'
-  },
-  { 
-    title: 'Data Not Synced', 
-    value: '1', 
-    icon: '/images/icons/close.svg'
+watchEffect(() => {
+  if (!route.query.tab && tabs.value.length && !tabs.value.includes(activeTab.value)) {
+    activeTab.value = tabs.value[0]
   }
-]
+})
 
-const tabs = [
-  'Productivity tracker',
-  'Data Sync Status',
-  'Client fixed progress',
-  'Consultant workload',
-  'Assign Consultant',
-  'Client review analysis progress'
-]
-
-const consultants = [
-  { id: 'C001', name: 'Arjun Mehta', fixed: 2, adhoc: 4 },
-  { id: 'C002', name: 'Priya Nair', fixed: 2, adhoc: 10 },
-  { id: 'C003', name: 'Rahul Das', fixed: 1, adhoc: 3 },
-  { id: 'C004', name: 'Vikram Iyer', fixed: 3, adhoc: 20 }
-]
-
-const syncData = [
-  { id: 'C001', name: 'Arjun Enterprises', date: '19 Oct 2025, 10:45 AM', status: 'Synced', consultant: 'Arjun Mehta' },
-  { id: 'C002', name: 'Bloom Tech Pvt Ltd', date: '19 Oct 2025, 09:12 AM', status: 'Synced', consultant: 'Priya Nair' },
-  { id: 'C003', name: 'Coastline Exports', date: '15 Oct 2025, 06:45 AM', status: 'Not Synced', consultant: 'Rahul Das', daysAgo: 4 },
-  { id: 'C004', name: 'Delta Logistics', date: '14 Oct 2025, 02:10 PM', status: 'Not Synced', consultant: 'Vikram Iyer', daysAgo: 4 }
-]
-
-const clientFixedProgressData = [
-  { id: 'C001', consultantName: 'Arjun Mehta', clientName: 'Logistics Express Inc.', progressValue: 10, progressTotal: 15, delay: 'Final review pending' },
-  { id: 'C002', consultantName: 'Priya Nair', clientName: 'Food Services Group', progressValue: 8, progressTotal: 15, delay: '-' },
-  { id: 'C003', consultantName: 'Rahul Das', clientName: 'Food Services Group', progressValue: 3, progressTotal: 15, delay: '-' },
-  { id: 'C004', consultantName: 'Vikram Iyer', clientName: 'Food Services Group', progressValue: 8, progressTotal: 15, delay: '-' }
-]
-
-const consultantWorkloadData = [
-  { id: 'C001', name: 'Arjun Mehta', avgHours: '142 hrs', clientFixed: '4 hrs 36 min', clientRequest: '4 hrs 36 min', clientAnalysis: '4 hrs 36 min' },
-  { id: 'C002', name: 'Priya Nair', avgHours: '142 hrs', clientFixed: '4 hrs 36 min', clientRequest: '4 hrs 36 min', clientAnalysis: '4 hrs 36 min' },
-  { id: 'C003', name: 'Rahul Das', avgHours: '142 hrs', clientFixed: '4 hrs 36 min', clientRequest: '4 hrs 36 min', clientAnalysis: '4 hrs 36 min' },
-  { id: 'C004', name: 'Vikram Iyer', avgHours: '142 hrs', clientFixed: '4 hrs 36 min', clientRequest: '4 hrs 36 min', clientAnalysis: '4 hrs 36 min' }
-]
-
-const assignConsultantData = ref([
-  { id: 'client-7', clientName: 'Logistics Express Inc.', completedDate: '01/10/2026', mobile: '+ 123 123 123', email: 'sarahjoseph@gmail.com', selectedConsultant: '' },
-  { id: 'client-4', clientName: 'Food Services Group', completedDate: '01/10/2026', mobile: '+ 123 123 123', email: 'sarahmathew@gmail.com', selectedConsultant: '' },
-  { id: 'client-4', clientName: 'Food Services Group', completedDate: '01/10/2026', mobile: '+ 123 123 123', email: 'sarahjoseph@gmail.com', selectedConsultant: '' },
-  { id: 'client-4', clientName: 'Food Services Group', completedDate: '01/10/2026', mobile: '+ 123 123 123', email: 'sarahjoseph@gmail.com', selectedConsultant: '' }
-])
-
-const consultantList = [
-  { name: 'Consultant A', activeCount: 3 },
-  { name: 'Consultant B', activeCount: 5 },
-  { name: 'Consultant C', activeCount: 6 }
-]
+const consultantsList = computed(() => consultants.value)
 
 const activeConsultantDropdown = ref(null)
 
@@ -605,16 +529,11 @@ function toggleConsultantDropdown(idx) {
 }
 
 function selectConsultant(idx, name) {
-  assignConsultantData.value[idx].selectedConsultant = name
+  if (assignConsultantData.value[idx]) {
+    assignConsultantData.value[idx].selectedConsultant = name
+  }
   activeConsultantDropdown.value = null
 }
-
-const clientReviewAnalysisData = [
-  { id: 'C001', consultantName: 'Arjun Mehta', clientName: 'Logistics Express Inc.', appointmentType: 'Client Review', delay: 'Final review pending' },
-  { id: 'C002', consultantName: 'Priya Nair', clientName: 'Food Services Group', appointmentType: 'Client Analysis', delay: '-' },
-  { id: 'C003', consultantName: 'Rahul Das', clientName: 'Food Services Group', appointmentType: 'Client Review', delay: '-' },
-  { id: 'C004', consultantName: 'Vikram Iyer', clientName: 'Food Services Group', appointmentType: 'Client Review', delay: '-' }
-]
 
 const showAppointmentTypeDropdown = ref(false)
 const selectedAppointmentType = ref('All Appointment Type')

@@ -9,26 +9,21 @@
     <main class="flex-1 flex flex-col items-center justify-center p-4 relative z-10 w-full">
       <!-- Header Text -->
       <div class="text-center mb-10 mt-[-50px]">
-        <h1 class="text-[30px] font-normal mb-2" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">Select Dashboard</h1>
-        <p class="text-[18px] font-normal" :class="isDark ? 'text-white/70' : 'text-[#00000080]'">Choose which dashboard
-          you'd like to access</p>
+        <h1 class="text-[30px] font-normal mb-2" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ title }}</h1>
+        <p class="text-[18px] font-normal" :class="isDark ? 'text-white/70' : 'text-[#00000080]'">{{ subtitle }}</p>
       </div>
 
       <!-- Cards Container -->
       <div class="w-full flex flex-col md:flex-row items-center justify-center gap-6 px-4">
-
-        <!-- Card 1: Ticketing System -->
-        <SelectDashboardCard icon="/images/icons/Ticketing-System.svg" title="Ticketing System"
-          description="Manage customer support tickets, track issues, and monitor resolution times"
-          buttonLabel="Access Ticketing Dashboard" />
-
-        <!-- Card 2: Revenue Partnership -->
-        <SelectDashboardCard icon="/images/icons/Revenue-Partnership.svg" title="Revenue Partnership"
-          description="Track revenue, manage partners, analyze costs, and monitor financial metrics"
-          buttonLabel="Access Revenue Dashboard"
-          @click="navigateToReview"
+        <SelectDashboardCard
+          v-for="card in cards"
+          :key="card.title"
+          :icon="card.icon"
+          :title="card.title"
+          :description="card.description"
+          :button-label="card.buttonLabel"
+          @click="navigateToReview(card.route)"
         />
-
       </div>
     </main>
 
@@ -37,7 +32,10 @@
 </template>
 
 <script setup>
+import { useRevenuePartnershipSelectDashboardPage } from '@/composables/useWebsiteData'
+
 const { isDark } = useTheme()
+const { title, subtitle, cards } = useRevenuePartnershipSelectDashboardPage()
 
 definePageMeta({
   layout: false
@@ -45,8 +43,10 @@ definePageMeta({
 
 import SelectDashboardCard from '@/components/revenue-partnership/SelectDashboardCard.vue'
 
-function navigateToReview() {
-  navigateTo('/revenue-partnership/admin')
+function navigateToReview(route) {
+  if (route) {
+    navigateTo(route)
+  }
 }
 </script>
 

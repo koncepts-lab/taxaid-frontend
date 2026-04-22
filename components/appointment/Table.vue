@@ -32,7 +32,7 @@
                     <!-- Type -->
                     <td class="px-6 py-4">
                         <span class="px-3 py-1 rounded-full text-[12px] font-medium"
-                            :class="getTypeStyle(item.type)">
+                            :style="{ backgroundColor: getTypeStyle(item.type).bg, color: getTypeStyle(item.type).text }">
                             {{ item.type }}
                         </span>
                     </td>
@@ -45,7 +45,7 @@
                     <!-- Status -->
                     <td class="px-6 py-4">
                         <span class="px-3 py-1 rounded-full text-[12px] font-medium"
-                            :class="getStatusStyle(item.status)">
+                            :style="{ backgroundColor: getStatusStyle(item.status).bg, color: getStatusStyle(item.status).text }">
                             {{ item.status }}
                         </span>
                     </td>
@@ -58,7 +58,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
-                            <span class="text-[13px] font-medium">View</span>
+                            <span class="text-[13px] font-medium">{{ currentLang === 'ar' ? 'عرض' : 'View' }}</span>
                         </button>
                     </td>
                 </tr>
@@ -75,15 +75,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const props = defineProps({
     data: Array
 })
 
 const { isDark } = useTheme()
+const currentLang = useState('currentLang', () => 'en')
+const { columns: dynamicColumns, columnsAr, statusStyles, typeStyles } = useAppointmentsPage()
 
-const columns = ['Date', 'Consultant', 'Type', 'Duration', 'Status', 'Action']
+const columns = computed(() => {
+    return currentLang.value === 'ar' ? columnsAr.value : dynamicColumns.value
+})
 
 const isDetailsOpen = ref(false)
 const selectedAppointment = ref(null)
@@ -99,17 +103,23 @@ const handleCancelAppointment = (appointment) => {
 }
 
 const getTypeStyle = (type) => {
-    if (type === 'Monthly Review') return 'bg-[#D6F5ED] text-[#018E71]'
-    return 'bg-[#FFE8E8] text-[#FF5B5B]'
+    const style = typeStyles.value[type]
+    if (style) return { bg: style.bg, text: style.text }
+    
+    if (type === 'Monthly Review') return { bg: '#D6F5ED', text: '#018E71' }
+    return { bg: '#FFE8E8', text: '#FF5B5B' }
 }
 
 const getStatusStyle = (status) => {
+    const style = statusStyles.value[status]
+    if (style) return { bg: style.bg, text: style.text }
+
     switch(status) {
-        case 'Completed': return 'bg-[#D6F5ED] text-[#018E71]'
-        case 'Pending': return 'bg-[#FFF4E5] text-[#FFA84A]'
-        case 'Scheduled': return 'bg-[#E5F1FF] text-[#4A90FF]'
-        case 'Cancelled': return 'bg-[#FFE8E8] text-[#FF5B5B]'
-        default: return 'bg-gray-100 text-gray-600'
+        case 'Completed': return { bg: '#D6F5ED', text: '#018E71' }
+        case 'Pending': return { bg: '#FFF4E5', text: '#FFA84A' }
+        case 'Scheduled': return { bg: '#E5F1FF', text: '#4A90FF' }
+        case 'Cancelled': return { bg: '#FFE8E8', text: '#FF5B5B' }
+        default: return { bg: '#F3F4F6', text: '#6B7280' }
     }
 }
 </script>

@@ -91,10 +91,8 @@
           <div>
             <DataSourceSettings v-if="activeSubTab === 'settings'" title="System Settings" titleAr="إعدادات النظام"
               description="Configure system currencies and preferences" descriptionAr="تكوين عملات النظام وتفضيلاته"
-              :isDark="isDark" :currentLang="currentLang" :columns="[
-                { label: 'Currency Code', labelAr: 'رمز العملة', key: 'code' },
-                { label: 'Currency Name', labelAr: 'اسم العملة', key: 'name' }
-              ]" :data="currencyData" @delete="prepareDelete" @add=" isAddModalOpen = true" />
+              :isDark="isDark" :currentLang="currentLang" :columns="currencyColumns" :data="currencyData"
+              @delete="prepareDelete" @add=" isAddModalOpen = true" />
             <DataSourceSettingsAddModal :isOpen="isAddModalOpen" :isDark="isDark" :currentLang="currentLang"
               @close=" isAddModalOpen = false" @save="onCurrencySave" />
             <DataSourceSettingsDeleteModal :isOpen="isDeleteModalOpen" :isDark="isDark" :currentLang="currentLang"
@@ -118,7 +116,7 @@
                 @close="isModalOpen = false" />
               <DataSourceBudget v-if="activeSubTab === 'budget'" :isDark="isDark" :currentLang="currentLang"
                 @open-budget-report="handleOpenBudgetReport" :isOpen="isBudgetOpen" />
-              <DataSourceSalesForecast v-if="activeSubTab === 'sales-forecast'" :data="salesForecastData"
+              <DataSourceSalesForecast v-if="activeSubTab === 'sales-forecast'" :data="salesForecastItems"
                 :isDark="isDark" :currentLang="currentLang" @open-sales-report="isForecastModalOpen = true" />
               <DataSourceSalesForecastModal :isOpen="isForecastModalOpen" :data="salesForecastDetailedData"
                 :isDark="isDark" :currentLang="currentLang" @close="isForecastModalOpen = false" />
@@ -155,44 +153,31 @@ const isAddModalOpen = ref(false)
 const isDeleteModalOpen = ref(false);
 const itemPendingDeletion = ref(null);
 
+// ── Data from data.json ──────────────────────────────────────────────────
+const {
+  mainTabs: mainTabsData,
+  subTabsFinancial: subTabsFinancialData,
+  subTabsContacts: subTabsContactsData,
+  settings: settingsData,
+  arData: arDataFromJson,
+  apData: apDataFromJson,
+  logs: logsData,
+  pdcSummaryData: pdcSummaryDataFromJson,
+  pdcDetailedData: pdcDetailedDataFromJson,
+  interCompanyData: interCompanyDataFromJson,
+  dataInItems: dataInItemsFromJson,
+  costCenterReports,
+  budget: budgetData,
+  salesForecast: salesForecastData,
+} = useDataSourcePage()
+
 const activeMainTab = ref('financial')
 const activeSubTab = ref('settings')
-const mainTabs = [
-  {
-    id: 'financial',
-    label: 'Financial Data Sources',
-    labelAr: 'مصادر البيانات المالية',
-    icon: '/images/icons/Financial-Data-Sources.svg'
-  },
-  {
-    id: 'contacts',
-    label: 'Contacts & Customers',
-    labelAr: 'جهات الاتصال والعملاء',
-    icon: '/images/icons/Contacts-Customers.svg'
-  },
-  {
-    id: 'certificate',
-    label: 'Upload Certificate',
-    labelAr: 'تحميل الشهادة',
-    icon: '/images/icons/Upload-Certificate.svg'
-  }
-]
-const subTabsFinancial = [
-  { id: 'settings', label: 'Settings', labelAr: 'الإعدادات' },
-  { id: 'data-in', label: 'Data In', labelAr: 'إدخال البيانات' },
-  { id: 'trial-balance', label: 'Trial balance', labelAr: 'ميزان المراجعة' },
-  { id: 'accounts-receivable', label: 'Accounts Receivable', labelAr: 'حسابات القبض' },
-  { id: 'accounts-payable', label: 'Accounts Payable', labelAr: 'حسابات الدفع' },
-  { id: 'inter-company', label: 'Inter Company', labelAr: 'بين الشركات' },
-  { id: 'sales-forecast', label: 'Sales Forecast', labelAr: 'توقعات المبيعات' },
-  { id: 'pdc', label: 'PDC', labelAr: 'الشيكات المؤجلة' },
-  { id: 'cost-center', label: 'Cost Center', labelAr: 'مركز التكلفة' },
-  { id: 'budget', label: 'Budget', labelAr: 'الميزانية' }
-]
-const subTabsContacts = [
-  { id: 'contacts', label: 'Contacts', labelAr: 'جهات الاتصال' },
-  { id: 'internal-email', label: 'Internal Email', labelAr: 'البريد الإلكتروني الداخلي' },
-  { id: 'customers', label: 'Customers', labelAr: 'العملاء' }]
+
+// Computed aliases so template/logic reads identically to before
+const mainTabs = computed(() => mainTabsData.value)
+const subTabsFinancial = computed(() => subTabsFinancialData.value)
+const subTabsContacts = computed(() => subTabsContactsData.value)
 const searchQuery = ref('')
 const subTabsContainer = ref(null)
 const canScrollLeft = ref(false)
@@ -288,23 +273,9 @@ watch(() => currentLang.value, () => {
 const isPDCModalOpen = ref(false)
 const selectedPDCType = ref('issued')
 
-const pdcSummaryData = ref([
-  {
-    type: 'issued', label: 'PDC Issued', labelAr: 'الشيكات المؤجلة الصادرة',
-    totalLabel: 'Total PDC issued', totalAmount: '1,250,000',
-    due30: '1,250,000', due45: '1,250,000'
-  },
-  {
-    type: 'received', label: 'PDC Received', labelAr: 'الشيكات المؤجلة الواردة',
-    totalLabel: 'Total PDC received', totalAmount: '1,250,000',
-    due30: '1,250,000', due45: '1,250,000'
-  }
-])
-
-const pdcDetailedData = ref([
-  { issueDate: '-', chequeDate: '-', bankName: '-', chequeNo: '-', partyName: '-', amount: '-' },
-  { issueDate: '-', chequeDate: '-', bankName: '-', chequeNo: '-', partyName: '-', amount: '-' },
-])
+// PDC data from composable (reactive to data.json)
+const pdcSummaryData = computed(() => pdcSummaryDataFromJson.value)
+const pdcDetailedData = computed(() => pdcDetailedDataFromJson.value)
 
 const openPDCReport = (type) => {
   selectedPDCType.value = type
@@ -312,177 +283,52 @@ const openPDCReport = (type) => {
 }
 
 
-const tableColumns = [
-  { label: '', labelAr: '' },
-  { label: 'Currencies', labelAr: 'العملات' },
-  { label: 'Status_List', labelAr: 'قائمة الحالة' },
-  { label: 'Contact_Types', labelAr: 'أنواع جهات الاتصال' },
-  { label: 'Payment_Terms', labelAr: 'شروط الدفع' },
-  { label: 'Bank_Accounts', labelAr: 'الحسابات البنكية' },
-  { label: 'PDC_Status', labelAr: 'حالة الشيكات المؤجلة' }
-]
-const currencyData = ref([
-  { code: 'INR', name: 'Indian Rupee' },
-  { code: 'AED', name: 'UAE Dirham' },
-  { code: 'SAR', name: 'Saudi Riyal' },
-  { code: 'USD', name: 'US Dollar' }
-]);
+// Settings (currency) from composable
+const currencyData = ref([])
+watch(settingsData, (val) => {
+  if (val?.currencyData?.length && !currencyData.value.length) {
+    currencyData.value = [...val.currencyData]
+  }
+}, { immediate: true })
+const currencyColumns = computed(() => settingsData.value?.currencyColumns ?? [])
 
 
+// AR / AP / Logs from composable
+const arData = computed(() => arDataFromJson.value)
+const apData = computed(() => apDataFromJson.value)
+const arLogs = computed(() => logsData.value?.ar ?? [])
+const apLogs = computed(() => logsData.value?.ap ?? [])
+const pdcLogs = computed(() => logsData.value?.pdc ?? [])
+const ccLogs = computed(() => logsData.value?.costCenter ?? [])
+const tbLogs = computed(() => logsData.value?.trialBalance ?? [])
+const budgetLogs = computed(() => logsData.value?.budget ?? [])
+const salesForecastLogs = computed(() => logsData.value?.salesForecast ?? [])
+
+// Data-In items from composable (kept as ref so handleRemove can mutate)
+const dataInItems = ref([])
+watch(dataInItemsFromJson, (val) => {
+  if (val?.length && !dataInItems.value.length) {
+    dataInItems.value = val.map(item => ({ ...item }))
+  }
+}, { immediate: true })
+
+// Inter-company from composable (kept as ref so add/delete can mutate)
+const interCompanyData = ref([])
+watch(interCompanyDataFromJson, (val) => {
+  if (val?.length && !interCompanyData.value.length) {
+    interCompanyData.value = val.map(row => ({ ...row }))
+  }
+}, { immediate: true })
+
+// Legacy tableData (settings table, not sent to any component now — kept for compat)
 const tableData = ref([
   { id: 1, currency: 'INR', status: 'Open', contactType: 'Customer', paymentTerms: 'Immediate', bankAccount: 'Operating_AED', pdcStatus: 'Pending', selected: true },
   { id: 2, currency: 'AED', status: 'Partially Paid', contactType: 'Vendor', paymentTerms: 'Net 7', bankAccount: 'Operating_INR', pdcStatus: 'Deposited', selected: false },
   { id: 3, currency: 'SAR', status: 'Paid', contactType: 'Intercompany', paymentTerms: 'Net 15', bankAccount: 'Operating_SAR', pdcStatus: 'Cleared', selected: false },
   { id: 4, currency: 'USD', status: 'Overdue', contactType: 'Bank', paymentTerms: 'Net 30', bankAccount: 'Operating_SAR', pdcStatus: 'Returned', selected: false },
-  { id: 5, currency: 'USD', status: 'Overdue', contactType: 'Bank', paymentTerms: 'Net 30', bankAccount: 'Operating_SAR', pdcStatus: 'Returned', selected: false },
-  { id: 6, currency: 'USD', status: 'Overdue', contactType: 'Bank', paymentTerms: 'Net 30', bankAccount: 'Operating_SAR', pdcStatus: 'Returned', selected: false }
-])
-const arData = ref([
-  { customer: 'AI Dhabi Contracting LLC', amount: '1,678,295.5', age1: '1,678,295.5', age2: '-', age3: '-', age4: '-' },
-  { customer: 'AI Dhabi Contracting LLC', amount: '1,678,295.5', age1: '1,678,295.5', age2: '-', age3: '-', age4: '-' },
-  { customer: 'AI Dhabi Contracting LLC', amount: '1,678,295.5', age1: '1,678,295.5', age2: '-', age3: '-', age4: '-' },
 ])
 
-const arLogs = ref([
-  { date: '06-Mar-2025', time: '14:23:45', user: 'consultant@taxaid.com', details: 'Historical AR data year set to 2022 and table locked' }
-])
-const apLogs = ref([
-  { date: '10-Mar-2025', time: '09:15:22', user: 'admin@taxaid.com', details: 'Vendor payment terms updated for Global Suppliers' }
-])
-const pdcLogs = ref([
-  {
-    date: '11-Mar-2025',
-    time: '16:45:10',
-    user: 'manager@taxaid.com',
-    details: 'Bulk import of 50 received PDCs completed and verified'
-  }
-])
-const ccLogs = ref([
-  {
-    date: '11-Mar-2025',
-    time: '16:45:10',
-    user: 'manager@taxaid.com',
-    details: 'Bulk import of 50 received PDCs completed and verified'
-  }
-])
-const tbLogs = ref([
-  {
-    date: '11-Mar-2025',
-    time: '16:45:10',
-    user: 'manager@taxaid.com',
-    details: 'Bulk import of 50 received PDCs completed and verified'
-  }
-])
-const apData = ref([
-  { customer: 'Global Suppliers Ltd', amount: '850,000.00', age1: '400,000.00', age2: '450,000.00', age3: '-', age4: '-' },
-  { customer: 'Dubai Logistics Co', amount: '120,500.00', age1: '-', age2: '120,500.00', age3: '-', age4: '-' }
-])
-const dataInItems = ref([
-  {
-    id: 'ar',
-    label: 'Account Receivable',
-    labelAr: 'حسابات القبض',
-    isUploaded: true,
-    uploadDate: 'Mar 07, 2026, 09:51 PM',
-    pdfUrl: '/reports/Sales - SST 35 Community Hub_Ledger.pdf'
-  },
-  {
-    id: 'ap',
-    label: 'Account Payable',
-    labelAr: 'حسابات الدفع',
-    isUploaded: true,
-    uploadDate: 'Mar 07, 2026, 09:51 PM',
-    pdfUrl: '/reports/Sales - SST 35 Community Hub_Ledger.pdf'
-  },
-  {
-    id: 'pdcin',
-    label: 'PDC In',
-    labelAr: 'شيكات واردة',
-    isUploaded: false,
-    uploadDate: '',
-    pdfUrl: ''
-  },
-  {
-    id: 'pdcout',
-    label: 'PDC Out',
-    labelAr: 'شيكات صادرة',
-    isUploaded: true,
-    uploadDate: 'Mar 07, 2026, 09:51 PM',
-    pdfUrl: '/reports/Sales - SST 35 Community Hub_Ledger.pdf'
-  },
-  {
-    id: 'forecast',
-    label: 'Sales Forecast',
-    labelAr: 'توقعات المبيعات',
-    isUploaded: true,
-    uploadDate: 'Mar 07, 2026, 09:51 PM',
-    pdfUrl: '/reports/Sales - SST 35 Community Hub_Ledger.pdf'
-  },
-  {
-    id: 'budget',
-    label: 'Budget',
-    labelAr: 'الميزانية',
-    isUploaded: true,
-    uploadDate: 'Mar 07, 2026, 09:51 PM',
-    pdfUrl: '/reports/Sales - SST 35 Community Hub_Ledger.pdf'
-  },
-  {
-    id: 'cc_mapping',
-    label: 'Cost Center Mapping',
-    labelAr: 'تخطيط مراكز التكلفة',
-    isUploaded: true,
-    uploadDate: 'Mar 07, 2026, 09:51 PM',
-    pdfUrl: '/reports/Sales - SST 35 Community Hub_Ledger.pdf'
-  },
-  {
-    id: 'cc_master',
-    label: 'Cost Center Master',
-    labelAr: 'سجل مراكز التكلفة الرئيسي',
-    isUploaded: true,
-    uploadDate: 'Mar 07, 2026, 09:51 PM',
-    pdfUrl: '/reports/cost_center_master.pdf'
-  },
-  {
-    id: 'cc_budget',
-    label: 'Cost Center Budget',
-    labelAr: 'ميزانية مراكز التكلفة',
-    isUploaded: true,
-    uploadDate: 'Mar 07, 2026, 09:51 PM',
-    pdfUrl: '/reports/Sales - SST 35 Community Hub_Ledger.pdf'
-  },
-  {
-    id: 'prepaid',
-    label: 'Prepaid Adjustments',
-    labelAr: 'تسويات المصاريف المدفوعة مقدماً',
-    isUploaded: true,
-    uploadDate: 'Mar 07, 2026, 09:51 PM',
-    pdfUrl: '/reports/Sales - SST 35 Community Hub_Ledger.pdf'
-  },
-  {
-    id: 'ct_returns',
-    label: 'CT Returns',
-    labelAr: 'إقرارات ضريبة الشركات',
-    isUploaded: true,
-    uploadDate: 'Mar 07, 2026, 09:51 PM',
-    pdfUrl: '/reports/Sales - SST 35 Community Hub_Ledger.pdf'
-  },
-  {
-    id: 'vat_returns',
-    label: 'VAT Returns',
-    labelAr: 'إقرارات ضريبة القيمة المضافة',
-    isUploaded: true,
-    uploadDate: 'Mar 07, 2026, 09:51 PM',
-    pdfUrl: '/reports/Sales - SST 35 Community Hub_Ledger.pdf'
-  },
-  {
-    id: 'opening_bal',
-    label: 'Opening Balance',
-    labelAr: 'الرصيد الافتتاحي',
-    isUploaded: true,
-    uploadDate: 'Mar 07, 2026, 09:51 PM',
-    pdfUrl: '/reports/Sales - SST 35 Community Hub_Ledger.pdf'
-  },
-])
+// _unused block removed — dataInItems is populated from composable via watch above
 const handleRemove = (id) => {
   const item = dataInItems.value.find(i => i.id === id)
   if (item) {
@@ -490,34 +336,7 @@ const handleRemove = (id) => {
     item.fileName = ''
   }
 }
-const interCompanyData = ref([
-  {
-    id: 1,
-    entryId: 'TRX-9001',
-    date: '10-Mar-2025',
-    counterparty: 'Masterline Trading',
-    description: 'Management Fee Transfer',
-    fx: '1.00',
-    dueType: 'Due From (+)',
-    amountBase: '50,000.00',
-    settlementDate: '30-Mar-2025',
-    status: 'Pending',
-    notes: 'Awaiting bank confirmation'
-  },
-  {
-    id: 2,
-    entryId: 'TRX-9002',
-    date: '11-Mar-2025',
-    counterparty: 'Apex Logistics',
-    description: 'Shared Office Rent',
-    fx: '3.67',
-    dueType: 'Due To (-)',
-    amountBase: '12,500.00',
-    settlementDate: '25-Mar-2025',
-    status: 'Settled',
-    notes: ''
-  }
-])
+// interCompanyData is already declared above via watch on composable
 
 const currentAgingData = computed(() => activeSubTab.value === 'accounts-receivable' ? arData.value : apData.value)
 const currrentTitle = computed(() => activeSubTab.value === 'accounts-receivable' ? (currentLang.value === 'ar' ? 'حسابات القبض' : 'Accounts Receivable') : (currentLang.value === 'ar' ? 'حسابات الدفع' : 'Accounts Payable'))
@@ -538,13 +357,13 @@ const currentLogs = computed(() => {
 })
 const currentSubTabs = computed(() => {
   return activeMainTab.value === 'financial'
-    ? subTabsFinancial
-    : subTabsContacts
+    ? subTabsFinancial.value
+    : subTabsContacts.value
 })
 
 watch(activeMainTab, (newTab) => {
-  const newArray = newTab === 'financial' ? subTabsFinancial : subTabsContacts
-  if (newArray.length > 0) {
+  const newArray = newTab === 'financial' ? subTabsFinancial.value : subTabsContacts.value
+  if (newArray?.length > 0) {
     activeSubTab.value = newArray[0].id
   }
 })
@@ -573,44 +392,13 @@ const getStatusClass = (status) => {
       return `${baseClasses} bg-gray-500 text-gray-600 border-gray-500`
   }
 }
-const ccMappingColumns = [
-  { label: 'Cost Center Name', labelAr: 'اسم مركز التكلفة', key: 'ccName' },
-  { label: 'FS Code', labelAr: 'كود FS', key: 'fsCode' },
-  { label: 'Main Group', labelAr: 'المجموعة الرئيسية', key: 'mainGroup' },
-  { label: 'Sub Group', labelAr: 'المجموعة الفرعية', key: 'subGroup' },
-  { label: 'Ledger Name', labelAr: 'اسم الأستاذ', key: 'ledger' }
-]
-
-const ccContractColumns = [
-  { label: 'Project Name As Tally', labelAr: 'اسم المشروع (تارلي)', key: 'projectName' },
-  { label: 'Status in 2025', labelAr: 'الحالة في 2025', key: 'status' },
-  { label: 'Project Value', labelAr: 'قيمة المشروع', key: 'value' },
-  { label: 'Variation', labelAr: 'الاختلاف', key: 'variation' },
-  { label: 'Final Project Value', labelAr: 'قيمة المشروع النهائية', key: 'finalValue' }
-]
-
-const ccBudgetColumns = [
-  { label: 'Project Name As Tally', labelAr: 'اسم المشروع (تارلي)', key: 'projectName' },
-  { label: 'Status in 2025', labelAr: 'الحالة في 2025', key: 'status' },
-  { label: 'Budgeted Cost', labelAr: 'التكلفة المرصودة', key: 'budgeted' },
-  { label: 'Material Purchased', labelAr: 'المواد المشتراة', key: 'material' },
-  { label: 'Labor Cost', labelAr: 'تكلفة العمالة', key: 'labor' }
-]
-const mappingData = ref([
-  { ccName: 'TS 17 - Al Ain Zoo', fsCode: 'FS-001', mainGroup: 'Operations', subGroup: 'Direct Cost', ledger: 'Project A Ledger' },
-  { ccName: 'TS 18 - Dubai Mall', fsCode: 'FS-002', mainGroup: 'Operations', subGroup: 'Direct Cost', ledger: 'Project B Ledger' },
-])
-
-const contractData = ref([
-  { projectName: 'TS 17 - Al Ain Zoo', status: 'Closed', value: '3,43,000.00', variation: '-', finalValue: '3,43,000.00' },
-  { projectName: 'TS 17 - Al Ain Zoo', status: 'Closed', value: '3,43,000.00', variation: '-', finalValue: '3,43,000.00' },
-  { projectName: 'TS 17 - Al Ain Zoo', status: 'Closed', value: '3,43,000.00', variation: '-', finalValue: '3,43,000.00' },
-])
-
-const budgetData = ref([
-  { projectName: 'TS 17 - Al Ain Zoo', status: 'Closed', budgeted: '3,43,000.00', material: '-', labor: '3,43,000.00' },
-  { projectName: 'TS 17 - Al Ain Zoo', status: 'Closed', budgeted: '3,43,000.00', material: '-', labor: '3,43,000.00' },
-])
+// Cost-center report columns/data from composable
+const ccMappingColumns = computed(() => costCenterReports.value?.mappingColumns ?? [])
+const ccContractColumns = computed(() => costCenterReports.value?.contractColumns ?? [])
+const ccBudgetColumns = computed(() => costCenterReports.value?.budgetColumns ?? [])
+const mappingData = computed(() => costCenterReports.value?.mappingData ?? [])
+const contractData = computed(() => costCenterReports.value?.contractData ?? [])
+const ccBudgetData = computed(() => costCenterReports.value?.budgetData ?? [])
 const isModalOpen = ref(false)
 const isBudgetOpen = ref(false)
 const modalConfig = ref({ title: '', columns: [], data: [], total: '-' })
@@ -619,145 +407,38 @@ const handleOpenCCReport = (reportId) => {
   if (reportId === 'mapping') {
     modalConfig.value = {
       title: currentLang.value === 'ar' ? 'تقرير تخطيط مركز التكلفة' : 'Cost Center Mapping Report',
-      columns: ccMappingColumns,
+      columns: ccMappingColumns.value,
       data: mappingData.value,
       total: 'N/A'
     }
   } else if (reportId === 'contract') {
     modalConfig.value = {
       title: currentLang.value === 'ar' ? 'تقرير سجل العقود الرئيسي' : 'Contract Master Detailed Report',
-      columns: ccContractColumns,
+      columns: ccContractColumns.value,
       data: contractData.value,
-      total: '1,250,000'
+      total: costCenterReports.value?.contractTotal ?? '1,250,000'
     }
   } else if (reportId === 'budget') {
     modalConfig.value = {
       title: currentLang.value === 'ar' ? 'تقرير ميزانية مركز التكلفة' : 'Budget Cost Center Report',
-      columns: ccBudgetColumns,
-      data: budgetData.value,
-      total: '840,000'
+      columns: ccBudgetColumns.value,
+      data: ccBudgetData.value,
+      total: costCenterReports.value?.budgetTotal ?? '840,000'
     }
   }
   isModalOpen.value = true
 }
-const budgetReportData = ref([
-  { name: 'Sales Department', budgeted: '1,200,000.00', actual: '1,150,000.00', variance: '50,000.00', percent: '95.8%' },
-  { name: 'Marketing & PR', budgeted: '450,000.00', actual: '480,000.00', variance: '-30,000.00', percent: '106.6%' },
-  { name: 'Operations', budgeted: '2,500,000.00', actual: '2,400,000.00', variance: '100,000.00', percent: '96.0%' },
-  { name: 'Human Resources', budgeted: '300,000.00', actual: '290,000.00', variance: '10,000.00', percent: '96.6%' },
-])
+// Budget report data/columns from composable
+const budgetReportData = computed(() => budgetData.value?.reportData ?? [])
+const budgetColumns = computed(() => budgetData.value?.reportColumns ?? [])
+const budgetReportTotal = computed(() => budgetData.value?.reportTotal ?? '-')
 
-// 2. LOGS FOR BUDGET PLANNING
-const budgetLogs = ref([
-  { date: '15-Mar-2026', time: '11:20:05', user: 'cfo@masterline.com', details: 'Revised Fixed Assets budget for Q3 2026' },
-  { date: '12-Mar-2026', time: '09:05:44', user: 'admin@taxaid.com', details: 'Initial budget templates generated for all cost centers' }
-])
+// Sales forecast from composable (salesForecastData from useDataSourcePage)
+const salesForecastItems = computed(() => salesForecastData.value?.data ?? [])
+const salesForecastDetailedData = computed(() => salesForecastData.value?.detailedData ?? [])
 
 
-
-const budgetColumns = [
-  { label: 'Particulars', labelAr: 'التفاصيل', key: 'name' },
-  { label: 'Budgeted', labelAr: 'الميزانية', key: 'budgeted' },
-  { label: 'Actual', labelAr: 'الفعلي', key: 'actual' },
-  { label: 'Variance', labelAr: 'التباين', key: 'variance' },
-  { label: 'Utilized %', labelAr: 'نسبة الاستخدام', key: 'percent' }
-]
-const salesForecastData = ref([
-  {
-    id: '2025',
-    label: '2025',
-    quarters: [
-      {
-        id: 'q1',
-        label: '1st Quarter',
-        months: [
-          {
-            label: 'January',
-            actual: '1,250,000',
-            income: '1,300,000',
-            forecast: '1,200,000',
-            possible: '1,280,000',
-            budget: '1,200,000',
-            diff: '+100,000'
-          },
-          { label: 'February', actual: '', income: '', forecast: '', possible: '', budget: '', diff: '' },
-          { label: 'March', actual: '', income: '', forecast: '', possible: '', budget: '', diff: '' },
-        ]
-      },
-      {
-        id: 'q1',
-        label: '1st Quarter',
-        months: [
-          {
-            label: 'January',
-            actual: '1,250,000',
-            income: '1,300,000',
-            forecast: '1,200,000',
-            possible: '1,280,000',
-            budget: '1,200,000',
-            diff: '+100,000'
-          },
-          { label: 'February', actual: '', income: '', forecast: '', possible: '', budget: '', diff: '' },
-          { label: 'March', actual: '', income: '', forecast: '', possible: '', budget: '', diff: '' },
-        ]
-      },
-      {
-        id: 'q2',
-        label: '2nd Quarter',
-        months: [
-          {
-            label: 'April',
-            actual: '1,250,000',
-            income: '1,300,000',
-            forecast: '1,200,000',
-            possible: '1,280,000',
-            budget: '1,200,000',
-            diff: '+100,000'
-          },
-          { label: 'May', actual: '', income: '', forecast: '', possible: '', budget: '', diff: '' },
-          { label: 'June', actual: '', income: '', forecast: '', possible: '', budget: '', diff: '' },
-        ]
-      },
-      {
-        id: 'q3',
-        label: '3rd Quarter',
-        months: [
-          {
-            label: 'July',
-            actual: '1,250,000',
-            income: '1,300,000',
-            forecast: '1,200,000',
-            possible: '1,280,000',
-            budget: '1,200,000',
-            diff: '+100,000'
-          },
-          { label: 'August', actual: '', income: '', forecast: '', possible: '', budget: '', diff: '' },
-          { label: 'September', actual: '', income: '', forecast: '', possible: '', budget: '', diff: '' },
-        ]
-      },
-      {
-        id: 'q4',
-        label: '4th Quarter',
-        months: [
-          {
-            label: 'October',
-            actual: '1,250,000',
-            income: '1,300,000',
-            forecast: '1,200,000',
-            possible: '1,280,000',
-            budget: '1,200,000',
-            diff: '+100,000'
-          },
-          { label: 'November', actual: '', income: '', forecast: '', possible: '', budget: '', diff: '' },
-          { label: 'December', actual: '', income: '', forecast: '', possible: '', budget: '', diff: '' },
-        ]
-      }
-    ]
-  }
-])
-const salesForecastLogs = ref([
-  { date: '19-Mar-2026', time: '15:10:22', user: 'cfo@masterline.com', details: 'Updated Q3 sales targets based on market shift' }
-])
+// salesForecastDetailedColumns kept for SalesForecastModal prop
 const salesForecastDetailedColumns = [
   { label: 'Project Name', labelAr: 'اسم المشروع', key: 'projectName' },
   { label: 'Customer', labelAr: 'العميل', key: 'customer' },
@@ -765,125 +446,14 @@ const salesForecastDetailedColumns = [
   { label: 'Date', labelAr: 'التاريخ', key: 'date' },
   { label: 'AED', labelAr: 'درهم إماراتي', key: 'amount', textRight: true }
 ]
-const salesForecastDetailedData = ref([
-  {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  },
-  {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  },
-  {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: '6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: ' 6,12,147.91'
-  }, {
-    projectName: 'SST-34 Animal Shelter',
-    customer: 'Lazourdy Contracting & Gen Maintanance',
-    possibility: '100%',
-    date: '3-Jan-25',
-    amount: ' 6,12,147.91'
-  },
-])
+
+
 const handleOpenBudgetReport = (id, title) => {
   modalConfig.value = {
     title: title,
-    columns: budgetColumns,
+    columns: budgetColumns.value,
     data: budgetReportData.value,
-    total: '4,450,000.00'
+    total: budgetReportTotal.value
   }
   isBudgetOpen.value = true
 }

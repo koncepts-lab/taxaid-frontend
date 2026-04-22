@@ -81,14 +81,16 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const series = ref([
+const { historicalMovement } = useAccountsReceivablePage()
+
+const series = computed(() => [
   {
     name: 'AR Balance',
-    data: [1.6, 3.2, 3.8, 4.3, 4.6, 4.8]
+    data: historicalMovement.value?.arBalance ?? []
   },
   {
     name: 'Percentage',
-    data: []
+    data: historicalMovement.value?.percentage ?? []
   }
 ])
 
@@ -121,7 +123,7 @@ const chartOptions = computed(() => ({
     hover: { size: 7 }
   },
   xaxis: {
-    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    categories: historicalMovement.value?.categories ?? [],
     tickPlacement: 'between',
     axisBorder: { 
       show: true,

@@ -69,6 +69,7 @@
 </template>
 
 <script setup>
+// indirect-expense page
 import { ref } from 'vue'
 import IndirectExpenseHeader from '~/components/indirect-expense/Header.vue'
 import IndirectExpenseSummary from '~/components/indirect-expense/Summary.vue'

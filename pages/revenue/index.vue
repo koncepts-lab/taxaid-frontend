@@ -76,27 +76,14 @@
 <script setup>
 import { ref, computed } from 'vue'
 
+// revenue page 
 const isChatOpen = ref(true)
 const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-
-const revenueSummaryData = computed(() => [
-    {
-        label: 'Product Sales', labelAr: 'مبيعات المنتجات', current: '1,850,000', previous: '1,620,000', budget: '1,900,000', variance: '+14.2%', progress: 50,
-        children: [
-            { label: 'SST 01', labelAr: 'SST 01', current: '2,100,000', previous: '1,900,000' },
-            { label: 'SST 02', labelAr: 'SST 02', current: '2,100,000', previous: '1,900,000' },
-            { label: 'SST 03', labelAr: 'SST 03', current: '2,100,000', previous: '1,900,000' },
-        ]
-    },
-    { label: 'Service', labelAr: 'الخدمات', current: '450,000', previous: '380,000', budget: '480,000', variance: '+18.4%', progress: 30 },
-    { label: 'Subscriptions', labelAr: 'الاشتراكات', current: '280,000', previous: '240,000', budget: '300,000', variance: '-16.7%', progress: 20 },
-    { label: 'Total Revenue', labelAr: 'إجمالي الإيرادات', current: '2,775,000', previous: '2,405,000', budget: '2,890,000', variance: '+15.4%', progress: 25, isSummary: true },
-])
-
-
+const { summary } = useRevenuePage()
+const revenueSummaryData = summary
 </script>
 
 <style scoped>

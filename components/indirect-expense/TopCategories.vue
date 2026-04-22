@@ -140,10 +140,12 @@ const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 const isModalOpen = ref(false)
 
-const labels = ['Rent & Utilities', 'Salaries & Wages', 'Marketing & Advertising', 'Office Supplies', 'Others'];
-const labelsAr = ['الإيجار والمرافق', 'الرواتب والأجور', 'التسويق والإعلان', 'اللوازم المكتبية', 'أخرى'];
-const series = [35, 30, 20, 10, 5];
-const values = ['0.61', '0.42', '0.28', '0.19', '0.05'];
+const { topCategories } = useIndirectExpensePage()
+
+const labels = computed(() => topCategories.value?.labels || [])
+const labelsAr = computed(() => topCategories.value?.labelsAr || [])
+const series = computed(() => topCategories.value?.series || [])
+const values = computed(() => topCategories.value?.values || [])
 const colors = ['#004D41', '#00966C', '#FFB100', '#D29600', '#FF7E5B'];
 const radii = [100, 96, 88, 80, 72];
 
@@ -165,7 +167,7 @@ onMounted(() => {
 
 const computedSlices = computed(() => {
   let currentAngle = 90; // Match dashboard start angle
-  return series.map((val, index) => {
+  return series.value.map((val, index) => {
     const value = val * (animProgress.value / 100);
     const angle = (value / 100) * 360;
     const r = radii[index] || 100;

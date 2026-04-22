@@ -3,13 +3,13 @@
     :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
 
     <!-- HEADER -->
-    <DashboardHeader role="Partner" name="PARTNER-001" />
+    <DashboardHeader :role="partnerInfo.role" :name="partnerInfo.partnerId" />
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 pb-[0px] pt-8 space-y-6 overflow-y-auto" style="margin-top: -18px;">
 
       <!-- Alert Banner -->
-      <div v-if="showAlertBanner"
+      <div v-if="showAlertBanner && hasAlert"
         :class="isDark ? 'bg-[#00141080] border-[#F9AF4D80]' : 'bg-[#FEFCE8] border-[#FFF085]'"
         class="rounded-[16px] p-4 flex items-center justify-between shadow-sm relative pr-12 border">
         <div class="flex items-center gap-4">
@@ -23,8 +23,9 @@
           <div>
             <h4 class="text-[16px] font-semibold" :class="isDark ? 'text-white' : 'text-[#854D0E]'">Expiring cards
               detected</h4>
-            <p class="text-[14px] font-normal" :class="isDark ? 'text-white/70' : 'text-[#854D0E]'">3 customers have
-              cards expiring in under 30 days. Update details to prevent payment issues.</p>
+            <p class="text-[14px] font-normal" :class="isDark ? 'text-white/70' : 'text-[#854D0E]'">
+              {{ expiringCardsCount }} customers have cards expiring in under {{ expiringCardsDaysThreshold }} days. Update details to prevent payment issues.
+            </p>
           </div>
         </div>
         <button @click="showAlertBanner = false" class="transition-colors cursor-pointer"
@@ -80,7 +81,7 @@
               class="rounded-[24px] p-6 border shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
               <div class="flex justify-between items-start mb-6">
                 <h5 class="text-[18px] font-medium text-[#00000080]">{{ stat.title }}</h5>
-                <div class="w-10 h-10 flex items-center justify-center" :class="stat.iconColor">
+                <div class="w-10 h-10 flex items-center justify-center" :class="stat.iconColor || 'p-0'">
                   <img v-if="typeof stat.icon === 'string'" :src="stat.icon" class="w-8 h-8" alt="icon" />
                   <component v-else :is="stat.icon" class="w-8 h-8" />
                 </div>
@@ -99,11 +100,11 @@
           <h2 class="text-[20px] font-normal mb-6" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">Payment Status
             Overview</h2>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div v-for="(stat, idx) in paymentStatusMetrics" :key="idx" :class="[stat.bgClass, stat.borderColor]"
+            <div v-for="(stat, idx) in paymentStatusMetrics" :key="idx" :class="[stat.bgClass || 'bg-[#F0FDF4]', stat.borderColor || 'border-[#04C18F80]']"
               class="rounded-[15px] p-6 border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
               <div class="flex justify-between items-start mb-6">
                 <h5 class="text-[18px] font-medium text-[#00000080]">{{ stat.title }}</h5>
-                <div class="w-10 h-10 flex items-center justify-center" :class="stat.iconColor">
+                <div class="w-10 h-10 flex items-center justify-center" :class="stat.iconColor || 'p-0'">
                   <img v-if="typeof stat.icon === 'string'" :src="stat.icon" class="w-8 h-8" alt="icon" />
                   <component v-else :is="stat.icon" class="w-8 h-8" />
                 </div>
@@ -333,7 +334,7 @@
                     <div v-if="isSourceMenuOpen"
                       class="absolute top-full left-0 mt-1 bg-white border border-gray-100 rounded-[12px] shadow-2xl z-50 p-2 min-w-[160px] text-left font-normal text-[#1a1a1a]">
                       <div class="space-y-1">
-                        <div v-for="source in ['PT-001', 'PT-002', 'PT-003']" :key="source"
+                        <div v-for="source in partnerSourceOptions" :key="source"
                           @click.stop="toggleSourceFilter(source)"
                           class="flex items-center gap-3 p-2 rounded-[8px] hover:bg-gray-50 cursor-pointer transition-colors group">
                           <!-- Checkbox UI -->
@@ -732,12 +733,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { DatePicker as VDatePicker } from 'v-calendar'
 import 'v-calendar/dist/style.css'
 import { format } from 'date-fns'
+import { useRevenuePartnership } from '@/composables/useWebsiteData'
 
 const { isDark } = useTheme()
+const { partnerInfo, overviewMetrics, paymentStatusMetrics, customerManagement, paymentToPartnerModal, alerts } = useRevenuePartnership()
 
 definePageMeta({
   layout: false
@@ -775,7 +778,6 @@ const showPaymentModal = ref(false)
 const showAddPartnerModal = ref(false)
 const showPartnerList = ref(false)
 const selectedPartner = ref('Choose a partner')
-const partners = ['TechCorp Solutions Inc.', 'Innovate System Ltd.', 'Enterprise Holdings']
 
 const paymentDate = ref(null)
 const activeModalDropdown = ref(null)
@@ -785,98 +787,23 @@ const formatDate = (date) => {
   return format(date, 'dd-MM-yyyy')
 }
 
-const customerSubTabs = [
+const hasAlert = computed(() => (alerts.value?.expiringCardsCount ?? 0) > 0)
+const expiringCardsCount = computed(() => alerts.value?.expiringCardsCount ?? 0)
+const expiringCardsDaysThreshold = computed(() => alerts.value?.expiringCardsDaysThreshold ?? 30)
+
+const customerSubTabs = computed(() => customerManagement.value?.subTabs ?? [
   { name: 'Partners', count: 3 },
   { name: 'Direct Customers', count: 2 },
   { name: 'Notify Customers', count: 2 },
   { name: 'User Master Info', count: 2 }
-]
+])
 
-
-const overviewMetrics = [
-  {
-    title: 'Total Customers',
-    value: '5',
-    subtext: 'Partner-sourced clients',
-    icon: '/images/icons/Total-Customers.svg',
-    iconColor: 'p-0',
-    isCurrency: false
-  },
-  {
-    title: 'Total Revenue',
-    value: '808,000',
-    subtext: 'All partner revenue',
-    icon: '/images/icons/doller-green.svg',
-    iconColor: 'p-0',
-    isCurrency: true
-  },
-  {
-    title: 'Amount Collected',
-    value: '714,500',
-    subtext: 'Collection rate: 88.4%',
-    icon: '/images/icons/amt_collected.svg',
-    iconColor: 'p-0',
-    isCurrency: true
-  }
-]
-
-const paymentStatusMetrics = [
-  {
-    title: 'Paid',
-    value: '808,000',
-    count: '3',
-    subtext: 'Completed payments',
-    icon: '/images/icons/green-tick.svg',
-    iconColor: 'p-0',
-    bgClass: 'bg-[#F0FDF4]',
-    borderColor: 'border-[#04C18F80]'
-  },
-  {
-    title: 'Failed',
-    value: '808,000',
-    count: '3',
-    subtext: 'Failed Payments',
-    icon: '/images/icons/close.svg',
-    iconColor: 'p-0',
-    bgClass: 'bg-[#FEF2F2]',
-    borderColor: 'border-[#FFA6A6]',
-    textColor: '#C10007'
-  },
-  {
-    title: 'Settlements',
-    value: '808,000',
-    count: '3',
-    subtext: 'Total Partner Payments',
-    icon: '/images/icons/Settlements-blue.svg',
-    iconColor: 'p-0',
-    bgClass: 'bg-[#DFF4FF]',
-    borderColor: 'border-[#1FB2FF]',
-    textColor: '#005B8A'
-  }
-]
-
-const paymentDetails = [
-  { code: 'CUST-001', source: 'PT-001', company: 'TechCorp Solutions Inc.', period: '125,000', year: '1', revenue: '125,000', collected: '125,000', settlement: '125,000', date: '11/5/2024', status: 'Paid' },
-  { code: 'CUST-002', source: 'PT-002', company: 'Global Finance LLC', period: '89,000', year: '2', revenue: '89,000', collected: '89,000', settlement: '89,000', date: '11/5/2024', status: 'Failed' },
-  { code: 'CUST-001', source: 'PT-003', company: 'TechCorp Solutions Inc.', period: '125,000', year: '3+', revenue: '125,000', collected: '125,000', settlement: '125,000', date: '11/5/2024', status: 'Failed' },
-]
-
-const directCustomersData = [
-  { code: 'CUST-001', source: 'DC-001', company: 'TechCorp Solutions Inc.', revenue: '125,000', collected: '125,000', date: '11/5/2024', status: 'Paid', reason: '-' },
-  { code: 'CUST-002', source: 'DC-002', company: 'Global Finance LLC', revenue: '89,000', collected: '89,000', date: '11/5/2024', status: 'Failed', reason: 'Invoice not received' },
-  { code: 'CUST-001', source: 'DC-003', company: 'TechCorp Solutions Inc.', revenue: '125,000', collected: '125,000', date: '11/5/2024', status: 'Failed', reason: 'Card limit exceeded' },
-]
-
-const notifyCustomersData = [
-  { code: 'CUST-001', source: 'DC-001', company: 'TechCorp Solutions Inc.', contact: '+123456789', cardType: 'Visa', last4: '4432', expiry: '12/2024', status: 'Expiring', action: 'Notify' },
-  { code: 'CUST-002', source: 'DC-002', company: 'Global Finance LLC', contact: '+123456789', cardType: 'Mastercard', last4: '9921', expiry: '11/2024', status: 'Expiring', action: 'Notified' }
-]
-
-const userMasterData = [
-  { code: 'CUST-001', source: 'DC-001', company: 'TechCorp Solutions Inc.', bank: 'Chase Bank *****1234', card: '**** 4532', contactPerson: 'John Smith', contactNo: '+1-555-0101', email: 'john.smith@techcorp.com' },
-  { code: 'CUST-001', source: 'DC-001', company: 'TechCorp Solutions Inc.', bank: 'Chase Bank *****1234', card: '**** 4532', contactPerson: 'John Smith', contactNo: '+1-555-0101', email: 'john.smith@techcorp.com' },
-  { code: 'CUST-001', source: 'DC-001', company: 'TechCorp Solutions Inc.', bank: 'Chase Bank *****1234', card: '**** 4532', contactPerson: 'John Smith', contactNo: '+1-555-0101', email: 'john.smith@techcorp.com' }
-]
+const partnerSourceOptions = computed(() => customerManagement.value?.partnerSourceOptions ?? ['PT-001', 'PT-002', 'PT-003'])
+const partners = computed(() => paymentToPartnerModal.value?.partnerOptions ?? ['TechCorp Solutions Inc.', 'Innovate System Ltd.', 'Enterprise Holdings'])
+const paymentDetails = computed(() => customerManagement.value?.partners?.data ?? [])
+const directCustomersData = computed(() => customerManagement.value?.directCustomers?.data ?? [])
+const notifyCustomersData = computed(() => customerManagement.value?.notifyCustomers?.data ?? [])
+const userMasterData = computed(() => customerManagement.value?.userMasterInfo?.data ?? [])
 
 const isSourceMenuOpen = ref(false)
 const selectedSources = ref(['PT-002'])
