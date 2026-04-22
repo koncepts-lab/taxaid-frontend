@@ -21,7 +21,7 @@
 import { ref } from 'vue'
 
 // Role can be: 'member', 'lead', or 'manager'
-const userRole = ref('manager')
+const userRole = ref('lead')
 const selectedProject = ref(null)
 
 const handleGoToProject = (project) => {
