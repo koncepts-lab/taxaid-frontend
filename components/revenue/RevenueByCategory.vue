@@ -12,8 +12,22 @@
       </div>
     </div>
 
-    <div class="flex-1 w-full min-h-[400px]"> 
-      <ClientOnly>
+    <div class="flex-1 w-full min-h-[400px] relative"> 
+      <!-- Loading Overlay -->
+      <div v-if="loading" class="absolute inset-0 z-20 flex items-center justify-center bg-white/50 dark:bg-black/10 backdrop-blur-[2px] rounded-2xl">
+        <div class="flex flex-col items-center gap-3">
+          <div class="w-10 h-10 border-4 border-[#0BD9A4] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div v-else-if="error" class="absolute inset-0 z-20 flex items-center justify-center bg-red-50/10 backdrop-blur-[2px] rounded-2xl">
+        <div class="flex flex-col items-center gap-3 text-center px-6">
+          <p class="text-xs font-medium text-red-600">{{ currentLang === 'ar' ? 'فشل تحميل البيانات.' : 'Failed to load data.' }}</p>
+        </div>
+      </div>
+
+      <ClientOnly v-if="!loading && !error">
         <apexchart
           type="bar"
           height="100%"
@@ -61,14 +75,18 @@
 <script setup>
 import { ref, computed } from 'vue'
 
+const props = defineProps({
+  data: Object,
+  loading: Boolean,
+  error: [String, Object]
+})
+
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const { byCategory } = useRevenuePage()
-
 const series = computed(() => {
-  const dataSeries = byCategory.value?.series ?? []
+  const dataSeries = props.data?.series ?? []
   return dataSeries.map(s => ({
     name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
     data: s.data
@@ -116,7 +134,7 @@ const chartOptions = computed(() => ({
     colors: ['transparent']
   },
   xaxis: {
-    categories: currentLang.value === 'ar' ? (byCategory.value?.categoriesAr || []) : (byCategory.value?.categories || []),
+    categories: currentLang.value === 'ar' ? (props.data?.categoriesAr || []) : (props.data?.categories || []),
     axisBorder: {
       show: false
     },
@@ -137,7 +155,7 @@ const chartOptions = computed(() => ({
   },
   yaxis: {
     min: 0,
-    max: 6,
+    max: Math.ceil(Math.max(...series.value.flatMap(s => s.data), 1)),
     tickAmount: 6,
     labels: {
       style: {
@@ -206,14 +224,7 @@ const chartOptions = computed(() => ({
     }
   },
   tooltip: {
-    y: {
-      formatter: function (val) {
-        if (currentLang.value === 'ar') {
-          return val + " مليون درهم"
-        }
-        return val + " Million AED"
-      }
-    }
+    enabled: false
   },
   responsive: [
     {

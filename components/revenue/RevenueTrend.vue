@@ -27,7 +27,25 @@
 
     <!-- Chart -->
     <div class="flex-1 w-full relative z-10 min-h-[300px]">
-      <ClientOnly>
+      <!-- Loading Overlay -->
+      <div v-if="loading" class="absolute inset-0 z-20 flex items-center justify-center bg-black/10 backdrop-blur-[2px] rounded-2xl">
+        <div class="flex flex-col items-center gap-3">
+          <div class="w-10 h-10 border-4 border-[#00FFBC] border-t-transparent rounded-full animate-spin"></div>
+          <p class="text-sm font-medium text-white/80">{{ currentLang === 'ar' ? 'جاري التحميل...' : 'Loading Data...' }}</p>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div v-else-if="error" class="absolute inset-0 z-20 flex items-center justify-center bg-red-500/10 backdrop-blur-[2px] rounded-2xl">
+        <div class="flex flex-col items-center gap-3 text-center px-6">
+          <p class="text-sm font-medium text-white">{{ currentLang === 'ar' ? 'فشل تحميل البيانات.' : 'Failed to load data.' }}</p>
+          <button @click="fetchTrendData" class="mt-2 px-4 py-2 bg-white/20 text-white text-xs rounded-lg hover:bg-white/30 transition-colors">
+            {{ currentLang === 'ar' ? 'إعادة المحاولة' : 'Retry' }}
+          </button>
+        </div>
+      </div>
+
+      <ClientOnly v-if="!loading && !error">
         <apexchart
           type="line"
           height="100%"
@@ -70,7 +88,25 @@
           
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10 min-h-[300px]">
-            <ClientOnly>
+            <!-- Loading Overlay -->
+            <div v-if="loading" class="absolute inset-0 z-20 flex items-center justify-center bg-black/10 backdrop-blur-[2px]">
+              <div class="flex flex-col items-center gap-3">
+                <div class="w-12 h-12 border-4 border-[#00FFBC] border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-base font-medium text-white/80">{{ currentLang === 'ar' ? 'جاري التحميل...' : 'Loading Data...' }}</p>
+              </div>
+            </div>
+
+            <!-- Error State -->
+            <div v-else-if="error" class="absolute inset-0 z-20 flex items-center justify-center bg-red-500/10 backdrop-blur-[2px]">
+              <div class="flex flex-col items-center gap-3 text-center px-6">
+                <p class="text-base font-medium text-white">{{ currentLang === 'ar' ? 'فشل تحميل البيانات.' : 'Failed to load data.' }}</p>
+                <button @click="fetchTrendData" class="mt-4 px-6 py-2 bg-white/20 text-white text-sm rounded-lg hover:bg-white/30 transition-colors">
+                  {{ currentLang === 'ar' ? 'إعادة المحاولة' : 'Retry' }}
+                </button>
+              </div>
+            </div>
+
+            <ClientOnly v-if="!loading && !error">
               <apexchart
                 type="line"
                 height="100%"
@@ -86,18 +122,63 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const { trend } = useRevenuePage()
+// API Data State
+const loading = ref(true)
+const error = ref(null)
+const trendData = ref([])
+const categories = ref([])
+
+const fetchTrendData = async () => {
+  try {
+    loading.value = true
+    error.value = null
+    const response = await useApi('revenue-analysis/trend-chart', {
+      method: 'POST',
+      body: {
+        custom_from: "12-05-2025"
+      }
+    })
+    
+    if (response.status === 'success') {
+      const apiData = response.data
+      
+      categories.value = apiData.map(item => item.month_short)
+      
+      // Series 0: Previous Year, Series 1: Current Year
+      trendData.value = [
+        {
+          name: 'Previous Year',
+          nameAr: 'السنة السابقة',
+          data: apiData.map(item => Number((item.previous_year / 1_000_000).toFixed(2)))
+        },
+        {
+          name: 'Current Year',
+          nameAr: 'السنة الحالية',
+          data: apiData.map(item => Number((item.current_year / 1_000_000).toFixed(2)))
+        }
+      ]
+    }
+  } catch (err) {
+    error.value = err
+    console.error('Failed to fetch trend data:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchTrendData()
+})
 
 const series = computed(() => {
-  const dataSeries = trend.value?.series ?? []
-  return dataSeries.map(s => ({
-    name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
+  return trendData.value.map(s => ({
+    name: currentLang.value === 'ar' ? s.nameAr : s.name,
     data: s.data
   }))
 })
@@ -136,7 +217,7 @@ const chartOptions = computed(() => ({
     }
   },
   xaxis: {
-    categories: trend.value?.categories ?? ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+    categories: categories.value.length ? categories.value : ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
     axisBorder: { show: false },
     axisTicks: { show: false },
     crosshairs: {
@@ -158,7 +239,7 @@ const chartOptions = computed(() => ({
   },
   yaxis: {
     min: 0,
-    max: 4,
+    max: Math.ceil(Math.max(...trendData.value.flatMap(s => s.data), 1)),
     tickAmount: 4,
     opposite: currentLang.value === 'ar',
     labels: {
@@ -177,12 +258,17 @@ const chartOptions = computed(() => ({
       const monthLabel = w.globals.categoryLabels[dataPointIndex]
       const curYearValue = series[1][dataPointIndex]
       const preYearValue = series[0][dataPointIndex]
+      
       const diff = preYearValue - curYearValue
-      const decline = ((diff / preYearValue) * 100).toFixed(1)
+      const variance = preYearValue !== 0 ? ((diff / preYearValue) * 100).toFixed(1) : '0.0'
       
       const curLabel = currentLang.value === 'ar' ? 'السنة الحالية:' : 'Current Year:'
       const preLabel = currentLang.value === 'ar' ? 'السنة السابقة:' : 'Previous Year:'
-      const decLabel = currentLang.value === 'ar' ? 'انخفاض:' : 'Decline:'
+      const varLabel = currentLang.value === 'ar' ? 'تباين:' : 'Variance:'
+
+      // Format using our utility
+      const formattedCur = formatInMillions(curYearValue * 1000000, { suffix: 'M' })
+      const formattedPre = formatInMillions(preYearValue * 1000000, { suffix: 'M' })
 
       return `
         <div class="custom-tooltip shadow-2xl">
@@ -190,16 +276,16 @@ const chartOptions = computed(() => ({
           <div class="tooltip-body">
             <div class="tooltip-row">
               <span class="label">${curLabel}</span>
-              <span class="value">AED ${curYearValue.toString().replace('.', ',')}M</span>
+              <span class="value">AED ${formattedCur}</span>
             </div>
             <div class="tooltip-row">
               <span class="label">${preLabel}</span>
-              <span class="value">AED ${preYearValue.toString().replace('.', ',')}M</span>
+              <span class="value">AED ${formattedPre}</span>
             </div>
             <div class="tooltip-divider"></div>
             <div class="tooltip-row">
-              <span class="label">${decLabel}</span>
-              <span class="value highlight">-${decline}%</span>
+              <span class="label">${varLabel}</span>
+              <span class="value ${diff > 0 ? 'highlight' : 'teal'}">${diff > 0 ? '-' : '+'}${Math.abs(variance)}%</span>
             </div>
           </div>
         </div>

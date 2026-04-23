@@ -14,8 +14,20 @@
     </div>
 
     <!-- Gauge Area -->
-    <div class="relative w-full flex flex-col items-center justify-center flex-1 py-4">
-      <div class="relative w-full max-w-[400px]">
+    <div class="relative w-full flex flex-col items-center justify-center flex-1 py-4 min-h-[250px]">
+      <!-- Loading Overlay -->
+      <div v-if="loading" class="absolute inset-0 z-20 flex items-center justify-center bg-white/5 dark:bg-black/5 backdrop-blur-[2px]">
+        <div class="flex flex-col items-center gap-3">
+          <div class="w-10 h-10 border-4 border-[#03D9B0] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div v-else-if="error" class="absolute inset-0 z-20 flex items-center justify-center">
+        <p class="text-xs font-medium text-white/60">{{ currentLang === 'ar' ? 'فشل تحميل البيانات.' : 'Failed to load data.' }}</p>
+      </div>
+
+      <div v-if="!loading && !error" class="relative w-full max-w-[400px]">
         <svg class="w-full h-auto block" :viewBox="`0 0 ${svgW} ${svgH}`">
           <!-- Ticks -->
           <g>
@@ -64,15 +76,15 @@
 
 
     <!-- Legend (Dashboard Style) -->
-    <div class="w-full grid grid-cols-3 gap-2 mt-[-90px] pt-6 border-t border-white/10">
+    <div v-if="!loading && !error" class="w-full grid grid-cols-3 gap-2 mt-[-90px] pt-6 border-t border-white/10">
       <div class="flex flex-col items-center lg:text-center">
         <div class="flex lg:items-center lg:justify-center items-normal gap-2 mb-1 min-h-[36px]">
           <div class="w-2 h-2 lg:h-3 lg:w-3 rounded-full" :style="{ backgroundColor: colors.lastYear }"></div>
           <span class="text-[12px] lg:whitespace-nowrap whitespace-normal font-light lg:text-center text-left">{{ currentLang === 'ar' ? 'العام الماضي' : 'Previous Year' }} ({{ lastYearPct }}%)</span>
         </div>
         <div class="text-[18px] font-medium lg:text-center text-left">
-          <template v-if="currentLang === 'ar'">0,8 مليون د.إ</template>
-          <template v-else>AED 0.8M</template>
+          <template v-if="currentLang === 'ar'">{{ formatToMillions(props.data?.previousValue || 0) }} مليون د.إ</template>
+          <template v-else>AED {{ formatToMillions(props.data?.previousValue || 0) }}M</template>
         </div>
       </div>
       <div class="flex flex-col items-center lg:text-center">
@@ -81,8 +93,8 @@
           <span class="text-[12px] font-light lg:whitespace-nowrap whitespace-normal lg:text-center text-left">{{ currentLang === 'ar' ? 'الحالي' : 'Current' }} ({{ Math.round(currentYearPct) }}%)</span>
         </div>
         <div class="text-[18px] font-medium lg:text-center text-left">
-          <template v-if="currentLang === 'ar'">7,8 مليون د.إ</template>
-          <template v-else>AED 7.8M</template>
+          <template v-if="currentLang === 'ar'">{{ formatToMillions(currentYearAchieved) }} مليون د.إ</template>
+          <template v-else>AED {{ formatToMillions(currentYearAchieved) }}M</template>
         </div>
       </div>
       <div class="flex flex-col items-center lg:text-center">
@@ -91,8 +103,8 @@
           <span class="text-[12px] font-light lg:whitespace-nowrap whitespace-normal lg:text-center text-left">{{ currentLang === 'ar' ? 'المستهدف' : 'Target' }} (100%)</span>
         </div>
         <div class="text-[18px] font-medium lg:text-center text-left">
-          <template v-if="currentLang === 'ar'">8,5 مليون د.إ</template>
-          <template v-else>AED 8.5M</template>
+          <template v-if="currentLang === 'ar'">{{ formatToMillions(currentYearTarget) }} مليون د.إ</template>
+          <template v-else>AED {{ formatToMillions(currentYearTarget) }}M</template>
         </div>
       </div>
     </div>
@@ -207,17 +219,21 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from "vue";
 
+const props = defineProps({
+  data: Object,
+  loading: Boolean,
+  error: [String, Object]
+})
+
 // Support for language state if available, fallback to 'en'
 const { isDark } = useTheme();
 const currentLang = useState('currentLang', () => 'en');
 const isModalOpen = ref(false);
 
-const { gauge } = useRevenuePage()
-
 // Data
-const currentYearTarget   = computed(() => gauge.value?.target          ?? 8500000);
-const currentYearAchieved = computed(() => gauge.value?.achieved        ?? 7820000);
-const lastYearPct         = computed(() => gauge.value?.previousYearPct ?? 9); // Based on the provided image legend
+const currentYearTarget   = computed(() => props.data?.target          ?? 8500000);
+const currentYearAchieved = computed(() => props.data?.achieved        ?? 7820000);
+const lastYearPct         = computed(() => props.data?.previousYearPct ?? 9); 
 
 // Dashboard Logic Constants
 const colors = { lastYear: "#21E669", currentYear: "#03D8B0", balance: "#0A7C4B" };
