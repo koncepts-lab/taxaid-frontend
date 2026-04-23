@@ -75,12 +75,42 @@
                         </button>
 
                         <!-- Export Button -->
-                        <button v-if="showExport" @click="$emit('export')"
-                            class="w-[40px] h-[40px] flex items-center justify-center border rounded-lg transition-colors"
-                            :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-[#03D8B0] hover:bg-gray-50'">
-                            <img :src="isDark ? '/images/icons/export.svg' : '/images/icons/export.svg'"
-                                alt="Export Icon" class="w-5 h-5" :class="isDark ? 'invert' : ''" />
-                        </button>
+                        <div class="relative" ref="exportDropdownRef">
+                            <button @click="showExportDropdown = !showExportDropdown"
+                                class="p-2 border rounded-lg transition-colors"
+                                :class="isDark ? 'bg-primary-900 border-primary-100 text-white hover:bg-white/10' : 'bg-white border-primary-100 text-gray-700 hover:bg-gray-50'">
+                                <img src="/images/icons/export.svg" alt="Export" class="w-5 h-5"
+                                    :class="isDark ? 'invert' : ''" />
+                            </button>
+
+                            <Transition name="dropdown">
+                                <div v-if="showExportDropdown"
+                                    class="absolute mt-2 w-48 border rounded-lg shadow-lg z-50 py-2 px-2" :class="[
+                                        isDark ? 'bg-primary-900 border-primary-100 shadow-black/50' : 'bg-white border-primary-100',
+                                        currentLang === 'ar' ? 'left-0' : 'right-0'
+                                    ]">
+                                    <button @click="triggerExport('excel')"
+                                        class="w-full px-4 py-2 text-xs rounded-lg flex items-center transition-colors"
+                                        :class="[
+                                            currentLang === 'ar' ? 'text-right' : 'text-left',
+                                            isDark ? 'text-white hover:bg-white/10' : 'text-black hover:bg-primary-700'
+                                        ]">
+                                        <span class="font-medium">{{ currentLang === 'ar' ? 'تصدير بصيغة إكسل (.xlsx)' :
+                                            'Export as Excel (.xlsx)' }}</span>
+                                    </button>
+
+                                    <button @click="triggerExport('pdf')"
+                                        class="w-full px-4 py-2 text-xs rounded-lg flex items-center transition-colors"
+                                        :class="[
+                                            currentLang === 'ar' ? 'text-right' : 'text-left',
+                                            isDark ? 'text-white hover:bg-white/10' : 'text-black hover:bg-primary-700'
+                                        ]">
+                                        <span class="font-medium">{{ currentLang === 'ar' ? 'تصدير بصيغة PDF (.pdf)' :
+                                            'Export as PDF (.pdf)' }}</span>
+                                    </button>
+                                </div>
+                            </Transition>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -129,11 +159,12 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['selected-date', 'reload', 'export', 'one-click-summary'])
+const emit = defineEmits(['selected-date', 'reload', 'export-excel', 'export-pdf', 'one-click-summary'])
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const showDateDropdown = ref(false)
+const showExportDropdown = ref(false)
 
 const selectedPeriodKey = ref(props.periods[0]?.en || 'Year to Date')
 
@@ -141,7 +172,19 @@ const selectedPeriod = computed(() => {
     const period = props.periods.find(p => p.en === selectedPeriodKey.value) || props.periods[0]
     return currentLang.value === 'ar' ? period?.ar : period?.en
 })
-
+const resetToDefault = () => {
+    // Set the key back to the first period in the array
+    if (props.periods.length > 0) {
+        selectedPeriodKey.value = props.periods[0].en
+    }
+    showDateDropdown.value = false
+    showExportDropdown.value = false
+}
+const triggerExport = (type) => {
+    if (type === 'excel') emit('export-excel')
+    if (type === 'pdf') emit('export-pdf')
+    showExportDropdown.value = false
+}
 const selectPeriod = (period) => {
     selectedPeriodKey.value = period.en
     showDateDropdown.value = false
@@ -160,6 +203,9 @@ const getDropdownItemClass = (period) => {
             : 'text-black hover:bg-teal-50'
     }
 }
+defineExpose({
+    resetToDefault
+})
 </script>
 
 <style scoped>
@@ -173,7 +219,7 @@ const getDropdownItemClass = (period) => {
     opacity: 0;
     transform: translateY(-10px);
 }
-</style> 
+</style>
 
 <!-- Example Usage: <template>
   <DashboardHeader 
