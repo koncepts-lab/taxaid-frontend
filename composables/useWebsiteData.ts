@@ -192,6 +192,7 @@ export function useRevenuePartnership() {
   }
 }
 
+
 /** Revenue detail page: /revenue */
 export function useRevenuePage() {
   const { data, loading, error } = useWebsiteData()

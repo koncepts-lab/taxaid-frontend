@@ -4,12 +4,14 @@ export const useApi = async (url: string, options: any = {}) => {
   const token = useCookie('auth_token')
 
   try {
+    const method = (options.method || 'GET').toUpperCase();
+
     return await $fetch(url, {
       baseURL: config.public.apiBase,
       ...options,
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        ...(method !== 'GET' ? { 'Content-Type': 'application/json' } : {}),
         ...(token.value ? { 'Authorization': `Bearer ${token.value}` } : {}),
         ...options.headers,
       },
@@ -24,4 +26,4 @@ export const useApi = async (url: string, options: any = {}) => {
   } catch (err) {
     throw err
   }
-}
+} 
