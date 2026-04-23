@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl"
+  <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl max-h-100 overflow-y-auto"
     :class="isDark ? 'bg-[#00141080]' : 'bg-white shadow-sm'">
 
     <div class="py-5 lg:px-8 px-4 flex justify-between items-center">
@@ -15,8 +15,8 @@
       </div>
     </div>
 
-    <table class="w-full text-left rtl:text-right border-collapse">
-      <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+    <table class="w-full text-left rtl:text-right border-collapse ">
+      <thead class="text-white sticky top-0 " :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
         <tr>
           <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
           <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'الإيرادات' :
@@ -60,7 +60,7 @@
       </tbody>
       <tfoot>
         <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
-          <td class="px-8 py-5 font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ 
+          <td class="px-8 py-5 font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
             currentLang === 'ar' ? summaryTotal.labelAr : summaryTotal.label }}</td>
           <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
             :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.revenue }}</td>
@@ -148,7 +148,8 @@
                 </template>
               </tbody>
               <tfoot class="sticky bottom-0 z-10">
-                <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
+                <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'"
+                  class="transition-all duration-500">
                   <td class="px-8 py-5 font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
                     currentLang === 'ar' ? summaryTotal.labelAr : summaryTotal.label }}</td>
                   <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
@@ -191,7 +192,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
@@ -199,6 +200,11 @@ const router = useRouter()
 
 const isModalOpen = ref(false)
 const hoveredRowRect = ref(null)
+const isLoading = ref(true)
+
+// Reactive references for the data
+const tableData = ref([])
+const summaryTotal = ref(null)
 
 const onRowEnter = (e) => {
   hoveredRowRect.value = e.currentTarget.getBoundingClientRect()
@@ -212,5 +218,54 @@ const goToDetail = (item) => {
   router.push('/cost-center/project-detail')
 }
 
-const { summary: tableData, summaryTotal } = useCostCenterPage()
+// Mapping Function to clean and format API data
+const mapApiData = (item) => {
+  return {
+    label: item.cost_center,
+    labelAr: item.cost_center, // API doesn't provide Arabic, using same for now
+    revenue: item.revenue,
+    cogs: item.cogs || '-',
+    indirectExp: item.indirect_expenses,
+    profit: item.profit,
+    // Convert margin string "-433.7%" to numeric -433.7 for the CSS logic
+    margin: parseFloat(item.profit_margin.replace('%', ''))
+  }
+}
+
+const fetchSummaryData = async () => {
+  isLoading.value = true
+  try {
+    const response = await useApi('cost-center/summary-by-date?date=31-12-2025', {
+      method: 'GET'
+    })
+
+    if (response.status === 'success' && response.data) {
+      const rawData = [...response.data]
+
+      // 1. Extract the "TOTAL" row (it's the last item in your JSON)
+      const totalItem = rawData.find(item => item.cost_center === "TOTAL")
+      if (totalItem) {
+        summaryTotal.value = mapApiData(totalItem)
+      }
+
+      // 2. Filter out the "TOTAL" row from the main list and map the rest
+      tableData.value = rawData
+        .filter(item => item.cost_center !== "TOTAL")
+        .map(mapApiData)
+    }
+  } catch (error) {
+    console.error("Failed to fetch cost center summary:", error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchSummaryData()
+})
+// Expose the data to the parent component
+defineExpose({
+  tableData,
+  summaryTotal
+})
 </script>

@@ -5,10 +5,9 @@
 
         <div v-if="!isFullScreenChat" class="min-h-screen font-sans flex relative z-10"
             :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-            <div class="flex-1 no-scrollbar transition-all duration-500 ease-in-out lg:p-8  p-4 pt-8"
-                :class="isChatOpen
-                    ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
-                    : (currentLang === 'ar' ? 'lg:ml-[170px] mr-0' : 'lg:mr-[170px] mr-0')">
+            <div class="flex-1 no-scrollbar transition-all duration-500 ease-in-out lg:p-8  p-4 pt-8" :class="isChatOpen
+                ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
+                : (currentLang === 'ar' ? 'lg:ml-[170px] mr-0' : 'lg:mr-[170px] mr-0')">
                 <div class="mx-auto">
                     <FinancialStatementHeader @date-change="handleDateUpdate" @export-excel="handleExportExcel"
                         @export-pdf="handleExportPDF" @refresh="fetchTabData(activeTab)"
