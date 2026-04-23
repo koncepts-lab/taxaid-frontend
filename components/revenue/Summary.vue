@@ -3,7 +3,7 @@
         <div class="py-5 lg:px-8 px-4 flex justify-between items-center">
             <div>
                 <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص الإيرادات' : 'Revenue Summary' }}</p>
-                <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+                <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بالدرهم الإماراتي' : 'Values in AED' }}</p>
             </div>
             <div class="flex items-center gap-3">
                 <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
@@ -17,8 +17,23 @@
         </div>
 
         <!-- Inline Table Container with overflow -->
-        <div class="w-full overflow-x-auto no-scrollbar">
-            <table class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px]">
+        <div class="w-full overflow-x-auto no-scrollbar relative min-h-[200px]">
+            <!-- Loading Overlay -->
+            <div v-if="loading" class="absolute inset-0 z-20 flex items-center justify-center bg-white/50 dark:bg-black/20 backdrop-blur-[2px]">
+                <div class="flex flex-col items-center gap-3">
+                    <div class="w-10 h-10 border-4 border-[#00C9A2] border-t-transparent rounded-full animate-spin"></div>
+                    <p class="text-sm font-medium" :class="isDark ? 'text-white/80' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'جاري التحميل...' : 'Loading Data...' }}</p>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div v-else-if="error" class="absolute inset-0 z-20 flex items-center justify-center bg-red-50/10 backdrop-blur-[2px]">
+                <div class="flex flex-col items-center gap-3 text-center px-6">
+                    <p class="text-sm font-medium text-red-600">{{ currentLang === 'ar' ? 'فشل تحميل البيانات.' : 'Failed to load data.' }}</p>
+                </div>
+            </div>
+
+            <table v-if="!loading && !error" class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px]">
             <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
                 <tr class="transition-all duration-500">
                     <th :class="isCompressed ? 'px-8 py-4' : 'px-8 py-5'" class="font-medium text-[14px]">
@@ -167,7 +182,7 @@
                                 {{ currentLang === 'ar' ? 'ملخص الإيرادات' : 'Revenue Summary' }}
                             </p>
                             <p class="text-[12px] mt-0.5" :class="isDark ? 'text-white/50' : 'text-[#00000096]'">
-                                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+                                {{ currentLang === 'ar' ? 'القيم بالدرهم الإماراتي' : 'Values in AED' }}
                             </p>
                         </div>
                         <button @click="isModalOpen = false"
@@ -307,11 +322,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 const props = defineProps({
     data: Array,
-    isCompressed: Boolean
+    isCompressed: Boolean,
+    loading: Boolean,
+    error: [String, Object]
 })
 
 const { isDark } = useTheme()
@@ -330,22 +347,44 @@ const openLedger = (child) => {
 
 // Inline table expand state
 const expandedRows = ref({})
-props.data?.forEach((row, i) => {
-    if (row.children && row.children.length) {
-        expandedRows.value[i] = i === 0
+const initializeExpanded = () => {
+    if (props.data && props.data.length) {
+        props.data.forEach((row, i) => {
+            if (row.children && row.children.length) {
+                if (expandedRows.value[i] === undefined) {
+                    expandedRows.value[i] = i === 0
+                }
+            }
+        })
     }
-})
+}
+
+watch(() => props.data, () => {
+    initializeExpanded()
+}, { immediate: true })
+
 const toggleRow = (index) => {
     expandedRows.value[index] = !expandedRows.value[index]
 }
 
 // Modal table expand state (independent)
 const modalExpandedRows = ref({})
-props.data?.forEach((row, i) => {
-    if (row.children && row.children.length) {
-        modalExpandedRows.value[i] = i === 0
+const initializeModalExpanded = () => {
+    if (props.data && props.data.length) {
+        props.data.forEach((row, i) => {
+            if (row.children && row.children.length) {
+                if (modalExpandedRows.value[i] === undefined) {
+                    modalExpandedRows.value[i] = i === 0
+                }
+            }
+        })
     }
-})
+}
+
+watch(() => props.data, () => {
+    initializeModalExpanded()
+}, { immediate: true })
+
 const toggleModalRow = (index) => {
     modalExpandedRows.value[index] = !modalExpandedRows.value[index]
 }

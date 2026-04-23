@@ -26,8 +26,34 @@
     </div>
 
     <!-- Chart -->
-    <div class="flex-1 w-full min-h-[350px]">
-      <ClientOnly>
+    <div class="flex-1 w-full min-h-[350px] relative">
+      <!-- Loading Overlay -->
+      <div v-if="loading" class="absolute inset-0 z-20 flex items-center justify-center bg-white/10 backdrop-blur-[2px] rounded-2xl">
+        <div class="flex flex-col items-center gap-3">
+          <div class="w-10 h-10 border-4 border-[#04C18F] border-t-transparent rounded-full animate-spin"></div>
+          <p class="text-sm font-medium" :class="isDark ? 'text-white/80' : 'text-[#013E32]'">{{ currentLang === 'ar' ? 'جاري التحميل...' : 'Loading Data...' }}</p>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div v-else-if="error" class="absolute inset-0 z-20 flex items-center justify-center bg-red-50/10 backdrop-blur-[2px] rounded-2xl">
+        <div class="flex flex-col items-center gap-3 text-center px-6">
+          <div class="w-12 h-12 flex items-center justify-center bg-red-100 rounded-full">
+            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <p class="text-sm font-medium text-red-600">
+            {{ currentLang === 'ar' ? 'فشل تحميل البيانات.' : 'Failed to load data.' }}
+            <span class="block text-[10px] mt-1 opacity-70">{{ error.message || error }}</span>
+          </p>
+          <button @click="fetchTopCustomers" class="mt-2 px-4 py-2 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 transition-colors">
+            {{ currentLang === 'ar' ? 'إعادة المحاولة' : 'Retry' }}
+          </button>
+        </div>
+      </div>
+
+      <ClientOnly v-if="!loading && !error">
         <apexchart
           type="line"
           height="100%"
@@ -77,7 +103,30 @@
           
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10 min-h-[350px]" :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
-            <ClientOnly>
+            <!-- Loading Overlay -->
+            <div v-if="loading" class="absolute inset-0 z-20 flex items-center justify-center bg-white/10 backdrop-blur-[2px]">
+              <div class="flex flex-col items-center gap-3">
+                <div class="w-12 h-12 border-4 border-[#04C18F] border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-base font-medium" :class="isDark ? 'text-white/80' : 'text-[#013E32]'">{{ currentLang === 'ar' ? 'جاري التحميل...' : 'Loading Data...' }}</p>
+              </div>
+            </div>
+
+            <!-- Error State -->
+            <div v-else-if="error" class="absolute inset-0 z-20 flex items-center justify-center bg-red-50/10 backdrop-blur-[2px]">
+              <div class="flex flex-col items-center gap-3 text-center px-6">
+                <div class="w-16 h-16 flex items-center justify-center bg-red-100 rounded-full">
+                  <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p class="text-base font-medium text-red-600">{{ currentLang === 'ar' ? 'فشل تحميل البيانات.' : 'Failed to load data.' }}</p>
+                <button @click="fetchTopCustomers" class="mt-4 px-6 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors">
+                  {{ currentLang === 'ar' ? 'إعادة المحاولة' : 'Retry' }}
+                </button>
+              </div>
+            </div>
+
+            <ClientOnly v-if="!loading && !error">
               <apexchart
                 type="line"
                 height="100%"
@@ -101,16 +150,68 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const { isDark } = useTheme()
-
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const { topCustomers } = useRevenuePage()
+// API Data State
+const loading = ref(true)
+const error = ref(null)
+const apiData = ref(null)
+const customersData = ref([])
+const cumulativePct = ref([])
 
-const customersData = computed(() => topCustomers.value?.customers ?? [])
+const fetchTopCustomers = async () => {
+  try {
+    loading.value = true
+    error.value = null
+    // removed leading slash to avoid potential double slash issues with baseURL
+    const response = await useApi('revenue-analysis/top-10-customers', { 
+      method: 'POST',
+      body: {
+        range_option: "Previous 3 months",
+        custom_from: "01-02-2025"
+      }
+    })
+    if (response.status === 'Success') {
+      apiData.value = response.data
+      const total = response.data.total_sales_amount
+      let runningSum = 0
+      
+      const colors = [
+        '#04C18F', '#FF886A', '#FFB01A', '#008FFB', '#00E396', 
+        '#775DD0', '#546E7A', '#26A69A', '#D10CE8', '#FF4560'
+      ]
+      
+      const tempCumulative = []
+      customersData.value = response.data.top_10_ledgers.map((item, index) => {
+        const valInMillions = item.amount / 1_000_000
+        runningSum += item.amount
+        tempCumulative.push(Number(((runningSum / total) * 100).toFixed(2)))
+        
+        return {
+          id: `C${index + 1}`,
+          name: item.name,
+          nameAr: item.name, // Fallback to name if Arabic is not provided
+          value: Number(valInMillions.toFixed(2)),
+          color: colors[index % colors.length]
+        }
+      })
+      cumulativePct.value = tempCumulative
+    }
+  } catch (err) {
+    error.value = err
+    console.error('API Error details:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchTopCustomers()
+})
 
 const customers = computed(() => {
   return customersData.value.map(c => ({
@@ -129,7 +230,7 @@ const series = computed(() => [
   {
     name: 'Cumulative %',
     type: 'line',
-    data: topCustomers.value?.cumulativePct ?? []
+    data: cumulativePct.value
   }
 ])
 
@@ -155,7 +256,7 @@ const chartOptions = computed(() => ({
   dataLabels: {
     enabled: true,
     enabledOnSeries: [0],
-    offsetY: -15,
+    offsetY: -25,
     style: {
       fontSize: '12px',
       colors: [isDark.value ? '#00E0A5CF' : '#013E32CF'],
@@ -164,7 +265,7 @@ const chartOptions = computed(() => ({
     background: {
       enabled: false,
     },
-    formatter: (val) => val.toString().replace('.', ',') + "M"
+    formatter: (val) => val.toString().replace(',', '.') + "M"
   },
   markers: {
     size: 5,
@@ -188,7 +289,8 @@ const chartOptions = computed(() => ({
   yaxis: [
     {
       min: 0,
-      max: 5,
+      // Dynamically set max based on data
+      max: Math.ceil(Math.max(...customersData.value.map(c => c.value), 1)),
       tickAmount: 5,
       axisBorder: {
         show: true,
@@ -224,10 +326,12 @@ const chartOptions = computed(() => ({
   legend: { show: false },
   tooltip: {
     shared: true,
+    theme: isDark.value ? 'dark' : 'light',
     intersect: false,
-    theme: 'light',
     custom: function({ series, seriesIndex, dataPointIndex, w }) {
       const customer = customersData.value[dataPointIndex]
+      if (!customer) return ''
+      
       const customerName = currentLang.value === 'ar' ? customer.nameAr : customer.name
       const rev = series[0][dataPointIndex]
       const cum = series[1][dataPointIndex]
@@ -235,13 +339,16 @@ const chartOptions = computed(() => ({
       const revLabel = currentLang.value === 'ar' ? 'الإيرادات' : 'Revenue'
       const contLabel = currentLang.value === 'ar' ? 'المساهمات' : 'Contributions'
 
+      // Using the global formatInMillions utility for the tooltip
+      const formattedRev = formatInMillions(customer.value * 1000000, { showCurrency: false, suffix: 'M' })
+
       return `
         <div class="custom-tooltip shadow-2xl">
           <div class="tooltip-header">${customerName}</div>
           <div class="tooltip-body">
             <div class="tooltip-row">
               <span class="label">${revLabel}:</span>
-              <span class="value">AED ${rev.toString().replace('.', ',')}M</span>
+              <span class="value">AED ${formattedRev}</span>
             </div>
             <div class="tooltip-row">
               <span class="label">${contLabel}:</span>
