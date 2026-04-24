@@ -118,7 +118,7 @@ const topCustomersData = computed(() => props.data?.top_customers ?? [])
 const customers = computed(() => {
   return topCustomersData.value.map((c, index) => ({
     id: `0${index + 1}`.slice(-2),
-    displayName: c.customer,
+    displayName: c.customer || (currentLang.value === 'ar' ? 'عميل' : 'Customer'),
     value: c.value,
     percentage: c.percentage,
     cumulative_percentage: c.cumulative_percentage
@@ -148,6 +148,10 @@ const chartOptions = computed(() => {
   const allBarData = series.value[0].data
   const rawMax = Math.max(...allBarData, 0)
   const dynamicMax = rawMax > 4 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
+
+  const allCumulativeData = series.value[1]?.data || []
+  const rawCumulativeMax = Math.max(...allCumulativeData, 100)
+  const dynamicCumulativeMax = Math.ceil(rawCumulativeMax / 5) * 5
 
   return {
   chart: {
@@ -229,7 +233,7 @@ const chartOptions = computed(() => {
     {
       opposite: true,
       min: 0,
-      max: 100,
+      max: dynamicCumulativeMax,
       tickAmount: 5,
       labels: {
         style: {

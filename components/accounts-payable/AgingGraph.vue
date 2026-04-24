@@ -178,6 +178,10 @@ const chartOptions = computed(() => {
   const rawMax = Math.max(...allBarData, 0)
   const dynamicMax = rawMax > 4 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
 
+  const allCumulativeData = series.value[2]?.data || []
+  const rawCumulativeMax = Math.max(...allCumulativeData, 100)
+  const dynamicCumulativeMax = Math.ceil(rawCumulativeMax / 5) * 5
+
   return {
     chart: {
       fontFamily: 'Noto Sans Arabic, sans-serif',
@@ -270,7 +274,7 @@ const chartOptions = computed(() => {
         seriesName: 'Cumulative %',
         opposite: true,
         min: 0,
-        max: 100,
+        max: dynamicCumulativeMax,
         tickAmount: 5,
         axisBorder: { show: true, color: '#00403399', width: 1 },
         axisTicks: { show: false },
