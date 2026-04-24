@@ -214,8 +214,13 @@ const onRowLeave = () => {
   hoveredRowRect.value = null
 }
 
+const selectedDate = ref('31-12-2025') // your current selected date state
+
 const goToDetail = (item) => {
-  router.push('/cost-center/project-detail')
+  router.push({
+    path: `/cost-center/${encodeURIComponent(item.label)}`,
+    query: { date: selectedDate.value }
+  })
 }
 
 // Mapping Function to clean and format API data
@@ -232,40 +237,36 @@ const mapApiData = (item) => {
   }
 }
 
-const fetchSummaryData = async () => {
+const fetchSummaryData = async (dateStr = '31-12-2025') => {
   isLoading.value = true
   try {
-    const response = await useApi('cost-center/summary-by-date?date=31-12-2025', {
+    // 2. Use a Template Literal for a dynamic URL
+    const response = await useApi(`cost-center/summary-by-date?date=${dateStr}`, {
       method: 'GET'
     })
 
     if (response.status === 'success' && response.data) {
       const rawData = [...response.data]
-
-      // 1. Extract the "TOTAL" row (it's the last item in your JSON)
       const totalItem = rawData.find(item => item.cost_center === "TOTAL")
-      if (totalItem) {
-        summaryTotal.value = mapApiData(totalItem)
-      }
+      if (totalItem) summaryTotal.value = mapApiData(totalItem)
 
-      // 2. Filter out the "TOTAL" row from the main list and map the rest
       tableData.value = rawData
         .filter(item => item.cost_center !== "TOTAL")
         .map(mapApiData)
     }
   } catch (error) {
-    console.error("Failed to fetch cost center summary:", error)
+    console.error("Failed to fetch data:", error)
   } finally {
     isLoading.value = false
   }
 }
-
-onMounted(() => {
-  fetchSummaryData()
-})
-// Expose the data to the parent component
 defineExpose({
+  fetchSummaryData,
   tableData,
   summaryTotal
+})
+
+onMounted(() => {
+  fetchSummaryData() // Fetches default on load
 })
 </script>
