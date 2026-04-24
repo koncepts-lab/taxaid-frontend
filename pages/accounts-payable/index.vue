@@ -12,7 +12,14 @@
         : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
         <div class="mx-auto pt-8 lg:pt-0">
 
-          <AccountsPayableHeader class="mb-8" />
+          <CommonDashboardHeader 
+            :title="{ en: 'Accounts Payable', ar: 'حسابات الدفع' }"
+            :subtitle="{ en: 'Accounts Payable Dashboard', ar: 'لوحة معلومات حسابات الدفع' }" 
+            :periods="customPeriods"
+            class="mb-8" 
+            @selected-date="handleDateChange"
+            @reload="fetchAgingData"
+          />
 
           <AccountsPayableAlert />
 
@@ -34,7 +41,7 @@
 
           <div>
             <div class="lg:h-[440px] h-[440px]">
-              <AccountsPayableAgingGraph />
+              <AccountsPayableAgingGraph :agingData="apiData" />
             </div>
           </div>
 
@@ -69,7 +76,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import ParticleBackground from '~/components/common/ParticleBackground.vue'
 import AccountsPayableHeader from '~/components/accounts-payable/Header.vue'
 import AccountsPayableAlert from '~/components/accounts-payable/Alert.vue'
@@ -82,6 +89,51 @@ const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+
+const apiData = ref({})
+const activeTestDate = ref('2025-07-02')
+
+const customPeriods = [
+    { en: 'Year to Date', ar: 'منذ بداية العام' },
+    { en: 'This Quarter', ar: 'هذا الربع' },
+    { en: 'Last Quarter', ar: 'الربع الماضي' },
+    { en: 'This Year', ar: 'هذه السنة' },
+    { en: 'Last Year', ar: 'السنة الماضية' },
+    { en: 'Custom Date', ar: 'تاريخ مخصص' }
+]
+
+const fetchAgingData = async () => {
+  try {
+    const response = await useApi('/ap-report/aging', {
+      params: {
+        test_date: activeTestDate.value,
+        lang: currentLang.value
+      }
+    })
+    
+    if (response && response.status === 'success') {
+      apiData.value = response.payload
+    }
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error)
+  }
+}
+
+const handleDateChange = (period) => {
+  if (period.custom_from) {
+    const parts = period.custom_from.split('-')
+    activeTestDate.value = `${parts[2]}-${parts[1]}-${parts[0]}`
+  }
+  fetchAgingData()
+}
+
+watch(currentLang, () => {
+  fetchAgingData()
+})
+
+onMounted(() => {
+  fetchAgingData()
+})
 </script>
 
 <style scoped>

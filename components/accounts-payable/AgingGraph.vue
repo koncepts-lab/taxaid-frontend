@@ -35,10 +35,13 @@
     </div>
 
     <!-- Chart -->
-    <div class="flex-1 w-full min-h-[320px] relative z-10">
+    <div v-if="hasData" class="flex-1 w-full min-h-[320px] relative z-10">
       <ClientOnly>
         <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
+    </div>
+    <div v-else class="flex-1 flex items-center justify-center text-white/50 italic">
+      {{ currentLang === 'ar' ? 'جاري تحميل البيانات...' : 'Loading aging data...' }}
     </div>
 
     <!-- Modal -->
@@ -84,7 +87,7 @@
 
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10">
-            <ClientOnly>
+            <ClientOnly v-if="hasData">
               <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
             </ClientOnly>
           </div>
@@ -96,39 +99,70 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { formatToMillions } from '~/utils/formatters'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const { agingGraph } = useAccountsPayablePage()
-
-const agingCategories = computed(() => agingGraph.value?.agingCategories ?? [
-  { en: 'Overdue >30 Days', ar: 'متأخر أكثر من 30 يوم' },
-  { en: 'Overdue 30-60 Days', ar: 'متأخر 30-60 يوم' },
-  { en: 'Overdue 60-90 Days', ar: 'متأخر 60-90 يوم' },
-  { en: 'Overdue <90 Days', ar: 'متأخر أقل من 90 يوم' }
-])
-
-const percentOfTotal = computed(() => agingGraph.value?.percentOfTotal ?? [16, 16, 10, 15])
-
-const series = computed(() => [
-  {
-    name: 'Previous Year',
-    type: 'bar',
-    data: agingGraph.value?.previousYearData ?? []
-  },
-  {
-    name: 'Current Year',
-    type: 'bar',
-    data: agingGraph.value?.currentYearData ?? []
-  },
-  {
-    name: 'Cumulative %',
-    type: 'line',
-    data: agingGraph.value?.cumulativeData ?? []
+const props = defineProps({
+  agingData: {
+    type: Object,
+    default: () => ({})
   }
-])
+})
+
+const arabicBuckets = {
+  "0 - 30 days": "0 - 30 يوم",
+  "31 - 60 days": "31 - 60 يوم",
+  "61 - 90 days": "61 - 90 يوم",
+  "> 90 days": "أكثر من 90 يوم"
+}
+const hasData = computed(() => !!props.agingData?.comparison_data?.length)
+
+const agingCategories = computed(() => {
+  const source = props.agingData?.comparison_data?.[0]?.aging_summary || []
+  const filtered = source.filter(item => item.bucket !== "Total AP")
+  
+  if (filtered.length === 0) {
+    return [
+      { en: 'Overdue >30 Days', ar: 'متأخر أكثر من 30 يوم' },
+      { en: 'Overdue 30-60 Days', ar: 'متأخر 30-60 يوم' },
+      { en: 'Overdue 60-90 Days', ar: 'متأخر 60-90 يوم' },
+      { en: 'Overdue <90 Days', ar: 'متأخر أقل من 90 يوم' }
+    ]
+  }
+
+  return filtered.map(item => ({
+    en: item.bucket,
+    ar: arabicBuckets[item.bucket] || item.bucket
+  }))
+})
+
+const series = computed(() => {
+  const compData = props.agingData?.comparison_data || []
+  // Mapping first array as Current and second as Previous based on API logic
+  const currentSummary = compData[0]?.aging_summary?.filter(i => i.bucket !== "Total AP") || []
+  const previousSummary = compData[1]?.aging_summary?.filter(i => i.bucket !== "Total AP") || []
+
+  return [
+    {
+      name: 'Previous Year',
+      type: 'bar',
+      data: previousSummary.map(item => Number(formatToMillions(item.value, 2).replace(/,/g, '')))
+    },
+    {
+      name: 'Current Year',
+      type: 'bar',
+      data: currentSummary.map(item => Number(formatToMillions(item.value, 2).replace(/,/g, '')))
+    },
+    {
+      name: 'Cumulative %',
+      type: 'line',
+      data: currentSummary.map(item => parseInt(item.cumulative_percentage || 0))
+    }
+  ]
+})
 
 const chartOptions = computed(() => ({
   chart: {
@@ -161,7 +195,7 @@ const chartOptions = computed(() => ({
       colors: ['#FFFFFFBF'],
       fontWeight: 400
     },
-    formatter: (val) => val.toString().replace('.', ',') + 'M'
+    formatter: (val) => val === 0 ? '0' : val.toString().replace('.', ',') + 'M'
   },
   markers: {
     size: [0, 0, 6],
@@ -205,7 +239,7 @@ const chartOptions = computed(() => ({
           fontSize: '13px',
           colors: '#FFFFFFBF'
         },
-        formatter: (val) => val === 0 ? '0' : val + 'M'
+        formatter: (val) => val === 0 ? '0' : val.toFixed(1) + 'M'
       }
     },
     {
@@ -243,14 +277,15 @@ const chartOptions = computed(() => ({
     shared: true,
     intersect: false,
     custom: function ({ series: s, dataPointIndex }) {
-      const cat = agingCategories.value[dataPointIndex]
-      const catLabel = currentLang.value === 'ar' ? cat.ar : cat.en
-      const curYear = s[1][dataPointIndex]
-      const cumPct = s[2][dataPointIndex]
-      const pctTot = percentOfTotal.value[dataPointIndex]
+      const currentSummary = props.agingData?.comparison_data?.[0]?.aging_summary?.filter(i => i.bucket !== "Total AP") || []
+      const item = currentSummary[dataPointIndex]
+      if (!item) return ''
 
+      const catLabel = currentLang.value === 'ar' ? (arabicBuckets[item.bucket] || item.bucket) : item.bucket
+      const curYearFormatted = formatToMillions(item.value, 2)
+      
       const cyrLabel = currentLang.value === 'ar' ? 'السنة الحالية' : 'Current year'
-      const totLabel = currentLang.value === 'ar' ? '% من إجمالي AR' : '% of Total AR'
+      const totLabel = currentLang.value === 'ar' ? '% من إجمالي AP' : '% of Total AP'
       const cumLabel = currentLang.value === 'ar' ? 'التراكمي %' : 'Cumulative %'
 
       return `
@@ -259,15 +294,15 @@ const chartOptions = computed(() => ({
           <div class="tooltip-body">
             <div class="tooltip-row">
               <span class="label">${cyrLabel}:</span>
-              <span class="value teal">AED ${curYear.toString().replace('.', ',')}M</span>
+              <span class="value teal">AED ${curYearFormatted}M</span>
             </div>
             <div class="tooltip-row">
               <span class="label">${totLabel}:</span>
-              <span class="value teal">${pctTot}%</span>
+              <span class="value teal">${item.percentage}</span>
             </div>
             <div class="tooltip-row">
               <span class="label">${cumLabel}:</span>
-              <span class="value teal">${cumPct}%</span>
+              <span class="value teal">${item.cumulative_percentage}</span>
             </div>
           </div>
         </div>
