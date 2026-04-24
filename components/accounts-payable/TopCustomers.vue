@@ -100,36 +100,56 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { formatToMillions } from '~/utils/formatters'
+
+const props = defineProps({
+  data: {
+    type: Object,
+    default: () => null
+  }
+})
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const { topCustomers } = useAccountsPayablePage()
-
-const customersData = computed(() => topCustomers.value?.customersData ?? [])
+const topCustomersData = computed(() => props.data?.top_customers ?? [])
 
 const customers = computed(() => {
-  return customersData.value.map((c) => ({
-    ...c,
-    displayName: currentLang.value === 'ar' ? c.nameAr : c.name
+  return topCustomersData.value.map((c, index) => ({
+    id: `0${index + 1}`.slice(-2),
+    displayName: c.customer,
+    value: c.value,
+    percentage: c.percentage,
+    cumulative_percentage: c.cumulative_percentage
   }))
 })
 
 const series = computed(() => [
   {
-    name: 'AR Balance',
+    name: 'Accounts Payable',
     type: 'column',
-    data: customersData.value.map((c) => c.value)
+    data: customers.value.map((c) => {
+      if (!c.value) return 0;
+      return Number(formatToMillions(c.value, 2).replace(/,/g, ''))
+    })
   },
   {
     name: 'Cumulative %',
     type: 'line',
-    data: topCustomers.value?.cumulativeLine ?? []
+    data: customers.value.map((c) => {
+      const parsed = parseFloat(c.cumulative_percentage?.toString().replace('%', '') || '0');
+      return isNaN(parsed) ? 0 : parsed;
+    })
   }
 ])
 
-const chartOptions = computed(() => ({
+const chartOptions = computed(() => {
+  const allBarData = series.value[0].data
+  const rawMax = Math.max(...allBarData, 0)
+  const dynamicMax = rawMax > 4 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
+
+  return {
   chart: {
     fontFamily: 'Noto Sans Arabic, sans-serif',
     toolbar: { show: false },
@@ -168,7 +188,7 @@ const chartOptions = computed(() => ({
     hover: { size: 7 }
   },
   xaxis: {
-    categories: customersData.value.map(c => c.id),
+    categories: customers.value.map(c => c.id),
     axisBorder: {
       show: true,
       color: '#00403333',
@@ -190,7 +210,7 @@ const chartOptions = computed(() => ({
   yaxis: [
     {
       min: 0,
-      max: 5,
+      max: dynamicMax,
       tickAmount: 5,
       axisBorder: {
         show: true,
@@ -233,14 +253,18 @@ const chartOptions = computed(() => ({
     intersect: false,
     theme: 'light',
     custom: function ({ series, seriesIndex, dataPointIndex, w }) {
-      const customer = customersData.value[dataPointIndex]
-      const customerName = currentLang.value === 'ar' ? customer.nameAr : customer.name
+      const customer = customers.value[dataPointIndex]
+      if (!customer) return ''
+      
+      const customerName = customer.displayName
       const bal = series[0][dataPointIndex]
       const cum = series[1][dataPointIndex]
 
-      const balLabel = currentLang.value === 'ar' ? 'رصيد حسابات القبض' : 'AR Balance'
-      const totLabel = currentLang.value === 'ar' ? '% من الإجمالي' : '% of Total AR'
+      const balLabel = currentLang.value === 'ar' ? 'حسابات الدفع' : 'AP Balance'
+      const totLabel = currentLang.value === 'ar' ? '% من الإجمالي' : '% of Total AP'
       const cumLabel = currentLang.value === 'ar' ? 'تراكمي %' : 'Cumulative %'
+
+      const curFormatted = bal ? bal.toString().replace('.', ',') : '0'
 
       return `
         <div class="custom-tooltip shadow-2xl">
@@ -248,11 +272,11 @@ const chartOptions = computed(() => ({
           <div class="tooltip-body">
             <div class="tooltip-row">
               <span class="label">${balLabel}:</span>
-              <span class="value teal">AED ${bal.toString().replace('.', ',')}M</span>
+              <span class="value teal">AED ${curFormatted}M</span>
             </div>
             <div class="tooltip-row">
               <span class="label">${totLabel}:</span>
-              <span class="value teal">15%</span>
+              <span class="value teal">${customer.percentage || '0%'}</span>
             </div>
             <div class="tooltip-row">
               <span class="label">${cumLabel}:</span>
@@ -263,7 +287,8 @@ const chartOptions = computed(() => ({
       `
     }
   }
-}))
+  }
+})
 </script>
 
 <style scoped>

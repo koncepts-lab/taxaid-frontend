@@ -113,7 +113,7 @@ const props = defineProps({
 })
 
 const arabicBuckets = {
-  "0 - 30 days": "0 - 30 يوم",
+  "0 - 30 days": "أكثر من 30 يوم",
   "31 - 60 days": "31 - 60 يوم",
   "61 - 90 days": "61 - 90 يوم",
   "> 90 days": "أكثر من 90 يوم"
@@ -129,14 +129,21 @@ const agingCategories = computed(() => {
       { en: 'Overdue >30 Days', ar: 'متأخر أكثر من 30 يوم' },
       { en: 'Overdue 30-60 Days', ar: 'متأخر 30-60 يوم' },
       { en: 'Overdue 60-90 Days', ar: 'متأخر 60-90 يوم' },
-      { en: 'Overdue <90 Days', ar: 'متأخر أقل من 90 يوم' }
+      { en: 'Overdue <90 Days', ar: 'متأخر أكثر من 90 يوم' }
     ]
   }
 
-  return filtered.map(item => ({
-    en: item.bucket,
-    ar: arabicBuckets[item.bucket] || item.bucket
-  }))
+  return filtered.map(item => {
+    const isFirstBucket = item.bucket === "0 - 30 days"
+    let enLabel = isFirstBucket ? ">30 Days" : item.bucket
+    
+    enLabel = enLabel.replace(/days/g, "Days").replace(/>\s*90/, "<90")
+    
+    return {
+      en: `Overdue ${enLabel}`,
+      ar: `متأخر ${arabicBuckets[item.bucket] || item.bucket}`
+    }
+  })
 })
 
 const series = computed(() => {
@@ -159,157 +166,179 @@ const series = computed(() => {
     {
       name: 'Cumulative %',
       type: 'line',
-      data: currentSummary.map(item => parseInt(item.cumulative_percentage || 0))
+      data: currentSummary.map(item => parseInt(item.cumulative_percentage || 0)),
+      dataLabels: { enabled: false }
     }
   ]
 })
 
-const chartOptions = computed(() => ({
-  chart: {
-    fontFamily: 'Noto Sans Arabic, sans-serif',
-    toolbar: { show: false },
-    zoom: { enabled: false }
-  },
-  plotOptions: {
-    bar: {
-      columnWidth: 33,
-      borderRadius: 15,
-      borderRadiusApplication: 'around',
-      borderRadiusWhenStacked: 'all',
-      grouped: true
-    }
-  },
-  stroke: {
-    width: [0, 0, 2],
-    curve: 'smooth',
-    colors: ['transparent', 'transparent', '#FB7554']
-  },
-  colors: ['#FFDD7D', '#008D68', '#FB7554'],
-  dataLabels: {
-    enabled: true,
-    enabledOnSeries: [0, 1],
-    offsetY: -25,
-    background: { enabled: false },
-    style: {
-      fontSize: '11px',
-      colors: ['#FFFFFFBF'],
-      fontWeight: 400
+const chartOptions = computed(() => {
+  // UI FIX: Calculate dynamic max for Y-axis based on data to prevent values hitting the ceiling
+  const allBarData = [...series.value[0].data, ...series.value[1].data]
+  const rawMax = Math.max(...allBarData, 0)
+  const dynamicMax = rawMax > 4 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
+
+  return {
+    chart: {
+      fontFamily: 'Noto Sans Arabic, sans-serif',
+      toolbar: { show: false },
+      zoom: { enabled: false }
     },
-    formatter: (val) => val === 0 ? '0' : val.toString().replace('.', ',') + 'M'
-  },
-  markers: {
-    size: [0, 0, 6],
-    colors: ['transparent', 'transparent', '#FFC107'],
-    strokeColors: ['transparent', 'transparent', '#FB7554'],
-    strokeWidth: 2,
-    hover: { size: 8 }
-  },
-  xaxis: {
-    categories: agingCategories.value.map(c => currentLang.value === 'ar' ? c.ar : c.en),
-    axisBorder: {
-      show: true,
-      color: '#00403399',
-      height: 1,
-      width: '100%'
-    },
-    axisTicks: { show: false },
-    tooltip: { enabled: false },
-    labels: {
-      style: {
-        fontSize: '13px',
-        colors: '#FFFFFFBF',
-        fontWeight: 400
+    plotOptions: {
+      bar: {
+        columnWidth: 33,
+        borderRadius: 15,
+        borderRadiusApplication: 'around',
+        borderRadiusWhenStacked: 'all',
+        grouped: true
       }
-    }
-  },
-  yaxis: [
-    {
-      seriesName: 'Previous Year',
-      min: 0,
-      max: 5,
-      tickAmount: 5,
+    },
+    stroke: {
+      width: [0, 0, 2],
+      curve: 'smooth',
+      colors: ['transparent', 'transparent', '#FB7554']
+    },
+    colors: ['#FFDD7D', '#008D68', '#FB7554'],
+    dataLabels: {
+      enabled: true,
+      enabledOnSeries: [0, 1],
+      offsetY: -15, // Adjusted offset to clear dots
+      background: { enabled: false },
+      style: {
+        fontSize: '11px',
+        colors: ['#FFFFFFBF'],
+        fontWeight: 400
+      },
+      formatter: (val, { seriesIndex }) => {
+        if (val === 0) return '0'
+        const formatted = val.toString().replace('.', ',') + 'M'
+        return seriesIndex === 0 ? `${formatted}\u00A0\u00A0\u00A0\u00A0` : `\u00A0\u00A0\u00A0\u00A0${formatted}`
+      }
+    },
+    markers: {
+      size: [0, 0, 6],
+      colors: ['transparent', 'transparent', '#FFC107'],
+      strokeColors: ['transparent', 'transparent', '#FB7554'],
+      strokeWidth: 2,
+      hover: { size: 8 }
+    },
+    xaxis: {
+      categories: agingCategories.value.map(c => currentLang.value === 'ar' ? c.ar : c.en),
       axisBorder: {
         show: true,
         color: '#00403399',
-        width: 1
+        height: 1,
+        width: '100%'
       },
       axisTicks: { show: false },
+      tooltip: { enabled: false },
       labels: {
         style: {
           fontSize: '13px',
-          colors: '#FFFFFFBF'
-        },
-        formatter: (val) => val === 0 ? '0' : val.toFixed(1) + 'M'
+          colors: '#FFFFFFBF',
+          fontWeight: 400
+        }
       }
     },
-    {
-      seriesName: 'Current Year',
-      show: false,
-      min: 0,
-      max: 5
-    },
-    {
-      seriesName: 'Cumulative %',
-      opposite: true,
-      min: 0,
-      max: 100,
-      tickAmount: 5,
-      axisBorder: { show: true, color: '#00403399', width: 1 },
-      axisTicks: { show: false },
-      labels: {
-        style: {
-          fontSize: '13px',
-          colors: '#FFFFFFBF'
+    yaxis: [
+      {
+        seriesName: 'Previous Year',
+        min: 0,
+        max: dynamicMax, // UI FIX: dynamic instead of hardcoded 5
+        tickAmount: 5,
+        axisBorder: {
+          show: true,
+          color: '#00403399',
+          width: 1
         },
-        formatter: (val) => val + '%'
+        axisTicks: { show: false },
+        labels: {
+          style: {
+            fontSize: '13px', 
+            colors: '#FFFFFFBF'
+           },
+          formatter: (val) => val === 0 ? '0' : Math.round(val) + 'M'
+        }
+      },
+      {
+        seriesName: 'Current Year',
+        show: false,
+        min: 0,
+        max: dynamicMax
+      },
+      {
+        seriesName: 'Cumulative %',
+        opposite: true,
+        min: 0,
+        max: 100,
+        tickAmount: 5,
+        axisBorder: { show: true, color: '#00403399', width: 1 },
+        axisTicks: { show: false },
+        labels: {
+          style: {
+            fontSize: '13px',
+            colors: '#FFFFFFBF'
+          },
+          formatter: (val) => val + '%'
+        }
       }
-    }
-  ],
-  grid: {
-    borderColor: '#00403399',
-    strokeDashArray: 0,
-    xaxis: { lines: { show: false } },
-    yaxis: { lines: { show: true } },
-    padding: { top: 10, right: 10, bottom: 0, left: 10 }
-  },
-  legend: { show: false },
-  tooltip: {
-    shared: true,
-    intersect: false,
-    custom: function ({ series: s, dataPointIndex }) {
-      const currentSummary = props.agingData?.comparison_data?.[0]?.aging_summary?.filter(i => i.bucket !== "Total AP") || []
-      const item = currentSummary[dataPointIndex]
-      if (!item) return ''
+    ],
+    grid: {
+      borderColor: '#00403399',
+      strokeDashArray: 0,
+      xaxis: { lines: { show: false } },
+      yaxis: { lines: { show: true } },
+      padding: { 
+        top: 10, 
+        right: 10, 
+        bottom: 0, 
+        left: 10 
+      }
+    },
+    legend: { show: false },
+    tooltip: {
+      shared: true,
+      intersect: false,
+      custom: function ({ series: s, dataPointIndex }) {
+        const currentSummary = props.agingData?.comparison_data?.[0]?.aging_summary?.filter(i => i.bucket !== "Total AP") || []
+        const item = currentSummary[dataPointIndex]
+        if (!item) return ''
 
-      const catLabel = currentLang.value === 'ar' ? (arabicBuckets[item.bucket] || item.bucket) : item.bucket
-      const curYearFormatted = formatToMillions(item.value, 2)
-      
-      const cyrLabel = currentLang.value === 'ar' ? 'السنة الحالية' : 'Current year'
-      const totLabel = currentLang.value === 'ar' ? '% من إجمالي AP' : '% of Total AP'
-      const cumLabel = currentLang.value === 'ar' ? 'التراكمي %' : 'Cumulative %'
+        const isFirst = item.bucket === "0 - 30 days"
+        let enDisp = isFirst ? ">30 Days" : item.bucket
+        enDisp = enDisp.replace(/days/g, "Days").replace(/>\s*90/, "<90")
+        const catLabel = currentLang.value === 'ar' 
+          ? `متأخر ${arabicBuckets[item.bucket] || item.bucket}` 
+          : `Overdue ${enDisp}`
+        
+        const curYearFormatted = formatToMillions(item.value, 2).replace('.', ',')
+        const cyrLabel = currentLang.value === 'ar' ? 'السنة الحالية' : 'Current year'
+        const totLabel = currentLang.value === 'ar' ? '% من إجمالي AP' : '% of Total AP'
+        const cumLabel = currentLang.value === 'ar' ? 'التراكمي %' : 'Cumulative %'
 
-      return `
-        <div class="custom-tooltip shadow-xl">
-          <div class="tooltip-header">${catLabel}</div>
-          <div class="tooltip-body">
-            <div class="tooltip-row">
-              <span class="label">${cyrLabel}:</span>
-              <span class="value teal">AED ${curYearFormatted}M</span>
-            </div>
-            <div class="tooltip-row">
-              <span class="label">${totLabel}:</span>
-              <span class="value teal">${item.percentage}</span>
-            </div>
-            <div class="tooltip-row">
-              <span class="label">${cumLabel}:</span>
-              <span class="value teal">${item.cumulative_percentage}</span>
+        return `
+          <div class="custom-tooltip shadow-xl">
+            <div class="tooltip-header">${catLabel}</div>
+            <div class="tooltip-body">
+              <div class="tooltip-row">
+                <span class="label">${cyrLabel}:</span>
+                <span class="value teal">AED ${curYearFormatted}M</span>
+              </div>
+              <div class="tooltip-row">
+                <span class="label">${totLabel}:</span>
+                <span class="value teal">${item.percentage}</span>
+              </div>
+              <div class="tooltip-row">
+                <span class="label">${cumLabel}:</span>
+                <span class="value teal">${item.cumulative_percentage}</span>
+              </div>
             </div>
           </div>
-        </div>
-      `
+        `
+      }
     }
   }
-}))
+})
 </script>
 
 <style scoped>

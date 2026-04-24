@@ -29,7 +29,7 @@
 
           <div class="mb-4 lg:mb-8">
             <div class="h-[600px]">
-              <AccountsPayableTopCustomers />
+              <AccountsPayableTopCustomers :data="topCustomersData" />
             </div>
           </div>
 
@@ -41,7 +41,7 @@
 
           <div>
             <div class="lg:h-[440px] h-[440px]">
-              <AccountsPayableAgingGraph :agingData="apiData" />
+              <AccountsPayableAgingGraph :agingData="agingData" />
             </div>
           </div>
 
@@ -90,7 +90,8 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const apiData = ref({})
+const agingData = ref({})
+const topCustomersData = ref(null)
 const activeTestDate = ref('2025-07-02')
 
 const customPeriods = [
@@ -112,10 +113,26 @@ const fetchAgingData = async () => {
     })
     
     if (response && response.status === 'success') {
-      apiData.value = response.payload
+      agingData.value = response.payload
     }
   } catch (error) {
     console.error('Error fetching dashboard data:', error)
+  }
+}
+
+const fetchTopCustomersData = async () => {
+  try {
+    const response = await useApi('/ap-report/top-eight', {
+      params: {
+        test_date: activeTestDate.value
+      }
+    })
+    
+    if (response && response.status === 'success') {
+      topCustomersData.value = response.payload
+    }
+  } catch (error) {
+    console.error('Error fetching top customers data:', error)
   }
 }
 
@@ -125,6 +142,7 @@ const handleDateChange = (period) => {
     activeTestDate.value = `${parts[2]}-${parts[1]}-${parts[0]}`
   }
   fetchAgingData()
+  fetchTopCustomersData()
 }
 
 watch(currentLang, () => {
@@ -133,6 +151,7 @@ watch(currentLang, () => {
 
 onMounted(() => {
   fetchAgingData()
+  fetchTopCustomersData()
 })
 </script>
 
