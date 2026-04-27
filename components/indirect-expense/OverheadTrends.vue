@@ -92,18 +92,37 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { formatToMillions } from '~/utils/formatters'
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 const isModalOpen = ref(false)
 
-const { overheadTrends } = useIndirectExpensePage()
+const props = defineProps({
+  data: {
+    type: Array,
+    default: () => []
+  }
+})
 
-const chartSeries = computed(() => {
-  const dataSeries = overheadTrends.value?.series ?? []
-  return dataSeries.map(s => ({
-    name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
-    data: s.data
-  }))
+const chartCategories = computed(() => props.data.map((item: any) => item.month_short))
+
+const chartSeries = computed(() => [
+  {
+    name: currentLang.value === 'ar' ? 'السنة الحالية' : 'Current Year',
+    data: props.data.map((item: any) => parseFloat(formatToMillions(item.current_year ?? 0, 2)))
+  },
+  {
+    name: currentLang.value === 'ar' ? 'السنة السابقة' : 'Previous Year',
+    data: props.data.map((item: any) => parseFloat(formatToMillions(item.previous_year ?? 0, 2)))
+  }
+])
+
+const rawData = computed(() => props.data)
+
+const yMax = computed(() => {
+  const allVals = chartSeries.value.flatMap(s => s.data)
+  const max = Math.max(...allVals, 0)
+  return Math.ceil(max + 1)
 })
 
 const chartOptions = computed(() => ({
@@ -122,9 +141,7 @@ const chartOptions = computed(() => ({
     width: 3
   },
   xaxis: {
-    categories: currentLang.value === 'ar' 
-      ? (overheadTrends.value?.categoriesAr || [])
-      : (overheadTrends.value?.categories || []),
+    categories: chartCategories.value,
     labels: {
         style: { colors: '#FFFFFFBF', fontSize: '13px', fontWeight: 400 }
     },
@@ -134,7 +151,7 @@ const chartOptions = computed(() => ({
   },
   yaxis: {
     min: 0,
-    max: 5,
+    max: yMax.value,
     tickAmount: 5,
     labels: {
       formatter: (value: number) => value.toFixed(0) + ' M',
@@ -157,24 +174,22 @@ const chartOptions = computed(() => ({
   },
   tooltip: {
     custom: function({series, seriesIndex, dataPointIndex, w}: any) {
-      const months = currentLang.value === 'ar' 
-        ? (overheadTrends.value?.categoriesAr || [])
-        : (overheadTrends.value?.categories || []);
-      const monthName = months[dataPointIndex];
+      const monthName = chartCategories.value[dataPointIndex];
+      const raw = rawData.value[dataPointIndex] as any;
       
-      const currentYearVal = series[0][dataPointIndex];
-      const previousYearVal = series[1][dataPointIndex];
-      const diff = ((currentYearVal - previousYearVal) / previousYearVal * 100).toFixed(1);
+      const currentYearVal = formatToMillions(raw?.current_year ?? 0, 2);
+      const previousYearVal = formatToMillions(raw?.previous_year ?? 0, 2);
+      const variancePercent = raw?.variance_percent ?? '0%';
       
       const currentLabel = currentLang.value === 'ar' ? 'السنة الحالية: ' : 'Current Year: ';
       const previousLabel = currentLang.value === 'ar' ? 'السنة السابقة: ' : 'Previous Year: ';
-      const diffLabel = currentLang.value === 'ar' ? 'التغير: ' : 'Decline: ';
+      const diffLabel = currentLang.value === 'ar' ? 'التغير: ' : 'Change: ';
       
       return '<div class="px-5 py-4 bg-[#E2F9F4] rounded-xl shadow-xl border-none" style="min-width: 200px;">' +
         '<div class="font-bold mb-2 text-[#000] text-[16px]">' + monthName + '</div>' +
         '<div class="text-[#333] text-[14px] mb-1">' + currentLabel + '<span class="font-bold"> AED ' + currentYearVal + 'M</span></div>' +
         '<div class="text-[#333] text-[14px] mb-1">' + previousLabel + '<span class="font-bold"> AED ' + previousYearVal + 'M</span></div>' +
-        '<div class="text-[#333] text-[14px]">' + diffLabel + '<span class="font-bold text-[#FF582F]"> ' + diff + '%</span></div>' +
+        '<div class="text-[#333] text-[14px]">' + diffLabel + '<span class="font-bold text-[#FF582F]"> ' + variancePercent + '</span></div>' +
         '</div>'
     }
   },

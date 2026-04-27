@@ -13,8 +13,8 @@
         <div class="mx-auto pt-8 lg:pt-0">
 
           <CommonDashboardHeader 
-            :title="{ en: 'Accounts Payable', ar: 'حسابات الدفع' }"
-            :subtitle="{ en: 'Accounts Payable Dashboard', ar: 'لوحة معلومات حسابات الدفع' }" 
+            :title="{ en: 'Accounts Payable Analysis', ar: 'تحليل حسابات الدفع' }"
+            :subtitle="{ en: 'Comprehensive AP tracking and aging insights', ar: 'تتبع شامل لحسابات الدفع ورؤى التقادم' }" 
             :periods="customPeriods"
             class="mb-8" 
             @selected-date="handleDateChange"
@@ -77,13 +77,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import ParticleBackground from '~/components/common/ParticleBackground.vue'
-import AccountsPayableHeader from '~/components/accounts-payable/Header.vue'
-import AccountsPayableAlert from '~/components/accounts-payable/Alert.vue'
-import AccountsPayableSummary from '~/components/accounts-payable/Summary.vue'
-import AccountsPayableTopCustomers from '~/components/accounts-payable/TopCustomers.vue'
-import AccountsPayableHistoricalMovement from '~/components/accounts-payable/HistoricalMovement.vue'
-import AccountsPayableAgingGraph from '~/components/accounts-payable/AgingGraph.vue'
+const { date, currentDate } = useAppDate()
 
 const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
@@ -93,7 +87,7 @@ const currentLang = useState('currentLang', () => 'en')
 const agingData = ref({})
 const summaryData = ref([])
 const topCustomersData = ref(null)
-const activeTestDate = ref('2025-07-02')//remove this value and make it null after testing!!!!!!
+const activeTestDate = ref(currentDate.value)
 
 const customPeriods = [
     { en: 'Year to Date', ar: 'منذ بداية العام' },

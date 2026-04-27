@@ -4,11 +4,11 @@
 
             <!-- TITLE & BACK SECTION -->
             <div class="flex items-center gap-4">
-                <button @click="handleBack"
+                <!-- <button @click="handleBack"
                     class="p-2 -ml-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                     <img src="/images/icons/back.svg" class="w-6 h-6"
                         :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'rotate-180' : '']" />
-                </button>
+                </button> -->
                 <div>
                     <h1 class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">
                         {{ currentLang === 'ar' ? title?.ar : title?.en }}
@@ -259,6 +259,9 @@ const selectPeriod = (period) => {
 
 const emitRangeChange = () => {
     if (range.value.start && range.value.end) {
+        prevMonthPage.value = { month: range.value.start.getMonth() + 1, year: range.value.start.getFullYear() };
+        currMonthPage.value = { month: range.value.end.getMonth() + 1, year: range.value.end.getFullYear() };
+        
         emit('selected-date', {
             en: 'Custom Range',
             ar: 'نطاق مخصص',
@@ -271,6 +274,8 @@ const emitRangeChange = () => {
 
 const handleSingleChange = (val) => {
     if (val) {
+        currMonthPage.value = { month: val.getMonth() + 1, year: val.getFullYear() };
+        
         emit('selected-date', {
             en: 'Custom Date',
             ar: 'تاريخ مخصص',

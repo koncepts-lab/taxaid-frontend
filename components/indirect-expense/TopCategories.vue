@@ -21,13 +21,15 @@
         
         <div class="w-[280px] h-[280px] lg:w-[380px] lg:h-[380px] relative z-10 flex items-center justify-center flex-shrink-0">
           <svg viewBox="-110 -110 220 220" class="w-full h-full transform -rotate-42 transition-all duration-700 ease-out" :style="{ opacity: animProgress / 100 }">
-            <circle cx="0" cy="0" r="100" fill="#F7FBFD1A" />
-            <g v-for="(slice, index) in computedSlices" :key="index">
-              <path 
-                :d="slice.path" 
-                :fill="slice.color"
-                class="transition-all duration-300 hover:opacity-80"
-              />
+            <circle cx="0" cy="0" r="100" fill="#F7FBFD1A" />            
+            <path 
+              v-for="(slice, index) in computedSlices" 
+              :key="'path-' + index"
+              :d="slice.path" 
+              :fill="slice.color"
+              class="transition-all duration-300 hover:opacity-80"
+            />            
+            <g v-for="(slice, index) in computedSlices" :key="'label-' + index">
               <g v-if="animProgress > 50" :transform="`translate(${slice.textPos.x}, ${slice.textPos.y}) rotate(42)`">
                 <text 
                   fill="white" 
@@ -90,13 +92,18 @@
             <div class="w-[380px] h-[380px] relative z-10 flex items-center justify-center flex-shrink-0">
                 <svg viewBox="-110 -110 220 220" class="w-full h-full transform -rotate-42 transition-all duration-700 ease-out" :style="{ opacity: animProgress / 100 }">
                     <circle cx="0" cy="0" r="100" fill="#F7FBFD1A" />
-                    <g v-for="(slice, index) in computedSlices" :key="'modal-'+index">
+                    <!-- First pass: render all paths -->
                     <path 
+                        v-for="(slice, index) in computedSlices" 
+                        :key="'modal-path-' + index"
                         :d="slice.path" 
                         :fill="slice.color"
                         class="transition-all duration-300 hover:opacity-80"
                     />
-                    <g v-if="animProgress > 50" :transform="`translate(${slice.textPos.x}, ${slice.textPos.y}) rotate(42)`">
+                    
+                    <!-- Second pass: render all labels on top -->
+                    <g v-for="(slice, index) in computedSlices" :key="'modal-label-' + index">
+                      <g v-if="animProgress > 50" :transform="`translate(${slice.textPos.x}, ${slice.textPos.y}) rotate(42)`">
                         <text 
                           fill="white" 
                           font-size="10" 
@@ -115,7 +122,7 @@
                         >
                           {{ values[index] }}M
                         </text>
-                    </g>
+                      </g>
                     </g>
                 </svg>
             </div>
@@ -136,16 +143,25 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
+import { formatToMillions } from '~/utils/formatters'
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 const isModalOpen = ref(false)
 
-const { topCategories } = useIndirectExpensePage()
+const props = defineProps({
+  data: {
+    type: Object,
+    default: () => ({})
+  }
+})
 
-const labels = computed(() => topCategories.value?.labels || [])
-const labelsAr = computed(() => topCategories.value?.labelsAr || [])
-const series = computed(() => topCategories.value?.series || [])
-const values = computed(() => topCategories.value?.values || [])
+const labels = computed(() => props.data?.categories || [])
+const labelsAr = computed(() => props.data?.categories || [])
+const series = computed(() => props.data?.percentages || [])
+const values = computed(() => {
+  const raw = props.data?.current_year || []
+  return raw.map((v: number) => formatToMillions(v ?? 0, 2))
+})
 const colors = ['#004D41', '#00966C', '#FFB100', '#D29600', '#FF7E5B'];
 const radii = [100, 96, 88, 80, 72];
 
@@ -189,7 +205,7 @@ const computedSlices = computed(() => {
     // Text position (centered in slice)
     const textAngle = startAngle + angle / 2;
     const textRad = (textAngle * Math.PI) / 180;
-    const tr = r * 0.65;
+    const tr = r * 0.75;
     const textPos = {
       x: tr * Math.cos(textRad),
       y: tr * Math.sin(textRad)

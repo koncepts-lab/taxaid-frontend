@@ -148,26 +148,40 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
 const isModalOpen = ref(false)
 
-const { summary } = useIndirectExpensePage()
+const props = defineProps({
+  data: {
+    type: Array,
+    default: () => []
+  }
+})
+
+const formatNumber = (val) => {
+  if (val === null || val === undefined) return '0'
+  const num = Number(val)
+  return num.toLocaleString('en-US')
+}
+
+const parsePercent = (str) => {
+  if (!str) return 0
+  return parseFloat(str.replace('%', '')) || 0
+}
 
 const tableData = computed(() => {
-  return summary.value.map(item => ({
-    ...item,
-    // Ensure all required fields exist
-    label: item.label,
-    labelAr: item.labelAr,
-    currentYear: item.currentYear,
-    previousYear: item.previousYear,
-    budget: item.budget,
-    variance: item.variance,
-    yearToGo: item.yearToGo,
+  return props.data.map(item => ({
+    label: item.subgroup,
+    labelAr: item.subgroup, // API doesn't seem to have subgroupAr yet
+    currentYear: formatNumber(item.current_year),
+    previousYear: formatNumber(item.previous_year),
+    budget: formatNumber(item.budget),
+    variance: parsePercent(item.variance_percent),
+    yearToGo: parsePercent(item.ytg_percent),
     isTotal: item.isTotal || false
   }))
 })

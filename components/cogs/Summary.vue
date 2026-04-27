@@ -245,7 +245,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+
+const props = defineProps({
+  data: {
+    type: Array,
+    default: () => []
+  }
+})
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
@@ -258,5 +265,45 @@ const getProgressColor = (progress) => {
   return '#fb7554'
 }
 
-const { summary: tableData, summaryTotal } = useCogsPage()
+const formatNumber = (val) => {
+  if (val === null || val === undefined) return '0'
+  const num = Number(val)
+  if (isNaN(num)) return '0'
+  return num.toLocaleString('en-US')
+}
+
+// Parse "80.56%" or "-38.52%" → number
+const parsePercent = (val) => {
+  if (val == null || val === 'null' || val === '') return 0
+  const num = parseFloat(String(val).replace(/[^-0-9.]/g, ''))
+  return isNaN(num) ? 0 : num
+}
+
+const tableData = computed(() => {
+  if (!props.data || !Array.isArray(props.data)) return []
+  return props.data
+    .filter(item => !item.isTotal && !item.is_balance)
+    .map(item => ({
+      label: item.subgroup,
+      labelAr: item.subgroup,
+      currentYear: formatNumber(item.current_year),
+      previousYear: formatNumber(item.previous_year),
+      budget: formatNumber(item.budget),
+      variance: parsePercent(item.variance_percent),
+      progress: Math.max(0, Math.min(100, parsePercent(item.ytg_percent)))
+    }))
+})
+
+const summaryTotal = computed(() => {
+  if (!props.data || !Array.isArray(props.data)) return null
+  const row = props.data.find(item => item.isTotal)
+  if (!row) return null
+  return {
+    currentYear: formatNumber(row.current_year),
+    previousYear: formatNumber(row.previous_year),
+    budget: formatNumber(row.budget),
+    variance: parsePercent(row.variance_percent),
+    progress: Math.max(0, Math.min(100, parsePercent(row.ytg_percent)))
+  }
+})
 </script>

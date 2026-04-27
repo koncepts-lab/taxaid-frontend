@@ -35,7 +35,7 @@
     <!-- Chart -->
     <div class="flex-1 w-full min-h-[320px] relative z-10 mt-6">
       <ClientOnly>
-        <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
+        <apexchart :key="data.length" type="line" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
     </div>
 
@@ -90,133 +90,159 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { formatToMillions } from '~/utils/formatters'
+
+const props = defineProps({
+  data: {
+    type: Array,
+    default: () => []
+  }
+})
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const { last6Months } = useCogsPage()
-
-const months = computed(() => last6Months.value?.months ?? [
-  { en: 'Apr', ar: 'أبريل' },
-  { en: 'May', ar: 'مايو' },
-  { en: 'Jun', ar: 'يونيو' },
-  { en: 'Jul', ar: 'يوليو' },
-  { en: 'Aug', ar: 'أغسطس' },
-  { en: 'Sep', ar: 'سبتمبر' }
-])
-
-const series = computed(() => [
-  {
-    name: 'Previous Year',
-    data: last6Months.value?.previousYearData ?? []
-  },
-  {
-    name: 'Current Year',
-    data: last6Months.value?.currentYearData ?? []
+const months = computed(() => {
+  if (props.data && props.data.length > 0) {
+    return props.data.map(item => {
+      const monthVal = item.month_short || item.month || item.month_name || 'N/A'
+      return {
+        en: monthVal,
+        ar: monthVal
+      }
+    })
   }
-])
+  return []
+})
 
-const chartOptions = computed(() => ({
-  chart: {
-    fontFamily: 'Noto Sans Arabic, sans-serif',
-    toolbar: { show: false },
-    zoom: { enabled: false }
-  },
-  stroke: {
-    width: 2,
-    curve: 'smooth',
-    colors: ['#FB7554', '#03D8B0']
-  },
-  colors: ['#FB7554', '#03D8B0'],
-  dataLabels: {
-    enabled: false
-  },
-  markers: {
-    size: 5,
+const series = computed(() => {
+  if (props.data && props.data.length > 0) {
+    return [
+      {
+        name: 'Previous Year',
+        data: props.data.map(item => Number(formatToMillions(item.previous_year || 0, 2).replace(/,/g, '')))
+      },
+      {
+        name: 'Current Year',
+        data: props.data.map(item => Number(formatToMillions(item.current_year || 0, 2).replace(/,/g, '')))
+      }
+    ]
+  }
+  return [
+    { name: 'Previous Year', data: [] },
+    { name: 'Current Year', data: [] }
+  ]
+})
+
+const chartOptions = computed(() => {
+  // Calculate dynamic max for Y-axis based on data to prevent values hitting the ceiling
+  const allData = [...series.value[0].data, ...series.value[1].data]
+  const rawMax = Math.max(...allData, 0)
+  // Logic: only if it exceeds the original 5M range, add 10% buffer and round to nearest 5.
+  const dynamicMax = rawMax > 5 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
+
+  return {
+    chart: {
+      fontFamily: 'Noto Sans Arabic, sans-serif',
+      toolbar: { show: false },
+      zoom: { enabled: false }
+    },
+    stroke: {
+      width: 2,
+      curve: 'smooth',
+      colors: ['#FB7554', '#03D8B0']
+    },
     colors: ['#FB7554', '#03D8B0'],
-    strokeColors: ['#fff', '#fff'],
-    strokeWidth: 2,
-    hover: { size: 7 }
-  },
-  xaxis: {
-    categories: months.value.map(m => currentLang.value === 'ar' ? m.ar : m.en),
-    axisBorder: { show: false },
-    axisTicks: { show: false },
-    tooltip: { enabled: false },
-    labels: {
-      style: {
-        fontSize: '12px',
-        colors: '#FFFFFFBF',
-        fontWeight: 400
+    dataLabels: {
+      enabled: false
+    },
+    markers: {
+      size: 5,
+      colors: ['#FB7554', '#03D8B0'],
+      strokeColors: ['#fff', '#fff'],
+      strokeWidth: 2,
+      hover: { size: 7 }
+    },
+    xaxis: {
+      categories: months.value.map(m => currentLang.value === 'ar' ? m.ar : m.en),
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      tooltip: { enabled: false },
+      labels: {
+        style: {
+          fontSize: '12px',
+          colors: '#FFFFFFBF',
+          fontWeight: 400
+        }
+      }
+    },
+    yaxis: {
+      min: 0,
+      max: dynamicMax,
+      tickAmount: 5,
+      axisBorder: {
+        show: true,
+        color: '#004033',
+        width: 1
+      },
+      axisTicks: { show: false },
+      labels: {
+        style: {
+          fontSize: '12px',
+          colors: '#FFFFFFBF'
+        },
+        formatter: (val) => val === 0 ? '0' : val + ' M'
+      }
+    },
+    grid: {
+      show: true,
+      borderColor: '#004033',
+      strokeDashArray: 0,
+      xaxis: { lines: { show: false } },
+      yaxis: { lines: { show: true } },
+      padding: { top: 20, right: 10, bottom: 0, left: 10 }
+    },
+    legend: { show: false },
+    tooltip: {
+      shared: true,
+      intersect: false,
+      theme: 'light',
+      custom: function ({ series: s, dataPointIndex }) {
+        const cat = months.value[dataPointIndex]
+        const catLabel = currentLang.value === 'ar' ? cat.ar : cat.en
+        const pyVal = s[0][dataPointIndex]
+        const cyVal = s[1][dataPointIndex]
+
+        const decline = pyVal !== 0 ? (((cyVal - pyVal) / pyVal) * 100).toFixed(1) : (cyVal > 0 ? 100 : 0)
+        const declineColor = decline < 0 ? '#FB7554' : '#03D8B0'
+        const declinePrefix = decline > 0 ? '+' : ''
+        const declineText = currentLang.value === 'ar' ? 'التغيير' : 'Change'
+
+        const cyLabel = currentLang.value === 'ar' ? 'السنة الحالية' : 'Current Year'
+        const pyLabel = currentLang.value === 'ar' ? 'السنة السابقة' : 'Previous Year'
+
+        return `
+          <div class="custom-tooltip-line shadow-xl rounded-2xl" style="background:#ffffff; padding: 12px 18px; border:none; color:#1A1A1A;">
+            <div style="font-size:13px; margin-bottom:10px; font-weight:600;">${catLabel}</div>
+            <div style="font-size:12px; margin-bottom:6px; display:flex; justify-content:space-between; width: 160px;">
+               <span>${cyLabel}:</span>
+               <span style="font-weight:600;">AED ${cyVal.toString().replace('.', ',')}M</span>
+            </div>
+            <div style="font-size:12px; margin-bottom:6px; display:flex; justify-content:space-between; width: 160px;">
+               <span>${pyLabel}:</span>
+               <span style="font-weight:600;">AED ${pyVal.toString().replace('.', ',')}M</span>
+            </div>
+            <div style="font-size:12px; display:flex; justify-content:space-between; width: 160px;">
+               <span>${declineText}:</span>
+               <span style="color:${declineColor}; font-weight:600;">${declinePrefix}${decline}%</span>
+            </div>
+          </div>
+        `
       }
     }
-  },
-  yaxis: {
-    min: 0,
-    max: 5,
-    tickAmount: 5,
-    axisBorder: {
-      show: true,
-      color: '#004033',
-      width: 1
-    },
-    axisTicks: { show: false },
-    labels: {
-      style: {
-        fontSize: '12px',
-        colors: '#FFFFFFBF'
-      },
-      formatter: (val) => val === 0 ? '0' : val + ' M'
-    }
-  },
-  grid: {
-    show: true,
-    borderColor: '#004033',
-    strokeDashArray: 0,
-    xaxis: { lines: { show: false } },
-    yaxis: { lines: { show: true } },
-    padding: { top: 20, right: 10, bottom: 0, left: 10 }
-  },
-  legend: { show: false },
-  tooltip: {
-    shared: true,
-    intersect: false,
-    theme: 'light',
-    custom: function ({ series: s, dataPointIndex }) {
-      const cat = months.value[dataPointIndex]
-      const catLabel = currentLang.value === 'ar' ? cat.ar : cat.en
-      const pyVal = s[0][dataPointIndex]
-      const cyVal = s[1][dataPointIndex]
-
-      const decline = (((cyVal - pyVal) / pyVal) * 100).toFixed(1)
-      const declineColor = decline < 0 ? '#FB7554' : '#03D8B0'
-      const declinePrefix = decline > 0 ? '+' : ''
-      const declineText = currentLang.value === 'ar' ? 'التغيير' : 'Decline'
-
-      const cyLabel = currentLang.value === 'ar' ? 'السنة الحالية' : 'Current Year'
-      const pyLabel = currentLang.value === 'ar' ? 'السنة السابقة' : 'Previous Year'
-
-      return `
-        <div class="custom-tooltip-line shadow-xl rounded-2xl" style="background:#ffffff; padding: 12px 18px; border:none; color:#1A1A1A;">
-          <div style="font-size:13px; margin-bottom:10px; font-weight:600;">${catLabel}</div>
-          <div style="font-size:12px; margin-bottom:6px; display:flex; justify-content:space-between; width: 160px;">
-             <span>${cyLabel}:</span>
-             <span style="font-weight:600;">AED ${cyVal.toString().replace('.', ',')}M</span>
-          </div>
-          <div style="font-size:12px; margin-bottom:6px; display:flex; justify-content:space-between; width: 160px;">
-             <span>${pyLabel}:</span>
-             <span style="font-weight:600;">AED ${pyVal.toString().replace('.', ',')}M</span>
-          </div>
-          <div style="font-size:12px; display:flex; justify-content:space-between; width: 160px;">
-             <span>${declineText}:</span>
-             <span style="color:${declineColor}; font-weight:600;">${declinePrefix}${decline}%</span>
-          </div>
-        </div>
-      `
-    }
   }
-}))
+})
 </script>
 
 <style scoped>
