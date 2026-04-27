@@ -218,7 +218,8 @@ const resetToDefault = () => {
 }
 
 const handleReload = () => {
-    resetToDefault()
+    showDateDropdown.value = false
+    showExportDropdown.value = false//now date will not reset when reload is used.
     emit('reload')
 }
 

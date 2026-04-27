@@ -34,52 +34,42 @@
                 </svg>
               </div>
             </th>
-            <th class="lg:px-6 px-4 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ?
-              '>30' :
-              '>30'
-            }}</th>
-            <th class="lg:px-6 px-4 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ?
-              '30-60' :
-              '30-60' }}</th>
-            <th class="lg:px-6 px-4 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ?
-              '60-90' :
-              '60-90' }}</th>
-            <th class="lg:px-6 px-4 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ?
-              ' < 90' : ' < 90' }}</th>
+            <th v-for="col in tableColumns" :key="col.key" class="lg:px-6 px-4 py-5 font-normal text-right rtl:text-left text-[14px] whitespace-nowrap">
+              {{ col.label }}
+            </th>
           </tr>
         </thead>
         <tbody>
-          <template v-for="(group, gIdx) in arData" :key="gIdx">
+          <template v-for="(group, gIdx) in mainRows" :key="gIdx">
             <!-- Main Group Row -->
             <tr class="transition-all duration-500 border-b border-white/5"
               :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'">
               <td class="lg:px-8 px-4 py-5">
-                <div class="flex items-center gap-2 cursor-pointer" @click="toggleGroup(gIdx)">
-                  <span class="font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang
-                    === 'ar' ? group.labelAr : group.label }}</span>
+                <div class="flex items-center gap-2 cursor-pointer" @click="toggleGroup(gIdx, group.customer)">
+                  <span class="font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-black'">
+                    {{ group.customer || (currentLang === 'ar' ? 'عميل' : 'Customer') }}
+                  </span>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                     class="transition-transform duration-300"
-                    :class="expandedGroups.includes(gIdx) ? 'rotate-180' : ''">
+                    :class="{ 'rotate-180': expandedGroups.includes(gIdx), 'text-white': isDark, 'text-black': !isDark }">
                     <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                       stroke-linejoin="round" />
                   </svg>
                 </div>
               </td>
               <td class="lg:px-6 px-4 py-5 text-right rtl:text-left font-semibold text-[14px]"
-                :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">{{ group.total }}</td>
-              <td class="lg:px-6 px-4 py-5 text-right rtl:text-left text-[14px] font-medium"
-                :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age30 }}</td>
-              <td class="lg:px-6 px-4 py-5 text-right rtl:text-left text-[14px] font-medium"
-                :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age3060 }}</td>
-              <td class="lg:px-6 px-4 py-5 text-right rtl:text-left text-[14px] font-medium"
-                :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age6090 }}</td>
-              <td class="lg:px-6 px-4 py-5 text-right rtl:text-left text-[14px] font-medium"
-                :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age90plus }}</td>
+                :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
+                {{ formatValue(group.amount) }}
+              </td>
+              <td v-for="col in tableColumns" :key="col.key" class="lg:px-6 px-4 py-5 text-right rtl:text-left text-[14px] font-medium"
+                :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">
+                {{ formatValue(group[col.key]) }}
+              </td>
             </tr>
 
             <!-- Expandable Invoice Section -->
             <tr v-if="expandedGroups.includes(gIdx)">
-              <td colspan="6" class="p-0">
+              <td :colspan="tableColumns.length + 2" class="p-0">
                 <div :class="isDark ? '' : 'bg-[#A2E8D6]'" class="p-8">
                   <div class="flex justify-between items-start mb-6">
                     <div>
@@ -91,7 +81,7 @@
                         <input type="checkbox" v-model="selectAll" @change="handleSelectAll"
                           class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
                         <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
-                          {{ currentLang === 'ar' ? 'تحديد الكل (4)' : 'Select All (4)' }}
+                          {{ currentLang === 'ar' ? `تحديد الكل (${fetchedInvoices[group.customer]?.length || 0})` : `Select All (${fetchedInvoices[group.customer]?.length || 0})` }}
                         </span>
                       </div>
                     </div>
@@ -102,33 +92,34 @@
                           d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                       </svg>
-                      {{ currentLang === 'ar' ? 'مراجعة معلقة (5)' : 'Hold for Review (5)' }}
+                      {{ currentLang === 'ar' ? `مراجعة معلقة (${fetchedInvoices[group.customer]?.filter(inv => inv.selected).length || 0})` : `Hold for Review (${fetchedInvoices[group.customer]?.filter(inv => inv.selected).length || 0})` }}
                     </button>
                   </div>
 
-                  <div class="space-y-4 mt-8">
-                    <div v-for="(inv, iIdx) in group.invoices" :key="iIdx"
-                      class="grid grid-cols-6 items-center border-t border-black/5 dark:border-white/5 pt-4">
-                      <div class="flex items-center gap-3">
+                  <div class="space-y-4 mt-8" v-if="!loadingInvoices[group.customer]">
+                    <div v-if="!fetchedInvoices[group.customer]?.length" class="text-center py-4 opacity-50">
+                      {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
+                    </div>
+                    <div v-else v-for="(inv, iIdx) in fetchedInvoices[group.customer]" :key="iIdx"
+                      class="grid items-center border-t border-black/5 dark:border-white/5 pt-4"
+                      :style="{ gridTemplateColumns: `2.25fr repeat(${tableColumns.length + 1}, minmax(0, 1fr))` }">
+                      <div class="flex items-center gap-3 pr-2">
                         <input type="checkbox" v-model="inv.selected"
-                          class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
-                        <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
-                          inv.id
+                          class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864] shrink-0">
+                        <span class="text-[16px] font-normal truncate" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'" :title="inv.invoice_no !== '0' ? inv.invoice_no : inv.description">{{
+                          inv.invoice_no !== '0' ? inv.invoice_no : inv.description
                         }}</span>
                       </div>
                       <div class="text-right rtl:text-left font-normal text-[16px]"
                         :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
-                        <span class="underline underline-offset-4 cursor-pointer">{{ inv.total }}</span>
+                        <span class="underline underline-offset-4 cursor-pointer">{{ formatValue(inv.amount) }}</span>
                       </div>
-                      <div class="text-right rtl:text-left text-[16px] font-normal"
-                        :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age30 }}</div>
-                      <div class="text-right rtl:text-left text-[16px] font-normal"
-                        :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age3060 }}</div>
-                      <div class="text-right rtl:text-left text-[16px] font-normal"
-                        :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age6090 }}</div>
-                      <div class="text-right rtl:text-left text-[16px] font-normal"
-                        :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age90plus }}</div>
+                      <div v-for="col in tableColumns" :key="col.key" class="text-right rtl:text-left text-[16px] font-normal"
+                        :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ formatValue(inv[col.key]) }}</div>
                     </div>
+                  </div>
+                  <div v-else class="text-center py-8 opacity-50">
+                    <span class="text-sm">{{ currentLang === 'ar' ? 'جاري تحميل الفواتير...' : 'Loading invoices...' }}</span>
                   </div>
                 </div>
               </td>
@@ -138,19 +129,11 @@
         <tfoot>
           <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'" class="transition-all duration-500">
             <td class="lg:px-8 px-4 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
-              currentLang
-                ===
-                'ar' ? 'الإجمالي' : 'Total' }}</td>
+              currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
             <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.total }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age30 }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age3060 }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age6090 }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age90plus }}</td>
+              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ formatValue(summaryTotal.amount) }}</td>
+            <td v-for="col in tableColumns" :key="'foot-' + col.key" class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
+              :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ formatValue(summaryTotal[col.key]) }}</td>
           </tr>
         </tfoot>
       </table>
@@ -199,51 +182,41 @@
                       </svg>
                     </div>
                   </th>
-                  <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ?
-                    '>30'
-                    :
-                    '>30' }}</th>
-                  <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ?
-                    '30-60' :
-                    '30-60' }}</th>
-                  <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ?
-                    '60-90' :
-                    '60-90' }}</th>
-                  <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ?
-                    ' < 90' : ' < 90' }}</th>
+                  <th v-for="col in tableColumns" :key="'modal-th-' + col.key" class="px-6 py-5 font-normal text-right rtl:text-left text-[14px] whitespace-nowrap">
+                    {{ col.label }}
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                <template v-for="(group, gIdx) in arData" :key="'modal-' + gIdx">
+                <template v-for="(group, gIdx) in mainRows" :key="'modal-' + gIdx">
                   <tr class="transition-all duration-500 border-b border-black/5 dark:border-white/5"
                     :class="isDark ? 'hover:bg-white/5 bg-[#00141080]' : 'hover:bg-gray-50 bg-white'">
                     <td class="px-8 py-5">
-                      <div class="flex items-center gap-2 cursor-pointer" @click="toggleGroup(gIdx)">
-                        <span class="font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
-                          currentLang === 'ar' ? group.labelAr : group.label }}</span>
+                      <div class="flex items-center gap-2 cursor-pointer" @click="toggleGroup(gIdx, group.customer)">
+                        <span class="font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
+                          {{ group.customer || (currentLang === 'ar' ? 'عميل' : 'Customer') }}
+                        </span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                           class="transition-transform duration-300"
-                          :class="expandedGroups.includes(gIdx) ? 'rotate-180' : ''">
+                          :class="{ 'rotate-180': expandedGroups.includes(gIdx), 'text-white': isDark, 'text-black': !isDark }">
                           <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                             stroke-linejoin="round" />
                         </svg>
                       </div>
                     </td>
                     <td class="px-6 py-5 text-right rtl:text-left font-semibold text-[14px]"
-                      :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">{{ group.total }}</td>
-                    <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium"
-                      :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age30 }}</td>
-                    <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium"
-                      :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age3060 }}</td>
-                    <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium"
-                      :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age6090 }}</td>
-                    <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium"
-                      :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age90plus }}</td>
+                      :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
+                      {{ formatValue(group.amount) }}
+                    </td>
+                    <td v-for="col in tableColumns" :key="'modal-td-' + col.key" class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium"
+                      :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">
+                      {{ formatValue(group[col.key]) }}
+                    </td>
                   </tr>
 
                   <!-- Expandable Invoice Section -->
                   <tr v-if="expandedGroups.includes(gIdx)">
-                    <td colspan="6" class="p-0">
+                    <td :colspan="tableColumns.length + 2" class="p-0">
                       <div :class="isDark ? 'bg-transparent' : 'bg-[#A2E8D6]'" class="p-8">
                         <div class="flex justify-between items-start mb-6">
                           <div>
@@ -255,7 +228,7 @@
                               <input type="checkbox" v-model="selectAll" @change="handleSelectAll"
                                 class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
                               <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
-                                {{ currentLang === 'ar' ? 'تحديد الكل (4)' : 'Select All (4)' }}
+                                {{ currentLang === 'ar' ? `تحديد الكل (${fetchedInvoices[group.customer]?.length || 0})` : `Select All (${fetchedInvoices[group.customer]?.length || 0})` }}
                               </span>
                             </div>
                           </div>
@@ -267,32 +240,33 @@
                                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-                            {{ currentLang === 'ar' ? 'مراجعة معلقة (5)' : 'Hold for Review (5)' }}
+                            {{ currentLang === 'ar' ? `مراجعة معلقة (${fetchedInvoices[group.customer]?.filter(inv => inv.selected).length || 0})` : `Hold for Review (${fetchedInvoices[group.customer]?.filter(inv => inv.selected).length || 0})` }}
                           </button>
                         </div>
 
-                        <div class="space-y-4 mt-8">
-                          <div v-for="(inv, iIdx) in group.invoices" :key="'modal-inv-' + iIdx"
-                            class="grid grid-cols-6 items-center border-t border-black/5 dark:border-white/5 pt-4">
-                            <div class="flex items-center gap-3">
+                        <div class="space-y-4 mt-8" v-if="!loadingInvoices[group.customer]">
+                          <div v-if="!fetchedInvoices[group.customer]?.length" class="text-center py-4 opacity-50">
+                            {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
+                          </div>
+                          <div v-else v-for="(inv, iIdx) in fetchedInvoices[group.customer]" :key="'modal-inv-' + iIdx"
+                            class="grid items-center border-t border-black/5 dark:border-white/5 pt-4"
+                            :style="{ gridTemplateColumns: `2.25fr repeat(${tableColumns.length + 1}, minmax(0, 1fr))` }">
+                            <div class="flex items-center gap-3 pr-2">
                               <input type="checkbox" v-model="inv.selected"
-                                class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
-                              <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
-                                inv.id }}</span>
+                                class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864] shrink-0">
+                              <span class="text-[16px] font-normal truncate" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'" :title="inv.invoice_no !== '0' ? inv.invoice_no : inv.description">{{
+                                inv.invoice_no !== '0' ? inv.invoice_no : inv.description }}</span>
                             </div>
                             <div class="text-right rtl:text-left font-normal text-[16px]"
                               :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
-                              <span class="underline underline-offset-4 cursor-pointer">{{ inv.total }}</span>
+                              <span class="underline underline-offset-4 cursor-pointer">{{ formatValue(inv.amount) }}</span>
                             </div>
-                            <div class="text-right rtl:text-left text-[16px] font-normal"
-                              :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age30 }}</div>
-                            <div class="text-right rtl:text-left text-[16px] font-normal"
-                              :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age3060 }}</div>
-                            <div class="text-right rtl:text-left text-[16px] font-normal"
-                              :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age6090 }}</div>
-                            <div class="text-right rtl:text-left text-[16px] font-normal"
-                              :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age90plus }}</div>
+                            <div v-for="col in tableColumns" :key="'modal-td-' + col.key" class="text-right rtl:text-left text-[16px] font-normal"
+                              :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ formatValue(inv[col.key]) }}</div>
                           </div>
+                        </div>
+                        <div v-else class="text-center py-8 opacity-50">
+                          <span class="text-sm">{{ currentLang === 'ar' ? 'جاري تحميل الفواتير...' : 'Loading invoices...' }}</span>
                         </div>
                       </div>
                     </td>
@@ -305,15 +279,9 @@
                   <td class="px-8 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
                     currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
                   <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.total }}</td>
-                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age30 }}</td>
-                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age3060 }}</td>
-                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age6090 }}</td>
-                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
-                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age90plus }}</td>
+                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ formatValue(summaryTotal.amount) }}</td>
+                  <td v-for="col in tableColumns" :key="'modal-foot-' + col.key" class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
+                    :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ formatValue(summaryTotal[col.key]) }}</td>
                 </tr>
               </tfoot>
             </table>
@@ -325,30 +293,95 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { formatToMillions } from '~/utils/formatters'
+
+const props = defineProps({
+  data: {
+    type: Array,
+    default: () => []
+  },
+  testDate: {
+    type: String,
+    default: ''
+  }
+})
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const expandedGroups = ref([0]) // Default expand first group
+const expandedGroups = ref([]) 
 const selectAll = ref(false)
 const isModalOpen = ref(false)
 
-const { summary, summaryTotal } = useAccountsPayablePage()
-const arData = summary
+const fetchedInvoices = ref({})
+const loadingInvoices = ref({})
 
-const toggleGroup = (idx) => {
+const formatBucketLabel = (key) => {
+  let formatted = key.replace('bucket_', '').replace(/_/g, '-')
+  if (formatted === '365-plus') return '> 365'
+  if (formatted === '0-30') return '0 - 30'
+  return formatted
+}
+
+const tableColumns = computed(() => {
+  if (!props.data || props.data.length === 0) return []
+  const firstRow = props.data[0]
+  const keys = Object.keys(firstRow).filter(k => k.startsWith('bucket_'))
+  return keys.map(key => ({
+    key: key,
+    label: formatBucketLabel(key)
+  }))
+})
+
+const mainRows = computed(() => {
+  return props.data.filter(row => !row.isTotal)
+})
+
+const summaryTotal = computed(() => {
+  if (!props.data || props.data.length === 0) return null
+  return props.data.find(row => row.isTotal) || null
+})
+
+const formatValue = (val) => {
+  if (val === undefined || val === null) return '0.00'
+  return formatToMillions(val, 2)
+}
+
+const toggleGroup = async (idx, customerName) => {
   const index = expandedGroups.value.indexOf(idx)
   if (index > -1) {
     expandedGroups.value.splice(index, 1)
   } else {
     expandedGroups.value.push(idx)
+    //Better to use a single API call to fetch customer details instead of calling it individually on each user click,
+    // as this negatively impacts both UX and performance.!!!!!!!!!!!!
+    if (!fetchedInvoices.value[customerName] && !loadingInvoices.value[customerName]) {
+      loadingInvoices.value[customerName] = true
+      try {
+        const response = await useApi('/ap-report/customer-details', {
+          params: {
+            test_date: props.testDate,
+            customer_name: customerName
+          }
+        })
+        if (response && response.status === 'success') {
+          fetchedInvoices.value[customerName] = (response.data || []).filter(inv => !inv.isTotal)
+        }
+      } catch (err) {
+        console.error('Error fetching invoices:', err)
+        fetchedInvoices.value[customerName] = []
+      } finally {
+        loadingInvoices.value[customerName] = false
+      }
+    }
   }
 }
 
 const handleSelectAll = () => {
-  summary.value.forEach(group => {
-    group.invoices.forEach(inv => {
+  mainRows.value.forEach(group => {
+    const invoices = fetchedInvoices.value[group.customer] || []
+    invoices.forEach(inv => {
       inv.selected = selectAll.value
     })
   })

@@ -18,18 +18,18 @@
             :periods="customPeriods"
             class="mb-8" 
             @selected-date="handleDateChange"
-            @reload="fetchAgingData"
+            @reload="handleReload"
           />
 
           <AccountsPayableAlert />
 
           <div class="mb-4 lg:mb-8">
-            <AccountsPayableSummary />
+            <AccountsPayableSummary :data="summaryData" :testDate="activeTestDate" />
           </div>
 
           <div class="mb-4 lg:mb-8">
             <div class="h-[600px]">
-              <AccountsPayableTopCustomers />
+              <AccountsPayableTopCustomers :data="topCustomersData" />
             </div>
           </div>
 
@@ -41,7 +41,7 @@
 
           <div>
             <div class="lg:h-[440px] h-[440px]">
-              <AccountsPayableAgingGraph :agingData="apiData" />
+              <AccountsPayableAgingGraph :agingData="agingData" />
             </div>
           </div>
 
@@ -90,8 +90,10 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const apiData = ref({})
-const activeTestDate = ref('2025-07-02')
+const agingData = ref({})
+const summaryData = ref([])
+const topCustomersData = ref(null)
+const activeTestDate = ref('2025-07-02')//remove this value and make it null after testing!!!!!!
 
 const customPeriods = [
     { en: 'Year to Date', ar: 'منذ بداية العام' },
@@ -103,6 +105,7 @@ const customPeriods = [
 ]
 
 const fetchAgingData = async () => {
+  agingData.value = {}
   try {
     const response = await useApi('/ap-report/aging', {
       params: {
@@ -112,10 +115,47 @@ const fetchAgingData = async () => {
     })
     
     if (response && response.status === 'success') {
-      apiData.value = response.payload
+      agingData.value = response.payload || {}
     }
   } catch (error) {
     console.error('Error fetching dashboard data:', error)
+    agingData.value = {}
+  }
+}
+
+const fetchSummaryData = async () => {
+  summaryData.value = []
+  try {
+    const response = await useApi('/ap-report', {
+      params: {
+        test_date: activeTestDate.value
+      }
+    })
+    
+    if (response && response.status === 'success') {
+      summaryData.value = response.data || []
+    }
+  } catch (error) {
+    console.error('Error fetching summary data:', error)
+    summaryData.value = []
+  }
+}
+
+const fetchTopCustomersData = async () => {
+  topCustomersData.value = null
+  try {
+    const response = await useApi('/ap-report/top-eight', {
+      params: {
+        test_date: activeTestDate.value
+      }
+    })
+    
+    if (response && response.status === 'success') {
+      topCustomersData.value = response.payload || null
+    }
+  } catch (error) {
+    console.error('Error fetching top customers data:', error)
+    topCustomersData.value = null
   }
 }
 
@@ -124,7 +164,13 @@ const handleDateChange = (period) => {
     const parts = period.custom_from.split('-')
     activeTestDate.value = `${parts[2]}-${parts[1]}-${parts[0]}`
   }
+  handleReload()
+}
+
+const handleReload = () => {
   fetchAgingData()
+  fetchTopCustomersData()
+  fetchSummaryData()
 }
 
 watch(currentLang, () => {
@@ -133,6 +179,8 @@ watch(currentLang, () => {
 
 onMounted(() => {
   fetchAgingData()
+  fetchTopCustomersData()
+  fetchSummaryData()
 })
 </script>
 
