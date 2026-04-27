@@ -294,7 +294,6 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { formatToMillions } from '~/utils/formatters'
 
 const props = defineProps({
   data: {
@@ -344,8 +343,10 @@ const summaryTotal = computed(() => {
 })
 
 const formatValue = (val) => {
-  if (val === undefined || val === null) return '0.00'
-  return formatToMillions(val, 2)
+  if (val === undefined || val === null) return '0'
+  const num = Number(val)
+  if (isNaN(num)) return '0'
+  return num.toLocaleString('en-US')
 }
 
 const toggleGroup = async (idx, customerName) => {

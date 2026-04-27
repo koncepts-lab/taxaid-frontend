@@ -35,7 +35,7 @@
     <!-- Chart -->
     <div class="flex-1 w-full min-h-[320px] relative z-10">
       <ClientOnly>
-        <apexchart type="bar" height="100%" :options="chartOptions" :series="series" />
+        <apexchart :key="data?.charts?.cogs_by_category?.categories?.length" type="bar" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
     </div>
 
@@ -90,117 +90,137 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { formatToMillions } from '~/utils/formatters'
+
+const props = defineProps({
+  data: {
+    type: Object,
+    default: () => null
+  }
+})
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const { breakdown } = useCogsPage()
-
-const categories = computed(() => breakdown.value?.categories ?? [
-  { en: 'Product Sales', ar: 'مبيعات المنتجات' },
-  { en: 'Service', ar: 'خدمة' },
-  { en: 'Consulting', ar: 'استشارات' },
-  { en: 'Subscription', ar: 'الاشتراك' },
-  { en: 'SaaS', ar: 'برمجيات' },
-  { en: 'Training', ar: 'التدريب' },
-  { en: 'Support', ar: 'دعم' },
-  { en: 'Licensing', ar: 'الترخيص' },
-  { en: 'Logistics', ar: 'الخدمات اللوجستية' },
-  { en: 'Manufacturing', ar: 'التصنيع' }
-])
-
-const series = computed(() => [
-  {
-    name: 'Previous Year',
-    data: breakdown.value?.previousYearData ?? []
-  },
-  {
-    name: 'Current Year',
-    data: breakdown.value?.currentYearData ?? []
+const categories = computed(() => {
+  if (props.data?.charts?.cogs_by_category?.categories) {
+    return props.data.charts.cogs_by_category.categories.map(cat => ({
+      en: cat,
+      ar: cat
+    }))
   }
-])
+  return []
+})
 
-const chartOptions = computed(() => ({
-  chart: {
-    fontFamily: 'Noto Sans Arabic, sans-serif',
-    toolbar: { show: false },
-    zoom: { enabled: false }
-  },
-  plotOptions: {
-    bar: {
-      columnWidth: '50%',
-      borderRadius: 4,
-      borderRadiusApplication: 'end',
-      dataLabels: {
-        position: 'top',
+const series = computed(() => {
+  if (props.data?.charts?.cogs_by_category) {
+    const chartData = props.data.charts.cogs_by_category
+    return [
+      {
+        name: 'Previous Year',
+        data: chartData.previous_year.map(val => Number(formatToMillions(val || 0, 2).replace(/,/g, '')))
       },
-    }
-  },
-  colors: ['#FB7554', '#03D8B0'],
-  dataLabels: {
-    enabled: true,
-    offsetY: -30,
-    style: {
-      fontSize: '11px',
-      colors: ['#03D8B0'] // Adjust accordingly, using teal for labels as mostly seen
+      {
+        name: 'Current Year',
+        data: chartData.current_year.map(val => Number(formatToMillions(val || 0, 2).replace(/,/g, '')))
+      }
+    ]
+  }
+  return [
+    { name: 'Previous Year', data: [] },
+    { name: 'Current Year', data: [] }
+  ]
+})
+
+const chartOptions = computed(() => {
+  // Calculate dynamic max for Y-axis based on data to prevent values hitting the ceiling
+  const allData = [...series.value[0].data, ...series.value[1].data]
+  const rawMax = Math.max(...allData, 0)
+  // Logic: only if it exceeds the original 5M range, add 10% buffer and round to nearest 5.
+  const dynamicMax = rawMax > 5 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
+
+  return {
+    chart: {
+      fontFamily: 'Noto Sans Arabic, sans-serif',
+      toolbar: { show: false },
+      zoom: { enabled: false }
     },
-    formatter: (val) => val.toString().replace('.', ',') + 'M'
-  },
-  xaxis: {
-    categories: categories.value.map(c => currentLang.value === 'ar' ? c.ar : c.en),
-    axisBorder: {
-      show: true,
-      color: '#004033',
-      height: 1,
-      width: '100%'
+    plotOptions: {
+      bar: {
+        columnWidth: '50%',
+        borderRadius: 4,
+        borderRadiusApplication: 'end',
+        dataLabels: {
+          position: 'top',
+        },
+      }
     },
-    axisTicks: { show: false },
-    tooltip: { enabled: false },
-    labels: {
+    colors: ['#FB7554', '#03D8B0'],
+    dataLabels: {
+      enabled: true,
+      offsetY: -30,
       style: {
-        fontSize: '12px',
-        colors: '#FFFFFFBF',
-        fontWeight: 400
+        fontSize: '11px',
+        colors: ['#03D8B0'] // Adjust accordingly, using teal for labels as mostly seen
+      },
+      formatter: (val) => val.toString().replace('.', ',') + 'M'
+    },
+    xaxis: {
+      categories: categories.value.map(c => currentLang.value === 'ar' ? c.ar : c.en),
+      axisBorder: {
+        show: true,
+        color: '#004033',
+        height: 1,
+        width: '100%'
+      },
+      axisTicks: { show: false },
+      tooltip: { enabled: false },
+      labels: {
+        style: {
+          fontSize: '12px',
+          colors: '#FFFFFFBF',
+          fontWeight: 400
+        }
+      }
+    },
+    yaxis: {
+      min: 0,
+      max: dynamicMax,
+      tickAmount: 5,
+      axisBorder: {
+        show: true,
+        color: '#004033',
+        width: 1
+      },
+      axisTicks: { show: false },
+      labels: {
+        style: {
+          fontSize: '12px',
+          colors: '#FFFFFFBF'
+        },
+        formatter: (val) => val === 0 ? '0' : Math.round(val) + 'M'
+      }
+    },
+    grid: {
+      show: true,
+      borderColor: '#004033',
+      strokeDashArray: 0,
+      xaxis: { lines: { show: false } },
+      yaxis: { lines: { show: true } },
+      padding: { top: 20, right: 10, bottom: 0, left: 10 }
+    },
+    legend: { show: false },
+    tooltip: {
+      theme: 'light',
+      y: {
+        formatter: function (val) {
+          return "AED " + val + "M"
+        }
       }
     }
-  },
-  yaxis: {
-    min: 0,
-    max: 6,
-    tickAmount: 6,
-    axisBorder: {
-      show: true,
-      color: '#004033',
-      width: 1
-    },
-    axisTicks: { show: false },
-    labels: {
-      style: {
-        fontSize: '12px',
-        colors: '#FFFFFFBF'
-      },
-      formatter: (val) => val === 0 ? '0' : val + 'M'
-    }
-  },
-  grid: {
-    show: true,
-    borderColor: '#004033',
-    strokeDashArray: 0,
-    xaxis: { lines: { show: false } },
-    yaxis: { lines: { show: true } },
-    padding: { top: 20, right: 10, bottom: 0, left: 10 }
-  },
-  legend: { show: false },
-  tooltip: {
-    theme: 'light',
-    y: {
-      formatter: function (val) {
-        return "AED " + val + "M"
-      }
-    }
   }
-}))
+})
 </script>
 
 <style scoped>
@@ -212,7 +232,11 @@ const chartOptions = computed(() => ({
   margin: 0 auto;
 }
 
-:deep(.apexcharts-datalabel) {
-  fill: #03D8B0 !important;
+:deep(.apexcharts-tooltip) {
+  color: #1A1A1A !important;
+}
+
+:deep(.apexcharts-tooltip-title) {
+  color: #1A1A1A !important;
 }
 </style>

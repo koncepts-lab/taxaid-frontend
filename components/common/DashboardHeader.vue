@@ -259,6 +259,9 @@ const selectPeriod = (period) => {
 
 const emitRangeChange = () => {
     if (range.value.start && range.value.end) {
+        prevMonthPage.value = { month: range.value.start.getMonth() + 1, year: range.value.start.getFullYear() };
+        currMonthPage.value = { month: range.value.end.getMonth() + 1, year: range.value.end.getFullYear() };
+        
         emit('selected-date', {
             en: 'Custom Range',
             ar: 'نطاق مخصص',
@@ -271,6 +274,8 @@ const emitRangeChange = () => {
 
 const handleSingleChange = (val) => {
     if (val) {
+        currMonthPage.value = { month: val.getMonth() + 1, year: val.getFullYear() };
+        
         emit('selected-date', {
             en: 'Custom Date',
             ar: 'تاريخ مخصص',

@@ -12,27 +12,36 @@
         : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
         <div class="mx-auto pt-8 lg:pt-0">
 
-          <CogsHeader class="mb-8" />
+          <DashboardHeader 
+            class="mb-8"
+            :title="{ en: 'COGS Analysis', ar: 'تحليل تكلفة المبيعات' }"
+            :subtitle="{ en: 'COGS Breakdown by Categories', ar: 'تفصيل تكلفة المبيعات حسب الفئات' }"
+            :periods="customPeriods"
+            :oneclickreview="true"
+            @selected-date="handleDateChange"
+            @reload="handleReload"
+            @one-click-summary="handleOneClickSummary"
+          />
 
           <div class="mb-4 lg:mb-8">
-            <CogsSummary />
+            <CogsSummary :data="breakdownData?.data" />
           </div>
 
           <div class="mb-4 lg:mb-8">
             <div class="h-[500px]">
-              <CogsBreakdownByCategory />
+              <CogsBreakdownByCategory :data="breakdownData" />
             </div>
           </div>
 
           <div class="mb-8">
             <div class="lg:h-[420px] h-[500px]">
-              <CogsRevenueToCogsMonthly />
+              <CogsRevenueToCogsMonthly :data="revenueToCogsData" />
             </div>
           </div>
 
           <div>
             <div class="lg:h-[440px] h-[500px]">
-              <CogsLast6Months />
+              <CogsLast6Months :data="trendData" />
             </div>
           </div>
 
@@ -67,9 +76,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import ParticleBackground from '~/components/common/ParticleBackground.vue'
-import CogsHeader from '~/components/cogs/Header.vue'
+import { ref, onMounted } from 'vue'
+import DashboardHeader from '~/components/common/DashboardHeader.vue'
 import CogsSummary from '~/components/cogs/Summary.vue'
 import CogsBreakdownByCategory from '~/components/cogs/BreakdownByCategory.vue'
 import CogsRevenueToCogsMonthly from '~/components/cogs/RevenueToCogsMonthly.vue'
@@ -79,6 +87,120 @@ const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+
+const customPeriods = [
+    { en: 'Year to Date', ar: 'منذ بداية العام' },
+    { en: 'This Quarter', ar: 'هذا الربع' },
+    { en: 'Last Quarter', ar: 'الربع الماضي' },
+    { en: 'This Year', ar: 'هذه السنة' },
+    { en: 'Last Year', ar: 'السنة الماضية' },
+    { en: 'Custom Range', ar: 'نطاق مخصص' },
+    { en: 'Custom Date', ar: 'تاريخ مخصص' }
+]
+
+const { date, currentDate } = useAppDate()
+
+const trendData = ref([])
+const revenueToCogsData = ref([])
+const breakdownData = ref(null)
+
+// Format YYYY-MM-DD to DD-MM-YYYY
+const formatDate = (dateStr) => {
+  if (!dateStr) return null
+  const [y, m, d] = dateStr.split('-')
+  return `${d}-${m}-${y}`
+}
+
+const startOfYearStr = `${date.value.getFullYear()}-01-01`
+const activeDateFrom = ref(formatDate(startOfYearStr))
+const activeDateTo = ref(formatDate(currentDate.value))
+const activePeriod = ref('Year to Date')
+
+const fetchTrendData = async () => {
+  try {
+    const response = await useApi('/cogs-analysis/trend-chart', {
+      method: 'POST',
+      body: {
+        custom_from: activeDateFrom.value,
+        custom_to: activeDateTo.value,
+        lang: currentLang.value
+      }
+    })
+    
+    if (response) {
+      trendData.value = Array.isArray(response) ? response : (response.data || response.payload || [])
+    }
+  } catch (error) {
+    console.error('Error fetching trend data:', error)
+    trendData.value = []
+  }
+}
+
+const fetchRevenueToCogsData = async () => {
+  try {
+    const response = await useApi('/cogs-analysis/revenue-vs-cogs/trend-chart', {
+      method: 'POST',
+      body: {
+        custom_from: activeDateFrom.value,
+        custom_to: activeDateTo.value,
+        lang: currentLang.value
+      }
+    })
+    
+    if (response) {
+      revenueToCogsData.value = Array.isArray(response) ? response : (response.data || response.payload || [])
+    }
+  } catch (error) {
+    console.error('Error fetching revenue to cogs data:', error)
+    revenueToCogsData.value = []
+  }
+}
+
+const fetchBreakdownData = async () => {
+  try {
+    const response = await useApi('/cogs-analysis/breakdown', {
+      method: 'POST',
+      body: {
+        range_option: 'Custom Dates',
+        custom_from: activeDateFrom.value,
+        custom_to: activeDateTo.value,
+        lang: currentLang.value
+      }
+    })
+    
+    if (response && response.status === 'success') {
+      breakdownData.value = response
+    }
+  } catch (error) {
+    console.error('Error fetching breakdown data:', error)
+    breakdownData.value = null
+  }
+}
+
+const handleDateChange = (period) => {
+  activePeriod.value = period.en
+  activeDateFrom.value = period.custom_from
+  activeDateTo.value = period.custom_to
+  fetchTrendData()
+  fetchRevenueToCogsData()
+  fetchBreakdownData()
+}
+
+const handleReload = () => {
+  fetchTrendData()
+  fetchRevenueToCogsData()
+  fetchBreakdownData()
+}
+
+const handleOneClickSummary = () => {
+  console.log('One Click Summary clicked')
+}
+
+onMounted(() => {
+  fetchTrendData()
+  fetchRevenueToCogsData()
+  fetchBreakdownData()
+})
 </script>
 
 <style scoped>

@@ -36,7 +36,7 @@
     <!-- Chart -->
     <div class="flex-1 w-full min-h-[320px] relative z-10 mt-0">
       <ClientOnly>
-        <apexchart type="bar" height="100%" :options="chartOptions" :series="series" />
+        <apexchart :key="data.length" type="bar" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
     </div>
 
@@ -91,144 +91,168 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+const props = defineProps({
+  data: {
+    type: Array,
+    default: () => []
+  }
+})
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const { revenueToCogs } = useCogsPage()
-
-const months = computed(() => revenueToCogs.value?.months ?? [
-  { en: 'Apr', ar: 'أبريل' },
-  { en: 'May', ar: 'مايو' },
-  { en: 'Jun', ar: 'يونيو' },
-  { en: 'Jul', ar: 'يوليو' },
-  { en: 'Aug', ar: 'أغسطس' },
-  { en: 'Sep', ar: 'سبتمبر' }
-])
-
-const series = computed(() => [
-  {
-    name: 'COGS',
-    data: revenueToCogs.value?.cogsData ?? []
-  },
-  {
-    name: 'Revenue',
-    data: revenueToCogs.value?.revenueData ?? []
+const months = computed(() => {
+  if (props.data && props.data.length > 0) {
+    return props.data.map(item => ({
+      en: item.month_short,
+      ar: item.month_short
+    }))
   }
-])
+  return []
+})
 
-const chartOptions = computed(() => ({
-  chart: {
-    fontFamily: 'Noto Sans Arabic, sans-serif',
-    toolbar: { show: false },
-    zoom: { enabled: false }
-  },
-  plotOptions: {
-    bar: {
-      columnWidth: '30%',
-      borderRadius: 4,
-      borderRadiusApplication: 'end',
-      dataLabels: {
-        position: 'top',
+const series = computed(() => {
+  if (props.data && props.data.length > 0) {
+    return [
+      {
+        name: 'COGS',
+        data: props.data.map(item => Number(formatToMillions(item.cogs || 0, 2).replace(/,/g, ''))),
+        dataLabels: { offsetX: -12 }
       },
-    }
-  },
-  colors: ['#FFC107', '#005A48'],
-  dataLabels: {
-    enabled: true,
-    offsetY: -30,
-    style: {
-      fontSize: '11px',
-      colors: [isDark.value ? '#FFFFFF' : '#005A48']
+      {
+        name: 'Revenue',
+        data: props.data.map(item => Number(formatToMillions(item.revenue || 0, 2).replace(/,/g, ''))),
+        dataLabels: { offsetX: 12 }
+      }
+    ]
+  }
+  return [
+    { name: 'COGS', data: [] },
+    { name: 'Revenue', data: [] }
+  ]
+})
+
+const chartOptions = computed(() => {
+  // Calculate dynamic max for Y-axis based on data to prevent values hitting the ceiling
+  const allData = [...series.value[0].data, ...series.value[1].data]
+  const rawMax = Math.max(...allData, 0)
+  // Logic: only if it exceeds the original 5M range, add 10% buffer and round to nearest 5.
+  const dynamicMax = rawMax > 5 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
+
+  return {
+    chart: {
+      fontFamily: 'Noto Sans Arabic, sans-serif',
+      toolbar: { show: false },
+      zoom: { enabled: false }
     },
-    formatter: (val) => val.toString().replace('.', ',') + 'M'
-  },
-  xaxis: {
-    categories: months.value.map(m => currentLang.value === 'ar' ? m.ar : m.en),
-    axisBorder: {
-      show: false
-    },
-    axisTicks: { show: false },
-    tooltip: { enabled: false },
-    labels: {
-      style: {
-        fontSize: '12px',
-        colors: isDark.value ? '#FFFFFFBF' : '#00000099',
-        fontWeight: 400
+    plotOptions: {
+      bar: {
+        columnWidth: '45%',
+        borderRadius: 4,
+        borderRadiusApplication: 'end',
+        dataLabels: {
+          position: 'top',
+        },
       }
     },
-    crosshairs: {
-      show: false
-    }
-  },
-  yaxis: {
-    min: 0,
-    max: 5,
-    tickAmount: 5,
-    axisBorder: {
+    colors: ['#FFC107', '#005A48'],
+    dataLabels: {
+      enabled: true,
+      offsetY: -30,
+      style: {
+        fontSize: '10px',
+        colors: [isDark.value ? '#FFFFFF' : '#005A48']
+      },
+      formatter: (val) => val.toString().replace('.', ',') + 'M'
+    },
+    xaxis: {
+      categories: months.value.map(m => currentLang.value === 'ar' ? m.ar : m.en),
+      axisBorder: {
+        show: false
+      },
+      axisTicks: { show: false },
+      tooltip: { enabled: false },
+      labels: {
+        style: {
+          fontSize: '12px',
+          colors: isDark.value ? '#FFFFFFBF' : '#00000099',
+          fontWeight: 400
+        }
+      },
+      crosshairs: {
+        show: false
+      }
+    },
+    yaxis: {
+      min: 0,
+      max: dynamicMax,
+      tickAmount: 5,
+      axisBorder: {
+        show: true,
+        color: isDark.value ? 'rgba(255, 255, 255, 0.1)' : '#EFEFEF',
+        width: 1
+      },
+      axisTicks: { show: false },
+      labels: {
+        style: {
+          fontSize: '12px',
+          colors: isDark.value ? '#FFFFFFBF' : '#00000099'
+        },
+        formatter: (val) => val === 0 ? '0' : val + 'M'
+      }
+    },
+    grid: {
       show: true,
-      color: isDark.value ? 'rgba(255, 255, 255, 0.1)' : '#EFEFEF',
-      width: 1
+      borderColor: isDark.value ? 'rgba(255, 255, 255, 0.05)' : '#EFEFEF',
+      strokeDashArray: 0,
+      xaxis: { lines: { show: false } },
+      yaxis: { lines: { show: true } },
+      padding: { top: 20, right: 20, bottom: 0, left: 10 }
     },
-    axisTicks: { show: false },
-    labels: {
-      style: {
-        fontSize: '12px',
-        colors: isDark.value ? '#FFFFFFBF' : '#00000099'
+    states: {
+      hover: {
+        filter: {
+          type: 'none'
+        }
       },
-      formatter: (val) => val === 0 ? '0' : val + 'M'
-    }
-  },
-  grid: {
-    show: true,
-    borderColor: isDark.value ? 'rgba(255, 255, 255, 0.05)' : '#EFEFEF',
-    strokeDashArray: 0,
-    xaxis: { lines: { show: false } },
-    yaxis: { lines: { show: true } },
-    padding: { top: 20, right: 20, bottom: 0, left: 10 }
-  },
-  states: {
-    hover: {
-      filter: {
-        type: 'none'
+      active: {
+        filter: {
+          type: 'none'
+        }
       }
     },
-    active: {
-      filter: {
-        type: 'none'
+    legend: { show: false },
+    tooltip: {
+      shared: true,
+      intersect: false,
+      theme: isDark.value ? 'dark' : 'light',
+      custom: function ({ series: s, dataPointIndex }) {
+        const cat = months.value[dataPointIndex]
+        if (!cat) return ''
+        
+        const catLabel = currentLang.value === 'ar' ? cat.ar : cat.en
+        const rVal = s[1][dataPointIndex]
+        const cVal = s[0][dataPointIndex]
+        const ratio = cVal !== 0 ? (rVal / cVal).toFixed(2) : (rVal > 0 ? '∞' : '0.00')
+
+        const trRevenue = currentLang.value === 'ar' ? 'الإيرادات' : 'Revenue'
+        const trCOGS = currentLang.value === 'ar' ? 'تكلفة المبيعات' : 'COGS'
+        const trRatio = currentLang.value === 'ar' ? 'لإيرادات نسبة تكلفة' : 'Revenue to COGS'
+
+        // Tooltip styling matches the mockup (teal background bubble)
+        return `
+          <div class="custom-tooltip-cogs shadow-xl rounded-2xl" style="background:#D9FBF2; padding: 12px 16px; border:none;  color:#1A1A1A;">
+            <div style="font-size:12px; margin-bottom:8px; font-weight:500;">${catLabel}</div>
+            <div style="font-size:11px; margin-bottom:4px;">${trRevenue}: AED ${rVal.toString().replace('.', ',')}M</div>
+            <div style="font-size:11px; margin-bottom:4px;">${trCOGS}: AED ${cVal.toString().replace('.', ',')}M</div>
+            <div style="font-size:11px; color:#00A176;">${trRatio}: ${ratio}</div>
+          </div>
+        `
       }
-    }
-  },
-  legend: { show: false },
-  tooltip: {
-    shared: true,
-    intersect: false,
-    theme: isDark.value ? 'dark' : 'light',
-    custom: function ({ series: s, dataPointIndex }) {
-      const cat = months.value[dataPointIndex]
-      const catLabel = currentLang.value === 'ar' ? cat.ar : cat.en
-      const rVal = s[1][dataPointIndex]
-      const cVal = s[0][dataPointIndex]
-      const ratio = (rVal / cVal).toFixed(2)
-
-      const trRevenue = currentLang.value === 'ar' ? 'الإيرادات' : 'Revenue'
-      const trCOGS = currentLang.value === 'ar' ? 'تكلفة المبيعات' : 'COGS'
-      const trRatio = currentLang.value === 'ar' ? 'لإيرادات نسبة تكلفة' : 'Revenue to COGS'
-
-      // Tooltip styling matches the mockup (teal background bubble)
-      return `
-        <div class="custom-tooltip-cogs shadow-xl rounded-2xl" style="background:#D9FBF2; padding: 12px 16px; border:none;  color:#1A1A1A;">
-          <div style="font-size:12px; margin-bottom:8px; font-weight:500;">${catLabel}</div>
-          <div style="font-size:11px; margin-bottom:4px;">${trRevenue}: AED ${rVal.toString().replace('.', ',')}M</div>
-          <div style="font-size:11px; margin-bottom:4px;">${trCOGS}: AED ${cVal.toString().replace('.', ',')}M</div>
-          <div style="font-size:11px; color:#00A176;">${trRatio}: ${ratio}</div>
-        </div>
-      `
     }
   }
-}))
+})
 </script>
 
 <style scoped>

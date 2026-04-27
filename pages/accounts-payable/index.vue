@@ -13,8 +13,8 @@
         <div class="mx-auto pt-8 lg:pt-0">
 
           <CommonDashboardHeader 
-            :title="{ en: 'Accounts Payable', ar: 'حسابات الدفع' }"
-            :subtitle="{ en: 'Accounts Payable Dashboard', ar: 'لوحة معلومات حسابات الدفع' }" 
+            :title="{ en: 'Accounts Payable Analysis', ar: 'تحليل حسابات الدفع' }"
+            :subtitle="{ en: 'Comprehensive AP tracking and aging insights', ar: 'تتبع شامل لحسابات الدفع ورؤى التقادم' }" 
             :periods="customPeriods"
             class="mb-8" 
             @selected-date="handleDateChange"
@@ -94,7 +94,7 @@ const currentLang = useState('currentLang', () => 'en')
 const agingData = ref({})
 const summaryData = ref([])
 const topCustomersData = ref(null)
-const activeTestDate = ref(currentDate)
+const activeTestDate = ref(currentDate.value)
 
 const customPeriods = [
     { en: 'Year to Date', ar: 'منذ بداية العام' },
