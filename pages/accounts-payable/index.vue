@@ -84,6 +84,7 @@ import AccountsPayableSummary from '~/components/accounts-payable/Summary.vue'
 import AccountsPayableTopCustomers from '~/components/accounts-payable/TopCustomers.vue'
 import AccountsPayableHistoricalMovement from '~/components/accounts-payable/HistoricalMovement.vue'
 import AccountsPayableAgingGraph from '~/components/accounts-payable/AgingGraph.vue'
+const { date, currentDate } = useAppDate()
 
 const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
@@ -93,7 +94,7 @@ const currentLang = useState('currentLang', () => 'en')
 const agingData = ref({})
 const summaryData = ref([])
 const topCustomersData = ref(null)
-const activeTestDate = ref('2025-07-02')//remove this value and make it null after testing!!!!!!
+const activeTestDate = ref(currentDate)
 
 const customPeriods = [
     { en: 'Year to Date', ar: 'منذ بداية العام' },
