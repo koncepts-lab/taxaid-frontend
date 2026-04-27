@@ -92,18 +92,37 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { formatToMillions } from '~/utils/formatters'
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 const isModalOpen = ref(false)
 
-const { overheadVsRevenue } = useIndirectExpensePage()
+const props = defineProps({
+  data: {
+    type: Array,
+    default: () => []
+  }
+})
 
-const chartSeries = computed(() => {
-  const dataSeries = overheadVsRevenue.value?.series ?? []
-  return dataSeries.map(s => ({
-    name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
-    data: s.data
-  }))
+const chartCategories = computed(() => props.data.map((item: any) => item.month_short))
+
+const chartSeries = computed(() => [
+  {
+    name: currentLang.value === 'ar' ? 'النفقات العامة' : 'Overhead',
+    data: props.data.map((item: any) => parseFloat(formatToMillions(item['indirect expenses'] ?? 0, 2)))
+  },
+  {
+    name: currentLang.value === 'ar' ? 'الإيرادات' : 'Revenue',
+    data: props.data.map((item: any) => parseFloat(formatToMillions(item.revenue ?? 0, 2)))
+  }
+])
+
+const rawData = computed(() => props.data)
+
+const yMax = computed(() => {
+  const allVals = chartSeries.value.flatMap(s => s.data)
+  const max = Math.max(...allVals, 0)
+  return Math.ceil(max + 1)
 })
 
 const chartOptions = computed(() => ({
@@ -117,7 +136,7 @@ const chartOptions = computed(() => ({
   plotOptions: {
     bar: {
       horizontal: false,
-      columnWidth: '40%',
+      columnWidth: '55%',
       borderRadius: 4,
       dataLabels: { position: 'top' }
     }
@@ -138,9 +157,7 @@ const chartOptions = computed(() => ({
   },
   legend: { show: false },
   xaxis: {
-    categories: currentLang.value === 'ar' 
-      ? (overheadVsRevenue.value?.categoriesAr || [])
-      : (overheadVsRevenue.value?.categories || []),
+    categories: chartCategories.value,
     labels: {
         style: { colors: isDark.value ? '#FFFFFFBF' : '#333333BF', fontSize: '13px', fontWeight: 400 }
     },
@@ -149,7 +166,7 @@ const chartOptions = computed(() => ({
   },
   yaxis: {
     min: 0,
-    max: 5,
+    max: yMax.value,
     tickAmount: 5,
     labels: {
       formatter: (value: number) => value.toFixed(0) + 'M',
@@ -164,14 +181,13 @@ const chartOptions = computed(() => ({
   },
   tooltip: {
     custom: function({series, seriesIndex, dataPointIndex, w}: any) {
-      const months = currentLang.value === 'ar' 
-        ? (overheadVsRevenue.value?.categoriesAr || [])
-        : (overheadVsRevenue.value?.categories || []);
+      const months = chartCategories.value;
       const monthName = months[dataPointIndex];
       
-      const overhead = series[0][dataPointIndex];
-      const revenue = series[1][dataPointIndex];
-      const ratio = ((overhead / revenue) * 100).toFixed(1);
+      const raw = rawData.value[dataPointIndex] as any;
+      const overhead = formatToMillions(raw?.['indirect expenses'] ?? 0, 2);
+      const revenue = formatToMillions(raw?.revenue ?? 0, 2);
+      const ratio = raw?.expense_to_revenue_ratio ?? '0%';
       
       const revenueLabel = currentLang.value === 'ar' ? 'الإيرادات: ' : 'Revenue: ';
       const overheadLabel = currentLang.value === 'ar' ? 'النفقات العامة: ' : 'Overhead: ';
@@ -181,7 +197,7 @@ const chartOptions = computed(() => ({
         '<div class="font-bold mb-2 text-[#000] text-[16px]">' + monthName + '</div>' +
         '<div class="text-[#333] text-[14px] mb-1">' + revenueLabel + '<span class="font-bold text-[#007965]"> AED ' + revenue + 'M</span></div>' +
         '<div class="text-[#333] text-[14px] mb-1">' + overheadLabel + '<span class="font-bold text-[#D48806]"> AED ' + overhead + 'M</span></div>' +
-        '<div class="text-[#333] text-[14px]">' + ratioLabel + '<span class="font-bold text-[#007965]"> ' + ratio + '%</span></div>' +
+        '<div class="text-[#333] text-[14px]">' + ratioLabel + '<span class="font-bold text-[#007965]"> ' + ratio + '</span></div>' +
         '</div>'
     }
   },

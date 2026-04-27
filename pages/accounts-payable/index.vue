@@ -77,13 +77,6 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import ParticleBackground from '~/components/common/ParticleBackground.vue'
-import AccountsPayableHeader from '~/components/accounts-payable/Header.vue'
-import AccountsPayableAlert from '~/components/accounts-payable/Alert.vue'
-import AccountsPayableSummary from '~/components/accounts-payable/Summary.vue'
-import AccountsPayableTopCustomers from '~/components/accounts-payable/TopCustomers.vue'
-import AccountsPayableHistoricalMovement from '~/components/accounts-payable/HistoricalMovement.vue'
-import AccountsPayableAgingGraph from '~/components/accounts-payable/AgingGraph.vue'
 const { date, currentDate } = useAppDate()
 
 const isChatOpen = ref(false)

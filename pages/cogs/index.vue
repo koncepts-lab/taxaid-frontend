@@ -12,7 +12,7 @@
         : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
         <div class="mx-auto pt-8 lg:pt-0">
 
-          <DashboardHeader 
+          <CommonDashboardHeader 
             class="mb-8"
             :title="{ en: 'COGS Analysis', ar: 'تحليل تكلفة المبيعات' }"
             :subtitle="{ en: 'COGS Breakdown by Categories', ar: 'تفصيل تكلفة المبيعات حسب الفئات' }"
@@ -77,11 +77,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import DashboardHeader from '~/components/common/DashboardHeader.vue'
-import CogsSummary from '~/components/cogs/Summary.vue'
-import CogsBreakdownByCategory from '~/components/cogs/BreakdownByCategory.vue'
-import CogsRevenueToCogsMonthly from '~/components/cogs/RevenueToCogsMonthly.vue'
-import CogsLast6Months from '~/components/cogs/Last6Months.vue'
+
 
 const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
