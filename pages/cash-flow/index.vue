@@ -16,23 +16,28 @@
                     
                     <CashFlowHeader class="mb-4 lg:mb-8" />
 
-                    <CashFlowMetrics :is-compressed="isChatOpen" />
+                    <CashFlowMetrics :is-compressed="isChatOpen" :data="projectionData" :loading="projectionLoading" />
 
                     <div class="rounded-3xl mb-4 lg:mb-8 transition-all duration-500"
                         :class="isDark ? 'bg-[#00141080] border-none' : 'bg-white border border-gray-100'"
                         :style="isDark ? { boxShadow: '0px 4px 4px 0px #00000040' } : {}">
-                        <CashFlowSummary :data="cashFlowSummaryData" :is-compressed="isChatOpen" />
+                        <CashFlowSummary 
+                            :data="summaryData" 
+                            :is-compressed="isChatOpen" 
+                            :loading="projectionLoading"
+                            :error="projectionError"
+                        />
                     </div>
 
                     <div class="mb-4 lg:mb-8">
                         <div class="h-[auto] lg:h-[420px]">
-                            <CashFlowChart />
+                            <CashFlowChart :data="projectionData" :loading="projectionLoading" />
                         </div>
                     </div>
 
                     <div>
                         <div class="h-[auto] lg:h-[420px]">
-                            <CashFlowInflowOutflow />
+                            <CashFlowInflowOutflow :data="projectionData" :loading="projectionLoading" />
                         </div>
                     </div>
 
@@ -66,17 +71,31 @@
     </NuxtLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 
 // cash-flow page
-const isChatOpen = ref(true)
+const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { summary } = useCashFlowPage()
-const cashFlowSummaryData = summary
+const { data: projectionData, loading: projectionLoading, error: projectionError } = useCashFlowProjection()
+
+// Helper to extract months from the first available category
+const months = computed(() => {
+    if (!projectionData.value) return []
+    const firstCategory = Object.values(projectionData.value)[0] as any
+    return Object.keys(firstCategory.monthly_totals)
+})
+
+const summaryData = computed(() => {
+    if (!projectionData.value) return null
+    return {
+        months: months.value,
+        categories: projectionData.value
+    }
+})
 </script>
 
 <style scoped>

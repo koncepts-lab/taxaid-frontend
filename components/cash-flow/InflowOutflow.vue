@@ -91,18 +91,38 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+
+const props = defineProps({
+  data: Object,
+  loading: Boolean
+})
+
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
 const isModalOpen = ref(false)
 
-const { inflowOutflow } = useCashFlowPage()
+const months = computed(() => {
+    if (!props.data) return []
+    const firstCategory = Object.values(props.data)[0] as any
+    return Object.keys(firstCategory.monthly_totals)
+})
 
 const chartSeries = computed(() => {
-  const dataSeries = inflowOutflow.value?.series ?? []
-  return dataSeries.map(s => ({
-    name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
-    data: s.data
-  }))
+    if (!props.data) return []
+    
+    const incoming = props.data['Incoming']
+    const outgoing = props.data['Outgoing']
+    
+    return [
+        {
+            name: currentLang.value === 'ar' ? 'التدفق الخارجي' : 'Outflow',
+            data: outgoing ? Object.values(outgoing.monthly_totals).map(v => Number((Number(v) / 1_000_000).toFixed(2))) : []
+        },
+        {
+            name: currentLang.value === 'ar' ? 'التدفق الداخلي' : 'Inflow',
+            data: incoming ? Object.values(incoming.monthly_totals).map(v => Number((Number(v) / 1_000_000).toFixed(2))) : []
+        }
+    ]
 })
 
 const chartOptions = computed(() => ({
@@ -143,9 +163,7 @@ const chartOptions = computed(() => ({
     show: false
   },
   xaxis: {
-    categories: currentLang.value === 'ar' 
-      ? (inflowOutflow.value?.categoriesAr || [])
-      : (inflowOutflow.value?.categories || []),
+    categories: months.value,
     labels: {
         style: { colors: '#FFFFFF', fontSize: '13px', fontWeight: 500 }
     },
@@ -154,10 +172,10 @@ const chartOptions = computed(() => ({
   },
   yaxis: {
     min: 0,
-    max: 5,
+    max: Math.ceil(Math.max(...chartSeries.value.flatMap(s => s.data), 1) * 1.2),
     tickAmount: 5,
     labels: {
-      formatter: (value: number) => value.toFixed(0) + 'M',
+      formatter: (value: number) => value.toFixed(1) + 'M',
       style: { colors: '#FFFFFF', fontSize: '13px', fontWeight: 500 }
     },
     axisBorder: { 
@@ -175,23 +193,10 @@ const chartOptions = computed(() => ({
     yaxis: { lines: { show: true } },
   },
   tooltip: {
-    custom: function({series, seriesIndex, dataPointIndex, w}: any) {
-      const month = w.globals.labels[dataPointIndex];
-      const inflowValue = series[1][dataPointIndex];
-      const outflowValue = series[0][dataPointIndex];
-      const netCashflow = inflowValue - outflowValue;
-      const netPercentage = ((netCashflow / outflowValue) * 100).toFixed(1);
-      
-      const inflowLabel = currentLang.value === 'ar' ? 'التدفق الداخلي: ' : 'Inflow: ';
-      const outflowLabel = currentLang.value === 'ar' ? 'التدفق الخارجي: ' : 'Outflow: ';
-      const netCashflowLabel = currentLang.value === 'ar' ? 'صافي التدفق النقدي: ' : 'Net Cashflow: ';
-      
-      return '<div class="px-4 py-3 bg-white rounded-lg shadow-xl border-none" style="min-width: 180px;">' +
-        '<div class="font-semibold mb-2 text-[#000] text-[13px]">' + month + '</div>' +
-        '<div class="text-[#000] text-[12px] mb-1">' + inflowLabel + '<span class="font-semibold">AED ' + inflowValue.toFixed(1) + 'M</span></div>' +
-        '<div class="text-[#000] text-[12px] mb-1">' + outflowLabel + '<span class="font-semibold">AED ' + outflowValue.toFixed(1) + 'M</span></div>' +
-        '<div class="text-[12px]">' + netCashflowLabel + '<span class="font-semibold text-[#00A176]">+' + netPercentage + '%</span></div>' +
-        '</div>'
+    theme: 'dark',
+    x: { show: true },
+    y: {
+      formatter: (val: number) => `AED ${val.toFixed(2)}M`
     }
   },
   responsive: [

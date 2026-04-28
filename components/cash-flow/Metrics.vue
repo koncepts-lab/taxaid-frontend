@@ -86,10 +86,13 @@
     </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { formatStandardNumber, formatInMillions } from '~/utils/formatters'
 
 const props = defineProps({
+    data: Object,
+    loading: Boolean,
     isCompressed: {
         type: Boolean,
         default: false
@@ -100,22 +103,34 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const showScenarioDropdown = ref(false)
 
-const { metrics } = useCashFlowPage()
+const cashInHandValue = computed(() => {
+    if (!props.data) return 0
+    const cat = props.data['Opening Cash Balance']
+    if (!cat) return 0
+    return Object.values(cat.monthly_totals)[0] as number
+})
 
-const cashInHand = computed(() => metrics.value?.cashInHand ?? 'AED 0.0 M')
-const cashInHandChange = computed(() => metrics.value?.cashInHandChange ?? '0.0%')
-const ar30Days = computed(() => metrics.value?.ar30Days ?? 'AED 0.0 M')
-const ar30DaysChange = computed(() => metrics.value?.ar30DaysChange ?? '0.0%')
+const ar30DaysValue = computed(() => {
+    if (!props.data) return 0
+    const cat = props.data['AR File']
+    if (!cat) return 0
+    return Object.values(cat.monthly_totals)[0] as number
+})
 
-const scenarios = computed(() => metrics.value?.scenarios ?? [
+const cashInHand = computed(() => formatInMillions(cashInHandValue.value))
+const cashInHandChange = computed(() => '0.0%') // Fallback if not in API
+const ar30Days = computed(() => formatInMillions(ar30DaysValue.value))
+const ar30DaysChange = computed(() => '0.0%') // Fallback
+
+const scenarios = [
     { en: '100% Scenario', ar: 'سيناريو 100%' },
     { en: 'Future Contract', ar: 'عقد مستقبلي' }
-])
+]
 
 const selectedScenarioKey = ref('100% Scenario')
 
 const selectedScenario = computed(() => {
-    const scenario = scenarios.value.find(s => s.en === selectedScenarioKey.value)
+    const scenario = scenarios.find(s => s.en === selectedScenarioKey.value)
     if (!scenario) return ''
     return currentLang.value === 'ar' ? scenario.ar : scenario.en
 })

@@ -238,7 +238,7 @@ const chartOptions = computed(() => ({
     }
   },
   yaxis: {
-    min: 0,
+    min: Math.floor(Math.min(...trendData.value.flatMap(s => s.data), 0)),
     max: Math.ceil(Math.max(...trendData.value.flatMap(s => s.data), 1)),
     tickAmount: 4,
     opposite: currentLang.value === 'ar',

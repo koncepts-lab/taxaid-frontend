@@ -123,9 +123,9 @@ const chartOptions = computed(() => ({
     },
     formatter: function (val) {
       if (currentLang.value === 'ar') {
-        return val.toString().replace('.', ',') + " مليون"
+        return val.toString() + " مليون"
       }
-      return val.toString().replace('.', ',') + "M"
+      return val.toString() + "M"
     }
   },
   stroke: {
