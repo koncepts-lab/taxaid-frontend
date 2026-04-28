@@ -14,27 +14,37 @@
         ]">
         <div class="mx-auto pt-0 lg:pt-0">
           
-          <IndirectExpenseHeader class="mb-4 lg:mb-8" />
+          <CommonDashboardHeader 
+            class="mb-4 lg:mb-8"
+            :title="{ en: 'Indirect Expense Analysis', ar: 'تحليل المصروفات غير المباشرة' }"
+            :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
+            :periods="customPeriods"
+            :oneclickreview="false"
+            @selected-date="handleDateChange"
+            @reload="handleReload"
+            @export-excel="handleExport('excel')"
+            @export-pdf="handleExport('pdf')"
+          />
 
           <div class="mb-4 lg:mb-8">
-            <IndirectExpenseSummary />
+            <IndirectExpenseSummary :data="breakdownData?.data" />
           </div>
 
           <div class="grid grid-cols-1 gap-8 mb-4 lg:mb-8">
             <div>
-              <IndirectExpenseTopCategories />
+              <IndirectExpenseTopCategories :data="breakdownData?.charts?.expense_by_category" />
             </div>
           </div>
 
           <div class="grid grid-cols-1 gap-8 mb-4 lg:mb-8">
             <div class="h-auto lg:h-[450px]">
-              <IndirectExpenseOverheadTrends />
+              <IndirectExpenseOverheadTrends :data="trendData" />
             </div>
           </div>
 
           <div class="grid grid-cols-1 gap-8">
             <div class="h-auto lg:h-[450px]">
-              <IndirectExpenseOverheadVsRevenue />
+              <IndirectExpenseOverheadVsRevenue :data="expenseVsRevenueData" />
             </div>
           </div>
 
@@ -69,20 +79,119 @@
 </template>
 
 <script setup>
-// indirect-expense page
-import { ref } from 'vue'
-import IndirectExpenseHeader from '~/components/indirect-expense/Header.vue'
-import IndirectExpenseSummary from '~/components/indirect-expense/Summary.vue'
-import IndirectExpenseTopCategories from '~/components/indirect-expense/TopCategories.vue'
-import IndirectExpenseOverheadTrends from '~/components/indirect-expense/OverheadTrends.vue'
-import IndirectExpenseOverheadVsRevenue from '~/components/indirect-expense/OverheadVsRevenue.vue'
+import { ref, onMounted } from 'vue'
 
 const isChatOpen = ref(true)
 const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
+const customPeriods = [
+    { en: 'Year to Date', ar: 'منذ بداية العام' },
+    { en: 'This Quarter', ar: 'هذا الربع' },
+    { en: 'Last Quarter', ar: 'الربع الماضي' },
+    { en: 'This Year', ar: 'هذه السنة' },
+    { en: 'Last Year', ar: 'السنة الماضية' },
+    { en: 'Custom Range', ar: 'نطاق مخصص' },
+    { en: 'Custom Date', ar: 'تاريخ مخصص' }
+]
 
+const { date, currentDate } = useAppDate()
+
+// Format YYYY-MM-DD to DD-MM-YYYY
+const formatDate = (dateStr) => {
+  if (!dateStr) return null
+  const [y, m, d] = dateStr.split('-')
+  return `${d}-${m}-${y}`
+}
+
+const startOfYearStr = `${date.value.getFullYear()}-01-01`
+const activeDateFrom = ref(formatDate(startOfYearStr))
+const activeDateTo = ref(formatDate(currentDate.value))
+
+// API Data
+const expenseVsRevenueData = ref([])
+const trendData = ref([])
+const breakdownData = ref(null)
+
+const fetchExpenseVsRevenue = async () => {
+  try {
+    const response = await useApi('/indirectexpenses-analysis/expense-vs-revenue/trend-chart', {
+      method: 'POST',
+      body: {
+        custom_from: activeDateFrom.value,
+        lang: currentLang.value
+      }
+    })
+    if (response && response.status === 'success') {
+      expenseVsRevenueData.value = response.data || []
+    }
+  } catch (error) {
+    console.error('Error fetching expense vs revenue data:', error)
+    expenseVsRevenueData.value = []
+  }
+}
+
+const fetchTrendData = async () => {
+  try {
+    const response = await useApi('/indirectexpenses-analysis/trend-chart', {
+      method: 'POST',
+      body: {
+        custom_from: activeDateFrom.value
+      }
+    })
+    if (response && response.status === 'success') {
+      trendData.value = response.data || []
+    }
+  } catch (error) {
+    console.error('Error fetching trend data:', error)
+    trendData.value = []
+  }
+}
+
+const fetchBreakdownData = async () => {
+  try {
+    const response = await useApi('/indirectexpenses-analysis/breakdown', {
+      method: 'POST',
+      body: {
+        range_option: 'Custom Dates',
+        custom_from: activeDateFrom.value,
+        custom_to: activeDateTo.value,
+        lang: currentLang.value
+      }
+    })
+    if (response && response.status === 'success') {
+      breakdownData.value = response
+    }
+  } catch (error) {
+    console.error('Error fetching breakdown data:', error)
+    breakdownData.value = null
+  }
+}
+
+const handleDateChange = (period) => {
+  activeDateFrom.value = period.custom_from
+  activeDateTo.value = period.custom_to
+  fetchExpenseVsRevenue()
+  fetchTrendData()
+  fetchBreakdownData()
+}
+
+const handleReload = () => {
+  fetchExpenseVsRevenue()
+  fetchTrendData()
+  fetchBreakdownData()
+}
+
+const handleExport = (type) => {
+  console.log('Export:', type)
+}
+
+onMounted(() => {
+  fetchExpenseVsRevenue()
+  fetchTrendData()
+  fetchBreakdownData()
+})
 
 </script>
 

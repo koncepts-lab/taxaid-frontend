@@ -12,17 +12,24 @@
         : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
         <div class="mx-auto pt-8 lg:pt-0">
 
-          <AccountsPayableHeader class="mb-8" />
+          <CommonDashboardHeader 
+            :title="{ en: 'Accounts Payable Analysis', ar: 'تحليل حسابات الدفع' }"
+            :subtitle="{ en: 'Comprehensive AP tracking and aging insights', ar: 'تتبع شامل لحسابات الدفع ورؤى التقادم' }" 
+            :periods="customPeriods"
+            class="mb-8" 
+            @selected-date="handleDateChange"
+            @reload="handleReload"
+          />
 
           <AccountsPayableAlert />
 
           <div class="mb-4 lg:mb-8">
-            <AccountsPayableSummary />
+            <AccountsPayableSummary :data="summaryData" :testDate="activeTestDate" />
           </div>
 
           <div class="mb-4 lg:mb-8">
             <div class="h-[600px]">
-              <AccountsPayableTopCustomers />
+              <AccountsPayableTopCustomers :data="topCustomersData" />
             </div>
           </div>
 
@@ -34,7 +41,7 @@
 
           <div>
             <div class="lg:h-[440px] h-[440px]">
-              <AccountsPayableAgingGraph />
+              <AccountsPayableAgingGraph :agingData="agingData" />
             </div>
           </div>
 
@@ -69,19 +76,106 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import ParticleBackground from '~/components/common/ParticleBackground.vue'
-import AccountsPayableHeader from '~/components/accounts-payable/Header.vue'
-import AccountsPayableAlert from '~/components/accounts-payable/Alert.vue'
-import AccountsPayableSummary from '~/components/accounts-payable/Summary.vue'
-import AccountsPayableTopCustomers from '~/components/accounts-payable/TopCustomers.vue'
-import AccountsPayableHistoricalMovement from '~/components/accounts-payable/HistoricalMovement.vue'
-import AccountsPayableAgingGraph from '~/components/accounts-payable/AgingGraph.vue'
+import { ref, onMounted, watch } from 'vue'
+const { date, currentDate } = useAppDate()
 
 const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+
+const agingData = ref({})
+const summaryData = ref([])
+const topCustomersData = ref(null)
+const activeTestDate = ref(currentDate.value)
+
+const customPeriods = [
+    { en: 'Year to Date', ar: 'منذ بداية العام' },
+    { en: 'This Quarter', ar: 'هذا الربع' },
+    { en: 'Last Quarter', ar: 'الربع الماضي' },
+    { en: 'This Year', ar: 'هذه السنة' },
+    { en: 'Last Year', ar: 'السنة الماضية' },
+    { en: 'Custom Date', ar: 'تاريخ مخصص' }
+]
+
+const fetchAgingData = async () => {
+  agingData.value = {}
+  try {
+    const response = await useApi('/ap-report/aging', {
+      params: {
+        test_date: activeTestDate.value,
+        lang: currentLang.value
+      }
+    })
+    
+    if (response && response.status === 'success') {
+      agingData.value = response.payload || {}
+    }
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error)
+    agingData.value = {}
+  }
+}
+
+const fetchSummaryData = async () => {
+  summaryData.value = []
+  try {
+    const response = await useApi('/ap-report', {
+      params: {
+        test_date: activeTestDate.value
+      }
+    })
+    
+    if (response && response.status === 'success') {
+      summaryData.value = response.data || []
+    }
+  } catch (error) {
+    console.error('Error fetching summary data:', error)
+    summaryData.value = []
+  }
+}
+
+const fetchTopCustomersData = async () => {
+  topCustomersData.value = null
+  try {
+    const response = await useApi('/ap-report/top-eight', {
+      params: {
+        test_date: activeTestDate.value
+      }
+    })
+    
+    if (response && response.status === 'success') {
+      topCustomersData.value = response.payload || null
+    }
+  } catch (error) {
+    console.error('Error fetching top customers data:', error)
+    topCustomersData.value = null
+  }
+}
+
+const handleDateChange = (period) => {
+  if (period.custom_from) {
+    const parts = period.custom_from.split('-')
+    activeTestDate.value = `${parts[2]}-${parts[1]}-${parts[0]}`
+  }
+  handleReload()
+}
+
+const handleReload = () => {
+  fetchAgingData()
+  fetchTopCustomersData()
+  fetchSummaryData()
+}
+
+watch(currentLang, () => {
+  fetchAgingData()
+})
+
+onMounted(() => {
+  fetchAgingData()
+  fetchTopCustomersData()
+  fetchSummaryData()
+})
 </script>
 
 <style scoped>
