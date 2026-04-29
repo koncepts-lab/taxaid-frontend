@@ -123,7 +123,7 @@
                                                         <span
                                                             class="absolute bottom-0 inset-x-0 flex items-center justify-center text-[10px] font-bold"
                                                             :class="isDark ? 'text-white' : 'text-black'">{{
-                                                                item.ytg_percent }}%</span>
+                                                                item.ytg_percent }}</span>
                                                     </div>
                                                 </div>
                                             </td>
@@ -209,6 +209,7 @@
 import { ref } from 'vue';
 const config = useRuntimeConfig();
 const baseUrl = config.public.apiBase;
+const currentLang = useState('currentLang', () => 'en')
 const props = defineProps({
     isOpen: Boolean,
     loading: Boolean,
@@ -216,9 +217,11 @@ const props = defineProps({
     title: String,
     isDark: Boolean,
     schedule: String,
+    activeTab: String,
     // Ensure these are passed from the parent component
     rangeOption: { type: String, default: 'Previous 3 months' },
-    customFrom: { type: String, default: '12-01-2025' }
+    customFrom: { type: String, default: '12-01-2025' },
+    customTo: { type: String, default: null }
 });
 
 defineEmits(['close']);
@@ -227,6 +230,10 @@ defineEmits(['close']);
 const expandedRows = ref([]);      // Tracks which subgroups are open
 const ledgerDataMap = ref({});     // Stores API results: { "Subgroup Name": [data] }
 const rowLoading = ref({});        // Tracks loading state per row: { "Subgroup Name": true/false }
+
+const mapRangeOption = (en) => {
+    return 'Custom Dates';
+}
 
 const getProgressColor = (progress) => {
     const val = parseFloat(progress);
@@ -249,17 +256,18 @@ const openGlReport = async (ledger) => {
     isLedgerReportOpen.value = true;
     ledgerReportLoading.value = true;
 
-    // Determine endpoint based on schedule type (e.g., S1-S5 are Balance Sheet)
-    const isBalanceSheet = props.schedule.startsWith('S');
+    // Determine endpoint based on activeTab
+    const isBalanceSheet = props.activeTab === 'balance-sheet';
     const endpoint = isBalanceSheet ? 'gl/report-bs' : 'gl/report-pl';
 
     try {
-        const response = await $fetch(`${baseUrl}/financial-analysis/${endpoint}`, {
+        const response = await useApi(`/financial-analysis/${endpoint}`, {
             method: 'POST',
             body: {
                 ledger_name: activeLedgerName.value,
-                range_option: props.rangeOption,
-                custom_from: props.customFrom
+                range_option: mapRangeOption(props.rangeOption),
+                custom_from: props.customFrom,
+                custom_to: props.customTo
             }
         });
         ledgerReportData.value = response.data;
@@ -288,14 +296,17 @@ const handleLedgerList = async (item) => {
     try {
         rowLoading.value[key] = true;
 
-        const response = await $fetch(`${baseUrl}/financial-analysis/pl-ledger-details`, {
+        const isBalanceSheet = props.activeTab === 'balance-sheet';
+        const endpoint = isBalanceSheet ? '/financial-analysis/bs-ledger-details' : '/financial-analysis/pl-ledger-details';
+
+        const response = await useApi(endpoint, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            body: {
                 subgroup: item.subgroup,
-                range_option: props.rangeOption,
-                custom_from: props.customFrom
-            })
+                range_option: mapRangeOption(props.rangeOption),
+                custom_from: props.customFrom,
+                custom_to: props.customTo
+            }
         });
 
 
