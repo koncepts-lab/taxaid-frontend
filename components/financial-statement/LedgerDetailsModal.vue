@@ -7,7 +7,7 @@
 
                 <!-- Header -->
                 <div
-                    class="flex md:flex-row flex-col justify-between md:items-center items-start py-5 m md:gap-0 gap-4 d:px-8 px-4 relative">
+                    class="flex md:flex-row flex-col justify-between md:items-center items-start py-5 md:gap-0 gap-4 md:px-8 px-4 relative z-20">
                     <div class="flex flex-col">
                         <h3 class="md:text-xl text-lg font-semibold"
                             :class="isDark ? 'text-white' : 'text-primary-750'">
@@ -35,7 +35,7 @@
                                 <div v-if="showExportDropdown"
                                     class="absolute mt-2 w-52 border rounded-xl shadow-xl z-50 py-2 px-2" :class="[
                                         isDark ? 'bg-primary-900 border-primary-100 shadow-black/50' : 'bg-white border-primary-100',
-                                        currentLang === 'ar' ? 'left-0' : 'md:right-0 left-0'
+                                        currentLang === 'ar' ? 'left-0' : 'right-0'
                                     ]">
 
                                     <button @click="triggerExport('excel')"

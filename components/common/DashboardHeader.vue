@@ -248,6 +248,8 @@ const selectPeriod = (period) => {
             startDate = startOfYear(subYears(today, 1))
             endDate = new Date(startOfYear(today).getTime() - 1)
         }
+        else if (period.en === 'Previous 3 Months') startDate = subMonths(today, 3)
+        else if (period.en === 'Previous 6 Months') startDate = subMonths(today, 6)
 
         emit('selected-date', {
             ...period,
