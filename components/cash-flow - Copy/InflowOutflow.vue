@@ -3,8 +3,7 @@
     :style="isDark ? { background: '#00141080' } : { background: 'linear-gradient(205.59deg, #005A48 8.7%, #00342A 83.81%)' }">
     <!-- Header Area -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center flex-shrink-0">
-      
-       <!-- Title -->
+      <!-- Title -->
       <div class="mb-4 lg:mb-2">
         <h2 class="text-[16px] font-regular text-white">{{ currentLang === 'ar' ? 'التدفق الداخلي مقابل التدفق الخارجي' : 'Inflow vs Outflow' }}</h2>
         <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white' : 'text-[#FFFFFF5C]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
@@ -29,7 +28,7 @@
                  class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
                />
                <img 
-                 :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-white.svg'" 
+                 src="/images/icons/expand-white.svg"
                  alt="Expand" 
                  class="w-6 h-6 cursor-pointer hover:opacity-100 hidden lg:block"
                  @click="isModalOpen = true"
@@ -91,17 +90,28 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+
+const props = defineProps({
+  data: { type: Object, default: () => ({}) },
+  loading: Boolean
+})
+
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
 const isModalOpen = ref(false)
 
-const { inflowOutflow } = useCashFlowPage()
+// data.json shape: { categories, categoriesAr, series: [{ name, nameAr, data }] }
+const months = computed(() =>
+  currentLang.value === 'ar'
+    ? (props.data?.categoriesAr ?? props.data?.categories ?? [])
+    : (props.data?.categories ?? [])
+)
 
 const chartSeries = computed(() => {
-  const dataSeries = inflowOutflow.value?.series ?? []
-  return dataSeries.map(s => ({
-    name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
-    data: s.data
+  if (!props.data?.series?.length) return []
+  return props.data.series.map((s: any) => ({
+    name: currentLang.value === 'ar' ? (s.nameAr ?? s.name) : s.name,
+    data: s.data ?? []
   }))
 })
 
@@ -120,9 +130,7 @@ const chartOptions = computed(() => ({
       borderRadius: 5,
       borderRadiusApplication: 'end',
       borderRadiusWhenStacked: 'last',
-      dataLabels: {
-        position: 'top'
-      }
+      dataLabels: { position: 'top' }
     }
   },
   dataLabels: {
@@ -133,34 +141,26 @@ const chartOptions = computed(() => ({
       colors: ['#00B793CF'],
       fontWeight: 400
     },
-    formatter: function (val: number) {
-      return val.toFixed(1) + 'M'
-    }
+    formatter: (val: number) => val.toFixed(1) + 'M'
   },
   legend: { show: false },
   colors: ['#FF7B5F', '#00FFBC'],
-  stroke: {
-    show: false
-  },
+  stroke: { show: false },
   xaxis: {
-    categories: currentLang.value === 'ar' 
-      ? (inflowOutflow.value?.categoriesAr || [])
-      : (inflowOutflow.value?.categories || []),
-    labels: {
-        style: { colors: '#FFFFFF', fontSize: '13px', fontWeight: 500 }
-    },
+    categories: months.value,
+    labels: { style: { colors: '#FFFFFF', fontSize: '13px', fontWeight: 500 } },
     axisBorder: { show: false },
     axisTicks: { show: false }
   },
   yaxis: {
     min: 0,
-    max: 5,
+    max: Math.ceil(Math.max(...chartSeries.value.flatMap((s: any) => s.data), 1) * 1.2),
     tickAmount: 5,
     labels: {
-      formatter: (value: number) => value.toFixed(0) + 'M',
+      formatter: (value: number) => value.toFixed(1) + 'M',
       style: { colors: '#FFFFFF', fontSize: '13px', fontWeight: 500 }
     },
-    axisBorder: { 
+    axisBorder: {
       show: true,
       color: 'rgba(255, 255, 255, 0.3)',
       width: 1,
@@ -172,61 +172,25 @@ const chartOptions = computed(() => ({
     borderColor: 'rgba(255, 255, 255, 0.15)',
     strokeDashArray: 0,
     xaxis: { lines: { show: false } },
-    yaxis: { lines: { show: true } },
+    yaxis: { lines: { show: true } }
   },
   tooltip: {
-    custom: function({series, seriesIndex, dataPointIndex, w}: any) {
-      const month = w.globals.labels[dataPointIndex];
-      const inflowValue = series[1][dataPointIndex];
-      const outflowValue = series[0][dataPointIndex];
-      const netCashflow = inflowValue - outflowValue;
-      const netPercentage = ((netCashflow / outflowValue) * 100).toFixed(1);
-      
-      const inflowLabel = currentLang.value === 'ar' ? 'التدفق الداخلي: ' : 'Inflow: ';
-      const outflowLabel = currentLang.value === 'ar' ? 'التدفق الخارجي: ' : 'Outflow: ';
-      const netCashflowLabel = currentLang.value === 'ar' ? 'صافي التدفق النقدي: ' : 'Net Cashflow: ';
-      
-      return '<div class="px-4 py-3 bg-white rounded-lg shadow-xl border-none" style="min-width: 180px;">' +
-        '<div class="font-semibold mb-2 text-[#000] text-[13px]">' + month + '</div>' +
-        '<div class="text-[#000] text-[12px] mb-1">' + inflowLabel + '<span class="font-semibold">AED ' + inflowValue.toFixed(1) + 'M</span></div>' +
-        '<div class="text-[#000] text-[12px] mb-1">' + outflowLabel + '<span class="font-semibold">AED ' + outflowValue.toFixed(1) + 'M</span></div>' +
-        '<div class="text-[12px]">' + netCashflowLabel + '<span class="font-semibold text-[#00A176]">+' + netPercentage + '%</span></div>' +
-        '</div>'
-    }
+    theme: 'dark',
+    x: { show: true },
+    y: { formatter: (val: number) => `AED ${val.toFixed(2)}M` }
   },
   responsive: [
     {
       breakpoint: 640,
       options: {
-        plotOptions: {
-          bar: {
-            columnWidth: '45%',
-            borderRadius: 4
-          }
-        },
-        xaxis: {
-          labels: {
-            style: {
-              fontSize: '11px',
-              colors: '#FFFFFF'
-            }
-          }
-        },
+        plotOptions: { bar: { columnWidth: '45%', borderRadius: 4 } },
+        xaxis: { labels: { style: { fontSize: '11px', colors: '#FFFFFF' } } },
         yaxis: {
           labels: {
             formatter: (value: number) => Math.abs(value).toFixed(0) + 'M',
-            style: {
-              fontSize: '11px',
-              colors: '#FFFFFF'
-            }
+            style: { fontSize: '11px', colors: '#FFFFFF' }
           },
-          axisBorder: {
-            show: true,
-            color: 'rgba(255, 255, 255, 0.3)',
-            width: 1,
-            offsetX: -2,
-            offsetY: -2
-          }
+          axisBorder: { show: true, color: 'rgba(255, 255, 255, 0.3)', width: 1, offsetX: -2, offsetY: -2 }
         }
       }
     }

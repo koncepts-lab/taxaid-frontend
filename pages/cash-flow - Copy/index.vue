@@ -16,23 +16,28 @@
                     
                     <CashFlowHeader class="mb-4 lg:mb-8" />
 
-                    <CashFlowMetrics :is-compressed="isChatOpen" />
+                    <CashFlowMetrics :is-compressed="isChatOpen" :metrics="metrics" :loading="loading" />
 
                     <div class="rounded-3xl mb-4 lg:mb-8 transition-all duration-500"
                         :class="isDark ? 'bg-[#00141080] border-none' : 'bg-white border border-gray-100'"
                         :style="isDark ? { boxShadow: '0px 4px 4px 0px #00000040' } : {}">
-                        <CashFlowSummary :data="cashFlowSummaryData" :is-compressed="isChatOpen" />
+                        <CashFlowSummary 
+                            :data="summary" 
+                            :is-compressed="isChatOpen" 
+                            :loading="loading"
+                            :error="error"
+                        />
                     </div>
 
                     <div class="mb-4 lg:mb-8">
                         <div class="h-[auto] lg:h-[420px]">
-                            <CashFlowChart />
+                            <CashFlowChart :data="scenarioChart" :loading="loading" />
                         </div>
                     </div>
 
                     <div>
                         <div class="h-[auto] lg:h-[420px]">
-                            <CashFlowInflowOutflow />
+                            <CashFlowInflowOutflow :data="inflowOutflow" :loading="loading" />
                         </div>
                     </div>
 
@@ -66,8 +71,9 @@
     </NuxtLayout>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useCashFlowPage } from '~/composables/useWebsiteData'
 
 // cash-flow page
 const isChatOpen = ref(false)
@@ -75,8 +81,7 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { summary } = useCashFlowPage()
-const cashFlowSummaryData = summary
+const { loading, error, summary, metrics, scenarioChart, inflowOutflow } = useCashFlowPage()
 </script>
 
 <style scoped>

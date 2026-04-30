@@ -16,76 +16,145 @@
             </div>
         </div>
 
-        <div class="w-full overflow-x-auto no-scrollbar relative min-h-[400px]">
-            <!-- Loading Overlay -->
-            <div v-if="loading" class="absolute inset-0 z-20 flex items-center justify-center bg-white/50 dark:bg-black/10 backdrop-blur-[2px]">
-                <div class="w-10 h-10 border-4 border-[#0BD9A4] border-t-transparent rounded-full animate-spin"></div>
-            </div>
+        <div class="w-full overflow-x-auto no-scrollbar">
+            <table class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px]">
+            <thead class="text-white" :class="isDark ? 'bg-[#002118]' : 'bg-[#008A6F]'">
+                <tr class="transition-all duration-500">
+                    <th :class="isCompressed ? 'px-8 py-4' : 'px-8 py-5'" class="font-medium text-[14px]">
+                        {{ currentLang === 'ar' ? 'التدفقات النقدية' : 'Cashflow' }}
+                    </th>
+                    <th v-for="month in months" :key="month" :class="isCompressed ? 'px-4 py-4' : 'px-6 py-5'" class="font-medium text-right rtl:text-left text-[14px]">
+                        {{ month }}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Opening Balance Row -->
+                <tr :class="isDark ? 'bg-transparent border-b border-white/10' : 'bg-white border-b border-gray-100'" class="transition-all duration-500">
+                    <td :class="[isCompressed ? 'px-8 py-4' : 'px-8 py-5', isDark ? 'text-[#00C9A2]' : 'text-[#000]', 'font-medium text-[14px]']">
+                        {{ currentLang === 'ar' ? 'الرصيد الافتتاحي' : 'Opening Balance' }}
+                    </td>
+                    <td v-for="(value, idx) in openingBalance" :key="idx" :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-[#00C9A2]' : 'text-[#000]', 'text-right rtl:text-left font-medium text-[14px]']">
+                        {{ value }}
+                    </td>
+                </tr>
 
-            <!-- Error State -->
-            <div v-else-if="error" class="absolute inset-0 z-20 flex items-center justify-center bg-red-50/10 backdrop-blur-[2px]">
-                <p class="text-xs font-medium text-red-600">{{ currentLang === 'ar' ? 'فشل تحميل البيانات.' : 'Failed to load data.' }}</p>
-            </div>
+                <!-- Incoming Row (Expandable) -->
+                <tr :class="isDark ? 'bg-transparent border-b border-white/10' : 'bg-white border-b border-gray-100'" class="transition-all duration-500">
+                    <td :class="[isCompressed ? 'px-8 py-4' : 'px-8 py-5', isDark ? 'text-white' : 'text-[#000]', 'font-medium text-[14px]']">
+                        <div class="flex items-center gap-2 cursor-pointer" @click="toggleIncoming">
+                            {{ currentLang === 'ar' ? 'الواردة' : 'Incoming' }}
+                            <svg class="w-2.5 h-2.5 transition-transform duration-300" :class="[showIncoming ? 'rotate-180' : '']" viewBox="0 0 10 6" fill="currentColor">
+                                <path d="M5 6L0 0H10L5 6Z" />
+                            </svg>
+                        </div>
+                    </td>
+                    <td v-for="(value, idx) in incoming" :key="idx" :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white/80' : 'text-[#000]', 'text-right rtl:text-left font-medium text-[14px]']">
+                        {{ value }}
+                    </td>
+                </tr>
 
-            <table v-if="!loading && !error" class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px]">
-                <thead class="text-white" :class="isDark ? 'bg-[#002118]' : 'bg-[#008A6F]'">
-                    <tr class="transition-all duration-500">
-                        <th :class="isCompressed ? 'px-8 py-4' : 'px-8 py-5'" class="font-medium text-[14px]">
-                            {{ currentLang === 'ar' ? 'التدفقات النقدية' : 'Cashflow' }}
-                        </th>
-                        <th v-for="month in months" :key="month" :class="isCompressed ? 'px-4 py-4' : 'px-6 py-5'" class="font-medium text-right rtl:text-left text-[14px]">
-                            {{ month }}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template v-for="(catData, catName) in categories" :key="catName">
-                        <!-- Main Category Row -->
-                        <tr :class="[
-                            isDark ? 'bg-transparent border-b border-white/10' : 'bg-white border-b border-gray-100',
-                            catName === 'Closing Balance' ? (isDark ? 'bg-[#1F6F4D] text-white' : 'bg-[#68E4C4] text-black') : '',
-                            catName === 'Net Cash Flow' ? (isDark ? 'bg-[#186554] text-white' : 'bg-[#51FFD980] text-black') : ''
-                        ]" class="transition-all duration-500">
-                            <td :class="[
-                                isCompressed ? 'px-8 py-4' : 'px-8 py-5', 
-                                isDark && catName !== 'Closing Balance' && catName !== 'Net Cash Flow' ? 'text-white' : 'text-[#000]', 
-                                'font-medium text-[14px]'
-                            ]">
-                                <div class="flex items-center gap-2" :class="catData.customers?.length ? 'cursor-pointer' : ''" @click="catData.customers?.length ? toggleCategory(catName) : null">
-                                    {{ catName }}
-                                    <svg v-if="catData.customers?.length" class="w-2.5 h-2.5 transition-transform duration-300" :class="[expandedCategories.has(catName) ? 'rotate-180' : '']" viewBox="0 0 10 6" fill="currentColor">
-                                        <path d="M5 6L0 0H10L5 6Z" />
-                                    </svg>
-                                </div>
-                            </td>
-                            <td v-for="(val, month) in catData.monthly_totals" :key="month" :class="[
-                                isCompressed ? 'px-4' : 'px-6', 
-                                isDark && catName !== 'Closing Balance' && catName !== 'Net Cash Flow' ? 'text-white/80' : 'text-[#000]', 
-                                'text-right rtl:text-left font-medium text-[14px]'
-                            ]">
-                                {{ formatStandardNumber(val) }}
-                            </td>
-                        </tr>
+                <!-- Incoming Details Table (Expandable) -->
+                <tr v-if="showIncoming" :class="isDark ? 'bg-[#002B21]/30' : 'bg-transparent'">
+                    <td colspan="7" class="p-0">
+                        <div class="px-0 py-0 overflow-hidden">
+                            <table class="w-full border-collapse">
+                                <thead :class="isDark ? 'bg-[#04C18F5E]' : 'bg-[#A1E2D2]'">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left rtl:text-right font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'رقم الفاتورة' : 'Invoice No.' }}</th>
+                                        <th class="px-6 py-3 text-left rtl:text-right font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'اسم العميل' : 'Customer Name' }}</th>
+                                        <th class="px-6 py-3 text-left rtl:text-right font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'النوع' : 'Type' }}</th>
+                                        <th class="px-6 py-3 text-right rtl:text-left font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'المبلغ' : 'Amount' }}</th>
+                                        <th class="px-6 py-3 text-center font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الحالة' : 'Status' }}</th>
+                                        <th class="px-6 py-3 text-right rtl:text-left font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'تاريخ الانتهاء' : 'Exp. Date' }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody :class="isDark ? 'bg-[#04C18F33]' : ''">
+                                    <tr v-for="(invoice, idx) in invoices" :key="idx" :class="isDark ? 'border-b border-white/10' : 'border-b border-gray-200 bg-[#E8F9F5]'">
+                                        <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.number }}</td>
+                                        <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.customer }}</td>
+                                        <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.type }}</td>
+                                        <td class="px-6 py-3 text-right rtl:text-left text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.amount }}</td>
+                                        <td class="px-6 py-3 text-center">
+                                            <span class="px-3 py-1 rounded-full text-[12px] font-medium inline-block" :class="getStatusClass(invoice.status)">{{ invoice.status }}</span>
+                                        </td>
+                                        <td class="px-6 py-3 text-right rtl:text-left text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.expDate }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
 
-                        <!-- Customer Rows (Expanded) -->
-                        <template v-if="expandedCategories.has(catName)">
-                            <tr v-for="customer in catData.customers" :key="customer.name" 
-                                :class="isDark ? 'bg-[#04C18F1A]' : 'bg-[#F0FAF8]'"
-                                class="border-b border-white/5 cursor-pointer hover:bg-[#0BD9A420] transition-colors"
-                                @click="openCustomerDetail(customer.name, catName)"
-                            >
-                                <td :class="[isCompressed ? 'px-12 py-3' : 'px-12 py-4', 'text-white/60 text-[13px] font-medium']">
-                                    {{ customer.name }}
-                                </td>
-                                <td v-for="(val, month) in customer.values" :key="month" class="px-6 text-right rtl:text-left text-white/50 text-[13px] font-medium">
-                                    {{ formatStandardNumber(val) }}
-                                </td>
-                            </tr>
-                        </template>
-                    </template>
-                </tbody>
-            </table>
-        </div>
+                <!-- Outgoing Row (Expandable) -->
+                <tr :class="isDark ? 'bg-transparent border-b border-white/10' : 'bg-white border-b border-gray-100'" class="transition-all duration-500">
+                    <td :class="[isCompressed ? 'px-8 py-4' : 'px-8 py-5', isDark ? 'text-white' : 'text-[#000]', 'font-medium text-[14px]']">
+                        <div class="flex items-center gap-2 cursor-pointer" @click="toggleOutgoing">
+                            {{ currentLang === 'ar' ? 'الصادرة' : 'Outgoing' }}
+                            <svg class="w-2.5 h-2.5 transition-transform duration-300" :class="[showOutgoing ? 'rotate-180' : '']" viewBox="0 0 10 6" fill="currentColor">
+                                <path d="M5 6L0 0H10L5 6Z" />
+                            </svg>
+                        </div>
+                    </td>
+                    <td v-for="(value, idx) in outgoing" :key="idx" :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white/80' : 'text-[#000]', 'text-right rtl:text-left font-medium text-[14px]']">
+                        {{ value }}
+                    </td>
+                </tr>
+
+                <!-- Outgoing Details Table (Expandable) -->
+                <tr v-if="showOutgoing" :class="isDark ? 'bg-[#002B21]/30' : 'bg-transparent'">
+                    <td colspan="7" class="p-0">
+                        <div class="px-0 py-0 overflow-hidden">
+                            <table class="w-full border-collapse">
+                                <thead :class="isDark ? 'bg-[#04C18F5E]' : 'bg-[#A1E2D2]'">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left rtl:text-right font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'رقم الفاتورة' : 'Invoice No.' }}</th>
+                                        <th class="px-6 py-3 text-left rtl:text-right font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'اسم العميل' : 'Customer Name' }}</th>
+                                        <th class="px-6 py-3 text-left rtl:text-right font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'النوع' : 'Type' }}</th>
+                                        <th class="px-6 py-3 text-right rtl:text-left font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'المبلغ' : 'Amount' }}</th>
+                                        <th class="px-6 py-3 text-center font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الحالة' : 'Status' }}</th>
+                                        <th class="px-6 py-3 text-right rtl:text-left font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'تاريخ الانتهاء' : 'Exp. Date' }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody :class="isDark ? 'bg-[#04C18F33]' : ''">
+                                    <tr v-for="(invoice, idx) in invoices" :key="idx" :class="isDark ? 'border-b border-white/10' : 'border-b border-gray-200 bg-[#E8F9F5]'">
+                                        <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.number }}</td>
+                                        <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.customer }}</td>
+                                        <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.type }}</td>
+                                        <td class="px-6 py-3 text-right rtl:text-left text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.amount }}</td>
+                                        <td class="px-6 py-3 text-center">
+                                            <span class="px-3 py-1 rounded-full text-[12px] font-medium inline-block" :class="getStatusClass(invoice.status)">{{ invoice.status }}</span>
+                                        </td>
+                                        <td class="px-6 py-3 text-right rtl:text-left text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.expDate }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Net Movements Row -->
+                <tr :class="isDark ? 'bg-[#186554] text-white' : 'bg-[#51FFD980] text-black'" class="transition-all duration-500">
+                    <td :class="[isCompressed ? 'px-8 py-4' : 'px-8 py-5', 'font-medium text-[14px]']">
+                        {{ currentLang === 'ar' ? 'صافي الحركات' : 'Net Movements' }}
+                    </td>
+                    <td v-for="(value, idx) in netMovements" :key="idx" :class="[isCompressed ? 'px-4' : 'px-6', 'text-right rtl:text-left font-medium text-[14px]']">
+                        {{ value }}
+                    </td>
+                </tr>
+
+                <!-- Closing Row -->
+                <tr :class="isDark ? 'bg-[#1F6F4D] text-white' : 'bg-[#68E4C4] text-black'" class="transition-all duration-500">
+                    <td :class="[isCompressed ? 'px-8 py-4' : 'px-8 py-5', isDark ? 'text-white' : 'text-[#000]', 'font-medium text-[14px]']">
+                        {{ currentLang === 'ar' ? 'الإغلاق' : 'Closing' }}
+                    </td>
+                    <td v-for="(value, idx) in closing" :key="idx" :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white' : 'text-[#000]', 'text-right rtl:text-left font-medium text-[14px]']">
+                        {{ value }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
     <!-- Modal -->
@@ -95,9 +164,8 @@
                 <!-- Modal Header -->
                 <div class="flex justify-between items-center py-6 px-8 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
                     <div class="flex flex-col">
-                        <h2 class="text-lg font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
-                            {{ currentLang === 'ar' ? 'تفاصيل العميل' : 'Customer Projection Detail' }} - {{ selectedCustomer }}
-                        </h2>
+                        <h2 class="text-lg font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص التدفقات النقدية' : 'Cashflow Summary' }}</h2>
+                        <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
                     </div>
                     <button @click="isModalOpen = false" class="p-2 rounded-full transition-colors flex-shrink-0" :class="isDark ? 'hover:bg-white/10' : 'hover:bg-black/5'">
                         <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5" :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
@@ -105,37 +173,108 @@
                 </div>
 
                 <!-- Modal Body -->
-                <div class="flex-1 overflow-auto p-8 relative min-h-[300px]" :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
-                    <!-- Loading Overlay -->
-                    <div v-if="customerLoading" class="absolute inset-0 z-20 flex items-center justify-center bg-white/50 dark:bg-black/10 backdrop-blur-[2px]">
-                        <div class="w-10 h-10 border-4 border-[#0BD9A4] border-t-transparent rounded-full animate-spin"></div>
-                    </div>
+                <div class="flex-1 overflow-auto" :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
+                    <table class="w-full text-left rtl:text-right border-collapse">
+                        <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002118]' : 'bg-[#008A6F]'">
+                            <tr>
+                                <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'التدفقات النقدية' : 'Cashflow' }}</th>
+                                <th v-for="month in months" :key="month" class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ month }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Opening Balance -->
+                            <tr :class="isDark ? 'bg-transparent border-b border-white/10' : 'bg-white border-b border-gray-100'">
+                                <td class="px-8 py-5 font-medium text-[14px]" :class="isDark ? 'text-[#00C9A2]' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الرصيد الافتتاحي' : 'Opening Balance' }}</td>
+                                <td v-for="(value, idx) in openingBalance" :key="idx" class="px-6 text-right rtl:text-left font-medium text-[14px]" :class="isDark ? 'text-[#00C9A2]' : 'text-[#000]'">{{ value }}</td>
+                            </tr>
 
-                    <div v-else-if="customerDetail" class="space-y-8">
-                        <div v-for="(monthData, monthName) in customerDetail" :key="monthName" class="space-y-4">
-                            <h3 class="text-md font-bold" :class="isDark ? 'text-white' : 'text-[#013e32]'">{{ monthName }} (Total: {{ formatStandardNumber(monthData.total) }})</h3>
-                            
-                            <table v-if="monthData.invoices.length" class="w-full border-collapse">
-                                <thead :class="isDark ? 'bg-[#002118]' : 'bg-[#008A6F]'" class="text-white">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left rtl:text-right font-medium text-[13px]">{{ currentLang === 'ar' ? 'رقم الفاتورة' : 'Invoice No.' }}</th>
-                                        <th class="px-6 py-3 text-left rtl:text-right font-medium text-[13px]">{{ currentLang === 'ar' ? 'الوصف' : 'Description' }}</th>
-                                        <th class="px-6 py-3 text-right rtl:text-left font-medium text-[13px]">{{ currentLang === 'ar' ? 'المبلغ' : 'Amount' }}</th>
-                                        <th class="px-6 py-3 text-right rtl:text-left font-medium text-[13px]">{{ currentLang === 'ar' ? 'تاريخ الاستحقاق' : 'Due Date' }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="(inv, idx) in monthData.invoices" :key="idx" :class="isDark ? 'border-b border-white/10' : 'border-b border-gray-100'">
-                                        <td class="px-6 py-3 text-[13px]" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ inv.invoice_no }}</td>
-                                        <td class="px-6 py-3 text-[13px]" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ inv.description }}</td>
-                                        <td class="px-6 py-3 text-right rtl:text-left text-[13px]" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatStandardNumber(inv.amount) }}</td>
-                                        <td class="px-6 py-3 text-right rtl:text-left text-[13px]" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ inv.due_date }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <p v-else class="text-sm text-gray-500 italic">{{ currentLang === 'ar' ? 'لا توجد فواتير لهذا الشهر.' : 'No invoices for this month.' }}</p>
-                        </div>
-                    </div>
+                            <!-- Incoming Row -->
+                            <tr :class="isDark ? 'bg-transparent border-b border-white/10' : 'bg-white border-b border-gray-100'">
+                                <td class="px-8 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#000]'">
+                                    <div class="flex items-center gap-2 cursor-pointer" @click="toggleIncoming">
+                                        {{ currentLang === 'ar' ? 'الواردة' : 'Incoming' }}
+                                        <svg class="w-2.5 h-2.5 transition-transform duration-300" :class="[showIncoming ? 'rotate-180' : '']" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10L5 6Z" /></svg>
+                                    </div>
+                                </td>
+                                <td v-for="(value, idx) in incoming" :key="idx" class="px-6 text-right rtl:text-left font-medium text-[14px]" :class="isDark ? 'text-white/80' : 'text-[#000]'">{{ value }}</td>
+                            </tr>
+                            <tr v-if="showIncoming" :class="isDark ? 'bg-[#002B21]/30' : 'bg-transparent'">
+                                <td colspan="7" class="p-0">
+                                    <table class="w-full border-collapse">
+                                        <thead :class="isDark ? 'bg-[#04C18F5E]' : 'bg-[#A1E2D2]'">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left rtl:text-right font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'رقم الفاتورة' : 'Invoice No.' }}</th>
+                                                <th class="px-6 py-3 text-left rtl:text-right font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'اسم العميل' : 'Customer Name' }}</th>
+                                                <th class="px-6 py-3 text-left rtl:text-right font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'النوع' : 'Type' }}</th>
+                                                <th class="px-6 py-3 text-right rtl:text-left font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'المبلغ' : 'Amount' }}</th>
+                                                <th class="px-6 py-3 text-center font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الحالة' : 'Status' }}</th>
+                                                <th class="px-6 py-3 text-right rtl:text-left font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'تاريخ الانتهاء' : 'Exp. Date' }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody :class="isDark ? 'bg-[#04C18F33]' : ''">
+                                            <tr v-for="(invoice, idx) in invoices" :key="idx" :class="isDark ? 'border-b border-white/10' : 'border-b border-gray-200 bg-[#E8F9F5]'">
+                                                <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.number }}</td>
+                                                <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.customer }}</td>
+                                                <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.type }}</td>
+                                                <td class="px-6 py-3 text-right rtl:text-left text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.amount }}</td>
+                                                <td class="px-6 py-3 text-center"><span class="px-3 py-1 rounded-full text-[12px] font-medium inline-block" :class="getStatusClass(invoice.status)">{{ invoice.status }}</span></td>
+                                                <td class="px-6 py-3 text-right rtl:text-left text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.expDate }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+
+                            <!-- Outgoing Row -->
+                            <tr :class="isDark ? 'bg-transparent border-b border-white/10' : 'bg-white border-b border-gray-100'">
+                                <td class="px-8 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#000]'">
+                                    <div class="flex items-center gap-2 cursor-pointer" @click="toggleOutgoing">
+                                        {{ currentLang === 'ar' ? 'الصادرة' : 'Outgoing' }}
+                                        <svg class="w-2.5 h-2.5 transition-transform duration-300" :class="[showOutgoing ? 'rotate-180' : '']" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10L5 6Z" /></svg>
+                                    </div>
+                                </td>
+                                <td v-for="(value, idx) in outgoing" :key="idx" class="px-6 text-right rtl:text-left font-medium text-[14px]" :class="isDark ? 'text-white/80' : 'text-[#000]'">{{ value }}</td>
+                            </tr>
+                            <tr v-if="showOutgoing" :class="isDark ? 'bg-[#002B21]/30' : 'bg-transparent'">
+                                <td colspan="7" class="p-0">
+                                    <table class="w-full border-collapse">
+                                        <thead :class="isDark ? 'bg-[#04C18F5E]' : 'bg-[#A1E2D2]'">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left rtl:text-right font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'رقم الفاتورة' : 'Invoice No.' }}</th>
+                                                <th class="px-6 py-3 text-left rtl:text-right font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'اسم العميل' : 'Customer Name' }}</th>
+                                                <th class="px-6 py-3 text-left rtl:text-right font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'النوع' : 'Type' }}</th>
+                                                <th class="px-6 py-3 text-right rtl:text-left font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'المبلغ' : 'Amount' }}</th>
+                                                <th class="px-6 py-3 text-center font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الحالة' : 'Status' }}</th>
+                                                <th class="px-6 py-3 text-right rtl:text-left font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'تاريخ الانتهاء' : 'Exp. Date' }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody :class="isDark ? 'bg-[#04C18F33]' : ''">
+                                            <tr v-for="(invoice, idx) in invoices" :key="idx" :class="isDark ? 'border-b border-white/10' : 'border-b border-gray-200 bg-[#E8F9F5]'">
+                                                <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.number }}</td>
+                                                <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.customer }}</td>
+                                                <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.type }}</td>
+                                                <td class="px-6 py-3 text-right rtl:text-left text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.amount }}</td>
+                                                <td class="px-6 py-3 text-center"><span class="px-3 py-1 rounded-full text-[12px] font-medium inline-block" :class="getStatusClass(invoice.status)">{{ invoice.status }}</span></td>
+                                                <td class="px-6 py-3 text-right rtl:text-left text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.expDate }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+
+                            <!-- Net Movements -->
+                            <tr :class="isDark ? 'bg-[#186554] text-white' : 'bg-[#51FFD980] text-black'">
+                                <td class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'صافي الحركات' : 'Net Movements' }}</td>
+                                <td v-for="(value, idx) in netMovements" :key="idx" class="px-6 text-right rtl:text-left font-medium text-[14px]">{{ value }}</td>
+                            </tr>
+
+                            <!-- Closing -->
+                            <tr :class="isDark ? 'bg-[#1F6F4D] text-white' : 'bg-[#68E4C4] text-black'">
+                                <td class="px-8 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الإغلاق' : 'Closing' }}</td>
+                                <td v-for="(value, idx) in closing" :key="idx" class="px-6 text-right rtl:text-left font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#000]'">{{ value }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -143,52 +282,25 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { formatStandardNumber } from '~/utils/formatters'
-import { useCustomerProjection } from '~/composables/useCustomerProjection'
+import { ref } from 'vue'
 
 const props = defineProps({
-    data: Object,
-    isCompressed: Boolean,
-    loading: Boolean,
-    error: [String, Object]
+    isCompressed: Boolean
 })
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
 const isModalOpen = ref(false)
-const expandedCategories = ref(new Set())
+const showIncoming = ref(true)
+const showOutgoing = ref(false)
 
-const months = computed(() => props.data?.months || [])
-const categories = computed(() => props.data?.categories || {})
-
-const toggleCategory = (categoryName) => {
-    if (expandedCategories.value.has(categoryName)) {
-        expandedCategories.value.delete(categoryName)
-    } else {
-        expandedCategories.value.add(categoryName)
-    }
-}
-
-// Customer Detail State
-const { fetchCustomerDetail, data: customerDetail, loading: customerLoading } = useCustomerProjection()
-const selectedCustomer = ref(null)
-
-const openCustomerDetail = async (customerName, categoryKey) => {
-    selectedCustomer.value = customerName
-    isModalOpen.value = true
-    
-    // Determine type (AR, AP, etc.)
-    const type = categoryKey.includes('AR') ? 'AR' : categoryKey.includes('AP') ? 'AP' : 'Other'
-    
-    await fetchCustomerDetail({
-        date: '2025-06-30', // Fallback or dynamic
-        period: 6,
-        customer: customerName,
-        type: type
-    })
-}
+const months = ['Sept 25', 'Oct 25', 'Nov 25', 'Dec 25', 'Jan 26', 'Feb 26']
+const openingBalance = ['1,800,000', '2,100,000', '2,400,000', '2,800,000', '3,000,000', '2,700,000']
+const incoming = ['1,800,000', '2,100,000', '2,400,000', '2,800,000', '3,000,000', '2,700,000']
+const outgoing = ['1,800,000', '2,100,000', '2,400,000', '2,800,000', '3,000,000', '2,700,000']
+const netMovements = ['1,800,000', '2,100,000', '2,400,000', '2,800,000', '3,000,000', '2,700,000']
+const closing = ['2,100,000', '2,400,000', '2,800,000', '3,300,000', '2,700,000', '3,100,000']
 
 const invoices = [
     { number: 'INV-1015', customer: 'Emirates Trading LLC', type: 'Invoice', amount: '12,000', status: 'Confirmed', expDate: 'Oct 5, 2025' },

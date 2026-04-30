@@ -91,19 +91,32 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+
+const props = defineProps({
+  data: { type: Object, default: () => ({}) },
+  loading: Boolean
+})
+
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
 const isModalOpen = ref(false)
 
-const { scenarioChart } = useCashFlowPage()
+// data.json shape: { categories: [...], categoriesAr: [...], series: [{ name, nameAr, data: [] }] }
+const months = computed(() =>
+  currentLang.value === 'ar'
+    ? (props.data?.categoriesAr ?? props.data?.categories ?? [])
+    : (props.data?.categories ?? [])
+)
 
 const chartSeries = computed(() => {
-  const dataSeries = scenarioChart.value?.series ?? []
-  return dataSeries.map(s => ({
-    name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
-    data: s.data
+  if (!props.data?.series?.length) return []
+  return props.data.series.map((s: any) => ({
+    name: currentLang.value === 'ar' ? (s.nameAr ?? s.name) : s.name,
+    data: s.data ?? []
   }))
 })
+
+const allValues = computed(() => chartSeries.value.flatMap((s: any) => s.data))
 
 const chartOptions = computed(() => ({
   chart: {
@@ -115,104 +128,45 @@ const chartOptions = computed(() => ({
   },
   legend: { show: false },
   colors: ['#00FFBC', '#FF7B5F'],
-  fill: {
-    type: 'solid',
-    opacity: 1
-  },
+  fill: { type: 'solid', opacity: 1 },
   dataLabels: { enabled: false },
-  stroke: {
-    curve: 'smooth',
-    width: 3
-  },
+  stroke: { curve: 'smooth', width: 3 },
   xaxis: {
-    categories: currentLang.value === 'ar' 
-      ? (scenarioChart.value?.categoriesAr || [])
-      : (scenarioChart.value?.categories || []),
-    labels: {
-        style: { colors: '#FFFFFF', fontSize: '13px', fontWeight: 500 }
-    },
+    categories: months.value,
+    labels: { style: { colors: '#FFFFFF', fontSize: '13px', fontWeight: 500 } },
     axisBorder: { show: false },
     axisTicks: { show: false },
     tooltip: { enabled: false }
   },
   yaxis: {
-    min: 0,
-    max: 4.5,
+    min: Math.floor(Math.min(...allValues.value, 0)),
+    max: Math.ceil(Math.max(...allValues.value, 1)),
     tickAmount: 4,
     labels: {
-      formatter: (value: number) => value.toFixed(0) + 'M',
+      formatter: (value: number) => value.toFixed(1) + 'M',
       style: { colors: '#FFFFFF', fontSize: '13px', fontWeight: 500 }
     },
-    axisBorder: { 
-      show: true,
-      color: 'rgba(255, 255, 255, 0.3)',
-      width: 1,
-      offsetX: -2,
-      offsetY: -2
-    }
+    axisBorder: { show: true, color: 'rgba(255,255,255,0.3)', width: 1, offsetX: -2, offsetY: -2 }
   },
   grid: {
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: 'rgba(255,255,255,0.15)',
     strokeDashArray: 0,
     xaxis: { lines: { show: false } },
-    yaxis: { lines: { show: true } },
+    yaxis: { lines: { show: true } }
   },
   tooltip: {
-    custom: function({series, seriesIndex, dataPointIndex, w}: any) {
-      const months = currentLang.value === 'ar' 
-        ? ['مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر']
-        : ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
-      const monthName = months[Math.floor(dataPointIndex / 3)];
-      
-      // Values matched to design image but with standard tooltip styling
-      const currentYear = 4.6;
-      const previousYear = 4.7;
-      const decline = "-3.2%";
-      
-      const currentYearLabel = currentLang.value === 'ar' ? 'السنة الحالية: ' : 'Current Year: ';
-      const previousYearLabel = currentLang.value === 'ar' ? 'السنة السابقة: ' : 'Previous Year: ';
-      const declineLabel = currentLang.value === 'ar' ? 'الانخفاض: ' : 'Decline: ';
-      
-      return '<div class="px-5 py-4 bg-white rounded-xl shadow-xl border-none" style="min-width: 200px;">' +
-        '<div class="font-bold mb-2 text-[#000] text-[16px]">' + monthName + '</div>' +
-        '<div class="text-[#000] text-[14px] mb-1">' + currentYearLabel + '<span class="font-medium"> AED ' + currentYear.toFixed(1).replace('.', ',') + 'M</span></div>' +
-        '<div class="text-[#000] text-[14px] mb-1">' + previousYearLabel + '<span class="font-medium"> AED ' + previousYear.toFixed(1).replace('.', ',') + 'M</span></div>' +
-        '<div class="text-[#000] text-[14px]">' + declineLabel + '<span class="font-bold text-[#FF7B5F]"> ' + decline + '</span></div>' +
-        '</div>'
-    }
+    theme: 'dark',
+    x: { show: true },
+    y: { formatter: (val: number) => `AED ${val.toFixed(2)}M` }
   },
-  responsive: [
-    {
-      breakpoint: 640,
-      options: {
-        xaxis: {
-          labels: {
-            style: {
-              fontSize: '11px',
-              colors: '#FFFFFF'
-            }
-          }
-        },
-        yaxis: {
-          labels: {
-            formatter: (value: number) => Math.abs(value).toFixed(0) + 'M',
-            style: {
-              fontSize: '11px',
-              colors: '#FFFFFF'
-            }
-          },
-          axisBorder: {
-            show: true,
-            color: 'rgba(255, 255, 255, 0.3)',
-            width: 1,
-            offsetX: -2,
-            offsetY: -2
-          }
-        }
-      }
+  responsive: [{
+    breakpoint: 640,
+    options: {
+      xaxis: { labels: { style: { fontSize: '11px', colors: '#FFFFFF' } } },
+      yaxis: { labels: { formatter: (v: number) => Math.abs(v).toFixed(0) + 'M', style: { fontSize: '11px', colors: '#FFFFFF' } }, axisBorder: { show: true, color: 'rgba(255,255,255,0.3)', width: 1, offsetX: -2, offsetY: -2 } }
     }
-  ]
-}));
+  }]
+}))
 </script>
 
 <style scoped>

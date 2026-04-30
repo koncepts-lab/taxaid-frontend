@@ -86,10 +86,15 @@
     </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 
 const props = defineProps({
+    metrics: {
+        type: Object,
+        default: () => ({})
+    },
+    loading: Boolean,
     isCompressed: {
         type: Boolean,
         default: false
@@ -100,19 +105,23 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const showScenarioDropdown = ref(false)
 
-const { metrics } = useCashFlowPage()
+const cashInHand    = computed(() => props.metrics?.cashInHand    ?? '—')
+const cashInHandChange = computed(() => props.metrics?.cashInHandChange ?? '0.0%')
+const ar30Days      = computed(() => props.metrics?.ar30Days      ?? '—')
+const ar30DaysChange = computed(() => props.metrics?.ar30DaysChange ?? '0.0%')
 
-const cashInHand = computed(() => metrics.value?.cashInHand ?? 'AED 0.0 M')
-const cashInHandChange = computed(() => metrics.value?.cashInHandChange ?? '0.0%')
-const ar30Days = computed(() => metrics.value?.ar30Days ?? 'AED 0.0 M')
-const ar30DaysChange = computed(() => metrics.value?.ar30DaysChange ?? '0.0%')
-
-const scenarios = computed(() => metrics.value?.scenarios ?? [
+const scenarios = computed(() => props.metrics?.scenarios ?? [
     { en: '100% Scenario', ar: 'سيناريو 100%' },
     { en: 'Future Contract', ar: 'عقد مستقبلي' }
 ])
 
-const selectedScenarioKey = ref('100% Scenario')
+const selectedScenarioKey = ref('')
+// initialise once scenarios are available
+watchEffect(() => {
+    if (!selectedScenarioKey.value && scenarios.value.length) {
+        selectedScenarioKey.value = scenarios.value[0].en
+    }
+})
 
 const selectedScenario = computed(() => {
     const scenario = scenarios.value.find(s => s.en === selectedScenarioKey.value)
