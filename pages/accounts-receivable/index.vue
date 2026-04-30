@@ -3,38 +3,41 @@
 
 
     <!-- 1. Container fills the screen height and prevents page-level scrolling -->
-    <div v-if="!isFullScreenChat" class="h-screen font-sans flex overflow-hidden relative z-10"
-      :class="{ '': isDark }" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+    <div v-if="!isFullScreenChat" class="h-screen font-sans flex overflow-hidden relative z-10" :class="{ '': isDark }"
+      :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
       <!-- 2. LEFT AREA: Resizes dynamically -->
-      <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-0" :class="isChatOpen 
+      <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" :class="isChatOpen
         ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
         : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
-        <div class="mx-auto pt-0">
-          
-          <AccountsReceivableHeader class="mb-4 lg:mb-8" />
+        <div class="mx-auto pt-8 lg:pt-0">
 
-          <AccountsReceivableAlert />
+          <CommonDashboardHeader :title="{ en: 'Accounts Recievable', ar: 'حسابات القبض' }"
+            :subtitle="{ en: 'Accounts Recievable Dashboard', ar: 'لوحة معلومات حسابات القبض' }"
+            :periods="customPeriods" class="mb-8" @selected-date="handleDateChange" @reload="handleReload" />
+
+          <AccountsPayableAlert />
 
           <div class="mb-4 lg:mb-8">
-            <AccountsReceivableSummary />
+            <AccountsPayableSummary :data="summaryData" :testDate="activeTestDate"
+              title="Accounts Recievable Summary" />
           </div>
 
           <div class="mb-4 lg:mb-8">
-            <div class="h-auto lg:h-[600px]">
-              <AccountsReceivableTopCustomers />
+            <div class="h-[600px]">
+              <AccountsPayableTopCustomers :data="topCustomersData" />
             </div>
           </div>
 
           <div class="mb-4 lg:mb-8">
-            <div class="h-auto lg:h-[420px]">
-              <AccountsReceivableHistoricalMovement />
+            <div class="h-[420px]">
+              <AccountsPayableHistoricalMovement />
             </div>
           </div>
 
           <div>
-            <div class="h-auto lg:h-[440px]">
-              <AccountsReceivableAgingGraph />
+            <div class="lg:h-[440px] h-[440px]">
+              <AccountsPayableAgingGraph :agingData="agingData" />
             </div>
           </div>
 
@@ -46,48 +49,142 @@
         currentLang === 'ar' ? 'left-0' : 'right-0',
         'lg:top-1/2 lg:-translate-y-1/2 lg:bottom-auto lg:mt-5',
         isChatOpen
-            ? 'bottom-0 w-full translate-y-0'
-            : 'bottom-24 w-[80px]',
+          ? 'bottom-0 w-full translate-y-0'
+          : 'bottom-24 w-[80px]',
         isChatOpen ? 'lg:2xl:w-120 lg:w-100' : 'lg:w-[80px]'
       ]">
-        <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = true" />
+        <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = false" />
       </aside>
     </div>
-    
-    <div v-else class="w-full flex overflow-hidden" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-        <!-- Full Sidebar version -->
-        <aside class="w-80 shrink-0 h-[calc(100vh-90px)]">
-            <TaxQueriesLeftSideBar @close="isFullScreenChat = false" />
-        </aside>
 
-        <!-- Main Chat Window -->
-        <main class="flex-1">
-          <TaxQueriesChatWindow :isMinimized="false" class="flex-1 min-h-0 h-[calc(100vh-90px)] ml-12" />
-        </main>
+    <div v-else class="w-full flex overflow-hidden" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+      <!-- Full Sidebar version -->
+      <aside class="w-80 shrink-0 h-[calc(100vh-90px)]">
+        <TaxQueriesLeftSideBar @close="isFullScreenChat = false" />
+      </aside>
+
+      <!-- Main Chat Window -->
+      <main class="flex-1">
+        <TaxQueriesChatWindow :isMinimized="false" class="flex-1 min-h-0 h-[calc(100vh-90px)] ml-12" />
+      </main>
     </div>
   </NuxtLayout>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import ParticleBackground from '~/components/common/ParticleBackground.vue'
-import AccountsReceivableHeader from '~/components/accounts-receivable/Header.vue'
-import AccountsReceivableAlert from '~/components/accounts-receivable/Alert.vue'
-import AccountsReceivableSummary from '~/components/accounts-receivable/Summary.vue'
-import AccountsReceivableTopCustomers from '~/components/accounts-receivable/TopCustomers.vue'
-import AccountsReceivableHistoricalMovement from '~/components/accounts-receivable/HistoricalMovement.vue'
-import AccountsReceivableAgingGraph from '~/components/accounts-receivable/AgingGraph.vue'
+import AccountsPayableHeader from '~/components/accounts-payable/Header.vue'
+import AccountsPayableAlert from '~/components/accounts-payable/Alert.vue'
+import AccountsPayableSummary from '~/components/accounts-payable/Summary.vue'
+import AccountsPayableTopCustomers from '~/components/accounts-payable/TopCustomers.vue'
+import AccountsPayableHistoricalMovement from '~/components/accounts-payable/HistoricalMovement.vue'
+import AccountsPayableAgingGraph from '~/components/accounts-payable/AgingGraph.vue'
 
-const isChatOpen = ref(true)
+const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+
+const agingData = ref({})
+const summaryData = ref([])
+const topCustomersData = ref(null)
+const activeTestDate = ref('2025-07-02')//remove this value and make it null after testing!!!!!!
+
+const customPeriods = [
+  { en: 'Year to Date', ar: 'منذ بداية العام' },
+  { en: 'This Quarter', ar: 'هذا الربع' },
+  { en: 'Last Quarter', ar: 'الربع الماضي' },
+  { en: 'This Year', ar: 'هذه السنة' },
+  { en: 'Last Year', ar: 'السنة الماضية' },
+  { en: 'Custom Date', ar: 'تاريخ مخصص' }
+]
+
+const fetchAgingData = async () => {
+  agingData.value = {}
+  try {
+    const response = await useApi('/ar-report/aging', {
+      params: {
+        test_date: activeTestDate.value,
+        lang: currentLang.value
+      }
+    })
+
+    if (response && response.status === 'success') {
+      agingData.value = response.payload || {}
+    }
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error)
+    agingData.value = {}
+  }
+}
+
+const fetchSummaryData = async () => {
+  summaryData.value = []
+  try {
+    const response = await useApi('/ar-report', {
+      params: {
+        test_date: activeTestDate.value
+      }
+    })
+
+    if (response && response.status === 'success') {
+      summaryData.value = response.data || []
+    }
+  } catch (error) {
+    console.error('Error fetching summary data:', error)
+    summaryData.value = []
+  }
+}
+
+const fetchTopCustomersData = async () => {
+  topCustomersData.value = null
+  try {
+    const response = await useApi('/ar-report/top-eight', {
+      params: {
+        test_date: activeTestDate.value
+      }
+    })
+
+    if (response && response.status === 'success') {
+      topCustomersData.value = response.payload || null
+    }
+  } catch (error) {
+    console.error('Error fetching top customers data:', error)
+    topCustomersData.value = null
+  }
+}
+
+const handleDateChange = (period) => {
+  if (period.custom_from) {
+    const parts = period.custom_from.split('-')
+    activeTestDate.value = `${parts[2]}-${parts[1]}-${parts[0]}`
+  }
+  handleReload()
+}
+
+const handleReload = () => {
+  fetchAgingData()
+  fetchTopCustomersData()
+  fetchSummaryData()
+}
+
+watch(currentLang, () => {
+  fetchAgingData()
+})
+
+onMounted(() => {
+  fetchAgingData()
+  fetchTopCustomersData()
+  fetchSummaryData()
+})
 </script>
 
 <style scoped>
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

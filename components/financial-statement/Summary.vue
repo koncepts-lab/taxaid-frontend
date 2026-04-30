@@ -259,7 +259,7 @@
         </div>
         <FinancialStatementScheduleModal :isOpen="isScheduleModalOpen" :loading="isScheduleLoading"
             :data="scheduleDetails" :title="selectedMainGroup" :isDark="isDark" @close="isScheduleModalOpen = false"
-            :schedule="selectedSchedule" />
+            :schedule="selectedSchedule" :activeTab="props.activeTab" :rangeOption="props.filters.range_option" :customFrom="props.filters.custom_from" :customTo="props.filters.custom_to" />
         <FinancialStatementModal :isOpen="isModalOpen" :isDark="isDark" :currentLang="currentLang"
             :title="translatedTitle" :t="t" :data="data" :activeTab="activeTab" :selectedRatio="selectedRatio"
             :ratioOptions="ratioOptions" :isCompressed="isCompressed" @close="isModalOpen = false"
@@ -375,6 +375,10 @@ const scheduleDetails = ref([]);
 const selectedMainGroup = ref('');
 const selectedSchedule = ref('');
 
+const mapRangeOption = (en) => {
+    return 'Custom Dates';
+}
+
 const handleSchedule = async (row) => {
     selectedMainGroup.value = row.label;
     selectedSchedule.value = row.schedule;
@@ -383,11 +387,15 @@ const handleSchedule = async (row) => {
 
     try {
 
-        const result = await $fetch(`${baseUrl}/financial-analysis/pl-subgroup-totals`, {
+        const endpoint = props.activeTab === 'balance-sheet' 
+            ? '/financial-analysis/bs-subgroup-totals' 
+            : '/financial-analysis/pl-subgroup-totals';
+
+        const result = await useApi(endpoint, {
             method: 'POST',
             body: {
                 "main_group": row.label,
-                "range_option": props.filters.range_option,
+                "range_option": mapRangeOption(props.filters.range_option),
                 "custom_from": props.filters.custom_from,
                 "custom_to": props.filters.custom_to
             }
