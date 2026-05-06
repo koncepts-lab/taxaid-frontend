@@ -98,8 +98,27 @@
             <DataSourceSettingsDeleteModal :isOpen="isDeleteModalOpen" :isDark="isDark" :currentLang="currentLang"
               @close="isDeleteModalOpen = false" @confirm="executeDelete" />
             <div class="space-y-8">
-              <DataSourceAR v-if="activeSubTab === 'accounts-receivable' || activeSubTab === 'accounts-payable'"
-                :type="agingType" :data="currentAgingData" :isDark="isDark" :currentLang="currentLang"
+              <!-- Accounts Receivable (live API) -->
+              <DataSourceAR v-if="activeSubTab === 'accounts-receivable'"
+                type="AR"
+                :data="arData"
+                :arRows="arRows"
+                :arTotals="arTotals"
+                :loading="arLoading"
+                :error="arError"
+                :isDark="isDark"
+                :currentLang="currentLang"
+                :title="currrentTitle" />
+              <!-- Accounts Payable (live API) -->
+              <DataSourceAR v-if="activeSubTab === 'accounts-payable'"
+                type="AP"
+                :data="apData"
+                :arRows="apRows"
+                :arTotals="apTotals"
+                :loading="apLoading"
+                :error="apError"
+                :isDark="isDark"
+                :currentLang="currentLang"
                 :title="currrentTitle" />
               <DataSourceInterCompany
                 v-if="activeMainTab !== 'certificate' && ['inter-company', 'contacts', 'internal-email', 'customers'].includes(activeSubTab)"
@@ -144,6 +163,12 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+
+// ── AR Aging Summary (live API) ────────────────────────────────────────────
+const { rows: arRows, totals: arTotals, loading: arLoading, error: arError } = useArAgingSummary()
+
+// ── AP Aging Summary (live API) ────────────────────────────────────────────
+const { rows: apRows, totals: apTotals, loading: apLoading, error: apError } = useApAgingSummary()
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()

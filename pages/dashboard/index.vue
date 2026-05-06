@@ -51,6 +51,12 @@
           </NuxtLink>
         </div>
       </div>
+
+      <!-- Onload Popup for AP Variance -->
+      <!-- <DashboardApVarianceReconciliationModal /> -->
+      <!-- <DashboardArVarianceReconciliationModal /> -->
+      <!-- <DashboardNewLedgerDetectedModal /> -->
+      <DashboardSalesForecastVarianceModal />
     </div>
   </NuxtLayout>
 </template>
