@@ -34,45 +34,80 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto rounded-[15px] border" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+        <!-- Loading State -->
+        <div v-if="loading" class="flex items-center justify-center py-16">
+            <div class="flex flex-col items-center gap-3">
+                <svg class="animate-spin w-8 h-8 text-[#00B794]" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                <span class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-500'">
+                    {{ currentLang === 'ar' ? 'جارٍ التحميل...' : 'Loading aging data...' }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div v-else-if="error"
+            class="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            {{ error }}
+        </div>
+
+        <!-- Table -->
+        <div v-else class="overflow-x-auto rounded-[15px] border" :class="isDark ? 'border-white/10' : 'border-gray-100'">
             <table class="w-full text-left rtl:text-right border-collapse min-w-[900px]">
                 <thead>
                     <tr class="bg-[#008864] text-white">
-                        <th class="px-6 py-4 text-[14px] font-normal w-20">{{ currentLang === 'ar' ? 'رقم' : 'Sl.No' }}
-                        </th>
-                        <th class="px-4 py-4 text-[14px] font-normal">{{ currentLang === 'ar' ? 'العميل' : 'Customer' }}
-                        </th>
-                        <th class="px-4 py-4 text-[14px] font-normal">{{ currentLang === 'ar' ? 'المبلغ (AED)' :
-                            'Amount(AED)' }}</th>
+                        <th class="px-6 py-4 text-[14px] font-normal w-20">{{ currentLang === 'ar' ? 'رقم' : 'Sl.No' }}</th>
+                        <th class="px-4 py-4 text-[14px] font-normal">{{ currentLang === 'ar' ? 'العميل' : 'Customer' }}</th>
+                        <th class="px-4 py-4 text-[14px] font-normal">{{ currentLang === 'ar' ? 'المبلغ (AED)' : 'Amount (AED)' }}</th>
+                        <th class="px-4 py-4 text-[14px] font-normal">{{ currentLang === 'ar' ? 'غير مستحق' : 'Not Due' }}</th>
                         <th class="px-4 py-4 text-[14px] font-normal">&lt;0 - 30&gt;</th>
-                        <th class="px-4 py-4 text-[14px] font-normal">&lt;31 - 60&gt;</th>
-                        <th class="px-4 py-4 text-[14px] font-normal">&lt;61 - 90&gt;</th>
+                        <th class="px-4 py-4 text-[14px] font-normal">&lt;31 - 90&gt;</th>
                         <th class="px-4 py-4 text-[14px] font-normal">&lt;91 - 180&gt;</th>
+                        <th class="px-4 py-4 text-[14px] font-normal">&gt; 180</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(row, index) in data" :key="index" class="border-b transition-all duration-300"
-                        :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50/50'">
-                        <td class="px-6 py-4 text-sm" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ index + 1
-                        }}</td>
-                        <td class="px-4 py-4 text-sm font-medium" :class="isDark ? 'text-white' : 'text-[#0A0A0A]'">{{
-                            row.customer }}</td>
-                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ row.amount
-                        }}</td>
-                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ row.age1
-                        }}</td>
-                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ row.age2
-                        }}</td>
-                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ row.age3
-                        }}</td>
-                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ row.age4
-                        }}</td>
+                    <!-- Empty state -->
+                    <tr v-if="!arRows.length">
+                        <td colspan="8" class="px-6 py-12 text-center text-sm"
+                            :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                            {{ currentLang === 'ar' ? 'لا توجد بيانات متاحة' : 'No data available' }}
+                        </td>
+                    </tr>
+
+                    <tr v-for="(row, index) in arRows" :key="index" class="border-b transition-all duration-300"
+                        :class="[
+                          row.is_total
+                            ? (isDark ? 'bg-[#00B794]/20 border-[#00B794]/30 font-semibold' : 'bg-[#e8fdf7] border-[#84D7C5] font-semibold')
+                            : (isDark ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50/50')
+                        ]">
+                        <td class="px-6 py-4 text-sm" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ row.is_total ? '—' : index + 1 }}</td>
+                        <td class="px-4 py-4 text-sm font-medium" :class="isDark ? 'text-white' : 'text-[#0A0A0A]'">{{ row.customer }}</td>
+                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.amount) }}</td>
+                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.not_due) }}</td>
+                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.age_0_30) }}</td>
+                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.age_31_90) }}</td>
+                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.age_91_180) }}</td>
+                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.age_gt_180) }}</td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr class="bg-[#68E4C4] font-medium text-[#013E32]">
-                        <td class="px-6 py-4 rounded-bl-[15px]">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-                        <td colspan="6" class="px-4 py-4 text-right rtl:text-left rounded-br-[15px]">1,678,295.5</td>
+                        <td class="px-6 py-4 rounded-bl-[15px]" colspan="2">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
+                        <td class="px-4 py-4">{{ formatNumber(arTotals.amount) }}</td>
+                        <td class="px-4 py-4">{{ formatNumber(arTotals.not_due) }}</td>
+                        <td class="px-4 py-4">{{ formatNumber(arTotals.age_0_30) }}</td>
+                        <td class="px-4 py-4">{{ formatNumber(arTotals.age_31_90) }}</td>
+                        <td class="px-4 py-4">{{ formatNumber(arTotals.age_91_180) }}</td>
+                        <td class="px-4 py-4 rounded-br-[15px]">{{ formatNumber(arTotals.age_gt_180) }}</td>
                     </tr>
                 </tfoot>
             </table>
@@ -105,19 +140,13 @@
                             <table class="w-full text-left rtl:text-right border-collapse min-w-[1200px]">
                                 <thead>
                                     <tr class="bg-[#008864] text-white">
-                                        <th class="px-6 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ? 'العميل'
-                                            : 'Customer' }}</th>
-                                        <th class="px-4 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ?
-                                            'الفاتورة' : 'Invoice' }}</th>
-                                        <th class="px-4 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ?
-                                            'تاريخ الفاتورة' : 'Date of Invoice' }}</th>
-                                        <th class="px-4 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ?
-                                            'أيام الائتمان' : 'Credit days' }}</th>
-                                        <th class="px-4 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ?
-                                            'تاريخ الاستحقاق' : 'Due date of Invoice' }}</th>
+                                        <th class="px-6 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ? 'العميل' : 'Customer' }}</th>
+                                        <th class="px-4 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ? 'الفاتورة' : 'Invoice' }}</th>
+                                        <th class="px-4 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ? 'تاريخ الفاتورة' : 'Date of Invoice' }}</th>
+                                        <th class="px-4 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ? 'أيام الائتمان' : 'Credit days' }}</th>
+                                        <th class="px-4 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ? 'تاريخ الاستحقاق' : 'Due date of Invoice' }}</th>
                                         <th class="px-4 py-5 text-[15px] font-medium">30-Jun-25</th>
-                                        <th class="px-6 py-5 text-[15px] font-medium text-right rtl:text-left">{{
-                                            currentLang === 'ar' ? 'المبلغ' : 'Amount' }}</th>
+                                        <th class="px-6 py-5 text-[15px] font-medium text-right rtl:text-left">{{ currentLang === 'ar' ? 'المبلغ' : 'Amount' }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="max-h-[50vh]">
@@ -129,14 +158,12 @@
                                         <td class="px-4 py-4 text-[15px]">0</td>
                                         <td class="px-4 py-4 text-[15px]">11-Jun-25</td>
                                         <td class="px-4 py-4 text-[15px]">19 Days</td>
-                                        <td class="px-6 py-4 text-[15px] text-right rtl:text-left font-medium">1,250,000
-                                        </td>
+                                        <td class="px-6 py-4 text-[15px] text-right rtl:text-left font-medium">1,250,000</td>
                                     </tr>
                                 </tbody>
                                 <tfoot>
                                     <tr class="bg-[#68E4C4] font-bold text-[#013E32]">
-                                        <td class="px-6 py-5 rounded-bl-[20px]">{{ currentLang === 'ar' ? 'الإجمالي' :
-                                            'Total' }}</td>
+                                        <td class="px-6 py-5 rounded-bl-[20px]">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
                                         <td colspan="5"></td>
                                         <td class="px-6 py-5 text-right rtl:text-left rounded-br-[20px]">8,96,000</td>
                                     </tr>
@@ -149,20 +176,52 @@
         </Teleport>
     </div>
 </template>
+
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const activeMode = ref('Hybrid')
 const isModalOpen = ref(false)
 
 const props = defineProps({
+    // Legacy static data (AP still uses this)
     data: Array,
     isDark: Boolean,
     currentLang: String,
-    title: String
+    title: String,
+    type: String, // 'AR' | 'AP'
+    // Live API data (AR only)
+    arRows: {
+        type: Array,
+        default: () => [],
+    },
+    arTotals: {
+        type: Object,
+        default: () => ({
+            amount: 0, not_due: 0, age_0_30: 0,
+            age_31_90: 0, age_91_180: 0, age_gt_180: 0,
+        }),
+    },
+    loading: {
+        type: Boolean,
+        default: false,
+    },
+    error: {
+        type: String,
+        default: null,
+    },
 })
 
-console.log("🚀 ~ title:", props.title)
+// Format numbers with commas, 2 decimal places when non-zero
+const formatNumber = (val) => {
+    if (val === null || val === undefined) return '—'
+    const num = Number(val)
+    if (isNaN(num)) return '—'
+    return num.toLocaleString('en-AE', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+    })
+}
 </script>
 
 <style scoped>
