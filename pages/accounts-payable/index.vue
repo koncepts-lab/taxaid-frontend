@@ -35,7 +35,7 @@
 
           <div class="mb-4 lg:mb-8">
             <div class="h-[420px]">
-              <AccountsPayableHistoricalMovement />
+              <AccountsPayableHistoricalMovement :data="timelineData" />
             </div>
           </div>
 
@@ -87,6 +87,7 @@ const currentLang = useState('currentLang', () => 'en')
 const agingData = ref({})
 const summaryData = ref([])
 const topCustomersData = ref(null)
+const timelineData = ref(null)
 const activeTestDate = ref(currentDate.value)
 
 const customPeriods = [
@@ -153,6 +154,32 @@ const fetchTopCustomersData = async () => {
   }
 }
 
+const fetchTimelineData = async () => {
+  timelineData.value = null
+  try {
+    const response = await useApi('/ap-report/timeline', {
+      params: {
+        test_date: activeTestDate.value
+      }
+    })
+    
+    if (response && response.status === 'success' && response.payload) {
+      const ranges = response.payload.ranges || []
+      timelineData.value = {
+        apBalance: ranges.map(r => r.ap_value / 1000000),
+        categories: ranges.map(r => {
+          const date = new Date(r.start)
+          return date.toLocaleString('en-US', { month: 'short' })
+        }),
+        percentage: []
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching timeline data:', error)
+    timelineData.value = null
+  }
+}
+
 const handleDateChange = (period) => {
   if (period.custom_from) {
     const parts = period.custom_from.split('-')
@@ -165,6 +192,7 @@ const handleReload = () => {
   fetchAgingData()
   fetchTopCustomersData()
   fetchSummaryData()
+  fetchTimelineData()
 }
 
 watch(currentLang, () => {
@@ -175,6 +203,7 @@ onMounted(() => {
   fetchAgingData()
   fetchTopCustomersData()
   fetchSummaryData()
+  fetchTimelineData()
 })
 </script>
 

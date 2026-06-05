@@ -163,6 +163,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useDataIn } from '../../composables/data-source/useDataIn'
 
 // ── AR Aging Summary (live API) ────────────────────────────────────────────
 const { rows: arRows, totals: arTotals, loading: arLoading, error: arError } = useArAgingSummary()
@@ -190,7 +191,7 @@ const {
   pdcSummaryData: pdcSummaryDataFromJson,
   pdcDetailedData: pdcDetailedDataFromJson,
   interCompanyData: interCompanyDataFromJson,
-  dataInItems: dataInItemsFromJson,
+  dataInItems: _dataInItemsFromJson,
   costCenterReports,
   budget: budgetData,
   salesForecast: salesForecastData,
@@ -329,13 +330,9 @@ const tbLogs = computed(() => logsData.value?.trialBalance ?? [])
 const budgetLogs = computed(() => logsData.value?.budget ?? [])
 const salesForecastLogs = computed(() => logsData.value?.salesForecast ?? [])
 
-// Data-In items from composable (kept as ref so handleRemove can mutate)
-const dataInItems = ref([])
-watch(dataInItemsFromJson, (val) => {
-  if (val?.length && !dataInItems.value.length) {
-    dataInItems.value = val.map(item => ({ ...item }))
-  }
-}, { immediate: true })
+// Data-In items — live from backend via useDataIn composable
+const { items: dataInItems, fetchConfig: fetchDataInConfig } = useDataIn()
+onMounted(() => fetchDataInConfig())
 
 // Inter-company from composable (kept as ref so add/delete can mutate)
 const interCompanyData = ref([])
@@ -353,12 +350,12 @@ const tableData = ref([
   { id: 4, currency: 'USD', status: 'Overdue', contactType: 'Bank', paymentTerms: 'Net 30', bankAccount: 'Operating_SAR', pdcStatus: 'Returned', selected: false },
 ])
 
-// _unused block removed — dataInItems is populated from composable via watch above
 const handleRemove = (id) => {
   const item = dataInItems.value.find(i => i.id === id)
   if (item) {
     item.isUploaded = false
-    item.fileName = ''
+    item.fileName = null
+    item.uploadDate = null
   }
 }
 // interCompanyData is already declared above via watch on composable

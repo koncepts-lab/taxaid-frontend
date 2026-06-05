@@ -81,7 +81,14 @@
                         </button>
                     </div>
                     <div v-else class="space-y-3">
-                        <button
+                        <input
+                            type="file"
+                            accept=".xlsx,.xls"
+                            class="hidden"
+                            :ref="el => { if (el) fileInputs[card.id] = el }"
+                            @change="onFileSelected(card, $event)"
+                        />
+                        <button @click="handleDownloadSample(card)"
                             class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-sm font-medium hover:bg-[#00B794]/5 transition-all">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
@@ -90,9 +97,10 @@
                             {{ currentLang === 'ar' ? 'تحميل نموذج' : 'Download Sample' }}
                         </button>
                         <button @click="openUploadModal(card)"
+                            :disabled="uploadingId === card.id"
                             class="w-full flex items-center justify-center gap-3 py-3 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 cursor-pointer">
-                            <span class="text-lg font-light">+</span>
-                            {{ currentLang === 'ar' ? 'إضافة (IC)' : 'Add (IC)' }}
+                            <span class="text-lg font-light">{{ uploadingId === card.id ? '…' : '+' }}</span>
+                            {{ uploadingId === card.id ? (currentLang === 'ar' ? 'جارٍ الرفع...' : 'Uploading...') : (currentLang === 'ar' ? 'إضافة (IC)' : 'Add (IC)') }}
                         </button>
                     </div>
                 </div>
@@ -104,21 +112,43 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useDataIn } from '../../composables/data-source/useDataIn'
 
 const props = defineProps({
     isDark: Boolean,
     currentLang: String,
     dataInItems: Array
 })
+
+const emit = defineEmits(['view', 'remove'])
+const userType = ref('admin')
 const isModalOpen = ref(false)
 const selectedDocument = ref(null)
 
+const { uploadFile, downloadSample, removeItem, uploadingId } = useDataIn()
+
+// Hidden file inputs — one ref per card id, keyed by id
+const fileInputs = ref({})
+
 const openUploadModal = (card) => {
-    selectedDocument.ref = card
-    isModalOpen.value = true
+    // Trigger hidden file input for this card directly (no modal needed for API uploads)
+    const input = fileInputs.value[card.id]
+    if (input) input.click()
 }
-const userType = ref('admin')
-const emit = defineEmits(['view', 'remove'])
+
+const onFileSelected = async (card, event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    try {
+        await uploadFile(card.id, file)
+    } catch (err) {
+        console.error(`Upload failed for ${card.id}:`, err)
+    }
+    // Reset input so the same file can be re-selected if needed
+    event.target.value = ''
+}
+
+const userType_ref = userType
 
 const getFileNameFromUrl = (url) => {
     if (!url) return '';
@@ -133,6 +163,15 @@ const openPdf = (card) => {
 }
 
 const removeFile = (card) => {
+    removeItem(card.id)
     emit('remove', card.id)
+}
+
+const handleDownloadSample = async (card) => {
+    try {
+        await downloadSample(card.id)
+    } catch (err) {
+        console.error(`Sample download failed for ${card.id}:`, err)
+    }
 }
 </script>

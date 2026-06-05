@@ -27,9 +27,12 @@ export default defineNuxtConfig({
       // Ensure this is empty to avoid the "null to object" error
     },
   },
+  imports: {
+    dirs: ['composables', 'composables/data-source'],
+  },
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || "http://127.0.0.1/api",
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || "http://127.0.0.1/api" || "https://taxaid.alwin.pro/",//!!!!!!!remove this after local test
     },
   },
 });
