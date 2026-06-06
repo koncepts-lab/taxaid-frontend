@@ -15,7 +15,10 @@
         </div>
 
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-if="loading" class="text-center py-8 text-gray-400">Loading...</div>
+        <div v-else-if="error" class="p-4 rounded-xl border border-red-200 bg-red-50 text-red-600 text-sm">{{ error }}</div>
+
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div v-for="card in dataInItems" :key="card.id"
                 class="rounded-[20px] p-6 transition-all duration-300 border relative group"
                 :class="isDark ? 'bg-[#015F4D]/20 border border-[#00B794]/30' : ' border-[#04C18F80] shadow-sm', card.isUploaded ? 'bg-[#00FFBC]/15' : ' bg-[#00FFBC1F]'">
@@ -112,26 +115,25 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useDataIn } from '../../composables/data-source/useDataIn'
 
 const props = defineProps({
     isDark: Boolean,
     currentLang: String,
-    dataInItems: Array
+    dataInItems: Array,
+    loading: Boolean,
+    error: String,
+    uploadFile: Function,
+    downloadSample: Function,
+    uploadingId: String,
 })
 
-const emit = defineEmits(['view', 'remove'])
+const emit = defineEmits(['view', 'remove', 'uploaded'])
 const userType = ref('admin')
 const isModalOpen = ref(false)
-const selectedDocument = ref(null)
 
-const { uploadFile, downloadSample, removeItem, uploadingId } = useDataIn()
-
-// Hidden file inputs — one ref per card id, keyed by id
 const fileInputs = ref({})
 
 const openUploadModal = (card) => {
-    // Trigger hidden file input for this card directly (no modal needed for API uploads)
     const input = fileInputs.value[card.id]
     if (input) input.click()
 }
@@ -140,36 +142,31 @@ const onFileSelected = async (card, event) => {
     const file = event.target.files?.[0]
     if (!file) return
     try {
-        await uploadFile(card.id, file)
+        await props.uploadFile(card.id, file)
+        emit('uploaded', card.id)
     } catch (err) {
         console.error(`Upload failed for ${card.id}:`, err)
     }
-    // Reset input so the same file can be re-selected if needed
     event.target.value = ''
 }
 
-const userType_ref = userType
-
 const getFileNameFromUrl = (url) => {
-    if (!url) return '';
-    const parts = url.split('/');
-    return parts[parts.length - 1];
+    if (!url) return ''
+    const parts = url.split('/')
+    return parts[parts.length - 1]
 }
 
 const openPdf = (card) => {
-    if (card.pdfUrl) {
-        window.open(card.pdfUrl, '_blank');
-    }
+    if (card.pdfUrl) window.open(card.pdfUrl, '_blank')
 }
 
 const removeFile = (card) => {
-    removeItem(card.id)
     emit('remove', card.id)
 }
 
 const handleDownloadSample = async (card) => {
     try {
-        await downloadSample(card.id)
+        await props.downloadSample(card.id)
     } catch (err) {
         console.error(`Sample download failed for ${card.id}:`, err)
     }

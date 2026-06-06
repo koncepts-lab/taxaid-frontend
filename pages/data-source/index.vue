@@ -139,8 +139,17 @@
                 :isDark="isDark" :currentLang="currentLang" @open-sales-report="isForecastModalOpen = true" />
               <DataSourceSalesForecastModal :isOpen="isForecastModalOpen" :data="salesForecastDetailedData"
                 :isDark="isDark" :currentLang="currentLang" @close="isForecastModalOpen = false" />
-              <DataSourceDataIn v-if="activeSubTab === 'data-in'" :dataInItems="dataInItems" :isDark="isDark"
-                :currentLang="currentLang" @remove="handleRemove" />
+              <DataSourceDataIn v-if="activeSubTab === 'data-in'"
+                :dataInItems="dataInItems"
+                :loading="dataInLoading"
+                :error="dataInError"
+                :uploadFile="dataInUploadFile"
+                :downloadSample="dataInDownloadSample"
+                :uploadingId="dataInUploadingId"
+                :isDark="isDark"
+                :currentLang="currentLang"
+                @remove="handleRemove"
+                @uploaded="fetchDataInConfig" />
               <DataSourceTrialBalance v-if="activeSubTab === 'trial-balance'" :isDark="isDark"
                 :currentLang="currentLang" />
               <DataSourceChangeLog
@@ -331,7 +340,7 @@ const budgetLogs = computed(() => logsData.value?.budget ?? [])
 const salesForecastLogs = computed(() => logsData.value?.salesForecast ?? [])
 
 // Data-In items — live from backend via useDataIn composable
-const { items: dataInItems, fetchConfig: fetchDataInConfig } = useDataIn()
+const { items: dataInItems, loading: dataInLoading, error: dataInError, fetchConfig: fetchDataInConfig, uploadFile: dataInUploadFile, downloadSample: dataInDownloadSample, uploadingId: dataInUploadingId } = useDataIn()
 onMounted(() => fetchDataInConfig())
 
 // Inter-company from composable (kept as ref so add/delete can mutate)
