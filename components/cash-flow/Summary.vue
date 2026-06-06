@@ -70,7 +70,7 @@
                                     </tr>
                                 </thead>
                                 <tbody :class="isDark ? 'bg-[#04C18F33]' : ''">
-                                    <tr v-for="(invoice, idx) in invoices" :key="idx" :class="isDark ? 'border-b border-white/10' : 'border-b border-gray-200 bg-[#E8F9F5]'">
+                                    <tr v-for="(invoice, idx) in incomingInvoices" :key="idx" :class="isDark ? 'border-b border-white/10' : 'border-b border-gray-200 bg-[#E8F9F5]'">
                                         <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.number }}</td>
                                         <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.customer }}</td>
                                         <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.type }}</td>
@@ -117,7 +117,7 @@
                                     </tr>
                                 </thead>
                                 <tbody :class="isDark ? 'bg-[#04C18F33]' : ''">
-                                    <tr v-for="(invoice, idx) in invoices" :key="idx" :class="isDark ? 'border-b border-white/10' : 'border-b border-gray-200 bg-[#E8F9F5]'">
+                                    <tr v-for="(invoice, idx) in outgoingInvoices" :key="idx" :class="isDark ? 'border-b border-white/10' : 'border-b border-gray-200 bg-[#E8F9F5]'">
                                         <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.number }}</td>
                                         <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.customer }}</td>
                                         <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.type }}</td>
@@ -212,7 +212,7 @@
                                             </tr>
                                         </thead>
                                         <tbody :class="isDark ? 'bg-[#04C18F33]' : ''">
-                                            <tr v-for="(invoice, idx) in invoices" :key="idx" :class="isDark ? 'border-b border-white/10' : 'border-b border-gray-200 bg-[#E8F9F5]'">
+                                            <tr v-for="(invoice, idx) in incomingInvoices" :key="idx" :class="isDark ? 'border-b border-white/10' : 'border-b border-gray-200 bg-[#E8F9F5]'">
                                                 <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.number }}</td>
                                                 <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.customer }}</td>
                                                 <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.type }}</td>
@@ -249,7 +249,7 @@
                                             </tr>
                                         </thead>
                                         <tbody :class="isDark ? 'bg-[#04C18F33]' : ''">
-                                            <tr v-for="(invoice, idx) in invoices" :key="idx" :class="isDark ? 'border-b border-white/10' : 'border-b border-gray-200 bg-[#E8F9F5]'">
+                                            <tr v-for="(invoice, idx) in outgoingInvoices" :key="idx" :class="isDark ? 'border-b border-white/10' : 'border-b border-gray-200 bg-[#E8F9F5]'">
                                                 <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.number }}</td>
                                                 <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ invoice.customer }}</td>
                                                 <td class="px-6 py-3 text-[13px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#000]/80'">{{ invoice.type }}</td>
@@ -282,7 +282,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const props = defineProps({
     isCompressed: Boolean
@@ -295,35 +295,24 @@ const isModalOpen = ref(false)
 const showIncoming = ref(true)
 const showOutgoing = ref(false)
 
-const months = ['Sept 25', 'Oct 25', 'Nov 25', 'Dec 25', 'Jan 26', 'Feb 26']
-const openingBalance = ['1,800,000', '2,100,000', '2,400,000', '2,800,000', '3,000,000', '2,700,000']
-const incoming = ['1,800,000', '2,100,000', '2,400,000', '2,800,000', '3,000,000', '2,700,000']
-const outgoing = ['1,800,000', '2,100,000', '2,400,000', '2,800,000', '3,000,000', '2,700,000']
-const netMovements = ['1,800,000', '2,100,000', '2,400,000', '2,800,000', '3,000,000', '2,700,000']
-const closing = ['2,100,000', '2,400,000', '2,800,000', '3,300,000', '2,700,000', '3,100,000']
+const { summary } = useCashFlow()
 
-const invoices = [
-    { number: 'INV-1015', customer: 'Emirates Trading LLC', type: 'Invoice', amount: '12,000', status: 'Confirmed', expDate: 'Oct 5, 2025' },
-    { number: 'INV-1016', customer: 'BlueSky Interiors', type: 'Contract Signed', amount: '12,000', status: 'Signed', expDate: 'Oct 10, 2025' },
-    { number: 'FUT-2031', customer: 'Gulf Star Services', type: 'Future Contract', amount: '10,000', status: 'Pipeline', expDate: 'Oct 22, 2025' }
-]
+const months          = computed(() => summary.value?.months          ?? [])
+const openingBalance  = computed(() => summary.value?.openingBalance  ?? [])
+const incoming        = computed(() => summary.value?.incoming        ?? [])
+const outgoing        = computed(() => summary.value?.outgoing        ?? [])
+const netMovements    = computed(() => summary.value?.netMovements    ?? [])
+const closing         = computed(() => summary.value?.closing         ?? [])
+const incomingInvoices = computed(() => summary.value?.incomingInvoices ?? [])
+const outgoingInvoices = computed(() => summary.value?.outgoingInvoices ?? [])
 
-const toggleIncoming = () => {
-    showIncoming.value = !showIncoming.value
-}
-
-const toggleOutgoing = () => {
-    showOutgoing.value = !showOutgoing.value
-}
+const toggleIncoming = () => { showIncoming.value = !showIncoming.value }
+const toggleOutgoing = () => { showOutgoing.value = !showOutgoing.value }
 
 const getStatusClass = (status) => {
-    if (status === 'Confirmed') {
-        return isDark.value ? 'bg-[#5CE5C1] text-[#002B21]' : 'bg-[#5CE5C1] text-[#002B21]'
-    } else if (status === 'Signed') {
-        return isDark.value ? 'bg-[#FFC08A] text-[#000]' : 'bg-[#FFC08A] text-[#000]'
-    } else if (status === 'Pipeline') {
-        return isDark.value ? 'bg-[#A7C5FB] text-[#2B54A7]' : 'bg-[#A7C5FB] text-[#2B54A7]'
-    }
+    if (status === 'Confirmed') return 'bg-[#5CE5C1] text-[#002B21]'
+    if (status === 'Signed')    return 'bg-[#FFC08A] text-[#000]'
+    if (status === 'Pipeline')  return 'bg-[#A7C5FB] text-[#2B54A7]'
     return ''
 }
 </script>

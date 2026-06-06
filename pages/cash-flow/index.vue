@@ -14,14 +14,27 @@
                 ]">
                 <div class="mx-auto pt-0">
                     
-                    <CashFlowHeader class="mb-4 lg:mb-8" />
+                    <CommonDashboardHeader
+                        class="mb-4 lg:mb-8"
+                        :title="{ en: 'Cash Flow Analysis', ar: 'تحليل التدفقات النقدية' }"
+                        :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
+                        :oneclickreview="false"
+                        :showDateFilter="true"
+                        :showReload="true"
+                        :showExport="true"
+                        :periods="cashFlowPeriods"
+                        @reload="fetchProjection"
+                        @selected-date="handleDateSelected"
+                        @export-excel="handleExport('excel')"
+                        @export-pdf="handleExport('pdf')"
+                    />
 
                     <CashFlowMetrics :is-compressed="isChatOpen" />
 
                     <div class="rounded-3xl mb-4 lg:mb-8 transition-all duration-500"
                         :class="isDark ? 'bg-[#00141080] border-none' : 'bg-white border border-gray-100'"
                         :style="isDark ? { boxShadow: '0px 4px 4px 0px #00000040' } : {}">
-                        <CashFlowSummary :data="cashFlowSummaryData" :is-compressed="isChatOpen" />
+                        <CashFlowSummary :is-compressed="isChatOpen" />
                     </div>
 
                     <div class="mb-4 lg:mb-8">
@@ -67,16 +80,40 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 
-// cash-flow page
 const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { summary } = useCashFlowPage()
-const cashFlowSummaryData = summary
+const { fetchProjection, activeDate } = useCashFlow()
+
+const cashFlowPeriods = [
+    { en: 'Year to Date',  ar: 'منذ بداية العام' },
+    { en: 'This Quarter',  ar: 'هذا الربع' },
+    { en: 'Last Quarter',  ar: 'الربع الماضي' },
+    { en: 'This Year',     ar: 'هذه السنة' },
+    { en: 'Last Year',     ar: 'السنة الماضية' },
+    { en: 'Custom Range',  ar: 'نطاق مخصص' },
+]
+
+const handleDateSelected = (periodData) => {
+    if (periodData.custom_to) {
+        const [d, m, y] = periodData.custom_to.split('-')
+        activeDate.value = `${y}-${m}-${d}`
+    } else if (periodData.custom_from) {
+        const [d, m, y] = periodData.custom_from.split('-')
+        activeDate.value = `${y}-${m}-${d}`
+    }
+    fetchProjection()
+}
+
+const handleExport = (type) => {
+    // export logic can be wired here
+}
+
+onMounted(() => fetchProjection())
 </script>
 
 <style scoped>

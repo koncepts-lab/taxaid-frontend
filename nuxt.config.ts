@@ -28,7 +28,7 @@ export default defineNuxtConfig({
     },
   },
   imports: {
-    dirs: ['composables', 'composables/data-source'],
+    dirs: ['composables', 'composables/data-source', 'composables/cards'],
   },
   runtimeConfig: {
     public: {
