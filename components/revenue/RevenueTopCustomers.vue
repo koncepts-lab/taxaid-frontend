@@ -149,83 +149,30 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-// API Data State
-const loading = ref(true)
-const error = ref(null)
-const apiData = ref(null)
-const customersData = ref([])
-const cumulativePct = ref([])
+const { loading, error, topCustomersData, fetchAll: fetchTopCustomers } = useRevenue()
 
-const fetchTopCustomers = async () => {
-  try {
-    loading.value = true
-    error.value = null
-    // removed leading slash to avoid potential double slash issues with baseURL
-    const response = await useApi('revenue-analysis/top-10-customers', { 
-      method: 'POST',
-      body: {
-        range_option: "Previous 3 months",
-        custom_from: "01-02-2025"
-      }
-    })
-    if (response.status === 'Success') {
-      apiData.value = response.data
-      const total = response.data.total_sales_amount
-      let runningSum = 0
-      
-      const colors = [
-        '#04C18F', '#FF886A', '#FFB01A', '#008FFB', '#00E396', 
-        '#775DD0', '#546E7A', '#26A69A', '#D10CE8', '#FF4560'
-      ]
-      
-      const tempCumulative = []
-      customersData.value = response.data.top_10_ledgers.map((item, index) => {
-        const valInMillions = item.amount / 1_000_000
-        runningSum += item.amount
-        tempCumulative.push(Number(((runningSum / total) * 100).toFixed(2)))
-        
-        return {
-          id: `C${index + 1}`,
-          name: item.name,
-          nameAr: item.name, // Fallback to name if Arabic is not provided
-          value: Number(valInMillions.toFixed(2)),
-          color: colors[index % colors.length]
-        }
-      })
-      cumulativePct.value = tempCumulative
-    }
-  } catch (err) {
-    error.value = err
-    console.error('API Error details:', err)
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(() => {
-  fetchTopCustomers()
-})
+const customersData = computed(() => topCustomersData.value?.customers ?? [])
+const cumulativePct = computed(() => topCustomersData.value?.cumulative ?? [])
 
 const customers = computed(() => {
-  return customersData.value.map(c => ({
+  return customersData.value.map((c: any) => ({
     ...c,
     displayName: currentLang.value === 'ar' ? c.nameAr : c.name
   }))
 })
 
-// Data series for Chart
 const series = computed(() => [
   {
     name: 'Revenue',
     type: 'column',
-    data: customersData.value.map(c => c.value)
+    data: customersData.value.map((c: any) => c.value)
   },
   {
     name: 'Cumulative %',
@@ -290,7 +237,7 @@ const chartOptions = computed(() => ({
     {
       min: 0,
       // Dynamically set max based on data
-      max: Math.ceil(Math.max(...customersData.value.map(c => c.value), 1)),
+      max: Math.ceil(Math.max(...customersData.value.map((c: any) => c.value), 1)),
       tickAmount: 5,
       axisBorder: {
         show: true,

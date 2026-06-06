@@ -76,21 +76,27 @@ const handleDateUpdate = (payload) => {
 const summaryRef = ref(null)
 const headerRef = ref(null)
 
-const fetchData = async () => {
-  if (headerRef.value) {
-    headerRef.value.resetToDefault()
-  }
+const { fetchChart, activeDate: ccDate } = useCostCenter()
 
-  if (summaryRef.value) {
-    await summaryRef.value.fetchSummaryData()
-  }
+const fetchData = async () => {
+  if (headerRef.value) headerRef.value.resetToDefault()
+  ccDate.value = '31-12-2025'
+  await Promise.all([
+    summaryRef.value?.fetchSummaryData(),
+    fetchChart()
+  ])
 }
 
 const handleDateChange = (period) => {
-  if (summaryRef.value) {
-
-    summaryRef.value.fetchSummaryData(period)
+  if (period.custom_to) {
+    const [d, m, y] = period.custom_to.split('-')
+    ccDate.value = `${d}-${m}-${y}`
+  } else if (period.custom_from) {
+    const [d, m, y] = period.custom_from.split('-')
+    ccDate.value = `${d}-${m}-${y}`
   }
+  summaryRef.value?.fetchSummaryData(ccDate.value)
+  fetchChart()
 }
 const handleExportExcel = () => {
   const childData = summaryRef.value?.tableData || []

@@ -14,7 +14,20 @@
                  ]">
                 <div class="mx-auto pt-0">
                     
-                    <RevenueHeader class="mb-4 lg:mb-8" />
+                    <CommonDashboardHeader
+                        class="mb-4 lg:mb-8"
+                        :title="{ en: 'Revenue Analysis', ar: 'تحليل الإيرادات' }"
+                        :subtitle="{ en: 'Comprehensive revenue tracking and insights', ar: 'تتبع شامل للإيرادات والرؤى' }"
+                        :oneclickreview="false"
+                        :showDateFilter="true"
+                        :showReload="true"
+                        :showExport="true"
+                        :periods="revenuePeriods"
+                        @reload="fetchAll"
+                        @selected-date="handleDateSelected"
+                        @export-excel="handleExport('excel')"
+                        @export-pdf="handleExport('pdf')"
+                    />
 
                     <div class="rounded-3xl mb-4 lg:mb-8 transition-all duration-500"
                         :class="isDark ? 'bg-[#00141080] border-none' : 'bg-white border border-gray-100'"
@@ -86,73 +99,37 @@
     </NuxtLayout>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 
-// revenue page 
+
 const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { breakdownData, loading: loadingBreakdown, error: errorBreakdown } = useRevenueBreakdown()
+const { fetchAll, customFrom, loading: loadingBreakdown, error: errorBreakdown, summaryData, gaugeData, byCategoryData } = useRevenue()
 
-// 1. Map Summary Data
-const summaryData = computed(() => {
-    if (!breakdownData.value?.data) return []
-    
-    return breakdownData.value.data.map(item => {
-        const achievedPct = item.budget > 0 ? (item.current_year / item.budget) * 100 : 0
-        const varianceSign = item.variance >= 0 ? '+' : ''
-        
-        return {
-            label: item.subgroup,
-            labelAr: item.subgroup, // Fallback
-            current: formatStandardNumber(item.current_year),
-            previous: formatStandardNumber(item.previous_year),
-            budget: formatStandardNumber(item.budget),
-            variance: `${varianceSign}${item.variance_percent}`,
-            progress: Number(achievedPct.toFixed(1)),
-            isSummary: item.isTotal
-        }
-    })
-})
+const revenuePeriods = [
+    { en: 'Year to Date',  ar: 'منذ بداية العام' },
+    { en: 'This Quarter',  ar: 'هذا الربع' },
+    { en: 'Last Quarter',  ar: 'الربع الماضي' },
+    { en: 'This Year',     ar: 'هذه السنة' },
+    { en: 'Last Year',     ar: 'السنة الماضية' },
+    { en: 'Custom Range',  ar: 'نطاق مخصص' },
+]
 
-// 2. Map Gauge Data
-const gaugeData = computed(() => {
-    if (!breakdownData.value?.charts?.target_achievement) return null
-    const target = breakdownData.value.charts.target_achievement
-    
-    return {
-        target: target.target_value,
-        achieved: target.current_value,
-        previousYearPct: target.previous_percent,
-        previousValue: target.previous_value
+const handleDateSelected = (periodData) => {
+    if (periodData.custom_from) {
+        const [d, m, y] = periodData.custom_from.split('-')
+        customFrom.value = `${y}-${m}-${d}`
     }
-})
+    fetchAll()
+}
 
-// 3. Map ByCategory Data
-const byCategoryData = computed(() => {
-    if (!breakdownData.value?.charts?.revenue_by_category) return null
-    const chart = breakdownData.value.charts.revenue_by_category
-    
-    return {
-        categories: chart.categories,
-        categoriesAr: chart.categories, // Fallback
-        series: [
-            {
-                name: 'Previous Year',
-                nameAr: 'السنة السابقة',
-                data: chart.previous_year.map(v => Number((v / 1_000_000).toFixed(2)))
-            },
-            {
-                name: 'Current Year',
-                nameAr: 'السنة الحالية',
-                data: chart.current_year.map(v => Number((v / 1_000_000).toFixed(2)))
-            }
-        ]
-    }
-})
+const handleExport = (type) => {}
+
+onMounted(() => fetchAll())
 </script>
 
 <style scoped>
