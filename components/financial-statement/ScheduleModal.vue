@@ -117,7 +117,7 @@
                                                                 transform="rotate(-180 18 18)" stroke-linecap="round" />
                                                             <circle cx="18" cy="18" r="15" fill="none" :stroke="getProgressColor(item.ytg_percent)"
                                                                 stroke-width="3.5" stroke-dasharray="47.1 94.2"
-                                                                :stroke-dashoffset="47.1 - (parseFloat(item.ytg_percent) / 100) * 47.1"
+                                                                :stroke-dashoffset="Math.max(0, 47.1 - (Math.min(parseFloat(item.ytg_percent), 100) / 100) * 47.1)"
                                                                 transform="rotate(-180 18 18)" stroke-linecap="round" />
                                                         </svg>
                                                         <span
@@ -125,6 +125,7 @@
                                                             :class="isDark ? 'text-white' : 'text-black'">{{
                                                                 item.ytg_percent }}</span>
                                                     </div>
+                                                    <div v-else class="text-gray-400 text-xs">-</div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -142,6 +143,15 @@
                                                         <div class="animate-spin inline-block rounded-full h-5 w-5 border-b-2"
                                                             :class="isDark ? 'border-emerald-400' : 'border-emerald-700'">
                                                         </div>
+                                                    </td>
+                                                </tr>
+
+                                                <!-- Empty State -->
+                                                <tr v-if="!rowLoading[item.subgroup] && ledgerDataMap[item.subgroup]?.length === 0"
+                                                    :class="isDark ? 'bg-emerald-950/15 border-b border-gray-800/70' : 'bg-primary-1150 border-b border-emerald-200/60'">
+                                                    <td colspan="6" class="py-4 text-center text-xs"
+                                                        :class="isDark ? 'text-white/40' : 'text-gray-400'">
+                                                        No ledger data for selected period
                                                     </td>
                                                 </tr>
 
@@ -180,12 +190,15 @@
                                                         {{ ledger.budget ? formatNumber(ledger.budget) : '-' }}
                                                     </td>
 
-                                                    <td class="px-4 py-3.5 text-center"
-                                                        :class="isDark ? 'text-gray-200' : 'text-gray-600'">
-                                                        -
+                                                    <td class="px-4 py-3.5 text-center">
+                                                        <span v-if="ledger.variance_percent && !ledger.isTotal"
+                                                            :class="[ledger.variance < 0 ? 'bg-red-100 text-red-600' : 'bg-[#E6F9F4] text-[#029F80]', 'px-3 py-1 rounded-full text-[11px] font-bold']">
+                                                            {{ ledger.variance_percent }}
+                                                        </span>
+                                                        <span v-else :class="isDark ? 'text-gray-200' : 'text-gray-600'">-</span>
                                                     </td>
 
-                                                    <td class=" px-4 py-3.5 text-center"
+                                                    <td class="px-4 py-3.5 text-center"
                                                         :class="isDark ? 'text-gray-200' : 'text-gray-600'">
                                                         -
                                                     </td>
