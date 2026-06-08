@@ -99,13 +99,15 @@
 <script setup>
 import { ref, computed } from 'vue'
 
+const props = defineProps({
+  data: { type: Object, default: () => ({ customersData: [], cumulativeLine: [] }) }
+})
+
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const { topCustomers } = useAccountsReceivablePage()
-
-const customersData = computed(() => topCustomers.value?.customersData ?? [])
+const customersData = computed(() => props.data?.customersData ?? [])
 
 const customers = computed(() => {
   return customersData.value.map((c) => ({
@@ -123,11 +125,20 @@ const series = computed(() => [
   {
     name: 'Cumulative %',
     type: 'line',
-    data: topCustomers.value?.cumulativeLine ?? []
+    data: props.data?.cumulativeLine ?? []
   }
 ])
 
-const chartOptions = computed(() => ({
+const chartOptions = computed(() => {
+  const allBarData = series.value[0].data
+  const rawMax = Math.max(...allBarData, 0)
+  const dynamicMax = rawMax > 4 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
+
+  const allCumulativeData = series.value[1]?.data || []
+  const rawCumulativeMax = Math.max(...allCumulativeData, 100)
+  const dynamicCumulativeMax = Math.ceil(rawCumulativeMax / 5) * 5
+
+  return ({
   chart: {
     fontFamily: 'Noto Sans Arabic, sans-serif',
     toolbar: { show: false },
@@ -188,9 +199,9 @@ const chartOptions = computed(() => ({
   yaxis: [
     {
       min: 0,
-      max: 5,
+      max: dynamicMax,
       tickAmount: 5,
-      axisBorder: { 
+      axisBorder: {
         show: true,
         color: '#00403333',
         width: 1,
@@ -207,7 +218,7 @@ const chartOptions = computed(() => ({
     {
       opposite: true,
       min: 0,
-      max: 100,
+      max: dynamicCumulativeMax,
       tickAmount: 5,
       labels: {
         style: {
@@ -315,7 +326,8 @@ const chartOptions = computed(() => ({
       }
     }
   ]
-}));
+})
+});
 </script>
 
 <style scoped>

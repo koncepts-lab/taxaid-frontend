@@ -24,12 +24,12 @@
           <AccountsPayableAlert />
 
           <div class="mb-4 lg:mb-8">
-            <AccountsPayableSummary :data="summaryData" :testDate="activeTestDate" />
+            <AccountsPayableSummary :data="summary" :testDate="activeDate" />
           </div>
 
           <div class="mb-4 lg:mb-8">
             <div class="h-[600px]">
-              <AccountsPayableTopCustomers :data="topCustomersData" />
+              <AccountsPayableTopCustomers :data="topCustomers" />
             </div>
           </div>
 
@@ -77,18 +77,13 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-const { date, currentDate } = useAppDate()
 
 const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const agingData = ref({})
-const summaryData = ref([])
-const topCustomersData = ref(null)
-const timelineData = ref(null)
-const activeTestDate = ref(currentDate.value)
+const { activeDate, fetchAll, summary, agingData, topCustomers, timelineData } = useAccountsPayablePage()
 
 const customPeriods = [
     { en: 'Year to Date', ar: 'منذ بداية العام' },
@@ -99,112 +94,20 @@ const customPeriods = [
     { en: 'Custom Date', ar: 'تاريخ مخصص' }
 ]
 
-const fetchAgingData = async () => {
-  agingData.value = {}
-  try {
-    const response = await useApi('/ap-report/aging', {
-      params: {
-        test_date: activeTestDate.value,
-        lang: currentLang.value
-      }
-    })
-    
-    if (response && response.status === 'success') {
-      agingData.value = response.payload || {}
-    }
-  } catch (error) {
-    console.error('Error fetching dashboard data:', error)
-    agingData.value = {}
-  }
-}
-
-const fetchSummaryData = async () => {
-  summaryData.value = []
-  try {
-    const response = await useApi('/ap-report', {
-      params: {
-        test_date: activeTestDate.value
-      }
-    })
-    
-    if (response && response.status === 'success') {
-      summaryData.value = response.data || []
-    }
-  } catch (error) {
-    console.error('Error fetching summary data:', error)
-    summaryData.value = []
-  }
-}
-
-const fetchTopCustomersData = async () => {
-  topCustomersData.value = null
-  try {
-    const response = await useApi('/ap-report/top-eight', {
-      params: {
-        test_date: activeTestDate.value
-      }
-    })
-    
-    if (response && response.status === 'success') {
-      topCustomersData.value = response.payload || null
-    }
-  } catch (error) {
-    console.error('Error fetching top customers data:', error)
-    topCustomersData.value = null
-  }
-}
-
-const fetchTimelineData = async () => {
-  timelineData.value = null
-  try {
-    const response = await useApi('/ap-report/timeline', {
-      params: {
-        test_date: activeTestDate.value
-      }
-    })
-    
-    if (response && response.status === 'success' && response.payload) {
-      const ranges = response.payload.ranges || []
-      timelineData.value = {
-        apBalance: ranges.map(r => r.ap_value / 1000000),
-        categories: ranges.map(r => {
-          const date = new Date(r.start)
-          return date.toLocaleString('en-US', { month: 'short' })
-        }),
-        percentage: []
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching timeline data:', error)
-    timelineData.value = null
-  }
-}
-
 const handleDateChange = (period) => {
-  if (period.custom_from) {
-    const parts = period.custom_from.split('-')
-    activeTestDate.value = `${parts[2]}-${parts[1]}-${parts[0]}`
+  const dateStr = period.custom_to || period.custom_from
+  if (dateStr) {
+    const parts = dateStr.split('-')
+    activeDate.value = `${parts[2]}-${parts[1]}-${parts[0]}`
   }
-  handleReload()
+  fetchAll(currentLang.value)
 }
 
-const handleReload = () => {
-  fetchAgingData()
-  fetchTopCustomersData()
-  fetchSummaryData()
-  fetchTimelineData()
-}
+const handleReload = () => fetchAll(currentLang.value)
 
-watch(currentLang, () => {
-  fetchAgingData()
-})
+watch(currentLang, () => fetchAll(currentLang.value))
 
-onMounted(() => {
-  fetchAgingData()
-  fetchTopCustomersData()
-  fetchSummaryData()
-  fetchTimelineData()
-})
+onMounted(() => fetchAll(currentLang.value))
 </script>
 
 <style scoped>

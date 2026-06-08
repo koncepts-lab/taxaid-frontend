@@ -76,8 +76,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-
+import { ref, onMounted, watch } from 'vue'
 
 const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
@@ -94,109 +93,23 @@ const customPeriods = [
     { en: 'Custom Date', ar: 'تاريخ مخصص' }
 ]
 
-const { date, currentDate } = useAppDate()
-
-const trendData = ref([])
-const revenueToCogsData = ref([])
-const breakdownData = ref(null)
-
-// Format YYYY-MM-DD to DD-MM-YYYY
-const formatDate = (dateStr) => {
-  if (!dateStr) return null
-  const [y, m, d] = dateStr.split('-')
-  return `${d}-${m}-${y}`
-}
-
-const startOfYearStr = `${date.value.getFullYear()}-01-01`
-const activeDateFrom = ref(formatDate(startOfYearStr))
-const activeDateTo = ref(formatDate(currentDate.value))
-const activePeriod = ref('Year to Date')
-
-const fetchTrendData = async () => {
-  try {
-    const response = await useApi('/cogs-analysis/trend-chart', {
-      method: 'POST',
-      body: {
-        custom_from: activeDateFrom.value,
-        custom_to: activeDateTo.value,
-        lang: currentLang.value
-      }
-    })
-    
-    if (response) {
-      trendData.value = Array.isArray(response) ? response : (response.data || response.payload || [])
-    }
-  } catch (error) {
-    console.error('Error fetching trend data:', error)
-    trendData.value = []
-  }
-}
-
-const fetchRevenueToCogsData = async () => {
-  try {
-    const response = await useApi('/cogs-analysis/revenue-vs-cogs/trend-chart', {
-      method: 'POST',
-      body: {
-        custom_from: activeDateFrom.value,
-        custom_to: activeDateTo.value,
-        lang: currentLang.value
-      }
-    })
-    
-    if (response) {
-      revenueToCogsData.value = Array.isArray(response) ? response : (response.data || response.payload || [])
-    }
-  } catch (error) {
-    console.error('Error fetching revenue to cogs data:', error)
-    revenueToCogsData.value = []
-  }
-}
-
-const fetchBreakdownData = async () => {
-  try {
-    const response = await useApi('/cogs-analysis/breakdown', {
-      method: 'POST',
-      body: {
-        range_option: 'Custom Dates',
-        custom_from: activeDateFrom.value,
-        custom_to: activeDateTo.value,
-        lang: currentLang.value
-      }
-    })
-    
-    if (response && response.status === 'success') {
-      breakdownData.value = response
-    }
-  } catch (error) {
-    console.error('Error fetching breakdown data:', error)
-    breakdownData.value = null
-  }
-}
+const { dateFrom, dateTo, breakdownData, trendData, revenueToCogsData, fetchAll } = useCogs()
 
 const handleDateChange = (period) => {
-  activePeriod.value = period.en
-  activeDateFrom.value = period.custom_from
-  activeDateTo.value = period.custom_to
-  fetchTrendData()
-  fetchRevenueToCogsData()
-  fetchBreakdownData()
+  if (period.custom_from) dateFrom.value = period.custom_from
+  if (period.custom_to)   dateTo.value   = period.custom_to
+  fetchAll(currentLang.value)
 }
 
-const handleReload = () => {
-  fetchTrendData()
-  fetchRevenueToCogsData()
-  fetchBreakdownData()
-}
+const handleReload = () => fetchAll(currentLang.value)
 
 const handleOneClickSummary = () => {
   console.log('One Click Summary clicked')
 }
 
-onMounted(() => {
-  fetchTrendData()
-  fetchRevenueToCogsData()
-  fetchBreakdownData()
-})
+watch(currentLang, () => fetchAll(currentLang.value))
+
+onMounted(() => fetchAll(currentLang.value))
 </script>
 
 <style scoped>

@@ -77,241 +77,26 @@
 import { ref, computed, watch } from 'vue'
 import ParticleBackground from '~/components/common/ParticleBackground.vue'
 import * as XLSX from 'xlsx'
-import { format } from 'date-fns' // Ensure date-fns is installed
-// financial-statement page
+
 const isFullScreenChat = ref(false)
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
-const config = useRuntimeConfig()
 const isChatOpen = ref(false)
 const activeTab = ref('profit-loss')
-const isLoading = ref(false)
-const selectedRatioType = ref('All Ratios');
 
-const { profitLoss, balanceSheet, ratios, tabs: jsonTabs } = useFinancialStatementPage()
-
-// --- 1. INITIAL FILTER STATE ---
-const { date: appDate } = useAppDate()
-const today = appDate.value
-const startOfYear = new Date(today.getFullYear(), 0, 1)
-const reportInfo = ref({ current: '', previous: '' });
-
-const filters = ref({
-    "range_option": "Year to Date",
-    "custom_from": format(startOfYear, 'dd-MM-yyyy'),
-    "custom_to": format(today, 'dd-MM-yyyy')
-})
-
-const ratiosRows = ref([])
+const { filters, selectedRatioType, plRows, bsRows, ratiosRows, reportInfo, fetchTabData } = useFinancialStatement()
 
 const dashboardData = computed(() => ({
-    'profit-loss': { rows: plRows.value },
+    'profit-loss':   { rows: plRows.value },
     'balance-sheet': { rows: bsRows.value },
-    'ratios': { rows: ratiosRows.value },
-    'schedules': { rows: [] }
+    'ratios':        { rows: ratiosRows.value },
+    'schedules':     { rows: [] }
 }))
 
-const handleInfo = () => {
-    isChatOpen.value = true
-}
+const activeTabData = computed(() => dashboardData.value[activeTab.value] || { rows: [] })
 
-const plRows = ref([])
-const bsRows = ref([])
+const handleInfo = () => { isChatOpen.value = true }
 
-const scheduleMap = {
-    'Revenue':           '01',
-    'Direct Expenses':   '02',
-    'Opening Stock':     null,
-    'Closing Stock':     null,
-    'Gross Profit':      null,
-    'Indirect Expenses': '03',
-    'Net Operating Income': null,
-    'Indirect Income':   '04',
-    'Profit Before Tax (PBT)': null,
-    'Tax Expense':       '05',
-    'Net Profit':        null,
-}
-
-const scheduleMapBS = {
-    'Fixed Assets': 'S1',
-    'Current Asset': 'S2',
-    'Current Liabilitity': 'S3',
-    'Non Current Liabilities': 'S4'
-}
-
-const mapRangeOption = (en) => {
-    return 'Custom Dates';
-}
-
-const fetchPLData = async () => {
-    isLoading.value = true;
-    try {
-        const payload = {
-            range_option: mapRangeOption(filters.value.range_option),
-            custom_from: filters.value.custom_from,
-            custom_to: filters.value.custom_to
-        };
-        const response = await useApi('/financial-analysis/pl-maingroup-totals', {
-            method: 'POST',
-            body: payload
-        });
-        
-        if (response?.status === 'success') {
-            try {
-                if (response.info) {
-                   reportInfo.value = {
-                       current: response.info.current_range ? `${format(new Date(response.info.current_range.from), 'dd MMM yyyy')} - ${format(new Date(response.info.current_range.to), 'dd MMM yyyy')}` : '',
-                       previous: response.info.previous_range ? `${format(new Date(response.info.previous_range.from), 'dd MMM yyyy')} - ${format(new Date(response.info.previous_range.to), 'dd MMM yyyy')}` : ''
-                   };
-                }
-            } catch (formatErr) {
-                console.error("Date formatting error:", formatErr);
-            }
-            
-            const formatNumber = (num) => {
-                if (num === null || num === undefined || isNaN(num)) return num;
-                return new Intl.NumberFormat('en-US').format(num);
-            };
-
-            plRows.value = (response.report || []).map(row => {
-                return {
-                    label: row.label,
-                    current: formatNumber(row.current_year),
-                    previous: formatNumber(row.previous_year),
-                    variance: row.variance_percent,
-                    budget: row.budget !== null ? formatNumber(row.budget) : '-',
-                    progress: row.ytg_percent !== null ? String(row.ytg_percent).replace('%', '') : '-',
-                    isSummary: row.isSummary,
-                    isHeader: false,
-                    isTotal: false,
-                    schedule: scheduleMap[row.label] || '-'
-                };
-            });
-        }
-    } catch (e) {
-        console.error("Failed to fetch P&L data", e);
-    } finally {
-        isLoading.value = false;
-    }
-}
-
-const fetchBSData = async () => {
-    isLoading.value = true;
-    try {
-        const payload = {
-            range_option: mapRangeOption(filters.value.range_option),
-            custom_from: filters.value.custom_from,
-            custom_to: filters.value.custom_to
-        };
-        const response = await useApi('/financial-analysis/bs-maingroup-totals', {
-            method: 'POST',
-            body: payload
-        });
-        
-        if (response?.status === 'success') {
-            const formatNumber = (num) => {
-                if (num === null || num === undefined || isNaN(num)) return num;
-                return new Intl.NumberFormat('en-US').format(num);
-            };
-
-            bsRows.value = (response.report || []).map(row => {
-                return {
-                    label: row.label,
-                    current: formatNumber(row.current_year),
-                    previous: formatNumber(row.previous_year),
-                    variance: row.variance_percent !== null ? row.variance_percent : '-',
-                    budget: row.budget !== null ? formatNumber(row.budget) : '-',
-                    progress: row.ytg_percent !== null ? String(row.ytg_percent).replace('%', '') : '-',
-                    isSummary: row.isSummary || false,
-                    isHeader: row.isHeader || false,
-                    isTotal: row.isTotal || false,
-                    schedule: scheduleMapBS[row.label] || '-'
-                };
-            });
-        }
-    } catch (e) {
-        console.error("Failed to fetch BS data", e);
-    } finally {
-        isLoading.value = false;
-    }
-}
-
-const fetchRatiosData = async () => {
-    isLoading.value = true;
-    try {
-        const payload = {
-            range_option: mapRangeOption(filters.value.range_option),
-            custom_from: filters.value.custom_from,
-            custom_to: filters.value.custom_to
-        };
-        
-        if (selectedRatioType.value && selectedRatioType.value !== 'All Ratios') {
-            payload.ratio_type = selectedRatioType.value;
-        }
-
-        const response = await useApi('/financial-ratios/comparative-report', {
-            method: 'POST',
-            body: payload
-        });
-        
-        if (response?.success) {
-            ratiosRows.value = (response.report || []).map(row => {
-                let progressVal = 0;
-                if (row.year_to_go) {
-                    const parsed = parseFloat(String(row.year_to_go).replace('%', ''));
-                    if (!isNaN(parsed)) {
-                        progressVal = Math.min(100, Math.max(0, Math.round(parsed)));
-                    }
-                }
-
-                let current = row.current_year !== null && row.current_year !== undefined ? row.current_year : '-';
-                let previous = row.previous_year !== null && row.previous_year !== undefined ? row.previous_year : '-';
-                let budget = row.budget !== null && row.budget !== undefined ? row.budget : '-';
-                
-                if (current !== '-' && !String(current).includes('%') && (row.category === 'Profitability' || String(row.key_metric).toLowerCase().includes('margin'))) {
-                    current = `${current}%`;
-                }
-                if (previous !== '-' && !String(previous).includes('%') && (row.category === 'Profitability' || String(row.key_metric).toLowerCase().includes('margin'))) {
-                    previous = `${previous}%`;
-                }
-                if (budget !== '-' && !String(budget).includes('%') && (row.category === 'Profitability' || String(row.key_metric).toLowerCase().includes('margin'))) {
-                    budget = `${budget}%`;
-                }
-
-                return {
-                    label: row.key_metric,
-                    category: row.category,
-                    current: current,
-                    previous: previous,
-                    budget: budget,
-                    variance: row.variance_percent !== null ? row.variance_percent : '-',
-                    progress: progressVal,
-                    isSummary: false,
-                    isHeader: false,
-                    isTotal: false,
-                    schedule: '-'
-                };
-            });
-        }
-    } catch (e) {
-        console.error("Failed to fetch Ratios data", e);
-    } finally {
-        isLoading.value = false;
-    }
-}
-
-const fetchTabData = async (tabId) => {
-    if (tabId === 'profit-loss') {
-        await fetchPLData();
-    } else if (tabId === 'balance-sheet') {
-        await fetchBSData();
-    } else if (tabId === 'ratios') {
-        await fetchRatiosData();
-    }
-    console.log(`Switching to tab: ${tabId}`)
-}
-
-// Custom periods for Financial Statement
 const customPeriods = [
     { en: 'Year to Date', ar: 'منذ بداية العام' },
     { en: 'Previous 3 Months', ar: 'آخر ٣ أشهر' },
@@ -319,30 +104,23 @@ const customPeriods = [
     { en: 'Custom Range', ar: 'نطاق مخصص' },
 ]
 
-// --- 3. HANDLE DATE CHANGE FROM HEADER ---
-// DashboardHeader emits { en, ar, custom_from, custom_to } — map en → range_option
 const handleDateUpdate = (payload) => {
     filters.value = {
         range_option: payload.en,
-        custom_from: payload.custom_from,
-        custom_to: payload.custom_to ?? null
+        custom_from:  payload.custom_from,
+        custom_to:    payload.custom_to ?? null
     }
-    fetchTabData(activeTab.value);
+    fetchTabData(activeTab.value)
 }
 
-// Watch both Tab and Filters for changes
 watch([activeTab, filters], () => {
     fetchTabData(activeTab.value)
 }, { immediate: true, deep: true })
 
-const activeTabData = computed(() => {
-    return dashboardData.value[activeTab.value] || { rows: [] }
-})
-// --- EXCEL LOGIC (Kept as is) ---
 const handleExportExcel = () => {
     const exportData = activeTabData.value.rows.map(row => ({
-        "Account": row.label,
-        "Current": row.current,
+        "Account":  row.label,
+        "Current":  row.current,
         "Previous": row.previous,
         "Variance": row.variance
     }))
@@ -352,35 +130,26 @@ const handleExportExcel = () => {
     XLSX.writeFile(workbook, `Report_${activeTab.value}.xlsx`)
 }
 
-// --- PDF LOGIC (Kept as is) ---
 const handleExportPDF = async () => {
-    if (!process.client) return;
+    if (!process.client) return
     try {
-        const { default: jsPDF } = await import('jspdf');
-        const { default: autoTable } = await import('jspdf-autotable');
-        const doc = new jsPDF();
-        const body = activeTabData.value.rows.map(row => [
-            row.label,
-            row.current,
-            row.previous,
-            row.variance
-        ]);
-        doc.setFontSize(18);
-        doc.text(`${activeTab.value.toUpperCase()} Report`, 14, 15);
+        const { default: jsPDF }    = await import('jspdf')
+        const { default: autoTable } = await import('jspdf-autotable')
+        const doc = new jsPDF()
+        const body = activeTabData.value.rows.map(row => [row.label, row.current, row.previous, row.variance])
+        doc.setFontSize(18)
+        doc.text(`${activeTab.value.toUpperCase()} Report`, 14, 15)
         autoTable(doc, {
             head: [['Account', 'Current', 'Previous', 'Variance']],
-            body: body,
-            startY: 25,
-            theme: 'grid',
+            body, startY: 25, theme: 'grid',
             headStyles: { fillColor: [13, 148, 136] },
-            styles: { fontSize: 9 },
-            margin: { top: 25 }
-        });
-        doc.save(`Report_${activeTab.value}.pdf`);
+            styles: { fontSize: 9 }, margin: { top: 25 }
+        })
+        doc.save(`Report_${activeTab.value}.pdf`)
     } catch (error) {
-        console.error("Export Error:", error);
+        console.error('Export Error:', error)
     }
-};
+}
 
 const tabs = [
     {

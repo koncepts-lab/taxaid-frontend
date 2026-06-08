@@ -15,7 +15,8 @@
 
           <CommonDashboardHeader ref="headerRef" :title="{ en: 'Cost Center Analysis', ar: 'تحليل مركز التكلفة' }"
             :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
-            :oneclickreview="false" @export-excel="handleExportExcel" @export-pdf="handleExportPDF"
+            :oneclickreview="false" :periods="costCenterPeriods"
+            @export-excel="handleExportExcel" @export-pdf="handleExportPDF"
             @selected-date="handleDateChange" @reload="fetchData" @export="exportData"
             @one-click-summary="showSummaryModal" />
           <div class="my-8">
@@ -77,6 +78,12 @@ const summaryRef = ref(null)
 const headerRef = ref(null)
 
 const { fetchChart, activeDate: ccDate } = useCostCenter()
+
+const costCenterPeriods = [
+  { en: 'This Year',   ar: 'هذه السنة' },
+  { en: 'Last Year',   ar: 'السنة الماضية' },
+  { en: 'Custom Date', ar: 'تاريخ مخصص' },
+]
 
 const fetchData = async () => {
   if (headerRef.value) headerRef.value.resetToDefault()

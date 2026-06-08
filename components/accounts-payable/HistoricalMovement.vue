@@ -81,24 +81,31 @@
 <script setup>
 import { ref, computed } from 'vue'
 
+const props = defineProps({
+  data: { type: Object, default: () => ({ categories: [], apBalance: [], percentage: [] }) }
+})
+
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const { historicalMovement } = useAccountsPayablePage()
-
 const series = computed(() => [
   {
-    name: 'AR Balance',
-    data: historicalMovement.value?.apBalance ?? []
+    name: 'AP Balance',
+    data: props.data?.apBalance ?? []
   },
   {
     name: 'Percentage',
-    data: historicalMovement.value?.percentage ?? []
+    data: props.data?.percentage ?? []
   }
 ])
 
-const chartOptions = computed(() => ({
+const chartOptions = computed(() => {
+  const allData = series.value[0]?.data || []
+  const rawMax = Math.max(...allData, 0)
+  const dynamicMax = rawMax > 4 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
+
+  return ({
   chart: {
     type: 'line',
     toolbar: { show: false },
@@ -127,7 +134,7 @@ const chartOptions = computed(() => ({
     hover: { size: 7 }
   },
   xaxis: {
-    categories: historicalMovement.value?.categories ?? [],
+    categories: props.data?.categories ?? [],
     tickPlacement: 'between',
     axisBorder: {
       show: true,
@@ -147,7 +154,7 @@ const chartOptions = computed(() => ({
   yaxis: [
     {
       min: 0,
-      max: 5,
+      max: dynamicMax,
       tickAmount: 5,
       axisBorder: {
         show: true,
@@ -193,7 +200,7 @@ const chartOptions = computed(() => ({
           <div class="tooltip-header">${monthLabel}</div>
           <div class="tooltip-body">
             <div class="tooltip-row">
-              <span class="label">${currentLang.value === 'ar' ? 'رصيد حسابات القبض' : 'AR Balance'}:</span>
+              <span class="label">${currentLang.value === 'ar' ? 'رصيد حسابات القبض' : 'AP Balance'}:</span>
               <span class="value">AED ${bal.toString().replace('.', ',')}M</span>
             </div>
           </div>
@@ -201,7 +208,8 @@ const chartOptions = computed(() => ({
       `
     }
   }
-}))
+})
+})
 </script>
 
 <style scoped>

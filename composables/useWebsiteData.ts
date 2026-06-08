@@ -246,18 +246,7 @@ export function useCashFlowPage() {
   }
 }
 
-/** Accounts Receivable detail page: /accounts-receivable */
-export function useAccountsReceivablePage() {
-  const { data, loading, error } = useWebsiteData()
-  const ar = computed(() => data.value?.accountsReceivablePage ?? {})
-  return {
-    loading, error,
-    summary:            computed(() => ar.value?.summary            ?? []),
-    topCustomers:       computed(() => ar.value?.topCustomers       ?? {}),
-    historicalMovement: computed(() => ar.value?.historicalMovement ?? {}),
-    agingGraph:         computed(() => ar.value?.agingGraph         ?? {}),
-  }
-}
+// useAccountsReceivablePage is exported from composables/useAccountsReceivable.ts
 
 /** COGS detail page: /cogs */
 export function useCogsPage() {

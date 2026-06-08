@@ -79,7 +79,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
 const isChatOpen = ref(true)
 const isFullScreenChat = ref(false)
@@ -96,102 +96,23 @@ const customPeriods = [
     { en: 'Custom Date', ar: 'تاريخ مخصص' }
 ]
 
-const { date, currentDate } = useAppDate()
-
-// Format YYYY-MM-DD to DD-MM-YYYY
-const formatDate = (dateStr) => {
-  if (!dateStr) return null
-  const [y, m, d] = dateStr.split('-')
-  return `${d}-${m}-${y}`
-}
-
-const startOfYearStr = `${date.value.getFullYear()}-01-01`
-const activeDateFrom = ref(formatDate(startOfYearStr))
-const activeDateTo = ref(formatDate(currentDate.value))
-
-// API Data
-const expenseVsRevenueData = ref([])
-const trendData = ref([])
-const breakdownData = ref(null)
-
-const fetchExpenseVsRevenue = async () => {
-  try {
-    const response = await useApi('/indirectexpenses-analysis/expense-vs-revenue/trend-chart', {
-      method: 'POST',
-      body: {
-        custom_from: activeDateFrom.value,
-        lang: currentLang.value
-      }
-    })
-    if (response && response.status === 'success') {
-      expenseVsRevenueData.value = response.data || []
-    }
-  } catch (error) {
-    console.error('Error fetching expense vs revenue data:', error)
-    expenseVsRevenueData.value = []
-  }
-}
-
-const fetchTrendData = async () => {
-  try {
-    const response = await useApi('/indirectexpenses-analysis/trend-chart', {
-      method: 'POST',
-      body: {
-        custom_from: activeDateFrom.value
-      }
-    })
-    if (response && response.status === 'success') {
-      trendData.value = response.data || []
-    }
-  } catch (error) {
-    console.error('Error fetching trend data:', error)
-    trendData.value = []
-  }
-}
-
-const fetchBreakdownData = async () => {
-  try {
-    const response = await useApi('/indirectexpenses-analysis/breakdown', {
-      method: 'POST',
-      body: {
-        range_option: 'Custom Dates',
-        custom_from: activeDateFrom.value,
-        custom_to: activeDateTo.value,
-        lang: currentLang.value
-      }
-    })
-    if (response && response.status === 'success') {
-      breakdownData.value = response
-    }
-  } catch (error) {
-    console.error('Error fetching breakdown data:', error)
-    breakdownData.value = null
-  }
-}
+const { dateFrom, dateTo, breakdownData, trendData, expenseVsRevenue: expenseVsRevenueData, fetchAll } = useIndirectExpense()
 
 const handleDateChange = (period) => {
-  activeDateFrom.value = period.custom_from
-  activeDateTo.value = period.custom_to
-  fetchExpenseVsRevenue()
-  fetchTrendData()
-  fetchBreakdownData()
+  if (period.custom_from) dateFrom.value = period.custom_from
+  if (period.custom_to)   dateTo.value   = period.custom_to
+  fetchAll(currentLang.value)
 }
 
-const handleReload = () => {
-  fetchExpenseVsRevenue()
-  fetchTrendData()
-  fetchBreakdownData()
-}
+const handleReload = () => fetchAll(currentLang.value)
 
 const handleExport = (type) => {
   console.log('Export:', type)
 }
 
-onMounted(() => {
-  fetchExpenseVsRevenue()
-  fetchTrendData()
-  fetchBreakdownData()
-})
+watch(currentLang, () => fetchAll(currentLang.value))
+
+onMounted(() => fetchAll(currentLang.value))
 
 </script>
 

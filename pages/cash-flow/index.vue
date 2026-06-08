@@ -95,7 +95,7 @@ const cashFlowPeriods = [
     { en: 'Last Quarter',  ar: 'الربع الماضي' },
     { en: 'This Year',     ar: 'هذه السنة' },
     { en: 'Last Year',     ar: 'السنة الماضية' },
-    { en: 'Custom Range',  ar: 'نطاق مخصص' },
+    { en: 'Custom Date',   ar: 'تاريخ مخصص' },
 ]
 
 const handleDateSelected = (periodData) => {

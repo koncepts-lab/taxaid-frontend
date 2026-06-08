@@ -101,40 +101,51 @@
 <script setup>
 import { ref, computed } from 'vue'
 
+const props = defineProps({
+  agingData: { type: Object, default: () => ({}) }
+})
+
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const { agingGraph } = useAccountsReceivablePage()
-
-const agingCategories = computed(() => agingGraph.value?.agingCategories ?? [
+const agingCategories = computed(() => props.agingData?.agingCategories ?? [
   { en: 'Overdue >30 Days',  ar: 'متأخر أكثر من 30 يوم' },
   { en: 'Overdue 30-60 Days', ar: 'متأخر 30-60 يوم' },
   { en: 'Overdue 60-90 Days', ar: 'متأخر 60-90 يوم' },
   { en: 'Overdue <90 Days',  ar: 'متأخر أقل من 90 يوم' }
 ])
 
-const percentOfTotal = computed(() => agingGraph.value?.percentOfTotal ?? [16, 16, 10, 15])
+const percentOfTotal = computed(() => props.agingData?.percentOfTotal ?? [])
 
 const series = computed(() => [
   {
     name: 'Previous Year',
     type: 'bar',
-    data: agingGraph.value?.previousYearData ?? []
+    data: props.agingData?.previousYearData ?? []
   },
   {
     name: 'Current Year',
     type: 'bar',
-    data: agingGraph.value?.currentYearData ?? []
+    data: props.agingData?.currentYearData ?? []
   },
   {
     name: 'Cumulative %',
     type: 'line',
-    data: agingGraph.value?.cumulativeData ?? []
+    data: props.agingData?.cumulativeData ?? []
   }
 ])
 
-const chartOptions = computed(() => ({
+const chartOptions = computed(() => {
+  const allBarData = [...series.value[0].data, ...series.value[1].data]
+  const rawMax = Math.max(...allBarData, 0)
+  const dynamicMax = rawMax > 4 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
+
+  const allCumulativeData = series.value[2]?.data || []
+  const rawCumulativeMax = Math.max(...allCumulativeData, 100)
+  const dynamicCumulativeMax = Math.ceil(rawCumulativeMax / 5) * 5
+
+  return ({
   chart: {
     fontFamily: 'Noto Sans Arabic, sans-serif',
     toolbar: { show: false },
@@ -196,7 +207,7 @@ const chartOptions = computed(() => ({
     {
       seriesName: 'Previous Year',
       min: 0,
-      max: 5,
+      max: dynamicMax,
       tickAmount: 5,
       axisBorder: {
         show: true,
@@ -216,13 +227,13 @@ const chartOptions = computed(() => ({
       seriesName: 'Current Year',
       show: false,
       min: 0,
-      max: 5
+      max: dynamicMax
     },
     {
       seriesName: 'Cumulative %',
       opposite: true,
       min: 0,
-      max: 100,
+      max: dynamicCumulativeMax,
       tickAmount: 5,
       axisBorder: { show: true, color: '#00403399', width: 1 },
       axisTicks: { show: false },
@@ -335,7 +346,8 @@ const chartOptions = computed(() => ({
       }
     }
   ]
-}))
+  })
+})
 </script>
 
 <style scoped>
