@@ -49,10 +49,6 @@ export const useDataIn = () => {
       await useApi(endpoint, {
         method: 'POST',
         body: form,
-        headers: {
-          // Let the browser set Content-Type with the boundary for FormData
-          'Content-Type': undefined as any,
-        },
       })
 
       // Refresh status for this card from backend after a successful upload
