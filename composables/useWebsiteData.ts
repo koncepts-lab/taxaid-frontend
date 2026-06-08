@@ -289,19 +289,20 @@ export function useCostCenterPage() {
   }
 }
 
-/** Tax Queries page: /tax-queries */
-export function useTaxQueriesPage() {
-  const { data, loading, error } = useWebsiteData()
-  const tq = computed(() => data.value?.taxQueriesPage ?? {})
-  return {
-    loading, error,
-    tableData:      computed(() => tq.value?.tableData      ?? {}),
-    suggestions:    computed(() => tq.value?.suggestions    ?? []),
-    tabs:           computed(() => tq.value?.tabs           ?? []),
-    historyGroups:  computed(() => tq.value?.historyGroups  ?? []),
-    deadlines:      computed(() => tq.value?.deadlines      ?? []),
-  }
-}
+// useTaxQueriesPage — MOCK (static data.json)
+// Replaced by composables/cards/useTaxQueries.ts which calls the real API
+// export function useTaxQueriesPage() {
+//   const { data, loading, error } = useWebsiteData()
+//   const tq = computed(() => data.value?.taxQueriesPage ?? {})
+//   return {
+//     loading, error,
+//     tableData:      computed(() => tq.value?.tableData      ?? {}),
+//     suggestions:    computed(() => tq.value?.suggestions    ?? []),
+//     tabs:           computed(() => tq.value?.tabs           ?? []),
+//     historyGroups:  computed(() => tq.value?.historyGroups  ?? []),
+//     deadlines:      computed(() => tq.value?.deadlines      ?? []),
+//   }
+// }
 
 /** Data Source Management page: /data-source */
 export function useDataSourcePage() {

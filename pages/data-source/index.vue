@@ -129,7 +129,7 @@
               <DataSourceCostCenter v-if="activeSubTab === 'cost-center'" :isDark="isDark" :currentLang="currentLang"
                 @open-report="handleOpenCCReport" />
               <DataSourcePDCModal :isOpen="isPDCModalOpen" :type="selectedPDCType" :data="pdcDetailedData"
-                :isDark="isDark" :currentLang="currentLang" @close="isPDCModalOpen = false" />
+                :totalAmount="pdcDetailedTotal" :isDark="isDark" :currentLang="currentLang" @close="isPDCModalOpen = false" />
               <DataSourceCostCenterModal :isOpen="isModalOpen" :title="modalConfig.title" :columns="modalConfig.columns"
                 :data="modalConfig.data" :totalValue="modalConfig.total" :isDark="isDark" :currentLang="currentLang"
                 @close="isModalOpen = false" />
@@ -173,6 +173,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useDataIn } from '../../composables/data-source/useDataIn'
+import { usePDC } from '../../composables/data-source/usePDC'
 
 // ── AR Aging Summary (live API) ────────────────────────────────────────────
 const { rows: arRows, totals: arTotals, loading: arLoading, error: arError } = useArAgingSummary()
@@ -197,8 +198,6 @@ const {
   arData: arDataFromJson,
   apData: apDataFromJson,
   logs: logsData,
-  pdcSummaryData: pdcSummaryDataFromJson,
-  pdcDetailedData: pdcDetailedDataFromJson,
   interCompanyData: interCompanyDataFromJson,
   dataInItems: _dataInItemsFromJson,
   costCenterReports,
@@ -308,12 +307,19 @@ watch(() => currentLang.value, () => {
 const isPDCModalOpen = ref(false)
 const selectedPDCType = ref('issued')
 
-// PDC data from composable (reactive to data.json)
-const pdcSummaryData = computed(() => pdcSummaryDataFromJson.value)
-const pdcDetailedData = computed(() => pdcDetailedDataFromJson.value)
 
-const openPDCReport = (type) => {
+const {
+  pdcGroups,
+  pdcDetailedData,
+  pdcDetailedTotal,
+  fetchDetailed: fetchPdcDetailed,
+} = usePDC()
+
+const pdcSummaryData = computed(() => pdcGroups.value)
+
+const openPDCReport = async (type) => {
   selectedPDCType.value = type
+  await fetchPdcDetailed(type)
   isPDCModalOpen.value = true
 }
 

@@ -59,7 +59,7 @@
                                         <td class="px-4 py-4 text-sm">-</td>
                                         <td class="px-4 py-4 text-sm">-</td>
                                         <td class="px-4 py-4 text-sm">-</td>
-                                        <td class="px-6 py-4 text-sm text-right rtl:text-left font-medium">-</td>
+                                        <td class="px-6 py-4 text-sm text-right rtl:text-left font-medium">{{ totalAmount ?? '-' }}</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -76,6 +76,7 @@ defineProps({
     isOpen: Boolean,
     type: String,
     data: Array,
+    totalAmount: [Number, String],
     isDark: Boolean,
     currentLang: String
 })
