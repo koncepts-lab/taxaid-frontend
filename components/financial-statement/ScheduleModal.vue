@@ -245,7 +245,8 @@ const ledgerDataMap = ref({});     // Stores API results: { "Subgroup Name": [da
 const rowLoading = ref({});        // Tracks loading state per row: { "Subgroup Name": true/false }
 
 const mapRangeOption = (en) => {
-    return 'Custom Dates';
+    // Pass the range_option through directly — already backend-correct from the page handler
+    return en ?? 'Year to Date'
 }
 
 const getProgressColor = (progress) => {

@@ -84,21 +84,41 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
 const customPeriods = [
-    { en: 'Year to Date', ar: 'منذ بداية العام' },
-    { en: 'This Quarter', ar: 'هذا الربع' },
-    { en: 'Last Quarter', ar: 'الربع الماضي' },
-    { en: 'This Year', ar: 'هذه السنة' },
-    { en: 'Last Year', ar: 'السنة الماضية' },
-    { en: 'Custom Range', ar: 'نطاق مخصص' },
-    { en: 'Custom Date', ar: 'تاريخ مخصص' }
+    { en: 'Year to Date',      ar: 'منذ بداية العام' },
+    { en: 'Previous 3 Months', ar: 'الأشهر الثلاثة الماضية' },
+    { en: 'Previous 6 Months', ar: 'الأشهر الستة الماضية' },
+    // { en: 'This Quarter', ar: 'هذا الربع' },    // not supported by backend
+    // { en: 'Last Quarter', ar: 'الربع الماضي' },  // not supported by backend
+    // { en: 'This Year',    ar: 'هذه السنة' },     // not supported by backend
+    // { en: 'Last Year',    ar: 'السنة الماضية' }, // not supported by backend
+    { en: 'Custom Range',      ar: 'نطاق مخصص' },
 ]
 
-const { dateFrom, dateTo, breakdownData, trendData, revenueToCogsData, fetchAll } = useCogs()
+const backendRangeMap = {
+    'Year to Date':      'Year to Date',
+    'Previous 3 Months': 'Previous 3 months',
+    'Previous 6 Months': 'Previous 6 months',
+    'Custom Range':      'Custom Dates',
+}
 
-const handleDateChange = (period) => {
-  if (period.custom_from) dateFrom.value = period.custom_from
-  if (period.custom_to)   dateTo.value   = period.custom_to
-  fetchAll(currentLang.value)
+const { rangeOption, customFrom, customTo, breakdownData, trendData, revenueToCogsData, fetchAll } = useCogs()
+
+const handleDateChange = (periodData) => {
+    rangeOption.value = backendRangeMap[periodData.en] ?? 'Year to Date'
+    if (periodData.en === 'Custom Range') {
+        if (periodData.custom_from) {
+            const [d, m, y] = periodData.custom_from.split('-')
+            customFrom.value = `${y}-${m}-${d}`
+        }
+        if (periodData.custom_to) {
+            const [d, m, y] = periodData.custom_to.split('-')
+            customTo.value = `${y}-${m}-${d}`
+        }
+    } else {
+        customFrom.value = null
+        customTo.value   = null
+    }
+    fetchAll(currentLang.value)
 }
 
 const handleReload = () => fetchAll(currentLang.value)

@@ -376,7 +376,9 @@ const selectedMainGroup = ref('');
 const selectedSchedule = ref('');
 
 const mapRangeOption = (en) => {
-    return 'Custom Dates';
+    // Pass the range_option through directly — it's already the backend-correct value
+    // set by handleDateUpdate in the page (e.g. 'Year to Date', 'Previous 3 months', 'Custom Dates')
+    return en ?? 'Year to Date'
 }
 
 const handleSchedule = async (row) => {

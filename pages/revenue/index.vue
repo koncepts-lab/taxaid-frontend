@@ -108,22 +108,37 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { fetchAll, customFrom, loading: loadingBreakdown, error: errorBreakdown, summaryData, gaugeData, byCategoryData } = useRevenue()
+const { fetchAll, customFrom, customTo, rangeOption, loading: loadingBreakdown, error: errorBreakdown, summaryData, gaugeData, byCategoryData } = useRevenue()
 
 const revenuePeriods = [
     { en: 'Year to Date',  ar: 'منذ بداية العام' },
-    { en: 'This Quarter',  ar: 'هذا الربع' },
-    { en: 'Last Quarter',  ar: 'الربع الماضي' },
-    { en: 'This Year',     ar: 'هذه السنة' },
-    { en: 'Last Year',     ar: 'السنة الماضية' },
+    // { en: 'This Quarter',  ar: 'هذا الربع' },    // not supported by backend
+    // { en: 'Last Quarter',  ar: 'الربع الماضي' },  // not supported by backend
+    // { en: 'This Year',     ar: 'هذه السنة' },     // not supported by backend
+    // { en: 'Last Year',     ar: 'السنة الماضية' }, // not supported by backend
     { en: 'Custom Range',  ar: 'نطاق مخصص' },
 ]
 
 const handleDateSelected = (periodData) => {
-    if (periodData.custom_from) {
-        const [d, m, y] = periodData.custom_from.split('-')
-        customFrom.value = `${y}-${m}-${d}`
+    rangeOption.value = periodData.en
+
+    if (periodData.en === 'Custom Range') {
+        // DashboardHeader emits dates as dd-MM-yyyy — convert to yyyy-MM-dd for backend
+        if (periodData.custom_from) {
+            const [d, m, y] = periodData.custom_from.split('-')
+            customFrom.value = `${y}-${m}-${d}`
+        }
+        if (periodData.custom_to) {
+            const [d, m, y] = periodData.custom_to.split('-')
+            customTo.value = `${y}-${m}-${d}`
+        }
+    } else {
+        // Let backend resolve dates from Carbon::now() — sending custom_from collapses
+        // the Year to Date toDate to the anchor itself instead of today
+        customFrom.value = null
+        customTo.value   = null
     }
+
     fetchAll()
 }
 

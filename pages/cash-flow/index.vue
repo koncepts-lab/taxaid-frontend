@@ -22,9 +22,11 @@
                         :showDateFilter="true"
                         :showReload="true"
                         :showExport="true"
+                        :showPeriodToggle="true"
                         :periods="cashFlowPeriods"
                         @reload="fetchProjection"
                         @selected-date="handleDateSelected"
+                        @period-change="handlePeriodChange"
                         @export-excel="handleExport('excel')"
                         @export-pdf="handleExport('pdf')"
                     />
@@ -87,31 +89,34 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { fetchProjection, activeDate } = useCashFlow()
+const { fetchProjection, activeDate, period } = useCashFlow()
 
+// Backend only accepts: date (single Y-m-d anchor), period (3 or 6), scenario
+// No range_option concept — Custom Date is the only supported date filter
 const cashFlowPeriods = [
-    { en: 'Year to Date',  ar: 'منذ بداية العام' },
-    { en: 'This Quarter',  ar: 'هذا الربع' },
-    { en: 'Last Quarter',  ar: 'الربع الماضي' },
-    { en: 'This Year',     ar: 'هذه السنة' },
-    { en: 'Last Year',     ar: 'السنة الماضية' },
-    { en: 'Custom Date',   ar: 'تاريخ مخصص' },
+    // { en: 'Year to Date',  ar: 'منذ بداية العام' }, // not supported — no range_option in backend
+    // { en: 'This Quarter',  ar: 'هذا الربع' },        // not supported — no range_option in backend
+    // { en: 'Last Quarter',  ar: 'الربع الماضي' },     // not supported — no range_option in backend
+    // { en: 'This Year',     ar: 'هذه السنة' },        // not supported — no range_option in backend
+    // { en: 'Last Year',     ar: 'السنة الماضية' },    // not supported — no range_option in backend
+    { en: 'Custom Date',   ar: 'تاريخ مخصص' },         // ✅ maps to ?date=Y-m-d query param
 ]
 
 const handleDateSelected = (periodData) => {
-    if (periodData.custom_to) {
-        const [d, m, y] = periodData.custom_to.split('-')
-        activeDate.value = `${y}-${m}-${d}`
-    } else if (periodData.custom_from) {
+    // Custom Date emits custom_from only (single day) — convert dd-MM-yyyy to yyyy-MM-dd
+    if (periodData.custom_from) {
         const [d, m, y] = periodData.custom_from.split('-')
         activeDate.value = `${y}-${m}-${d}`
     }
     fetchProjection()
 }
 
-const handleExport = (type) => {
-    // export logic can be wired here
+const handlePeriodChange = (months) => {
+    period.value = months
+    fetchProjection()
 }
+
+const handleExport = (type) => {}
 
 onMounted(() => fetchProjection())
 </script>

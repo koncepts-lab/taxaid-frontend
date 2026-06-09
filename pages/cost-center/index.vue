@@ -80,9 +80,9 @@ const headerRef = ref(null)
 const { fetchChart, activeDate: ccDate } = useCostCenter()
 
 const costCenterPeriods = [
-  { en: 'This Year',   ar: 'هذه السنة' },
-  { en: 'Last Year',   ar: 'السنة الماضية' },
-  { en: 'Custom Date', ar: 'تاريخ مخصص' },
+  // { en: 'This Year', ar: 'هذه السنة' },   // not supported — backend uses single date, no range_option
+  // { en: 'Last Year', ar: 'السنة الماضية' }, // not supported
+  { en: 'Custom Date', ar: 'تاريخ مخصص' },    // ✅ maps to ?date=dd-MM-yyyy
 ]
 
 const fetchData = async () => {

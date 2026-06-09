@@ -86,19 +86,19 @@ const currentLang = useState('currentLang', () => 'en')
 const { activeDate, fetchAll, summary, topCustomers, agingGraph, historicalMovement } = useAccountsReceivablePage()
 
 const customPeriods = [
-  { en: 'Year to Date', ar: 'منذ بداية العام' },
-  { en: 'This Quarter', ar: 'هذا الربع' },
-  { en: 'Last Quarter', ar: 'الربع الماضي' },
-  { en: 'This Year', ar: 'هذه السنة' },
-  { en: 'Last Year', ar: 'السنة الماضية' },
-  { en: 'Custom Date', ar: 'تاريخ مخصص' }
+  // { en: 'Year to Date', ar: 'منذ بداية العام' }, // not supported — backend uses single test_date only
+  // { en: 'This Quarter', ar: 'هذا الربع' },        // not supported
+  // { en: 'Last Quarter', ar: 'الربع الماضي' },     // not supported
+  // { en: 'This Year',    ar: 'هذه السنة' },        // not supported
+  // { en: 'Last Year',    ar: 'السنة الماضية' },    // not supported
+  { en: 'Custom Date', ar: 'تاريخ مخصص' },           // ✅ maps to ?test_date=Y-m-d
 ]
 
 const handleDateChange = (period) => {
-  const dateStr = period.custom_to || period.custom_from
+  const dateStr = period.custom_from || period.custom_to
   if (dateStr) {
-    const parts = dateStr.split('-')
-    activeDate.value = `${parts[2]}-${parts[1]}-${parts[0]}`
+    const [d, m, y] = dateStr.split('-')
+    activeDate.value = `${y}-${m}-${d}`
   }
   fetchAll()
 }

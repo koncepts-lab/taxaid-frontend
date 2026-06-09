@@ -1,20 +1,7 @@
-import { format } from 'date-fns'
-
-const initDates = () => {
-  const d = new Date()
-  const startOfYear = new Date(d.getFullYear(), 0, 1)
-  return {
-    from: format(startOfYear, 'dd-MM-yyyy'),
-    to:   format(d, 'dd-MM-yyyy'),
-  }
-}
-
-const { from, to } = initDates()
-
 export const fsFilters = ref({
   range_option: 'Year to Date',
-  custom_from:  from,
-  custom_to:    to,
+  custom_from:  null as string | null,
+  custom_to:    null as string | null,
 })
 
 export const fsSelectedRatioType = ref('All Ratios')
@@ -54,10 +41,10 @@ const fmtNum = (num: any) => {
 async function fetchPLData() {
   _loading.value = true
   try {
-    const payload = {
-      range_option: 'Custom Dates',
-      custom_from:  fsFilters.value.custom_from,
-      custom_to:    fsFilters.value.custom_to,
+    const payload: any = { range_option: fsFilters.value.range_option }
+    if (fsFilters.value.range_option === 'Custom Dates') {
+      payload.custom_from = fsFilters.value.custom_from
+      payload.custom_to   = fsFilters.value.custom_to
     }
     const res: any = await useApi('/financial-analysis/pl-maingroup-totals', { method: 'POST', body: payload })
     if (res?.status === 'success') {
@@ -92,10 +79,10 @@ async function fetchPLData() {
 async function fetchBSData() {
   _loading.value = true
   try {
-    const payload = {
-      range_option: 'Custom Dates',
-      custom_from:  fsFilters.value.custom_from,
-      custom_to:    fsFilters.value.custom_to,
+    const payload: any = { range_option: fsFilters.value.range_option }
+    if (fsFilters.value.range_option === 'Custom Dates') {
+      payload.custom_from = fsFilters.value.custom_from
+      payload.custom_to   = fsFilters.value.custom_to
     }
     const res: any = await useApi('/financial-analysis/bs-maingroup-totals', { method: 'POST', body: payload })
     if (res?.status === 'success') {
@@ -122,10 +109,10 @@ async function fetchBSData() {
 async function fetchRatiosData() {
   _loading.value = true
   try {
-    const payload: any = {
-      range_option: 'Custom Dates',
-      custom_from:  fsFilters.value.custom_from,
-      custom_to:    fsFilters.value.custom_to,
+    const payload: any = { range_option: fsFilters.value.range_option }
+    if (fsFilters.value.range_option === 'Custom Dates') {
+      payload.custom_from = fsFilters.value.custom_from
+      payload.custom_to   = fsFilters.value.custom_to
     }
     if (fsSelectedRatioType.value && fsSelectedRatioType.value !== 'All Ratios') {
       payload.ratio_type = fsSelectedRatioType.value

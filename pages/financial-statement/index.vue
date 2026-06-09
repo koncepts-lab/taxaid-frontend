@@ -104,12 +104,34 @@ const customPeriods = [
     { en: 'Custom Range', ar: 'نطاق مخصص' },
 ]
 
+// Map frontend display labels → exact backend range_option strings
+const backendRangeOption = {
+    'Year to Date':      'Year to Date',
+    'Previous 3 Months': 'Previous 3 months',  // backend switch case is lowercase 'm'
+    'Previous 6 Months': 'Previous 6 months',  // backend switch case is lowercase 'm'
+    'Custom Range':      'Custom Dates',        // backend expects 'Custom Dates'
+}
+
 const handleDateUpdate = (payload) => {
-    filters.value = {
-        range_option: payload.en,
-        custom_from:  payload.custom_from,
-        custom_to:    payload.custom_to ?? null
+    const rangeOption = backendRangeOption[payload.en] ?? 'Year to Date'
+
+    let customFrom = null
+    let customTo   = null
+
+    if (payload.en === 'Custom Range') {
+        // DashboardHeader emits dd-MM-yyyy — convert to yyyy-MM-dd for backend
+        if (payload.custom_from) {
+            const [d, m, y] = payload.custom_from.split('-')
+            customFrom = `${y}-${m}-${d}`
+        }
+        if (payload.custom_to) {
+            const [d, m, y] = payload.custom_to.split('-')
+            customTo = `${y}-${m}-${d}`
+        }
     }
+    // For all other options let backend resolve dates from Carbon::now()
+
+    filters.value = { range_option: rangeOption, custom_from: customFrom, custom_to: customTo }
     fetchTabData(activeTab.value)
 }
 

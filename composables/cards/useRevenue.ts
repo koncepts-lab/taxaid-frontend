@@ -1,8 +1,9 @@
 export const useRevenue = () => {
   const loading    = useState<boolean>('revenue_loading',   () => false)
   const error      = useState<string | null>('revenue_error', () => null)
-  const customFrom = useState<string | null>('revenue_custom_from', () => null)
-  const rangeOption = useState<string>('revenue_range_option', () => 'Previous 3 months')
+  const customFrom  = useState<string | null>('revenue_custom_from', () => null)
+  const customTo    = useState<string | null>('revenue_custom_to',   () => null)
+  const rangeOption = useState<string>('revenue_range_option', () => 'Year to Date')
 
   const breakdownRaw    = useState<any>('revenue_breakdown',     () => null)
   const trendRaw        = useState<any>('revenue_trend',         () => null)
@@ -12,8 +13,11 @@ export const useRevenue = () => {
     loading.value = true
     error.value   = null
     try {
-      const body: Record<string, any> = { range_option: rangeOption.value }
+      // Backend expects 'Custom Dates' but header emits 'Custom Range'
+      const backendRangeOption = rangeOption.value === 'Custom Range' ? 'Custom Dates' : rangeOption.value
+      const body: Record<string, any> = { range_option: backendRangeOption }
       if (customFrom.value) body.custom_from = customFrom.value
+      if (customTo.value)   body.custom_to   = customTo.value
 
       const [breakdown, trend, topCustomers] = await Promise.all([
         useApi('revenue-analysis/breakdown',       { method: 'POST', body }) as any,
@@ -119,6 +123,7 @@ export const useRevenue = () => {
     loading,
     error,
     customFrom,
+    customTo,
     rangeOption,
     fetchAll,
     summaryData,
