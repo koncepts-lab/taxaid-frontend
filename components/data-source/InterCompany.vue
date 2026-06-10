@@ -54,7 +54,7 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <button v-if="isImported"
+                <button v-if="!isApiType && isImportedLocal"
                     class="px-6 py-2 bg-[#FFF085] hover:bg-[#FACC15] text-gray-800 rounded-xl font-medium transition-all active:scale-95 shadow-sm">
                     {{ currentLang === 'ar' ? 'تطبيق التغييرات' : 'Apply Changes' }}
                 </button>
@@ -124,8 +124,20 @@
                     </div>
                 </div>
 
+                <!-- Loading State -->
+                <div v-if="loading" class="p-16 flex flex-col items-center justify-center gap-3">
+                    <div class="w-8 h-8 border-2 border-[#00896F] border-t-transparent rounded-full animate-spin"></div>
+                    <p class="text-sm" :class="isDark ? 'text-white/50' : 'text-[#717182]'">Loading...</p>
+                </div>
+
+                <!-- Error State -->
+                <div v-else-if="apiError" class="p-12 flex flex-col items-center justify-center gap-3 text-center">
+                    <p class="text-sm text-red-500">{{ apiError }}</p>
+                    <button @click="loadData" class="px-4 py-2 text-sm border border-[#00896F] text-[#00896F] rounded-xl hover:bg-[#E6FDF9] transition-all">Retry</button>
+                </div>
+
                 <!-- State 1: Empty UI -->
-                <div v-if="!isImported" class="p-24 flex flex-col items-center justify-center text-center space-y-4">
+                <div v-else-if="!showTable" class="p-24 flex flex-col items-center justify-center text-center space-y-4">
                     <div class="w-24 h-24 bg-[#8DF3DF]/91 rounded-full flex items-center justify-center">
                         <img src="/images/icons/file.svg" class="w-12 h-12" alt="Empty" />
                     </div>
@@ -154,7 +166,7 @@
 
                 <!-- State 2: Populated Table -->
                 <div v-else class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-50'">
-                    <div v-for="(row, idx) in transactions" :key="row.id"
+                    <div v-for="(row, idx) in rows" :key="row.id"
                         class="flex items-center px-4 py-3 transition-colors"
                         :class="row.selected ? (isDark ? 'bg-[#00896F]/10' : 'bg-[#E6FDF9]') : 'hover:bg-gray-50/50'">
                         <div class="w-10 shrink-0">
@@ -165,14 +177,32 @@
                             :style="{ gridTemplateColumns: currentConfig.gridCols }">
                             <div class="text-center text-xs text-gray-400 font-medium">{{ idx + 1 }}</div>
                             <div v-for="(h, hIdx) in currentConfig.headers" :key="hIdx">
-                                <!-- Design logic for Status pill vs Inputs -->
                                 <div v-if="h === 'Status'"
-                                    class="px-3 py-1 bg-[#DCFCE7] text-[#166534] rounded-full text-[10px] w-fit font-bold uppercase border border-[#BBF7D0]">
-                                    Active</div>
+                                    class="px-3 py-1 rounded-full text-[10px] w-fit font-bold uppercase border"
+                                    :class="(row.status || 'Active') === 'Active' ? 'bg-[#DCFCE7] text-[#166534] border-[#BBF7D0]' : 'bg-[#FEF9C3] text-[#854D0E] border-[#FDE047]'">
+                                    {{ row.status || 'Active' }}
+                                </div>
                                 <input v-else type="text" placeholder="-"
+                                    :value="getFieldValue(row, h)"
+                                    @input="row.isNew && setFieldValue(row, h, $event.target.value)"
+                                    :readonly="!row.isNew"
                                     class="w-full h-10 border rounded-lg px-3 text-sm outline-none transition-all"
-                                    :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-[#F9FAFB] border-[#F3F4F6] text-black focus:border-[#00896F]'" />
+                                    :class="[
+                                        isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-[#F9FAFB] border-[#F3F4F6] text-black focus:border-[#00896F]',
+                                        !row.isNew ? 'cursor-default' : ''
+                                    ]" />
                             </div>
+                        </div>
+                        <!-- Save / Cancel for unsaved new rows -->
+                        <div v-if="row.isNew" class="flex gap-2 ml-3 shrink-0">
+                            <button @click="saveRow(row)" :disabled="row._saving"
+                                class="px-3 py-1.5 bg-[#00896F] text-white rounded-lg text-xs font-medium hover:bg-[#006b56] transition-all disabled:opacity-50">
+                                {{ row._saving ? '...' : 'Save' }}
+                            </button>
+                            <button @click="cancelRow(row)"
+                                class="px-3 py-1.5 border border-gray-200 text-gray-500 rounded-lg text-xs font-medium hover:bg-gray-50 transition-all">
+                                Cancel
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -234,7 +264,7 @@
 
                         <div>
                             <input type="file" ref="fileInput" class="hidden" accept=".xlsx, .xls"
-                                @change="handleFileSelect" />
+                                @change="(e) => selectedFile = e.target.files[0]" />
                             <div @click="triggerPicker" @dragover.prevent="isDragging = true"
                                 @dragleave.prevent="isDragging = false" @drop.prevent="handleDrop"
                                 class="border-2 rounded-[10px] p-12 flex flex-col items-center justify-center transition-all cursor-pointer"
@@ -283,6 +313,8 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useContacts } from '~/composables/data-source/useContacts'
+import { useInternalEmails } from '~/composables/data-source/useInternalEmails'
 
 const props = defineProps({
     type: { type: String, default: 'inter-company' },
@@ -326,8 +358,44 @@ const configs = {
     }
 }
 
-// --- 2. STATE ---
-const isImported = ref(false)
+// Maps each column header to the API field key for that type
+const fieldMap = {
+    'contacts': {
+        'Contact_ID': 'identity', 'Name': 'name', 'Type': 'type',
+        'Company': 'name', 'Email': 'email', 'Phone': 'phone_number', 'TRN': 'tax_id',
+    },
+    'customers': {
+        'Tax ID': 'tax_id', 'Contact Person': 'contact_person',
+        'Contact Details': 'email', 'Outstanding (AED)': null, 'Credit Limit (AED)': 'credit_limit',
+    },
+    'internal-email': {
+        'Employee': 'employee_name', 'Department': 'department',
+        'Role': null, 'Email': 'email', 'Extension': 'phone_number',
+    },
+}
+
+const getFieldValue = (row, header) => {
+    const key = fieldMap[props.type]?.[header]
+    if (!key) return ''
+    return row[key] ?? ''
+}
+
+const setFieldValue = (row, header, value) => {
+    const key = fieldMap[props.type]?.[header]
+    if (key) row[key] = value
+}
+
+// --- 2. API COMPOSABLES ---
+const contactsApi = useContacts()
+const emailsApi = useInternalEmails()
+
+const isApiType = computed(() => ['contacts', 'customers', 'internal-email'].includes(props.type))
+
+// --- 3. STATE ---
+const isImportedLocal = ref(false) // only used for non-API types (inter-company)
+const rows = ref([])
+const loading = ref(false)
+const apiError = ref(null)
 const isModalOpen = ref(false)
 const allSelected = ref(false)
 const isAddDropdownOpen = ref(false)
@@ -336,20 +404,49 @@ const selectedFile = ref(null)
 const isDragging = ref(false)
 const addDropdownRef = ref(null)
 
-const transactions = ref([{ id: 1, selected: false }, { id: 2, selected: false }, { id: 3, selected: false }, { id: 4, selected: false }])
-
-// --- 3. COMPUTED ---
-const currentConfig = computed(() => configs[props.type] || configs['inter-company'])
-const translatedHeaders = computed(() => props.currentLang === 'ar' ? currentConfig.value.headersAr : currentConfig.value.headers)
-const selectedCount = computed(() => transactions.value.filter(t => t.selected).length)
-
-// Reset state when tab changes
-watch(() => props.type, () => {
-    isImported.value = false
-    allSelected.value = false
+const showTable = computed(() => {
+    if (isApiType.value) return loading.value || rows.value.length > 0
+    return isImportedLocal.value
 })
 
-// Icons
+// --- 4. COMPUTED ---
+const currentConfig = computed(() => configs[props.type] || configs['inter-company'])
+const translatedHeaders = computed(() => props.currentLang === 'ar' ? currentConfig.value.headersAr : currentConfig.value.headers)
+const selectedCount = computed(() => rows.value.filter(r => r.selected).length)
+
+// --- 5. DATA LOADING ---
+const loadData = async () => {
+    if (!isApiType.value) return
+    loading.value = true
+    apiError.value = null
+    rows.value = []
+    try {
+        if (props.type === 'internal-email') {
+            await emailsApi.fetchEmails()
+            rows.value = emailsApi.emails.value.map(r => ({ ...r, selected: false, isNew: false, _saving: false }))
+        } else if (props.type === 'customers') {
+            await contactsApi.fetchCustomers()
+            rows.value = contactsApi.customers.value.map(r => ({ ...r, selected: false, isNew: false, _saving: false }))
+        } else {
+            await contactsApi.fetchContacts()
+            rows.value = contactsApi.contacts.value.map(r => ({ ...r, selected: false, isNew: false, _saving: false }))
+        }
+    } catch (e) {
+        apiError.value = e?.data?.message ?? 'Failed to load data.'
+    } finally {
+        loading.value = false
+    }
+}
+
+watch(() => props.type, () => {
+    isImportedLocal.value = false
+    allSelected.value = false
+    loadData()
+})
+
+onMounted(loadData)
+
+// --- 6. ICONS ---
 const IconAbove = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11.3 7.3L8 4 4.7 7.3M11.3 12L8 8.7 4.7 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`
 const IconBelow = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4.7 8.7L8 12l3.3-3.3M4.7 4L8 7.3l3.3-3.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`
 const IconPlus = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3.3V12.7M3.3 8h9.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`
@@ -360,27 +457,95 @@ const translatedOptions = computed(() => [
     { id: 'end', label: props.currentLang === 'ar' ? 'إضافة في النهاية' : 'Add at End', icon: IconPlus, requiresSelection: false }
 ])
 
-// --- 4. METHODS ---
-const toggleAll = () => transactions.value.forEach(t => t.selected = allSelected.value)
+// --- 7. METHODS ---
+const toggleAll = () => rows.value.forEach(r => r.selected = allSelected.value)
 const handleRowSelect = (row) => { if (row.selected) lastSelectedRowId.value = row.id }
 
-const handleAddAction = (actionId) => {
-    const newRow = { id: Date.now(), selected: false }
-    const idx = transactions.value.findIndex(t => t.id === lastSelectedRowId.value)
-    if (actionId === 'end') transactions.value.push(newRow)
-    else if (actionId === 'above' && idx !== -1) transactions.value.splice(idx, 0, newRow)
-    else if (actionId === 'below' && idx !== -1) transactions.value.splice(idx + 1, 0, newRow)
+const newRowTemplate = () => {
+    const base = { id: Date.now(), selected: false, isNew: true, _saving: false }
+    if (props.type === 'internal-email') {
+        return { ...base, employee_name: '', department: '', email: '', phone_number: '' }
+    }
+    return { ...base, identity: '', name: '', type: props.type === 'customers' ? 'customer' : 'customer', tax_id: '', contact_person: '', email: '', phone_number: '', credit_limit: '', status: '' }
+}
+
+const handleAddAction = async (actionId) => {
+    const newRow = newRowTemplate()
+
+    // Auto-generate identity for contact/customer rows
+    if (isApiType.value && props.type !== 'internal-email') {
+        try {
+            newRow.identity = await contactsApi.generateIdentity('customer')
+        } catch {}
+    }
+
+    const idx = rows.value.findIndex(r => r.id === lastSelectedRowId.value)
+    if (actionId === 'end' || idx === -1) rows.value.push(newRow)
+    else if (actionId === 'above') rows.value.splice(idx, 0, newRow)
+    else if (actionId === 'below') rows.value.splice(idx + 1, 0, newRow)
     isAddDropdownOpen.value = false
 }
 
-const deleteSelected = () => {
-    transactions.value = transactions.value.filter(t => !t.selected)
+const saveRow = async (row) => {
+    row._saving = true
+    try {
+        let saved
+        if (props.type === 'internal-email') {
+            saved = await emailsApi.createEmail({
+                employee_name: row.employee_name,
+                department: row.department,
+                email: row.email,
+                phone_number: row.phone_number || undefined,
+            })
+        } else {
+            saved = await contactsApi.createContact({
+                type: props.type === 'customers' ? 'customer' : (row.type || 'customer'),
+                name: row.name,
+                identity: row.identity || undefined,
+                tax_id: row.tax_id || undefined,
+                contact_person: row.contact_person || undefined,
+                email: row.email,
+                phone_number: row.phone_number || undefined,
+                credit_limit: row.credit_limit ? Number(row.credit_limit) : undefined,
+            })
+        }
+        const idx = rows.value.indexOf(row)
+        if (idx !== -1) rows.value.splice(idx, 1, { ...saved, selected: false, isNew: false, _saving: false })
+    } catch {
+        row._saving = false
+    }
+}
+
+const cancelRow = (row) => {
+    rows.value = rows.value.filter(r => r !== row)
+}
+
+const deleteSelected = async () => {
+    if (!isApiType.value) {
+        rows.value = rows.value.filter(r => !r.selected)
+        allSelected.value = false
+        return
+    }
+    const toDelete = rows.value.filter(r => r.selected && !r.isNew)
+    rows.value = rows.value.filter(r => !(r.selected && r.isNew))
+    for (const row of toDelete) {
+        try {
+            if (props.type === 'internal-email') await emailsApi.deleteEmail(row.id)
+            else await contactsApi.deleteContact(row.id)
+            rows.value = rows.value.filter(r => r.id !== row.id)
+        } catch {}
+    }
     allSelected.value = false
 }
 
 const simulateImport = () => {
     isModalOpen.value = false
-    setTimeout(() => isImported.value = true, 400)
+    if (!isApiType.value) {
+        setTimeout(() => {
+            rows.value = [1, 2, 3, 4].map(id => ({ id, selected: false, isNew: false, _saving: false }))
+            isImportedLocal.value = true
+        }, 400)
+    }
 }
 
 const triggerPicker = () => {
@@ -391,7 +556,7 @@ const triggerPicker = () => {
 
 const handleDrop = (e) => {
     isDragging.value = false
-    selectedFile.value = e.dataTransfer.files[0]
+    selectedFile.value = e.dataTransfer?.files[0] ?? null
 }
 
 const handleClickOutside = (e) => {

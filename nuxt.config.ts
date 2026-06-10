@@ -1,6 +1,11 @@
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineNuxtConfig({
+  $development: {
+    future: {
+      compatibilityVersion: 4,
+    },
+  },
   // Ensure this is clean
   modules: ["@nuxt/ui"],
   ui: {
