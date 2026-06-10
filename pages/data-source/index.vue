@@ -151,7 +151,12 @@
                 @remove="handleRemove"
                 @uploaded="fetchDataInConfig" />
               <DataSourceTrialBalance v-if="activeSubTab === 'trial-balance'" :isDark="isDark"
-                :currentLang="currentLang" />
+                :currentLang="currentLang"
+                :tbMappingData="tbMappingData"
+                :tbConfigData="tbConfigData"
+                :tbMappingOptions="tbMappingOptions"
+                :tbSaving="tbSaving"
+                :onUpdate="updateTrialBalance" />
               <DataSourceChangeLog
                 v-if="activeSubTab === 'accounts-receivable' || activeSubTab === 'accounts-payable' || activeSubTab === 'pdc' || activeSubTab === 'cost-center' || activeSubTab === 'budget' || activeSubTab === 'sales-forecast' || activeSubTab === 'trial-balance'"
                 :logs="currentLogs" :isDark="isDark" :currentLang="currentLang" />
@@ -174,12 +179,16 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useDataIn } from '../../composables/data-source/useDataIn'
 import { usePDC } from '../../composables/data-source/usePDC'
+import { useTrialBalance } from '../../composables/data-source/useTrialBalance'
 
 // ── AR Aging Summary (live API) ────────────────────────────────────────────
 const { rows: arRows, totals: arTotals, loading: arLoading, error: arError } = useArAgingSummary()
 
 // ── AP Aging Summary (live API) ────────────────────────────────────────────
 const { rows: apRows, totals: apTotals, loading: apLoading, error: apError } = useApAgingSummary()
+
+// ── Trial Balance (live API) ───────────────────────────────────────────────
+const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, updateTrialBalance } = useTrialBalance()
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
@@ -404,6 +413,7 @@ watch(activeMainTab, (newTab) => {
     activeSubTab.value = newArray[0].id
   }
 })
+
 const agingType = computed(() => activeSubTab.value === 'accounts-receivable' ? 'AR' : 'AP')
 const selectAll = ref(false)
 const selectedCount = computed(() => tableData.value.filter(row => row.selected).length)
