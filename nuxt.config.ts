@@ -1,6 +1,11 @@
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineNuxtConfig({
+  $development: {
+    future: {
+      compatibilityVersion: 4,
+    },
+  },
   // Ensure this is clean
   modules: ["@nuxt/ui"],
   ui: {
@@ -26,6 +31,9 @@ export default defineNuxtConfig({
     plugins: {
       // Ensure this is empty to avoid the "null to object" error
     },
+  },
+  imports: {
+    dirs: ['composables/**'],
   },
   runtimeConfig: {
     public: {

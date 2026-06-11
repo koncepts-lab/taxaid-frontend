@@ -16,28 +16,27 @@
             :subtitle="{ en: 'Accounts Recievable Dashboard', ar: 'لوحة معلومات حسابات القبض' }"
             :periods="customPeriods" class="mb-8" @selected-date="handleDateChange" @reload="handleReload" />
 
-          <AccountsPayableAlert />
+          <AccountsReceivableAlert />
 
           <div class="mb-4 lg:mb-8">
-            <AccountsPayableSummary :data="summaryData" :testDate="activeTestDate"
-              title="Accounts Recievable Summary" />
+            <AccountsReceivableSummary :data="summary" :testDate="activeDate" />
           </div>
 
           <div class="mb-4 lg:mb-8">
             <div class="h-[600px]">
-              <AccountsPayableTopCustomers :data="topCustomersData" />
+              <AccountsReceivableTopCustomers :data="topCustomers" />
             </div>
           </div>
 
           <div class="mb-4 lg:mb-8">
             <div class="h-[420px]">
-              <AccountsPayableHistoricalMovement />
+              <AccountsReceivableHistoricalMovement :data="historicalMovement" />
             </div>
           </div>
 
           <div>
             <div class="lg:h-[440px] h-[440px]">
-              <AccountsPayableAgingGraph :agingData="agingData" />
+              <AccountsReceivableAgingGraph :agingData="agingGraph" />
             </div>
           </div>
 
@@ -73,111 +72,40 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import ParticleBackground from '~/components/common/ParticleBackground.vue'
-import AccountsPayableHeader from '~/components/accounts-payable/Header.vue'
-import AccountsPayableAlert from '~/components/accounts-payable/Alert.vue'
-import AccountsPayableSummary from '~/components/accounts-payable/Summary.vue'
-import AccountsPayableTopCustomers from '~/components/accounts-payable/TopCustomers.vue'
-import AccountsPayableHistoricalMovement from '~/components/accounts-payable/HistoricalMovement.vue'
-import AccountsPayableAgingGraph from '~/components/accounts-payable/AgingGraph.vue'
+import AccountsReceivableAlert from '~/components/accounts-receivable/Alert.vue'
+import AccountsReceivableSummary from '~/components/accounts-receivable/Summary.vue'
+import AccountsReceivableTopCustomers from '~/components/accounts-receivable/TopCustomers.vue'
+import AccountsReceivableHistoricalMovement from '~/components/accounts-receivable/HistoricalMovement.vue'
+import AccountsReceivableAgingGraph from '~/components/accounts-receivable/AgingGraph.vue'
 
 const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const agingData = ref({})
-const summaryData = ref([])
-const topCustomersData = ref(null)
-const activeTestDate = ref('2025-07-02')//remove this value and make it null after testing!!!!!!
+const { activeDate, fetchAll, summary, topCustomers, agingGraph, historicalMovement } = useAccountsReceivablePage()
 
 const customPeriods = [
-  { en: 'Year to Date', ar: 'منذ بداية العام' },
-  { en: 'This Quarter', ar: 'هذا الربع' },
-  { en: 'Last Quarter', ar: 'الربع الماضي' },
-  { en: 'This Year', ar: 'هذه السنة' },
-  { en: 'Last Year', ar: 'السنة الماضية' },
-  { en: 'Custom Date', ar: 'تاريخ مخصص' }
+  // { en: 'Year to Date', ar: 'منذ بداية العام' }, // not supported — backend uses single test_date only
+  // { en: 'This Quarter', ar: 'هذا الربع' },        // not supported
+  // { en: 'Last Quarter', ar: 'الربع الماضي' },     // not supported
+  // { en: 'This Year',    ar: 'هذه السنة' },        // not supported
+  // { en: 'Last Year',    ar: 'السنة الماضية' },    // not supported
+  { en: 'Custom Date', ar: 'تاريخ مخصص' },           // ✅ maps to ?test_date=Y-m-d
 ]
 
-const fetchAgingData = async () => {
-  agingData.value = {}
-  try {
-    const response = await useApi('/ar-report/aging', {
-      params: {
-        test_date: activeTestDate.value,
-        lang: currentLang.value
-      }
-    })
-
-    if (response && response.status === 'success') {
-      agingData.value = response.payload || {}
-    }
-  } catch (error) {
-    console.error('Error fetching dashboard data:', error)
-    agingData.value = {}
-  }
-}
-
-const fetchSummaryData = async () => {
-  summaryData.value = []
-  try {
-    const response = await useApi('/ar-report', {
-      params: {
-        test_date: activeTestDate.value
-      }
-    })
-
-    if (response && response.status === 'success') {
-      summaryData.value = response.data || []
-    }
-  } catch (error) {
-    console.error('Error fetching summary data:', error)
-    summaryData.value = []
-  }
-}
-
-const fetchTopCustomersData = async () => {
-  topCustomersData.value = null
-  try {
-    const response = await useApi('/ar-report/top-eight', {
-      params: {
-        test_date: activeTestDate.value
-      }
-    })
-
-    if (response && response.status === 'success') {
-      topCustomersData.value = response.payload || null
-    }
-  } catch (error) {
-    console.error('Error fetching top customers data:', error)
-    topCustomersData.value = null
-  }
-}
-
 const handleDateChange = (period) => {
-  if (period.custom_from) {
-    const parts = period.custom_from.split('-')
-    activeTestDate.value = `${parts[2]}-${parts[1]}-${parts[0]}`
+  const dateStr = period.custom_from || period.custom_to
+  if (dateStr) {
+    const [d, m, y] = dateStr.split('-')
+    activeDate.value = `${y}-${m}-${d}`
   }
-  handleReload()
+  fetchAll()
 }
 
-const handleReload = () => {
-  fetchAgingData()
-  fetchTopCustomersData()
-  fetchSummaryData()
-}
+const handleReload = () => fetchAll()
 
-watch(currentLang, () => {
-  fetchAgingData()
-})
-
-onMounted(() => {
-  fetchAgingData()
-  fetchTopCustomersData()
-  fetchSummaryData()
-})
+onMounted(() => fetchAll())
 </script>
 
 <style scoped>

@@ -12,9 +12,9 @@
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button v-if="userType === 'admin'"
-                        class="px-8 py-2 bg-[#FFF085] hover:bg-[#FACC15] text-black rounded-xl font-normal transition-all active:scale-95 shadow-sm">
-                        {{ currentLang === 'ar' ? 'تحديث' : 'Update' }}
+                    <button v-if="userType === 'admin'" @click="handleUpdate" :disabled="tbSaving"
+                        class="px-8 py-2 bg-[#FFF085] hover:bg-[#FACC15] text-black rounded-xl font-normal transition-all active:scale-95 shadow-sm disabled:opacity-50">
+                        {{ tbSaving ? '...' : (currentLang === 'ar' ? 'تحديث' : 'Update') }}
                     </button>
                     <button @click="isReportModalOpen = true"
                         class="flex items-center gap-2 px-6 py-2 bg-[#68E4C4] hover:bg-[#34D399] text-[#064E3B] rounded-xl font-normal text-base transition-all active:scale-95 shadow-sm">
@@ -65,16 +65,14 @@
                             <td class="p-2 border-b border-[#0000001A]">
                                 <select v-if="userType === 'admin'" v-model="item.mainGroup"
                                     class="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-1 focus:ring-[#00896F] outline-none appearance-none cursor-pointer text-[#717182]">
-                                    <option value="Assets">Assets</option>
-                                    <option value="Liabilities">Liabilities</option>
+                                    <option v-for="opt in mainGroups" :key="opt" :value="opt">{{ opt }}</option>
                                 </select>
                                 <span v-else class="px-4 text-sm text-black">{{ item.mainGroup }}</span>
                             </td>
                             <td class="p-2 border-b border-[#0000001A]">
                                 <select v-if="userType === 'admin'" v-model="item.subGroup"
                                     class="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-1 focus:ring-[#00896F] outline-none appearance-none cursor-pointer text-[#717182]">
-                                    <option value="Current Assets">Current Assets</option>
-                                    <option value="Fixed Assets">Fixed Assets</option>
+                                    <option v-for="opt in subGroups" :key="opt" :value="opt">{{ opt }}</option>
                                 </select>
                                 <span v-else class="px-4 text-sm text-black">{{ item.subGroup }}</span>
                             </td>
@@ -247,57 +245,84 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const props = defineProps({
-    userType: {
-        type: String,
-        default: 'admin'
-    },
-    currentLang: {
-        type: String,
-        default: 'en'
-    }
+    userType:         { type: String,    default: 'admin' },
+    currentLang:      { type: String,    default: 'en' },
+    tbMappingData:    { type: Array,     default: () => [] },
+    tbConfigData:     { type: Array,     default: () => [] },
+    tbMappingOptions: { type: Object,    default: () => ({ fsCodes: [], mainGroups: [], subGroups: [] }) },
+    tbSaving:         { type: Boolean,   default: false },
+    onUpdate:         { type: Function,  default: null },
 })
 
 const isReportModalOpen = ref(false)
-const fsCodes = ['1000', '1100', '1500', '1550', '2000']
-const reportData = ref([
-    { fsCode: '1000', mainGroup: 'Assets', subGroup: 'Current Assets', ledger: 'Cash and Bank' },
-    { fsCode: '1100', mainGroup: 'Assets', subGroup: 'Current Assets', ledger: 'Accounts Receivable' },
-    { fsCode: '1150', mainGroup: 'Assets', subGroup: 'Current Assets', ledger: 'Inventory' },
-    { fsCode: '1200', mainGroup: 'Assets', subGroup: 'Current Assets', ledger: 'Prepaid Expenses' },
-    { fsCode: '1500', mainGroup: 'Assets', subGroup: 'Fixed Assets', ledger: 'Property & Equipment' },
-    { fsCode: '1550', mainGroup: 'Assets', subGroup: 'Fixed Assets', ledger: 'Accumulated Depreciation' },
-    { fsCode: '2000', mainGroup: 'Liabilities', subGroup: 'Current Liabilities', ledger: 'Accounts Payable' },
-    { fsCode: '2100', mainGroup: 'Liabilities', subGroup: 'Current Liabilities', ledger: 'VAT Payable' },
-    { fsCode: '2200', mainGroup: 'Liabilities', subGroup: 'Long-term Liabilities', ledger: 'Bank Loan' },
-    { fsCode: '3000', mainGroup: 'Equity', subGroup: 'Share Capital', ledger: 'Common Stock' },
-    { fsCode: '3100', mainGroup: 'Equity', subGroup: 'Retained Earnings', ledger: 'Retained Earnings' },
-    { fsCode: '4000', mainGroup: 'Revenue', subGroup: 'Sales', ledger: 'Service Revenue' },
-])
-const mappingData = ref([
-    { id: 1, fsCode: '1000', mainGroup: 'Assets', subGroup: 'Current Assets', ledger: 'Cash and Bank' },
-    { id: 2, fsCode: '1100', mainGroup: 'Assets', subGroup: 'Current Assets', ledger: 'Accounts Receivable' },
-    { id: 3, fsCode: '1500', mainGroup: 'Assets', subGroup: 'Fixed Assets', ledger: 'Property & Equipment' },
-    { id: 4, fsCode: '1550', mainGroup: 'Assets', subGroup: 'Fixed Assets', ledger: 'Accumulated Depreciation' },
-])
 
-// Mock Data for Config
-const configData = ref([
-    { label: 'Financial Year', from: '01-Jan-2025', to: '31-Dec-2025' },
-    { label: 'VAT return (first quarter)', from: '01-Jan-2025', to: '31-Mar-2025' },
-    { label: 'CT Due date', from: null, to: '30-Jun-2025' },
-    { label: 'Go live date (as on)', from: null, to: '01-Jan-2025' },
-    { label: 'Historical data since', from: null, to: '2022', isYear: true },
-])
+const mappingData = computed(() =>
+    props.tbMappingData.length ? props.tbMappingData : [
+        { id: 1, fsCode: '1000', mainGroup: 'Assets',      subGroup: 'Current Assets', ledger: 'Cash and Bank' },
+        { id: 2, fsCode: '1100', mainGroup: 'Assets',      subGroup: 'Current Assets', ledger: 'Accounts Receivable' },
+        { id: 3, fsCode: '1500', mainGroup: 'Assets',      subGroup: 'Fixed Assets',   ledger: 'Property & Equipment' },
+        { id: 4, fsCode: '1550', mainGroup: 'Assets',      subGroup: 'Fixed Assets',   ledger: 'Accumulated Depreciation' },
+    ]
+)
 
-// Mock Data for Integrity
+const reportData = computed(() =>
+    props.tbMappingData.length ? props.tbMappingData : [
+        { fsCode: '1000', mainGroup: 'Assets',      subGroup: 'Current Assets',        ledger: 'Cash and Bank' },
+        { fsCode: '1100', mainGroup: 'Assets',      subGroup: 'Current Assets',        ledger: 'Accounts Receivable' },
+        { fsCode: '1150', mainGroup: 'Assets',      subGroup: 'Current Assets',        ledger: 'Inventory' },
+        { fsCode: '1200', mainGroup: 'Assets',      subGroup: 'Current Assets',        ledger: 'Prepaid Expenses' },
+        { fsCode: '1500', mainGroup: 'Assets',      subGroup: 'Fixed Assets',          ledger: 'Property & Equipment' },
+        { fsCode: '1550', mainGroup: 'Assets',      subGroup: 'Fixed Assets',          ledger: 'Accumulated Depreciation' },
+        { fsCode: '2000', mainGroup: 'Liabilities', subGroup: 'Current Liabilities',   ledger: 'Accounts Payable' },
+        { fsCode: '2100', mainGroup: 'Liabilities', subGroup: 'Current Liabilities',   ledger: 'VAT Payable' },
+        { fsCode: '2200', mainGroup: 'Liabilities', subGroup: 'Long-term Liabilities', ledger: 'Bank Loan' },
+        { fsCode: '3000', mainGroup: 'Equity',      subGroup: 'Share Capital',         ledger: 'Common Stock' },
+        { fsCode: '3100', mainGroup: 'Equity',      subGroup: 'Retained Earnings',     ledger: 'Retained Earnings' },
+        { fsCode: '4000', mainGroup: 'Revenue',     subGroup: 'Sales',                 ledger: 'Service Revenue' },
+    ]
+)
+
+const fsCodes = computed(() =>
+    props.tbMappingOptions.fsCodes?.length
+        ? props.tbMappingOptions.fsCodes
+        : ['1000', '1100', '1500', '1550', '2000']
+)
+
+const mainGroups = computed(() =>
+    props.tbMappingOptions.mainGroups?.length
+        ? props.tbMappingOptions.mainGroups
+        : ['Assets', 'Liabilities', 'Equity', 'Revenue']
+)
+
+const subGroups = computed(() =>
+    props.tbMappingOptions.subGroups?.length
+        ? props.tbMappingOptions.subGroups
+        : ['Current Assets', 'Fixed Assets', 'Current Liabilities', 'Long-term Liabilities']
+)
+
+const configData = computed(() =>
+    props.tbConfigData.length ? props.tbConfigData : [
+        { label: 'Financial Year',             from: '01-Jan-2025', to: '31-Dec-2025' },
+        { label: 'VAT return (first quarter)',  from: '01-Jan-2025', to: '31-Mar-2025' },
+        { label: 'CT Due date',                from: null,          to: '30-Jun-2025' },
+        { label: 'Go live date (as on)',        from: null,          to: '01-Jan-2025' },
+        { label: 'Historical data since',       from: null,          to: '2022',        isYear: true },
+    ]
+)
+
+// Integrity check — no backend endpoint yet
 const integrityData = ref([
-    { label: 'Trial balance', isValid: true },
-    { label: 'Balance Sheet', isValid: true },
+    { label: 'Trial balance',   isValid: true  },
+    { label: 'Balance Sheet',   isValid: true  },
     { label: 'Profit and loss', isValid: false },
 ])
+
+const handleUpdate = () => {
+    if (props.onUpdate) props.onUpdate(mappingData.value)
+}
 </script>
 
 <style scoped>

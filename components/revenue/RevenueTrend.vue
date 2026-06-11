@@ -121,67 +121,23 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-// API Data State
-const loading = ref(true)
-const error = ref(null)
-const trendData = ref([])
-const categories = ref([])
-
-const fetchTrendData = async () => {
-  try {
-    loading.value = true
-    error.value = null
-    const response = await useApi('revenue-analysis/trend-chart', {
-      method: 'POST',
-      body: {
-        custom_from: "12-05-2025"
-      }
-    })
-    
-    if (response.status === 'success') {
-      const apiData = response.data
-      
-      categories.value = apiData.map(item => item.month_short)
-      
-      // Series 0: Previous Year, Series 1: Current Year
-      trendData.value = [
-        {
-          name: 'Previous Year',
-          nameAr: 'السنة السابقة',
-          data: apiData.map(item => Number((item.previous_year / 1_000_000).toFixed(2)))
-        },
-        {
-          name: 'Current Year',
-          nameAr: 'السنة الحالية',
-          data: apiData.map(item => Number((item.current_year / 1_000_000).toFixed(2)))
-        }
-      ]
-    }
-  } catch (err) {
-    error.value = err
-    console.error('Failed to fetch trend data:', err)
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(() => {
-  fetchTrendData()
-})
+const { loading, error, trendData, fetchAll: fetchTrendData } = useRevenue()
 
 const series = computed(() => {
-  return trendData.value.map(s => ({
+  return (trendData.value?.series ?? []).map((s: any) => ({
     name: currentLang.value === 'ar' ? s.nameAr : s.name,
     data: s.data
   }))
 })
+
+const categories = computed(() => trendData.value?.categories ?? [])
 
 const chartOptions = computed(() => ({
   chart: {
@@ -217,7 +173,7 @@ const chartOptions = computed(() => ({
     }
   },
   xaxis: {
-    categories: categories.value.length ? categories.value : ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
+    categories: categories.value.length ? categories.value : [],
     axisBorder: { show: false },
     axisTicks: { show: false },
     crosshairs: {
@@ -238,8 +194,8 @@ const chartOptions = computed(() => ({
     }
   },
   yaxis: {
-    min: Math.floor(Math.min(...trendData.value.flatMap(s => s.data), 0)),
-    max: Math.ceil(Math.max(...trendData.value.flatMap(s => s.data), 1)),
+    min: Math.floor(Math.min(...(trendData.value?.series ?? []).flatMap((s: any) => s.data), 0)),
+    max: Math.ceil(Math.max(...(trendData.value?.series ?? []).flatMap((s: any) => s.data), 1)),
     tickAmount: 4,
     opposite: currentLang.value === 'ar',
     labels: {

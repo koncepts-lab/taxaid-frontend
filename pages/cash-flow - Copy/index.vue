@@ -73,7 +73,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useCashFlowPage } from '~/composables/useWebsiteData'
+import { useCashFlow } from '~/composables/cards/useCashFlow'
 
 // cash-flow page
 const isChatOpen = ref(false)
@@ -81,7 +81,7 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { loading, error, summary, metrics, scenarioChart, inflowOutflow } = useCashFlowPage()
+const { loading, error, summary, metrics, scenarioChart, inflowOutflow } = useCashFlow()
 </script>
 
 <style scoped>

@@ -76,8 +76,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-
+import { ref, onMounted, watch } from 'vue'
 
 const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
@@ -85,118 +84,52 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
 const customPeriods = [
-    { en: 'Year to Date', ar: 'منذ بداية العام' },
-    { en: 'This Quarter', ar: 'هذا الربع' },
-    { en: 'Last Quarter', ar: 'الربع الماضي' },
-    { en: 'This Year', ar: 'هذه السنة' },
-    { en: 'Last Year', ar: 'السنة الماضية' },
-    { en: 'Custom Range', ar: 'نطاق مخصص' },
-    { en: 'Custom Date', ar: 'تاريخ مخصص' }
+    { en: 'Year to Date',      ar: 'منذ بداية العام' },
+    { en: 'Previous 3 Months', ar: 'الأشهر الثلاثة الماضية' },
+    { en: 'Previous 6 Months', ar: 'الأشهر الستة الماضية' },
+    // { en: 'This Quarter', ar: 'هذا الربع' },    // not supported by backend
+    // { en: 'Last Quarter', ar: 'الربع الماضي' },  // not supported by backend
+    // { en: 'This Year',    ar: 'هذه السنة' },     // not supported by backend
+    // { en: 'Last Year',    ar: 'السنة الماضية' }, // not supported by backend
+    { en: 'Custom Range',      ar: 'نطاق مخصص' },
 ]
 
-const { date, currentDate } = useAppDate()
-
-const trendData = ref([])
-const revenueToCogsData = ref([])
-const breakdownData = ref(null)
-
-// Format YYYY-MM-DD to DD-MM-YYYY
-const formatDate = (dateStr) => {
-  if (!dateStr) return null
-  const [y, m, d] = dateStr.split('-')
-  return `${d}-${m}-${y}`
+const backendRangeMap = {
+    'Year to Date':      'Year to Date',
+    'Previous 3 Months': 'Previous 3 months',
+    'Previous 6 Months': 'Previous 6 months',
+    'Custom Range':      'Custom Dates',
 }
 
-const startOfYearStr = `${date.value.getFullYear()}-01-01`
-const activeDateFrom = ref(formatDate(startOfYearStr))
-const activeDateTo = ref(formatDate(currentDate.value))
-const activePeriod = ref('Year to Date')
+const { rangeOption, customFrom, customTo, breakdownData, trendData, revenueToCogsData, fetchAll } = useCogs()
 
-const fetchTrendData = async () => {
-  try {
-    const response = await useApi('/cogs-analysis/trend-chart', {
-      method: 'POST',
-      body: {
-        custom_from: activeDateFrom.value,
-        custom_to: activeDateTo.value,
-        lang: currentLang.value
-      }
-    })
-    
-    if (response) {
-      trendData.value = Array.isArray(response) ? response : (response.data || response.payload || [])
+const handleDateChange = (periodData) => {
+    rangeOption.value = backendRangeMap[periodData.en] ?? 'Year to Date'
+    if (periodData.en === 'Custom Range') {
+        if (periodData.custom_from) {
+            const [d, m, y] = periodData.custom_from.split('-')
+            customFrom.value = `${y}-${m}-${d}`
+        }
+        if (periodData.custom_to) {
+            const [d, m, y] = periodData.custom_to.split('-')
+            customTo.value = `${y}-${m}-${d}`
+        }
+    } else {
+        customFrom.value = null
+        customTo.value   = null
     }
-  } catch (error) {
-    console.error('Error fetching trend data:', error)
-    trendData.value = []
-  }
+    fetchAll(currentLang.value)
 }
 
-const fetchRevenueToCogsData = async () => {
-  try {
-    const response = await useApi('/cogs-analysis/revenue-vs-cogs/trend-chart', {
-      method: 'POST',
-      body: {
-        custom_from: activeDateFrom.value,
-        custom_to: activeDateTo.value,
-        lang: currentLang.value
-      }
-    })
-    
-    if (response) {
-      revenueToCogsData.value = Array.isArray(response) ? response : (response.data || response.payload || [])
-    }
-  } catch (error) {
-    console.error('Error fetching revenue to cogs data:', error)
-    revenueToCogsData.value = []
-  }
-}
-
-const fetchBreakdownData = async () => {
-  try {
-    const response = await useApi('/cogs-analysis/breakdown', {
-      method: 'POST',
-      body: {
-        range_option: 'Custom Dates',
-        custom_from: activeDateFrom.value,
-        custom_to: activeDateTo.value,
-        lang: currentLang.value
-      }
-    })
-    
-    if (response && response.status === 'success') {
-      breakdownData.value = response
-    }
-  } catch (error) {
-    console.error('Error fetching breakdown data:', error)
-    breakdownData.value = null
-  }
-}
-
-const handleDateChange = (period) => {
-  activePeriod.value = period.en
-  activeDateFrom.value = period.custom_from
-  activeDateTo.value = period.custom_to
-  fetchTrendData()
-  fetchRevenueToCogsData()
-  fetchBreakdownData()
-}
-
-const handleReload = () => {
-  fetchTrendData()
-  fetchRevenueToCogsData()
-  fetchBreakdownData()
-}
+const handleReload = () => fetchAll(currentLang.value)
 
 const handleOneClickSummary = () => {
   console.log('One Click Summary clicked')
 }
 
-onMounted(() => {
-  fetchTrendData()
-  fetchRevenueToCogsData()
-  fetchBreakdownData()
-})
+watch(currentLang, () => fetchAll(currentLang.value))
+
+onMounted(() => fetchAll(currentLang.value))
 </script>
 
 <style scoped>

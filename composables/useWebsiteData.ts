@@ -193,126 +193,48 @@ export function useRevenuePartnership() {
 }
 
 
-/** Revenue detail page: /revenue */
-export function useRevenuePage() {
-  const { data, loading, error } = useWebsiteData()
-  const rp = computed(() => data.value?.revenuePage ?? {})
-  return {
-    loading, error,
-    summary:      computed(() => rp.value?.summary      ?? []),
-    gauge:        computed(() => rp.value?.gauge        ?? {}),
-    byCategory:   computed(() => rp.value?.byCategory   ?? {}),
-    trend:        computed(() => rp.value?.trend        ?? {}),
-    topCustomers: computed(() => rp.value?.topCustomers ?? {}),
-  }
-}
+// useRevenuePage — MOCK (static data.json)
+// Replaced by composables/cards/useRevenue.ts which calls the real API
+// export function useRevenuePage() { ... }
 
-/** Financial Statement detail page: /financial-statement */
-export function useFinancialStatementPage() {
-  const { data, loading, error } = useWebsiteData()
-  const fp = computed(() => data.value?.financialStatementPage ?? {})
-  return {
-    loading, error,
-    tabs:         computed(() => fp.value?.tabs         ?? []),
-    profitLoss:   computed(() => fp.value?.profitLoss   ?? []),
-    balanceSheet: computed(() => fp.value?.balanceSheet ?? []),
-    ratios:       computed(() => fp.value?.ratios       ?? []),
-  }
-}
+// useFinancialStatementPage — MOCK (static data.json)
+// Replaced by composables/cards/useFinancialStatement.ts which calls the real API
+// export function useFinancialStatementPage() { ... }
 
-/** Indirect Expense detail page: /indirect-expense */
-export function useIndirectExpensePage() {
-  const { data, loading, error } = useWebsiteData()
-  const ep = computed(() => data.value?.indirectExpensePage ?? {})
-  return {
-    loading, error,
-    summary:            computed(() => ep.value?.summary            ?? []),
-    topCategories:      computed(() => ep.value?.topCategories      ?? {}),
-    overheadTrends:     computed(() => ep.value?.overheadTrends     ?? {}),
-    overheadVsRevenue:  computed(() => ep.value?.overheadVsRevenue  ?? {}),
-  }
-}
+// useIndirectExpensePage — MOCK (static data.json)
+// Replaced by composables/cards/useIndirectExpense.ts which calls the real API
+// export function useIndirectExpensePage() { ... }
 
-/** Cash-Flow detail page: /cash-flow */
-export function useCashFlowPage() {
-  const { data, loading, error } = useWebsiteData()
-  const cp = computed(() => data.value?.cashFlowPage ?? {})
-  return {
-    loading, error,
-    summary:        computed(() => cp.value?.summary        ?? []),
-    metrics:        computed(() => cp.value?.metrics        ?? {}),
-    scenarioChart:  computed(() => cp.value?.scenarioChart  ?? {}),
-    inflowOutflow:  computed(() => cp.value?.inflowOutflow  ?? {}),
-  }
-}
+// useCashFlowPage — MOCK (static data.json)
+// Replaced by composables/cards/useCashFlow.ts which calls the real API
+// NOTE: still used in pages/cash-flow - Copy/index.vue — update that page to use useCashFlow
+// export function useCashFlowPage() { ... }
 
-/** Accounts Receivable detail page: /accounts-receivable */
-export function useAccountsReceivablePage() {
-  const { data, loading, error } = useWebsiteData()
-  const ar = computed(() => data.value?.accountsReceivablePage ?? {})
-  return {
-    loading, error,
-    summary:            computed(() => ar.value?.summary            ?? []),
-    topCustomers:       computed(() => ar.value?.topCustomers       ?? {}),
-    historicalMovement: computed(() => ar.value?.historicalMovement ?? {}),
-    agingGraph:         computed(() => ar.value?.agingGraph         ?? {}),
-  }
-}
+// useAccountsReceivablePage — replaced by composables/cards/useAccountsReceivable.ts (real API)
 
-/** COGS detail page: /cogs */
-export function useCogsPage() {
-  const { data, loading, error } = useWebsiteData()
-  const cp = computed(() => data.value?.cogsPage ?? {})
-  return {
-    loading, error,
-    summary:        computed(() => cp.value?.summary        ?? []),
-    summaryTotal:   computed(() => cp.value?.summaryTotal   ?? {}),
-    breakdown:      computed(() => cp.value?.breakdown      ?? {}),
-    last6Months:    computed(() => cp.value?.last6Months    ?? {}),
-    revenueToCogs:  computed(() => cp.value?.revenueToCogs  ?? {}),
-  }
-}
+// useCogsPage — MOCK (static data.json)
+// Replaced by composables/cards/useCogs.ts which calls the real API
+// export function useCogsPage() { ... }
 
-/** Accounts Payable detail page: /accounts-payable */
-export function useAccountsPayablePage() {
-  const { data, loading, error } = useWebsiteData()
-  const ap = computed(() => data.value?.accountsPayablePage ?? {})
-  return {
-    loading, error,
-    summary:            computed(() => ap.value?.summary            ?? []),
-    summaryTotal:       computed(() => ap.value?.summaryTotal       ?? {}),
-    topCustomers:       computed(() => ap.value?.topCustomers       ?? {}),
-    historicalMovement: computed(() => ap.value?.historicalMovement ?? {}),
-    agingGraph:         computed(() => ap.value?.agingGraph         ?? {}),
-  }
-}
+// useCostCenterPage — MOCK (static data.json)
+// Replaced by composables/cards/useCostCenter.ts which calls the real API
+// NOTE: still used in components/cost-center/ProjectDetailRevenueVsCost.vue — update to use useCostCenter
+// export function useCostCenterPage() { ... }
 
-/** Cost Center detail page: /cost-center */
-export function useCostCenterPage() {
-  const { data, loading, error } = useWebsiteData()
-  const cc = computed(() => data.value?.costCenterPage ?? {})
-  return {
-    loading, error,
-    summary:                computed(() => cc.value?.summary               ?? []),
-    summaryTotal:           computed(() => cc.value?.summaryTotal          ?? {}),
-    overallRevenueVsCost:   computed(() => cc.value?.overallRevenueVsCost  ?? {}),
-    projectDetail:          computed(() => cc.value?.projectDetail         ?? {}),
-  }
-}
-
-/** Tax Queries page: /tax-queries */
-export function useTaxQueriesPage() {
-  const { data, loading, error } = useWebsiteData()
-  const tq = computed(() => data.value?.taxQueriesPage ?? {})
-  return {
-    loading, error,
-    tableData:      computed(() => tq.value?.tableData      ?? {}),
-    suggestions:    computed(() => tq.value?.suggestions    ?? []),
-    tabs:           computed(() => tq.value?.tabs           ?? []),
-    historyGroups:  computed(() => tq.value?.historyGroups  ?? []),
-    deadlines:      computed(() => tq.value?.deadlines      ?? []),
-  }
-}
+// useTaxQueriesPage — MOCK (static data.json)
+// Replaced by composables/cards/useTaxQueries.ts which calls the real API
+// export function useTaxQueriesPage() {
+//   const { data, loading, error } = useWebsiteData()
+//   const tq = computed(() => data.value?.taxQueriesPage ?? {})
+//   return {
+//     loading, error,
+//     tableData:      computed(() => tq.value?.tableData      ?? {}),
+//     suggestions:    computed(() => tq.value?.suggestions    ?? []),
+//     tabs:           computed(() => tq.value?.tabs           ?? []),
+//     historyGroups:  computed(() => tq.value?.historyGroups  ?? []),
+//     deadlines:      computed(() => tq.value?.deadlines      ?? []),
+//   }
+// }
 
 /** Data Source Management page: /data-source */
 export function useDataSourcePage() {

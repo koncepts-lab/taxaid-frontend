@@ -95,7 +95,7 @@ const currentLang = useState('currentLang')
 const { isDark } = useTheme()
 const isModalOpen = ref(false)
 
-const { inflowOutflow } = useCashFlowPage()
+const { inflowOutflow } = useCashFlow()
 
 const chartSeries = computed(() => {
   const dataSeries = inflowOutflow.value?.series ?? []

@@ -6,12 +6,14 @@ export const useApi = async (url: string, options: any = {}) => {
   try {
     const method = (options.method || 'GET').toUpperCase();
 
+    const isFormData = options.body instanceof FormData
+
     return await $fetch(url, {
       baseURL: config.public.apiBase,
       ...options,
       headers: {
         'Accept': 'application/json',
-        ...(method !== 'GET' ? { 'Content-Type': 'application/json' } : {}),
+        ...(method !== 'GET' && !isFormData ? { 'Content-Type': 'application/json' } : {}),
         ...(token.value ? { 'Authorization': `Bearer ${token.value}` } : {}),
         ...options.headers,
       },

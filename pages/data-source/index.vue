@@ -129,7 +129,7 @@
               <DataSourceCostCenter v-if="activeSubTab === 'cost-center'" :isDark="isDark" :currentLang="currentLang"
                 @open-report="handleOpenCCReport" />
               <DataSourcePDCModal :isOpen="isPDCModalOpen" :type="selectedPDCType" :data="pdcDetailedData"
-                :isDark="isDark" :currentLang="currentLang" @close="isPDCModalOpen = false" />
+                :totalAmount="pdcDetailedTotal" :isDark="isDark" :currentLang="currentLang" @close="isPDCModalOpen = false" />
               <DataSourceCostCenterModal :isOpen="isModalOpen" :title="modalConfig.title" :columns="modalConfig.columns"
                 :data="modalConfig.data" :totalValue="modalConfig.total" :isDark="isDark" :currentLang="currentLang"
                 @close="isModalOpen = false" />
@@ -139,10 +139,24 @@
                 :isDark="isDark" :currentLang="currentLang" @open-sales-report="isForecastModalOpen = true" />
               <DataSourceSalesForecastModal :isOpen="isForecastModalOpen" :data="salesForecastDetailedData"
                 :isDark="isDark" :currentLang="currentLang" @close="isForecastModalOpen = false" />
-              <DataSourceDataIn v-if="activeSubTab === 'data-in'" :dataInItems="dataInItems" :isDark="isDark"
-                :currentLang="currentLang" @remove="handleRemove" />
+              <DataSourceDataIn v-if="activeSubTab === 'data-in'"
+                :dataInItems="dataInItems"
+                :loading="dataInLoading"
+                :error="dataInError"
+                :uploadFile="dataInUploadFile"
+                :downloadSample="dataInDownloadSample"
+                :uploadingId="dataInUploadingId"
+                :isDark="isDark"
+                :currentLang="currentLang"
+                @remove="handleRemove"
+                @uploaded="fetchDataInConfig" />
               <DataSourceTrialBalance v-if="activeSubTab === 'trial-balance'" :isDark="isDark"
-                :currentLang="currentLang" />
+                :currentLang="currentLang"
+                :tbMappingData="tbMappingData"
+                :tbConfigData="tbConfigData"
+                :tbMappingOptions="tbMappingOptions"
+                :tbSaving="tbSaving"
+                :onUpdate="updateTrialBalance" />
               <DataSourceChangeLog
                 v-if="activeSubTab === 'accounts-receivable' || activeSubTab === 'accounts-payable' || activeSubTab === 'pdc' || activeSubTab === 'cost-center' || activeSubTab === 'budget' || activeSubTab === 'sales-forecast' || activeSubTab === 'trial-balance'"
                 :logs="currentLogs" :isDark="isDark" :currentLang="currentLang" />
@@ -163,12 +177,18 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useDataIn } from '../../composables/data-source/useDataIn'
+import { usePDC } from '../../composables/data-source/usePDC'
+import { useTrialBalance } from '../../composables/data-source/useTrialBalance'
 
 // ── AR Aging Summary (live API) ────────────────────────────────────────────
 const { rows: arRows, totals: arTotals, loading: arLoading, error: arError } = useArAgingSummary()
 
 // ── AP Aging Summary (live API) ────────────────────────────────────────────
 const { rows: apRows, totals: apTotals, loading: apLoading, error: apError } = useApAgingSummary()
+
+// ── Trial Balance (live API) ───────────────────────────────────────────────
+const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, updateTrialBalance } = useTrialBalance()
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
@@ -187,10 +207,8 @@ const {
   arData: arDataFromJson,
   apData: apDataFromJson,
   logs: logsData,
-  pdcSummaryData: pdcSummaryDataFromJson,
-  pdcDetailedData: pdcDetailedDataFromJson,
   interCompanyData: interCompanyDataFromJson,
-  dataInItems: dataInItemsFromJson,
+  dataInItems: _dataInItemsFromJson,
   costCenterReports,
   budget: budgetData,
   salesForecast: salesForecastData,
@@ -298,12 +316,19 @@ watch(() => currentLang.value, () => {
 const isPDCModalOpen = ref(false)
 const selectedPDCType = ref('issued')
 
-// PDC data from composable (reactive to data.json)
-const pdcSummaryData = computed(() => pdcSummaryDataFromJson.value)
-const pdcDetailedData = computed(() => pdcDetailedDataFromJson.value)
 
-const openPDCReport = (type) => {
+const {
+  pdcGroups,
+  pdcDetailedData,
+  pdcDetailedTotal,
+  fetchDetailed: fetchPdcDetailed,
+} = usePDC()
+
+const pdcSummaryData = computed(() => pdcGroups.value)
+
+const openPDCReport = async (type) => {
   selectedPDCType.value = type
+  await fetchPdcDetailed(type)
   isPDCModalOpen.value = true
 }
 
@@ -329,13 +354,9 @@ const tbLogs = computed(() => logsData.value?.trialBalance ?? [])
 const budgetLogs = computed(() => logsData.value?.budget ?? [])
 const salesForecastLogs = computed(() => logsData.value?.salesForecast ?? [])
 
-// Data-In items from composable (kept as ref so handleRemove can mutate)
-const dataInItems = ref([])
-watch(dataInItemsFromJson, (val) => {
-  if (val?.length && !dataInItems.value.length) {
-    dataInItems.value = val.map(item => ({ ...item }))
-  }
-}, { immediate: true })
+// Data-In items — live from backend via useDataIn composable
+const { items: dataInItems, loading: dataInLoading, error: dataInError, fetchConfig: fetchDataInConfig, uploadFile: dataInUploadFile, downloadSample: dataInDownloadSample, uploadingId: dataInUploadingId } = useDataIn()
+onMounted(() => fetchDataInConfig())
 
 // Inter-company from composable (kept as ref so add/delete can mutate)
 const interCompanyData = ref([])
@@ -353,12 +374,12 @@ const tableData = ref([
   { id: 4, currency: 'USD', status: 'Overdue', contactType: 'Bank', paymentTerms: 'Net 30', bankAccount: 'Operating_SAR', pdcStatus: 'Returned', selected: false },
 ])
 
-// _unused block removed — dataInItems is populated from composable via watch above
 const handleRemove = (id) => {
   const item = dataInItems.value.find(i => i.id === id)
   if (item) {
     item.isUploaded = false
-    item.fileName = ''
+    item.fileName = null
+    item.uploadDate = null
   }
 }
 // interCompanyData is already declared above via watch on composable
@@ -392,6 +413,7 @@ watch(activeMainTab, (newTab) => {
     activeSubTab.value = newArray[0].id
   }
 })
+
 const agingType = computed(() => activeSubTab.value === 'accounts-receivable' ? 'AR' : 'AP')
 const selectAll = ref(false)
 const selectedCount = computed(() => tableData.value.filter(row => row.selected).length)

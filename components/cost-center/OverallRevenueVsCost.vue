@@ -187,13 +187,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const { overallRevenueVsCost } = useCostCenterPage()
+const { overallRevenueVsCost, fetchChart } = useCostCenter()
+
+onMounted(() => fetchChart())
 
 const categories = computed(() => overallRevenueVsCost.value?.categories ?? [])
 const mappingFullNames = computed(() => overallRevenueVsCost.value?.mappingFullNames ?? {})

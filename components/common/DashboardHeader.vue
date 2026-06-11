@@ -93,6 +93,18 @@
                                         </div>
 
                                         <div v-else class="p-2">
+                                            <!-- 3M / 6M projection toggle -->
+                                            <div v-if="showPeriodToggle" class="flex items-center gap-1 mb-2 p-1 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'">
+                                                <button
+                                                    v-for="m in [3, 6]" :key="m"
+                                                    @click.stop="selectProjectionPeriod(m)"
+                                                    class="flex-1 py-1.5 text-sm font-medium rounded-md transition-all"
+                                                    :class="activePeriod === m
+                                                        ? 'bg-[#03D8B0] text-black'
+                                                        : (isDark ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-gray-800')">
+                                                    {{ m }}M
+                                                </button>
+                                            </div>
                                             <VDatePicker v-model="singleDate" :is-dark="isDark"
                                                 :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
                                                 :max-date="today" @update:model-value="handleSingleChange" />
@@ -168,10 +180,15 @@ const props = defineProps({
             { en: 'Custom Range', ar: 'نطاق مخصص' },
             { en: 'Custom Date', ar: 'تاريخ مخصص' }
         ]
-    }
+    },
+    showPeriodToggle: { type: Boolean, default: false },
+    defaultPeriod: { type: String, default: null },
+    defaultRangeStart: { type: String, default: null },
+    defaultRangeEnd: { type: String, default: null },
+    defaultDate: { type: String, default: null }
 })
 
-const emit = defineEmits(['selected-date', 'reload', 'export-excel', 'export-pdf', 'one-click-summary'])
+const emit = defineEmits(['selected-date', 'reload', 'export-excel', 'export-pdf', 'one-click-summary', 'period-change'])
 
 const router = useRouter()
 const { isDark } = useTheme()
@@ -180,6 +197,13 @@ const currentLang = useState('currentLang', () => 'en')
 // UI States
 const showDateDropdown = ref(false)
 const showExportDropdown = ref(false)
+
+// 3M / 6M projection toggle (only shown when showPeriodToggle=true)
+const activePeriod = ref(3)
+const selectProjectionPeriod = (months) => {
+    activePeriod.value = months
+    emit('period-change', months)
+}
 const today = new Date()
 
 const range = ref({ start: null, end: null })

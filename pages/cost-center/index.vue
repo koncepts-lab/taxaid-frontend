@@ -15,7 +15,8 @@
 
           <CommonDashboardHeader ref="headerRef" :title="{ en: 'Cost Center Analysis', ar: 'تحليل مركز التكلفة' }"
             :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
-            :oneclickreview="false" @export-excel="handleExportExcel" @export-pdf="handleExportPDF"
+            :oneclickreview="false" :periods="costCenterPeriods"
+            @export-excel="handleExportExcel" @export-pdf="handleExportPDF"
             @selected-date="handleDateChange" @reload="fetchData" @export="exportData"
             @one-click-summary="showSummaryModal" />
           <div class="my-8">
@@ -76,21 +77,33 @@ const handleDateUpdate = (payload) => {
 const summaryRef = ref(null)
 const headerRef = ref(null)
 
-const fetchData = async () => {
-  if (headerRef.value) {
-    headerRef.value.resetToDefault()
-  }
+const { fetchChart, activeDate: ccDate } = useCostCenter()
 
-  if (summaryRef.value) {
-    await summaryRef.value.fetchSummaryData()
-  }
+const costCenterPeriods = [
+  // { en: 'This Year', ar: 'هذه السنة' },   // not supported — backend uses single date, no range_option
+  // { en: 'Last Year', ar: 'السنة الماضية' }, // not supported
+  { en: 'Custom Date', ar: 'تاريخ مخصص' },    // ✅ maps to ?date=dd-MM-yyyy
+]
+
+const fetchData = async () => {
+  if (headerRef.value) headerRef.value.resetToDefault()
+  ccDate.value = '31-12-2025'
+  await Promise.all([
+    summaryRef.value?.fetchSummaryData(),
+    fetchChart()
+  ])
 }
 
 const handleDateChange = (period) => {
-  if (summaryRef.value) {
-
-    summaryRef.value.fetchSummaryData(period)
+  if (period.custom_to) {
+    const [d, m, y] = period.custom_to.split('-')
+    ccDate.value = `${d}-${m}-${y}`
+  } else if (period.custom_from) {
+    const [d, m, y] = period.custom_from.split('-')
+    ccDate.value = `${d}-${m}-${y}`
   }
+  summaryRef.value?.fetchSummaryData(ccDate.value)
+  fetchChart()
 }
 const handleExportExcel = () => {
   const childData = summaryRef.value?.tableData || []

@@ -100,7 +100,7 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const showScenarioDropdown = ref(false)
 
-const { metrics } = useCashFlowPage()
+const { metrics } = useCashFlow()
 
 const cashInHand = computed(() => metrics.value?.cashInHand ?? 'AED 0.0 M')
 const cashInHandChange = computed(() => metrics.value?.cashInHandChange ?? '0.0%')
