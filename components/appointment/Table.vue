@@ -19,8 +19,8 @@
                     <!-- Date -->
                     <td class="px-6 py-4">
                         <div class="flex flex-row gap-[10px] items-center">
-                            <span class="text-[14px] font-medium" :class="isDark ? 'text-white' : 'text-[#111111]'">{{ item.date }}</span>
-                            <span class="text-[12px] opacity-60" :class="isDark ? 'text-white' : 'text-[#111111]'">{{ item.time }}</span>
+                            <span class="text-[14px] font-medium" :class="isDark ? 'text-white' : 'text-[#111111]'">{{ formatDate(item.appointment_date) }}</span>
+                            <span class="text-[12px] opacity-60" :class="isDark ? 'text-white' : 'text-[#111111]'">{{ item.appointment_time }}</span>
                         </div>
                     </td>
 
@@ -44,9 +44,21 @@
 
                     <!-- Status -->
                     <td class="px-6 py-4">
-                        <span class="px-3 py-1 rounded-full text-[12px] font-medium"
+                        <!-- extra_hours = pending + extra allocation; black container = one appointment, not two -->
+                        <div v-if="item.status === 'extra_hours'"
+                            class="inline-flex items-center gap-1.5">
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium"
+                                :style="{ backgroundColor: getStatusStyle('pending').bg, color: getStatusStyle('pending').text }">
+                                Pending
+                            </span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium"
+                                :style="{ backgroundColor: getStatusStyle('extra_hours').bg, color: getStatusStyle('extra_hours').text }">
+                                Extra Hours
+                            </span>
+                        </div>
+                        <span v-else class="px-3 py-1 rounded-full text-[12px] font-medium"
                             :style="{ backgroundColor: getStatusStyle(item.status).bg, color: getStatusStyle(item.status).text }">
-                            {{ item.status }}
+                            {{ statusLabel(item.status) }}
                         </span>
                     </td>
 
@@ -76,6 +88,12 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { format, parseISO } from 'date-fns'
+
+const formatDate = (dateStr) => {
+    if (!dateStr) return '—'
+    try { return format(parseISO(dateStr.slice(0, 10)), 'MMM dd, yyyy') } catch { return dateStr }
+}
 
 const props = defineProps({
     data: Array
@@ -83,7 +101,7 @@ const props = defineProps({
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
-const { columns: dynamicColumns, columnsAr, statusStyles, typeStyles } = useAppointmentsPage()
+const { columns: dynamicColumns, columnsAr, statusStyles, typeStyles, cancelAppointment } = useAppointmentsPage()
 
 const columns = computed(() => {
     return currentLang.value === 'ar' ? columnsAr.value : dynamicColumns.value
@@ -97,29 +115,21 @@ const openDetails = (item) => {
     isDetailsOpen.value = true
 }
 
-const handleCancelAppointment = (appointment) => {
-    // Optionally handle cancellation logic here
-    console.log('Cancel appointment:', appointment)
+const handleCancelAppointment = async (appointment) => {
+    if (!appointment?.id) return
+    await cancelAppointment(appointment.id)
+    isDetailsOpen.value = false
 }
 
-const getTypeStyle = (type) => {
-    const style = typeStyles.value[type]
-    if (style) return { bg: style.bg, text: style.text }
-    
-    if (type === 'Monthly Review') return { bg: '#D6F5ED', text: '#018E71' }
-    return { bg: '#FFE8E8', text: '#FF5B5B' }
+const STATUS_LABELS = {
+    pending:     'Pending',
+    scheduled:   'Scheduled',
+    extra_hours: 'Extra Hours',
+    cancelled:   'Cancelled',
+    completed:   'Completed',
 }
+const statusLabel = (status) => STATUS_LABELS[status] ?? status
 
-const getStatusStyle = (status) => {
-    const style = statusStyles.value[status]
-    if (style) return { bg: style.bg, text: style.text }
-
-    switch(status) {
-        case 'Completed': return { bg: '#D6F5ED', text: '#018E71' }
-        case 'Pending': return { bg: '#FFF4E5', text: '#FFA84A' }
-        case 'Scheduled': return { bg: '#E5F1FF', text: '#4A90FF' }
-        case 'Cancelled': return { bg: '#FFE8E8', text: '#FF5B5B' }
-        default: return { bg: '#F3F4F6', text: '#6B7280' }
-    }
-}
+const getTypeStyle = (type) => typeStyles.value[type] ?? { bg: '#F3F4F6', text: '#6B7280' }
+const getStatusStyle = (status) => statusStyles.value[status] ?? { bg: '#F3F4F6', text: '#6B7280' }
 </script>

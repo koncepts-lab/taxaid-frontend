@@ -40,7 +40,7 @@
                                 {{ currentLang === 'ar' ? 'نوع الموعد' : 'Appointment Type' }}
                             </p>
                             <span class="inline-block px-3 py-1.5 rounded-full text-[12px] font-medium"
-                                :class="getTypeStyle(appointment?.type)">
+                                :style="{ backgroundColor: getTypeStyle(appointment?.type).bg, color: getTypeStyle(appointment?.type).text }">
                                 {{ appointment?.type || '—' }}
                             </span>
                         </div>
@@ -67,7 +67,7 @@
                             </p>
                             <p style="font-weight: 400; font-size: 14px;"
                                 :style="isDark ? 'color: #ffffff;' : 'color: #101828;'">
-                                {{ appointment?.date || '—' }}
+                                {{ formatDate(appointment?.appointment_date) }}
                             </p>
                         </div>
                     </div>
@@ -83,7 +83,7 @@
                             </p>
                             <p style="font-weight: 400; font-size: 14px;"
                                 :style="isDark ? 'color: #ffffff;' : 'color: #101828;'">
-                                {{ appointment?.time || '—' }}
+                                {{ appointment?.appointment_time || '—' }}
                             </p>
                         </div>
 
@@ -107,9 +107,21 @@
                                 :style="isDark ? 'color: rgba(255,255,255,0.4);' : 'color: #505050;'">
                                 {{ currentLang === 'ar' ? 'الحالة' : 'Status' }}
                             </p>
-                            <span class="inline-block px-3 py-1.5 rounded-full text-[12px] font-medium"
-                                :class="getStatusStyle(appointment?.status)">
-                                {{ appointment?.status || '—' }}
+                            <!-- extra_hours: both pending + extra in black container = one appointment -->
+                            <div v-if="appointment?.status === 'extra_hours'"
+                                class="inline-flex items-center gap-1.5">
+                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium"
+                                    :style="{ backgroundColor: getStatusStyle('pending').bg, color: getStatusStyle('pending').text }">
+                                    Pending
+                                </span>
+                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium"
+                                    :style="{ backgroundColor: getStatusStyle('extra_hours').bg, color: getStatusStyle('extra_hours').text }">
+                                    Extra Hours
+                                </span>
+                            </div>
+                            <span v-else class="inline-block px-3 py-1.5 rounded-full text-[12px] font-medium"
+                                :style="{ backgroundColor: getStatusStyle(appointment?.status).bg, color: getStatusStyle(appointment?.status).text }">
+                                {{ statusLabel(appointment?.status) || '—' }}
                             </span>
                         </div>
                     </div>
@@ -129,8 +141,9 @@
                     </div>
                 </div>
 
-                <!-- Footer -->
-                <div class="px-8 pb-8 flex justify-end">
+                <!-- Footer — cancel only for future, non-terminal appointments -->
+                <div v-if="!['completed', 'cancelled'].includes(appointment?.status) && !isPast"
+                    class="px-8 pb-8 flex justify-end">
                     <button @click="handleCancel"
                         class="px-8 h-[48px] rounded-[12px] border text-[14px] font-medium transition-all cursor-pointer hover:bg-red-50 active:scale-[0.98]"
                         :class="isDark
@@ -139,12 +152,20 @@
                         {{ currentLang === 'ar' ? 'إلغاء الموعد' : 'Cancel Appointment' }}
                     </button>
                 </div>
+                <div v-else class="pb-4"></div>
             </div>
         </div>
     </Transition>
 </template>
 
 <script setup>
+import { format, parseISO } from 'date-fns'
+
+const formatDate = (dateStr) => {
+    if (!dateStr) return '—'
+    try { return format(parseISO(dateStr.slice(0, 10)), 'MMM dd, yyyy') } catch { return dateStr }
+}
+
 const props = defineProps({
     modelValue: Boolean,
     appointment: Object
@@ -154,22 +175,31 @@ const emit = defineEmits(['update:modelValue', 'cancel'])
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+const { typeStyles, statusStyles } = useAppointmentsPage()
 
+// Returns { bg, text } — uses API type names (Implementation Feedback, Initial Usability, Feature Suggestion)
 const getTypeStyle = (type) => {
-    if (type === 'Monthly Review') return 'bg-[#D6F5ED] text-[#018E71]'
-    return 'bg-[#FFE8E8] text-[#FF5B5B]'
+    return typeStyles.value[type] ?? { bg: '#F3F4F6', text: '#6B7280' }
 }
 
-const getStatusStyle = (status) => {
-    switch (status) {
-        case 'Completed': return 'bg-[#D6F5ED] text-[#018E71]'
-        case 'Pending': return 'bg-[#FFF4E5] text-[#FFA84A]'
-        case 'Scheduled': return 'bg-[#E5F1FF] text-[#4A90FF]'
-        case 'Confirmed': return 'bg-[#D6F5ED] text-[#018E71]'
-        case 'Cancelled': return 'bg-[#FFE8E8] text-[#FF5B5B]'
-        default: return 'bg-gray-100 text-gray-600'
-    }
+const isPast = computed(() => {
+    if (!props.appointment?.appointment_date || !props.appointment?.appointment_time) return false
+    try {
+        const dt = new Date(`${props.appointment.appointment_date.slice(0, 10)} ${props.appointment.appointment_time}`)
+        return dt <= new Date()
+    } catch { return false }
+})
+
+const STATUS_LABELS = {
+    pending:     'Pending',
+    scheduled:   'Scheduled',
+    extra_hours: 'Extra Hours',
+    cancelled:   'Cancelled',
+    completed:   'Completed',
 }
+const statusLabel = (status) => STATUS_LABELS[status] ?? status
+
+const getStatusStyle = (status) => statusStyles.value[status] ?? { bg: '#F3F4F6', text: '#6B7280' }
 
 const handleCancel = () => {
     emit('cancel', props.appointment)
