@@ -102,7 +102,7 @@
                     </svg>
                     Reschedule
                   </button>
-                  <button @click="$emit('approve', req.id)" class="px-4 py-1.5 bg-[#4AD2A8] text-white rounded-md hover:bg-[#3ebe95] text-[13px] font-medium shadow-sm">
+                  <button @click="openMeetUrlModal(req)" class="px-4 py-1.5 bg-[#4AD2A8] text-white rounded-md hover:bg-[#3ebe95] text-[13px] font-medium shadow-sm">
                     Confirm
                   </button>
                 </template>
@@ -192,11 +192,58 @@
             </div>
           </div>
 
+          <!-- Meet Link -->
+          <div v-if="selectedRequest.meet_url" class="mb-4">
+            <p class="text-[13px] text-gray-500 mb-1.5">Meet Link</p>
+            <a :href="selectedRequest.meet_url" target="_blank" rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 text-[13px] text-[#00896F] font-medium hover:underline break-all">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              {{ selectedRequest.meet_url }}
+            </a>
+          </div>
+
           <div>
             <h4 class="text-[15px] font-medium text-gray-900 mb-2.5">Notes</h4>
             <div class="bg-[#E6F9F3] rounded-xl p-4 text-[14px] text-gray-800 min-h-[90px] border border-transparent">
               {{ selectedRequest.notes || 'No notes.' }}
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Meet URL Modal -->
+    <div v-if="isMeetUrlModalOpen && selectedRequest" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/30 backdrop-blur-md">
+      <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl relative">
+        <div class="px-6 py-6">
+          <div class="flex justify-between items-center mb-5">
+            <h3 class="text-[17px] font-medium text-gray-900">Add Meet Link</h3>
+            <button @click="isMeetUrlModalOpen = false" class="text-gray-400 hover:text-gray-800 transition-colors">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <p class="text-[13px] text-gray-500 mb-4">Paste the Google Meet or Teams link for this appointment. The client will see this after confirmation.</p>
+          <input
+            v-model="meetUrlInput"
+            type="url"
+            placeholder="https://meet.google.com/..."
+            class="block w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none text-gray-800 mb-1"
+            :class="meetUrlError ? 'border-red-400 focus:border-red-400' : 'border-gray-200 focus:border-[#00896F]'"
+            @keyup.enter="confirmApprove"
+          />
+          <p v-if="meetUrlError" class="text-[12px] text-red-500 mb-3">{{ meetUrlError }}</p>
+          <div v-else class="mb-3"></div>
+          <div class="flex gap-3">
+            <button @click="isMeetUrlModalOpen = false" class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 bg-white transition-colors">
+              Cancel
+            </button>
+            <button @click="confirmApprove" class="flex-[1.5] px-4 py-2.5 bg-[#4AD2A8] text-white rounded-xl text-sm font-medium hover:bg-[#3ebe95] transition-colors">
+              Confirm Appointment
+            </button>
           </div>
         </div>
       </div>
@@ -309,7 +356,7 @@ const emit = defineEmits<{
   (e: 'update:search', val: string): void
   (e: 'update:statusFilter', val: string): void
   (e: 'refresh'): void
-  (e: 'approve', id: number): void
+  (e: 'approve', id: number, meetUrl: string): void
   (e: 'reschedule', id: number, date: string, time: string): void
   (e: 'cancel', id: number): void
   (e: 'complete', id: number): void
@@ -335,9 +382,27 @@ function onStatusChange(e: Event) {
 // ─── Modals ──────────────────────────────────────────────────────────────────
 const isDetailsModalOpen    = ref(false)
 const isRescheduleModalOpen = ref(false)
+const isMeetUrlModalOpen    = ref(false)
 const selectedRequest       = ref<AdminAppointment | null>(null)
 const rescheduleDate        = ref('')  // yyyy-MM-dd
 const rescheduleTime        = ref('09:00 AM')
+const meetUrlInput          = ref('')
+const meetUrlError          = ref('')
+
+function openMeetUrlModal(req: AdminAppointment) {
+  selectedRequest.value = req
+  meetUrlInput.value    = ''
+  meetUrlError.value    = ''
+  isMeetUrlModalOpen.value = true
+}
+
+function confirmApprove() {
+  const url = meetUrlInput.value.trim()
+  if (!url) { meetUrlError.value = 'Meet link is required.'; return }
+  if (!/^https?:\/\/.+/.test(url)) { meetUrlError.value = 'Enter a valid URL starting with http(s)://'; return }
+  emit('approve', selectedRequest.value!.id, url)
+  isMeetUrlModalOpen.value = false
+}
 
 // ─── Calendar state ───────────────────────────────────────────────────────────
 const calViewDate = ref(new Date())

@@ -10,7 +10,8 @@ interface Appointment {
   appointment_time: string
   duration: string
   duration_hours: number
-  status: 'pending' | 'scheduled' | 'extra_hours' | 'cancelled' | 'completed'
+  status: 'pending' | 'scheduled' | 'rescheduled' | 'extra_hours' | 'cancelled' | 'completed'
+  meet_url: string | null
   notes: string | null
   created_at: string
 }
@@ -36,6 +37,7 @@ const _monthlyUsageStats = ref<MonthlyUsageStats>({
   extra_hours_used: 0,
   next_review: null,
 })
+const _monthlyReviews = ref<any[]>([])
 
 const _loading = ref(false)
 
@@ -43,7 +45,11 @@ const _loading = ref(false)
 const _hasAnyAppointments = computed(() => _cache.value.length > 0)
 
 const _appointments = computed<Appointment[]>(() => {
-  let list = _cache.value
+  // Merge regular appointments with monthly reviews (shaped identically by backend)
+  const merged = [..._cache.value, ..._monthlyReviews.value]
+    .sort((a, b) => a.appointment_date.localeCompare(b.appointment_date))
+
+  let list = merged
   if (_statusFilter.value) {
     list = list.filter(a => a.status === _statusFilter.value)
   }
@@ -96,17 +102,19 @@ const _stats = computed(() => [
 
 // Static config refs — callers use .value consistently
 const _legend = ref([
-  { label: 'Pending',     labelAr: 'قيد الانتظار', color: '#D97706' },
-  { label: 'Scheduled',   labelAr: 'مجدول',         color: '#3B82F6' },
-  { label: 'Extra Hours', labelAr: 'ساعات إضافية', color: '#F97316' },
-  { label: 'Cancelled',   labelAr: 'ملغي',           color: '#991B1B' },
-  { label: 'Completed',   labelAr: 'مكتمل',          color: '#018E71' },
+  { label: 'Pending',     labelAr: 'قيد الانتظار',  color: '#D97706' },
+  { label: 'Scheduled',   labelAr: 'مجدول',          color: '#3B82F6' },
+  { label: 'Rescheduled', labelAr: 'معاد جدولته',   color: '#F97316' },
+  { label: 'Extra Hours', labelAr: 'ساعات إضافية',  color: '#F97316' },
+  { label: 'Cancelled',   labelAr: 'ملغي',            color: '#991B1B' },
+  { label: 'Completed',   labelAr: 'مكتمل',           color: '#018E71' },
 ])
 
 const _statusStyles = ref<Record<string, { bg: string; text: string }>>({
   completed:   { bg: '#D6F5ED', text: '#018E71' },
   pending:     { bg: '#FFF4E5', text: '#D97706' },
   scheduled:   { bg: '#E5F1FF', text: '#3B82F6' },
+  rescheduled: { bg: '#FFF3E0', text: '#F97316' },
   extra_hours: { bg: '#FFF0E5', text: '#F97316' },
   cancelled:   { bg: '#FFE8E8', text: '#EF4444' },
 })
@@ -148,6 +156,15 @@ export function useAppointmentsPage() {
         ...options.headers,
       },
     })
+  }
+
+  async function fetchScheduledReviews(): Promise<void> {
+    try {
+      const res = await apiFetch('/monthly-reviews')
+      _monthlyReviews.value = (res as any).data ?? []
+    } catch {
+      // non-fatal
+    }
   }
 
   async function fetchAppointments(from: string, to: string): Promise<void> {
@@ -195,7 +212,7 @@ export function useAppointmentsPage() {
     _cachedTo.value   = null
     const from = format(subMonths(new Date(), 3), 'yyyy-MM-dd')
     const to   = format(addMonths(new Date(), 3), 'yyyy-MM-dd')
-    await Promise.all([fetchAppointments(from, to), fetchStats()])
+    await Promise.all([fetchAppointments(from, to), fetchStats(), fetchScheduledReviews()])
   }
 
   async function extendCacheIfNeeded(targetDate: Date): Promise<void> {
@@ -231,9 +248,9 @@ export function useAppointmentsPage() {
     if (_cache.value.length === 0) {
       const from = format(subMonths(new Date(), 3), 'yyyy-MM-dd')
       const to   = format(addMonths(new Date(), 3), 'yyyy-MM-dd')
-      await Promise.all([fetchAppointments(from, to), fetchStats()])
+      await Promise.all([fetchAppointments(from, to), fetchStats(), fetchScheduledReviews()])
     } else {
-      await fetchStats()
+      await Promise.all([fetchStats(), fetchScheduledReviews()])
     }
   })
 

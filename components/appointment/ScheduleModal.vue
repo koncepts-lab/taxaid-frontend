@@ -105,7 +105,7 @@
                                             v-model="selectedDate"
                                             :is-dark="isDark"
                                             :locale="currentLang === 'ar' ? 'ar' : 'en'"
-                                            :min-date="new Date()"
+                                            :min-date="tomorrow"
                                             @update:model-value="activeDropdown = null"
                                             color="emerald"
                                             borderless
@@ -244,6 +244,7 @@ const activeDropdown = ref(null)
 const selectedIssue = ref('')
 const selectedDuration = ref('')
 const selectedDate = ref(null)
+const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); tomorrow.setHours(0, 0, 0, 0)
 const submitting = ref(false)
 const submitError = ref('')
 

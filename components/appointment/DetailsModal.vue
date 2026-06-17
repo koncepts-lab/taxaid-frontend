@@ -126,6 +126,22 @@
                         </div>
                     </div>
 
+                    <!-- Meet Link — shown when scheduled/rescheduled and a link exists -->
+                    <div v-if="appointment?.meet_url && ['scheduled', 'rescheduled'].includes(appointment?.status)" class="mb-7">
+                        <p class="mb-2" style="font-weight: 400; font-size: 12px;"
+                            :style="isDark ? 'color: rgba(255,255,255,0.4);' : 'color: #505050;'">
+                            {{ currentLang === 'ar' ? 'رابط الاجتماع' : 'Meet Link' }}
+                        </p>
+                        <a :href="appointment.meet_url" target="_blank" rel="noopener noreferrer"
+                            class="inline-flex items-center gap-1.5 text-[13px] font-medium break-all"
+                            :style="isDark ? 'color: #03D8B0;' : 'color: #00896F;'">
+                            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                            {{ appointment.meet_url }}
+                        </a>
+                    </div>
+
                     <!-- Notes -->
                     <div class="mb-8">
                         <p class="text-[14px] font-bold mb-3"
@@ -136,13 +152,13 @@
                             :class="isDark
                                 ? 'bg-[#00FFBC]/5 border border-[#00FFBC]/10 text-white/60'
                                 : 'bg-[#E6FFF5] text-[#555]'">
-                            {{ appointment?.notes || (currentLang === 'ar' ? 'لا توجد ملاحظات.' : 'No notes provided.') }}
+                            {{ notesDisplay }}
                         </div>
                     </div>
                 </div>
 
-                <!-- Footer — cancel only for future, non-terminal appointments -->
-                <div v-if="!['completed', 'cancelled'].includes(appointment?.status) && !isPast"
+                <!-- Footer — cancel only for future, non-terminal, non-monthly appointments -->
+                <div v-if="!['completed', 'cancelled'].includes(appointment?.status) && !isPast && appointment?.type !== 'Monthly Review'"
                     class="px-8 pb-8 flex justify-end">
                     <button @click="handleCancel"
                         class="px-8 h-[48px] rounded-[12px] border text-[14px] font-medium transition-all cursor-pointer hover:bg-red-50 active:scale-[0.98]"
@@ -188,6 +204,12 @@ const isPast = computed(() => {
         const dt = new Date(`${props.appointment.appointment_date.slice(0, 10)} ${props.appointment.appointment_time}`)
         return dt <= new Date()
     } catch { return false }
+})
+
+const notesDisplay = computed(() => {
+    if (props.appointment?.notes) return props.appointment.notes
+    if (props.appointment?.type === 'Monthly Review') return 'Monthly TaxAid Review'
+    return currentLang.value === 'ar' ? 'لا توجد ملاحظات.' : 'No notes provided.'
 })
 
 const STATUS_LABELS = {

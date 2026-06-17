@@ -19,6 +19,7 @@ export interface AdminAppointment {
   session_elapsed_seconds: number
   duration: string
   duration_hours: number
+  meet_url: string | null
   notes: string | null
 }
 
@@ -46,8 +47,8 @@ export function useAdminAppointments() {
     }
   }
 
-  async function approveAppointment(id: number): Promise<void> {
-    await useApi(`/admin/appointments/${id}/approve`, { method: 'PATCH' })
+  async function approveAppointment(id: number, meetUrl: string): Promise<void> {
+    await useApi(`/admin/appointments/${id}/approve`, { method: 'PATCH', body: { meet_url: meetUrl } })
     await fetchAppointments()
   }
 

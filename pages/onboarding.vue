@@ -327,7 +327,7 @@ const syncWithBackend = async () => {
           
           // Custom mapping based on UI logic
           if (q.maps_to_config_key === 'company_structure') ans = selectedLabel.value
-          if (q.maps_to_config_key === 'company_name') ans = JSON.stringify(entityForms.value)
+          if (q.maps_to_config_key === 'company_name') ans = JSON.stringify({ legal_name: entityForms.value[0]?.legalName ?? '', nickname: entityForms.value[0]?.nickName ?? '' })
           if (q.maps_to_config_key === 'currency') ans = finalCurrency
           
           // Handle 'Other' inputs
