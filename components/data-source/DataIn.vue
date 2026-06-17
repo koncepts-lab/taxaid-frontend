@@ -331,7 +331,7 @@
 </style>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const props = defineProps({
     isDark: Boolean,
@@ -406,7 +406,10 @@ const {
     budgetFetchGet,
     budgetFetchViewData,
     budgetDownloadSample,
+    fetchBudgetStatuses,
 } = useDataIn()
+
+onMounted(() => fetchBudgetStatuses())
 
 // View detailed report modal
 const viewModalOpen = ref(false)

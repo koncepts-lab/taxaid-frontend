@@ -203,13 +203,34 @@ export const useDataIn = () => {
     }
   }
 
+  // ── Budget upload status — restore state from backend on mount ───────────
+  const fetchBudgetStatuses = async (): Promise<void> => {
+    try {
+      const res = await fetch(`${config.public.apiBase}/data-source/budget/upload-status`, {
+        headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
+      })
+      if (!res.ok) return
+      const json = await res.json() as any
+      const data = json?.data ?? {}
+      for (const [id, status] of Object.entries(data) as any[]) {
+        budgetStatuses.value[id] = {
+          isUploaded: status.isUploaded,
+          fileName:   null,
+          uploadDate: status.uploadDate,
+        }
+      }
+    } catch {
+      // Non-fatal — statuses just stay false
+    }
+  }
+
   // ── Budget sync (BS / P&L) — computes and saves to DB ────────────────────
   const budgetFetchGet = async (id: string, year?: number): Promise<void> => {
     const endpoint = BUDGET_GET_ENDPOINTS[id]
     if (!endpoint) return
     budgetFetchingId.value = id
     budgetError.value      = null
-    const y   = 2024// year ?? new Date().getFullYear()!!!!!!!!!!!!!
+    const y   = year ?? new Date().getFullYear()
     const url = `${config.public.apiBase}${endpoint}?year=${y}`
     try {
       const res = await fetch(url, {
@@ -238,7 +259,7 @@ export const useDataIn = () => {
     if (!endpoint) return null
     budgetViewLoading.value = true
     budgetError.value       = null
-    const y   = 2024// year ?? new Date().getFullYear()
+    const y   = _year ?? new Date().getFullYear()
     const url = `${config.public.apiBase}${endpoint}?year=${y}`
     try {
       const res = await fetch(url, {
@@ -287,6 +308,6 @@ export const useDataIn = () => {
     // budget
     budgetStatuses, budgetUploadingId, budgetFetchingId, budgetError,
     budgetViewLoading, budgetViewData,
-    budgetUploadFile, budgetFetchGet, budgetFetchViewData, budgetDownloadSample,
+    budgetUploadFile, budgetFetchGet, budgetFetchViewData, budgetDownloadSample, fetchBudgetStatuses,
   }
 }
