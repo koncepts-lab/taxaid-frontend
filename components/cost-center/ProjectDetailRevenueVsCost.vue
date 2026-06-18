@@ -100,14 +100,17 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const { projectDetail } = useCostCenterPage()
-const actualVsBudget = computed(() => projectDetail.value?.actualVsBudget ?? {})
+const props = defineProps({
+  data: { type: Object, default: () => ({}) }
+})
 
-const categories = computed(() => actualVsBudget.value?.categories?.map(c => currentLang.value === 'ar' ? c.ar : c.en) ?? [])
+const tableRows = computed(() => props.data?.table_data ?? [])
+
+const categories = computed(() => tableRows.value.map(row => row.particulars ?? ''))
 
 const series = computed(() => [
-  { name: 'Actual', data: actualVsBudget.value?.actualData ?? [] },
-  { name: 'Budget', data: actualVsBudget.value?.budgetData ?? [] }
+  { name: 'Actual', data: tableRows.value.map(row => parseFloat(((row.actual ?? 0) / 1_000_000).toFixed(2))) },
+  { name: 'Budget', data: tableRows.value.map(row => parseFloat(((row.budget ?? 0) / 1_000_000).toFixed(2))) }
 ])
 
 const chartOptions = computed(() => ({

@@ -82,12 +82,24 @@
 
                 <!-- Appointment Pills -->
                 <div class="flex flex-col gap-1 mt-0.5">
-                    <button v-for="(appt, i) in getAppointmentsForDay(day)" :key="i"
-                        @click="openDetails(appt)"
-                        class="w-full text-left px-2 py-0.5 rounded-[5px] text-[11px] font-medium truncate transition-all cursor-pointer hover:opacity-80 active:scale-[0.97]"
-                        :style="{ background: getStatusBg(appt.status), color: getStatusText(appt.status) }">
-                        {{ appt.consultant }}
-                    </button>
+                    <template v-for="(appt, i) in getAppointmentsForDay(day)" :key="i">
+                        <!-- extra_hours: pill color = pending normally / extra_hours when that filter active -->
+                        <!-- dot at right = extra_hours accent color to signal extra allocation -->
+                        <div v-if="appt.status === 'extra_hours'"
+                            @click="openDetails(appt)"
+                            class="w-full flex items-center gap-1 px-2 py-0.5 rounded-[5px] cursor-pointer hover:opacity-80 active:scale-[0.97] transition-all"
+                            :style="extraHoursPillStyle">
+                            <span class="text-[11px] font-medium truncate flex-1 min-w-0">{{ appt.consultant }}</span>
+                            <span class="w-2 h-2 rounded-full flex-shrink-0" :style="{ background: getStatusText('extra_hours') }"></span>
+                        </div>
+                        <!-- Normal appointment pill -->
+                        <button v-else
+                            @click="openDetails(appt)"
+                            class="w-full text-left px-2 py-0.5 rounded-[5px] text-[11px] font-medium truncate transition-all cursor-pointer hover:opacity-80 active:scale-[0.97]"
+                            :style="{ background: getStatusBg(appt.status), color: getStatusText(appt.status) }">
+                            {{ appt.consultant }}
+                        </button>
+                    </template>
                 </div>
             </div>
 
@@ -103,11 +115,13 @@
     <AppointmentDetailsModal
         v-model="isDetailsOpen"
         :appointment="selectedAppointment"
+        @cancel="handleCancelAppointment"
     />
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { parseISO } from 'date-fns'
 
 const props = defineProps({
     data: Array
@@ -115,11 +129,17 @@ const props = defineProps({
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
-const appointments = useState('appointments_list', () => [])
+const { cancelAppointment } = useAppointmentsPage()
 
 // ─── Modal ───────────────────────────────────────────────────────────────────
 const isDetailsOpen = ref(false)
 const selectedAppointment = ref(null)
+
+const handleCancelAppointment = async (appointment) => {
+    if (!appointment?.id) return
+    await cancelAppointment(appointment.id)
+    isDetailsOpen.value = false
+}
 
 const openDetails = (appt) => {
     selectedAppointment.value = appt
@@ -179,21 +199,20 @@ const isToday = (day) => {
 }
 
 // ─── Appointment matching ─────────────────────────────────────────────────────
-// Parses appointment.date string like "Nov 25, 2025" or "25-11-2025"
+// API returns "YYYY-MM-DD". parseISO keeps it as local date (no UTC-shift).
 const parseAppointmentDate = (dateStr) => {
     if (!dateStr) return null
-    // Try native parse (works for "Nov 25, 2025")
-    const d = new Date(dateStr)
-    if (!isNaN(d)) return d
-    // Try dd-mm-yyyy
-    const parts = dateStr.split('-')
-    if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0])
-    return null
+    try {
+        // Slice to first 10 chars to handle both "2026-06-17" and ISO datetime strings
+        return parseISO(dateStr.slice(0, 10))
+    } catch {
+        return null
+    }
 }
 
 const getAppointmentsForDay = (day) => {
-    return appointments.value.filter(appt => {
-        const d = parseAppointmentDate(appt.date)
+    return (props.data ?? []).filter(appt => {
+        const d = parseAppointmentDate(appt.appointment_date ?? appt.date)
         if (!d) return false
         return (
             d.getDate() === day &&
@@ -203,16 +222,44 @@ const getAppointmentsForDay = (day) => {
     })
 }
 
+// ─── Auto-navigate when filter has no results in current month ────────────────
+// When data changes (filter applied / new results) and the current displayed month
+// has no appointments, jump to the month of the chronologically closest appointment.
+watch(() => props.data, (list) => {
+    if (!list || list.length === 0) return
+
+    const hasInMonth = list.some(appt => {
+        const d = parseAppointmentDate(appt.appointment_date)
+        return d && d.getMonth() === currentMonth.value && d.getFullYear() === currentYear.value
+    })
+
+    if (!hasInMonth) {
+        // Prefer the next upcoming appointment; fall back to the most recent past one
+        const todayMs = Date.now()
+        const upcoming = list.find(a => {
+            const d = parseAppointmentDate(a.appointment_date)
+            return d && d.getTime() >= todayMs
+        })
+        const target = upcoming ?? list[list.length - 1]
+        const d = target ? parseAppointmentDate(target.appointment_date) : null
+        if (d) {
+            currentMonth.value = d.getMonth()
+            currentYear.value  = d.getFullYear()
+        }
+    }
+})
+
 // ─── Status colours ───────────────────────────────────────────────────────────
-const { legend: dynamicLegend, statusStyles } = useAppointmentsPage()
+const { legend: dynamicLegend, statusStyles, statusFilter } = useAppointmentsPage()
 
-const getStatusBg = (status) => {
-    return statusStyles.value[status]?.bg || '#F3F4F6'
-}
+const getStatusBg   = (status) => statusStyles.value[status]?.bg   || '#F3F4F6'
+const getStatusText = (status) => statusStyles.value[status]?.text || '#6B7280'
 
-const getStatusText = (status) => {
-    return statusStyles.value[status]?.text || '#6B7280'
-}
+// extra_hours pill: pending color by default; switches to extra_hours color when that filter is active
+const extraHoursPillStyle = computed(() => {
+    const base = statusFilter.value === 'extra_hours' ? 'extra_hours' : 'pending'
+    return { background: getStatusBg(base), color: getStatusText(base) }
+})
 
 // ─── Legend ───────────────────────────────────────────────────────────────────
 const legend = computed(() => {

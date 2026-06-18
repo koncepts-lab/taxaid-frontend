@@ -12,7 +12,7 @@
           <CostCenterProjectDetailSummaryCards :summary-data="data?.contract_summary" />
           <CostCenterProjectDetailTable ref="tableRef" :data="data" />
           <div class="h-[500px]">
-            <CostCenterProjectDetailRevenueVsCost />
+            <CostCenterProjectDetailRevenueVsCost :data="data" />
           </div>
         </div>
       </div>
