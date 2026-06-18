@@ -54,10 +54,10 @@
               </div>
             </td>
           </tr>
-          <tr v-else-if="filteredReviews.length === 0">
+          <tr v-else-if="reviews.length === 0">
             <td colspan="7" class="px-6 py-12 text-center text-sm text-gray-400">No reviews found for {{ selectedMonth }}.</td>
           </tr>
-          <tr v-for="r in filteredReviews" :key="r.id" class="hover:bg-gray-50 transition-colors">
+          <tr v-for="r in reviews" :key="r.id" class="hover:bg-gray-50 transition-colors">
             <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-500">{{ r.tenant_id }}</td>
             <td class="px-6 py-5 whitespace-nowrap text-[15px] font-medium text-gray-900">{{ r.client_name }}</td>
             <!-- Progress -->
@@ -112,6 +112,16 @@
         </tbody>
       </table>
     </div>
+    <PaginationBar
+      v-if="meta"
+      :page="meta.current_page"
+      :totalPages="meta.last_page"
+      :from="meta.from"
+      :to="meta.to"
+      :total="meta.total"
+      @prev="loadReviews(meta.current_page - 1)"
+      @next="loadReviews(meta.current_page + 1)"
+    />
 
     <!-- Set Schedule Modal -->
     <SetScheduleModal
@@ -128,20 +138,16 @@ import { format, parseISO } from 'date-fns'
 import { useAdminMonthlyReviews } from '~/composables/admin/useAdminMonthlyReviews'
 import type { AdminMonthlyReview } from '~/composables/admin/useAdminMonthlyReviews'
 import SetScheduleModal from './SetScheduleModal.vue'
+import PaginationBar from './PaginationBar.vue'
 
-const { reviews, loading, fetchReviews } = useAdminMonthlyReviews()
+const { reviews, meta, loading, fetchReviews } = useAdminMonthlyReviews()
 
 const selectedMonth = ref(new Date().toISOString().slice(0, 7))
 const search        = ref('')
+const currentPage   = ref(1)
 
 const isScheduleModalOpen = ref(false)
 const selectedReview      = ref<AdminMonthlyReview | null>(null)
-
-const filteredReviews = computed(() => {
-  if (!search.value.trim()) return reviews.value
-  const q = search.value.toLowerCase()
-  return reviews.value.filter(r => r.client_name.toLowerCase().includes(q))
-})
 
 const progressPercent = (r: AdminMonthlyReview) => {
   if (!r.progress_total) return 0
@@ -173,11 +179,18 @@ const statusLabel = (status: string) => {
   return status ? status.charAt(0).toUpperCase() + status.slice(1) : ''
 }
 
-async function loadReviews() {
-  await fetchReviews(selectedMonth.value, search.value || undefined)
+async function loadReviews(page = currentPage.value) {
+  currentPage.value = page
+  await fetchReviews(selectedMonth.value, search.value || undefined, page)
 }
 
-watch(selectedMonth, loadReviews)
+watch(selectedMonth, () => loadReviews(1))
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+watch(search, () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => loadReviews(1), 300)
+})
 
 function openScheduleModal(r: AdminMonthlyReview) {
   selectedReview.value    = r
