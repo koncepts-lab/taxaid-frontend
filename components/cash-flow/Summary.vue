@@ -16,9 +16,9 @@
             </div>
         </div>
 
-        <div class="w-full">
+        <div class="w-full max-h-[60vh] overflow-auto no-scrollbar">
             <table class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px]">
-            <thead class="text-white sticky top-[82px] z-10" :class="isDark ? 'bg-[#002118]' : 'bg-[#008A6F]'">
+            <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002118]' : 'bg-[#008A6F]'">
                 <tr class="transition-all duration-500">
                     <th :class="isCompressed ? 'px-8 py-4' : 'px-8 py-5'" class="font-medium text-[14px]">
                         {{ currentLang === 'ar' ? 'التدفقات النقدية' : 'Cashflow' }}
