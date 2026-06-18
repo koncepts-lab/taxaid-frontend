@@ -12,7 +12,8 @@
                 <div class="flex items-center gap-3">
                     <!-- Search Bar -->
                     <div class="relative">
-                        <input type="text" 
+                        <input type="text"
+                            v-model="searchQuery"
                             :placeholder="currentLang === 'ar' ? 'بحث في المواعيد...' : 'Search Appointments...'"
                             class="pl-6 pr-12 h-[40px] rounded-[10px] border border-[#04C18F] focus:outline-none focus:ring-1 focus:ring-[#04C18F]/30 transition-all w-[346px] max-md:w-full"
                             :class="isDark ? 'bg-[#002E26] text-white placeholder:text-white/40' : 'bg-white text-[#111111]/60 placeholder:text-[#111111]/40'"
@@ -24,6 +25,7 @@
 
                     <!-- Reload Button -->
                     <button
+                        @click="forceRefresh()"
                         class="w-[40px] h-[40px] flex items-center justify-center border border-[#04C18F] rounded-[10px] transition-colors group cursor-pointer"
                         :class="isDark ? 'bg-[#002E26]' : 'bg-white hover:bg-gray-50'">
                         <img src="/images/icons/reload.svg" alt="Reload Icon" class="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" :class="isDark ? 'invert' : ''" />
@@ -45,12 +47,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
 const isModalOpen = useState('isScheduleModalOpen', () => false)
+const { searchQuery, forceRefresh } = useAppointmentsPage()
 </script>
 
 <style scoped>

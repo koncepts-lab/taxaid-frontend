@@ -28,8 +28,8 @@
                 <svg class="w-4 h-4 flex-shrink-0" :class="isDark ? 'text-white/40' : 'text-[#9CA3AF]'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
-                <!-- Centered label -->
-                <span class="flex-1 text-center">{{ currentLang === 'ar' ? 'كل الحالات' : 'All Statuses' }}</span>
+                <!-- Centered label — shows current filter or default -->
+                <span class="flex-1 text-center">{{ selectedLabel }}</span>
                 <!-- Chevron right -->
                 <svg class="w-4 h-4 flex-shrink-0 transition-transform duration-300" :class="[showFilter ? 'rotate-180' : '', isDark ? 'text-white/40' : 'text-[#9CA3AF]']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7" />
@@ -39,7 +39,7 @@
                 <div v-if="showFilter" class="absolute top-full mt-2 w-full z-50 rounded-[14px] border shadow-lg overflow-hidden"
                     :class="isDark ? 'bg-[#002E26] border-[#03D8B0]/20' : 'bg-white border-gray-100'">
                     <button v-for="(status, index) in statuses" :key="status"
-                        @click="selectedStatus = status; showFilter = false"
+                        @click="selectStatus(index); showFilter = false"
                         class="w-full text-left px-5 py-3.5 text-[14px] font-normal transition-all cursor-pointer"
                         :class="[
                             index === 0
@@ -55,21 +55,34 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
 const activeView = useState('appointment_active_view', () => 'calendar')
 const showFilter = ref(false)
 
-const { legend } = useAppointmentsPage()
+const { legend, statusFilter } = useAppointmentsPage()
 
-const activeStatus = ref('All Statuses')
+// Display labels — index 0 = "All", 1..N = legend items in order
 const statuses = computed(() => {
     const base = currentLang.value === 'ar' ? ['كل الحالات'] : ['All Statuses']
     const fromLegend = legend.value.map(l => currentLang.value === 'ar' ? l.labelAr : l.label)
     return [...base, ...fromLegend]
 })
+
+// Status keys matching legend order: pending, scheduled, extra_hours, cancelled, completed
+const statusKeys = computed(() => ['', ...legend.value.map(l => l.label.toLowerCase().replace(/\s+/g, '_'))])
+
+const selectedLabel = computed(() => {
+    if (!statusFilter.value) return currentLang.value === 'ar' ? 'كل الحالات' : 'All Statuses'
+    const idx = statusKeys.value.indexOf(statusFilter.value)
+    return idx > 0 ? statuses.value[idx] : (currentLang.value === 'ar' ? 'كل الحالات' : 'All Statuses')
+})
+
+const selectStatus = (index) => {
+    statusFilter.value = statusKeys.value[index] ?? ''
+}
 </script>
 
 <style scoped>

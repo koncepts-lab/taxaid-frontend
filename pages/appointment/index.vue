@@ -20,7 +20,9 @@
                 <AppointmentViewSwitcher />
 
                 <div class="flex flex-col min-h-[500px] mb-12">
-                    <template v-if="appointments.length === 0">
+                    <!-- Calendar/table always renders immediately (empty grid during load) -->
+                    <!-- Empty state only shows once loading finishes and there is truly no data -->
+                    <template v-if="!loading && !hasAnyAppointments">
                         <AppointmentEmptyState @schedule="isModalOpen = true" />
                     </template>
                     <template v-else>
@@ -30,7 +32,7 @@
                 </div>
 
                 <!-- Schedule Modal -->
-                <AppointmentScheduleModal v-model="isModalOpen" @confirm="addAppointment" />
+                <AppointmentScheduleModal v-model="isModalOpen" :monthly-usage-stats="monthlyUsageStats" :on-submit="createAppointment" />
 
                
 
@@ -48,19 +50,7 @@ const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = useState('isScheduleModalOpen', () => false)
 const activeView = useState('appointment_active_view', () => 'calendar')
 
-const { appointments: dynamicAppointments, loading, error } = useAppointmentsPage()
-const appointments = useState('appointments_list', () => [])
-
-// Initialize state from dynamic data when ready
-watchEffect(() => {
-  if (dynamicAppointments.value?.length > 0 && appointments.value.length === 0) {
-    appointments.value = [...dynamicAppointments.value]
-  }
-})
-
-const addAppointment = (newApp) => {
-  appointments.value.push(newApp)
-}
+const { appointments, hasAnyAppointments, monthlyUsageStats, loading, error, createAppointment } = useAppointmentsPage()
 
 useHead({
   title: 'Appointments | Taxaid.AI',

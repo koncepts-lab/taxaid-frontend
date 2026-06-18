@@ -272,23 +272,7 @@ export function useAlertsPage() {
   }
 }
 
-export function useAppointmentsPage() {
-  const { data, loading, error } = useWebsiteData()
-  const pageData = computed(() => data.value?.appointmentsPage ?? {})
-
-  return {
-    loading,
-    error,
-    stats:        computed(() => pageData.value?.stats        ?? []),
-    banner:       computed(() => pageData.value?.banner       ?? {}),
-    legend:       computed(() => pageData.value?.legend       ?? []),
-    statusStyles: computed(() => pageData.value?.statusStyles ?? {}),
-    typeStyles:   computed(() => pageData.value?.typeStyles   ?? {}),
-    columns:      computed(() => pageData.value?.columns      ?? []),
-    columnsAr:    computed(() => pageData.value?.columnsAr    ?? []),
-    appointments: computed(() => pageData.value?.appointments ?? []),
-  }
-}
+// useAppointmentsPage moved to composables/appointment/useAppointmentsPage.ts (live API)
 export function useRevenuePartnershipLogin() {
   const { data, loading, error } = useWebsiteData()
   const pageData = computed(() => data.value?.revenuePartnershipLoginPage ?? {})

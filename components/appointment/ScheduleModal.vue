@@ -24,17 +24,21 @@
                 </div>
 
                 <div class="px-6 py-4 overflow-y-auto max-h-[80vh] no-scrollbar">
-                    <!-- Progress Section -->
-                    <div class="p-4 rounded-[12px] mb-4"
+                    <!-- Progress Section — only shown when extra hours are being used (total used > 20) -->
+                    <div v-if="props.monthlyUsageStats.extra_hours_used > 0" class="p-4 rounded-[12px] mb-4"
                         :class="isDark ? 'bg-[#00FFBC]/5 border border-[#00FFBC]/20' : 'bg-[#E6FFF5] border border-[#00FFBC]/30'">
                         <div class="flex justify-between items-center mb-3">
                             <span class="text-sm font-medium" :class="isDark ? 'text-[#00FFBC]' : 'text-[#013e32]'">
                                 {{ currentLang === 'ar' ? 'الساعات الإضافية المستخدمة' : 'Extra Hours Used' }}
                             </span>
-                            <span class="text-sm font-medium" :class="isDark ? 'text-[#00FFBC]' : 'text-[#013e32]'">2/3 hrs</span>
+                            <span class="text-sm font-medium" :class="isDark ? 'text-[#00FFBC]' : 'text-[#013e32]'">
+                                {{ props.monthlyUsageStats.extra_hours_used }}/3 hrs
+                            </span>
                         </div>
-                        <div class="h-3 w-full bg-white/50 rounded-full overflow-hidden" :class="isDark ? 'bg-black/20' : 'bg-white/80'">
-                            <div class="h-full bg-[#033E32] rounded-full" style="width: 66%"></div>
+                        <div class="h-3 w-full rounded-full overflow-hidden" :class="isDark ? 'bg-black/20' : 'bg-white/80'">
+                            <div class="h-full bg-[#033E32] rounded-full transition-all duration-300"
+                                :style="{ width: `${Math.min((props.monthlyUsageStats.extra_hours_used / 3) * 100, 100)}%` }">
+                            </div>
                         </div>
                     </div>
 
@@ -97,10 +101,11 @@
                                     <div v-if="activeDropdown === 'calendar'" 
                                         class="absolute top-full left-0 mt-2 z-[60] border rounded-xl shadow-2xl overflow-hidden"
                                         :class="isDark ? 'bg-[#002E26] border-[#03D8B0]/30' : 'bg-white border-gray-100'">
-                                        <VDatePicker 
-                                            v-model="selectedDate" 
+                                        <VDatePicker
+                                            v-model="selectedDate"
                                             :is-dark="isDark"
                                             :locale="currentLang === 'ar' ? 'ar' : 'en'"
+                                            :min-date="tomorrow"
                                             @update:model-value="activeDropdown = null"
                                             color="emerald"
                                             borderless
@@ -161,24 +166,34 @@
 
                         <!-- Notes Area -->
                         <div class="relative">
-                            <textarea 
+                            <textarea
+                                v-model="formData.notes"
                                 :placeholder="currentLang === 'ar' ? 'أضف أي ملاحظات إضافية...' : 'Add any additional notes...'"
                                 class="w-full px-4 py-3 min-h-[100px] rounded-[12px] border focus:outline-none transition-all resize-none placeholder:font-normal"
-                                :class="isDark 
-                                    ? 'bg-[#002E26] border-[#03D8B0]/30 text-white placeholder:text-white/30' 
+                                :class="isDark
+                                    ? 'bg-[#002E26] border-[#03D8B0]/30 text-white placeholder:text-white/30'
                                     : 'bg-white border-[#04C18F]/30 text-[#013e32] placeholder:text-[#00000080]'"
                             ></textarea>
                         </div>
                     </div>
                 </div>
 
+                <!-- Error message -->
+                <div v-if="submitError" class="mx-6 mb-2 px-4 py-2 rounded-[10px] text-sm text-red-600 bg-red-50 border border-red-200">
+                    {{ submitError }}
+                </div>
+
                 <!-- Footer Actions -->
                 <div class="p-6 flex items-center gap-4">
-                    <button @click="confirm" class="flex-1 h-[48px] rounded-[12px] bg-[#007B5B] text-white font-medium flex items-center justify-center gap-2 hover:bg-[#00664B] active:scale-[0.98] transition-all cursor-pointer">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button @click="confirm" :disabled="submitting" class="flex-1 h-[48px] rounded-[12px] bg-[#007B5B] text-white font-medium flex items-center justify-center gap-2 hover:bg-[#00664B] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                        <svg v-if="!submitting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        <span>{{ currentLang === 'ar' ? 'تأكيد' : 'Confirm' }}</span>
+                        <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                        </svg>
+                        <span>{{ submitting ? (currentLang === 'ar' ? 'جارٍ الحفظ...' : 'Saving...') : (currentLang === 'ar' ? 'تأكيد' : 'Confirm') }}</span>
                     </button>
                     <button @click="$emit('update:modelValue', false)"
                         class="flex-1 h-[48px] rounded-[12px] bg-white border border-[#04C18F] text-[#013e32] font-medium flex items-center justify-center gap-2 hover:bg-gray-50 active:scale-[0.98] transition-all cursor-pointer">
@@ -201,7 +216,15 @@ import 'v-calendar/dist/style.css'
 import { format } from 'date-fns'
 
 const props = defineProps({
-    modelValue: Boolean
+    modelValue: Boolean,
+    monthlyUsageStats: {
+        type: Object,
+        default: () => ({ extra_hours_used: 0, total_hours_used: 0, remaining_hours: 20 })
+    },
+    onSubmit: {
+        type: Function,
+        default: null
+    }
 })
 
 const emit = defineEmits(['update:modelValue', 'confirm'])
@@ -221,6 +244,9 @@ const activeDropdown = ref(null)
 const selectedIssue = ref('')
 const selectedDuration = ref('')
 const selectedDate = ref(null)
+const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); tomorrow.setHours(0, 0, 0, 0)
+const submitting = ref(false)
+const submitError = ref('')
 
 const issueOptions = [
     'Implementation Feedback',
@@ -249,24 +275,45 @@ const selectDuration = (opt) => {
     activeDropdown.value = null
 }
 
-const confirm = () => {
-    const newAppointment = {
-        date: selectedDate.value ? format(selectedDate.value, 'MMM dd, yyyy') : format(new Date(), 'MMM dd, yyyy'),
-        time: `${formData.value.hour}:${formData.value.minute} ${formData.value.ampm}`,
-        consultant: formData.value.consultant || 'John Mathew',
-        type: selectedIssue.value || 'Monthly Review',
-        duration: selectedDuration.value || '1 hrs',
-        status: 'Scheduled'
-    }
-    
-    emit('confirm', newAppointment)
-    emit('update:modelValue', false)
+const confirm = async () => {
+    submitError.value = ''
 
-    // Reset form
-    formData.value.consultant = ''
-    selectedDate.value = null
-    selectedIssue.value = ''
-    selectedDuration.value = ''
+    const dateObj = selectedDate.value ?? new Date()
+
+    const newAppointment = {
+        consultant:       formData.value.consultant,
+        type:             selectedIssue.value,
+        appointment_date: format(dateObj, 'yyyy-MM-dd'),
+        appointment_time: `${formData.value.hour}:${formData.value.minute} ${formData.value.ampm}`,
+        duration:         selectedDuration.value,
+        notes:            formData.value.notes || null,
+    }
+
+    if (props.onSubmit) {
+        submitting.value = true
+        try {
+            await props.onSubmit(newAppointment)
+            emit('update:modelValue', false)
+            // Reset form only on success
+            formData.value.consultant = ''
+            formData.value.notes = ''
+            selectedDate.value = null
+            selectedIssue.value = ''
+            selectedDuration.value = ''
+        } catch (err) {
+            const errors = err?.data?.errors
+            if (errors) {
+                submitError.value = Object.values(errors).flat().join(' ')
+            } else {
+                submitError.value = err?.data?.message ?? 'Failed to schedule appointment.'
+            }
+        } finally {
+            submitting.value = false
+        }
+    } else {
+        emit('confirm', newAppointment)
+        emit('update:modelValue', false)
+    }
 }
 
 const formatDate = (date) => {
