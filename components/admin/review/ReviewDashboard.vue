@@ -8,7 +8,7 @@
     <div class="flex justify-between items-start mb-8">
       <!-- Main Navigation Tabs -->
       <div class="flex bg-white p-1.5 rounded-full shadow-sm w-fit border border-gray-100">
-        <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
+        <button v-for="tab in tabs" :key="tab.id" @click="switchTab(tab.id)"
           class="px-12 py-2 rounded-full text-[14px] font-medium transition-all duration-300"
           :class="activeTab === tab.id ? 'bg-[#8EFDE0] text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'">
           {{ tab.label }}
@@ -408,7 +408,14 @@ onMounted(async () => {
   await Promise.all([fetchTodaySession(), fetchStats(), fetchMonthlyStats(currentMonth), fetchClients()])
 })
 
-const activeTab = ref((route.query.tab as string) || 'client')
+const router = useRouter()
+const validTabs = ['activity', 'client', 'masterlist']
+const activeTab = ref(validTabs.includes(route.query.tab as string) ? (route.query.tab as string) : 'activity')
+
+function switchTab(tab: string) {
+  activeTab.value = tab
+  router.replace({ query: { ...route.query, tab } })
+}
 
 watch(activeTab, (tab) => {
   if (tab === 'activity') {

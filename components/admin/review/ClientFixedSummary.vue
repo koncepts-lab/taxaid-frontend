@@ -54,7 +54,7 @@
               </div>
             </td>
           </tr>
-          <tr v-else-if="filteredReviews.length === 0">
+          <tr v-else-if="reviews.length === 0">
             <td colspan="7" class="px-6 py-12 text-center text-sm text-gray-400">No reviews found for {{ selectedMonth }}.</td>
           </tr>
           <tr v-for="r in reviews" :key="r.id" class="hover:bg-gray-50 transition-colors">
