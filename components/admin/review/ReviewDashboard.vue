@@ -1,5 +1,9 @@
 <template>
   <div class="p-8 space-y-6 min-h-screen bg-[#F8F9FA]">
+    <WorkSessionGuardModal
+      :show="showWorkSessionGuard"
+      @dismiss="showWorkSessionGuard = false"
+    />
     <!-- Header with Tabs -->
     <div class="flex justify-between items-start mb-8">
       <!-- Main Navigation Tabs -->
@@ -19,7 +23,7 @@
           <h1 class="text-[26px] font-semibold text-[#004D40] mb-1">Activity Tracking</h1>
           <p class="text-[15px] text-gray-500">Track your daily work sessions, activities, and performance metrics</p>
         </div>
-        <button class="flex items-center gap-2 px-4 py-2 border border-gray-200 bg-white rounded-lg text-sm font-medium hover:bg-gray-50 text-gray-700 shadow-sm transition-colors">
+        <button @click="navigateTo('/admin/Review-Dashboard/activity-log')" class="flex items-center gap-2 px-4 py-2 border border-gray-200 bg-white rounded-lg text-sm font-medium hover:bg-gray-50 text-gray-700 shadow-sm transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -32,32 +36,63 @@
 
       <!-- Top Cards Grid -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <ReviewStatsCard title="Number of Active Clients" :value="metrics.activeClients || '0'">
+        <ReviewStatsCard title="Number of Active Clients" :value="activityStats?.active_clients_count ?? 0">
           <template #icon>
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
           </template>
         </ReviewStatsCard>
-        
-        <ReviewStatsCard title="Average Productive Hours" :value="metrics.avgProductiveHours || '0 hrs 0 min'">
+
+        <ReviewStatsCard title="Average Productive Hours" :value="activityStats?.avg_productive_hours ?? '0 hrs 0 min'">
           <template #icon>
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </template>
         </ReviewStatsCard>
-        
-        <ReviewTimer :initialRunning="false" @toggle="onTimerToggle" />
+
+        <ReviewTimer :session="session" :loading="activityLoading" @clockin="onClockIn" @clockout="onClockOut" />
       </div>
 
-      <!-- Table Section -->
-      <div class="bg-white rounded-xl border border-[#A5E5D9] shadow-sm p-6">
-        <ReviewTable 
-          :isTimerRunning="isTimerRunning" 
-          :activities="activities" 
-          :totalHours="monthlySummary.totalHours || '00:00:00 hrs'" 
+      <!-- Current Activity Panel (Timer 3) -->
+      <CurrentActivityPanel :clients="activityClients" @save="onAddActivity" />
+
+      <!-- Daily Activity Table -->
+      <div class="bg-white rounded-xl border border-[#A5E5D9] shadow-sm p-6 mb-8">
+        <ReviewTable
+          :isTimerRunning="isTimerRunning"
+          :activities="todayLogs"
+          :totalHours="totalLoggedFormatted"
+          :hideAddButton="true"
         />
+      </div>
+
+      <!-- Monthly Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <ReviewStatsCard title="Total Client Fixed Hours - This Month" :value="monthlyStats?.fixed_formatted ?? '0 hrs 0 min'">
+          <template #icon>
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </template>
+        </ReviewStatsCard>
+
+        <ReviewStatsCard title="Total Client Request Hours - This Month" :value="monthlyStats?.review_formatted ?? '0 hrs 0 min'">
+          <template #icon>
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </template>
+        </ReviewStatsCard>
+
+        <ReviewStatsCard title="Total Internal Hours - This Month" :value="monthlyStats?.internal_formatted ?? '0 hrs 0 min'">
+          <template #icon>
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </template>
+        </ReviewStatsCard>
       </div>
     </div>
 
@@ -80,9 +115,9 @@
         @reschedule="rescheduleAppointment"
         @cancel="cancelAppointment"
         @complete="completeAppointment"
-        @start-session="startSession"
-        @pause-session="pauseSession"
-        @stop-session="stopSession"
+        @start-session="guardedStartSession"
+        @pause-session="onPauseSession"
+        @stop-session="onStopSession"
       />
       <ClientFixedSummary />
     </div>
@@ -144,7 +179,7 @@
                 <td colspan="6" class="px-6 py-8 text-center text-gray-500 text-sm">No monthly reviews found.</td>
               </tr>
             </template>
-            <tr v-else v-for="r in filteredFixedRows" :key="r.id" class="hover:bg-gray-50 transition-colors">
+            <tr v-else v-for="r in pagedFixedRows" :key="r.id" class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap text-[13px] text-gray-600">{{ r.tenant_id }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-[14px] font-medium text-gray-900">{{ r.client_name }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -171,6 +206,7 @@
             </tr>
           </tbody>
         </table>
+        <PaginationBar :page="fixedPage" :totalPages="fixedTotalPages" :from="fixedFrom" :to="fixedTo" :total="fixedTotal" @prev="fixedPrev" @next="fixedNext" />
       </div>
 
       <!-- All Appointments Tab -->
@@ -193,7 +229,7 @@
             <template v-else-if="allRows.length === 0">
               <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500 text-sm">No records found.</td></tr>
             </template>
-            <tr v-else v-for="r in allRows" :key="r.key" class="hover:bg-gray-50 transition-colors">
+            <tr v-else v-for="r in pagedAllRows" :key="r.key" class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap text-[13px] text-gray-600">{{ r.tenant_id }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-[14px] font-medium text-gray-900">{{ r.client_name }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -224,6 +260,7 @@
             </tr>
           </tbody>
         </table>
+        <PaginationBar :page="allPage" :totalPages="allTotalPages" :from="allFrom" :to="allTo" :total="allTotal" @prev="allPrev" @next="allNext" />
       </div>
 
       <!-- Client Review Tab -->
@@ -249,7 +286,7 @@
                 <td colspan="5" class="px-6 py-8 text-center text-gray-500 text-sm">No appointment data found.</td>
               </tr>
             </template>
-            <tr v-else v-for="r in filteredReviewRows" :key="r.tenant_id" class="hover:bg-gray-50 transition-colors">
+            <tr v-else v-for="r in pagedReviewRows" :key="r.tenant_id" class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap text-[13px] text-gray-600">{{ r.tenant_id }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-[14px] font-medium text-gray-900">{{ r.client_name }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -268,6 +305,7 @@
             </tr>
           </tbody>
         </table>
+        <PaginationBar :page="reviewPage" :totalPages="reviewTotalPages" :from="reviewFrom" :to="reviewTo" :total="reviewTotal" @prev="reviewPrev" @next="reviewNext" />
       </div>
     </div>
   </div>
@@ -276,17 +314,77 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { format, parseISO } from 'date-fns'
-import { useTeamMemberActivity } from '~/composables/useWebsiteData'
+const route = useRoute()
 import { useAdminAppointments } from '~/composables/admin/useAdminAppointments'
 import { useAdminMonthlyReviews } from '~/composables/admin/useAdminMonthlyReviews'
+import { useActivityTracking } from '~/composables/admin/useActivityTracking'
+import { usePagination } from '~/composables/admin/usePagination'
+import PaginationBar from './PaginationBar.vue'
 import ReviewStatsCard from './ReviewStatsCard.vue'
 import ReviewTimer from './ReviewTimer.vue'
 import ReviewTable from './ReviewTable.vue'
 import ClientRequestPool from './ClientRequestPool.vue'
 import ClientFixedSummary from './ClientFixedSummary.vue'
+import CurrentActivityPanel from './CurrentActivityPanel.vue'
+import WorkSessionGuardModal from './WorkSessionGuardModal.vue'
 
-// Activity Data
-const { metrics, activities, monthlySummary } = useTeamMemberActivity()
+// Activity Tracking
+const {
+  session,
+  dailyStats,
+  todayLogs,
+  monthlyStats,
+  stats:    activityStats,
+  clients:  activityClients,
+  loading:  activityLoading,
+  fetchTodaySession,
+  fetchMonthlyStats,
+  fetchStats,
+  fetchClients,
+  clockIn,
+  checkOut,
+  clockOut,
+  logEntry,
+} = useActivityTracking()
+
+
+const totalLoggedFormatted = computed(() => {
+  const mins = dailyStats.value?.total_logged_minutes ?? 0
+  return `${Math.floor(mins / 60)} hrs ${mins % 60} min`
+})
+
+const showWorkSessionGuard = ref(false)
+
+function isWorkSessionActive(): boolean {
+  return !!session.value?.checked_in_at && !session.value?.checked_out_at
+}
+
+async function onClockIn()  { await clockIn() }
+async function onClockOut() { await clockOut() }
+
+async function onAddActivity(payload: object) {
+  await logEntry(payload)
+}
+
+async function guardedStartSession(appointmentId: number) {
+  if (!isWorkSessionActive()) {
+    showWorkSessionGuard.value = true
+    return
+  }
+  await startSession(appointmentId)
+  if (activeTab.value === 'activity') fetchTodaySession()
+}
+
+async function onPauseSession(id: number) {
+  await pauseSession(id)
+  if (activeTab.value === 'activity') fetchTodaySession()
+}
+
+async function onStopSession(id: number) {
+  await stopSession(id)
+  if (activeTab.value === 'activity') fetchTodaySession()
+}
+
 
 // Client Management Data
 const {
@@ -305,14 +403,26 @@ const {
   stopSession,
 } = useAdminAppointments()
 
-onMounted(() => fetchAppointments())
+onMounted(async () => {
+  fetchAppointments()
+  await Promise.all([fetchTodaySession(), fetchStats(), fetchMonthlyStats(currentMonth), fetchClients()])
+})
 
-const activeTab = ref('client')
+const activeTab = ref((route.query.tab as string) || 'client')
+
+watch(activeTab, (tab) => {
+  if (tab === 'activity') {
+    fetchTodaySession()
+    fetchStats()
+    fetchMonthlyStats(currentMonth)
+  }
+})
 const tabs = [
   { id: 'activity', label: 'Activity Tracking' },
   { id: 'client', label: 'Client Management' },
   { id: 'masterlist', label: 'Masterlist' }
 ]
+
 
 // ─── Masterlist ──────────────────────────────────────────────────────────────
 
@@ -402,6 +512,10 @@ const allRows = computed(() => {
   return merged.filter(r => r.client_name.toLowerCase().includes(q))
 })
 
+const { paged: pagedFixedRows,   page: fixedPage,   totalPages: fixedTotalPages,   from: fixedFrom,   to: fixedTo,   total: fixedTotal,   next: fixedNext,   prev: fixedPrev   } = usePagination(filteredFixedRows)
+const { paged: pagedAllRows,     page: allPage,     totalPages: allTotalPages,     from: allFrom,     to: allTo,     total: allTotal,     next: allNext,     prev: allPrev     } = usePagination(allRows)
+const { paged: pagedReviewRows,  page: reviewPage,  totalPages: reviewTotalPages,  from: reviewFrom,  to: reviewTo,  total: reviewTotal,  next: reviewNext,  prev: reviewPrev  } = usePagination(filteredReviewRows)
+
 function formatMasterDate(d: string) {
   try { return format(parseISO(d), 'MMM dd, yyyy') } catch { return d }
 }
@@ -437,9 +551,7 @@ function allRowDisplayLabel(r: any): string {
 
 // ─── Timer ───────────────────────────────────────────────────────────────────
 
-const isTimerRunning = ref(false)
-
-const onTimerToggle = (running: boolean) => {
-  isTimerRunning.value = running
-}
+const isTimerRunning = computed(() =>
+  !!session.value?.checked_in_at && !session.value?.checked_out_at
+)
 </script>
