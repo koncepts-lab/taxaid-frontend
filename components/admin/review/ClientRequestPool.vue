@@ -111,6 +111,7 @@
                 <template v-else-if="req.status === 'scheduled' || req.status === 'rescheduled'">
                   <SessionTimerRow
                     :appointment="req"
+                    :any-running="isBlockedByAnother(req)"
                     @start="$emit('start-session', req.id)"
                     @pause="$emit('pause-session', req.id)"
                     @stop="$emit('stop-session', req.id)"
@@ -133,6 +134,16 @@
         </tbody>
       </table>
     </div>
+    <PaginationBar
+      v-if="meta"
+      :page="meta.current_page"
+      :totalPages="meta.last_page"
+      :from="meta.from"
+      :to="meta.to"
+      :total="meta.total"
+      @prev="fetchAppointments(meta.current_page - 1)"
+      @next="fetchAppointments(meta.current_page + 1)"
+    />
 
     <!-- Appointment Details Modal -->
     <div v-if="isDetailsModalOpen && selectedRequest" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/30 backdrop-blur-md">
@@ -343,7 +354,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { AdminAppointment } from '~/composables/admin/useAdminAppointments'
+import { useAdminAppointments } from '~/composables/admin/useAdminAppointments'
 import SessionTimerRow from './SessionTimerRow.vue'
+import PaginationBar from './PaginationBar.vue'
 
 const props = defineProps<{
   requests: AdminAppointment[]
@@ -364,6 +377,16 @@ const emit = defineEmits<{
   (e: 'pause-session', id: number): void
   (e: 'stop-session', id: number): void
 }>()
+
+const { meta, fetchAppointments } = useAdminAppointments()
+
+function isBlockedByAnother(req: AdminAppointment): boolean {
+  return props.requests.some(r =>
+    r.id !== req.id &&
+    r.status !== 'completed' &&
+    (!!r.session_started_at || (r.session_elapsed_seconds ?? 0) > 0)
+  )
+}
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 

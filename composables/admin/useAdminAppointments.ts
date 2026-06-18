@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
 export interface AdminAppointment {
   id: number
@@ -23,23 +23,37 @@ export interface AdminAppointment {
   notes: string | null
 }
 
+export interface PaginationMeta {
+  current_page: number
+  last_page: number
+  per_page: number
+  total: number
+  from: number
+  to: number
+}
+
 const _appointments = ref<AdminAppointment[]>([])
+const _meta         = ref<PaginationMeta | null>(null)
 const _loading      = ref(false)
 const _error        = ref<string | null>(null)
 const _search       = ref('')
 const _statusFilter = ref('')
+const _page         = ref(1)
 
 export function useAdminAppointments() {
-  async function fetchAppointments(): Promise<void> {
+  async function fetchAppointments(page = 1): Promise<void> {
+    _page.value    = page
     _loading.value = true
     _error.value   = null
     try {
       const params = new URLSearchParams()
+      params.set('page', String(page))
+      params.set('per_page', '10')
       if (_search.value)       params.set('search', _search.value)
       if (_statusFilter.value) params.set('status', _statusFilter.value)
-      const qs = params.toString()
-      const res: any = await useApi(`/admin/appointments${qs ? '?' + qs : ''}`)
+      const res: any = await useApi(`/admin/appointments?${params.toString()}`)
       _appointments.value = res.data ?? []
+      _meta.value         = res.meta ?? null
     } catch (err: any) {
       _error.value = err?.data?.message ?? 'Failed to load appointments.'
     } finally {
@@ -49,7 +63,7 @@ export function useAdminAppointments() {
 
   async function approveAppointment(id: number, meetUrl: string): Promise<void> {
     await useApi(`/admin/appointments/${id}/approve`, { method: 'PATCH', body: { meet_url: meetUrl } })
-    await fetchAppointments()
+    await fetchAppointments(_page.value)
   }
 
   async function rescheduleAppointment(id: number, date: string, time: string): Promise<void> {
@@ -57,39 +71,40 @@ export function useAdminAppointments() {
       method: 'PATCH',
       body: { rescheduled_date: date, rescheduled_time: time },
     })
-    await fetchAppointments()
+    await fetchAppointments(_page.value)
   }
 
   async function cancelAppointment(id: number): Promise<void> {
     await useApi(`/admin/appointments/${id}/cancel`, { method: 'PATCH' })
-    await fetchAppointments()
+    await fetchAppointments(_page.value)
   }
 
   async function completeAppointment(id: number): Promise<void> {
     await useApi(`/admin/appointments/${id}/complete`, { method: 'PATCH' })
-    await fetchAppointments()
+    await fetchAppointments(_page.value)
   }
 
   async function startSession(id: number): Promise<AdminAppointment> {
     const res: any = await useApi(`/admin/appointments/${id}/session/start`, { method: 'POST' })
-    await fetchAppointments()
+    await fetchAppointments(_page.value)
     return res.data
   }
 
   async function pauseSession(id: number): Promise<AdminAppointment> {
     const res: any = await useApi(`/admin/appointments/${id}/session/pause`, { method: 'POST' })
-    await fetchAppointments()
+    await fetchAppointments(_page.value)
     return res.data
   }
 
   async function stopSession(id: number): Promise<AdminAppointment> {
     const res: any = await useApi(`/admin/appointments/${id}/session/stop`, { method: 'POST' })
-    await fetchAppointments()
+    await fetchAppointments(_page.value)
     return res.data
   }
 
   return {
     appointments:       _appointments,
+    meta:               _meta,
     loading:            _loading,
     error:              _error,
     search:             _search,

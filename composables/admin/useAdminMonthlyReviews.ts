@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import type { PaginationMeta } from './useAdminAppointments'
 
 export interface AdminMonthlyReview {
   id: number
@@ -28,18 +29,31 @@ export interface ReviewAnswer {
 }
 
 const _reviews  = ref<AdminMonthlyReview[]>([])
+const _meta     = ref<PaginationMeta | null>(null)
 const _loading  = ref(false)
 const _error    = ref<string | null>(null)
 
 export function useAdminMonthlyReviews() {
-  async function fetchReviews(month: string, search?: string): Promise<void> {
+  async function fetchReviews(month: string, search?: string, page?: number): Promise<void> {
     _loading.value = true
     _error.value   = null
     try {
       const params = new URLSearchParams({ month })
-      if (search) params.set('search', search)
+      if (search)            params.set('search', search)
+      if (page !== undefined) {
+        params.set('page', String(page))
+        params.set('per_page', '10')
+      }
       const res: any = await useApi(`/admin/monthly-reviews?${params.toString()}`)
-      _reviews.value = res.data ?? []
+      if (page !== undefined) {
+        // Paginated response: { data: [...], meta: {...} }
+        _reviews.value = res.data ?? []
+        _meta.value    = res.meta ?? null
+      } else {
+        // Full list response: { data: [...] }
+        _reviews.value = res.data ?? []
+        _meta.value    = null
+      }
     } catch (err: any) {
       _error.value = err?.data?.message ?? 'Failed to load monthly reviews.'
     } finally {
@@ -95,6 +109,7 @@ export function useAdminMonthlyReviews() {
 
   return {
     reviews:  _reviews,
+    meta:     _meta,
     loading:  _loading,
     error:    _error,
     fetchReviews,
