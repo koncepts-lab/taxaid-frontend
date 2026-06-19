@@ -127,15 +127,15 @@
         <div class="text-right hidden lg:block" :class="currentLang === 'ar' ? 'text-left' : 'text-right'">
           <div class="font-medium text-[15px] leading-tight transition-colors duration-300"
             :class="isDark ? 'text-white' : 'text-[#013E32]'">
-            {{ currentLang === 'ar' ? 'ماستر لاين ميكانيك' : 'Masterline Mech' }}
+            {{ profile?.companyNickname || profile?.companyName || '...' }}
           </div>
           <div class="text-[12px] font-light transition-colors duration-300"
             :class="isDark ? 'text-white/80' : 'text-[#013E32]'">
-            {{ currentLang === 'ar' ? 'أبو ظبي، الإمارات العربية المتحدة' : 'Abu Dhabi, UAE' }}
+            {{ profile?.email || '' }}
           </div>
         </div>
         <div class="relative">
-          <img src="/images/avatar-company.png"
+          <img :src="pictureUrl || '/images/avatar-company.png'"
             class="w-9 h-9 md:w-12 md:h-12 rounded-full border-2 border-white shadow-md object-cover" alt="Profile" />
         </div>
 
@@ -144,11 +144,11 @@
           :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
           <div class="bg-[#E6F9F4] p-2 rounded-2xl flex items-center gap-4 mb-5">
-            <img src="/images/avatar-company.png"
+            <img :src="pictureUrl || '/images/avatar-company.png'"
               class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
             <div class="flex-1">
-              <h4 class="font-medium text-[#013E32] text-sm leading-tight">MasterLine Mechanical LLC</h4>
-              <p class="text-sm text-[#013E32]/70 font-medium">ml@masterline-mech.com</p>
+              <h4 class="font-medium text-[#013E32] text-sm leading-tight">{{ profile?.companyLegalName || profile?.companyName || '' }}</h4>
+              <p class="text-sm text-[#013E32]/70 font-medium">{{ profile?.email || '' }}</p>
               <NuxtLink to="/profile" class="text-[#00B68D] text-sm font-medium  mt-1 inline-block">View
                 Profile</NuxtLink>
             </div>
@@ -317,11 +317,11 @@
 
         <div class="p-2 ">
           <div class="bg-[#E6F9F4] p-2 rounded-2xl flex items-center gap-4 mb-5 relative">
-            <img src="/images/avatar-company.png"
+            <img :src="pictureUrl || '/images/avatar-company.png'"
               class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
             <div class="flex-1">
-              <h4 class="font-medium text-[#013E32] text-sm leading-tight">MasterLine Mechanical LLC</h4>
-              <p class="text-sm text-[#013E32]/70 font-medium">ml@masterline-mech.com</p>
+              <h4 class="font-medium text-[#013E32] text-sm leading-tight">{{ profile?.companyLegalName || profile?.companyName || '' }}</h4>
+              <p class="text-sm text-[#013E32]/70 font-medium">{{ profile?.email || '' }}</p>
               <NuxtLink to="/profile" class="text-[#00B68D] text-sm font-medium  mt-1 inline-block">View
                 Profile</NuxtLink>
             </div>
@@ -408,10 +408,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import LanguageToggle from './LanguageToggle.vue'
+import { useProfile } from '~/composables/settings/useProfile'
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark, toggleTheme } = useTheme()
 const isMenuOpen = ref(false)
+
+const { profile, pictureUrl, fetchProfile } = useProfile()
 
 const { logout } = useAuth()//logout Logic
 const onLogoutClick = () => {
@@ -510,6 +513,7 @@ onMounted(() => {
   const checkScreen = () => isDesktop.value = window.innerWidth >= 1024
   checkScreen()
   window.addEventListener('resize', checkScreen)
+  fetchProfile()
 })
 </script>
 
