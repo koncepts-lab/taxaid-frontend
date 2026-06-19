@@ -30,13 +30,18 @@ const _cachedFrom       = ref<string | null>(null)
 const _cachedTo         = ref<string | null>(null)
 const _searchQuery      = ref('')
 const _statusFilter     = ref('')
-const _monthlyUsageStats = ref<MonthlyUsageStats>({
-  total_hours_allocated: 20,
-  total_hours_used: 0,
-  remaining_hours: 20,
-  extra_hours_used: 0,
-  next_review: null,
-})
+const STATS_CACHE_KEY = 'appt_stats_cache'
+
+function _loadCachedStats(): MonthlyUsageStats {
+  if (typeof localStorage === 'undefined') return { total_hours_allocated: 0, total_hours_used: 0, remaining_hours: 0, extra_hours_used: 0, next_review: null }
+  try {
+    const raw = localStorage.getItem(STATS_CACHE_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch {}
+  return { total_hours_allocated: 0, total_hours_used: 0, remaining_hours: 0, extra_hours_used: 0, next_review: null }
+}
+
+const _monthlyUsageStats = ref<MonthlyUsageStats>(_loadCachedStats())
 const _monthlyReviews = ref<any[]>([])
 
 const _loading = ref(false)
@@ -65,17 +70,23 @@ const _appointments = computed<Appointment[]>(() => {
   return list
 })
 
+function formatHours(decimal: number): string {
+  const h = Math.floor(decimal)
+  const m = Math.round((decimal - h) * 60)
+  return m > 0 ? `${h}h ${m}m` : `${h}h`
+}
+
 const _stats = computed(() => [
   {
     label:    'Total Hours (This Month)',
     labelAr:  'إجمالي الساعات (هذا الشهر)',
-    value:    `${_monthlyUsageStats.value.total_hours_allocated} hrs`,
+    value:    formatHours(_monthlyUsageStats.value.total_hours_allocated),
     icon:     '/images/icons/Hours.svg',
   },
   {
     label:      'Hours Used',
     labelAr:    'الساعات المستخدمة',
-    value:      `${_monthlyUsageStats.value.total_hours_used} hrs`,
+    value:      formatHours(_monthlyUsageStats.value.total_hours_used),
     sublabel:   'Completed meetings',
     sublabelAr: 'الاجتماعات المكتملة',
     icon:       '/images/icons/Hours-Used.svg',
@@ -83,7 +94,7 @@ const _stats = computed(() => [
   {
     label:      'Hours Remaining',
     labelAr:    'الساعات المتبقية',
-    value:      `${_monthlyUsageStats.value.remaining_hours} hrs`,
+    value:      formatHours(_monthlyUsageStats.value.remaining_hours),
     sublabel:   'Balance Available',
     sublabelAr: 'الرصيد المتاح',
     icon:       '/images/icons/Hours-Remaining.svg',
@@ -198,6 +209,7 @@ export function useAppointmentsPage() {
     try {
       const res = await apiFetch('/appointments/stats/monthly-usage')
       _monthlyUsageStats.value = (res as any).data
+      try { localStorage.setItem(STATS_CACHE_KEY, JSON.stringify(_monthlyUsageStats.value)) } catch {}
     } catch {
       // non-fatal — UI shows stale stats rather than breaking
     } finally {
