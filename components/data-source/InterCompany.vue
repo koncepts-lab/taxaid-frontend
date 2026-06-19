@@ -59,7 +59,7 @@
                     {{ currentLang === 'ar' ? 'تطبيق التغييرات' : 'Apply Changes' }}
                 </button>
 
-                <button @click="isModalOpen = true"
+                <button v-if="type === 'inter-company'" @click="isModalOpen = true"
                     class="flex items-center gap-2 px-4 py-2 bg-white border border-[#04C18F80] text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-all">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -67,7 +67,7 @@
                     {{ currentLang === 'ar' ? 'استيراد' : 'Import Excel' }}
                 </button>
 
-                <button
+                <button v-if="type === 'inter-company'"
                     class="flex items-center gap-2 px-4 py-2 bg-white border border-[#04C18F80] text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-all">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -332,9 +332,9 @@ const configs = {
         gridCols: '50px 120px 180px 220px 100px 160px 120px 140px 100px 1fr',
         minWidth: '1600px'
     },
-    'contacts': {
-        title: 'Contacts Directory', titleAr: 'دليل جهات الاتصال',
-        sub: 'Manage all business contacts and their details', subAr: 'إدارة جميع جهات الاتصال التجارية وتفاصيلها',
+    'vendor': {
+        title: 'Vendor Directory', titleAr: 'دليل جهات الاتصال',
+        sub: 'Manage all business vendors and their details', subAr: 'إدارة جميع جهات الاتصال التجارية وتفاصيلها',
         headers: ['Contact_ID', 'Name', 'Type', 'Company', 'Email', 'Phone', 'TRN', 'Status'],
         headersAr: ['معرف الاتصال', 'الاسم', 'النوع', 'الشركة', 'البريد', 'الهاتف', 'TRN', 'الحالة'],
         gridCols: '50px 100px 180px 120px 180px 220px 150px 150px 100px',
@@ -360,7 +360,7 @@ const configs = {
 
 // Maps each column header to the API field key for that type
 const fieldMap = {
-    'contacts': {
+    'vendor': {
         'Contact_ID': 'identity', 'Name': 'name', 'Type': 'type',
         'Company': 'name', 'Email': 'email', 'Phone': 'phone_number', 'TRN': 'tax_id',
     },
@@ -389,7 +389,7 @@ const setFieldValue = (row, header, value) => {
 const contactsApi = useContacts()
 const emailsApi = useInternalEmails()
 
-const isApiType = computed(() => ['contacts', 'customers', 'internal-email'].includes(props.type))
+const isApiType = computed(() => ['vendor', 'contacts', 'customers', 'internal-email'].includes(props.type))
 
 // --- 3. STATE ---
 const isImportedLocal = ref(false) // only used for non-API types (inter-company)
@@ -466,7 +466,7 @@ const newRowTemplate = () => {
     if (props.type === 'internal-email') {
         return { ...base, employee_name: '', department: '', email: '', phone_number: '' }
     }
-    return { ...base, identity: '', name: '', type: props.type === 'customers' ? 'customer' : 'customer', tax_id: '', contact_person: '', email: '', phone_number: '', credit_limit: '', status: '' }
+    return { ...base, identity: '', name: '', type: props.type === 'customers' ? 'customer' : 'vendor', tax_id: '', contact_person: '', email: '', phone_number: '', credit_limit: '', status: '' }
 }
 
 const handleAddAction = async (actionId) => {

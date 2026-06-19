@@ -2227,19 +2227,19 @@
     ],
     "subTabsContacts": [
       {
-        "id": "contacts",
-        "label": "Contacts",
+        "id": "customers",
+        "label": "Customers",
+        "labelAr": "العملاء"
+      },
+      {
+        "id": "vendor",
+        "label": "Vendor",
         "labelAr": "جهات الاتصال"
       },
       {
         "id": "internal-email",
         "label": "Internal Email",
         "labelAr": "البريد الإلكتروني الداخلي"
-      },
-      {
-        "id": "customers",
-        "label": "Customers",
-        "labelAr": "العملاء"
       }
     ],
     "settings": {
