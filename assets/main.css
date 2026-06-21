@@ -96,13 +96,21 @@ tbody tr:hover td {
 .dark-mode-bg .text-\[\#0A0A0A\],
 .dark-mode-bg .text-\[\#1a1a1a\],
 .dark-mode-bg .text-black,
-.dark-mode-bg .text-\[\#000\] {
+.dark-mode-bg .text-\[\#000\],
+.dark-mode-bg .text-gray-800,
+.dark-mode-bg .text-gray-900 {
   color: #ffffff !important;
 }
 
 .dark-mode-bg .border-gray-100,
+.dark-mode-bg .border-gray-200,
+.dark-mode-bg .border-gray-300,
 .dark-mode-bg .border-\[\#04C18F80\],
-.dark-mode-bg .border-\[\#0000001A\] {
+.dark-mode-bg .border-\[\#0000001A\],
+.dark-mode-bg .border-\[\#FDBA74\],
+.dark-mode-bg .border-\[\#FCA5A5\],
+.dark-mode-bg .border-\[\#BFDBFE\],
+.dark-mode-bg .border-\[\#86EFAC\] {
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
@@ -119,6 +127,7 @@ tbody tr:hover td {
 .dark-mode-bg .text-\[\#00000080\],
 .dark-mode-bg .text-\[\#999\],
 .dark-mode-bg .text-gray-400,
+.dark-mode-bg .text-gray-500,
 .dark-mode-bg .text-gray-600,
 .dark-mode-bg .text-gray-700 {
   color: rgba(255, 255, 255, 0.6) !important;
@@ -128,7 +137,9 @@ tbody tr:hover td {
 .dark-mode-bg .bg-\[\#E4FFF6B0\],
 .dark-mode-bg .bg-\[\#F0FDF4\],
 .dark-mode-bg .bg-\[\#FEF2F2\],
-.dark-mode-bg .bg-\[\#DFF4FF\] {
+.dark-mode-bg .bg-\[\#DFF4FF\],
+.dark-mode-bg .bg-\[\#FFF7ED\],
+.dark-mode-bg .bg-\[\#EFF6FF\] {
   background-color: #00141080 !important;
 }
 

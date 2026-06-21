@@ -1,6 +1,6 @@
 <template>
-    <div class="w-full transition-all duration-500 rounded-3xl overflow-hidden">
-        <div class="py-5 lg:px-8 px-4 flex justify-between items-center">
+    <div class="w-full transition-all duration-500 rounded-3xl">
+        <div class="sticky top-0 z-20 py-5 lg:px-8 px-4 flex justify-between items-center rounded-t-3xl" :class="isDark ? 'bg-[#001813]' : 'bg-white'">
             <div>
                 <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص التدفقات النقدية' : 'Cashflow Summary' }}</p>
                 <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
@@ -16,9 +16,9 @@
             </div>
         </div>
 
-        <div class="w-full overflow-x-auto no-scrollbar">
+        <div class="w-full max-h-[60vh] overflow-auto no-scrollbar">
             <table class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px]">
-            <thead class="text-white" :class="isDark ? 'bg-[#002118]' : 'bg-[#008A6F]'">
+            <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002118]' : 'bg-[#008A6F]'">
                 <tr class="transition-all duration-500">
                     <th :class="isCompressed ? 'px-8 py-4' : 'px-8 py-5'" class="font-medium text-[14px]">
                         {{ currentLang === 'ar' ? 'التدفقات النقدية' : 'Cashflow' }}

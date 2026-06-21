@@ -121,7 +121,7 @@
                 :currentLang="currentLang"
                 :title="currrentTitle" />
               <DataSourceInterCompany
-                v-if="activeMainTab !== 'certificate' && ['inter-company', 'contacts', 'internal-email', 'customers'].includes(activeSubTab)"
+                v-if="activeMainTab !== 'certificate' && ['inter-company', 'vendor', 'internal-email', 'customers'].includes(activeSubTab)"
                 :key="activeSubTab" :type="activeSubTab" :data="interCompanyData" :isDark="isDark"
                 :currentLang="currentLang" @add="handleAddRow" @delete="handleDeleteRows" />
               <DataSourcePDC v-if="activeSubTab === 'pdc'" :pdcGroups="pdcSummaryData" :isDark="isDark"

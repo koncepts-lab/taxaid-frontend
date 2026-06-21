@@ -1,5 +1,5 @@
 <template>
-  <div class="p-8 space-y-6 min-h-screen bg-[#F8F9FA]">
+  <div class="p-8 space-y-6 min-h-screen bg-[#F8F9FA]" style="background: linear-gradient(180deg, #F0F0F0 0%, #F0F0F0 100%);">
     <WorkSessionGuardModal
       :show="showWorkSessionGuard"
       @dismiss="showWorkSessionGuard = false"
