@@ -53,10 +53,10 @@
 
         <!-- Logout -->
         <CommonTooltip :text="currentLang === 'ar' ? 'تسجيل الخروج' : 'Logout'">
-          <NuxtLink to="/revenue-partnership-login"
+          <button @click="handleLogout"
             class="w-[38px] h-[38px] rounded-full bg-[#00896F]/40 border border-[#ffffff1A] flex items-center justify-center text-white hover:bg-[#00896F]/60 transition-colors cursor-pointer">
             <img src="/images/icons/logout-icon.svg" alt="Logout" class="w-5 h-5 invert brightness-0" />
-          </NuxtLink>
+          </button>
         </CommonTooltip>
       </div>
     </div>
@@ -84,10 +84,26 @@ const props = defineProps({
   showManageAccess: {
     type: Boolean,
     default: false
+  },
+  logoutTo: {
+    type: String,
+    default: '/revenue-partnership-login'
+  },
+  adminLogout: {
+    type: Boolean,
+    default: false
   }
 })
 
 const currentLang = useState('currentLang')
 const { isDark, toggleTheme } = useTheme()
+
+function handleLogout() {
+  if (props.adminLogout) {
+    const token = useCookie('admin_token')
+    token.value = null
+  }
+  navigateTo(props.logoutTo)
+}
 
 </script>

@@ -16,8 +16,8 @@
           </svg>
         </button>
         <div class="space-y-0.5">
-          <h1 class="text-[32px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">Arjun Mehta</h1>
-          <p class="text-[14px] font-medium text-[#00000080]" :class="isDark ? 'text-white/60' : ''">CON-001</p>
+          <h1 class="text-[32px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">{{ consultantName }}</h1>
+          <p class="text-[14px] font-medium text-[#00000080]" :class="isDark ? 'text-white/60' : ''">ID #{{ adminId }}</p>
         </div>
       </div>
 
@@ -53,12 +53,15 @@
               </tr>
             </thead>
             <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-              <tr v-for="(item, idx) in detailsData" :key="idx" 
+              <tr v-if="!detailsData.length">
+                <td colspan="4" class="py-8 text-center text-[14px] opacity-50">No workload data for this month.</td>
+              </tr>
+              <tr v-for="(item, idx) in detailsData" :key="idx"
                   class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.projectName }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientFixed }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientRequest }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientAnalysis }}</td>
+                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.client_name }}</td>
+                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.fixed_hours }}</td>
+                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.request_hours }}</td>
+                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.analysis_hours }}</td>
               </tr>
             </tbody>
           </table>
@@ -72,14 +75,25 @@
 </template>
 
 <script setup>
-const { isDark } = useTheme()
+import { useReviewManager } from '@/composables/admin/review/useReviewManager'
 
-const detailsData = [
-  { projectName: 'Logistics Express Inc.', clientFixed: '4 hrs 36 min', clientRequest: '4 hrs 36 min', clientAnalysis: '4 hrs 36 min' },
-  { projectName: 'Food Services Group', clientFixed: '4 hrs 36 min', clientRequest: '4 hrs 36 min', clientAnalysis: '4 hrs 36 min' },
-  { projectName: 'Food Services Group', clientFixed: '4 hrs 36 min', clientRequest: '4 hrs 36 min', clientAnalysis: '4 hrs 36 min' },
-  { projectName: 'Food Services Group', clientFixed: '4 hrs 36 min', clientRequest: '4 hrs 36 min', clientAnalysis: '4 hrs 36 min' }
-]
+const { isDark } = useTheme()
+const route = useRoute()
+const rm = useReviewManager()
+
+const adminId     = computed(() => Number(route.query.admin_id))
+const consultantName = ref('Consultant')
+const detailsData = ref([])
+
+onMounted(async () => {
+  if (!adminId.value) return
+  const [workload, consultants] = await Promise.all([
+    rm.getConsultantWorkload(adminId.value),
+    rm.getConsultantList(),
+  ])
+  detailsData.value    = workload
+  consultantName.value = consultants.find((c) => c.id === adminId.value)?.name ?? 'Consultant'
+})
 
 function goBack() {
   navigateTo('/review-manager/dashboard?tab=Consultant workload')

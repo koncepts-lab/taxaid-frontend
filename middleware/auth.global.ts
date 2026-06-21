@@ -1,9 +1,18 @@
-// middleware/auth.global.ts
 export default defineNuxtRouteMiddleware((to) => {
-  const token = useCookie('auth_token')
-  const publicPages = ['/', '/home', '/revenue-partnership-login', '/verify-email', '/test-auth']//pages access without any login data(test-atuh is for testing apis on LH)
+  const authToken  = useCookie('auth_token')
+  const adminToken = useCookie('admin_token')
 
-  if (!token.value && !publicPages.includes(to.path)) {
-    return navigateTo('/home')
+  const publicPages   = ['/', '/home', '/revenue-partnership-login', '/verify-email', '/test-auth', '/superadmin/login']
+  const adminPrefixes = ['/superadmin', '/admin', '/review-manager', '/review-team-member']
+
+  if (publicPages.includes(to.path)) return
+
+  const isAdminPath = adminPrefixes.some(p => to.path.startsWith(p))
+
+  if (isAdminPath) {
+    if (!adminToken.value) throw createError({ statusCode: 404, statusMessage: 'Not Found' })
+    return
   }
-}) 
+
+  if (!authToken.value) return navigateTo('/home')
+})

@@ -44,15 +44,25 @@
 
                     <!-- Form Fields -->
                     <div class="space-y-4">
+                        <!-- Consultant (auto-filled from assignment) -->
                         <div class="relative">
-                            <input type="text" 
-                                v-model="formData.consultant"
-                                :placeholder="currentLang === 'ar' ? 'اسم المستشار' : 'Consultant Name'"
-                                class="w-full px-4 h-[44px] rounded-[10px] border focus:outline-none transition-all placeholder:font-normal"
-                                :class="isDark 
-                                    ? 'bg-[#002E26] border-[#03D8B0]/30 text-white placeholder:text-white/30 focus:border-[#03D8B0]' 
-                                    : 'bg-white border-[#04C18F]/30 text-[#013e32] placeholder:text-[#00000080] focus:border-[#04C18F]'"
-                            />
+                            <div class="w-full px-4 h-[44px] rounded-[10px] border flex items-center gap-2"
+                                :class="isDark
+                                    ? 'bg-[#001F1A] border-[#03D8B0]/20'
+                                    : 'bg-[#F7FFFE] border-[#04C18F]/30'">
+                                <svg class="w-4 h-4 flex-shrink-0" :class="isDark ? 'text-[#03D8B0]/50' : 'text-[#04C18F]/60'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span v-if="consultantLoading" class="text-sm" :class="isDark ? 'text-white/30' : 'text-[#00000080]'">
+                                    {{ currentLang === 'ar' ? 'جارٍ التحميل...' : 'Loading...' }}
+                                </span>
+                                <span v-else-if="myConsultant" class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-[#013e32]'">
+                                    {{ myConsultant.name }}
+                                </span>
+                                <span v-else class="text-sm" :class="isDark ? 'text-red-400/70' : 'text-red-500/70'">
+                                    {{ currentLang === 'ar' ? 'لم يتم تعيين مستشار بعد' : 'No consultant assigned to your account yet' }}
+                                </span>
+                            </div>
                         </div>
 
                         <!-- Issue Type Dropdown -->
@@ -185,7 +195,7 @@
 
                 <!-- Footer Actions -->
                 <div class="p-6 flex items-center gap-4">
-                    <button @click="confirm" :disabled="submitting" class="flex-1 h-[48px] rounded-[12px] bg-[#007B5B] text-white font-medium flex items-center justify-center gap-2 hover:bg-[#00664B] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                    <button @click="confirm" :disabled="submitting || (!consultantLoading && !myConsultant)" class="flex-1 h-[48px] rounded-[12px] bg-[#007B5B] text-white font-medium flex items-center justify-center gap-2 hover:bg-[#00664B] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
                         <svg v-if="!submitting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
@@ -210,7 +220,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { DatePicker as VDatePicker } from 'v-calendar'
 import 'v-calendar/dist/style.css'
 import { format } from 'date-fns'
@@ -230,11 +240,23 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'confirm'])
 
 const formData = ref({
-    consultant: '',
     hour: '10',
     minute: '00',
     ampm: 'AM',
     notes: ''
+})
+
+const myConsultant      = ref(null)
+const consultantLoading = ref(false)
+
+const { fetchMyConsultant } = useAppointmentsPage()
+
+watch(() => props.modelValue, async (open) => {
+    if (open && !myConsultant.value) {
+        consultantLoading.value = true
+        myConsultant.value      = await fetchMyConsultant()
+        consultantLoading.value = false
+    }
 })
 
 const { isDark } = useTheme()
@@ -281,7 +303,6 @@ const confirm = async () => {
     const dateObj = selectedDate.value ?? new Date()
 
     const newAppointment = {
-        consultant:       formData.value.consultant,
         type:             selectedIssue.value,
         appointment_date: format(dateObj, 'yyyy-MM-dd'),
         appointment_time: `${formData.value.hour}:${formData.value.minute} ${formData.value.ampm}`,
@@ -295,7 +316,6 @@ const confirm = async () => {
             await props.onSubmit(newAppointment)
             emit('update:modelValue', false)
             // Reset form only on success
-            formData.value.consultant = ''
             formData.value.notes = ''
             selectedDate.value = null
             selectedIssue.value = ''

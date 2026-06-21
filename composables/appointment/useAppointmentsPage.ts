@@ -169,6 +169,15 @@ export function useAppointmentsPage() {
     })
   }
 
+  async function fetchMyConsultant(): Promise<{ id: number; name: string } | null> {
+    try {
+      const res = await apiFetch('/my-consultant')
+      return (res as any).data ?? null
+    } catch {
+      return null
+    }
+  }
+
   async function fetchScheduledReviews(): Promise<void> {
     try {
       const res = await apiFetch('/monthly-reviews')
@@ -185,9 +194,13 @@ export function useAppointmentsPage() {
       const res = await apiFetch(`/appointments?from=${from}&to=${to}`)
       const incoming: Appointment[] = (res as any).data ?? []
 
+      // Update existing items (so admin status changes like rescheduled are reflected)
+      // and append any newly created ones not yet in cache
+      const incomingMap = new Map(incoming.map(a => [a.id, a]))
+      const updated     = _cache.value.map(a => incomingMap.get(a.id) ?? a)
       const existingIds = new Set(_cache.value.map(a => a.id))
       const newItems    = incoming.filter(a => !existingIds.has(a.id))
-      _cache.value = [..._cache.value, ...newItems].sort((a, b) =>
+      _cache.value = [...updated, ...newItems].sort((a, b) =>
         a.appointment_date.localeCompare(b.appointment_date)
       )
 
@@ -257,13 +270,9 @@ export function useAppointmentsPage() {
   }
 
   onMounted(async () => {
-    if (_cache.value.length === 0) {
-      const from = format(subMonths(new Date(), 3), 'yyyy-MM-dd')
-      const to   = format(addMonths(new Date(), 3), 'yyyy-MM-dd')
-      await Promise.all([fetchAppointments(from, to), fetchStats(), fetchScheduledReviews()])
-    } else {
-      await Promise.all([fetchStats(), fetchScheduledReviews()])
-    }
+    const from = format(subMonths(new Date(), 3), 'yyyy-MM-dd')
+    const to   = format(addMonths(new Date(), 3), 'yyyy-MM-dd')
+    await Promise.all([fetchAppointments(from, to), fetchStats(), fetchScheduledReviews()])
   })
 
   return {
@@ -288,5 +297,6 @@ export function useAppointmentsPage() {
     extendCacheIfNeeded,
     createAppointment,
     cancelAppointment,
+    fetchMyConsultant,
   }
 }

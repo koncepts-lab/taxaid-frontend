@@ -145,7 +145,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { format, parseISO } from 'date-fns'
-import type { AdminMonthlyReview } from '~/composables/admin/useAdminMonthlyReviews'
+import type { AdminMonthlyReview } from '~/composables/admin/review/useAdminMonthlyReviews'
 
 const props = defineProps<{
   modelValue: boolean

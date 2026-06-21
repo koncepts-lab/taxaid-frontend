@@ -91,6 +91,13 @@
             :isTimerRunning="false"
             :totalHours="totalLoggedFormatted"
             :hideAddButton="true"
+            :page="dailyLogsMeta?.current_page ?? 1"
+            :totalPages="dailyLogsMeta?.last_page ?? 1"
+            :from="dailyLogsMeta?.from ?? 0"
+            :to="dailyLogsMeta?.to ?? 0"
+            :total="dailyLogsMeta?.total ?? 0"
+            @prev="load(selectedDate, (dailyLogsMeta?.current_page ?? 1) - 1)"
+            @next="load(selectedDate, (dailyLogsMeta?.current_page ?? 1) + 1)"
           />
         </div>
       </div>
@@ -107,11 +114,11 @@ import { ref, computed, onMounted } from 'vue'
 import { format, addDays, subDays, parseISO } from 'date-fns'
 import { DatePicker as VDatePicker } from 'v-calendar'
 import 'v-calendar/dist/style.css'
-import { useActivityTracking } from '~/composables/admin/useActivityTracking'
-import type { DailyStats } from '~/composables/admin/useActivityTracking'
+import { useActivityTracking } from '~/composables/admin/review/useActivityTracking'
+import type { DailyStats } from '~/composables/admin/review/useActivityTracking'
 import ReviewTable from '~/components/admin/review/ReviewTable.vue'
 
-const { fetchDailyLogs } = useActivityTracking()
+const { fetchDailyLogs, dailyLogsMeta } = useActivityTracking()
 
 const selectedDate  = ref(new Date().toISOString().slice(0, 10))
 const calendarDate  = ref(new Date())
@@ -145,10 +152,10 @@ const appointmentBreakdown = computed(() => {
   return `${f} Client Fixed · ${r} Client Review`
 })
 
-async function load(date: string) {
+async function load(date: string, page = 1) {
   loading.value = true
   try {
-    const res = await fetchDailyLogs(date)
+    const res = await fetchDailyLogs(date, page)
     dateSession.value = res.session
     dateStats.value   = res.stats
     dateLogs.value    = res.logs
@@ -160,28 +167,28 @@ async function load(date: string) {
 function prevDay() {
   selectedDate.value = format(subDays(parseISO(selectedDate.value), 1), 'yyyy-MM-dd')
   calendarDate.value = parseISO(selectedDate.value)
-  load(selectedDate.value)
+  load(selectedDate.value, 1)
 }
 
 function nextDay() {
   selectedDate.value = format(addDays(parseISO(selectedDate.value), 1), 'yyyy-MM-dd')
   calendarDate.value = parseISO(selectedDate.value)
-  load(selectedDate.value)
+  load(selectedDate.value, 1)
 }
 
 function goToday() {
   selectedDate.value = new Date().toISOString().slice(0, 10)
   calendarDate.value = new Date()
-  load(selectedDate.value)
+  load(selectedDate.value, 1)
 }
 
 function onCalendarSelect(date: Date) {
   selectedDate.value = format(date, 'yyyy-MM-dd')
   calendarOpen.value = false
-  load(selectedDate.value)
+  load(selectedDate.value, 1)
 }
 
-onMounted(() => load(selectedDate.value))
+onMounted(() => load(selectedDate.value, 1))
 </script>
 
 <style scoped>

@@ -124,6 +124,7 @@ const handleCancelAppointment = async (appointment) => {
 const STATUS_LABELS = {
     pending:     'Pending',
     scheduled:   'Scheduled',
+    rescheduled: 'Rescheduled',
     extra_hours: 'Extra Hours',
     cancelled:   'Cancelled',
     completed:   'Completed',

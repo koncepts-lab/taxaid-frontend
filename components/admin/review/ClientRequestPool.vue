@@ -353,8 +353,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { AdminAppointment } from '~/composables/admin/useAdminAppointments'
-import { useAdminAppointments } from '~/composables/admin/useAdminAppointments'
+import type { AdminAppointment } from '~/composables/admin/review/useAdminAppointments'
+import { useAdminAppointments } from '~/composables/admin/review/useAdminAppointments'
 import SessionTimerRow from './SessionTimerRow.vue'
 import PaginationBar from './PaginationBar.vue'
 
@@ -363,6 +363,7 @@ const props = defineProps<{
   loading?: boolean
   search: string
   statusFilter: string
+  currentActivityRunning?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -381,6 +382,7 @@ const emit = defineEmits<{
 const { meta, fetchAppointments } = useAdminAppointments()
 
 function isBlockedByAnother(req: AdminAppointment): boolean {
+  if (props.currentActivityRunning) return true
   return props.requests.some(r =>
     r.id !== req.id &&
     r.status !== 'completed' &&

@@ -44,7 +44,7 @@ export function useAdminMonthlyReviews() {
         params.set('page', String(page))
         params.set('per_page', '10')
       }
-      const res: any = await useApi(`/admin/monthly-reviews?${params.toString()}`)
+      const res: any = await useAdminApi(`/admin/monthly-reviews?${params.toString()}`)
       if (page !== undefined) {
         // Paginated response: { data: [...], meta: {...} }
         _reviews.value = res.data ?? []
@@ -62,34 +62,34 @@ export function useAdminMonthlyReviews() {
   }
 
   async function fetchDetail(id: number): Promise<any> {
-    const res: any = await useApi(`/admin/monthly-reviews/${id}`)
+    const res: any = await useAdminApi(`/admin/monthly-reviews/${id}`)
     return res.data
   }
 
   async function fetchByTenant(tenantId: number | string, month: string): Promise<any> {
-    const res: any = await useApi(`/admin/monthly-reviews/by-tenant/${tenantId}?month=${month}`)
+    const res: any = await useAdminApi(`/admin/monthly-reviews/by-tenant/${tenantId}?month=${month}`)
     return res.data
   }
 
   async function fetchQuestions(): Promise<ReviewQuestion[]> {
-    const res: any = await useApi('/admin/monthly-reviews/questions')
+    const res: any = await useAdminApi('/admin/monthly-reviews/questions')
     return res.data ?? []
   }
 
   async function setSchedule(id: number, date: string, time: string, meetUrl: string, notes?: string | null): Promise<void> {
-    await useApi(`/admin/monthly-reviews/${id}/schedule`, {
+    await useAdminApi(`/admin/monthly-reviews/${id}/schedule`, {
       method: 'PATCH',
       body: { scheduled_date: date, scheduled_time: time, meet_url: meetUrl, notes: notes ?? null },
     })
   }
 
   async function completeReview(id: number): Promise<any> {
-    const res: any = await useApi(`/admin/monthly-reviews/${id}/complete`, { method: 'PATCH' })
+    const res: any = await useAdminApi(`/admin/monthly-reviews/${id}/complete`, { method: 'PATCH' })
     return res.data
   }
 
   async function saveAnswer(reviewId: number, questionId: number, selection: string, notes?: string): Promise<any> {
-    const res: any = await useApi(`/admin/monthly-reviews/${reviewId}/answers`, {
+    const res: any = await useAdminApi(`/admin/monthly-reviews/${reviewId}/answers`, {
       method: 'POST',
       body: { question_id: questionId, selection, notes: notes ?? null },
     })
@@ -97,11 +97,11 @@ export function useAdminMonthlyReviews() {
   }
 
   async function cancelReview(id: number): Promise<void> {
-    await useApi(`/admin/monthly-reviews/${id}/cancel`, { method: 'PATCH' })
+    await useAdminApi(`/admin/monthly-reviews/${id}/cancel`, { method: 'PATCH' })
   }
 
   async function refreshForMonth(month?: string): Promise<void> {
-    await useApi('/admin/monthly-reviews/refresh', {
+    await useAdminApi('/admin/monthly-reviews/refresh', {
       method: 'POST',
       body: month ? { month } : {},
     })

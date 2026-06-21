@@ -76,7 +76,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import type { WorkSession } from '~/composables/admin/useActivityTracking'
+import type { WorkSession } from '~/composables/admin/review/useActivityTracking'
 
 const props = defineProps<{
   session?: WorkSession | null
