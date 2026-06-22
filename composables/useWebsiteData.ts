@@ -95,20 +95,21 @@ export function useOnboarding() {
   }
 }
 
-/** Team Member — Activity Tracking tab */
-export function useTeamMemberActivity() {
-  const { data, loading, error } = useWebsiteData()
-  const tm = computed(() => data.value?.teamMember ?? {})
-  return {
-    loading, error,
-    metrics:        computed(() => tm.value?.activityTracking?.metrics        ?? {}),
-    workSession:    computed(() => tm.value?.activityTracking?.workSession    ?? {}),
-    appointmentTypes:computed(() => tm.value?.activityTracking?.appointmentTypes ?? []),
-    activities:     computed(() => tm.value?.activityTracking?.activities     ?? []),
-    monthlySummary: computed(() => tm.value?.activityTracking?.monthlySummary ?? {}),
-    timeSlots:      computed(() => tm.value?.activityTracking?.timeSlots      ?? []),
-  }
-}
+// useTeamMemberActivity — MOCK (static data.json)
+// Replaced by composables/admin/review/useActivityTracking.ts (live API)
+// export function useTeamMemberActivity() {
+//   const { data, loading, error } = useWebsiteData()
+//   const tm = computed(() => data.value?.teamMember ?? {})
+//   return {
+//     loading, error,
+//     metrics:         computed(() => tm.value?.activityTracking?.metrics          ?? {}),
+//     workSession:     computed(() => tm.value?.activityTracking?.workSession      ?? {}),
+//     appointmentTypes:computed(() => tm.value?.activityTracking?.appointmentTypes ?? []),
+//     activities:      computed(() => tm.value?.activityTracking?.activities       ?? []),
+//     monthlySummary:  computed(() => tm.value?.activityTracking?.monthlySummary   ?? {}),
+//     timeSlots:       computed(() => tm.value?.activityTracking?.timeSlots        ?? []),
+//   }
+// }
 
 /** Team Member — Client Management tab */
 export function useTeamMemberClientManagement() {
@@ -148,34 +149,36 @@ export function useTeamMemberTicketing() {
   }
 }
 
-/** Team Member — Activity Log */
-export function useTeamMemberActivityLog() {
-  const { data, loading, error } = useWebsiteData()
-  const al = computed(() => data.value?.teamMember?.activityLog ?? {})
-  return {
-    loading, error,
-    summaryMetrics:   computed(() => al.value?.summaryMetrics   ?? {}),
-    sampleActivities: computed(() => al.value?.sampleActivities ?? []),
-    totalHoursLogged: computed(() => al.value?.totalHoursLogged ?? ''),
-  }
-}
+// useTeamMemberActivityLog — MOCK (static data.json)
+// Replaced by composables/admin/review/useActivityTracking.ts (live API)
+// export function useTeamMemberActivityLog() {
+//   const { data, loading, error } = useWebsiteData()
+//   const al = computed(() => data.value?.teamMember?.activityLog ?? {})
+//   return {
+//     loading, error,
+//     summaryMetrics:   computed(() => al.value?.summaryMetrics   ?? {}),
+//     sampleActivities: computed(() => al.value?.sampleActivities ?? []),
+//     totalHoursLogged: computed(() => al.value?.totalHoursLogged ?? ''),
+//   }
+// }
 
-/** Review Manager — all tabs */
-export function useReviewManager() {
-  const { data, loading, error } = useWebsiteData()
-  const rm = computed(() => data.value?.reviewManager ?? {})
-  return {
-    loading, error,
-    dashboard:             computed(() => rm.value?.dashboard             ?? {}),
-    productivityMetrics:   computed(() => rm.value?.productivityMetrics?.cards ?? []),
-    productivityTracker:   computed(() => rm.value?.productivityTracker?.consultants ?? []),
-    dataSyncStatus:        computed(() => rm.value?.dataSyncStatus        ?? {}),
-    clientFixedProgress:   computed(() => rm.value?.clientFixedProgress?.records ?? []),
-    consultantWorkload:    computed(() => rm.value?.consultantWorkload?.records   ?? []),
-    assignConsultant:      computed(() => rm.value?.assignConsultant      ?? {}),
-    clientReviewAnalysis:  computed(() => rm.value?.clientReviewAnalysis  ?? {}),
-  }
-}
+// useReviewManager — MOCK (static data.json)
+// Replaced by composables/admin/review/useReviewManager.ts (live API)
+// export function useReviewManager() {
+//   const { data, loading, error } = useWebsiteData()
+//   const rm = computed(() => data.value?.reviewManager ?? {})
+//   return {
+//     loading, error,
+//     dashboard:            computed(() => rm.value?.dashboard                        ?? {}),
+//     productivityMetrics:  computed(() => rm.value?.productivityMetrics?.cards       ?? []),
+//     productivityTracker:  computed(() => rm.value?.productivityTracker?.consultants ?? []),
+//     dataSyncStatus:       computed(() => rm.value?.dataSyncStatus                   ?? {}),
+//     clientFixedProgress:  computed(() => rm.value?.clientFixedProgress?.records     ?? []),
+//     consultantWorkload:   computed(() => rm.value?.consultantWorkload?.records       ?? []),
+//     assignConsultant:     computed(() => rm.value?.assignConsultant                 ?? {}),
+//     clientReviewAnalysis: computed(() => rm.value?.clientReviewAnalysis             ?? {}),
+//   }
+// }
 
 /** Revenue Partnership — accounts page */
 export function useRevenuePartnership() {
@@ -306,6 +309,8 @@ export function useRevenuePartnershipPartnerPage() {
   }
 }
 
+/// !! LANDING PAGE — static navigation only, no backend API needed !! ///
+/// !! title, subtitle, cards are hardcoded in data.json — do NOT replace with API !! ///
 export function useRevenuePartnershipSelectDashboardPage() {
   const { data, loading, error } = useWebsiteData()
   const pageData = computed(() => data.value?.revenuePartnershipSelectDashboardPage ?? {})
@@ -337,6 +342,8 @@ export function useRevenuePartnershipAdminPage() {
   }
 }
 
+/// !! LANDING PAGE — static navigation only, no backend API needed !! ///
+/// !! title, subtitle, cards are hardcoded in data.json — do NOT replace with API !! ///
 export function useReviewManagerSelectDashboardPage() {
   const { data, loading, error } = useWebsiteData()
   const pageData = computed(() => data.value?.reviewManagerSelectDashboardPage ?? {})
@@ -350,21 +357,22 @@ export function useReviewManagerSelectDashboardPage() {
   }
 }
 
-export function useReviewManagerDashboardPage() {
-  const { data, loading, error } = useWebsiteData()
-  const pageData = computed(() => data.value?.reviewManagerDashboardPage ?? {})
-
-  return {
-    loading,
-    error,
-    productivityMetrics:   computed(() => pageData.value?.productivityMetrics?.cards ?? []),
-    tabs:                  computed(() => pageData.value?.tabs ?? []),
-    consultants:           computed(() => pageData.value?.consultants ?? []),
-    syncData:              computed(() => pageData.value?.syncData ?? []),
-    clientFixedProgressData: computed(() => pageData.value?.clientFixedProgressData ?? []),
-    consultantWorkloadData: computed(() => pageData.value?.consultantWorkloadData ?? []),
-    assignConsultantData:  computed(() => pageData.value?.assignConsultantData ?? []),
-    clientReviewAnalysisData: computed(() => pageData.value?.clientReviewAnalysisData ?? []),
-    consultantList:        computed(() => pageData.value?.consultantList ?? []),
-  }
-}
+// useReviewManagerDashboardPage — MOCK (static data.json)
+// Replaced by composables/admin/review/useReviewManager.ts (live API)
+// export function useReviewManagerDashboardPage() {
+//   const { data, loading, error } = useWebsiteData()
+//   const pageData = computed(() => data.value?.reviewManagerDashboardPage ?? {})
+//   return {
+//     loading,
+//     error,
+//     productivityMetrics:      computed(() => pageData.value?.productivityMetrics?.cards    ?? []),
+//     tabs:                     computed(() => pageData.value?.tabs                          ?? []),
+//     consultants:              computed(() => pageData.value?.consultants                   ?? []),
+//     syncData:                 computed(() => pageData.value?.syncData                      ?? []),
+//     clientFixedProgressData:  computed(() => pageData.value?.clientFixedProgressData       ?? []),
+//     consultantWorkloadData:   computed(() => pageData.value?.consultantWorkloadData        ?? []),
+//     assignConsultantData:     computed(() => pageData.value?.assignConsultantData          ?? []),
+//     clientReviewAnalysisData: computed(() => pageData.value?.clientReviewAnalysisData      ?? []),
+//     consultantList:           computed(() => pageData.value?.consultantList                ?? []),
+//   }
+// }

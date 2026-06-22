@@ -89,9 +89,11 @@
                             </button>
                         </div>
 
-                        <button type="submit"
-                            class="w-full py-3 !mt-6 bg-[#008169] hover:bg-[#006b56] text-white rounded-lg font-medium text-sm transition-all active:scale-95 shadow-md">
-                            {{ currentLang === 'ar' ? 'تسجيل الدخول' : 'Login to Dashboard' }}
+                        <p v-if="loginError" class="text-[12px] text-red-500 font-medium text-center -mb-1">{{ loginError }}</p>
+
+                        <button type="submit" :disabled="loading"
+                            class="w-full py-3 !mt-6 bg-[#008169] hover:bg-[#006b56] text-white rounded-lg font-medium text-sm transition-all active:scale-95 shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
+                            {{ loading ? 'Logging in…' : (currentLang === 'ar' ? 'تسجيل الدخول' : 'Login to Dashboard') }}
                         </button>
                     </form>
                 </div>
@@ -158,14 +160,27 @@ const props = defineProps({
     isDark: Boolean
 })
 
-const authMode = ref('login')
-const form = reactive({ username: '', password: '', email: '' })
-const errors = reactive({ username: '', password: '', email: '' })
+const { login, admin } = useAdminAuth()
+
+const authMode     = ref('login')
+const form         = reactive({ username: '', password: '', email: '' })
+const errors       = reactive({ username: '', password: '', email: '' })
 const showPassword = ref(false)
+const loading      = ref(false)
+const loginError   = ref('')
+
+function dashboardRoute(adminUser) {
+    const role = adminUser?.role?.name
+    const dept = adminUser?.department?.name
+    if (role === 'Review Manager' && dept === 'Review')                                   return '/review-manager/dashboard'
+    if ((role === 'Team Lead' || role === 'Review Consultant') && dept === 'Review')      return '/review-team-member/dashboard'
+    return '/admin'
+}
 
 const handleLogin = async () => {
     errors.username = ''
     errors.password = ''
+    loginError.value = ''
 
     if (!form.username) {
         errors.username = props.currentLang === 'ar' ? 'يرجى إدخال اسم المستخدم' : 'Please enter your username'
@@ -173,9 +188,16 @@ const handleLogin = async () => {
     if (!form.password) {
         errors.password = props.currentLang === 'ar' ? 'يرجى إدخال كلمة المرور' : 'Please enter your password'
     }
+    if (errors.username || errors.password) return
 
-    if (!errors.username && !errors.password) {
-        await navigateTo('/admin')
+    loading.value = true
+    try {
+        await login(form.username, form.password)
+        await navigateTo(dashboardRoute(admin.value))
+    } catch (e) {
+        loginError.value = e?.data?.message ?? e?.message ?? 'Invalid credentials'
+    } finally {
+        loading.value = false
     }
 }
 
