@@ -100,8 +100,8 @@ const { isDark, toggleTheme } = useTheme()
 
 function handleLogout() {
   if (props.adminLogout) {
-    const token = useCookie('admin_token')
-    token.value = null
+    useCookie('admin_token').value = null
+    useCookie('admin_user').value  = null
   }
   navigateTo(props.logoutTo)
 }
