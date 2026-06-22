@@ -1,6 +1,5 @@
 <template>
-  <div class="p-8 space-y-6 min-h-screen bg-[#F8F9FA]">
-    <!-- Loading -->
+  <div class="p-8 space-y-6 min-h-[calc(100vh-90px)] bg-[#F8F9FA]">
     <div v-if="loading" class="flex items-center justify-center py-24 text-gray-400 text-sm">Loading profile...</div>
 
     <!-- Error -->
@@ -505,6 +504,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useProfile } from '~/composables/settings/useProfile'
+
+definePageMeta({
+  layout: 'dashboard'
+})
 
 const { profile, pictureUrl, loading, saving, error, fetchProfile, saveProfile, uploadPicture } = useProfile()
 
