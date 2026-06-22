@@ -51,7 +51,7 @@ export function useAdminAppointments() {
       params.set('per_page', '10')
       if (_search.value)       params.set('search', _search.value)
       if (_statusFilter.value) params.set('status', _statusFilter.value)
-      const res: any = await useApi(`/admin/appointments?${params.toString()}`)
+      const res: any = await useAdminApi(`/admin/appointments?${params.toString()}`)
       _appointments.value = res.data ?? []
       _meta.value         = res.meta ?? null
     } catch (err: any) {
@@ -62,12 +62,12 @@ export function useAdminAppointments() {
   }
 
   async function approveAppointment(id: number, meetUrl: string): Promise<void> {
-    await useApi(`/admin/appointments/${id}/approve`, { method: 'PATCH', body: { meet_url: meetUrl } })
+    await useAdminApi(`/admin/appointments/${id}/approve`, { method: 'PATCH', body: { meet_url: meetUrl } })
     await fetchAppointments(_page.value)
   }
 
   async function rescheduleAppointment(id: number, date: string, time: string): Promise<void> {
-    await useApi(`/admin/appointments/${id}/reschedule`, {
+    await useAdminApi(`/admin/appointments/${id}/reschedule`, {
       method: 'PATCH',
       body: { rescheduled_date: date, rescheduled_time: time },
     })
@@ -75,29 +75,29 @@ export function useAdminAppointments() {
   }
 
   async function cancelAppointment(id: number): Promise<void> {
-    await useApi(`/admin/appointments/${id}/cancel`, { method: 'PATCH' })
+    await useAdminApi(`/admin/appointments/${id}/cancel`, { method: 'PATCH' })
     await fetchAppointments(_page.value)
   }
 
   async function completeAppointment(id: number): Promise<void> {
-    await useApi(`/admin/appointments/${id}/complete`, { method: 'PATCH' })
+    await useAdminApi(`/admin/appointments/${id}/complete`, { method: 'PATCH' })
     await fetchAppointments(_page.value)
   }
 
   async function startSession(id: number): Promise<AdminAppointment> {
-    const res: any = await useApi(`/admin/appointments/${id}/session/start`, { method: 'POST' })
+    const res: any = await useAdminApi(`/admin/appointments/${id}/session/start`, { method: 'POST' })
     await fetchAppointments(_page.value)
     return res.data
   }
 
   async function pauseSession(id: number): Promise<AdminAppointment> {
-    const res: any = await useApi(`/admin/appointments/${id}/session/pause`, { method: 'POST' })
+    const res: any = await useAdminApi(`/admin/appointments/${id}/session/pause`, { method: 'POST' })
     await fetchAppointments(_page.value)
     return res.data
   }
 
   async function stopSession(id: number): Promise<AdminAppointment> {
-    const res: any = await useApi(`/admin/appointments/${id}/session/stop`, { method: 'POST' })
+    const res: any = await useAdminApi(`/admin/appointments/${id}/session/stop`, { method: 'POST' })
     await fetchAppointments(_page.value)
     return res.data
   }

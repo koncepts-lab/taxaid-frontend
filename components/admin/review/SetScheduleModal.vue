@@ -178,8 +178,8 @@ import { ref, watch } from 'vue'
 import { DatePicker as VDatePicker } from 'v-calendar'
 import 'v-calendar/dist/style.css'
 import { format, parseISO } from 'date-fns'
-import { useAdminMonthlyReviews } from '~/composables/admin/useAdminMonthlyReviews'
-import type { AdminMonthlyReview } from '~/composables/admin/useAdminMonthlyReviews'
+import { useAdminMonthlyReviews } from '~/composables/admin/review/useAdminMonthlyReviews'
+import type { AdminMonthlyReview } from '~/composables/admin/review/useAdminMonthlyReviews'
 
 const props = defineProps<{
   modelValue: boolean

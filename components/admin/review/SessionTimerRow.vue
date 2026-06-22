@@ -74,9 +74,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { AdminAppointment } from '~/composables/admin/useAdminAppointments'
-import { useSessionTimer } from '~/composables/admin/useSessionTimer'
-import { useActivityTracking } from '~/composables/admin/useActivityTracking'
+import type { AdminAppointment } from '~/composables/admin/review/useAdminAppointments'
+import { useSessionTimer } from '~/composables/admin/review/useSessionTimer'
+import { useActivityTracking } from '~/composables/admin/review/useActivityTracking'
 import WorkSessionGuardModal from './WorkSessionGuardModal.vue'
 
 const props = defineProps<{

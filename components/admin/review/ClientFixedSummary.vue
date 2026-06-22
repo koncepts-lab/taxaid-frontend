@@ -135,8 +135,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { format, parseISO } from 'date-fns'
-import { useAdminMonthlyReviews } from '~/composables/admin/useAdminMonthlyReviews'
-import type { AdminMonthlyReview } from '~/composables/admin/useAdminMonthlyReviews'
+import { useAdminMonthlyReviews } from '~/composables/admin/review/useAdminMonthlyReviews'
+import type { AdminMonthlyReview } from '~/composables/admin/review/useAdminMonthlyReviews'
 import SetScheduleModal from './SetScheduleModal.vue'
 import PaginationBar from './PaginationBar.vue'
 

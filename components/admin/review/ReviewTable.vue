@@ -66,7 +66,7 @@
       </div>
     </div>
 
-    <PaginationBar :page="page" :totalPages="totalPages" :from="from" :to="to" :total="total" @prev="prev" @next="next" />
+    <PaginationBar :page="page" :totalPages="totalPages" :from="from" :to="to" :total="total" @prev="emit('prev')" @next="emit('next')" />
 
     <!-- Total Footer -->
     <div class="mt-4 bg-[#FFF9E5] border border-[#FDEBBA] rounded-md p-4 flex justify-between items-center text-sm text-gray-900">
@@ -78,7 +78,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { usePagination } from '~/composables/admin/usePagination'
 import PaginationBar from './PaginationBar.vue'
 
 interface Activity {
@@ -95,19 +94,30 @@ const props = withDefaults(defineProps<{
   activities?: Activity[]
   totalHours?: string
   hideAddButton?: boolean
+  page?: number
+  totalPages?: number
+  from?: number
+  to?: number
+  total?: number
 }>(), {
   isTimerRunning: false,
   activities: () => [],
   totalHours: '0 hrs 0 min',
   hideAddButton: false,
+  page: 1,
+  totalPages: 1,
+  from: 0,
+  to: 0,
+  total: 0,
 })
 
 const emit = defineEmits<{
   'add-activity': [payload: { appointment_type: string; time_in: string; time_out?: string }]
+  'prev': []
+  'next': []
 }>()
 
-const activitySource = computed(() => props.activities)
-const { paged, page, totalPages, from, to, total, next, prev } = usePagination(activitySource)
+const paged = computed(() => props.activities)
 
 const showForm  = ref(false)
 const submitting = ref(false)

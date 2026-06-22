@@ -10,8 +10,8 @@
       <div>
         <label class="block text-xs font-medium text-gray-600 mb-1">Time In</label>
         <div class="bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm shadow-sm min-h-[42px] flex items-center">
-          <span :class="startedAt ? 'text-gray-800' : 'text-gray-300'">
-            {{ startedAt ? fmtTime(startedAt) : '—' }}
+          <span :class="timeInDisplay ? 'text-gray-800' : 'text-gray-300'">
+            {{ timeInDisplay || '—' }}
           </span>
         </div>
       </div>
@@ -20,9 +20,7 @@
       <div>
         <label class="block text-xs font-medium text-gray-600 mb-1">Time Out</label>
         <div class="bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm shadow-sm min-h-[42px] flex items-center">
-          <span :class="stoppedAt ? 'text-gray-800' : 'text-gray-300'">
-            {{ stoppedAt ? fmtTime(stoppedAt) : '—' }}
-          </span>
+          <span class="text-gray-300">—</span>
         </div>
       </div>
 
@@ -96,38 +94,32 @@
         </div>
 
         <!-- Start -->
-        <button v-if="timerState === 'idle'" @click="start" type="button"
-          class="flex items-center gap-2 px-4 py-2 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#007A62] transition-colors shadow-sm">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M8 5v14l11-7z"/>
-          </svg>
-          Start
-        </button>
+        <template v-if="timerState === 'idle'">
+          <button @click="start" :disabled="actionLoading || anyRunning" type="button"
+            class="flex items-center gap-2 px-4 py-2 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#007A62] transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            {{ actionLoading ? 'Starting...' : 'Start' }}
+          </button>
+          <p v-if="anyRunning" class="text-xs text-amber-600">An appointment session is currently running.</p>
+        </template>
 
-        <!-- Pause / Resume -->
+        <!-- Pause / Resume + Stop -->
         <template v-if="timerState === 'running' || timerState === 'paused'">
-          <button v-if="timerState === 'running'" @click="pause" type="button"
-            class="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white text-sm font-medium rounded-lg hover:bg-amber-600 transition-colors shadow-sm">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-            </svg>
+          <button v-if="timerState === 'running'" @click="pause" :disabled="actionLoading" type="button"
+            class="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white text-sm font-medium rounded-lg hover:bg-amber-600 transition-colors shadow-sm disabled:opacity-60">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
             Pause
           </button>
-          <button v-else @click="resume" type="button"
-            class="flex items-center gap-2 px-4 py-2 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#007A62] transition-colors shadow-sm">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
+          <button v-else @click="resume" :disabled="actionLoading" type="button"
+            class="flex items-center gap-2 px-4 py-2 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#007A62] transition-colors shadow-sm disabled:opacity-60">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             Resume
           </button>
 
-          <!-- Stop -->
-          <button @click="stop" :disabled="submitting" type="button"
+          <button @click="stop" :disabled="actionLoading" type="button"
             class="flex items-center gap-2 px-4 py-2 bg-[#FF4D4D] text-white text-sm font-medium rounded-lg hover:bg-red-600 disabled:opacity-60 transition-colors shadow-sm">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M6 6h12v12H6z"/>
-            </svg>
-            {{ submitting ? 'Saving...' : 'Stop & Save' }}
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+            {{ actionLoading ? 'Saving...' : 'Stop & Save' }}
           </button>
         </template>
       </div>
@@ -139,41 +131,94 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue'
-import { useActivityTracking, type ActivityClient } from '~/composables/admin/useActivityTracking'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useActivityTracking, type ActivityClient } from '~/composables/admin/review/useActivityTracking'
 import WorkSessionGuardModal from './WorkSessionGuardModal.vue'
 
-const props = defineProps<{
-  clients: ActivityClient[]
-}>()
+const props = defineProps<{ clients: ActivityClient[]; anyRunning?: boolean }>()
+const emit = defineEmits<{ save: [] }>()
 
-const { session } = useActivityTracking()
-const showGuard = ref(false)
+const { session, fetchActiveTimer, timer } = useActivityTracking()
 
-function isSessionActive(): boolean {
-  return !!session.value?.checked_in_at && !session.value?.checked_out_at
-}
+const showGuard    = ref(false)
+const actionLoading = ref(false)
+const error        = ref('')
+const typeOpen     = ref(false)
+const clientOpen   = ref(false)
 
-const emit = defineEmits<{
-  save: [payload: object]
-}>()
+// Timer state — driven from backend on mount, then ticked locally
+const timerState   = ref<'idle' | 'running' | 'paused'>('idle')
+const elapsedMs    = ref(0)        // total accumulated ms at last sync
+const runStartMs   = ref(0)        // Date.now() when current run segment began (local)
+const tick         = ref(0)
+let   interval: ReturnType<typeof setInterval> | null = null
 
-// ─── Form state ───────────────────────────────────────────────────────────────
+// Form — locked once timer is running
 const form = ref({ appointment_type: '', tenant_id: null as number | null })
-const typeOpen   = ref(false)
-const clientOpen = ref(false)
-const error      = ref('')
-const submitting = ref(false)
-
 const typeOptions = [
   { value: 'client_fixed', label: 'Client Fixed' },
   { value: 'internal',     label: 'Internal' },
   { value: 'training',     label: 'Training' },
 ]
 
-const needsClient      = computed(() => form.value.appointment_type === 'client_fixed')
+const needsClient       = computed(() => form.value.appointment_type === 'client_fixed')
 const selectedTypeLabel = computed(() => typeOptions.find(o => o.value === form.value.appointment_type)?.label ?? '')
 const clientName        = computed(() => props.clients.find(c => c.id === form.value.tenant_id)?.name ?? '')
+
+const totalElapsedMs = computed(() => {
+  tick.value
+  if (timerState.value !== 'running') return elapsedMs.value
+  return elapsedMs.value + (Date.now() - runStartMs.value)
+})
+
+const formattedElapsed = computed(() => {
+  const s   = Math.floor(totalElapsedMs.value / 1000)
+  const h   = Math.floor(s / 3600)
+  const m   = Math.floor((s % 3600) / 60)
+  const sec = s % 60
+  return `${h}h ${String(m).padStart(2, '0')}m ${String(sec).padStart(2, '0')}s`
+})
+
+const timeInDisplay = computed(() => {
+  if (timerState.value === 'idle') return ''
+  // time_in = now - totalElapsedMs
+  const timeIn = new Date(Date.now() - totalElapsedMs.value)
+  return timeIn.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' })
+})
+
+function startTick() {
+  if (interval) return
+  interval = setInterval(() => tick.value++, 1000)
+}
+
+function stopTick() {
+  if (interval) { clearInterval(interval); interval = null }
+}
+
+function restoreFromBackend(timer: any) {
+  form.value.appointment_type = timer.appointment_type
+  form.value.tenant_id        = timer.tenant_id
+  elapsedMs.value             = timer.elapsed_ms
+
+  if (timer.state === 'running') {
+    runStartMs.value = new Date(timer.started_at).getTime()
+    timerState.value = 'running'
+    startTick()
+  } else {
+    timerState.value = 'paused'
+  }
+}
+
+onMounted(async () => {
+  const active = await fetchActiveTimer()
+  if (active) restoreFromBackend(active)
+})
+
+onUnmounted(() => stopTick())
+
+function isSessionActive(): boolean {
+  return !!session.value?.checked_in_at && !session.value?.checked_out_at
+}
 
 function selectType(val: string) {
   form.value.appointment_type = val
@@ -185,120 +230,70 @@ function selectClient(id: number) {
   clientOpen.value     = false
 }
 
-// ─── Timer state ─────────────────────────────────────────────────────────────
-type TimerState = 'idle' | 'running' | 'paused'
-
-const timerState  = ref<TimerState>('idle')
-const startedAt   = ref<Date | null>(null)   // original start — becomes time_in
-const stoppedAt   = ref<Date | null>(null)   // stop moment — for display only
-const elapsedMs   = ref(0)                   // accumulated ms across pauses
-const runStartMs  = ref(0)                   // Date.now() when current run began
-const tick        = ref(0)
-let   interval:   ReturnType<typeof setInterval> | null = null
-
-const totalElapsedMs = computed(() => {
-  tick.value // subscribe to tick
-  if (timerState.value !== 'running') return elapsedMs.value
-  return elapsedMs.value + (Date.now() - runStartMs.value)
-})
-
-const formattedElapsed = computed(() => {
-  const s = Math.floor(totalElapsedMs.value / 1000)
-  const h = Math.floor(s / 3600)
-  const m = Math.floor((s % 3600) / 60)
-  const sec = s % 60
-  return `${h}h ${String(m).padStart(2, '0')}m ${String(sec).padStart(2, '0')}s`
-})
-
-function fmtTime(d: Date): string {
-  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' })
-}
-
-function toDatetimeStr(d: Date): string {
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
-}
-
-// ─── Controls ────────────────────────────────────────────────────────────────
-function start() {
+async function start() {
   error.value = ''
+  if (!isSessionActive()) { showGuard.value = true; return }
+  if (!form.value.appointment_type) { error.value = 'Select appointment type before starting.'; return }
+  if (needsClient.value && !form.value.tenant_id) { error.value = 'Select a client before starting.'; return }
 
-  if (!isSessionActive()) {
-    showGuard.value = true
-    return
+  actionLoading.value = true
+  try {
+    const t = await timer('start', { appointment_type: form.value.appointment_type, tenant_id: form.value.tenant_id })
+    if (t) restoreFromBackend(t)
+  } catch (e: any) {
+    error.value = e?.data?.message ?? 'Failed to start timer.'
+  } finally {
+    actionLoading.value = false
   }
-
-  if (!form.value.appointment_type) {
-    error.value = 'Select appointment type before starting.'
-    return
-  }
-  if (needsClient.value && !form.value.tenant_id) {
-    error.value = 'Select a client before starting.'
-    return
-  }
-
-  startedAt.value  = new Date()
-  stoppedAt.value  = null
-  elapsedMs.value  = 0
-  runStartMs.value = Date.now()
-  timerState.value = 'running'
-  interval = setInterval(() => tick.value++, 1000)
 }
 
-function pause() {
-  elapsedMs.value  += Date.now() - runStartMs.value
-  timerState.value  = 'paused'
-  if (interval) { clearInterval(interval); interval = null }
+async function pause() {
+  actionLoading.value = true
+  stopTick()
+  try {
+    const t = await timer('pause')
+    elapsedMs.value  = t?.elapsed_ms ?? elapsedMs.value
+    timerState.value = 'paused'
+  } catch (e: any) {
+    error.value = e?.data?.message ?? 'Failed to pause.'
+    startTick()
+  } finally {
+    actionLoading.value = false
+  }
 }
 
-function resume() {
-  runStartMs.value  = Date.now()
-  timerState.value  = 'running'
-  interval = setInterval(() => tick.value++, 1000)
+async function resume() {
+  actionLoading.value = true
+  try {
+    const t = await timer('resume')
+    if (t) runStartMs.value = new Date(t.started_at).getTime()
+    timerState.value = 'running'
+    startTick()
+  } catch (e: any) {
+    error.value = e?.data?.message ?? 'Failed to resume.'
+  } finally {
+    actionLoading.value = false
+  }
 }
 
 async function stop() {
-  if (interval) { clearInterval(interval); interval = null }
-
-  // Accumulate any remaining run time
-  if (timerState.value === 'running') {
-    elapsedMs.value += Date.now() - runStartMs.value
-  }
-  timerState.value = 'idle'
-
-  // Compute time_out = time_in + total elapsed
-  const timeInDate  = startedAt.value!
-  const timeOutDate = new Date(timeInDate.getTime() + elapsedMs.value)
-  stoppedAt.value   = timeOutDate
-
-  submitting.value = true
+  actionLoading.value = true
+  stopTick()
   try {
-    const payload: any = {
-      appointment_type: form.value.appointment_type,
-      time_in:          toDatetimeStr(timeInDate),
-      time_out:         toDatetimeStr(timeOutDate),
-    }
-    if (form.value.tenant_id) payload.tenant_id = form.value.tenant_id
-
-    emit('save', payload)
-
-    // Reset after a short display delay so user sees the final times
-    setTimeout(reset, 1500)
+    await timer('stop')
+    timerState.value = 'idle'
+    elapsedMs.value  = 0
+    runStartMs.value = 0
+    tick.value       = 0
+    form.value       = { appointment_type: '', tenant_id: null }
+    emit('save')
+  } catch (e: any) {
+    error.value = e?.data?.message ?? 'Failed to stop timer.'
+    if (timerState.value === 'running') startTick()
   } finally {
-    submitting.value = false
+    actionLoading.value = false
   }
 }
-
-function reset() {
-  startedAt.value  = null
-  stoppedAt.value  = null
-  elapsedMs.value  = 0
-  runStartMs.value = 0
-  tick.value       = 0
-  form.value       = { appointment_type: '', tenant_id: null }
-}
-
-onUnmounted(() => { if (interval) clearInterval(interval) })
 </script>
 
 <style scoped>

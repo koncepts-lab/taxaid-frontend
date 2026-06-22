@@ -56,7 +56,7 @@
       </div>
 
       <!-- Current Activity Panel (Timer 3) -->
-      <CurrentActivityPanel :clients="activityClients" @save="onAddActivity" />
+      <CurrentActivityPanel :clients="activityClients" :any-running="appointmentTimerRunning" @save="onAddActivity" />
 
       <!-- Daily Activity Table -->
       <div class="bg-white rounded-xl border border-[#A5E5D9] shadow-sm p-6 mb-8">
@@ -65,6 +65,13 @@
           :activities="todayLogs"
           :totalHours="totalLoggedFormatted"
           :hideAddButton="true"
+          :page="todayLogsMeta?.current_page ?? 1"
+          :totalPages="todayLogsMeta?.last_page ?? 1"
+          :from="todayLogsMeta?.from ?? 0"
+          :to="todayLogsMeta?.to ?? 0"
+          :total="todayLogsMeta?.total ?? 0"
+          @prev="fetchTodaySession(logsPage = Math.max(1, (todayLogsMeta?.current_page ?? 1) - 1))"
+          @next="fetchTodaySession(logsPage = Math.min(todayLogsMeta?.last_page ?? 1, (todayLogsMeta?.current_page ?? 1) + 1))"
         />
       </div>
 
@@ -110,6 +117,7 @@
         :loading="loading"
         v-model:search="search"
         v-model:status-filter="statusFilter"
+        :current-activity-running="currentActivityRunning"
         @refresh="fetchAppointments"
         @approve="approveAppointment"
         @reschedule="rescheduleAppointment"
@@ -174,12 +182,12 @@
                 <td colspan="6" class="px-6 py-8 text-center text-gray-400 text-sm">Loading...</td>
               </tr>
             </template>
-            <template v-else-if="filteredFixedRows.length === 0">
+            <template v-else-if="fixedRows.length === 0">
               <tr>
                 <td colspan="6" class="px-6 py-8 text-center text-gray-500 text-sm">No monthly reviews found.</td>
               </tr>
             </template>
-            <tr v-else v-for="r in pagedFixedRows" :key="r.id" class="hover:bg-gray-50 transition-colors">
+            <tr v-else v-for="r in fixedRows" :key="r.id" class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap text-[13px] text-gray-600">{{ r.tenant_id }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-[14px] font-medium text-gray-900">{{ r.client_name }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -206,7 +214,7 @@
             </tr>
           </tbody>
         </table>
-        <PaginationBar :page="fixedPage" :totalPages="fixedTotalPages" :from="fixedFrom" :to="fixedTo" :total="fixedTotal" @prev="fixedPrev" @next="fixedNext" />
+        <PaginationBar :page="fixedMeta?.current_page ?? 1" :totalPages="fixedMeta?.last_page ?? 1" :from="fixedMeta?.from ?? 0" :to="fixedMeta?.to ?? 0" :total="fixedMeta?.total ?? 0" @prev="fixedPrev" @next="fixedNext" />
       </div>
 
       <!-- All Appointments Tab -->
@@ -229,7 +237,7 @@
             <template v-else-if="allRows.length === 0">
               <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500 text-sm">No records found.</td></tr>
             </template>
-            <tr v-else v-for="r in pagedAllRows" :key="r.key" class="hover:bg-gray-50 transition-colors">
+            <tr v-else v-for="r in allRows" :key="r.key" class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap text-[13px] text-gray-600">{{ r.tenant_id }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-[14px] font-medium text-gray-900">{{ r.client_name }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -260,7 +268,6 @@
             </tr>
           </tbody>
         </table>
-        <PaginationBar :page="allPage" :totalPages="allTotalPages" :from="allFrom" :to="allTo" :total="allTotal" @prev="allPrev" @next="allNext" />
       </div>
 
       <!-- Client Review Tab -->
@@ -281,12 +288,12 @@
                 <td colspan="5" class="px-6 py-8 text-center text-gray-400 text-sm">Loading...</td>
               </tr>
             </template>
-            <template v-else-if="filteredReviewRows.length === 0">
+            <template v-else-if="reviewRows.length === 0">
               <tr>
                 <td colspan="5" class="px-6 py-8 text-center text-gray-500 text-sm">No appointment data found.</td>
               </tr>
             </template>
-            <tr v-else v-for="r in pagedReviewRows" :key="r.tenant_id" class="hover:bg-gray-50 transition-colors">
+            <tr v-else v-for="r in reviewRows" :key="r.tenant_id" class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap text-[13px] text-gray-600">{{ r.tenant_id }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-[14px] font-medium text-gray-900">{{ r.client_name }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -305,7 +312,7 @@
             </tr>
           </tbody>
         </table>
-        <PaginationBar :page="reviewPage" :totalPages="reviewTotalPages" :from="reviewFrom" :to="reviewTo" :total="reviewTotal" @prev="reviewPrev" @next="reviewNext" />
+        <PaginationBar :page="reviewMeta?.current_page ?? 1" :totalPages="reviewMeta?.last_page ?? 1" :from="reviewMeta?.from ?? 0" :to="reviewMeta?.to ?? 0" :total="reviewMeta?.total ?? 0" @prev="reviewPrev" @next="reviewNext" />
       </div>
     </div>
   </div>
@@ -315,10 +322,10 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { format, parseISO } from 'date-fns'
 const route = useRoute()
-import { useAdminAppointments } from '~/composables/admin/useAdminAppointments'
-import { useAdminMonthlyReviews } from '~/composables/admin/useAdminMonthlyReviews'
-import { useActivityTracking } from '~/composables/admin/useActivityTracking'
-import { usePagination } from '~/composables/admin/usePagination'
+import { useAdminAppointments } from '~/composables/admin/review/useAdminAppointments'
+import type { PaginationMeta } from '~/composables/admin/review/useAdminAppointments'
+import { useAdminMonthlyReviews } from '~/composables/admin/review/useAdminMonthlyReviews'
+import { useActivityTracking } from '~/composables/admin/review/useActivityTracking'
 import PaginationBar from './PaginationBar.vue'
 import ReviewStatsCard from './ReviewStatsCard.vue'
 import ReviewTimer from './ReviewTimer.vue'
@@ -331,8 +338,10 @@ import WorkSessionGuardModal from './WorkSessionGuardModal.vue'
 // Activity Tracking
 const {
   session,
+  activeTimer,
   dailyStats,
   todayLogs,
+  todayLogsMeta,
   monthlyStats,
   stats:    activityStats,
   clients:  activityClients,
@@ -341,11 +350,17 @@ const {
   fetchMonthlyStats,
   fetchStats,
   fetchClients,
+  fetchActiveTimer,
   clockIn,
   checkOut,
   clockOut,
   logEntry,
 } = useActivityTracking()
+
+const currentActivityRunning  = computed(() => activeTimer.value?.state === 'running')
+const appointmentTimerRunning = computed(() =>
+  appointments.value.some(a => a.status !== 'completed' && (!!a.session_started_at || (a.session_elapsed_seconds ?? 0) > 0))
+)
 
 
 const totalLoggedFormatted = computed(() => {
@@ -405,7 +420,7 @@ const {
 
 onMounted(async () => {
   fetchAppointments()
-  await Promise.all([fetchTodaySession(), fetchStats(), fetchMonthlyStats(currentMonth), fetchClients()])
+  await Promise.all([fetchTodaySession(), fetchStats(), fetchMonthlyStats(currentMonth), fetchClients(), fetchActiveTimer()])
 })
 
 const router = useRouter()
@@ -422,6 +437,8 @@ watch(activeTab, (tab) => {
     fetchTodaySession()
     fetchStats()
     fetchMonthlyStats(currentMonth)
+  } else if (tab === 'client') {
+    fetchActiveTimer()
   }
 })
 const tabs = [
@@ -443,53 +460,84 @@ const masterlistTabs = [
 const masterlistSearch = ref('')
 const masterlistLoading = ref(false)
 
-// Client Fixed — monthly reviews
-const { reviews: fixedRows, fetchReviews } = useAdminMonthlyReviews()
+// Client Fixed — monthly reviews (backend paginated)
+const { reviews: fixedRows, meta: fixedMeta, fetchReviews } = useAdminMonthlyReviews()
 const currentMonth = new Date().toISOString().slice(0, 7)
+const fixedCurrentPage = ref(1)
 
-// Client Review — appointment summary per client
+function fixedNext() {
+  if (fixedCurrentPage.value < (fixedMeta.value?.last_page ?? 1)) {
+    fixedCurrentPage.value++
+    fetchReviews(currentMonth, masterlistSearch.value || undefined, fixedCurrentPage.value)
+  }
+}
+function fixedPrev() {
+  if (fixedCurrentPage.value > 1) {
+    fixedCurrentPage.value--
+    fetchReviews(currentMonth, masterlistSearch.value || undefined, fixedCurrentPage.value)
+  }
+}
+
+// Client Review — appointment summary per client (backend paginated)
 const reviewRows = ref<{ tenant_id: number; client_name: string; total: number; completed: number }[]>([])
+const reviewMeta = ref<PaginationMeta | null>(null)
+const reviewCurrentPage = ref(1)
 
-async function fetchClientReview() {
+async function fetchClientReview(page = 1, perPage = 10) {
   try {
-    const res: any = await useApi('/admin/appointments/client-summary')
+    const params = new URLSearchParams({ page: String(page), per_page: String(perPage) })
+    if (masterlistSearch.value) params.set('search', masterlistSearch.value)
+    const res: any = await useAdminApi(`/admin/appointments/client-summary?${params.toString()}`)
     reviewRows.value = res.data ?? []
+    reviewMeta.value = res.meta ?? null
   } catch { /* non-fatal */ }
+}
+
+function reviewNext() {
+  if (reviewCurrentPage.value < (reviewMeta.value?.last_page ?? 1)) {
+    reviewCurrentPage.value++
+    fetchClientReview(reviewCurrentPage.value)
+  }
+}
+function reviewPrev() {
+  if (reviewCurrentPage.value > 1) {
+    reviewCurrentPage.value--
+    fetchClientReview(reviewCurrentPage.value)
+  }
 }
 
 async function refreshMasterlist() {
   masterlistLoading.value = true
   try {
     if (activeMasterlistTab.value === 'fixed') {
-      await fetchReviews(currentMonth)
+      await fetchReviews(currentMonth, masterlistSearch.value || undefined, fixedCurrentPage.value)
     } else if (activeMasterlistTab.value === 'review') {
-      await fetchClientReview()
+      await fetchClientReview(reviewCurrentPage.value)
     } else {
-      await Promise.all([fetchReviews(currentMonth), fetchClientReview()])
+      // All tab — fetch full datasets (large per_page) for merged display
+      await Promise.all([fetchReviews(currentMonth), fetchClientReview(1, 1000)])
     }
   } finally {
     masterlistLoading.value = false
   }
 }
 
-watch(activeMasterlistTab, () => refreshMasterlist())
+watch(activeMasterlistTab, () => {
+  fixedCurrentPage.value = 1
+  reviewCurrentPage.value = 1
+  refreshMasterlist()
+})
+
+watch(masterlistSearch, () => {
+  fixedCurrentPage.value = 1
+  reviewCurrentPage.value = 1
+  refreshMasterlist()
+})
 
 onMounted(async () => {
   masterlistLoading.value = true
-  await Promise.all([fetchReviews(currentMonth), fetchClientReview()])
+  await Promise.all([fetchReviews(currentMonth), fetchClientReview(1, 1000)])
   masterlistLoading.value = false
-})
-
-const filteredFixedRows = computed(() => {
-  const q = masterlistSearch.value.toLowerCase()
-  if (!q) return fixedRows.value
-  return fixedRows.value.filter((r: any) => r.client_name?.toLowerCase().includes(q))
-})
-
-const filteredReviewRows = computed(() => {
-  const q = masterlistSearch.value.toLowerCase()
-  if (!q) return reviewRows.value
-  return reviewRows.value.filter(r => r.client_name?.toLowerCase().includes(q))
 })
 
 const allRows = computed(() => {
@@ -519,9 +567,7 @@ const allRows = computed(() => {
   return merged.filter(r => r.client_name.toLowerCase().includes(q))
 })
 
-const { paged: pagedFixedRows,   page: fixedPage,   totalPages: fixedTotalPages,   from: fixedFrom,   to: fixedTo,   total: fixedTotal,   next: fixedNext,   prev: fixedPrev   } = usePagination(filteredFixedRows)
-const { paged: pagedAllRows,     page: allPage,     totalPages: allTotalPages,     from: allFrom,     to: allTo,     total: allTotal,     next: allNext,     prev: allPrev     } = usePagination(allRows)
-const { paged: pagedReviewRows,  page: reviewPage,  totalPages: reviewTotalPages,  from: reviewFrom,  to: reviewTo,  total: reviewTotal,  next: reviewNext,  prev: reviewPrev  } = usePagination(filteredReviewRows)
+const logsPage = ref(1)
 
 function formatMasterDate(d: string) {
   try { return format(parseISO(d), 'MMM dd, yyyy') } catch { return d }

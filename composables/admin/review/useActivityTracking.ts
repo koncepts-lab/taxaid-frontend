@@ -47,15 +47,27 @@ export interface ActivityClient {
   name: string
 }
 
+export interface ActiveTimer {
+  appointment_type: string
+  tenant_id: number | null
+  client_name: string | null
+  started_at: string
+  elapsed_ms: number
+  state: 'running' | 'paused'
+}
+
 // Module-level singleton state
-const _session      = ref<WorkSession | null>(null)
-const _clients      = ref<ActivityClient[]>([])
-const _dailyStats   = ref<DailyStats | null>(null)
-const _todayLogs    = ref<ActivityLogEntry[]>([])
-const _monthlyStats = ref<MonthlyStats | null>(null)
-const _stats        = ref<ActivityStats | null>(null)
-const _loading      = ref(false)
-const _error        = ref<string | null>(null)
+const _activeTimer    = ref<ActiveTimer | null>(null)
+const _session        = ref<WorkSession | null>(null)
+const _clients        = ref<ActivityClient[]>([])
+const _dailyStats     = ref<DailyStats | null>(null)
+const _todayLogs      = ref<ActivityLogEntry[]>([])
+const _todayLogsMeta  = ref<{ current_page: number; last_page: number; per_page: number; total: number; from: number; to: number } | null>(null)
+const _dailyLogsMeta  = ref<{ current_page: number; last_page: number; per_page: number; total: number; from: number; to: number } | null>(null)
+const _monthlyStats   = ref<MonthlyStats | null>(null)
+const _stats          = ref<ActivityStats | null>(null)
+const _loading        = ref(false)
+const _error          = ref<string | null>(null)
 
 function typeLabel(type: string): string {
   const map: Record<string, string> = {
@@ -80,14 +92,15 @@ function mapLogs(raw: ActivityLogEntry[]) {
 }
 
 export function useActivityTracking() {
-  async function fetchTodaySession(): Promise<void> {
+  async function fetchTodaySession(page = 1): Promise<void> {
     _loading.value = true
     _error.value   = null
     try {
-      const res: any = await useApi('/admin/activity/session/today')
-      _session.value    = res.data?.session ?? null
-      _dailyStats.value = res.data?.stats ?? null
-      _todayLogs.value  = mapLogs(res.data?.logs ?? [])
+      const res: any = await useAdminApi(`/admin/activity/session/today?page=${page}&per_page=10`)
+      _session.value       = res.data?.session ?? null
+      _dailyStats.value    = res.data?.stats ?? null
+      _todayLogs.value     = mapLogs(res.data?.logs ?? [])
+      _todayLogsMeta.value = res.data?.logs_meta ?? null
     } catch (err: any) {
       _error.value = err?.data?.message ?? 'Failed to load today session.'
     } finally {
@@ -95,8 +108,9 @@ export function useActivityTracking() {
     }
   }
 
-  async function fetchDailyLogs(date: string): Promise<{ session: WorkSession | null; stats: DailyStats | null; logs: any[] }> {
-    const res: any = await useApi(`/admin/activity/daily?date=${date}`)
+  async function fetchDailyLogs(date: string, page = 1): Promise<{ session: WorkSession | null; stats: DailyStats | null; logs: any[] }> {
+    const res: any = await useAdminApi(`/admin/activity/daily?date=${date}&page=${page}&per_page=10`)
+    _dailyLogsMeta.value = res.data?.logs_meta ?? null
     return {
       session: res.data?.session ?? null,
       stats:   res.data?.stats ?? null,
@@ -106,21 +120,21 @@ export function useActivityTracking() {
 
   async function fetchMonthlyStats(month: string): Promise<void> {
     try {
-      const res: any = await useApi(`/admin/activity/monthly?month=${month}`)
+      const res: any = await useAdminApi(`/admin/activity/monthly?month=${month}`)
       _monthlyStats.value = res.data ?? null
     } catch { /* non-fatal */ }
   }
 
   async function fetchStats(): Promise<void> {
     try {
-      const res: any = await useApi('/admin/activity/stats')
+      const res: any = await useAdminApi('/admin/activity/stats')
       _stats.value = res.data ?? null
     } catch { /* non-fatal */ }
   }
 
   async function fetchClients(): Promise<void> {
     try {
-      const res: any = await useApi('/admin/activity/clients')
+      const res: any = await useAdminApi('/admin/activity/clients')
       _clients.value = res.data ?? []
     } catch { /* non-fatal */ }
   }
@@ -129,7 +143,7 @@ export function useActivityTracking() {
     _loading.value = true
     _error.value   = null
     try {
-      await useApi('/admin/activity/clockin', { method: 'POST' })
+      await useAdminApi('/admin/activity/clockin', { method: 'POST' })
       await fetchTodaySession()
     } catch (err: any) {
       _error.value = err?.data?.message ?? 'Clock-in failed.'
@@ -142,7 +156,7 @@ export function useActivityTracking() {
     _loading.value = true
     _error.value   = null
     try {
-      await useApi('/admin/activity/clockout', { method: 'POST' })
+      await useAdminApi('/admin/activity/clockout', { method: 'POST' })
       await fetchTodaySession()
     } catch (err: any) {
       _error.value = err?.data?.message ?? 'Clock-out failed.'
@@ -152,24 +166,41 @@ export function useActivityTracking() {
   }
 
   async function logEntry(payload: object): Promise<void> {
-    await useApi('/admin/activity/logs', { method: 'POST', body: payload })
+    await useAdminApi('/admin/activity/logs', { method: 'POST', body: payload })
     await fetchTodaySession()
   }
 
   async function checkOutEntry(id: number, time_out: string): Promise<void> {
-    await useApi(`/admin/activity/logs/${id}/checkout`, { method: 'PATCH', body: { time_out } })
+    await useAdminApi(`/admin/activity/logs/${id}/checkout`, { method: 'PATCH', body: { time_out } })
     await fetchTodaySession()
   }
 
+  async function fetchActiveTimer(): Promise<ActiveTimer | null> {
+    try {
+      const res: any = await useAdminApi('/admin/activity/timer/active')
+      _activeTimer.value = res.data ?? null
+      return _activeTimer.value
+    } catch { return null }
+  }
+
+  async function timer(action: 'start' | 'pause' | 'resume' | 'stop', extra?: { appointment_type?: string; tenant_id?: number | null }): Promise<ActiveTimer | null> {
+    const res: any = await useAdminApi('/admin/activity/timer', { method: 'POST', body: { action, ...extra } })
+    _activeTimer.value = action === 'stop' ? null : (res.data ?? null)
+    if (action === 'stop') await fetchTodaySession()
+    return _activeTimer.value
+  }
+
   return {
-    session:      _session,
-    clients:      _clients,
-    dailyStats:   _dailyStats,
-    todayLogs:    _todayLogs,
-    monthlyStats: _monthlyStats,
-    stats:        _stats,
-    loading:      _loading,
-    error:        _error,
+    session:        _session,
+    clients:        _clients,
+    dailyStats:     _dailyStats,
+    todayLogs:      _todayLogs,
+    todayLogsMeta:  _todayLogsMeta,
+    dailyLogsMeta:  _dailyLogsMeta,
+    monthlyStats:   _monthlyStats,
+    stats:          _stats,
+    loading:        _loading,
+    error:          _error,
     fetchTodaySession,
     fetchClients,
     fetchDailyLogs,
@@ -177,7 +208,10 @@ export function useActivityTracking() {
     fetchStats,
     clockIn,
     clockOut,
+    activeTimer: _activeTimer,
     logEntry,
     checkOutEntry,
+    fetchActiveTimer,
+    timer,
   }
 }
