@@ -933,7 +933,7 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </button>
 
-          <button v-if="addUserStep === 3" @click="confirmAddUser" class="w-1/2 bg-[#007C65] text-white py-2.5 rounded-md font-medium text-[15px] flex items-center justify-center gap-2 hover:bg-[#006A56] transition-colors shadow-sm">
+          <button v-if="addUserStep === 3" @click="handleCreateUser" class="w-1/2 bg-[#007C65] text-white py-2.5 rounded-md font-medium text-[15px] flex items-center justify-center gap-2 hover:bg-[#006A56] transition-colors shadow-sm">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
             Create User
           </button>
@@ -941,22 +941,22 @@
       </div>
     </div>
 
-    <!-- Add Success Modal -->
-    <div v-if="showAddSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity p-4">
+    <!-- Create Success Modal -->
+    <div v-if="showCreateSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity p-4">
       <div class="bg-white rounded-xl shadow-lg w-[450px] max-w-full overflow-hidden flex flex-col relative text-center px-8 py-10">
         <!-- Close Button -->
-        <button @click="showAddSuccessModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+        <button @click="showCreateSuccessModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
 
         <!-- Icon -->
-        <div class="w-16 h-16 rounded-full bg-[#DCFCE7] flex items-center justify-center mx-auto mb-5 text-[#16A34A]">
+        <div class="w-16 h-16 rounded-full bg-[#ECFDF5] flex items-center justify-center mx-auto mb-5 text-[#10B981]">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
 
         <h2 class="text-[22px] font-semibold text-gray-900 mb-3">User created successfully</h2>
         <p class="text-gray-600 text-[15px] px-4 leading-relaxed">
-          Permissions and dashboard access have been configured.
+          Permissions and dashboard access have been<br />configured.
         </p>
       </div>
     </div>
@@ -972,17 +972,17 @@ const showEditUserModal = ref(false)
 const showDeleteUserModal = ref(false)
 const showDeleteSuccessModal = ref(false)
 const showAddUserModal = ref(false)
-const showAddSuccessModal = ref(false)
 const addUserStep = ref(1)
+const showCreateSuccessModal = ref(false)
 
 const closeAddUserModal = () => {
   showAddUserModal.value = false
   setTimeout(() => { addUserStep.value = 1 }, 300) // reset step after animation
 }
 
-const confirmAddUser = () => {
+const handleCreateUser = () => {
   closeAddUserModal()
-  showAddSuccessModal.value = true
+  showCreateSuccessModal.value = true
 }
 const selectedDashboards = ref(['Ticketing Dashboard'])
 const availableDashboards = [
