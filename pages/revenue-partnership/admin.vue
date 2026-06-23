@@ -216,7 +216,23 @@
 
         <AdminSearchFilter v-if="!['Resource Consumption', 'Partner Approvals', 'Uploaded Reports'].includes(activeOperationsSubTab)" />
         
-        <AdminOperationsTable :activeTab="activeOperationsSubTab" :subTab="activeApprovalSubTab" />
+        <AdminOperationsTable
+          :activeTab="activeOperationsSubTab"
+          :subTab="activeApprovalSubTab"
+          :allCustomersRows="allCustomersRows"
+          :directCustomersRows="directCustomersRows"
+          :partnersRows="partnersRows"
+          :resourceRows="resourceRows"
+          :partnerApprovalsRows="partnerApprovalsRows"
+          :paymentRequestsRows="paymentRequestsRows"
+          :uploadedReportsRows="uploadedReportsRows"
+          :userMasterRows="userMasterRows"
+          @approve-partner="handleApprovePartner"
+          @reject-partner="handleRejectPartner"
+          @approve-payment="handleApprovePayment"
+          @reject-payment="handleRejectPayment"
+          @download-report="downloadReport"
+        />
 
         <!-- Charts Grid -->
         <div v-if="!['Resource Consumption', 'Partner Approvals', 'Uploaded Reports', 'User Master Info'].includes(activeOperationsSubTab)" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
@@ -234,37 +250,223 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRevenuePartnershipAdminPage } from '@/composables/useWebsiteData'
+import { ref, computed, onMounted, watch } from 'vue'
+
+definePageMeta({ layout: false })
 
 const { isDark } = useTheme()
-const {
-  alert: dynamicAdminAlert,
-  overviewMetrics: dynamicOverviewMetrics,
-  paymentStatusMetrics: dynamicPaymentStatusMetrics,
-  operationsSubTabs: dynamicOperationsSubTabs,
-  approvalSubTabs: dynamicApprovalSubTabs,
-  statusFilters: dynamicStatusFilters
-} = useRevenuePartnershipAdminPage()
 
-definePageMeta({
-  layout: false
+const {
+  overview, alerts, loading,
+  fetchOverview, fetchCustomers, fetchAlerts,
+  approvePartner, rejectPartner, fetchPartnerRegistrations,
+  approvePayment, rejectPayment, fetchPaymentRequests,
+  fetchUploadedReports, downloadReport, fetchUserMasterInfo,
+} = useAdminDashboard()
+
+// ── Tab state (cookie-persisted) ──────────────────────────────────────────
+const adminTabCookie     = useCookie('rp_admin_tab',     { default: () => 'Overview' })
+const adminSubCookie     = useCookie('rp_admin_sub',     { default: () => 'All Customers' })
+const adminApprovalCookie= useCookie('rp_admin_approval',{ default: () => 'Partner Registration' })
+const activeTab              = ref(adminTabCookie.value)
+const activeOperationsSubTab = ref(adminSubCookie.value)
+const activeApprovalSubTab   = ref(adminApprovalCookie.value)
+const showStatusesDropdown   = ref(false)
+const activeStatusFilter     = ref('All Statuses')
+const showAlertBanner        = ref(true)
+
+// ── Static tab configs ─────────────────────────────────────────────────────
+const operationsSubTabs = [
+  { name: 'All Customers' },
+  { name: 'Partners' },
+  { name: 'Direct Customers' },
+  { name: 'Resource Consumption' },
+  { name: 'Partner Approvals' },
+  { name: 'Uploaded Reports' },
+  { name: 'User Master Info' },
+]
+
+const approvalSubTabs = computed(() => [
+  { name: 'Partner Registration', icon: '/images/icons/Partner.svg',        count: partnerApprovalsRows.value.filter(r => r.status === 'Pending').length },
+  { name: 'Payment Requests',     icon: '/images/icons/doller-black.svg',   count: paymentRequestsRows.value.filter(r => r.status === 'Pending').length },
+])
+
+const dynamicStatusFilters = ['All Statuses', 'Pending', 'Approved', 'Rejected']
+
+// ── Table row data ─────────────────────────────────────────────────────────
+const allCustomersRows    = ref([])
+const directCustomersRows = ref([])
+const partnersRows        = ref([])
+const resourceRows        = ref([])
+const partnerApprovalsRows= ref([])
+const paymentRequestsRows = ref([])
+const uploadedReportsRows = ref([])
+const userMasterRows      = ref([])
+
+// ── Overview computed ──────────────────────────────────────────────────────
+const overviewMetrics = computed(() => {
+  const m = overview.value?.metrics
+  if (!m) return []
+  return [
+    { title: 'Total Revenue', isCurrency: true, value: m.total_revenue_aed?.toLocaleString(), subtext: 'All collected payments', icon: '/images/icons/Total-Revenue.svg' },
+    { title: 'Active Partners', isCurrency: false, value: m.total_partners, subtext: 'Revenue-linked partners', icon: '/images/icons/Partner.svg' },
+    { title: 'Total Customers', isCurrency: false, value: m.total_customers, subtext: 'Across all sources', icon: '/images/icons/Total-Customers.svg' },
+  ]
 })
 
-const activeTab = ref('Overview')
+const paymentStatusMetrics = computed(() => {
+  const ps = overview.value?.payment_status
+  if (!ps) return []
+  return [
+    { title: 'Paid',    isCurrency: false, value: ps.paid,    count: ps.paid,    subtext: 'payments', bgClass: 'bg-[#F0FDF4]', borderColor: 'border-[#04C18F80]', textColor: '#045E40', icon: '/images/icons/Amount-Collected.svg' },
+    { title: 'Pending', isCurrency: false, value: ps.pending, count: ps.pending, subtext: 'payments', bgClass: 'bg-[#FFFBEB]', borderColor: 'border-[#FCD34D]',   textColor: '#92400E', icon: '/images/icons/pending.svg' },
+    { title: 'Failed',  isCurrency: false, value: ps.failed,  count: ps.failed,  subtext: 'payments', bgClass: 'bg-[#FEF2F2]', borderColor: 'border-[#FCA5A5]',   textColor: '#991B1B', icon: '/images/icons/overdue.svg' },
+  ]
+})
 
-const overviewMetrics = computed(() => dynamicOverviewMetrics.value.cards ?? [])
-const paymentStatusMetrics = computed(() => dynamicPaymentStatusMetrics.value.cards ?? [])
-const operationsSubTabs = computed(() => dynamicOperationsSubTabs.value)
+const dynamicAdminAlert = computed(() => {
+  const a = alerts.value?.[0]
+  return { title: a?.title ?? 'Action Required', text: a?.message ?? '' }
+})
 
-const activeOperationsSubTab = ref(dynamicOperationsSubTabs.value?.[0]?.name ?? 'All Customers')
-const activeApprovalSubTab = ref(dynamicApprovalSubTabs.value?.[0]?.name ?? 'Partner Registration')
+// ── Load data per tab ──────────────────────────────────────────────────────
+async function loadTab(tab) {
+  if (tab === 'All Customers') {
+    allCustomersRows.value = normalizeCustomerRows(await fetchCustomers('all'))
+  } else if (tab === 'Partners') {
+    partnersRows.value = normalizePartnerRows(await fetchCustomers('partners'))
+  } else if (tab === 'Direct Customers') {
+    directCustomersRows.value = normalizeCustomerRows(await fetchCustomers('direct'))
+  } else if (tab === 'Resource Consumption') {
+    resourceRows.value = normalizeResourceRows(await fetchCustomers('resource'))
+  } else if (tab === 'Partner Approvals') {
+    if (activeApprovalSubTab.value === 'Partner Registration') {
+      partnerApprovalsRows.value = normalizeApprovalRows(await fetchPartnerRegistrations())
+    } else {
+      paymentRequestsRows.value = normalizePaymentRequestRows(await fetchPaymentRequests())
+    }
+  } else if (tab === 'Uploaded Reports') {
+    uploadedReportsRows.value = normalizeReportRows(await fetchUploadedReports())
+  } else if (tab === 'User Master Info') {
+    userMasterRows.value = normalizeMasterRows(await fetchUserMasterInfo())
+  }
+}
 
-const showStatusesDropdown = ref(false)
-const activeStatusFilter = ref('All Statuses')
-const showAlertBanner = ref(true)
+// ── Cookie sync ───────────────────────────────────────────────────────────
+watch(activeTab, (val) => {
+  adminTabCookie.value = val
+})
+watch(activeOperationsSubTab, (val) => {
+  adminSubCookie.value = val
+})
+watch(activeApprovalSubTab, (val) => {
+  adminApprovalCookie.value = val
+})
 
+onMounted(async () => {
+  await Promise.all([fetchOverview(), fetchAlerts()])
+  loadAllOperationsData()
+})
 
+async function loadAllOperationsData() {
+  await Promise.all([
+    loadTab('All Customers'),
+    loadTab('Partners'),
+    loadTab('Direct Customers'),
+    loadTab('Resource Consumption'),
+    loadTab('Uploaded Reports'),
+    loadTab('User Master Info'),
+    fetchPartnerRegistrations().then(d => { partnerApprovalsRows.value = normalizeApprovalRows(d) }),
+    fetchPaymentRequests().then(d => { paymentRequestsRows.value = normalizePaymentRequestRows(d) }),
+  ])
+}
+
+// ── Row normalization helpers ──────────────────────────────────────────────
+function normalizeCustomerRows(rows) {
+  return (rows || []).map(r => ({
+    code: r.license_id ?? r.tenant_id, source: r.partner?.code ?? 'Direct',
+    company: r.company_name, revenue: r.revenue_aed?.toLocaleString() ?? '—',
+    collected: r.collected_aed?.toLocaleString() ?? '—', date: '—',
+    status: capitalize(r.payment_status ?? 'no_payments'), reason: r.failure_reason ?? '—',
+  }))
+}
+
+function normalizePartnerRows(rows) {
+  return (rows || []).map(r => ({
+    code: r.license_id ?? r.tenant_id, source: r.partner?.code ?? '—',
+    company: r.company_name, contract: r.contract_period ?? '—', year: r.year ?? '—',
+    revenue: r.revenue_aed?.toLocaleString() ?? '—', collected: r.collected_aed?.toLocaleString() ?? '—',
+    settlement: r.settlement_aed?.toLocaleString() ?? '—', date: '—',
+    status: capitalize(r.payment_status ?? 'no_payments'),
+  }))
+}
+
+function normalizeResourceRows(rows) {
+  return (rows || []).map(r => ({
+    code: r.license_id ?? r.tenant_id, source: r.partner?.code ?? 'Direct',
+    company: r.company_name, hosting: r.hosting_charge_aed?.toLocaleString() ?? '—',
+    ai: r.ai_token_cost_aed?.toLocaleString() ?? '—',
+    total: ((r.hosting_charge_aed ?? 0) + (r.ai_token_cost_aed ?? 0)).toLocaleString(),
+    issues: r.flags ?? [],
+  }))
+}
+
+function normalizeApprovalRows(rows) {
+  return (rows || []).map(r => ({
+    id: r.id, date: r.created_at?.slice(0, 10) ?? '—',
+    name: r.name, email: r.email, phone: r.contact_phone ?? '—',
+    license: r.trading_license ?? '—', status: capitalize(r.status),
+  }))
+}
+
+function normalizePaymentRequestRows(rows) {
+  return (rows || []).map(r => ({
+    id: r.id, date: r.created_at?.slice(0, 10) ?? '—',
+    name: r.partner?.name ?? '—', partnerId: r.partner?.code ?? '—',
+    amount: r.amount?.toLocaleString() ?? '—', voucher: r.voucher_number ?? '—',
+    paymentDate: r.payment_date ?? '—', status: capitalize(r.status),
+  }))
+}
+
+function normalizeReportRows(rows) {
+  return (rows || []).map(r => ({
+    id: r.id, type: r.report_type,
+    file: r.file_name, uploader: r.uploader?.full_name ?? '—',
+    date: r.created_at?.slice(0, 10) ?? '—',
+  }))
+}
+
+function normalizeMasterRows(rows) {
+  return (rows || []).map(r => ({
+    code: r.license_id ?? r.tenant_id, source: r.partner?.code ?? 'Direct',
+    company: r.company_name, bank: r.bank_details ?? '—',
+    card: r.card_type ? `${r.card_type} *${r.card_last4}` : '—',
+    contactPerson: r.contact_person ?? '—', contactNo: r.contact_no ?? '—', email: r.email ?? '—',
+  }))
+}
+
+function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s }
+
+// ── Table event handlers ───────────────────────────────────────────────────
+async function handleApprovePartner(id) {
+  await approvePartner(id, `Partner@${id}`, `REF-${id}`)
+  loadTab('Partner Approvals')
+}
+
+async function handleRejectPartner(id) {
+  await rejectPartner(id)
+  loadTab('Partner Approvals')
+}
+
+async function handleApprovePayment(id) {
+  await approvePayment(id)
+  loadTab('Partner Approvals')
+}
+
+async function handleRejectPayment(id) {
+  await rejectPayment(id)
+  loadTab('Partner Approvals')
+}
 </script>
 
 <style scoped>

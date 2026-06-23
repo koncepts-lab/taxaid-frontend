@@ -3,7 +3,7 @@
     :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
 
     <!-- HEADER -->
-    <DashboardHeader :role="partnerInfo.role" :name="partnerInfo.partnerId" />
+    <DashboardHeader role="Accounts" name="Revenue Partnership" />
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 pb-[0px] pt-8 space-y-6 overflow-y-auto" style="margin-top: -18px;">
@@ -138,8 +138,7 @@
               <div class="flex items-center gap-3 mb-8">
                 <img src="/images/icons/Month-End-Report.svg" class="w-7 h-7"
                   :class="{ 'brightness-0 invert': isDark }" />
-                <h4 class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#00614E]'">Month End Report
-                </h4>
+                <h4 class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#00614E]'">AI Usage Report</h4>
               </div>
               <div class="space-y-6">
                 <div>
@@ -156,14 +155,14 @@
                     @change="e => csvFileName = e.target.files[0]?.name || ''" />
                 </div>
                 <div class="space-y-3">
-                  <button class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-[15px] font-medium hover:bg-[#00B794]/5 transition-all cursor-pointer">
+                  <button @click="downloadTemplate('ai-usage')" class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-[15px] font-medium hover:bg-[#00B794]/5 transition-all cursor-pointer">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     Download Sample
                   </button>
-                  <button
+                  <button @click="handleUploadAiUsage"
                     class="w-full py-4 bg-[#00835D] text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-[#006b4d] transition-all cursor-pointer shadow-sm">
                     <img src="/images/icons/upload.svg" class="w-5 h-5 brightness-0 invert" />
-                    Upload Month End Report
+                    Upload AI Usage Report
                   </button>
                 </div>
               </div>
@@ -193,11 +192,11 @@
                     @change="e => excelFileName = e.target.files[0]?.name || ''" />
                 </div>
                 <div class="space-y-3">
-                  <button class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-[15px] font-medium hover:bg-[#00B794]/5 transition-all cursor-pointer">
+                  <button @click="downloadTemplate('hosting')" class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-[15px] font-medium hover:bg-[#00B794]/5 transition-all cursor-pointer">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     Download Sample
                   </button>
-                  <button
+                  <button @click="handleUploadHosting"
                     class="w-full py-4 bg-[#00835D] text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-[#006b4d] transition-all cursor-pointer shadow-sm">
                     <img src="/images/icons/upload.svg" class="w-5 h-5 brightness-0 invert" />
                     Upload Hosting Cost Report
@@ -379,7 +378,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-50 bg-[#F9FAFB]/50">
-                <tr v-for="(row, idx) in paymentDetails" :key="idx"
+                <tr v-for="(row, idx) in paymentDetailsRows" :key="idx"
                   :class="isDark ? 'hover:bg-white/5' : 'hover:bg-white'" class="transition-all group">
                   <td class="px-8 py-6 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.code }}
                   </td>
@@ -641,7 +640,7 @@
                 class="px-8 py-3 bg-white border border-gray-200 text-[#1a1a1a] rounded-xl font-normal hover:bg-gray-50 transition-all cursor-pointer">
                 Cancel
               </button>
-              <button
+              <button @click="handleSubmitPayment"
                 class="px-8 py-3 bg-[#00835D] text-white rounded-xl font-normal hover:bg-[#007452] transition-all cursor-pointer">
                 Submit Request
               </button>
@@ -732,7 +731,7 @@
                 class="px-8 py-3 bg-white border border-gray-200 text-[#1a1a1a] rounded-xl font-normal hover:bg-gray-50 transition-all cursor-pointer">
                 Cancel
               </button>
-              <button
+              <button @click="handleAddPartner"
                 class="px-8 py-3 bg-[#00835D] text-white rounded-xl font-normal hover:bg-[#007452] transition-all cursor-pointer">
                 Submit Request
               </button>
@@ -745,91 +744,226 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { DatePicker as VDatePicker } from 'v-calendar'
 import 'v-calendar/dist/style.css'
 import { format } from 'date-fns'
-import { useRevenuePartnership } from '@/composables/useWebsiteData'
+
+definePageMeta({ layout: false })
 
 const { isDark } = useTheme()
-const { partnerInfo, overviewMetrics, paymentStatusMetrics, customerManagement, paymentToPartnerModal, alerts } = useRevenuePartnership()
 
-definePageMeta({
-  layout: false
-})
+const {
+  overview, customers, alerts, loading,
+  fetchOverview, fetchCustomers, fetchAlerts,
+  submitPaymentToPartner, fetchPartnerClients,
+  addPartner, uploadHosting, uploadAiUsage, downloadTemplate,
+  fetchNotifyCustomers, fetchUserMasterInfo, fetchActivePartners,
+} = useAccountsDashboard()
 
-const activeTab = ref('Overview')
-const csvFileName = ref('')
+// ── Tab state (cookie-persisted) ──────────────────────────────────────────
+const tabCookie = useCookie('rp_accounts_tab', { default: () => 'Overview' })
+const subCookie = useCookie('rp_accounts_sub', { default: () => 'Partners' })
+const activeTab            = ref(tabCookie.value)
+const activeCustomerSubTab = ref(subCookie.value)
+const isStatusDropdownOpen  = ref(false)
+const selectedStatus        = ref('All Statuses')
+const showAlertBanner       = ref(true)
+
+// ── File upload refs ───────────────────────────────────────────────────────
+const csvFile       = ref(null)
+const excelFile     = ref(null)
+const csvFileName   = ref('')
 const excelFileName = ref('')
-const isStatusDropdownOpen = ref(false)
-const selectedStatus = ref('All Statuses')
-const showAlertBanner = ref(true)
+const csvInput      = ref(null)
+const excelInput    = ref(null)
 
-// Icons as inline components for simplicity
-const UserGroupIcon = {
-  template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>`
-}
-const CurrencyIcon = {
-  template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
-}
-const TrendingUpIcon = {
-  template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.94" /></svg>`
-}
-const DirhamIcon = {
-  template: `<img src="/images/icons/dirham-black.svg" class="w-full h-full" alt="AED" />`
-}
-const CheckCircleIcon = {
-  template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
-}
-const XCircleIcon = {
-  template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
-}
-
-const activeCustomerSubTab = ref('Partners')
-const showPaymentModal = ref(false)
+// ── Modal state ────────────────────────────────────────────────────────────
+const showPaymentModal    = ref(false)
 const showAddPartnerModal = ref(false)
-const showPartnerList = ref(false)
-const selectedPartner = ref('Choose a partner')
+const showPartnerList     = ref(false)
+const selectedPartnerId   = ref(null)
+const selectedPartner     = ref('Choose a partner')
+const partnerClientsList  = ref([])
 
-const paymentDate = ref(null)
+const paymentDate       = ref(null)
+const paymentDetails    = ref('')
+const paymentAmount     = ref('')
+const voucherNumber     = ref('')
 const activeModalDropdown = ref(null)
 
-const formatDate = (date) => {
-  if (!date) return ''
-  return format(date, 'dd-MM-yyyy')
-}
+const newPartnerForm = ref({ name: '', email: '', contact_person: '', contact_phone: '', trading_license: '', address: '', authorized_person: '', authorized_person_contact: '' })
 
-const hasAlert = computed(() => (alerts.value?.expiringCardsCount ?? 0) > 0)
-const expiringCardsCount = computed(() => alerts.value?.expiringCardsCount ?? 0)
-const expiringCardsDaysThreshold = computed(() => alerts.value?.expiringCardsDaysThreshold ?? 30)
+// ── Table data ─────────────────────────────────────────────────────────────
+const partnerRows       = ref([])
+const directRows        = ref([])
+const notifyRows        = ref([])
+const userMasterRows    = ref([])
+const activePartnerList = ref([])
 
-const customerSubTabs = computed(() => customerManagement.value?.subTabs ?? [
-  { name: 'Partners', count: 3 },
-  { name: 'Direct Customers', count: 2 },
-  { name: 'Notify Customers', count: 2 },
-  { name: 'User Master Info', count: 2 }
-])
-
-const partnerSourceOptions = computed(() => customerManagement.value?.partnerSourceOptions ?? ['PT-001', 'PT-002', 'PT-003'])
-const partners = computed(() => paymentToPartnerModal.value?.partnerOptions ?? ['TechCorp Solutions Inc.', 'Innovate System Ltd.', 'Enterprise Holdings'])
-const paymentDetails = computed(() => customerManagement.value?.partners?.data ?? [])
-const directCustomersData = computed(() => customerManagement.value?.directCustomers?.data ?? [])
-const notifyCustomersData = computed(() => customerManagement.value?.notifyCustomers?.data ?? [])
-const userMasterData = computed(() => customerManagement.value?.userMasterInfo?.data ?? [])
-
+// ── Tab sub-data ───────────────────────────────────────────────────────────
 const isSourceMenuOpen = ref(false)
-const selectedSources = ref(['PT-002'])
+const selectedSources  = ref([])
 
 const toggleSourceFilter = (source) => {
-  const index = selectedSources.value.indexOf(source)
-  if (index > -1) {
-    selectedSources.value.splice(index, 1)
-  } else {
-    selectedSources.value.push(source)
+  const i = selectedSources.value.indexOf(source)
+  i > -1 ? selectedSources.value.splice(i, 1) : selectedSources.value.push(source)
+}
+
+const partnerSourceOptions = computed(() => [...new Set(partnerRows.value.map(r => r.source).filter(Boolean))])
+
+const paymentDetailsRows  = computed(() => selectedSources.value.length ? partnerRows.value.filter(r => selectedSources.value.includes(r.source)) : partnerRows.value)
+const directCustomersData = computed(() => directRows.value)
+const notifyCustomersData = computed(() => notifyRows.value)
+const userMasterData      = computed(() => userMasterRows.value)
+
+const customerSubTabs = computed(() => [
+  { name: 'Partners',           count: partnerRows.value.length },
+  { name: 'Direct Customers',   count: directRows.value.length },
+  { name: 'Notify Customers',   count: notifyRows.value.length },
+  { name: 'User Master Info',   count: userMasterRows.value.length },
+])
+
+// ── Overview metrics ────────────────────────────────────────────────────────
+const overviewMetrics = computed(() => {
+  const m = overview.value?.metrics
+  if (!m) return []
+  return [
+    { title: 'Total Revenue', isCurrency: true, value: m.total_revenue_aed?.toLocaleString(), subtext: 'All collected payments', icon: '/images/icons/Total-Revenue.svg' },
+    { title: 'Active Partners', isCurrency: false, value: m.total_partners, subtext: 'Revenue-linked partners', icon: '/images/icons/Partner.svg' },
+    { title: 'Total Customers', isCurrency: false, value: m.total_customers, subtext: 'Across all sources', icon: '/images/icons/Total-Customers.svg' },
+  ]
+})
+
+const paymentStatusMetrics = computed(() => {
+  const ps = overview.value?.payment_status
+  if (!ps) return []
+  return [
+    { title: 'Paid', isCurrency: false, value: ps.paid, count: ps.paid, subtext: 'payments', bgClass: 'bg-[#F0FDF4]', borderColor: 'border-[#04C18F80]', textColor: '#045E40', icon: '/images/icons/Amount-Collected.svg' },
+    { title: 'Pending', isCurrency: false, value: ps.pending, count: ps.pending, subtext: 'payments', bgClass: 'bg-[#FFFBEB]', borderColor: 'border-[#FCD34D]', textColor: '#92400E', icon: '/images/icons/pending.svg' },
+    { title: 'Failed', isCurrency: false, value: ps.failed, count: ps.failed, subtext: 'payments', bgClass: 'bg-[#FEF2F2]', borderColor: 'border-[#FCA5A5]', textColor: '#991B1B', icon: '/images/icons/overdue.svg' },
+  ]
+})
+
+const hasAlert = computed(() => (alerts.value?.length ?? 0) > 0)
+const expiringCardsCount = computed(() => alerts.value?.filter(a => a.message?.includes('card')).length ?? 0)
+const expiringCardsDaysThreshold = computed(() => 30)
+
+// ── Partners list for modal ─────────────────────────────────────────────────
+const partners = computed(() => activePartnerList.value.map(p => p.name))
+
+const formatDate = (date) => date ? format(date, 'dd-MM-yyyy') : ''
+
+// ── Cookie sync ───────────────────────────────────────────────────────────
+watch(activeTab, (val) => {
+  tabCookie.value = val
+})
+watch(activeCustomerSubTab, (val) => {
+  subCookie.value = val
+})
+
+// ── Fetch on mount ──────────────────────────────────────────────────────────
+onMounted(async () => {
+  await Promise.all([fetchOverview(), fetchAlerts()])
+  const regs = await fetchActivePartners()
+  activePartnerList.value = regs || []
+  loadAllSubTabs()
+})
+
+async function loadAllSubTabs() {
+  await Promise.all([
+    loadSubTab('Partners'),
+    loadSubTab('Direct Customers'),
+    loadSubTab('Notify Customers'),
+    loadSubTab('User Master Info'),
+  ])
+}
+
+async function loadSubTab(tab) {
+  if (tab === 'Partners') {
+    const data = await fetchCustomers('partners')
+    partnerRows.value = (data || []).map(normalizeRow)
+  } else if (tab === 'Direct Customers') {
+    const data = await fetchCustomers('direct')
+    directRows.value = (data || []).map(normalizeRow)
+  } else if (tab === 'Notify Customers') {
+    const data = await fetchNotifyCustomers()
+    notifyRows.value = (data || []).map(r => ({
+      code: r.tenant_id, source: r.partner?.code ?? 'Direct', company: r.company_name,
+      contact: r.contact_no ?? '—', cardType: r.card_type ?? '—', last4: r.card_last4 ?? '—',
+      expiry: r.card_expiry ?? '—', status: 'Expiring', action: 'Notify',
+    }))
+  } else if (tab === 'User Master Info') {
+    const data = await fetchUserMasterInfo()
+    userMasterRows.value = (data || []).map(r => ({
+      code: r.license_id, source: r.partner?.code ?? 'Direct', company: r.company_name,
+      bank: r.bank_details ?? '—', card: r.card_type ? `${r.card_type} *${r.card_last4}` : '—',
+      contactPerson: r.contact_person ?? '—', contactNo: r.contact_no ?? '—', email: r.email ?? '—',
+    }))
   }
 }
 
+function normalizeRow(r) {
+  return {
+    code: r.license_id ?? r.tenant_id, source: r.partner?.code ?? 'Direct',
+    company: r.company_name, period: r.contract_period ?? '—', year: r.year ?? '—',
+    revenue: r.revenue_aed?.toLocaleString() ?? '—', collected: r.collected_aed?.toLocaleString() ?? '—',
+    settlement: r.settlement_aed?.toLocaleString() ?? '—', date: '—',
+    status: r.payment_status ?? 'no_payments', reason: '—',
+  }
+}
 
+// ── Partner select in modal ─────────────────────────────────────────────────
+async function selectPartnerForPayment(name) {
+  selectedPartner.value = name
+  showPartnerList.value = false
+  const p = activePartnerList.value.find(x => x.name === name)
+  if (p) {
+    selectedPartnerId.value = p.id
+    const data = await fetchPartnerClients(p.id)
+    partnerClientsList.value = data?.clients ?? []
+  }
+}
+
+// ── Modal submit handlers ───────────────────────────────────────────────────
+async function handleSubmitPayment() {
+  if (!selectedPartnerId.value || !paymentDate.value || !paymentAmount.value || !voucherNumber.value) return
+  await submitPaymentToPartner({
+    partner_id: selectedPartnerId.value,
+    payment_date: format(paymentDate.value, 'yyyy-MM-dd'),
+    details: paymentDetails.value,
+    amount: parseFloat(paymentAmount.value),
+    voucher_number: voucherNumber.value,
+    covered_client_ids: partnerClientsList.value.map(c => c.user_id),
+  })
+  showPaymentModal.value = false
+}
+
+async function handleAddPartner() {
+  await addPartner(newPartnerForm.value)
+  showAddPartnerModal.value = false
+}
+
+// ── Upload handlers ─────────────────────────────────────────────────────────
+const defaultMonth = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().slice(0, 7)
+
+async function handleUploadHosting() {
+  if (!excelFile.value) return
+  await uploadHosting(excelFile.value, defaultMonth)
+  excelFileName.value = ''
+  excelFile.value = null
+}
+
+async function handleUploadAiUsage() {
+  if (!csvFile.value) return
+  await uploadAiUsage(csvFile.value, defaultMonth)
+  csvFileName.value = ''
+  csvFile.value = null
+}
+
+// Watch file inputs
+watch(csvInput, (el) => { if (el) el.addEventListener('change', (e) => { csvFile.value = e.target.files[0]; csvFileName.value = e.target.files[0]?.name ?? '' }) })
+watch(excelInput, (el) => { if (el) el.addEventListener('change', (e) => { excelFile.value = e.target.files[0]; excelFileName.value = e.target.files[0]?.name ?? '' }) })
 </script>
 
 <style scoped>
