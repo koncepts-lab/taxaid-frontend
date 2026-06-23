@@ -196,3 +196,7 @@ tbody tr:hover td {
 .dark-mode-bg img[src*="Amount-Collected"] {
   filter: brightness(0) invert(1) !important;
 }
+
+button {
+  cursor: pointer;
+}
