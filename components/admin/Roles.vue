@@ -51,9 +51,10 @@
     </div>
 
     <!-- Tabs -->
-    <div class="flex items-center gap-2 text-sm mt-8 bg-white p-1.5 rounded-full border border-gray-100 shadow-sm w-fit">
+    <div class="flex items-center gap-2 text-sm mt-8 bg-white p-1.5 rounded-full border border-gray-100 shadow-sm w-fit overflow-x-auto">
       <button @click="activeTab = 'User Management'" :class="activeTab === 'User Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">User Management</button>
       <button @click="activeTab = 'System Access Control'" :class="activeTab === 'System Access Control' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">System Access Control</button>
+      <button @click="activeTab = 'Partner Management'" :class="activeTab === 'Partner Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Partner Management</button>
     </div>
 
     <div v-if="activeTab === 'User Management'">
@@ -537,6 +538,126 @@
       </div>
     </div>
 
+    <div v-else-if="activeTab === 'Partner Management'">
+      <!-- Active/Inactive User Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <div class="bg-[#EFF6FF] border border-[#BFDBFE] rounded-[10px] p-5 relative shadow-sm">
+          <div class="text-gray-500 text-[13px] mb-3 font-medium flex items-center justify-between">
+            <span>Total Partners</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#3B82F6]"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+          <div class="text-3xl font-semibold text-[#1a1a1a]">12</div>
+        </div>
+
+        <div class="bg-[#F0FDF4] border border-[#86EFAC] rounded-[10px] p-5 relative shadow-sm">
+          <div class="text-gray-500 text-[13px] mb-3 font-medium flex items-center justify-between">
+            <span>Active Partners</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#16A34A]"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          </div>
+          <div class="text-3xl font-semibold text-[#1a1a1a]">8</div>
+        </div>
+
+        <div class="bg-[#FFF7ED] border border-[#FED7AA] rounded-[10px] p-5 relative shadow-sm">
+          <div class="text-gray-500 text-[13px] mb-3 font-medium flex items-center justify-between">
+            <span>Partnered Clients</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#F97316]"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+          <div class="text-3xl font-semibold text-[#1a1a1a]">45</div>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="bg-[#61FFD62E] border border-[#00BE8CBD] rounded-[10px] p-4 flex flex-col md:flex-row gap-4 justify-between items-center mt-6">
+        <div class="relative w-full md:w-[40%]">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </span>
+          <input type="text" placeholder="Search partners..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm" />
+        </div>
+
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <div class="relative min-w-[160px]">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+              </svg>
+            </span>
+            <select class="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
+              <option>All Statuses</option>
+              <option>Approved</option>
+              <option>Pending</option>
+              <option>Rejected</option>
+            </select>
+            <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm mt-6">
+        <div class="w-full overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[1000px]">
+            <thead>
+              <tr class="bg-[#008865] text-white text-sm">
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Email</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Contact Person</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Contact Phone</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Trading License</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Status</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Created</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="text-sm divide-y divide-gray-100">
+              <tr class="hover:bg-gray-50/50">
+                <td class="py-4 px-6 text-gray-800">partner1@example.com</td>
+                <td class="py-4 px-6 text-gray-800 font-medium">John Doe</td>
+                <td class="py-4 px-6 text-gray-800">+1 234 567 890</td>
+                <td class="py-4 px-6 text-gray-800 font-medium">#TRD-98765432</td>
+                <td class="py-4 px-6">
+                  <span class="inline-flex bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full px-3 py-1 text-[13px] font-medium whitespace-nowrap">Pending</span>
+                </td>
+                <td class="py-4 px-6 text-gray-500">12/04/2026</td>
+                <td class="py-4 px-6 text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <button class="inline-flex items-center justify-center border border-green-200 rounded-md px-3 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 transition-colors text-[13px] font-medium shadow-sm">
+                      Approve
+                    </button>
+                    <button class="inline-flex items-center justify-center border border-red-200 rounded-md px-3 py-1.5 bg-red-50 text-red-700 hover:bg-red-100 transition-colors text-[13px] font-medium shadow-sm">
+                      Reject
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <!-- Second Dummy Row -->
+              <tr class="hover:bg-gray-50/50">
+                <td class="py-4 px-6 text-gray-800">partner2@example.com</td>
+                <td class="py-4 px-6 text-gray-800 font-medium">Jane Smith</td>
+                <td class="py-4 px-6 text-gray-800">+1 987 654 321</td>
+                <td class="py-4 px-6 text-gray-800 font-medium">#TRD-12345678</td>
+                <td class="py-4 px-6">
+                  <span class="inline-flex bg-[#F0FDF4] text-[#16A34A] border border-[#86EFAC] rounded-full px-3 py-1 text-[13px] font-medium whitespace-nowrap">Approved</span>
+                </td>
+                <td class="py-4 px-6 text-gray-500">10/04/2026</td>
+                <td class="py-4 px-6 text-right">
+                  <button @click="showConfigureModal = true" class="bg-[#007C65] text-white px-4 py-1.5 rounded-md font-medium text-[13px] hover:bg-[#006A56] transition-colors whitespace-nowrap shadow-sm">
+                    Configure
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- Configure Dashboard Access Modal -->
     <div v-if="showConfigureModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity p-4">
       <div class="bg-white rounded-xl shadow-lg w-[600px] max-w-full overflow-hidden flex flex-col max-h-[90vh]">
@@ -933,7 +1054,7 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </button>
 
-          <button v-if="addUserStep === 3" @click="confirmAddUser" class="w-1/2 bg-[#007C65] text-white py-2.5 rounded-md font-medium text-[15px] flex items-center justify-center gap-2 hover:bg-[#006A56] transition-colors shadow-sm">
+          <button v-if="addUserStep === 3" @click="handleCreateUser" class="w-1/2 bg-[#007C65] text-white py-2.5 rounded-md font-medium text-[15px] flex items-center justify-center gap-2 hover:bg-[#006A56] transition-colors shadow-sm">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
             Create User
           </button>
@@ -941,22 +1062,22 @@
       </div>
     </div>
 
-    <!-- Add Success Modal -->
-    <div v-if="showAddSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity p-4">
+    <!-- Create Success Modal -->
+    <div v-if="showCreateSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity p-4">
       <div class="bg-white rounded-xl shadow-lg w-[450px] max-w-full overflow-hidden flex flex-col relative text-center px-8 py-10">
         <!-- Close Button -->
-        <button @click="showAddSuccessModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+        <button @click="showCreateSuccessModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
 
         <!-- Icon -->
-        <div class="w-16 h-16 rounded-full bg-[#DCFCE7] flex items-center justify-center mx-auto mb-5 text-[#16A34A]">
+        <div class="w-16 h-16 rounded-full bg-[#ECFDF5] flex items-center justify-center mx-auto mb-5 text-[#10B981]">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
 
         <h2 class="text-[22px] font-semibold text-gray-900 mb-3">User created successfully</h2>
         <p class="text-gray-600 text-[15px] px-4 leading-relaxed">
-          Permissions and dashboard access have been configured.
+          Permissions and dashboard access have been<br />configured.
         </p>
       </div>
     </div>
@@ -972,17 +1093,17 @@ const showEditUserModal = ref(false)
 const showDeleteUserModal = ref(false)
 const showDeleteSuccessModal = ref(false)
 const showAddUserModal = ref(false)
-const showAddSuccessModal = ref(false)
 const addUserStep = ref(1)
+const showCreateSuccessModal = ref(false)
 
 const closeAddUserModal = () => {
   showAddUserModal.value = false
   setTimeout(() => { addUserStep.value = 1 }, 300) // reset step after animation
 }
 
-const confirmAddUser = () => {
+const handleCreateUser = () => {
   closeAddUserModal()
-  showAddSuccessModal.value = true
+  showCreateSuccessModal.value = true
 }
 const selectedDashboards = ref(['Ticketing Dashboard'])
 const availableDashboards = [
