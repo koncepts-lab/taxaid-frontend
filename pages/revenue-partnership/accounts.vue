@@ -155,11 +155,17 @@
                   <input ref="csvInput" type="file" accept=".csv" class="hidden"
                     @change="e => csvFileName = e.target.files[0]?.name || ''" />
                 </div>
-                <button
-                  class="w-full py-4 bg-[#00835D] text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-[#006b4d] transition-all cursor-pointer shadow-sm">
-                  <img src="/images/icons/upload.svg" class="w-5 h-5 brightness-0 invert" />
-                  Upload Month End Report
-                </button>
+                <div class="space-y-3">
+                  <button class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-[15px] font-medium hover:bg-[#00B794]/5 transition-all cursor-pointer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Download Sample
+                  </button>
+                  <button
+                    class="w-full py-4 bg-[#00835D] text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-[#006b4d] transition-all cursor-pointer shadow-sm">
+                    <img src="/images/icons/upload.svg" class="w-5 h-5 brightness-0 invert" />
+                    Upload Month End Report
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -186,11 +192,17 @@
                   <input ref="excelInput" type="file" accept=".xlsx,.xls" class="hidden"
                     @change="e => excelFileName = e.target.files[0]?.name || ''" />
                 </div>
-                <button
-                  class="w-full py-4 bg-[#00835D] text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-[#006b4d] transition-all cursor-pointer shadow-sm">
-                  <img src="/images/icons/upload.svg" class="w-5 h-5 brightness-0 invert" />
-                  Upload Hosting Cost Report
-                </button>
+                <div class="space-y-3">
+                  <button class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-[15px] font-medium hover:bg-[#00B794]/5 transition-all cursor-pointer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Download Sample
+                  </button>
+                  <button
+                    class="w-full py-4 bg-[#00835D] text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-[#006b4d] transition-all cursor-pointer shadow-sm">
+                    <img src="/images/icons/upload.svg" class="w-5 h-5 brightness-0 invert" />
+                    Upload Hosting Cost Report
+                  </button>
+                </div>
               </div>
             </div>
           </div>
