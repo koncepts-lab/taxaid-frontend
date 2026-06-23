@@ -1,6 +1,7 @@
 export default defineNuxtRouteMiddleware((to) => {
-  const authToken  = useCookie('auth_token')
-  const adminToken = useCookie('admin_token')
+  const authToken       = useCookie('auth_token')
+  const adminToken      = useCookie('admin_token')
+  const adminUserCookie = useCookie('admin_user')
 
   const publicPages   = ['/', '/home', '/revenue-partnership-login', '/verify-email', '/test-auth', '/superadmin/login', '/admin/login', '/admin/roles']
   const adminPrefixes = ['/superadmin', '/admin', '/review-manager', '/review-team-member']
