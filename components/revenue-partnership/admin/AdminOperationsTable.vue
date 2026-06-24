@@ -55,11 +55,29 @@
           <tr>
             <th class="px-8 py-4 text-[14px] font-medium">Customer Code</th>
             <th class="px-8 py-4 text-[14px] font-medium">
-              <div class="flex items-center gap-1 cursor-pointer">
-                Source
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
+              <div class="relative">
+                <div class="flex items-center gap-1 cursor-pointer select-none" @click="isSourceMenuOpen = !isSourceMenuOpen">
+                  Source
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform" :class="{ 'rotate-180': isSourceMenuOpen }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+                <div v-if="isSourceMenuOpen" class="absolute top-full left-0 mt-1 bg-white rounded-[10px] shadow-lg border border-gray-100 z-20 min-w-[160px] py-1">
+                  <div v-for="source in partnerSourceOptions" :key="source"
+                       class="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 group"
+                       @click.stop="toggleSourceFilter(source)">
+                    <div class="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-colors"
+                         :class="selectedSources.includes(source) ? 'bg-[#00835D]' : 'border-2 border-gray-300 group-hover:border-[#00835D80]'">
+                      <svg v-if="selectedSources.includes(source)" xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <span class="text-[13px] text-gray-700">{{ source }}</span>
+                  </div>
+                  <div v-if="selectedSources.length" class="border-t border-gray-100 mt-1 pt-1 px-3 pb-1">
+                    <button class="text-[12px] text-[#00835D] hover:underline" @click.stop="selectedSources = []">Clear filter</button>
+                  </div>
+                </div>
               </div>
             </th>
             <th class="px-8 py-4 text-[14px] font-medium">Company Name</th>
@@ -187,7 +205,7 @@
         <!-- PARTNERS TAB BODY -->
         <tbody v-else-if="activeTab === 'Partners'" 
                :class="isDark ? 'bg-transparent divide-white/5' : 'bg-[#F9FAFB]/50 divide-gray-50'" class="divide-y">
-          <tr v-for="(row, idx) in partnersRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-white'" class="transition-all group">
+          <tr v-for="(row, idx) in filteredPartnersRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-white'" class="transition-all group">
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.code }}</td>
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.source }}</td>
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.company }}</td>
@@ -343,9 +361,26 @@ const props = defineProps({
 
 const emit = defineEmits(['approve-partner', 'reject-partner', 'approve-payment', 'reject-payment', 'download-report'])
 
-const reportTypeLabel = (type: string) => {
+const reportTypeLabel = (type) => {
   if (type === 'ai_usage') return 'AI Usage Report'
   if (type === 'hosting_cost') return 'Hosting Cost Report'
   return type
+}
+
+// ── Partners Source filter ────────────────────────────────────────────────────
+const isSourceMenuOpen  = ref(false)
+const selectedSources   = ref([])
+
+const partnerSourceOptions = computed(() => [...new Set(props.partnersRows.map(r => r.source).filter(Boolean))])
+
+const filteredPartnersRows = computed(() =>
+  selectedSources.value.length
+    ? props.partnersRows.filter(r => selectedSources.value.includes(r.source))
+    : props.partnersRows
+)
+
+const toggleSourceFilter = (source) => {
+  const i = selectedSources.value.indexOf(source)
+  i > -1 ? selectedSources.value.splice(i, 1) : selectedSources.value.push(source)
 }
 </script>

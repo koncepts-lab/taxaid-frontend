@@ -60,7 +60,12 @@ export const useAdminDashboard = () => {
   }
 
   const fetchPartnerRegistrations = async () => {
-    return await useRpApi('/revenue/admin/partner-approvals/registrations')
+    try {
+      return await useRpApi('/revenue/admin/partner-approvals/registrations')
+    } catch (e: any) {
+      console.error('[fetchPartnerRegistrations]', e?.data?.message ?? e?.message ?? e)
+      return []
+    }
   }
 
   const approvePayment = async (id: number) => {
@@ -72,7 +77,12 @@ export const useAdminDashboard = () => {
   }
 
   const fetchPaymentRequests = async () => {
-    return await useRpApi('/revenue/admin/partner-approvals/payment-requests')
+    try {
+      return await useRpApi('/revenue/admin/partner-approvals/payment-requests')
+    } catch (e: any) {
+      console.error('[fetchPaymentRequests]', e?.data?.message ?? e?.message ?? e)
+      return []
+    }
   }
 
   const fetchUploadedReports = async () => {

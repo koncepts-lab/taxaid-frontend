@@ -224,7 +224,7 @@
           <!-- Stats Grid -->
           <div v-if="!['Notify Customers', 'User Master Info'].includes(activeCustomerSubTab)"
             class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div v-for="(stat, idx) in overviewMetrics" :key="idx"
+            <div v-for="(stat, idx) in operationsStats" :key="idx"
               :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-[#04C18F80]'"
               class="rounded-[24px] p-6 border transition-all hover:shadow-lg group">
               <div class="flex justify-between items-start mb-3">
@@ -477,13 +477,15 @@
                   </td>
                   <td class="px-8 py-6 text-center">
                     <button v-if="row.action === 'Notify'"
-                      class="px-5 py-2 bg-[#00835D] text-white rounded-[8px] text-[13px] font-medium flex items-center justify-center gap-2 mx-auto hover:bg-[#007452] transition-colors cursor-pointer">
+                      @click="handleNotify(row.code)"
+                      :disabled="notifyingTenantId === row.code"
+                      class="px-5 py-2 bg-[#00835D] text-white rounded-[8px] text-[13px] font-medium flex items-center justify-center gap-2 mx-auto hover:bg-[#007452] transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
                       </svg>
-                      Notify
+                      {{ notifyingTenantId === row.code ? 'Sending...' : 'Notify' }}
                     </button>
                     <button v-else-if="row.action === 'Notified'"
                       class="px-4 py-2 bg-transparent border border-[#00BE8CBD] text-[#00BE8CBD] rounded-[8px] text-[13px] font-medium flex items-center justify-center gap-2 mx-auto cursor-default opacity-80">
@@ -677,14 +679,14 @@
               <!-- Email -->
               <div class="space-y-1.5">
                 <label class="text-[15px] font-normal text-[#1a1a1a]">Email *</label>
-                <input type="email" placeholder="partner@company.com"
+                <input type="email" v-model="newPartnerForm.email" placeholder="partner@company.com"
                   class="w-full px-4 py-3 bg-white border border-[#82FFE0] rounded-xl focus:outline-none focus:border-[#00DDA3] placeholder:text-[#b0b7c1] text-[#000] text-[15px]" />
               </div>
               <!-- Contact Person -->
               <div class="space-y-1.5">
                 <label class="text-[15px] font-normal text-[#1a1a1a]">Contact Person *</label>
-                <input type="text" placeholder="John Doe"
-                  class="w-full px-4 py-3 bg-white border border-[#82FFE0) rounded-xl focus:outline-none focus:border-[#00DDA3] placeholder:text-[#b0b7c1] text-[#000] text-[15px]" />
+                <input type="text" v-model="newPartnerForm.contact_person" placeholder="John Doe"
+                  class="w-full px-4 py-3 bg-white border border-[#82FFE0] rounded-xl focus:outline-none focus:border-[#00DDA3] placeholder:text-[#b0b7c1] text-[#000] text-[15px]" />
               </div>
             </div>
 
@@ -692,13 +694,13 @@
               <!-- Contact Phone -->
               <div class="space-y-1.5">
                 <label class="text-[15px] font-normal text-[#1a1a1a]">Contact Phone</label>
-                <input type="text" placeholder="+1-555-0000"
+                <input type="text" v-model="newPartnerForm.contact_phone" placeholder="+1-555-0000"
                   class="w-full px-4 py-3 bg-white border border-[#82FFE0] rounded-xl focus:outline-none focus:border-[#00DDA3] placeholder:text-[#b0b7c1] text-[#000] text-[15px]" />
               </div>
               <!-- Trading License -->
               <div class="space-y-1.5">
                 <label class="text-[15px] font-normal text-[#1a1a1a]">Trading License *</label>
-                <input type="text" placeholder="TL-2024-XXX"
+                <input type="text" v-model="newPartnerForm.trading_license" placeholder="TL-2024-XXX"
                   class="w-full px-4 py-3 bg-white border border-[#82FFE0] rounded-xl focus:outline-none focus:border-[#00DDA3] placeholder:text-[#b0b7c1] text-[#000] text-[15px]" />
               </div>
             </div>
@@ -706,7 +708,7 @@
             <!-- Address -->
             <div class="space-y-1.5">
               <label class="text-[15px] font-normal text-[#1a1a1a]">Address</label>
-              <textarea placeholder="Full business address" rows="3"
+              <textarea v-model="newPartnerForm.address" placeholder="Full business address" rows="3"
                 class="w-full px-4 py-3 bg-white border border-[#82FFE0] rounded-xl focus:outline-none focus:border-[#00DDA3] placeholder:text-[#b0b7c1] text-[#000] text-[15px] resize-none"></textarea>
             </div>
 
@@ -714,26 +716,27 @@
               <!-- Authorized Person -->
               <div class="space-y-1.5">
                 <label class="text-[15px] font-normal text-[#1a1a1a]">Authorized Person</label>
-                <input type="text" placeholder="Jane Smith"
+                <input type="text" v-model="newPartnerForm.authorized_person" placeholder="Jane Smith"
                   class="w-full px-4 py-3 bg-white border border-[#82FFE0] rounded-xl focus:outline-none focus:border-[#00DDA3] placeholder:text-[#b0b7c1] text-[#000] text-[15px]" />
               </div>
               <!-- Authorized Person Contact -->
               <div class="space-y-1.5">
                 <label class="text-[15px] font-normal text-[#1a1a1a]">Authorized Person Contact</label>
-                <input type="text" placeholder="+1-555-0001"
+                <input type="text" v-model="newPartnerForm.authorized_person_contact" placeholder="+1-555-0001"
                   class="w-full px-4 py-3 bg-white border border-[#82FFE0] rounded-xl focus:outline-none focus:border-[#00DDA3] placeholder:text-[#b0b7c1] text-[#000] text-[15px]" />
               </div>
             </div>
 
             <!-- Footer -->
+            <p v-if="addPartnerError" class="text-[13px] text-red-500 pt-2">{{ addPartnerError }}</p>
             <div class="flex justify-end gap-3 pt-4">
               <button @click="showAddPartnerModal = false"
                 class="px-8 py-3 bg-white border border-gray-200 text-[#1a1a1a] rounded-xl font-normal hover:bg-gray-50 transition-all cursor-pointer">
                 Cancel
               </button>
-              <button @click="handleAddPartner"
-                class="px-8 py-3 bg-[#00835D] text-white rounded-xl font-normal hover:bg-[#007452] transition-all cursor-pointer">
-                Submit Request
+              <button @click="handleAddPartner" :disabled="addPartnerLoading"
+                class="px-8 py-3 bg-[#00835D] text-white rounded-xl font-normal hover:bg-[#007452] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                {{ addPartnerLoading ? 'Submitting…' : 'Submit Request' }}
               </button>
             </div>
           </div>
@@ -758,7 +761,7 @@ const {
   fetchOverview, fetchCustomers, fetchAlerts,
   submitPaymentToPartner, fetchPartnerClients,
   addPartner, uploadHosting, uploadAiUsage, downloadTemplate,
-  fetchNotifyCustomers, fetchUserMasterInfo, fetchActivePartners,
+  fetchNotifyCustomers, fetchUserMasterInfo, fetchActivePartners, sendCardExpiryNotification,
 } = useAccountsDashboard()
 
 // ── Tab state (cookie-persisted) ──────────────────────────────────────────
@@ -795,11 +798,12 @@ const activeModalDropdown = ref(null)
 const newPartnerForm = ref({ name: '', email: '', contact_person: '', contact_phone: '', trading_license: '', address: '', authorized_person: '', authorized_person_contact: '' })
 
 // ── Table data ─────────────────────────────────────────────────────────────
-const partnerRows       = ref([])
-const directRows        = ref([])
-const notifyRows        = ref([])
-const userMasterRows    = ref([])
-const activePartnerList = ref([])
+const partnerRows        = ref([])
+const directRows         = ref([])
+const notifyRows         = ref([])
+const userMasterRows     = ref([])
+const activePartnerList  = ref([])
+const notifyingTenantId  = ref(null)
 
 // ── Tab sub-data ───────────────────────────────────────────────────────────
 const isSourceMenuOpen = ref(false)
@@ -845,6 +849,21 @@ const paymentStatusMetrics = computed(() => {
   ]
 })
 
+// Stats cards for the Operations sub-tabs — derived from loaded row data
+const operationsStats = computed(() => {
+  const rows = activeCustomerSubTab.value === 'Partners' ? partnerRows.value : directRows.value
+  const totalRevenue   = rows.reduce((s, r) => s + (r.rawRevenue ?? 0), 0)
+  const totalCollected = rows.reduce((s, r) => s + (r.rawCollected ?? 0), 0)
+  const rate = totalRevenue > 0 ? ((totalCollected / totalRevenue) * 100).toFixed(1) : '0.0'
+  const subtext = activeCustomerSubTab.value === 'Partners' ? 'Partner-sourced clients' : 'Direct clients'
+  const revenueSubtext = activeCustomerSubTab.value === 'Partners' ? 'All partner revenue' : 'All direct revenue'
+  return [
+    { title: 'Total Customers', isCurrency: false, value: rows.length, subtext, icon: '/images/icons/Total-Customers.svg' },
+    { title: 'Total Revenue', isCurrency: true, value: totalRevenue.toLocaleString(), subtext: revenueSubtext, icon: '/images/icons/Total-Revenue.svg' },
+    { title: 'Amount Collected', isCurrency: true, value: totalCollected.toLocaleString(), subtext: `Collection rate: ${rate}%`, icon: '/images/icons/Amount-Collected.svg' },
+  ]
+})
+
 const hasAlert = computed(() => (alerts.value?.length ?? 0) > 0)
 const expiringCardsCount = computed(() => alerts.value?.filter(a => a.message?.includes('card')).length ?? 0)
 const expiringCardsDaysThreshold = computed(() => 30)
@@ -871,7 +890,7 @@ onMounted(async () => {
 })
 
 async function loadAllSubTabs() {
-  await Promise.all([
+  await Promise.allSettled([
     loadSubTab('Partners'),
     loadSubTab('Direct Customers'),
     loadSubTab('Notify Customers'),
@@ -880,36 +899,63 @@ async function loadAllSubTabs() {
 }
 
 async function loadSubTab(tab) {
-  if (tab === 'Partners') {
-    const data = await fetchCustomers('partners')
-    partnerRows.value = (data || []).map(normalizeRow)
-  } else if (tab === 'Direct Customers') {
-    const data = await fetchCustomers('direct')
-    directRows.value = (data || []).map(normalizeRow)
-  } else if (tab === 'Notify Customers') {
-    const data = await fetchNotifyCustomers()
-    notifyRows.value = (data || []).map(r => ({
-      code: r.tenant_id, source: r.partner?.code ?? 'Direct', company: r.company_name,
-      contact: r.contact_no ?? '—', cardType: r.card_type ?? '—', last4: r.card_last4 ?? '—',
-      expiry: r.card_expiry ?? '—', status: 'Expiring', action: 'Notify',
-    }))
-  } else if (tab === 'User Master Info') {
-    const data = await fetchUserMasterInfo()
-    userMasterRows.value = (data || []).map(r => ({
-      code: r.license_id, source: r.partner?.code ?? 'Direct', company: r.company_name,
-      bank: r.bank_details ?? '—', card: r.card_type ? `${r.card_type} *${r.card_last4}` : '—',
-      contactPerson: r.contact_person ?? '—', contactNo: r.contact_no ?? '—', email: r.email ?? '—',
-    }))
+  try {
+    if (tab === 'Partners') {
+      const data = await fetchCustomers('partners')
+      console.log('[loadSubTab:Partners] rows:', data?.length, data)
+      partnerRows.value = (data || []).map(normalizeRow)
+    } else if (tab === 'Direct Customers') {
+      const data = await fetchCustomers('direct')
+      console.log('[loadSubTab:Direct] rows:', data?.length, data)
+      directRows.value = (data || []).map(normalizeRow)
+    } else if (tab === 'Notify Customers') {
+      const data = await fetchNotifyCustomers()
+      console.log('[loadSubTab:Notify] rows:', data?.length, data)
+      notifyRows.value = (data || []).map(r => ({
+        code: r.tenant_id, source: r.partner?.code ?? 'Direct', company: r.company_name,
+        contact: r.contact_no ?? '—', cardType: r.card_type ?? '—', last4: r.card_last4 ? `****${r.card_last4}` : '—',
+        expiry: r.card_expiry ?? '—', status: 'Expiring', action: r.last_notified_at ? 'Notified' : 'Notify',
+      }))
+    } else if (tab === 'User Master Info') {
+      const data = await fetchUserMasterInfo()
+      console.log('[loadSubTab:UserMaster] rows:', data?.length, data)
+      userMasterRows.value = (data || []).map(r => ({
+        code: r.tenant_id, source: r.partner?.code ?? 'Direct', company: r.company_name,
+        bank: r.bank_details ?? '—', card: r.card_type ? `${r.card_type} *${r.card_last4}` : '—',
+        contactPerson: r.contact_person ?? '—', contactNo: r.contact_no ?? '—', email: r.email ?? '—',
+      }))
+    }
+  } catch (e) {
+    console.error(`[loadSubTab:${tab}]`, e)
   }
 }
 
 function normalizeRow(r) {
   return {
-    code: r.license_id ?? r.tenant_id, source: r.partner?.code ?? 'Direct',
+    code: r.tenant_id, source: r.partner?.code ?? 'Direct',
     company: r.company_name, period: r.contract_period ?? '—', year: r.year ?? '—',
+    rawRevenue: r.revenue_aed ?? 0, rawCollected: r.collected_aed ?? 0,
     revenue: r.revenue_aed?.toLocaleString() ?? '—', collected: r.collected_aed?.toLocaleString() ?? '—',
-    settlement: r.settlement_aed?.toLocaleString() ?? '—', date: '—',
-    status: r.payment_status ?? 'no_payments', reason: '—',
+    settlement: r.settlement_aed?.toLocaleString() ?? '—', date: r.last_payment_date ?? '—',
+    status: ({ paid: 'Paid', failed: 'Failed', pending: 'Pending', no_payments: 'No Payments' })[r.payment_status] ?? 'No Payments', reason: '—',
+  }
+}
+
+// ── Notify Customer ──────────────────────────────────────────────────────────
+async function handleNotify(tenantId) {
+  notifyingTenantId.value = tenantId
+  try {
+    await sendCardExpiryNotification(tenantId)
+    const data = await fetchNotifyCustomers()
+    notifyRows.value = (data || []).map(r => ({
+      code: r.tenant_id, source: r.partner?.code ?? 'Direct', company: r.company_name,
+      contact: r.contact_no ?? '—', cardType: r.card_type ?? '—', last4: r.card_last4 ? `****${r.card_last4}` : '—',
+      expiry: r.card_expiry ?? '—', status: 'Expiring', action: r.last_notified_at ? 'Notified' : 'Notify',
+    }))
+  } catch (e) {
+    console.error('[handleNotify]', e)
+  } finally {
+    notifyingTenantId.value = null
   }
 }
 
@@ -939,9 +985,21 @@ async function handleSubmitPayment() {
   showPaymentModal.value = false
 }
 
+const addPartnerError   = ref('')
+const addPartnerLoading = ref(false)
+
 async function handleAddPartner() {
-  await addPartner(newPartnerForm.value)
-  showAddPartnerModal.value = false
+  addPartnerError.value = ''
+  addPartnerLoading.value = true
+  try {
+    await addPartner({ ...newPartnerForm.value, name: newPartnerForm.value.contact_person })
+    showAddPartnerModal.value = false
+    newPartnerForm.value = { name: '', email: '', contact_person: '', contact_phone: '', trading_license: '', address: '', authorized_person: '', authorized_person_contact: '' }
+  } catch (e) {
+    addPartnerError.value = e?.data?.message ?? 'Failed to submit request. Please check all fields.'
+  } finally {
+    addPartnerLoading.value = false
+  }
 }
 
 // ── Upload handlers ─────────────────────────────────────────────────────────

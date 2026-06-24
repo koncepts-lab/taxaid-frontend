@@ -369,7 +369,7 @@ onMounted(async () => {
 })
 
 async function loadAllOperationsData() {
-  await Promise.all([
+  await Promise.allSettled([
     loadTab('All Customers'),
     loadTab('Partners'),
     loadTab('Direct Customers'),
@@ -384,26 +384,26 @@ async function loadAllOperationsData() {
 // ── Row normalization helpers ──────────────────────────────────────────────
 function normalizeCustomerRows(rows) {
   return (rows || []).map(r => ({
-    code: r.license_id ?? r.tenant_id, source: r.partner?.code ?? 'Direct',
+    code: r.tenant_id, source: r.partner?.code ?? 'Direct',
     company: r.company_name, revenue: r.revenue_aed?.toLocaleString() ?? '—',
-    collected: r.collected_aed?.toLocaleString() ?? '—', date: '—',
+    collected: r.collected_aed?.toLocaleString() ?? '—', date: r.last_payment_date ?? '—',
     status: capitalize(r.payment_status ?? 'no_payments'), reason: r.failure_reason ?? '—',
   }))
 }
 
 function normalizePartnerRows(rows) {
   return (rows || []).map(r => ({
-    code: r.license_id ?? r.tenant_id, source: r.partner?.code ?? '—',
+    code: r.tenant_id, source: r.partner?.code ?? '—',
     company: r.company_name, contract: r.contract_period ?? '—', year: r.year ?? '—',
     revenue: r.revenue_aed?.toLocaleString() ?? '—', collected: r.collected_aed?.toLocaleString() ?? '—',
-    settlement: r.settlement_aed?.toLocaleString() ?? '—', date: '—',
+    settlement: r.settlement_aed?.toLocaleString() ?? '—', date: r.last_payment_date ?? '—',
     status: capitalize(r.payment_status ?? 'no_payments'),
   }))
 }
 
 function normalizeResourceRows(rows) {
   return (rows || []).map(r => ({
-    code: r.license_id ?? r.tenant_id, source: r.partner?.code ?? 'Direct',
+    code: r.tenant_id, source: r.partner?.code ?? 'Direct',
     company: r.company_name, hosting: r.hosting_charge_aed?.toLocaleString() ?? '—',
     ai: r.ai_token_cost_aed?.toLocaleString() ?? '—',
     total: ((r.hosting_charge_aed ?? 0) + (r.ai_token_cost_aed ?? 0)).toLocaleString(),
@@ -438,7 +438,7 @@ function normalizeReportRows(rows) {
 
 function normalizeMasterRows(rows) {
   return (rows || []).map(r => ({
-    code: r.license_id ?? r.tenant_id, source: r.partner?.code ?? 'Direct',
+    code: r.tenant_id, source: r.partner?.code ?? 'Direct',
     company: r.company_name, bank: r.bank_details ?? '—',
     card: r.card_type ? `${r.card_type} *${r.card_last4}` : '—',
     contactPerson: r.contact_person ?? '—', contactNo: r.contact_no ?? '—', email: r.email ?? '—',

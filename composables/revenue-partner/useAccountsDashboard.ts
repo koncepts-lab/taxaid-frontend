@@ -19,9 +19,11 @@ export const useAccountsDashboard = () => {
   const fetchCustomers = async (tab: 'all' | 'partners' | 'direct' | 'resource') => {
     loading.value = true
     try {
-      customers.value = await useRpApi(`/revenue/admin/customers/${tab}`) as any[]
-      return customers.value
+      const result = await useRpApi(`/revenue/admin/customers/${tab}`) as any[]
+      customers.value = result
+      return result
     } catch (e: any) {
+      console.error(`[fetchCustomers:${tab}]`, e?.data?.message ?? e?.message ?? e)
       error.value = e?.data?.message ?? 'Failed to load customers.'
       return []
     } finally {
@@ -75,7 +77,12 @@ export const useAccountsDashboard = () => {
   }
 
   const fetchNotifyCustomers = async () => {
-    return await useRpApi('/revenue/accounts/notify-customers')
+    try {
+      return await useRpApi('/revenue/accounts/notify-customers')
+    } catch (e: any) {
+      console.error('[fetchNotifyCustomers]', e?.data?.message ?? e?.message ?? e)
+      return []
+    }
   }
 
   const fetchUploadedReports = async () => {
@@ -83,7 +90,21 @@ export const useAccountsDashboard = () => {
   }
 
   const fetchUserMasterInfo = async () => {
-    return await useRpApi('/revenue/admin/user-master-info')
+    try {
+      return await useRpApi('/revenue/admin/user-master-info')
+    } catch (e: any) {
+      console.error('[fetchUserMasterInfo]', e?.data?.message ?? e?.message ?? e)
+      return []
+    }
+  }
+
+  const sendCardExpiryNotification = async (tenantId: number) => {
+    try {
+      return await useRpApi(`/revenue/accounts/notify-customers/${tenantId}/send`, { method: 'POST' })
+    } catch (e: any) {
+      console.error('[sendCardExpiryNotification]', e?.data?.message ?? e?.message ?? e)
+      throw e
+    }
   }
 
   const fetchActivePartners = async () => {
@@ -104,6 +125,6 @@ export const useAccountsDashboard = () => {
     submitPaymentToPartner, fetchPartnerClients, addPartner,
     uploadHosting, uploadAiUsage, downloadTemplate,
     fetchNotifyCustomers, fetchUploadedReports,
-    fetchUserMasterInfo, fetchActivePartners,
+    fetchUserMasterInfo, fetchActivePartners, sendCardExpiryNotification,
   }
 }

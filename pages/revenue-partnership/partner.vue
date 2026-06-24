@@ -59,7 +59,7 @@
         <div class="flex items-center justify-between mb-6 px-4">
           <h3 class="text-[20px] font-normal text-[#0A0A0A]">
             {{ currentLang === 'ar' ? dynamicPartnerSummary.titleAr : dynamicPartnerSummary.title }}
-            ({{ dynamicPartnerSummary.partners?.length }} {{ currentLang === 'ar' ? 'شركاء' : 'partners' }})
+            ({{ partnerCards.length }} {{ currentLang === 'ar' ? 'عميل' : 'clients' }})
           </h3>
           <button
             class="flex items-center gap-2 bg-[#A1FFE64D] border border-[#04C18F80] px-6 py-2 rounded-[8px] text-[#0A0A0A] font-medium text-[14px] hover:bg-[#A1FFE666] transition-colors cursor-pointer">
@@ -232,22 +232,22 @@ onMounted(async () => {
 const mainStats = computed(() => {
   if (!stats.value) return []
   return [
-    { displayTitle: 'Total Customers', displaySubtext: 'Linked clients', icon: '/images/icons/users.svg', isCurrency: false, value: stats.value.total_customers },
-    { displayTitle: 'Total Revenue', displaySubtext: 'Expected monthly', icon: '/images/icons/revenue.svg', isCurrency: true, value: stats.value.total_revenue_aed?.toLocaleString() },
-    { displayTitle: 'Collected', displaySubtext: 'Payments received', icon: '/images/icons/collected.svg', isCurrency: true, value: stats.value.total_collected_aed?.toLocaleString() },
+    { displayTitle: 'Total Customers', displaySubtext: 'Linked clients', icon: '/images/icons/Total-Customers.svg', isCurrency: false, value: stats.value.total_customers },
+    { displayTitle: 'Total Revenue', displaySubtext: 'Expected monthly', icon: '/images/icons/Total-Revenue.svg', isCurrency: true, value: stats.value.total_revenue_aed?.toLocaleString() },
+    { displayTitle: 'Collected', displaySubtext: 'Payments received', icon: '/images/icons/Collected.svg', isCurrency: true, value: stats.value.total_collected_aed?.toLocaleString() },
     { displayTitle: 'Settlement', displaySubtext: 'Commission owed', icon: '/images/icons/settlement.svg', isCurrency: true, value: stats.value.total_settlement_aed?.toLocaleString() },
   ]
 })
 
-// Partner Summary — year group cards
+// Partner Summary — one card per client
 const partnerCards = computed(() => {
-  return (summary.value ?? []).map(group => ({
-    name: `${group.label} (${group.commission_rate})`,
+  const allClients = (summary.value ?? []).flatMap(group => group.clients ?? [])
+  return allClients.map(client => ({
+    name: client.company_name,
     displayMetrics: [
-      { displayLabel: 'Clients', value: group.client_count, isCurrency: false },
-      { displayLabel: 'Revenue', value: group.total_revenue_aed?.toLocaleString(), isCurrency: true },
-      { displayLabel: 'Collected', value: group.total_collected_aed?.toLocaleString(), isCurrency: true, label: 'Collected:' },
-      { displayLabel: 'Settlement', value: group.total_settlement_aed?.toLocaleString(), isCurrency: true, isRate: true },
+      { displayLabel: 'Revenue', value: client.revenue_aed?.toLocaleString(), isCurrency: true },
+      { displayLabel: 'Collected', value: client.collected_aed?.toLocaleString(), isCurrency: true, label: 'Collected:' },
+      { displayLabel: 'Settlement', value: client.settlement_aed?.toLocaleString(), isCurrency: true, isRate: true },
     ]
   }))
 })
@@ -258,7 +258,7 @@ const dynamicPartnerSummary = computed(() => ({
   titleAr: 'ملخص الشريك',
   exportBtn: 'Export',
   exportBtnAr: 'تصدير',
-  partners: partnerCards.value,
+  clientCount: stats.value?.total_customers ?? 0,
 }))
 
 // Alert banner — show first alert from API
