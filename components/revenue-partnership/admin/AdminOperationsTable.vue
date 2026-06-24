@@ -505,23 +505,27 @@
         <div class="grid grid-cols-3 gap-4 mb-6">
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Invoice Number</p>
-            <p class="text-[13px] font-medium text-gray-900">INV-2024-001</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.invoiceNumber }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Invoice Date</p>
-            <p class="text-[13px] font-medium text-gray-900">11/1/2024</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.invoiceDate }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Due Date</p>
-            <p class="text-[13px] font-medium text-gray-900">11/15/2024</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.dueDate }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Plan Type</p>
-            <p class="text-[13px] font-medium text-gray-900">Enterprise Plan</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.plan }}</p>
+          </div>
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Billing Cycle</p>
+            <p class="text-[13px] font-medium text-gray-900 capitalize">{{ selectedReviewRow.billingCycle }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Contract Period</p>
-            <p class="text-[13px] font-medium text-gray-900">12 months</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.contractPeriod }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Payment Date</p>
@@ -533,11 +537,11 @@
         <div class="bg-[#F0FDFA] rounded-[8px] p-4 mb-6">
           <div class="flex justify-between items-center mb-2">
             <p class="text-[14px] text-gray-600">Subtotal</p>
-            <p class="text-[14px] text-gray-900">$109,375</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.subtotal }}</p>
           </div>
           <div class="flex justify-between items-center mb-4">
             <p class="text-[14px] text-gray-600">Tax (12.5%)</p>
-            <p class="text-[14px] text-gray-900">$15,625</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.tax }}</p>
           </div>
           <div class="flex justify-between items-center pt-3 border-t border-[#A2E8D6] mb-3">
             <p class="text-[15px] font-medium text-gray-900">Total Revenue</p>
@@ -549,7 +553,7 @@
           </div>
           <div class="flex justify-between items-center">
             <p class="text-[14px] text-[#EF4444]">Amount Pending</p>
-            <p class="text-[14px] text-[#EF4444]">$0</p>
+            <p class="text-[14px] text-[#EF4444]">{{ selectedReviewRow.pending }}</p>
           </div>
         </div>
 
@@ -557,15 +561,15 @@
         <div class="grid grid-cols-2 gap-4 mb-6">
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Contact Person</p>
-            <p class="text-[13px] text-gray-900">John Smith</p>
+            <p class="text-[13px] text-gray-900">{{ selectedReviewRow.contactPerson }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Email Address</p>
-            <p class="text-[13px] text-gray-900">john.smith@techcorp.com</p>
+            <p class="text-[13px] text-gray-900">{{ selectedReviewRow.email }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Contact Phone</p>
-            <p class="text-[13px] text-gray-900">+1-555-0101</p>
+            <p class="text-[13px] text-gray-900">{{ selectedReviewRow.contactNo }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Source</p>
@@ -577,12 +581,12 @@
         <div class="grid grid-cols-2 gap-4 mb-6">
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Bank Details</p>
-            <p class="text-[13px] text-gray-900">Chase Bank *****1234</p>
+            <p class="text-[13px] text-gray-900">{{ selectedReviewRow.bank }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Credit Card</p>
-            <p class="text-[13px] text-gray-900">**** 4532</p>
-            <p class="text-[11px] text-gray-400 mt-0.5">Expires: 2025-08-15</p>
+            <p class="text-[13px] text-gray-900">{{ selectedReviewRow.card }}</p>
+            <p class="text-[11px] text-gray-400 mt-0.5">Expires: {{ selectedReviewRow.cardExpiry }}</p>
           </div>
         </div>
 
@@ -590,15 +594,15 @@
         <div class="grid grid-cols-3 gap-4 mb-2">
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Hosting Consumption</p>
-            <p class="text-[13px] font-medium text-gray-900">$15,000</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.hosting }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">AI Token Consumption</p>
-            <p class="text-[13px] font-medium text-gray-900">$30,000</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.ai }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Total Cost</p>
-            <p class="text-[13px] font-medium text-gray-900">$45,000</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.resourceTotal }}</p>
           </div>
         </div>
 
@@ -654,7 +658,24 @@ const selectedReviewRow = vueRef(null)
 const reviewModalType = vueRef('')
 
 const openReviewModal = (row, type) => {
-  selectedReviewRow.value = row
+  if (type === 'invoice') {
+    const masterRow   = props.userMasterRows.find(m => m.code === row.code)
+    const resourceRow = props.resourceRows.find(r => r.code === row.code)
+    selectedReviewRow.value = {
+      ...row,
+      contactPerson: masterRow?.contactPerson ?? '—',
+      contactNo:     masterRow?.contactNo     ?? '—',
+      email:         masterRow?.email         ?? row.email ?? '—',
+      bank:          masterRow?.bank          ?? '—',
+      card:          masterRow?.card          ?? '—',
+      cardExpiry:    masterRow?.cardExpiry    ?? '—',
+      hosting:       resourceRow?.hosting     ?? '—',
+      ai:            resourceRow?.ai          ?? '—',
+      resourceTotal: resourceRow?.total       ?? '—',
+    }
+  } else {
+    selectedReviewRow.value = row
+  }
   reviewModalType.value = type
 }
 

@@ -71,9 +71,24 @@ export const useAccountsDashboard = () => {
   }
 
   const downloadTemplate = async (type: 'hosting' | 'ai-usage') => {
-    const config = useRuntimeConfig()
-    const token  = useCookie('rp_token')
-    window.open(`${config.public.apiBase}/revenue/accounts/uploads/${type}/template?token=${token.value}`, '_blank')
+    const config   = useRuntimeConfig()
+    const token    = useCookie('rp_token')
+    const fileName = type === 'hosting' ? 'hosting_cost_template.xlsx' : 'ai_usage_template.csv'
+
+    const response = await fetch(`${config.public.apiBase}/revenue/accounts/uploads/${type}/template`, {
+      headers: { Authorization: `Bearer ${token.value}` },
+    })
+    if (!response.ok) throw new Error('Failed to download template')
+
+    const blob = await response.blob()
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = fileName
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   const fetchNotifyCustomers = async () => {

@@ -236,8 +236,13 @@
 
         <!-- Charts Grid -->
         <div v-if="!['Resource Consumption', 'Partner Approvals', 'Uploaded Reports', 'User Master Info'].includes(activeOperationsSubTab)" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <AdminBarChart />
-          <AdminLineChart />
+          <AdminBarChart
+            :revenueData="charts.revenueBySource"
+            :costData="charts.licensingBreakdown"
+            :partnerCount="overview?.customer_split?.partner_clients ?? 0"
+            :directCount="overview?.customer_split?.direct_clients ?? 0"
+          />
+          <AdminLineChart :costData="charts.licensingBreakdown" />
         </div>
 
       </div>
@@ -257,8 +262,8 @@ definePageMeta({ layout: false })
 const { isDark } = useTheme()
 
 const {
-  overview, alerts, loading,
-  fetchOverview, fetchCustomers, fetchAlerts,
+  overview, alerts, charts, loading,
+  fetchOverview, fetchCustomers, fetchAlerts, fetchCharts,
   approvePartner, rejectPartner, fetchPartnerRegistrations,
   approvePayment, rejectPayment, fetchPaymentRequests,
   fetchUploadedReports, downloadReport, fetchUserMasterInfo,
@@ -364,7 +369,7 @@ watch(activeApprovalSubTab, (val) => {
 })
 
 onMounted(async () => {
-  await Promise.all([fetchOverview(), fetchAlerts()])
+  await Promise.all([fetchOverview(), fetchAlerts(), fetchCharts()])
   loadAllOperationsData()
 })
 
@@ -388,6 +393,14 @@ function normalizeCustomerRows(rows) {
     company: r.company_name, revenue: r.revenue_aed?.toLocaleString() ?? '—',
     collected: r.collected_aed?.toLocaleString() ?? '—', date: r.last_payment_date ?? '—',
     status: capitalize(r.payment_status ?? 'no_payments'), reason: r.failure_reason ?? '—',
+    email: r.email ?? '—', plan: r.plan_name ?? '—', contractPeriod: r.contract_period ?? '—',
+    billingCycle: r.billing_cycle ?? '—',
+    invoiceNumber: r.invoice_number ?? '—',
+    invoiceDate: r.invoice_date ?? '—',
+    dueDate: r.due_date ?? '—',
+    subtotal: r.subtotal_aed?.toLocaleString() ?? '—',
+    tax: r.tax_aed?.toLocaleString() ?? '—',
+    pending: r.pending_aed?.toLocaleString() ?? '—',
   }))
 }
 
@@ -447,6 +460,7 @@ function normalizeMasterRows(rows) {
     code: r.tenant_id, source: r.partner?.code ?? 'Direct',
     company: r.company_name, bank: r.bank_details ?? '—',
     card: r.card_type ? `${r.card_type} *${r.card_last4}` : '—',
+    cardExpiry: r.card_expiry ?? '—',
     contactPerson: r.contact_person ?? '—', contactNo: r.contact_no ?? '—', email: r.email ?? '—',
   }))
 }
