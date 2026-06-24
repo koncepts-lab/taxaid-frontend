@@ -80,6 +80,7 @@
 </template>
 
 <script setup>
+// TODO: wire to /api/revenue/notifications endpoint once main data endpoints are stable
 import { ref, computed } from 'vue'
 
 const { isDark } = useTheme()

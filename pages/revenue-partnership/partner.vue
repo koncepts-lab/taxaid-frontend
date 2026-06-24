@@ -59,7 +59,7 @@
         <div class="flex items-center justify-between mb-6 px-4">
           <h3 class="text-[20px] font-normal text-[#0A0A0A]">
             {{ currentLang === 'ar' ? dynamicPartnerSummary.titleAr : dynamicPartnerSummary.title }}
-            ({{ dynamicPartnerSummary.partners?.length }} {{ currentLang === 'ar' ? 'شركاء' : 'partners' }})
+            ({{ partnerCards.length }} {{ currentLang === 'ar' ? 'عميل' : 'clients' }})
           </h3>
           <button
             class="flex items-center gap-2 bg-[#A1FFE64D] border border-[#04C18F80] px-6 py-2 rounded-[8px] text-[#0A0A0A] font-medium text-[14px] hover:bg-[#A1FFE666] transition-colors cursor-pointer">
@@ -157,7 +157,7 @@
               </div>
             </div>
 
-            <button
+            <button @click="exportPayments"
               class="h-[44px] flex items-center gap-2 bg-[#A1FFE64D] border border-[#04C18F80] px-6 py-2 rounded-[6px] text-[#0A0A0A] font-medium text-[14px] hover:bg-[#A1FFE666] transition-colors cursor-pointer ml-auto rtl:ml-0 rtl:mr-auto">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
@@ -173,54 +173,18 @@
           <table class="w-full text-left rtl:text-right border-collapse">
             <thead>
               <tr class="bg-[#00896F] text-white">
-                <th v-for="(col, cidx) in displayColumns" :key="cidx" class="px-6 py-4 font-normal text-[14px]"
-                  :class="{ 'relative': col === 'Partner Name' || col === 'اسم الشريك' }">
-                  <div v-if="col === 'Partner Name' || col === 'اسم الشريك'" @click="isPartnerMenuOpen = !isPartnerMenuOpen"
-                    class="flex items-center gap-1 cursor-pointer select-none">
+                <th v-for="(col, cidx) in displayColumns" :key="cidx" class="px-6 py-4 font-normal text-[14px]">
+                  <div v-if="col === 'Revenue' || col === 'الإيرادات' || col === 'Collected' || col === 'المحصل' || col === 'Settlement' || col === 'التسوية'" class="flex items-center gap-1">
                     {{ col }}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 transition-transform duration-200"
-                      :class="{ 'rotate-180': isPartnerMenuOpen }" fill="none" viewBox="0 0 24 24"
-                      stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                  <div v-else-if="col === 'Revenue' || col === 'الإيرادات' || col === 'Collected' || col === 'المحصل' || col === 'Settlement' || col === 'التسوية'" class="flex items-center gap-1">
-                    {{ col }}
-                    <img src="/images/icons/dirham-black.svg" alt="AED"
-                      class="w-3 h-3 invert contrast-[200%] grayscale" />
+                    <img src="/images/icons/dirham-black.svg" alt="AED" class="w-3 h-3 invert contrast-[200%] grayscale" />
                   </div>
                   <template v-else>{{ col }}</template>
-
-                  <!-- Partner Multi-Select Dropdown -->
-                  <div v-if="(col === 'Partner Name' || col === 'اسم الشريك') && isPartnerMenuOpen"
-                    class="absolute top-full left-0 rtl:left-auto rtl:right-0 mt-1 bg-white border border-gray-100 rounded-[16px] shadow-2xl z-50 p-3 min-w-[240px]">
-                    <div class="space-y-2">
-                      <div v-for="p in dynamicPartnerSummary.partners" :key="p.name"
-                        @click="togglePartnerFilter(p.name)"
-                        class="flex items-center gap-3 p-2 rounded-[12px] hover:bg-gray-50 cursor-pointer transition-colors group">
-                        <div class="w-6 h-6 rounded-[6px] flex items-center justify-center transition-all flex-shrink-0"
-                          :class="selectedPartners.includes(p.name) ? 'bg-[#00896F]' : 'border-2 border-gray-300 group-hover:border-[#00896F80]'">
-                          <svg v-if="selectedPartners.includes(p.name)" xmlns="http://www.w3.org/2000/svg"
-                            class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clip-rule="evenodd" />
-                          </svg>
-                        </div>
-                        <span class="text-[14px] font-normal"
-                          :class="selectedPartners.includes(p.name) ? 'text-[#000]' : 'text-gray-700'">
-                          {{ p.name }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
                 </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 bg-white">
               <tr v-for="row in paymentTable" :key="row.code" class="hover:bg-gray-50 transition-colors">
                 <td class="px-6 py-4 text-[13px] text-gray-700">{{ row.code }}</td>
-                <td class="px-6 py-4 text-[13px] text-gray-700">{{ row.partner }}</td>
                 <td class="px-6 py-4 text-[13px] text-gray-700">{{ row.company }}</td>
                 <td class="px-6 py-4 text-[13px] text-gray-700 text-center">{{ row.period }}</td>
                 <td class="px-6 py-4 text-[13px] text-gray-700 text-center">{{ row.year }}</td>
@@ -228,9 +192,9 @@
                 <td class="px-6 py-4 text-[13px] text-gray-700 text-center">{{ row.collected }}</td>
                 <td class="px-6 py-4 text-[13px] text-gray-700 text-center">{{ row.settlement }}</td>
                 <td class="px-6 py-4">
-                  <span :class="row.status === 'Paid' ? 'bg-[#00896F] text-white' : 'bg-[#EF4444] text-white'"
-                    class="px-4 py-1 rounded-full text-[12px] font-medium block w-fit mx-auto">
-                    {{ currentLang === 'ar' ? (row.status === 'Paid' ? 'مدفوع' : 'فشل') : row.status }}
+                  <span :class="row.status === 'paid' ? 'bg-[#00896F] text-white' : 'bg-[#EF4444] text-white'"
+                    class="px-4 py-1 rounded-full text-[12px] font-medium block w-fit mx-auto capitalize">
+                    {{ row.status }}
                   </span>
                 </td>
               </tr>
@@ -247,87 +211,99 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
-definePageMeta({
-  layout: false
-})
+definePageMeta({ layout: false })
 
 const currentLang = useState('currentLang', () => 'en')
-const { isDark, toggleTheme } = useTheme()
+const { isDark } = useTheme()
 
-const {
-  alert: dynamicAlert,
-  mainStats: dynamicMainStats,
-  partnerSummary: dynamicPartnerSummary,
-  paymentDetails: dynamicPaymentDetails
-} = useRevenuePartnershipPartnerPage()
+const { stats, summary, payments, alerts, fetchDashboard, fetchSummary, fetchPayments, exportPayments, fetchAlerts } = usePartnerDashboard()
 
-const showAlert = ref(true)
+const showAlert           = ref(true)
 const isStatusDropdownOpen = ref(false)
-const selectedStatus = ref('All Statuses')
-const isPartnerMenuOpen = ref(false)
+const selectedStatus      = ref('All Statuses')
 
-// Select all partners by default once they are loaded
-const selectedPartners = ref([])
-watchEffect(() => {
-  if (dynamicPartnerSummary.value?.partners?.length > 0 && selectedPartners.value.length === 0) {
-    selectedPartners.value = dynamicPartnerSummary.value.partners.map(p => p.name)
-  }
+onMounted(async () => {
+  await Promise.all([fetchDashboard(), fetchSummary(), fetchPayments(), fetchAlerts()])
 })
 
-const togglePartnerFilter = (partnerName) => {
-  const index = selectedPartners.value.indexOf(partnerName)
-  if (index > -1) {
-    selectedPartners.value.splice(index, 1)
-  } else {
-    selectedPartners.value.push(partnerName)
-  }
-}
-
-// Stats Mapping
+// Stat cards
 const mainStats = computed(() => {
-  return dynamicMainStats.value.map(stat => ({
-    ...stat,
-    displayTitle: currentLang.value === 'ar' ? stat.titleAr : stat.title,
-    displaySubtext: currentLang.value === 'ar' ? stat.subtextAr : stat.subtext
-  }))
+  if (!stats.value) return []
+  return [
+    { displayTitle: 'Total Customers', displaySubtext: 'Linked clients', icon: '/images/icons/Total-Customers.svg', isCurrency: false, value: stats.value.total_customers },
+    { displayTitle: 'Total Revenue', displaySubtext: 'Expected monthly', icon: '/images/icons/Total-Revenue.svg', isCurrency: true, value: stats.value.total_revenue_aed?.toLocaleString() },
+    { displayTitle: 'Collected', displaySubtext: 'Payments received', icon: '/images/icons/Collected.svg', isCurrency: true, value: stats.value.total_collected_aed?.toLocaleString() },
+    { displayTitle: 'Settlement', displaySubtext: 'Commission owed', icon: '/images/icons/settlement.svg', isCurrency: true, value: stats.value.total_settlement_aed?.toLocaleString() },
+  ]
 })
 
-// Partner Summary Mapping
+// Partner Summary — one card per client
 const partnerCards = computed(() => {
-  return (dynamicPartnerSummary.value?.partners ?? []).map(partner => ({
-    ...partner,
-    displayMetrics: partner.metrics.map(m => ({
-      ...m,
-      displayLabel: currentLang.value === 'ar' ? m.labelAr : m.label
-    }))
+  const allClients = (summary.value ?? []).flatMap(group => group.clients ?? [])
+  return allClients.map(client => ({
+    name: client.company_name,
+    displayMetrics: [
+      { displayLabel: 'Revenue', value: client.revenue_aed?.toLocaleString(), isCurrency: true },
+      { displayLabel: 'Collected', value: client.collected_aed?.toLocaleString(), isCurrency: true, label: 'Collected:' },
+      { displayLabel: 'Settlement', value: client.settlement_aed?.toLocaleString(), isCurrency: true, isRate: true },
+    ]
   }))
 })
 
-// Payment Table Logic
+// Summary card header
+const dynamicPartnerSummary = computed(() => ({
+  title: 'Partner Summary',
+  titleAr: 'ملخص الشريك',
+  exportBtn: 'Export',
+  exportBtnAr: 'تصدير',
+  clientCount: stats.value?.total_customers ?? 0,
+}))
+
+// Alert banner — show first alert from API
+const dynamicAlert = computed(() => {
+  const first = alerts.value?.[0]
+  return { title: 'Notice', titleAr: 'إشعار', text: first?.message ?? '', textAr: first?.message ?? '' }
+})
+
+// Payment table
+const columns    = ['Code', 'Company', 'Contract Period', 'Year', 'Revenue', 'Collected', 'Settlement', 'Payment Status']
+const columnsAr  = ['الرمز', 'الشركة', 'فترة العقد', 'السنة', 'الإيرادات', 'المحصل', 'التسوية', 'حالة الدفع']
+const statuses   = computed(() => currentLang.value === 'ar' ? ['كل الحالات', 'مدفوع', 'فشل'] : ['All Statuses', 'Paid', 'Failed'])
+
+const displayColumns = computed(() => currentLang.value === 'ar' ? columnsAr : columns)
+
 const paymentTable = computed(() => {
-  let rows = dynamicPaymentDetails.value?.table?.rows ?? []
-  
+  let rows = (payments.value ?? []).map(r => ({
+    code:       r.code,
+    company:    r.company_name,
+    period:     r.contract_period,
+    year:       r.year,
+    revenue:    r.revenue_aed?.toLocaleString(),
+    collected:  r.collected_aed?.toLocaleString(),
+    settlement: r.settlement_aed?.toLocaleString(),
+    status:     r.payment_status,
+  }))
+
   if (selectedStatus.value !== 'All Statuses' && selectedStatus.value !== 'كل الحالات') {
-    rows = rows.filter(r => r.status === selectedStatus.value || (selectedStatus.value === 'Paid' && r.status === 'Paid') || (selectedStatus.value === 'Failed' && r.status === 'Failed'))
+    const filter = selectedStatus.value.toLowerCase()
+    rows = rows.filter(r => r.status === filter)
   }
-  
-  if (selectedPartners.value.length > 0) {
-    rows = rows.filter(r => selectedPartners.value.includes(r.partner))
-  }
-  
+
   return rows
 })
 
-const statuses = computed(() => {
-  return currentLang.value === 'ar' ? dynamicPaymentDetails.value?.statusesAr : dynamicPaymentDetails.value?.statuses
-})
-
-const displayColumns = computed(() => {
-  return currentLang.value === 'ar' ? dynamicPaymentDetails.value?.table?.columnsAr : dynamicPaymentDetails.value?.table?.columns
-})
-
+const dynamicPaymentDetails = computed(() => ({
+  title: 'Payment Details & Management',
+  titleAr: 'تفاصيل المدفوعات وإدارتها',
+  unitText: 'Values in AED',
+  unitTextAr: 'القيم بالدرهم',
+  searchPlaceholder: 'Search by company or code…',
+  searchPlaceholderAr: 'ابحث بالشركة أو الرمز...',
+  exportBtn: 'Export',
+  exportBtnAr: 'تصدير',
+}))
 </script>
 
 <style scoped>

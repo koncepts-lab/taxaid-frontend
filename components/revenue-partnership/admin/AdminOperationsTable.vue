@@ -55,11 +55,29 @@
           <tr>
             <th class="px-8 py-4 text-[14px] font-medium">Customer Code</th>
             <th class="px-8 py-4 text-[14px] font-medium">
-              <div class="flex items-center gap-1 cursor-pointer">
-                Source
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
+              <div class="relative">
+                <div class="flex items-center gap-1 cursor-pointer select-none" @click="isSourceMenuOpen = !isSourceMenuOpen">
+                  Source
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform" :class="{ 'rotate-180': isSourceMenuOpen }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+                <div v-if="isSourceMenuOpen" class="absolute top-full left-0 mt-1 bg-white rounded-[10px] shadow-lg border border-gray-100 z-20 min-w-[160px] py-1">
+                  <div v-for="source in partnerSourceOptions" :key="source"
+                       class="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 group"
+                       @click.stop="toggleSourceFilter(source)">
+                    <div class="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-colors"
+                         :class="selectedSources.includes(source) ? 'bg-[#00835D]' : 'border-2 border-gray-300 group-hover:border-[#00835D80]'">
+                      <svg v-if="selectedSources.includes(source)" xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <span class="text-[13px] text-gray-700">{{ source }}</span>
+                  </div>
+                  <div v-if="selectedSources.length" class="border-t border-gray-100 mt-1 pt-1 px-3 pb-1">
+                    <button class="text-[12px] text-[#00835D] hover:underline" @click.stop="selectedSources = []">Clear filter</button>
+                  </div>
+                </div>
               </div>
             </th>
             <th class="px-8 py-4 text-[14px] font-medium">Company Name</th>
@@ -137,7 +155,7 @@
         <!-- ALL CUSTOMERS TAB BODY -->
         <tbody v-if="!['Partners', 'Direct Customers', 'Resource Consumption', 'Partner Approvals', 'Uploaded Reports', 'User Master Info'].includes(activeTab)" 
                :class="isDark ? 'bg-transparent divide-white/5' : 'bg-[#F9FAFB]/50 divide-gray-50'" class="divide-y">
-          <tr v-for="(row, idx) in allCustomersData" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-white'" class="transition-all group">
+          <tr v-for="(row, idx) in allCustomersRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-white'" class="transition-all group">
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.code }}</td>
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.source }}</td>
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.company }}</td>
@@ -157,7 +175,7 @@
         <!-- DIRECT CUSTOMERS TAB BODY -->
         <tbody v-else-if="activeTab === 'Direct Customers'" 
                :class="isDark ? 'bg-transparent divide-white/5' : 'bg-[#F9FAFB]/50 divide-gray-50'" class="divide-y">
-          <tr v-for="(row, idx) in directCustomersData" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-white'" class="transition-all group">
+          <tr v-for="(row, idx) in directCustomersRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-white'" class="transition-all group">
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.code }}</td>
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.source }}</td>
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.company }}</td>
@@ -187,7 +205,7 @@
         <!-- PARTNERS TAB BODY -->
         <tbody v-else-if="activeTab === 'Partners'" 
                :class="isDark ? 'bg-transparent divide-white/5' : 'bg-[#F9FAFB]/50 divide-gray-50'" class="divide-y">
-          <tr v-for="(row, idx) in partnersData" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-white'" class="transition-all group">
+          <tr v-for="(row, idx) in filteredPartnersRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-white'" class="transition-all group">
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.code }}</td>
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.source }}</td>
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.company }}</td>
@@ -209,7 +227,7 @@
         <!-- RESOURCE CONSUMPTION TAB BODY -->
         <tbody v-else-if="activeTab === 'Resource Consumption'" 
                :class="isDark ? 'bg-transparent divide-white/5' : 'bg-[#F9FAFB]/50 divide-gray-50'" class="divide-y">
-          <tr v-for="(row, idx) in resourceCustomersData" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-white'" class="transition-all group">
+          <tr v-for="(row, idx) in resourceRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-white'" class="transition-all group">
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.code }}</td>
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.source }}</td>
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.company }}</td>
@@ -228,7 +246,7 @@
         <!-- PARTNER APPROVALS TAB BODY -->
         <tbody v-else-if="activeTab === 'Partner Approvals'" :class="isDark ? 'bg-transparent' : 'bg-white'">
           <template v-if="subTab === 'Partner Registration'">
-            <tr v-for="(row, idx) in partnerApprovalsData" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
+            <tr v-for="(row, idx) in partnerApprovalsRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
               <td class="pl-6 pr-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.date }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.name }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.email }}</td>
@@ -241,18 +259,23 @@
                 </span>
               </td>
               <td class="px-4 py-3 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
-                        :class="row.status === 'Pending' ? 'bg-[#2DCE89] text-white hover:bg-[#28b97b] shadow-[#2DCE8933] shadow-sm' : 'bg-[#2DCE89] text-white opacity-40 cursor-not-allowed'">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                  </svg>
-                  Review
-                </button>
+                <div class="flex items-center gap-2">
+                  <button @click="row.status === 'Pending' && emit('approve-partner', row.id)"
+                          class="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
+                          :class="row.status === 'Pending' ? 'bg-[#00835D] text-white hover:bg-[#006A4A]' : 'bg-[#00835D] text-white opacity-40 cursor-not-allowed'">
+                    Approve
+                  </button>
+                  <button @click="row.status === 'Pending' && emit('reject-partner', row.id)"
+                          class="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
+                          :class="row.status === 'Pending' ? 'bg-[#EF4444] text-white hover:bg-[#DC2626]' : 'bg-[#EF4444] text-white opacity-40 cursor-not-allowed'">
+                    Reject
+                  </button>
+                </div>
               </td>
             </tr>
           </template>
           <template v-else-if="subTab === 'Payment Requests'">
-            <tr v-for="(row, idx) in partnerPaymentRequestsData" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
+            <tr v-for="(row, idx) in paymentRequestsRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
               <td class="pl-6 pr-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.date }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.name }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.partnerId }}</td>
@@ -266,13 +289,18 @@
                 </span>
               </td>
               <td class="px-4 py-3 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
-                        :class="row.status === 'Pending' ? 'bg-[#2DCE89] text-white hover:bg-[#28b97b] shadow-[#2DCE8933] shadow-sm' : 'bg-[#2DCE89] text-white opacity-40 cursor-not-allowed'">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                  </svg>
-                  Review
-                </button>
+                <div class="flex items-center gap-2">
+                  <button @click="row.status === 'Pending' && emit('approve-payment', row.id)"
+                          class="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
+                          :class="row.status === 'Pending' ? 'bg-[#00835D] text-white hover:bg-[#006A4A]' : 'bg-[#00835D] text-white opacity-40 cursor-not-allowed'">
+                    Approve
+                  </button>
+                  <button @click="row.status === 'Pending' && emit('reject-payment', row.id)"
+                          class="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
+                          :class="row.status === 'Pending' ? 'bg-[#EF4444] text-white hover:bg-[#DC2626]' : 'bg-[#EF4444] text-white opacity-40 cursor-not-allowed'">
+                    Reject
+                  </button>
+                </div>
               </td>
             </tr>
           </template>
@@ -280,13 +308,13 @@
 
         <!-- UPLOADED REPORTS TAB BODY -->
         <tbody v-else-if="activeTab === 'Uploaded Reports'" :class="isDark ? 'bg-transparent' : 'bg-white'">
-          <tr v-for="(row, idx) in uploadedReportsData" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
-            <td class="pl-6 pr-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.type }}</td>
+          <tr v-for="(row, idx) in uploadedReportsRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
+            <td class="pl-6 pr-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ reportTypeLabel(row.type) }}</td>
             <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.file }}</td>
             <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.uploader }}</td>
             <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.date }}</td>
             <td class="px-4 py-3 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-              <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all bg-[#2DCE89] text-white hover:bg-[#28b97b] shadow-[#2DCE8933] shadow-sm">
+              <button @click="emit('download-report', row.id)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all bg-[#2DCE89] text-white hover:bg-[#28b97b] shadow-[#2DCE8933] shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
@@ -298,7 +326,7 @@
 
         <!-- USER MASTER INFO TAB BODY -->
         <tbody v-else-if="activeTab === 'User Master Info'" :class="isDark ? 'bg-transparent' : 'bg-white'">
-          <tr v-for="(row, idx) in userMasterInfoData" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
+          <tr v-for="(row, idx) in userMasterRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
             <td class="pl-6 pr-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.code }}</td>
             <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.source }}</td>
             <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.company }}</td>
@@ -316,66 +344,43 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-
 const { isDark } = useTheme()
 
 const props = defineProps({
-  activeTab: { type: String, default: 'All Customers' },
-  subTab: { type: String, default: 'Partner Registration' }
+  activeTab:           { type: String,  default: 'All Customers' },
+  subTab:              { type: String,  default: 'Partner Registration' },
+  allCustomersRows:    { type: Array,   default: () => [] },
+  directCustomersRows: { type: Array,   default: () => [] },
+  partnersRows:        { type: Array,   default: () => [] },
+  resourceRows:        { type: Array,   default: () => [] },
+  partnerApprovalsRows:{ type: Array,   default: () => [] },
+  paymentRequestsRows: { type: Array,   default: () => [] },
+  uploadedReportsRows: { type: Array,   default: () => [] },
+  userMasterRows:      { type: Array,   default: () => [] },
 })
 
-const partnerApprovalsData = [
-  { date: '11/20/2024', name: 'Alex Thompson', email: 'partner@newtech.com', phone: '+1-555-0201', license: 'TL-2024-001', status: 'Pending' },
-  { date: '11/20/2024', name: 'Alex Thompson', email: 'partner@newtech.com', phone: '+1-555-0201', license: 'TL-2024-001', status: 'Pending' },
-  { date: '11/22/2024', name: 'Mark Stevens', email: 'partners@globalreach.com', phone: '+1-555-0203', license: 'TL-2024-002', status: 'Approved' },
-]
+const emit = defineEmits(['approve-partner', 'reject-partner', 'approve-payment', 'reject-payment', 'download-report'])
 
-const partnerPaymentRequestsData = [
-  { date: '11/20/2024', name: 'TechCorp Solutions Inc.', partnerId: 'PT-001', amount: '45,000', voucher: 'VCH-2024-1101', paymentDate: '11/25/2024', status: 'Pending' },
-  { date: '11/20/2024', name: 'Innovate System Ltd.', partnerId: 'PT-002', amount: '45,000', voucher: 'VCH-2024-1101', paymentDate: '11/25/2024', status: 'Pending' },
-  { date: '11/22/2024', name: 'Enterprise Holdings', partnerId: 'PT-003', amount: '45,000', voucher: 'VCH-2024-1101', paymentDate: '11/25/2024', status: 'Approved' }
-]
+const reportTypeLabel = (type) => {
+  if (type === 'ai_usage') return 'AI Usage Report'
+  if (type === 'hosting_cost') return 'Hosting Cost Report'
+  return type
+}
 
-const uploadedReportsData = [
-  { type: 'Month End Report', file: 'Month_End_Report_October_2024.csv', uploader: 'Accounts', date: '11/5/2024' },
-  { type: 'Hosting Cost Report', file: 'Month_End_Report_September_2024.csv', uploader: 'Accounts', date: '10/3/2024' },
-  { type: 'Month End Report', file: 'Month_End_Report_August_2024.csv', uploader: 'Accounts', date: '9/2/2024' }
-]
+// ── Partners Source filter ────────────────────────────────────────────────────
+const isSourceMenuOpen  = ref(false)
+const selectedSources   = ref([])
 
-const userMasterInfoData = [
-  { code: 'CUST-001', source: 'DC-001', company: 'TechCorp Solutions Inc.', bank: 'Chase Bank *****1234', card: '**** 4532', contactPerson: 'John Smith', contactNo: '+1-555-0101', email: 'john.smith@techcorp.com' },
-  { code: 'CUST-001', source: 'DC-001', company: 'TechCorp Solutions Inc.', bank: 'Chase Bank *****1234', card: '**** 4532', contactPerson: 'John Smith', contactNo: '+1-555-0101', email: 'john.smith@techcorp.com' },
-  { code: 'CUST-001', source: 'DC-001', company: 'TechCorp Solutions Inc.', bank: 'Chase Bank *****1234', card: '**** 4532', contactPerson: 'John Smith', contactNo: '+1-555-0101', email: 'john.smith@techcorp.com' }
-]
+const partnerSourceOptions = computed(() => [...new Set(props.partnersRows.map(r => r.source).filter(Boolean))])
 
-const allCustomersData = [
-  { code: 'CUST-001', source: 'PT-001', company: 'TechCorp Solutions Inc.', revenue: '125,000', collected: '125,000', date: '11/5/2024', status: 'Paid', reason: '-' },
-  { code: 'CUST-002', source: 'PT-002', company: 'Global Finance LLC', revenue: '89,000', collected: '89,000', date: '11/5/2024', status: 'Failed', reason: 'Invoice not received' },
-  { code: 'CUST-003', source: 'DC-003', company: 'TechCorp Solutions Inc.', revenue: '125,000', collected: '125,000', date: '11/5/2024', status: 'Failed', reason: 'Card limit exceeded' },
-]
+const filteredPartnersRows = computed(() =>
+  selectedSources.value.length
+    ? props.partnersRows.filter(r => selectedSources.value.includes(r.source))
+    : props.partnersRows
+)
 
-const directCustomersData = [
-  { code: 'CUST-001', source: 'DT-001', company: 'TechCorp Solutions Inc.', revenue: '125,000', collected: '125,000', date: '11/5/2024', status: 'Paid', reason: '-' },
-  { code: 'CUST-002', source: 'DT-002', company: 'Global Finance LLC', revenue: '89,000', collected: '89,000', date: '11/5/2024', status: 'Failed', reason: 'Invoice not received' },
-  { code: 'CUST-001', source: 'DT-003', company: 'TechCorp Solutions Inc.', revenue: '125,000', collected: '125,000', date: '11/5/2024', status: 'Failed', reason: 'Card limit exceeded' },
-]
-
-const partnersData = [
-  { code: 'CUST-001', source: 'PT-001', company: 'TechCorp Solutions Inc.', contract: '12 Months', year: '1', revenue: '125,000', collected: '125,000', settlement: '125,000', date: '11/5/2024', status: 'Paid' },
-  { code: 'CUST-002', source: 'PT-002', company: 'Global Finance LLC', contract: '24 Months', year: '3+', revenue: '26,000', collected: '26,000', settlement: '26,000', date: '11/5/2024', status: 'Failed' },
-  { code: 'CUST-001', source: 'PT-003', company: 'TechCorp Solutions Inc.', contract: '36 Months', year: '2', revenue: '38,000', collected: '38,000', settlement: '38,000', date: '11/5/2024', status: 'Failed' },
-]
-
-const resourceCustomersData = [
-  { code: 'CUST-001', source: 'DC-001', company: 'TechCorp Solutions Inc.', hosting: '35,000', ai: '37,000', total: '72,000', issues: ['High Hosting'] },
-  { code: 'CUST-002', source: 'DC-002', company: 'Global Finance LLC', hosting: '25,000', ai: '40,000', total: '68,000', issues: ['High Hosting', 'High AI Usage'] },
-]
-
-const currentTableData = computed(() => {
-  if (props.activeTab === 'Direct Customers') {
-    return allCustomersData.filter(item => item.source.startsWith('DC'))
-  }
-  return allCustomersData
-})
+const toggleSourceFilter = (source) => {
+  const i = selectedSources.value.indexOf(source)
+  i > -1 ? selectedSources.value.splice(i, 1) : selectedSources.value.push(source)
+}
 </script>

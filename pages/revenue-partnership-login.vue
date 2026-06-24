@@ -106,12 +106,16 @@
           </div>
         </div>
 
+        <!-- Error Message -->
+        <p v-if="loginError" class="text-[13px] text-red-500 text-center -mb-2">{{ loginError }}</p>
+
         <!-- Submit Button -->
-        <button 
+        <button
           type="submit"
-          class="w-full h-[48px] bg-[#007C65] hover:bg-[#006552] text-white font-medium rounded-[10px] transition-all duration-300 mt-4 active:scale-[0.98] shadow-lg shadow-[#007C6533] cursor-pointer"
+          :disabled="isLoggingIn"
+          class="w-full h-[48px] bg-[#007C65] hover:bg-[#006552] text-white font-medium rounded-[10px] transition-all duration-300 mt-4 active:scale-[0.98] shadow-lg shadow-[#007C6533] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {{ currentLang === 'ar' ? labels.submitAr : labels.submit }}
+          {{ isLoggingIn ? 'Signing in…' : (currentLang === 'ar' ? labels.submitAr : labels.submit) }}
         </button>
 
       </form>
@@ -129,26 +133,29 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect } from 'vue'
+import { ref, computed } from 'vue'
 
 definePageMeta({
   layout: false
 })
 
-const { 
-  title, titleAr, 
-  subtitle, subtitleAr, 
-  roles: rolesEn, rolesAr, 
-  labels, placeholders, footer 
+const {
+  title, titleAr,
+  subtitle, subtitleAr,
+  roles: rolesEn, rolesAr,
+  labels, placeholders, footer
 } = useRevenuePartnershipLogin()
 
-const currentLang = useState('currentLang', () => 'en')
-const email = ref('')
-const password = ref('')
+const { login } = useRevenueAuth()
+
+const currentLang  = useState('currentLang', () => 'en')
+const email        = ref('')
+const password     = ref('')
 const isDropdownOpen = ref(false)
 const selectedRole = ref('Partner')
+const isLoggingIn  = ref(false)
+const loginError   = ref('')
 
-// Map English roles to Arabic ones for display
 const rolesList = computed(() => {
   return rolesEn.value.map((role, idx) => ({
     id: role,
@@ -167,15 +174,18 @@ function selectRole(roleId) {
   isDropdownOpen.value = false
 }
 
-function onLogin() {
-  console.log('Logging in as:', selectedRole.value, email.value)
-  
-  if (selectedRole.value === 'Partner') {
-    navigateTo('/revenue-partnership/partner')
-  } else if (selectedRole.value === 'Accounts') {
-    navigateTo('/revenue-partnership/accounts')
-  } else {
-    navigateTo('/revenue-partnership/select-dashboard')
+async function onLogin() {
+  if (isLoggingIn.value) return
+  loginError.value = ''
+  isLoggingIn.value = true
+  try {
+    const roleMap = { Partner: 'partner', Accounts: 'accounts', Admin: 'admin' }
+    const role = roleMap[selectedRole.value] ?? selectedRole.value.toLowerCase()
+    await login(role, email.value, password.value)
+  } catch (err) {
+    loginError.value = err?.data?.message ?? 'Login failed. Please check your credentials.'
+  } finally {
+    isLoggingIn.value = false
   }
 }
 </script>

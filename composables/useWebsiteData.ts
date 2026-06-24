@@ -180,20 +180,21 @@ export function useTeamMemberTicketing() {
 //   }
 // }
 
-/** Revenue Partnership — accounts page */
-export function useRevenuePartnership() {
-  const { data, loading, error } = useWebsiteData()
-  const rp = computed(() => data.value?.revenuePartnership ?? {})
-  return {
-    loading, error,
-    partnerInfo:          computed(() => rp.value?.partnerInfo          ?? {}),
-    overviewMetrics:      computed(() => rp.value?.overviewMetrics?.cards ?? []),
-    paymentStatusMetrics: computed(() => rp.value?.paymentStatusMetrics?.cards ?? []),
-    customerManagement:   computed(() => rp.value?.customerManagement   ?? {}),
-    paymentToPartnerModal:computed(() => rp.value?.paymentToPartnerModal ?? {}),
-    alerts:               computed(() => rp.value?.alerts               ?? {}),
-  }
-}
+// useRevenuePartnership — MOCK (static data.json) — accounts page
+// Replaced by composables/revenue-partner/useAccountsDashboard.ts (live API)
+// export function useRevenuePartnership() {
+//   const { data, loading, error } = useWebsiteData()
+//   const rp = computed(() => data.value?.revenuePartnership ?? {})
+//   return {
+//     loading, error,
+//     partnerInfo:          computed(() => rp.value?.partnerInfo          ?? {}),
+//     overviewMetrics:      computed(() => rp.value?.overviewMetrics?.cards ?? []),
+//     paymentStatusMetrics: computed(() => rp.value?.paymentStatusMetrics?.cards ?? []),
+//     customerManagement:   computed(() => rp.value?.customerManagement   ?? {}),
+//     paymentToPartnerModal:computed(() => rp.value?.paymentToPartnerModal ?? {}),
+//     alerts:               computed(() => rp.value?.alerts               ?? {}),
+//   }
+// }
 
 
 // useRevenuePage — MOCK (static data.json)
@@ -295,19 +296,20 @@ export function useRevenuePartnershipLogin() {
   }
 }
 
-export function useRevenuePartnershipPartnerPage() {
-  const { data, loading, error } = useWebsiteData()
-  const pageData = computed(() => data.value?.revenuePartnershipPartnerPage ?? {})
-
-  return {
-    loading,
-    error,
-    alert:          computed(() => pageData.value?.alert          ?? {}),
-    mainStats:      computed(() => pageData.value?.mainStats      ?? []),
-    partnerSummary: computed(() => pageData.value?.partnerSummary ?? {}),
-    paymentDetails: computed(() => pageData.value?.paymentDetails ?? {}),
-  }
-}
+// useRevenuePartnershipPartnerPage — MOCK (static data.json) — partner page
+// Replaced by composables/revenue-partner/usePartnerDashboard.ts (live API)
+// export function useRevenuePartnershipPartnerPage() {
+//   const { data, loading, error } = useWebsiteData()
+//   const pageData = computed(() => data.value?.revenuePartnershipPartnerPage ?? {})
+//   return {
+//     loading,
+//     error,
+//     alert:          computed(() => pageData.value?.alert          ?? {}),
+//     mainStats:      computed(() => pageData.value?.mainStats      ?? []),
+//     partnerSummary: computed(() => pageData.value?.partnerSummary ?? {}),
+//     paymentDetails: computed(() => pageData.value?.paymentDetails ?? {}),
+//   }
+// }
 
 /// !! LANDING PAGE — static navigation only, no backend API needed !! ///
 /// !! title, subtitle, cards are hardcoded in data.json — do NOT replace with API !! ///
@@ -325,22 +327,23 @@ export function useRevenuePartnershipSelectDashboardPage() {
   }
 }
 
-export function useRevenuePartnershipAdminPage() {
-  const { data, loading, error } = useWebsiteData()
-  const pageData = computed(() => data.value?.revenuePartnershipAdminPage ?? {})
-
-  return {
-    loading,
-    error,
-    pageData,
-    alert:               computed(() => pageData.value?.alert               ?? {}),
-    overviewMetrics:     computed(() => pageData.value?.overviewMetrics     ?? {}),
-    paymentStatusMetrics:computed(() => pageData.value?.paymentStatusMetrics ?? {}),
-    operationsSubTabs:   computed(() => pageData.value?.operationsSubTabs   ?? []),
-    approvalSubTabs:     computed(() => pageData.value?.approvalSubTabs     ?? []),
-    statusFilters:       computed(() => pageData.value?.statusFilters       ?? []),
-  }
-}
+// useRevenuePartnershipAdminPage — MOCK (static data.json) — admin page
+// Replaced by composables/revenue-partner/useAdminDashboard.ts (live API)
+// export function useRevenuePartnershipAdminPage() {
+//   const { data, loading, error } = useWebsiteData()
+//   const pageData = computed(() => data.value?.revenuePartnershipAdminPage ?? {})
+//   return {
+//     loading,
+//     error,
+//     pageData,
+//     alert:               computed(() => pageData.value?.alert               ?? {}),
+//     overviewMetrics:     computed(() => pageData.value?.overviewMetrics     ?? {}),
+//     paymentStatusMetrics:computed(() => pageData.value?.paymentStatusMetrics ?? {}),
+//     operationsSubTabs:   computed(() => pageData.value?.operationsSubTabs   ?? []),
+//     approvalSubTabs:     computed(() => pageData.value?.approvalSubTabs     ?? []),
+//     statusFilters:       computed(() => pageData.value?.statusFilters       ?? []),
+//   }
+// }
 
 /// !! LANDING PAGE — static navigation only, no backend API needed !! ///
 /// !! title, subtitle, cards are hardcoded in data.json — do NOT replace with API !! ///
