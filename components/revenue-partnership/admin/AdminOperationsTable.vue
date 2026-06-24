@@ -190,7 +190,8 @@
             </td>
             <td class="px-8 py-5 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{ row.reason }}</td>
             <td class="px-8 py-5 text-right flex justify-end">
-              <button class="inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-[12px] font-medium transition-all"
+              <button @click="row.status === 'Paid' && openReviewModal(row, 'invoice')"
+                      class="inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-[12px] font-medium transition-all"
                       :class="row.status === 'Paid' ? 'bg-[#00835D] text-white hover:bg-[#006A4A]' : (isDark ? 'bg-white/10 text-white/40 cursor-not-allowed' : 'bg-[#7EAC9D] text-white cursor-not-allowed')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -260,6 +261,10 @@
               </td>
               <td class="px-4 py-3 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
                 <div class="flex items-center gap-2">
+                  <button @click="openReviewModal(row, 'registration')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#25b57d] text-white rounded-[6px] text-[12px] font-medium hover:bg-[#1a9563] transition-colors shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" /></svg>
+                    Review
+                  </button>
                   <button @click="row.status === 'Pending' && emit('approve-partner', row.id)"
                           class="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
                           :class="row.status === 'Pending' ? 'bg-[#00835D] text-white hover:bg-[#006A4A]' : 'bg-[#00835D] text-white opacity-40 cursor-not-allowed'">
@@ -290,6 +295,10 @@
               </td>
               <td class="px-4 py-3 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
                 <div class="flex items-center gap-2">
+                  <button @click="openReviewModal(row, 'payment')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#25b57d] text-white rounded-[6px] text-[12px] font-medium hover:bg-[#1a9563] transition-colors shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" /></svg>
+                    Review
+                  </button>
                   <button @click="row.status === 'Pending' && emit('approve-payment', row.id)"
                           class="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
                           :class="row.status === 'Pending' ? 'bg-[#00835D] text-white hover:bg-[#006A4A]' : 'bg-[#00835D] text-white opacity-40 cursor-not-allowed'">
@@ -341,6 +350,289 @@
       </div>
     </div>
   </section>
+
+  <!-- Partner Registration Details Modal -->
+  <div v-if="selectedReviewRow && reviewModalType === 'registration'" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-[16px] w-full max-w-lg shadow-xl overflow-y-auto relative max-h-[90vh]">
+      <div class="p-6">
+        <button @click="closeReviewModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+        <h3 class="text-xl font-medium text-gray-900 mb-1">Partner Registration Details</h3>
+        <p class="text-[14px] text-gray-500 mb-6">Complete information about the partner registration request</p>
+
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex items-center gap-2">
+            <span class="text-[14px] font-medium text-gray-900">Status:</span>
+            <span class="bg-[#F59E0B] text-white px-3 py-0.5 rounded-full text-[12px] font-medium">{{ selectedReviewRow.status }}</span>
+          </div>
+          <span class="text-[14px] text-gray-500">Requested: {{ selectedReviewRow.date }}</span>
+        </div>
+
+        <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Contact Information</h4>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Contact Person</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.name }}</p>
+          </div>
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Email Address</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.email }}</p>
+          </div>
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Contact Phone</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.phone }}</p>
+          </div>
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Authorized Person Phone</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.phone }}</p>
+          </div>
+        </div>
+
+        <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Business Information</h4>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Trading License Number</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.license }}</p>
+          </div>
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Authorized Person Name</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.name }}</p>
+          </div>
+          <div class="col-span-2">
+            <p class="text-[13px] text-gray-500 mb-1">Business Address</p>
+            <p class="text-[14px] text-gray-900">123 Business St, New York, NY 10001</p>
+          </div>
+        </div>
+
+        <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Request Details</h4>
+        <div class="grid grid-cols-2 gap-4 mb-8">
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Requested By</p>
+            <p class="text-[14px] text-gray-900">Accounts Team</p>
+          </div>
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Request Date</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.date }}, 5:30:00 AM</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 justify-center">
+          <button @click="emit('approve-partner', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#00835D] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#006A4A] transition-colors shadow-sm">
+            <img src="/images/icons/Approve-Partner.svg" class="w-4 h-4" alt="Approve" />
+            Approve Partner
+          </button>
+          <button @click="emit('reject-partner', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#EF4444] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#DC2626] transition-colors shadow-sm">
+            <img src="/images/icons/Reject-Partner.svg" class="w-4 h-4" alt="Reject" />
+            Reject Partner
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Partner Payment Request Details Modal -->
+  <div v-else-if="selectedReviewRow && reviewModalType === 'payment'" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-[16px] w-full max-w-lg shadow-xl overflow-y-auto relative max-h-[90vh]">
+      <div class="p-6">
+        <button @click="closeReviewModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+        <h3 class="text-xl font-medium text-gray-900 mb-1">Partner Payment Request Details</h3>
+        <p class="text-[14px] text-gray-500 mb-6">Complete information about the partner payment request</p>
+
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Status</p>
+            <span class="bg-[#F59E0B] text-white px-3 py-0.5 rounded-full text-[12px] font-medium">{{ selectedReviewRow.status }}</span>
+          </div>
+          <div class="text-right">
+            <p class="text-[13px] text-gray-500 mb-1">Requested</p>
+            <span class="text-[14px] text-gray-900">{{ selectedReviewRow.date }}</span>
+          </div>
+        </div>
+
+        <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Contact Information</h4>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Partner Name</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.name }}</p>
+          </div>
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Partner Code</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.partnerId }}</p>
+          </div>
+        </div>
+
+        <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Payment Information</h4>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Voucher Number</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.voucher }}</p>
+          </div>
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Payment Amount</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.amount }}</p>
+          </div>
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Payment Date</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.paymentDate }}</p>
+          </div>
+        </div>
+
+        <h4 class="text-[15px] font-medium text-gray-900 mb-2">Payment Details</h4>
+        <div class="bg-[#E8FCF2] border border-[#A2E8D6] rounded-[8px] p-4 mb-6">
+          <p class="text-[14px] text-gray-700">Commission payment for Q4 2024 - TechCorp Solutions Inc. and 3 other clients</p>
+        </div>
+
+        <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Request Details</h4>
+        <div class="grid grid-cols-2 gap-4 mb-8">
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Requested By</p>
+            <p class="text-[14px] text-gray-900">Sarah Johnson (Accounts)</p>
+          </div>
+          <div>
+            <p class="text-[13px] text-gray-500 mb-1">Request Date</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.date }}</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 justify-center">
+          <button @click="emit('approve-payment', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#00835D] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#006A4A] transition-colors shadow-sm">
+            <img src="/images/icons/Approve-Partner.svg" class="w-4 h-4" alt="Approve" />
+            Approve Partner
+          </button>
+          <button @click="emit('reject-payment', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#EF4444] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#DC2626] transition-colors shadow-sm">
+            <img src="/images/icons/Reject-Partner.svg" class="w-4 h-4" alt="Reject" />
+            Reject Partner
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice Details Modal -->
+  <div v-else-if="selectedReviewRow && reviewModalType === 'invoice'" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-[16px] w-full max-w-lg shadow-xl overflow-y-auto relative max-h-[90vh]">
+      <div class="p-6">
+        <button @click="closeReviewModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+        <h3 class="text-xl font-medium text-gray-900 mb-1">Invoice Details</h3>
+        <p class="text-[14px] text-gray-500 mb-6">Complete invoice information for the customer</p>
+
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h4 class="text-[18px] font-medium text-gray-900">{{ selectedReviewRow.company }}</h4>
+            <p class="text-[14px] text-gray-500">{{ selectedReviewRow.code }}</p>
+          </div>
+          <span class="bg-[#00835D] text-white px-4 py-1 rounded-full text-[13px] font-medium">Paid</span>
+        </div>
+
+        <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Invoice Information</h4>
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Invoice Number</p>
+            <p class="text-[13px] font-medium text-gray-900">INV-2024-001</p>
+          </div>
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Invoice Date</p>
+            <p class="text-[13px] font-medium text-gray-900">11/1/2024</p>
+          </div>
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Due Date</p>
+            <p class="text-[13px] font-medium text-gray-900">11/15/2024</p>
+          </div>
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Plan Type</p>
+            <p class="text-[13px] font-medium text-gray-900">Enterprise Plan</p>
+          </div>
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Contract Period</p>
+            <p class="text-[13px] font-medium text-gray-900">12 months</p>
+          </div>
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Payment Date</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.date }}</p>
+          </div>
+        </div>
+
+        <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Financial Details</h4>
+        <div class="bg-[#F0FDFA] rounded-[8px] p-4 mb-6">
+          <div class="flex justify-between items-center mb-2">
+            <p class="text-[14px] text-gray-600">Subtotal</p>
+            <p class="text-[14px] text-gray-900">$109,375</p>
+          </div>
+          <div class="flex justify-between items-center mb-4">
+            <p class="text-[14px] text-gray-600">Tax (12.5%)</p>
+            <p class="text-[14px] text-gray-900">$15,625</p>
+          </div>
+          <div class="flex justify-between items-center pt-3 border-t border-[#A2E8D6] mb-3">
+            <p class="text-[15px] font-medium text-gray-900">Total Revenue</p>
+            <p class="text-[15px] font-medium text-gray-900">{{ selectedReviewRow.revenue }}</p>
+          </div>
+          <div class="flex justify-between items-center mb-2">
+            <p class="text-[14px] text-[#00835D]">Amount Collected</p>
+            <p class="text-[14px] text-[#00835D]">{{ selectedReviewRow.collected }}</p>
+          </div>
+          <div class="flex justify-between items-center">
+            <p class="text-[14px] text-[#EF4444]">Amount Pending</p>
+            <p class="text-[14px] text-[#EF4444]">$0</p>
+          </div>
+        </div>
+
+        <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Customer Information</h4>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Contact Person</p>
+            <p class="text-[13px] text-gray-900">John Smith</p>
+          </div>
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Email Address</p>
+            <p class="text-[13px] text-gray-900">john.smith@techcorp.com</p>
+          </div>
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Contact Phone</p>
+            <p class="text-[13px] text-gray-900">+1-555-0101</p>
+          </div>
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Source</p>
+            <p class="text-[13px] text-gray-900">{{ selectedReviewRow.source }}</p>
+          </div>
+        </div>
+
+        <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Payment Information</h4>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Bank Details</p>
+            <p class="text-[13px] text-gray-900">Chase Bank *****1234</p>
+          </div>
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Credit Card</p>
+            <p class="text-[13px] text-gray-900">**** 4532</p>
+            <p class="text-[11px] text-gray-400 mt-0.5">Expires: 2025-08-15</p>
+          </div>
+        </div>
+
+        <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Resource Consumption</h4>
+        <div class="grid grid-cols-3 gap-4 mb-2">
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Hosting Consumption</p>
+            <p class="text-[13px] font-medium text-gray-900">$15,000</p>
+          </div>
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">AI Token Consumption</p>
+            <p class="text-[13px] font-medium text-gray-900">$30,000</p>
+          </div>
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Total Cost</p>
+            <p class="text-[13px] font-medium text-gray-900">$45,000</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -382,5 +674,20 @@ const filteredPartnersRows = computed(() =>
 const toggleSourceFilter = (source) => {
   const i = selectedSources.value.indexOf(source)
   i > -1 ? selectedSources.value.splice(i, 1) : selectedSources.value.push(source)
+}
+
+// ── Review Modals ─────────────────────────────────────────────────────────────
+import { ref as vueRef } from 'vue' // In case it wasn't explicitly imported
+const selectedReviewRow = vueRef(null)
+const reviewModalType = vueRef('')
+
+const openReviewModal = (row, type) => {
+  selectedReviewRow.value = row
+  reviewModalType.value = type
+}
+
+const closeReviewModal = () => {
+  selectedReviewRow.value = null
+  reviewModalType.value = ''
 }
 </script>
