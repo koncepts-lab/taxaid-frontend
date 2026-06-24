@@ -260,22 +260,10 @@
                 </span>
               </td>
               <td class="px-4 py-3 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                <div class="flex items-center gap-2">
-                  <button @click="openReviewModal(row, 'registration')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#25b57d] text-white rounded-[6px] text-[12px] font-medium hover:bg-[#1a9563] transition-colors shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" /></svg>
-                    Review
-                  </button>
-                  <button @click="row.status === 'Pending' && emit('approve-partner', row.id)"
-                          class="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
-                          :class="row.status === 'Pending' ? 'bg-[#00835D] text-white hover:bg-[#006A4A]' : 'bg-[#00835D] text-white opacity-40 cursor-not-allowed'">
-                    Approve
-                  </button>
-                  <button @click="row.status === 'Pending' && emit('reject-partner', row.id)"
-                          class="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
-                          :class="row.status === 'Pending' ? 'bg-[#EF4444] text-white hover:bg-[#DC2626]' : 'bg-[#EF4444] text-white opacity-40 cursor-not-allowed'">
-                    Reject
-                  </button>
-                </div>
+                <button @click="openReviewModal(row, 'registration')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#25b57d] text-white rounded-[6px] text-[12px] font-medium hover:bg-[#1a9563] transition-colors shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" /></svg>
+                  Review
+                </button>
               </td>
             </tr>
           </template>
@@ -294,22 +282,10 @@
                 </span>
               </td>
               <td class="px-4 py-3 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                <div class="flex items-center gap-2">
-                  <button @click="openReviewModal(row, 'payment')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#25b57d] text-white rounded-[6px] text-[12px] font-medium hover:bg-[#1a9563] transition-colors shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" /></svg>
-                    Review
-                  </button>
-                  <button @click="row.status === 'Pending' && emit('approve-payment', row.id)"
-                          class="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
-                          :class="row.status === 'Pending' ? 'bg-[#00835D] text-white hover:bg-[#006A4A]' : 'bg-[#00835D] text-white opacity-40 cursor-not-allowed'">
-                    Approve
-                  </button>
-                  <button @click="row.status === 'Pending' && emit('reject-payment', row.id)"
-                          class="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
-                          :class="row.status === 'Pending' ? 'bg-[#EF4444] text-white hover:bg-[#DC2626]' : 'bg-[#EF4444] text-white opacity-40 cursor-not-allowed'">
-                    Reject
-                  </button>
-                </div>
+                <button @click="openReviewModal(row, 'payment')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#25b57d] text-white rounded-[6px] text-[12px] font-medium hover:bg-[#1a9563] transition-colors shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" /></svg>
+                  Review
+                </button>
               </td>
             </tr>
           </template>
@@ -366,7 +342,7 @@
             <span class="text-[14px] font-medium text-gray-900">Status:</span>
             <span class="bg-[#F59E0B] text-white px-3 py-0.5 rounded-full text-[12px] font-medium">{{ selectedReviewRow.status }}</span>
           </div>
-          <span class="text-[14px] text-gray-500">Requested: {{ selectedReviewRow.date }}</span>
+          <span class="text-[14px] text-gray-500">Requested: {{ selectedReviewRow.dateOnly }}</span>
         </div>
 
         <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Contact Information</h4>
@@ -384,8 +360,8 @@
             <p class="text-[14px] text-gray-900">{{ selectedReviewRow.phone }}</p>
           </div>
           <div>
-            <p class="text-[13px] text-gray-500 mb-1">Authorized Person Phone</p>
-            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.phone }}</p>
+            <p class="text-[13px] text-gray-500 mb-1">Authorized Person Contact</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.authorizedPersonContact }}</p>
           </div>
         </div>
 
@@ -396,24 +372,20 @@
             <p class="text-[14px] text-gray-900">{{ selectedReviewRow.license }}</p>
           </div>
           <div>
-            <p class="text-[13px] text-gray-500 mb-1">Authorized Person Name</p>
-            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.name }}</p>
+            <p class="text-[13px] text-gray-500 mb-1">Authorized Person</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.authorizedPerson }}</p>
           </div>
           <div class="col-span-2">
             <p class="text-[13px] text-gray-500 mb-1">Business Address</p>
-            <p class="text-[14px] text-gray-900">123 Business St, New York, NY 10001</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.address }}</p>
           </div>
         </div>
 
         <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Request Details</h4>
         <div class="grid grid-cols-2 gap-4 mb-8">
           <div>
-            <p class="text-[13px] text-gray-500 mb-1">Requested By</p>
-            <p class="text-[14px] text-gray-900">Accounts Team</p>
-          </div>
-          <div>
             <p class="text-[13px] text-gray-500 mb-1">Request Date</p>
-            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.date }}, 5:30:00 AM</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.date }}</p>
           </div>
         </div>
 
@@ -448,7 +420,7 @@
           </div>
           <div class="text-right">
             <p class="text-[13px] text-gray-500 mb-1">Requested</p>
-            <span class="text-[14px] text-gray-900">{{ selectedReviewRow.date }}</span>
+            <span class="text-[14px] text-gray-900">{{ selectedReviewRow.dateOnly }}</span>
           </div>
         </div>
 
@@ -482,14 +454,14 @@
 
         <h4 class="text-[15px] font-medium text-gray-900 mb-2">Payment Details</h4>
         <div class="bg-[#E8FCF2] border border-[#A2E8D6] rounded-[8px] p-4 mb-6">
-          <p class="text-[14px] text-gray-700">Commission payment for Q4 2024 - TechCorp Solutions Inc. and 3 other clients</p>
+          <p class="text-[14px] text-gray-700">{{ selectedReviewRow.details }}</p>
         </div>
 
         <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Request Details</h4>
         <div class="grid grid-cols-2 gap-4 mb-8">
           <div>
-            <p class="text-[13px] text-gray-500 mb-1">Requested By</p>
-            <p class="text-[14px] text-gray-900">Sarah Johnson (Accounts)</p>
+            <p class="text-[13px] text-gray-500 mb-1">Submitted By</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.submittedBy }}</p>
           </div>
           <div>
             <p class="text-[13px] text-gray-500 mb-1">Request Date</p>

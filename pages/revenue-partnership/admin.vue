@@ -413,18 +413,24 @@ function normalizeResourceRows(rows) {
 
 function normalizeApprovalRows(rows) {
   return (rows || []).map(r => ({
-    id: r.id, date: r.created_at?.slice(0, 10) ?? '—',
+    id: r.id, date: r.created_at ? new Date(r.created_at).toLocaleString('en-US') : '—',
+    dateOnly: r.created_at ? new Date(r.created_at).toLocaleDateString('en-US') : '—',
     name: r.name, email: r.email, phone: r.contact_phone ?? '—',
     license: r.trading_license ?? '—', status: capitalize(r.status),
+    address: r.address ?? '—', authorizedPerson: r.authorized_person ?? '—',
+    authorizedPersonContact: r.authorized_person_contact ?? '—',
+    contactPerson: r.contact_person ?? '—',
   }))
 }
 
 function normalizePaymentRequestRows(rows) {
   return (rows || []).map(r => ({
-    id: r.id, date: r.created_at?.slice(0, 10) ?? '—',
+    id: r.id, date: r.created_at ? new Date(r.created_at).toLocaleString('en-US') : '—',
+    dateOnly: r.created_at ? new Date(r.created_at).toLocaleDateString('en-US') : '—',
     name: r.partner?.name ?? '—', partnerId: r.partner?.code ?? '—',
     amount: r.amount?.toLocaleString() ?? '—', voucher: r.voucher_number ?? '—',
-    paymentDate: r.payment_date ?? '—', status: capitalize(r.status),
+    paymentDate: r.payment_date ? new Date(r.payment_date).toLocaleDateString('en-US') : '—', status: capitalize(r.status),
+    details: r.details ?? '—', submittedBy: r.submitted_by?.full_name ?? '—',
   }))
 }
 
