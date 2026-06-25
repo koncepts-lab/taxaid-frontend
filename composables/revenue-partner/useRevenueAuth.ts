@@ -26,7 +26,7 @@ export const useRevenueAuth = () => {
     rpToken.value = res.token
     rpUser.value  = JSON.stringify(res.user)
 
-    const userRole = res.user?.role
+    const userRole = (res.user?.role ?? '').toLowerCase()
 
     if (userRole === 'partner') {
       return navigateTo('/revenue-partnership/partner')

@@ -12,6 +12,23 @@ export default defineNuxtRouteMiddleware((to) => {
   const isRpPath = rpPrefixes.some(p => to.path.startsWith(p))
   if (isRpPath) {
     if (!rpToken.value) return navigateTo('/revenue-partnership-login')
+
+    try {
+      const rpUser = useCookie('rp_user')
+      const user = typeof rpUser.value === 'string' ? JSON.parse(rpUser.value) : rpUser.value
+      const role = (user?.role ?? '').toLowerCase()
+
+      if (to.path.startsWith('/revenue-partnership/admin') && role !== 'admin') {
+        return navigateTo('/revenue-partnership-login')
+      }
+      if (to.path.startsWith('/revenue-partnership/accounts') && role !== 'accounts') {
+        return navigateTo('/revenue-partnership-login')
+      }
+      if (to.path.startsWith('/revenue-partnership/partner') && role !== 'partner') {
+        return navigateTo('/revenue-partnership-login')
+      }
+    } catch {}
+
     return
   }
 

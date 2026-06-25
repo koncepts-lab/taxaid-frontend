@@ -107,22 +107,70 @@
         <!-- PARTNER APPROVALS TAB HEADERS -->
         <thead v-else-if="activeTab === 'Partner Approvals'" class="bg-[#00835D] text-white">
           <tr v-if="subTab === 'Partner Registration'">
-            <th class="pl-6 pr-4 py-3 text-[14px] font-medium rounded-tl-[8px] rounded-bl-[8px]">Request Date</th>
-            <th class="px-4 py-3 text-[14px] font-medium">Partner Name</th>
+            <th class="pl-6 pr-4 py-3 text-[14px] font-medium rounded-tl-[8px] rounded-bl-[8px]">
+              <button class="flex items-center gap-1 hover:opacity-80" @click="toggleSort('date')">
+                Request Date
+                <span class="flex flex-col gap-px ml-0.5">
+                  <svg class="w-2 h-2" :class="sortField === 'date' && sortDir === 'asc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0Z"/></svg>
+                  <svg class="w-2 h-2" :class="sortField === 'date' && sortDir === 'desc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10Z"/></svg>
+                </span>
+              </button>
+            </th>
+            <th class="px-4 py-3 text-[14px] font-medium">
+              <button class="flex items-center gap-1 hover:opacity-80" @click="toggleSort('name')">
+                Partner Name
+                <span class="flex flex-col gap-px ml-0.5">
+                  <svg class="w-2 h-2" :class="sortField === 'name' && sortDir === 'asc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0Z"/></svg>
+                  <svg class="w-2 h-2" :class="sortField === 'name' && sortDir === 'desc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10Z"/></svg>
+                </span>
+              </button>
+            </th>
             <th class="px-4 py-3 text-[14px] font-medium">Email Id</th>
             <th class="px-4 py-3 text-[14px] font-medium">Phone</th>
             <th class="px-4 py-3 text-[14px] font-medium">Trading License</th>
-            <th class="px-4 py-3 text-[14px] font-medium">Status</th>
+            <th class="px-4 py-3 text-[14px] font-medium">
+              <button class="flex items-center gap-1 hover:opacity-80" @click="toggleSort('status')">
+                Status
+                <span class="flex flex-col gap-px ml-0.5">
+                  <svg class="w-2 h-2" :class="sortField === 'status' && sortDir === 'asc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0Z"/></svg>
+                  <svg class="w-2 h-2" :class="sortField === 'status' && sortDir === 'desc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10Z"/></svg>
+                </span>
+              </button>
+            </th>
             <th class="px-4 py-3 text-[14px] font-medium rounded-tr-[8px] rounded-br-[8px]">Action</th>
           </tr>
           <tr v-else-if="subTab === 'Payment Requests'">
-            <th class="pl-6 pr-4 py-3 text-[14px] font-medium rounded-tl-[8px] rounded-bl-[8px]">Request Date</th>
-            <th class="px-4 py-3 text-[14px] font-medium">Partner Name</th>
+            <th class="pl-6 pr-4 py-3 text-[14px] font-medium rounded-tl-[8px] rounded-bl-[8px]">
+              <button class="flex items-center gap-1 hover:opacity-80" @click="toggleSort('date')">
+                Request Date
+                <span class="flex flex-col gap-px ml-0.5">
+                  <svg class="w-2 h-2" :class="sortField === 'date' && sortDir === 'asc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0Z"/></svg>
+                  <svg class="w-2 h-2" :class="sortField === 'date' && sortDir === 'desc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10Z"/></svg>
+                </span>
+              </button>
+            </th>
+            <th class="px-4 py-3 text-[14px] font-medium">
+              <button class="flex items-center gap-1 hover:opacity-80" @click="toggleSort('name')">
+                Partner Name
+                <span class="flex flex-col gap-px ml-0.5">
+                  <svg class="w-2 h-2" :class="sortField === 'name' && sortDir === 'asc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0Z"/></svg>
+                  <svg class="w-2 h-2" :class="sortField === 'name' && sortDir === 'desc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10Z"/></svg>
+                </span>
+              </button>
+            </th>
             <th class="px-4 py-3 text-[14px] font-medium">Partner Id</th>
             <th class="px-4 py-3 text-[14px] font-medium">Amount</th>
             <th class="px-4 py-3 text-[14px] font-medium">Voucher No.</th>
             <th class="px-4 py-3 text-[14px] font-medium">Payment Date</th>
-            <th class="px-4 py-3 text-[14px] font-medium">Status</th>
+            <th class="px-4 py-3 text-[14px] font-medium">
+              <button class="flex items-center gap-1 hover:opacity-80" @click="toggleSort('status')">
+                Status
+                <span class="flex flex-col gap-px ml-0.5">
+                  <svg class="w-2 h-2" :class="sortField === 'status' && sortDir === 'asc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0Z"/></svg>
+                  <svg class="w-2 h-2" :class="sortField === 'status' && sortDir === 'desc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10Z"/></svg>
+                </span>
+              </button>
+            </th>
             <th class="px-4 py-3 text-[14px] font-medium rounded-tr-[8px] rounded-br-[8px]">Action</th>
           </tr>
         </thead>
@@ -247,15 +295,15 @@
         <!-- PARTNER APPROVALS TAB BODY -->
         <tbody v-else-if="activeTab === 'Partner Approvals'" :class="isDark ? 'bg-transparent' : 'bg-white'">
           <template v-if="subTab === 'Partner Registration'">
-            <tr v-for="(row, idx) in partnerApprovalsRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
+            <tr v-for="(row, idx) in sortedApprovalRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
               <td class="pl-6 pr-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.date }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.name }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.email }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.phone }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.license }}</td>
               <td class="px-4 py-3 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                <span :class="row.status === 'Approved' ? 'bg-[#00835D] text-white shadow-[#00835D33]' : 'bg-[#F59E0B] text-white shadow-[#F59E0B33]'"
-                      class="px-3 py-1 rounded-[20px] text-[12px] font-medium inline-block min-w-[70px] text-center shadow-sm">
+                <span :class="row.status === 'Approved' ? 'bg-[#00835D] shadow-[#00835D33]' : row.status === 'Rejected' ? 'bg-[#EF4444] shadow-[#EF444433]' : 'bg-[#F59E0B] shadow-[#F59E0B33]'"
+                      class="text-white px-3 py-1 rounded-[20px] text-[12px] font-medium inline-block min-w-[70px] text-center shadow-sm">
                   {{ row.status }}
                 </span>
               </td>
@@ -268,7 +316,7 @@
             </tr>
           </template>
           <template v-else-if="subTab === 'Payment Requests'">
-            <tr v-for="(row, idx) in paymentRequestsRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
+            <tr v-for="(row, idx) in sortedPaymentRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
               <td class="pl-6 pr-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.date }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.name }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.partnerId }}</td>
@@ -276,8 +324,8 @@
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.voucher }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.paymentDate }}</td>
               <td class="px-4 py-3 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                <span :class="row.status === 'Approved' ? 'bg-[#00835D] text-white shadow-[#00835D33]' : 'bg-[#F59E0B] text-white shadow-[#F59E0B33]'"
-                      class="px-3 py-1 rounded-[20px] text-[12px] font-medium inline-block min-w-[70px] text-center shadow-sm">
+                <span :class="row.status === 'Approved' ? 'bg-[#00835D] shadow-[#00835D33]' : row.status === 'Rejected' ? 'bg-[#EF4444] shadow-[#EF444433]' : 'bg-[#F59E0B] shadow-[#F59E0B33]'"
+                      class="text-white px-3 py-1 rounded-[20px] text-[12px] font-medium inline-block min-w-[70px] text-center shadow-sm">
                   {{ row.status }}
                 </span>
               </td>
@@ -340,7 +388,8 @@
         <div class="flex justify-between items-center mb-6">
           <div class="flex items-center gap-2">
             <span class="text-[14px] font-medium text-gray-900">Status:</span>
-            <span class="bg-[#F59E0B] text-white px-3 py-0.5 rounded-full text-[12px] font-medium">{{ selectedReviewRow.status }}</span>
+            <span :class="selectedReviewRow.status === 'Approved' ? 'bg-[#00835D]' : selectedReviewRow.status === 'Rejected' ? 'bg-[#EF4444]' : 'bg-[#F59E0B]'"
+                  class="text-white px-3 py-0.5 rounded-full text-[12px] font-medium">{{ selectedReviewRow.status }}</span>
           </div>
           <span class="text-[14px] text-gray-500">Requested: {{ selectedReviewRow.dateOnly }}</span>
         </div>
@@ -390,14 +439,18 @@
         </div>
 
         <div class="flex gap-4 justify-center">
-          <button @click="emit('approve-partner', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#00835D] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#006A4A] transition-colors shadow-sm">
-            <img src="/images/icons/Approve-Partner.svg" class="w-4 h-4" alt="Approve" />
-            Approve Partner
-          </button>
-          <button @click="emit('reject-partner', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#EF4444] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#DC2626] transition-colors shadow-sm">
-            <img src="/images/icons/Reject-Partner.svg" class="w-4 h-4" alt="Reject" />
-            Reject Partner
-          </button>
+          <template v-if="selectedReviewRow.status === 'Pending'">
+            <button @click="emit('approve-partner', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#00835D] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#006A4A] transition-colors shadow-sm">
+              <img src="/images/icons/Approve-Partner.svg" class="w-4 h-4" alt="Approve" />
+              Approve Partner
+            </button>
+            <button @click="emit('reject-partner', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#EF4444] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#DC2626] transition-colors shadow-sm">
+              <img src="/images/icons/Reject-Partner.svg" class="w-4 h-4" alt="Reject" />
+              Reject Partner
+            </button>
+          </template>
+          <p v-else-if="selectedReviewRow.status === 'Approved' && selectedReviewRow.approvedAt" class="text-[14px] text-[#00835D] font-medium">Approved on {{ selectedReviewRow.approvedAt }}</p>
+          <p v-else-if="selectedReviewRow.status === 'Rejected' && selectedReviewRow.rejectedAt" class="text-[14px] text-[#EF4444] font-medium">Rejected on {{ selectedReviewRow.rejectedAt }}</p>
         </div>
       </div>
     </div>
@@ -416,7 +469,8 @@
         <div class="flex justify-between items-center mb-6">
           <div>
             <p class="text-[13px] text-gray-500 mb-1">Status</p>
-            <span class="bg-[#F59E0B] text-white px-3 py-0.5 rounded-full text-[12px] font-medium">{{ selectedReviewRow.status }}</span>
+            <span :class="selectedReviewRow.status === 'Approved' ? 'bg-[#00835D]' : selectedReviewRow.status === 'Rejected' ? 'bg-[#EF4444]' : 'bg-[#F59E0B]'"
+                  class="text-white px-3 py-0.5 rounded-full text-[12px] font-medium">{{ selectedReviewRow.status }}</span>
           </div>
           <div class="text-right">
             <p class="text-[13px] text-gray-500 mb-1">Requested</p>
@@ -470,14 +524,18 @@
         </div>
 
         <div class="flex gap-4 justify-center">
-          <button @click="emit('approve-payment', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#00835D] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#006A4A] transition-colors shadow-sm">
-            <img src="/images/icons/Approve-Partner.svg" class="w-4 h-4" alt="Approve" />
-            Approve Partner
-          </button>
-          <button @click="emit('reject-payment', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#EF4444] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#DC2626] transition-colors shadow-sm">
-            <img src="/images/icons/Reject-Partner.svg" class="w-4 h-4" alt="Reject" />
-            Reject Partner
-          </button>
+          <template v-if="selectedReviewRow.status === 'Pending'">
+            <button @click="emit('approve-payment', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#00835D] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#006A4A] transition-colors shadow-sm">
+              <img src="/images/icons/Approve-Partner.svg" class="w-4 h-4" alt="Approve" />
+              Approve Payment
+            </button>
+            <button @click="emit('reject-payment', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#EF4444] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#DC2626] transition-colors shadow-sm">
+              <img src="/images/icons/Reject-Partner.svg" class="w-4 h-4" alt="Reject" />
+              Reject Payment
+            </button>
+          </template>
+          <p v-else-if="selectedReviewRow.status === 'Approved' && selectedReviewRow.approvedAt" class="text-[14px] text-[#00835D] font-medium">Approved on {{ selectedReviewRow.approvedAt }}</p>
+          <p v-else-if="selectedReviewRow.status === 'Rejected' && selectedReviewRow.rejectedAt" class="text-[14px] text-[#EF4444] font-medium">Rejected on {{ selectedReviewRow.rejectedAt }}</p>
         </div>
       </div>
     </div>
@@ -651,6 +709,40 @@ const toggleSourceFilter = (source) => {
   const i = selectedSources.value.indexOf(source)
   i > -1 ? selectedSources.value.splice(i, 1) : selectedSources.value.push(source)
 }
+
+// ── Column Sort ───────────────────────────────────────────────────────────────
+const sortField = ref(null)
+const sortDir   = ref('asc')
+
+function toggleSort(field) {
+  if (sortField.value === field) {
+    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortField.value = field
+    sortDir.value = 'asc'
+  }
+}
+
+function applySortToRows(rows) {
+  if (!sortField.value) return rows
+  return [...rows].sort((a, b) => {
+    let av = a[sortField.value] ?? ''
+    let bv = b[sortField.value] ?? ''
+    if (sortField.value === 'date') {
+      av = new Date(av)
+      bv = new Date(bv)
+    } else {
+      av = String(av).toLowerCase()
+      bv = String(bv).toLowerCase()
+    }
+    if (av < bv) return sortDir.value === 'asc' ? -1 : 1
+    if (av > bv) return sortDir.value === 'asc' ? 1 : -1
+    return 0
+  })
+}
+
+const sortedApprovalRows = computed(() => applySortToRows(props.partnerApprovalsRows))
+const sortedPaymentRows  = computed(() => applySortToRows(props.paymentRequestsRows))
 
 // ── Review Modals ─────────────────────────────────────────────────────────────
 import { ref as vueRef } from 'vue' // In case it wasn't explicitly imported
