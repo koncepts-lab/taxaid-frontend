@@ -512,6 +512,7 @@ function normalizePaymentRequestRows(rows) {
     details: r.details ?? '—', submittedBy: r.submitted_by?.full_name ?? '—',
     approvedAt: r.approved_at ? new Date(r.approved_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : null,
     rejectedAt: r.rejected_at ? new Date(r.rejected_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : null,
+    coveredClients: r.covered_clients ?? [],
   }))
 }
 

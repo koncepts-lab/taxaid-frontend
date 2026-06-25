@@ -490,6 +490,16 @@
           </div>
         </div>
 
+        <div v-if="selectedReviewRow.coveredClients && selectedReviewRow.coveredClients.length" class="mb-6">
+          <button @click="showCoveredClients = true"
+                  class="flex items-center gap-2 text-[13px] font-medium text-[#00835D] hover:text-[#006A4A] transition-colors border border-[#00835D]/30 bg-[#E8FCF2] rounded-[8px] px-4 py-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            View Clients ({{ selectedReviewRow.coveredClients.length }})
+          </button>
+        </div>
+
         <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Payment Information</h4>
         <div class="grid grid-cols-2 gap-4 mb-6">
           <div>
@@ -536,6 +546,40 @@
           </template>
           <p v-else-if="selectedReviewRow.status === 'Approved' && selectedReviewRow.approvedAt" class="text-[14px] text-[#00835D] font-medium">Approved on {{ selectedReviewRow.approvedAt }}</p>
           <p v-else-if="selectedReviewRow.status === 'Rejected' && selectedReviewRow.rejectedAt" class="text-[14px] text-[#EF4444] font-medium">Rejected on {{ selectedReviewRow.rejectedAt }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Covered Clients Popup Modal -->
+  <div v-if="showCoveredClients && selectedReviewRow"
+       class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4"
+       @click.self="showCoveredClients = false">
+    <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-[480px] overflow-hidden flex flex-col" style="max-height: 80vh">
+      <!-- Header -->
+      <div class="px-8 pt-8 pb-4">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <h3 class="text-[18px] font-medium text-[#1a1a1a]">Covered Clients</h3>
+            <p class="text-[13px] mt-0.5 text-gray-400">{{ selectedReviewRow.coveredClients.length }} client{{ selectedReviewRow.coveredClients.length > 1 ? 's' : '' }} included in this payment</p>
+          </div>
+          <button @click="showCoveredClients = false" class="text-gray-400 hover:text-gray-600 transition-opacity">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Client List -->
+      <div class="overflow-y-auto px-8 pb-6 divide-y divide-gray-100" style="max-height: 320px">
+        <div v-for="(client, idx) in selectedReviewRow.coveredClients" :key="client.user_id"
+             class="flex items-center gap-4 py-4">
+          <span class="w-8 h-8 rounded-full bg-[#E8FCF2] text-[#00835D] text-[12px] font-semibold flex items-center justify-center flex-shrink-0">{{ idx + 1 }}</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-[14px] font-medium text-[#1a1a1a] truncate">{{ client.company_name }}</p>
+            <div class="flex gap-3 mt-0.5">
+              <span class="text-[11px] text-gray-400">Customer ID: <span class="text-gray-600 font-medium">{{ client.tenant_id ?? '—' }}</span></span>
+              <span class="text-[11px] text-gray-400">End ID: <span class="text-gray-600 font-medium">{{ client.user_id }}</span></span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -771,8 +815,11 @@ const openReviewModal = (row, type) => {
   reviewModalType.value = type
 }
 
+const showCoveredClients = ref(false)
+
 const closeReviewModal = () => {
   selectedReviewRow.value = null
   reviewModalType.value = ''
+  showCoveredClients.value = false
 }
 </script>
