@@ -656,7 +656,7 @@
             <!-- Payment Details -->
             <div class="space-y-1.5">
               <label class="text-[15px] font-normal text-[#1a1a1a]">Payment Details *</label>
-              <textarea placeholder="e.g., Commission for October 2024, Revenue share for Q4..." rows="4"
+              <textarea v-model="paymentDetails" placeholder="e.g., Commission for October 2024, Revenue share for Q4..." rows="4"
                 class="w-full px-4 py-3 bg-white border border-[#82FFE0] rounded-xl focus:outline-none focus:border-[#00DDA3] placeholder:text-[#b0b7c1] text-[#000] text-[15px] resize-none"></textarea>
             </div>
 
@@ -664,13 +664,13 @@
               <!-- Payment Value -->
               <div class="space-y-1.5">
                 <label class="text-[15px] font-normal text-[#1a1a1a]">Payment Value (AED) *</label>
-                <input type="number" step="0.01" placeholder="0.00"
+                <input v-model="paymentAmount" type="number" step="0.01" placeholder="0.00"
                   class="w-full px-4 py-3 bg-white border border-[#82FFE0] rounded-xl focus:outline-none focus:border-[#00DDA3] placeholder:text-[#b0b7c1] text-[#000] text-[15px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
               </div>
               <!-- Voucher Number -->
               <div class="space-y-1.5">
                 <label class="text-[15px] font-normal text-[#1a1a1a]">Voucher Number *</label>
-                <input type="text" placeholder="e.g., VCH-2024-001"
+                <input v-model="voucherNumber" type="text" placeholder="e.g., VCH-2024-001"
                   class="w-full px-4 py-3 bg-white border border-[#82FFE0] rounded-xl focus:outline-none focus:border-[#00DDA3] placeholder:text-[#b0b7c1] text-[#000] text-[15px]" />
               </div>
             </div>
