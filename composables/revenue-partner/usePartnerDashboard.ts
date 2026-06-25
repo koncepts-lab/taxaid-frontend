@@ -43,7 +43,21 @@ export const usePartnerDashboard = () => {
   const exportPayments = async () => {
     const config = useRuntimeConfig()
     const token  = useCookie('rp_token')
-    window.open(`${config.public.apiBase}/revenue/partner/export?token=${token.value}`, '_blank')
+
+    const response = await fetch(`${config.public.apiBase}/revenue/partner/export`, {
+      headers: { Authorization: `Bearer ${token.value}` },
+    })
+    if (!response.ok) throw new Error('Failed to export payments')
+
+    const blob = await response.blob()
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = 'payments-export.xlsx'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   const fetchAlerts = async () => {
