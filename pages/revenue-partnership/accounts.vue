@@ -699,7 +699,7 @@
         class="rounded-[24px] shadow-2xl w-full max-w-[480px] overflow-hidden flex flex-col" style="max-height: 80vh">
         <!-- Header -->
         <div class="px-8 pt-8 pb-4">
-          <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center justify-between mb-4">
             <div>
               <h3 class="text-[18px] font-medium" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">Select Clients</h3>
               <p class="text-[13px] mt-0.5" :class="isDark ? 'text-white/50' : 'text-gray-400'">{{ selectedClientIds.length }} of {{ partnerClientsList.length }} selected</p>
@@ -709,14 +709,26 @@
             </button>
           </div>
           <!-- Search -->
-          <div class="relative">
+          <div class="relative mb-3">
             <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 111 11a6 6 0 0116 0z" /></svg>
             <input v-model="clientSearch" type="text" placeholder="Search by company or email..."
               :class="isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-[#F9FAFB] border-gray-100 text-[#1a1a1a] placeholder:text-gray-400'"
               class="w-full pl-10 pr-4 py-3 border rounded-xl text-[14px] focus:outline-none focus:border-[#00835D] transition-colors" />
           </div>
+          <!-- Filter tabs -->
+          <div class="flex gap-2 mb-3">
+            <button @click="clientFilter = 'all'"
+              :class="clientFilter === 'all' ? 'bg-[#00835D] text-white' : (isDark ? 'bg-white/10 text-white/60' : 'bg-gray-100 text-gray-500')"
+              class="px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors">All</button>
+            <button @click="clientFilter = 'not_paid'"
+              :class="clientFilter === 'not_paid' ? 'bg-[#F59E0B] text-white' : (isDark ? 'bg-white/10 text-white/60' : 'bg-gray-100 text-gray-500')"
+              class="px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors">Not Paid</button>
+            <button @click="clientFilter = 'commission_paid'"
+              :class="clientFilter === 'commission_paid' ? 'bg-[#0EA5E9] text-white' : (isDark ? 'bg-white/10 text-white/60' : 'bg-gray-100 text-gray-500')"
+              class="px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors">Commission Paid</button>
+          </div>
           <!-- Select All -->
-          <label class="flex items-center gap-3 mt-4 cursor-pointer">
+          <label class="flex items-center gap-3 cursor-pointer">
             <input type="checkbox"
               :checked="selectedClientIds.length === partnerClientsList.length && partnerClientsList.length > 0"
               :indeterminate="selectedClientIds.length > 0 && selectedClientIds.length < partnerClientsList.length"
@@ -728,21 +740,41 @@
 
         <!-- Client List -->
         <div class="overflow-y-auto flex-1 px-8 pb-4 divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-          <label v-for="client in filteredClients" :key="client.user_id"
-            class="flex items-center gap-3 py-4 cursor-pointer group">
-            <input type="checkbox" :value="client.user_id" v-model="selectedClientIds"
-              class="w-4 h-4 accent-[#00835D] cursor-pointer flex-shrink-0" />
-            <div class="flex-1 min-w-0">
-              <p class="text-[14px] font-medium truncate" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ client.company_name }}</p>
-              <p class="text-[12px] truncate" :class="isDark ? 'text-white/40' : 'text-gray-400'">{{ client.email }}</p>
+          <div v-for="client in filteredClients" :key="client.user_id" class="py-4">
+            <label class="flex items-start gap-3 cursor-pointer">
+              <input type="checkbox" :value="client.user_id" v-model="selectedClientIds"
+                class="w-4 h-4 accent-[#00835D] cursor-pointer flex-shrink-0 mt-0.5" />
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="text-[14px] font-medium truncate" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ client.company_name }}</p>
+                  <span v-if="client.has_paid_cycle" class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#DCFCE7] text-[#15803D] flex-shrink-0">Cycle Paid</span>
+                  <span v-if="client.has_paid_cycle && !client.commission_paid" class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#FEF3C7] text-[#D97706] flex-shrink-0">Not Paid</span>
+                  <span v-if="client.commission_paid" class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#E0F2FE] text-[#0369A1] flex-shrink-0">Commission Paid</span>
+                </div>
+                <p class="text-[12px] mt-0.5 truncate" :class="isDark ? 'text-white/40' : 'text-gray-400'">{{ client.email }}</p>
+              </div>
+              <svg v-if="selectedClientIds.includes(client.user_id)" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#04C18F] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+            </label>
+            <!-- Commission amount input -->
+            <div class="mt-2 ml-7">
+              <input
+                :value="clientAmounts[client.user_id] ?? ''"
+                @input="clientAmounts[client.user_id] = $event.target.value"
+                type="number" step="0.01" min="0"
+                :placeholder="client.calculated_settlement > 0 ? `Calculated settlement: AED ${client.calculated_settlement.toLocaleString()}` : 'Enter commission amount (AED)'"
+                :class="isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/20' : 'bg-[#F9FAFB] border-gray-100 text-[#1a1a1a] placeholder:text-gray-400'"
+                class="w-full px-3 py-2 border rounded-lg text-[13px] focus:outline-none focus:border-[#00835D] transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
             </div>
-            <svg v-if="selectedClientIds.includes(client.user_id)" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#04C18F] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-          </label>
+          </div>
           <p v-if="!filteredClients.length" class="text-[14px] text-gray-400 py-6 text-center">No clients match your search.</p>
         </div>
 
         <!-- Footer -->
         <div class="px-8 py-5 border-t" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+          <div v-if="totalCommission > 0" class="flex justify-between items-center mb-3">
+            <span class="text-[13px]" :class="isDark ? 'text-white/50' : 'text-gray-500'">Total Commission</span>
+            <span class="text-[15px] font-semibold text-[#00835D]">AED {{ totalCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+          </div>
           <button @click="showClientPicker = false"
             class="w-full py-3 bg-[#00835D] hover:bg-[#006b4d] text-white rounded-xl font-medium transition-all cursor-pointer">
             Confirm Selection
@@ -896,6 +928,8 @@ const partnerClientsList  = ref([])
 const selectedClientIds   = ref([])
 const showClientPicker    = ref(false)
 const clientSearch        = ref('')
+const clientAmounts       = ref({})
+const clientFilter        = ref('all')
 
 const paymentDate       = ref(null)
 const paymentDetails    = ref('')
@@ -981,10 +1015,24 @@ const partners = computed(() => activePartnerList.value.map(p => p.name))
 
 const filteredClients = computed(() => {
   const q = clientSearch.value.toLowerCase().trim()
-  if (!q) return partnerClientsList.value
-  return partnerClientsList.value.filter(c =>
-    c.company_name?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q)
-  )
+  let list = partnerClientsList.value
+
+  if (clientFilter.value === 'not_paid') {
+    list = list.filter(c => c.has_paid_cycle && !c.commission_paid)
+  } else if (clientFilter.value === 'commission_paid') {
+    list = list.filter(c => c.commission_paid)
+  }
+
+  if (!q) return list
+  return list.filter(c => c.company_name?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q))
+})
+
+const totalCommission = computed(() =>
+  selectedClientIds.value.reduce((sum, id) => sum + (parseFloat(clientAmounts.value[id]) || 0), 0)
+)
+
+watch(totalCommission, (val) => {
+  if (val > 0) paymentAmount.value = val.toFixed(2)
 })
 
 const formatDate = (date) => date ? format(date, 'dd-MM-yyyy') : ''
@@ -1085,6 +1133,8 @@ async function selectPartnerForPayment(name) {
     const data = await fetchPartnerClients(p.id)
     partnerClientsList.value = data?.clients ?? []
     selectedClientIds.value = []
+    clientAmounts.value = {}
+    clientFilter.value = 'all'
     clientSearch.value = ''
   }
 }
