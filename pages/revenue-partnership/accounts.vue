@@ -152,7 +152,7 @@
                     <span class="text-gray-400 text-[14px]">{{ csvFileName || 'No file chosen' }}</span>
                   </div>
                   <input ref="csvInput" type="file" accept=".csv" class="hidden"
-                    @change="e => csvFileName = e.target.files[0]?.name || ''" />
+                    @change="e => { csvFile = e.target.files[0] ?? null; csvFileName = e.target.files[0]?.name ?? '' }" />
                 </div>
                 <div class="space-y-3">
                   <button @click="downloadTemplate('ai-usage')" class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-[15px] font-medium hover:bg-[#00B794]/5 transition-all cursor-pointer">
@@ -189,7 +189,7 @@
                     <span class="text-gray-400 text-[14px]">{{ excelFileName || 'No file chosen' }}</span>
                   </div>
                   <input ref="excelInput" type="file" accept=".xlsx,.xls" class="hidden"
-                    @change="e => excelFileName = e.target.files[0]?.name || ''" />
+                    @change="e => { excelFile = e.target.files[0] ?? null; excelFileName = e.target.files[0]?.name ?? '' }" />
                 </div>
                 <div class="space-y-3">
                   <button @click="downloadTemplate('hosting')" class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-[15px] font-medium hover:bg-[#00B794]/5 transition-all cursor-pointer">
@@ -540,6 +540,32 @@
     <!-- FOOTER -->
     <DashboardFooter />
 
+    <!-- UPLOAD STATUS MODAL -->
+    <div v-if="uploadStatus.show"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[999] flex items-center justify-center p-4"
+      @click.self="uploadStatus.show = false">
+      <div :class="isDark ? 'bg-[#111] border border-white/10' : 'bg-white'"
+        class="rounded-[24px] shadow-2xl w-full max-w-[420px] p-10 flex flex-col items-center gap-6 text-center relative">
+        <button @click="uploadStatus.show = false" class="absolute top-6 right-6 hover:opacity-60 transition-opacity" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+        <div class="w-16 h-16 rounded-full flex items-center justify-center"
+          :class="uploadStatus.success ? 'bg-[#E4FFF6]' : 'bg-red-50'">
+          <svg v-if="uploadStatus.success" xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#04C18F]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </div>
+        <div>
+          <p class="text-[18px] font-medium mb-2" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ uploadStatus.success ? 'Upload Successful' : 'Upload Failed' }}</p>
+          <p class="text-[14px]" :class="isDark ? 'text-white/60' : 'text-gray-500'">{{ uploadStatus.message }}</p>
+        </div>
+        <button @click="uploadStatus.show = false"
+          class="px-8 py-3 rounded-xl text-white font-medium transition-all cursor-pointer"
+          :class="uploadStatus.success ? 'bg-[#00835D] hover:bg-[#006b4d]' : 'bg-red-500 hover:bg-red-600'">
+          OK
+        </button>
+      </div>
+    </div>
+
     <!-- PAYMENT MODAL -->
     <div v-if="showPaymentModal"
       class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
@@ -585,7 +611,7 @@
                   <div v-if="showPartnerList"
                     class="absolute top-[calc(100%+8px)] left-0 w-full bg-white rounded-2xl shadow-xl z-20 border border-gray-50 overflow-hidden py-1">
                     <div v-for="partner in partners" :key="partner"
-                      @click="selectedPartner = partner; showPartnerList = false"
+                      @click="selectPartnerForPayment(partner)"
                       class="px-6 py-4 text-[15px] text-[#1a1a1a] cursor-pointer hover:bg-[#E0FFF7] transition-all font-normal">
                       {{ partner }}
                     </div>
@@ -611,6 +637,19 @@
                       borderless />
                   </div>
                 </transition>
+              </div>
+            </div>
+
+            <!-- Covered Clients Trigger -->
+            <div v-if="selectedPartnerId" class="space-y-1.5">
+              <label class="text-[15px] font-normal text-[#1a1a1a]">Covered Clients *</label>
+              <div @click="showClientPicker = true"
+                :class="selectedClientIds.length ? 'border-[#00835D] bg-[#F0FDF4]' : 'border-[#82FFE0] bg-white'"
+                class="w-full px-4 py-3 border rounded-xl flex items-center justify-between cursor-pointer hover:border-[#00835D] transition-all">
+                <span :class="selectedClientIds.length ? 'text-[#00835D] font-medium' : 'text-[#b0b7c1]'" class="text-[15px]">
+                  {{ selectedClientIds.length ? `${selectedClientIds.length} client${selectedClientIds.length > 1 ? 's' : ''} selected` : 'Select clients covered by this payment' }}
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#00835D]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
               </div>
             </div>
 
@@ -648,6 +687,66 @@
               </button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENT PICKER MODAL -->
+    <div v-if="showClientPicker"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1000] flex items-center justify-center p-4"
+      @click.self="showClientPicker = false">
+      <div :class="isDark ? 'bg-[#111] border border-white/10' : 'bg-white'"
+        class="rounded-[24px] shadow-2xl w-full max-w-[480px] overflow-hidden flex flex-col" style="max-height: 80vh">
+        <!-- Header -->
+        <div class="px-8 pt-8 pb-4">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-[18px] font-medium" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">Select Clients</h3>
+              <p class="text-[13px] mt-0.5" :class="isDark ? 'text-white/50' : 'text-gray-400'">{{ selectedClientIds.length }} of {{ partnerClientsList.length }} selected</p>
+            </div>
+            <button @click="showClientPicker = false" class="hover:opacity-60 transition-opacity" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+          <!-- Search -->
+          <div class="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 111 11a6 6 0 0116 0z" /></svg>
+            <input v-model="clientSearch" type="text" placeholder="Search by company or email..."
+              :class="isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-[#F9FAFB] border-gray-100 text-[#1a1a1a] placeholder:text-gray-400'"
+              class="w-full pl-10 pr-4 py-3 border rounded-xl text-[14px] focus:outline-none focus:border-[#00835D] transition-colors" />
+          </div>
+          <!-- Select All -->
+          <label class="flex items-center gap-3 mt-4 cursor-pointer">
+            <input type="checkbox"
+              :checked="selectedClientIds.length === partnerClientsList.length && partnerClientsList.length > 0"
+              :indeterminate="selectedClientIds.length > 0 && selectedClientIds.length < partnerClientsList.length"
+              @change="selectedClientIds = selectedClientIds.length === partnerClientsList.length ? [] : partnerClientsList.map(c => c.user_id)"
+              class="w-4 h-4 accent-[#00835D] cursor-pointer" />
+            <span class="text-[14px] font-medium" :class="isDark ? 'text-white/70' : 'text-[#1a1a1a]'">Select all</span>
+          </label>
+        </div>
+
+        <!-- Client List -->
+        <div class="overflow-y-auto flex-1 px-8 pb-4 divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
+          <label v-for="client in filteredClients" :key="client.user_id"
+            class="flex items-center gap-3 py-4 cursor-pointer group">
+            <input type="checkbox" :value="client.user_id" v-model="selectedClientIds"
+              class="w-4 h-4 accent-[#00835D] cursor-pointer flex-shrink-0" />
+            <div class="flex-1 min-w-0">
+              <p class="text-[14px] font-medium truncate" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ client.company_name }}</p>
+              <p class="text-[12px] truncate" :class="isDark ? 'text-white/40' : 'text-gray-400'">{{ client.email }}</p>
+            </div>
+            <svg v-if="selectedClientIds.includes(client.user_id)" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#04C18F] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          </label>
+          <p v-if="!filteredClients.length" class="text-[14px] text-gray-400 py-6 text-center">No clients match your search.</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-8 py-5 border-t" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+          <button @click="showClientPicker = false"
+            class="w-full py-3 bg-[#00835D] hover:bg-[#006b4d] text-white rounded-xl font-medium transition-all cursor-pointer">
+            Confirm Selection
+          </button>
         </div>
       </div>
     </div>
@@ -781,6 +880,12 @@ const excelFileName = ref('')
 const csvInput      = ref(null)
 const excelInput    = ref(null)
 
+// ── Upload status modal ─────────────────────────────────────────────────────
+const uploadStatus = ref({ show: false, success: false, message: '' })
+function showUploadResult(success, message) {
+  uploadStatus.value = { show: true, success, message }
+}
+
 // ── Modal state ────────────────────────────────────────────────────────────
 const showPaymentModal    = ref(false)
 const showAddPartnerModal = ref(false)
@@ -788,6 +893,9 @@ const showPartnerList     = ref(false)
 const selectedPartnerId   = ref(null)
 const selectedPartner     = ref('Choose a partner')
 const partnerClientsList  = ref([])
+const selectedClientIds   = ref([])
+const showClientPicker    = ref(false)
+const clientSearch        = ref('')
 
 const paymentDate       = ref(null)
 const paymentDetails    = ref('')
@@ -870,6 +978,14 @@ const expiringCardsDaysThreshold = computed(() => 30)
 
 // ── Partners list for modal ─────────────────────────────────────────────────
 const partners = computed(() => activePartnerList.value.map(p => p.name))
+
+const filteredClients = computed(() => {
+  const q = clientSearch.value.toLowerCase().trim()
+  if (!q) return partnerClientsList.value
+  return partnerClientsList.value.filter(c =>
+    c.company_name?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q)
+  )
+})
 
 const formatDate = (date) => date ? format(date, 'dd-MM-yyyy') : ''
 
@@ -968,6 +1084,8 @@ async function selectPartnerForPayment(name) {
     selectedPartnerId.value = p.id
     const data = await fetchPartnerClients(p.id)
     partnerClientsList.value = data?.clients ?? []
+    selectedClientIds.value = []
+    clientSearch.value = ''
   }
 }
 
@@ -980,7 +1098,7 @@ async function handleSubmitPayment() {
     details: paymentDetails.value,
     amount: parseFloat(paymentAmount.value),
     voucher_number: voucherNumber.value,
-    covered_client_ids: partnerClientsList.value.map(c => c.user_id),
+    covered_client_ids: selectedClientIds.value,
   })
   showPaymentModal.value = false
 }
@@ -1003,25 +1121,32 @@ async function handleAddPartner() {
 }
 
 // ── Upload handlers ─────────────────────────────────────────────────────────
-const defaultMonth = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().slice(0, 7)
+const defaultMonth = new Date().toISOString().slice(0, 7)
 
 async function handleUploadHosting() {
-  if (!excelFile.value) return
-  await uploadHosting(excelFile.value, defaultMonth)
-  excelFileName.value = ''
-  excelFile.value = null
+  if (!excelFile.value) { showUploadResult(false, 'No file selected.'); return }
+  try {
+    const res = await uploadHosting(excelFile.value, defaultMonth)
+    showUploadResult(true, res?.message ?? 'Hosting report uploaded successfully.')
+    excelFileName.value = ''
+    excelFile.value = null
+  } catch (e) {
+    showUploadResult(false, e?.data?.message ?? e?.message ?? 'Upload failed.')
+  }
 }
 
 async function handleUploadAiUsage() {
-  if (!csvFile.value) return
-  await uploadAiUsage(csvFile.value, defaultMonth)
-  csvFileName.value = ''
-  csvFile.value = null
+  if (!csvFile.value) { showUploadResult(false, 'No file selected.'); return }
+  try {
+    const res = await uploadAiUsage(csvFile.value, defaultMonth)
+    showUploadResult(true, res?.message ?? 'AI usage report uploaded successfully.')
+    csvFileName.value = ''
+    csvFile.value = null
+  } catch (e) {
+    showUploadResult(false, e?.data?.message ?? e?.message ?? 'Upload failed.')
+  }
 }
 
-// Watch file inputs
-watch(csvInput, (el) => { if (el) el.addEventListener('change', (e) => { csvFile.value = e.target.files[0]; csvFileName.value = e.target.files[0]?.name ?? '' }) })
-watch(excelInput, (el) => { if (el) el.addEventListener('change', (e) => { excelFile.value = e.target.files[0]; excelFileName.value = e.target.files[0]?.name ?? '' }) })
 </script>
 
 <style scoped>

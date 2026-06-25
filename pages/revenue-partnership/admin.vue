@@ -223,8 +223,8 @@
           :directCustomersRows="directCustomersRows"
           :partnersRows="partnersRows"
           :resourceRows="resourceRows"
-          :partnerApprovalsRows="partnerApprovalsRows"
-          :paymentRequestsRows="paymentRequestsRows"
+          :partnerApprovalsRows="filteredApprovalRows"
+          :paymentRequestsRows="filteredPaymentRows"
           :uploadedReportsRows="uploadedReportsRows"
           :userMasterRows="userMasterRows"
           @approve-partner="handleApprovePartner"
@@ -236,13 +236,53 @@
 
         <!-- Charts Grid -->
         <div v-if="!['Resource Consumption', 'Partner Approvals', 'Uploaded Reports', 'User Master Info'].includes(activeOperationsSubTab)" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <AdminBarChart />
-          <AdminLineChart />
+          <AdminBarChart
+            :revenueData="charts.revenueBySource"
+            :costData="charts.licensingBreakdown"
+            :partnerCount="overview?.customer_split?.partner_clients ?? 0"
+            :directCount="overview?.customer_split?.direct_clients ?? 0"
+          />
+          <AdminLineChart :costData="charts.licensingBreakdown" />
         </div>
 
       </div>
 
     </main>
+
+    <!-- Password Modal -->
+    <div v-if="showPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-[16px] w-full max-w-md shadow-xl p-6">
+        <h3 class="text-xl font-medium text-gray-900 mb-1">Create Partner Account</h3>
+        <p class="text-[14px] text-gray-500 mb-6">Set login credentials for the approved partner</p>
+        <div class="space-y-4 mb-6">
+          <div>
+            <label class="text-[13px] text-gray-500 mb-1 block">Password <span class="text-red-500">*</span></label>
+            <input v-model="passwordForm.password" type="password" placeholder="Min. 8 characters"
+                   class="w-full border border-gray-200 rounded-[8px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#00835D]" />
+          </div>
+          <div>
+            <label class="text-[13px] text-gray-500 mb-1 block">Confirm Password <span class="text-red-500">*</span></label>
+            <input v-model="passwordForm.confirmPassword" type="password" placeholder="Re-enter password"
+                   class="w-full border border-gray-200 rounded-[8px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#00835D]" />
+          </div>
+          <div>
+            <label class="text-[13px] text-gray-500 mb-1 block">Referral Code <span class="text-[12px] text-gray-400">(Optional)</span></label>
+            <input v-model="passwordForm.referralCode" type="text" placeholder="e.g. REF-ABC123"
+                   class="w-full border border-gray-200 rounded-[8px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#00835D]" />
+          </div>
+          <p v-if="passwordError" class="text-[13px] text-red-500">{{ passwordError }}</p>
+        </div>
+        <div class="flex gap-3 justify-center">
+          <button @click="handleCreatePartner" class="px-6 py-2.5 bg-[#00835D] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#006A4A] transition-colors">
+            Create Partner
+          </button>
+          <button @click="showPasswordModal = false; pendingApprovalId = null; passwordForm = { password: '', confirmPassword: '', referralCode: '' }; passwordError = ''"
+                  class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-[8px] text-[14px] font-medium hover:bg-gray-200 transition-colors">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- FOOTER -->
     <DashboardFooter />
@@ -257,8 +297,8 @@ definePageMeta({ layout: false })
 const { isDark } = useTheme()
 
 const {
-  overview, alerts, loading,
-  fetchOverview, fetchCustomers, fetchAlerts,
+  overview, alerts, charts, loading,
+  fetchOverview, fetchCustomers, fetchAlerts, fetchCharts,
   approvePartner, rejectPartner, fetchPartnerRegistrations,
   approvePayment, rejectPayment, fetchPaymentRequests,
   fetchUploadedReports, downloadReport, fetchUserMasterInfo,
@@ -302,6 +342,18 @@ const partnerApprovalsRows= ref([])
 const paymentRequestsRows = ref([])
 const uploadedReportsRows = ref([])
 const userMasterRows      = ref([])
+
+const filteredApprovalRows = computed(() =>
+  activeStatusFilter.value === 'All Statuses'
+    ? partnerApprovalsRows.value
+    : partnerApprovalsRows.value.filter(r => r.status === activeStatusFilter.value)
+)
+
+const filteredPaymentRows = computed(() =>
+  activeStatusFilter.value === 'All Statuses'
+    ? paymentRequestsRows.value
+    : paymentRequestsRows.value.filter(r => r.status === activeStatusFilter.value)
+)
 
 // ── Overview computed ──────────────────────────────────────────────────────
 const overviewMetrics = computed(() => {
@@ -361,10 +413,11 @@ watch(activeOperationsSubTab, (val) => {
 })
 watch(activeApprovalSubTab, (val) => {
   adminApprovalCookie.value = val
+  activeStatusFilter.value = 'All Statuses'
 })
 
 onMounted(async () => {
-  await Promise.all([fetchOverview(), fetchAlerts()])
+  await Promise.all([fetchOverview(), fetchAlerts(), fetchCharts()])
   loadAllOperationsData()
 })
 
@@ -388,6 +441,14 @@ function normalizeCustomerRows(rows) {
     company: r.company_name, revenue: r.revenue_aed?.toLocaleString() ?? '—',
     collected: r.collected_aed?.toLocaleString() ?? '—', date: r.last_payment_date ?? '—',
     status: capitalize(r.payment_status ?? 'no_payments'), reason: r.failure_reason ?? '—',
+    email: r.email ?? '—', plan: r.plan_name ?? '—', contractPeriod: r.contract_period ?? '—',
+    billingCycle: r.billing_cycle ?? '—',
+    invoiceNumber: r.invoice_number ?? '—',
+    invoiceDate: r.invoice_date ?? '—',
+    dueDate: r.due_date ?? '—',
+    subtotal: r.subtotal_aed?.toLocaleString() ?? '—',
+    tax: r.tax_aed?.toLocaleString() ?? '—',
+    pending: r.pending_aed?.toLocaleString() ?? '—',
   }))
 }
 
@@ -413,18 +474,28 @@ function normalizeResourceRows(rows) {
 
 function normalizeApprovalRows(rows) {
   return (rows || []).map(r => ({
-    id: r.id, date: r.created_at?.slice(0, 10) ?? '—',
+    id: r.id, date: r.created_at ? new Date(r.created_at).toLocaleString('en-US') : '—',
+    dateOnly: r.created_at ? new Date(r.created_at).toLocaleDateString('en-US') : '—',
     name: r.name, email: r.email, phone: r.contact_phone ?? '—',
-    license: r.trading_license ?? '—', status: capitalize(r.status),
+    license: r.trading_license ?? '—', status: r.status === 'active' ? 'Approved' : capitalize(r.status),
+    address: r.address ?? '—', authorizedPerson: r.authorized_person ?? '—',
+    authorizedPersonContact: r.authorized_person_contact ?? '—',
+    contactPerson: r.contact_person ?? '—',
+    approvedAt: r.approved_at ? new Date(r.approved_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : null,
+    rejectedAt: r.rejected_at ? new Date(r.rejected_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : null,
   }))
 }
 
 function normalizePaymentRequestRows(rows) {
   return (rows || []).map(r => ({
-    id: r.id, date: r.created_at?.slice(0, 10) ?? '—',
+    id: r.id, date: r.created_at ? new Date(r.created_at).toLocaleString('en-US') : '—',
+    dateOnly: r.created_at ? new Date(r.created_at).toLocaleDateString('en-US') : '—',
     name: r.partner?.name ?? '—', partnerId: r.partner?.code ?? '—',
     amount: r.amount?.toLocaleString() ?? '—', voucher: r.voucher_number ?? '—',
-    paymentDate: r.payment_date ?? '—', status: capitalize(r.status),
+    paymentDate: r.payment_date ? new Date(r.payment_date).toLocaleDateString('en-US') : '—', status: capitalize(r.status),
+    details: r.details ?? '—', submittedBy: r.submitted_by?.full_name ?? '—',
+    approvedAt: r.approved_at ? new Date(r.approved_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : null,
+    rejectedAt: r.rejected_at ? new Date(r.rejected_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : null,
   }))
 }
 
@@ -441,6 +512,7 @@ function normalizeMasterRows(rows) {
     code: r.tenant_id, source: r.partner?.code ?? 'Direct',
     company: r.company_name, bank: r.bank_details ?? '—',
     card: r.card_type ? `${r.card_type} *${r.card_last4}` : '—',
+    cardExpiry: r.card_expiry ?? '—',
     contactPerson: r.contact_person ?? '—', contactNo: r.contact_no ?? '—', email: r.email ?? '—',
   }))
 }
@@ -448,8 +520,32 @@ function normalizeMasterRows(rows) {
 function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s }
 
 // ── Table event handlers ───────────────────────────────────────────────────
-async function handleApprovePartner(id) {
-  await approvePartner(id, `Partner@${id}`, `REF-${id}`)
+const showPasswordModal = ref(false)
+const pendingApprovalId = ref(null)
+const passwordError     = ref('')
+const passwordForm      = ref({ password: '', confirmPassword: '', referralCode: '' })
+
+function handleApprovePartner(id) {
+  pendingApprovalId.value = id
+  passwordForm.value = { password: '', confirmPassword: '', referralCode: '' }
+  passwordError.value = ''
+  showPasswordModal.value = true
+}
+
+async function handleCreatePartner() {
+  if (passwordForm.value.password.length < 8) {
+    passwordError.value = 'Password must be at least 8 characters.'
+    return
+  }
+  if (passwordForm.value.password !== passwordForm.value.confirmPassword) {
+    passwordError.value = 'Passwords do not match.'
+    return
+  }
+  await approvePartner(pendingApprovalId.value, passwordForm.value.password, passwordForm.value.referralCode || null)
+  showPasswordModal.value = false
+  pendingApprovalId.value = null
+  passwordForm.value = { password: '', confirmPassword: '', referralCode: '' }
+  passwordError.value = ''
   loadTab('Partner Approvals')
 }
 

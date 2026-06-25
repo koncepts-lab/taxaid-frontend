@@ -92,7 +92,24 @@ export const useAdminDashboard = () => {
   const downloadReport = async (id: number) => {
     const config = useRuntimeConfig()
     const token  = useCookie('rp_token')
-    window.open(`${config.public.apiBase}/revenue/admin/uploaded-reports/${id}/download?token=${token.value}`, '_blank')
+
+    const response = await fetch(`${config.public.apiBase}/revenue/admin/uploaded-reports/${id}/download`, {
+      headers: { Authorization: `Bearer ${token.value}` },
+    })
+    if (!response.ok) throw new Error('Failed to download report')
+
+    const disposition = response.headers.get('Content-Disposition') ?? ''
+    const match       = disposition.match(/filename[^;=\n]*=(['"]?)([^'";\n]+)\1/)
+    const fileName    = match?.[2] ?? `report-${id}`
+    const blob        = await response.blob()
+    const url         = URL.createObjectURL(blob)
+    const a           = document.createElement('a')
+    a.href            = url
+    a.download        = fileName
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   const fetchUserMasterInfo = async () => {

@@ -107,22 +107,70 @@
         <!-- PARTNER APPROVALS TAB HEADERS -->
         <thead v-else-if="activeTab === 'Partner Approvals'" class="bg-[#00835D] text-white">
           <tr v-if="subTab === 'Partner Registration'">
-            <th class="pl-6 pr-4 py-3 text-[14px] font-medium rounded-tl-[8px] rounded-bl-[8px]">Request Date</th>
-            <th class="px-4 py-3 text-[14px] font-medium">Partner Name</th>
+            <th class="pl-6 pr-4 py-3 text-[14px] font-medium rounded-tl-[8px] rounded-bl-[8px]">
+              <button class="flex items-center gap-1 hover:opacity-80" @click="toggleSort('date')">
+                Request Date
+                <span class="flex flex-col gap-px ml-0.5">
+                  <svg class="w-2 h-2" :class="sortField === 'date' && sortDir === 'asc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0Z"/></svg>
+                  <svg class="w-2 h-2" :class="sortField === 'date' && sortDir === 'desc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10Z"/></svg>
+                </span>
+              </button>
+            </th>
+            <th class="px-4 py-3 text-[14px] font-medium">
+              <button class="flex items-center gap-1 hover:opacity-80" @click="toggleSort('name')">
+                Partner Name
+                <span class="flex flex-col gap-px ml-0.5">
+                  <svg class="w-2 h-2" :class="sortField === 'name' && sortDir === 'asc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0Z"/></svg>
+                  <svg class="w-2 h-2" :class="sortField === 'name' && sortDir === 'desc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10Z"/></svg>
+                </span>
+              </button>
+            </th>
             <th class="px-4 py-3 text-[14px] font-medium">Email Id</th>
             <th class="px-4 py-3 text-[14px] font-medium">Phone</th>
             <th class="px-4 py-3 text-[14px] font-medium">Trading License</th>
-            <th class="px-4 py-3 text-[14px] font-medium">Status</th>
+            <th class="px-4 py-3 text-[14px] font-medium">
+              <button class="flex items-center gap-1 hover:opacity-80" @click="toggleSort('status')">
+                Status
+                <span class="flex flex-col gap-px ml-0.5">
+                  <svg class="w-2 h-2" :class="sortField === 'status' && sortDir === 'asc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0Z"/></svg>
+                  <svg class="w-2 h-2" :class="sortField === 'status' && sortDir === 'desc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10Z"/></svg>
+                </span>
+              </button>
+            </th>
             <th class="px-4 py-3 text-[14px] font-medium rounded-tr-[8px] rounded-br-[8px]">Action</th>
           </tr>
           <tr v-else-if="subTab === 'Payment Requests'">
-            <th class="pl-6 pr-4 py-3 text-[14px] font-medium rounded-tl-[8px] rounded-bl-[8px]">Request Date</th>
-            <th class="px-4 py-3 text-[14px] font-medium">Partner Name</th>
+            <th class="pl-6 pr-4 py-3 text-[14px] font-medium rounded-tl-[8px] rounded-bl-[8px]">
+              <button class="flex items-center gap-1 hover:opacity-80" @click="toggleSort('date')">
+                Request Date
+                <span class="flex flex-col gap-px ml-0.5">
+                  <svg class="w-2 h-2" :class="sortField === 'date' && sortDir === 'asc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0Z"/></svg>
+                  <svg class="w-2 h-2" :class="sortField === 'date' && sortDir === 'desc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10Z"/></svg>
+                </span>
+              </button>
+            </th>
+            <th class="px-4 py-3 text-[14px] font-medium">
+              <button class="flex items-center gap-1 hover:opacity-80" @click="toggleSort('name')">
+                Partner Name
+                <span class="flex flex-col gap-px ml-0.5">
+                  <svg class="w-2 h-2" :class="sortField === 'name' && sortDir === 'asc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0Z"/></svg>
+                  <svg class="w-2 h-2" :class="sortField === 'name' && sortDir === 'desc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10Z"/></svg>
+                </span>
+              </button>
+            </th>
             <th class="px-4 py-3 text-[14px] font-medium">Partner Id</th>
             <th class="px-4 py-3 text-[14px] font-medium">Amount</th>
             <th class="px-4 py-3 text-[14px] font-medium">Voucher No.</th>
             <th class="px-4 py-3 text-[14px] font-medium">Payment Date</th>
-            <th class="px-4 py-3 text-[14px] font-medium">Status</th>
+            <th class="px-4 py-3 text-[14px] font-medium">
+              <button class="flex items-center gap-1 hover:opacity-80" @click="toggleSort('status')">
+                Status
+                <span class="flex flex-col gap-px ml-0.5">
+                  <svg class="w-2 h-2" :class="sortField === 'status' && sortDir === 'asc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0Z"/></svg>
+                  <svg class="w-2 h-2" :class="sortField === 'status' && sortDir === 'desc' ? 'opacity-100' : 'opacity-30'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10Z"/></svg>
+                </span>
+              </button>
+            </th>
             <th class="px-4 py-3 text-[14px] font-medium rounded-tr-[8px] rounded-br-[8px]">Action</th>
           </tr>
         </thead>
@@ -247,40 +295,28 @@
         <!-- PARTNER APPROVALS TAB BODY -->
         <tbody v-else-if="activeTab === 'Partner Approvals'" :class="isDark ? 'bg-transparent' : 'bg-white'">
           <template v-if="subTab === 'Partner Registration'">
-            <tr v-for="(row, idx) in partnerApprovalsRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
+            <tr v-for="(row, idx) in sortedApprovalRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
               <td class="pl-6 pr-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.date }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.name }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.email }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.phone }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.license }}</td>
               <td class="px-4 py-3 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                <span :class="row.status === 'Approved' ? 'bg-[#00835D] text-white shadow-[#00835D33]' : 'bg-[#F59E0B] text-white shadow-[#F59E0B33]'"
-                      class="px-3 py-1 rounded-[20px] text-[12px] font-medium inline-block min-w-[70px] text-center shadow-sm">
+                <span :class="row.status === 'Approved' ? 'bg-[#00835D] shadow-[#00835D33]' : row.status === 'Rejected' ? 'bg-[#EF4444] shadow-[#EF444433]' : 'bg-[#F59E0B] shadow-[#F59E0B33]'"
+                      class="text-white px-3 py-1 rounded-[20px] text-[12px] font-medium inline-block min-w-[70px] text-center shadow-sm">
                   {{ row.status }}
                 </span>
               </td>
               <td class="px-4 py-3 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                <div class="flex items-center gap-2">
-                  <button @click="openReviewModal(row, 'registration')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#25b57d] text-white rounded-[6px] text-[12px] font-medium hover:bg-[#1a9563] transition-colors shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" /></svg>
-                    Review
-                  </button>
-                  <button @click="row.status === 'Pending' && emit('approve-partner', row.id)"
-                          class="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
-                          :class="row.status === 'Pending' ? 'bg-[#00835D] text-white hover:bg-[#006A4A]' : 'bg-[#00835D] text-white opacity-40 cursor-not-allowed'">
-                    Approve
-                  </button>
-                  <button @click="row.status === 'Pending' && emit('reject-partner', row.id)"
-                          class="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
-                          :class="row.status === 'Pending' ? 'bg-[#EF4444] text-white hover:bg-[#DC2626]' : 'bg-[#EF4444] text-white opacity-40 cursor-not-allowed'">
-                    Reject
-                  </button>
-                </div>
+                <button @click="openReviewModal(row, 'registration')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#25b57d] text-white rounded-[6px] text-[12px] font-medium hover:bg-[#1a9563] transition-colors shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" /></svg>
+                  Review
+                </button>
               </td>
             </tr>
           </template>
           <template v-else-if="subTab === 'Payment Requests'">
-            <tr v-for="(row, idx) in paymentRequestsRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
+            <tr v-for="(row, idx) in sortedPaymentRows" :key="idx" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'" class="transition-all group">
               <td class="pl-6 pr-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.date }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.name }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.partnerId }}</td>
@@ -288,28 +324,16 @@
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.voucher }}</td>
               <td class="px-4 py-3 text-[13px] border-b" :class="isDark ? 'text-white/90 border-white/5' : 'text-[#1a1a1a] border-gray-100'">{{ row.paymentDate }}</td>
               <td class="px-4 py-3 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                <span :class="row.status === 'Approved' ? 'bg-[#00835D] text-white shadow-[#00835D33]' : 'bg-[#F59E0B] text-white shadow-[#F59E0B33]'"
-                      class="px-3 py-1 rounded-[20px] text-[12px] font-medium inline-block min-w-[70px] text-center shadow-sm">
+                <span :class="row.status === 'Approved' ? 'bg-[#00835D] shadow-[#00835D33]' : row.status === 'Rejected' ? 'bg-[#EF4444] shadow-[#EF444433]' : 'bg-[#F59E0B] shadow-[#F59E0B33]'"
+                      class="text-white px-3 py-1 rounded-[20px] text-[12px] font-medium inline-block min-w-[70px] text-center shadow-sm">
                   {{ row.status }}
                 </span>
               </td>
               <td class="px-4 py-3 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                <div class="flex items-center gap-2">
-                  <button @click="openReviewModal(row, 'payment')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#25b57d] text-white rounded-[6px] text-[12px] font-medium hover:bg-[#1a9563] transition-colors shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" /></svg>
-                    Review
-                  </button>
-                  <button @click="row.status === 'Pending' && emit('approve-payment', row.id)"
-                          class="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
-                          :class="row.status === 'Pending' ? 'bg-[#00835D] text-white hover:bg-[#006A4A]' : 'bg-[#00835D] text-white opacity-40 cursor-not-allowed'">
-                    Approve
-                  </button>
-                  <button @click="row.status === 'Pending' && emit('reject-payment', row.id)"
-                          class="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all"
-                          :class="row.status === 'Pending' ? 'bg-[#EF4444] text-white hover:bg-[#DC2626]' : 'bg-[#EF4444] text-white opacity-40 cursor-not-allowed'">
-                    Reject
-                  </button>
-                </div>
+                <button @click="openReviewModal(row, 'payment')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#25b57d] text-white rounded-[6px] text-[12px] font-medium hover:bg-[#1a9563] transition-colors shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" /></svg>
+                  Review
+                </button>
               </td>
             </tr>
           </template>
@@ -364,9 +388,10 @@
         <div class="flex justify-between items-center mb-6">
           <div class="flex items-center gap-2">
             <span class="text-[14px] font-medium text-gray-900">Status:</span>
-            <span class="bg-[#F59E0B] text-white px-3 py-0.5 rounded-full text-[12px] font-medium">{{ selectedReviewRow.status }}</span>
+            <span :class="selectedReviewRow.status === 'Approved' ? 'bg-[#00835D]' : selectedReviewRow.status === 'Rejected' ? 'bg-[#EF4444]' : 'bg-[#F59E0B]'"
+                  class="text-white px-3 py-0.5 rounded-full text-[12px] font-medium">{{ selectedReviewRow.status }}</span>
           </div>
-          <span class="text-[14px] text-gray-500">Requested: {{ selectedReviewRow.date }}</span>
+          <span class="text-[14px] text-gray-500">Requested: {{ selectedReviewRow.dateOnly }}</span>
         </div>
 
         <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Contact Information</h4>
@@ -384,8 +409,8 @@
             <p class="text-[14px] text-gray-900">{{ selectedReviewRow.phone }}</p>
           </div>
           <div>
-            <p class="text-[13px] text-gray-500 mb-1">Authorized Person Phone</p>
-            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.phone }}</p>
+            <p class="text-[13px] text-gray-500 mb-1">Authorized Person Contact</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.authorizedPersonContact }}</p>
           </div>
         </div>
 
@@ -396,36 +421,36 @@
             <p class="text-[14px] text-gray-900">{{ selectedReviewRow.license }}</p>
           </div>
           <div>
-            <p class="text-[13px] text-gray-500 mb-1">Authorized Person Name</p>
-            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.name }}</p>
+            <p class="text-[13px] text-gray-500 mb-1">Authorized Person</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.authorizedPerson }}</p>
           </div>
           <div class="col-span-2">
             <p class="text-[13px] text-gray-500 mb-1">Business Address</p>
-            <p class="text-[14px] text-gray-900">123 Business St, New York, NY 10001</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.address }}</p>
           </div>
         </div>
 
         <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Request Details</h4>
         <div class="grid grid-cols-2 gap-4 mb-8">
           <div>
-            <p class="text-[13px] text-gray-500 mb-1">Requested By</p>
-            <p class="text-[14px] text-gray-900">Accounts Team</p>
-          </div>
-          <div>
             <p class="text-[13px] text-gray-500 mb-1">Request Date</p>
-            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.date }}, 5:30:00 AM</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.date }}</p>
           </div>
         </div>
 
         <div class="flex gap-4 justify-center">
-          <button @click="emit('approve-partner', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#00835D] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#006A4A] transition-colors shadow-sm">
-            <img src="/images/icons/Approve-Partner.svg" class="w-4 h-4" alt="Approve" />
-            Approve Partner
-          </button>
-          <button @click="emit('reject-partner', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#EF4444] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#DC2626] transition-colors shadow-sm">
-            <img src="/images/icons/Reject-Partner.svg" class="w-4 h-4" alt="Reject" />
-            Reject Partner
-          </button>
+          <template v-if="selectedReviewRow.status === 'Pending'">
+            <button @click="emit('approve-partner', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#00835D] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#006A4A] transition-colors shadow-sm">
+              <img src="/images/icons/Approve-Partner.svg" class="w-4 h-4" alt="Approve" />
+              Approve Partner
+            </button>
+            <button @click="emit('reject-partner', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#EF4444] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#DC2626] transition-colors shadow-sm">
+              <img src="/images/icons/Reject-Partner.svg" class="w-4 h-4" alt="Reject" />
+              Reject Partner
+            </button>
+          </template>
+          <p v-else-if="selectedReviewRow.status === 'Approved' && selectedReviewRow.approvedAt" class="text-[14px] text-[#00835D] font-medium">Approved on {{ selectedReviewRow.approvedAt }}</p>
+          <p v-else-if="selectedReviewRow.status === 'Rejected' && selectedReviewRow.rejectedAt" class="text-[14px] text-[#EF4444] font-medium">Rejected on {{ selectedReviewRow.rejectedAt }}</p>
         </div>
       </div>
     </div>
@@ -444,11 +469,12 @@
         <div class="flex justify-between items-center mb-6">
           <div>
             <p class="text-[13px] text-gray-500 mb-1">Status</p>
-            <span class="bg-[#F59E0B] text-white px-3 py-0.5 rounded-full text-[12px] font-medium">{{ selectedReviewRow.status }}</span>
+            <span :class="selectedReviewRow.status === 'Approved' ? 'bg-[#00835D]' : selectedReviewRow.status === 'Rejected' ? 'bg-[#EF4444]' : 'bg-[#F59E0B]'"
+                  class="text-white px-3 py-0.5 rounded-full text-[12px] font-medium">{{ selectedReviewRow.status }}</span>
           </div>
           <div class="text-right">
             <p class="text-[13px] text-gray-500 mb-1">Requested</p>
-            <span class="text-[14px] text-gray-900">{{ selectedReviewRow.date }}</span>
+            <span class="text-[14px] text-gray-900">{{ selectedReviewRow.dateOnly }}</span>
           </div>
         </div>
 
@@ -482,14 +508,14 @@
 
         <h4 class="text-[15px] font-medium text-gray-900 mb-2">Payment Details</h4>
         <div class="bg-[#E8FCF2] border border-[#A2E8D6] rounded-[8px] p-4 mb-6">
-          <p class="text-[14px] text-gray-700">Commission payment for Q4 2024 - TechCorp Solutions Inc. and 3 other clients</p>
+          <p class="text-[14px] text-gray-700">{{ selectedReviewRow.details }}</p>
         </div>
 
         <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Request Details</h4>
         <div class="grid grid-cols-2 gap-4 mb-8">
           <div>
-            <p class="text-[13px] text-gray-500 mb-1">Requested By</p>
-            <p class="text-[14px] text-gray-900">Sarah Johnson (Accounts)</p>
+            <p class="text-[13px] text-gray-500 mb-1">Submitted By</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.submittedBy }}</p>
           </div>
           <div>
             <p class="text-[13px] text-gray-500 mb-1">Request Date</p>
@@ -498,14 +524,18 @@
         </div>
 
         <div class="flex gap-4 justify-center">
-          <button @click="emit('approve-payment', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#00835D] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#006A4A] transition-colors shadow-sm">
-            <img src="/images/icons/Approve-Partner.svg" class="w-4 h-4" alt="Approve" />
-            Approve Partner
-          </button>
-          <button @click="emit('reject-payment', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#EF4444] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#DC2626] transition-colors shadow-sm">
-            <img src="/images/icons/Reject-Partner.svg" class="w-4 h-4" alt="Reject" />
-            Reject Partner
-          </button>
+          <template v-if="selectedReviewRow.status === 'Pending'">
+            <button @click="emit('approve-payment', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#00835D] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#006A4A] transition-colors shadow-sm">
+              <img src="/images/icons/Approve-Partner.svg" class="w-4 h-4" alt="Approve" />
+              Approve Payment
+            </button>
+            <button @click="emit('reject-payment', selectedReviewRow.id); closeReviewModal()" class="flex items-center gap-2 px-6 py-2.5 bg-[#EF4444] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#DC2626] transition-colors shadow-sm">
+              <img src="/images/icons/Reject-Partner.svg" class="w-4 h-4" alt="Reject" />
+              Reject Payment
+            </button>
+          </template>
+          <p v-else-if="selectedReviewRow.status === 'Approved' && selectedReviewRow.approvedAt" class="text-[14px] text-[#00835D] font-medium">Approved on {{ selectedReviewRow.approvedAt }}</p>
+          <p v-else-if="selectedReviewRow.status === 'Rejected' && selectedReviewRow.rejectedAt" class="text-[14px] text-[#EF4444] font-medium">Rejected on {{ selectedReviewRow.rejectedAt }}</p>
         </div>
       </div>
     </div>
@@ -533,23 +563,27 @@
         <div class="grid grid-cols-3 gap-4 mb-6">
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Invoice Number</p>
-            <p class="text-[13px] font-medium text-gray-900">INV-2024-001</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.invoiceNumber }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Invoice Date</p>
-            <p class="text-[13px] font-medium text-gray-900">11/1/2024</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.invoiceDate }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Due Date</p>
-            <p class="text-[13px] font-medium text-gray-900">11/15/2024</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.dueDate }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Plan Type</p>
-            <p class="text-[13px] font-medium text-gray-900">Enterprise Plan</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.plan }}</p>
+          </div>
+          <div>
+            <p class="text-[12px] text-gray-500 mb-1">Billing Cycle</p>
+            <p class="text-[13px] font-medium text-gray-900 capitalize">{{ selectedReviewRow.billingCycle }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Contract Period</p>
-            <p class="text-[13px] font-medium text-gray-900">12 months</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.contractPeriod }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Payment Date</p>
@@ -561,11 +595,11 @@
         <div class="bg-[#F0FDFA] rounded-[8px] p-4 mb-6">
           <div class="flex justify-between items-center mb-2">
             <p class="text-[14px] text-gray-600">Subtotal</p>
-            <p class="text-[14px] text-gray-900">$109,375</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.subtotal }}</p>
           </div>
           <div class="flex justify-between items-center mb-4">
             <p class="text-[14px] text-gray-600">Tax (12.5%)</p>
-            <p class="text-[14px] text-gray-900">$15,625</p>
+            <p class="text-[14px] text-gray-900">{{ selectedReviewRow.tax }}</p>
           </div>
           <div class="flex justify-between items-center pt-3 border-t border-[#A2E8D6] mb-3">
             <p class="text-[15px] font-medium text-gray-900">Total Revenue</p>
@@ -577,7 +611,7 @@
           </div>
           <div class="flex justify-between items-center">
             <p class="text-[14px] text-[#EF4444]">Amount Pending</p>
-            <p class="text-[14px] text-[#EF4444]">$0</p>
+            <p class="text-[14px] text-[#EF4444]">{{ selectedReviewRow.pending }}</p>
           </div>
         </div>
 
@@ -585,15 +619,15 @@
         <div class="grid grid-cols-2 gap-4 mb-6">
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Contact Person</p>
-            <p class="text-[13px] text-gray-900">John Smith</p>
+            <p class="text-[13px] text-gray-900">{{ selectedReviewRow.contactPerson }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Email Address</p>
-            <p class="text-[13px] text-gray-900">john.smith@techcorp.com</p>
+            <p class="text-[13px] text-gray-900">{{ selectedReviewRow.email }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Contact Phone</p>
-            <p class="text-[13px] text-gray-900">+1-555-0101</p>
+            <p class="text-[13px] text-gray-900">{{ selectedReviewRow.contactNo }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Source</p>
@@ -605,12 +639,12 @@
         <div class="grid grid-cols-2 gap-4 mb-6">
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Bank Details</p>
-            <p class="text-[13px] text-gray-900">Chase Bank *****1234</p>
+            <p class="text-[13px] text-gray-900">{{ selectedReviewRow.bank }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Credit Card</p>
-            <p class="text-[13px] text-gray-900">**** 4532</p>
-            <p class="text-[11px] text-gray-400 mt-0.5">Expires: 2025-08-15</p>
+            <p class="text-[13px] text-gray-900">{{ selectedReviewRow.card }}</p>
+            <p class="text-[11px] text-gray-400 mt-0.5">Expires: {{ selectedReviewRow.cardExpiry }}</p>
           </div>
         </div>
 
@@ -618,15 +652,15 @@
         <div class="grid grid-cols-3 gap-4 mb-2">
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Hosting Consumption</p>
-            <p class="text-[13px] font-medium text-gray-900">$15,000</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.hosting }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">AI Token Consumption</p>
-            <p class="text-[13px] font-medium text-gray-900">$30,000</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.ai }}</p>
           </div>
           <div>
             <p class="text-[12px] text-gray-500 mb-1">Total Cost</p>
-            <p class="text-[13px] font-medium text-gray-900">$45,000</p>
+            <p class="text-[13px] font-medium text-gray-900">{{ selectedReviewRow.resourceTotal }}</p>
           </div>
         </div>
 
@@ -676,13 +710,64 @@ const toggleSourceFilter = (source) => {
   i > -1 ? selectedSources.value.splice(i, 1) : selectedSources.value.push(source)
 }
 
+// ── Column Sort ───────────────────────────────────────────────────────────────
+const sortField = ref(null)
+const sortDir   = ref('asc')
+
+function toggleSort(field) {
+  if (sortField.value === field) {
+    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortField.value = field
+    sortDir.value = 'asc'
+  }
+}
+
+function applySortToRows(rows) {
+  if (!sortField.value) return rows
+  return [...rows].sort((a, b) => {
+    let av = a[sortField.value] ?? ''
+    let bv = b[sortField.value] ?? ''
+    if (sortField.value === 'date') {
+      av = new Date(av)
+      bv = new Date(bv)
+    } else {
+      av = String(av).toLowerCase()
+      bv = String(bv).toLowerCase()
+    }
+    if (av < bv) return sortDir.value === 'asc' ? -1 : 1
+    if (av > bv) return sortDir.value === 'asc' ? 1 : -1
+    return 0
+  })
+}
+
+const sortedApprovalRows = computed(() => applySortToRows(props.partnerApprovalsRows))
+const sortedPaymentRows  = computed(() => applySortToRows(props.paymentRequestsRows))
+
 // ── Review Modals ─────────────────────────────────────────────────────────────
 import { ref as vueRef } from 'vue' // In case it wasn't explicitly imported
 const selectedReviewRow = vueRef(null)
 const reviewModalType = vueRef('')
 
 const openReviewModal = (row, type) => {
-  selectedReviewRow.value = row
+  if (type === 'invoice') {
+    const masterRow   = props.userMasterRows.find(m => m.code === row.code)
+    const resourceRow = props.resourceRows.find(r => r.code === row.code)
+    selectedReviewRow.value = {
+      ...row,
+      contactPerson: masterRow?.contactPerson ?? '—',
+      contactNo:     masterRow?.contactNo     ?? '—',
+      email:         masterRow?.email         ?? row.email ?? '—',
+      bank:          masterRow?.bank          ?? '—',
+      card:          masterRow?.card          ?? '—',
+      cardExpiry:    masterRow?.cardExpiry    ?? '—',
+      hosting:       resourceRow?.hosting     ?? '—',
+      ai:            resourceRow?.ai          ?? '—',
+      resourceTotal: resourceRow?.total       ?? '—',
+    }
+  } else {
+    selectedReviewRow.value = row
+  }
   reviewModalType.value = type
 }
 
