@@ -8,7 +8,7 @@
     <main class="flex-1 px-8 pb-[0px] pt-8 space-y-6 overflow-y-auto" style="margin-top: -18px;">
       
       <!-- Alert Banner -->
-      <div v-if="showAlertBanner" :class="isDark ? 'bg-[#00141080] border-[#F9AF4D80]' : 'bg-[#FEFCE8] border-[#FFF085]'" class="rounded-[16px] p-4 flex items-center justify-between shadow-sm relative pr-12 border">
+      <div v-if="showAlertBanner && dynamicAdminAlert.text" :class="isDark ? 'bg-[#00141080] border-[#F9AF4D80]' : 'bg-[#FEFCE8] border-[#FFF085]'" class="rounded-[16px] p-4 flex items-center justify-between shadow-sm relative pr-12 border">
         <div class="flex items-center gap-4">
           <div class="w-10 h-10 bg-[#FFBB0D] rounded-full flex items-center justify-center flex-shrink-0">
             <svg class="text-white w-6 h-6 transition-colors" :class="{ 'hover:text-white': isDark }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -143,27 +143,27 @@
         </div>
 
         <!-- Resource Consumption metrics -->
-        <div v-if="activeOperationsSubTab === 'Resource Consumption'" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <div class="bg-[#E7FBF3] rounded-[16px] p-6 border border-[#A6E8D0] shadow-sm relative">
+        <div v-if="activeOperationsSubTab === 'Resource Consumption' && (avgHosting || avgAi)" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div v-if="avgHosting" class="bg-[#E7FBF3] rounded-[16px] p-6 border border-[#A6E8D0] shadow-sm relative">
             <div class="flex items-start justify-between mb-6">
               <h5 class="text-[16px] font-normal text-[#00000080]">Average Hosting Consumption</h5>
               <img src="/images/icons/Hosting.svg" class="w-6 h-6 object-contain" alt="Hosting" />
             </div>
             <div class="flex items-baseline gap-2 mb-2">
               <img src="/images/icons/dirham-black.svg" alt="AED" class="w-6 self-center" />
-              <span class="text-[30px] font-normal text-[#1a1a1a] leading-tight">18,400</span>
+              <span class="text-[30px] font-normal text-[#1a1a1a] leading-tight">{{ avgHosting }}</span>
             </div>
             <p class="text-[14px] text-[#999] font-normal">Per Customer</p>
           </div>
-          
-          <div class="bg-[#E7FBF3] rounded-[16px] p-6 border border-[#A6E8D0] shadow-sm relative">
+
+          <div v-if="avgAi" class="bg-[#E7FBF3] rounded-[16px] p-6 border border-[#A6E8D0] shadow-sm relative">
             <div class="flex items-start justify-between mb-6">
               <h5 class="text-[16px] font-normal text-[#00000080]">Average AI Token Consumption</h5>
               <img src="/images/icons/ai.svg" class="w-6 h-6 object-contain" alt="AI Token" />
             </div>
             <div class="flex items-baseline gap-2 mb-2">
               <img src="/images/icons/dirham-black.svg" alt="AED" class="w-6 self-center" />
-              <span class="text-[30px] font-normal text-[#1a1a1a] leading-tight">26,500</span>
+              <span class="text-[30px] font-normal text-[#1a1a1a] leading-tight">{{ avgAi }}</span>
             </div>
             <p class="text-[14px] text-[#999] font-normal">Per Customer</p>
           </div>
@@ -378,7 +378,9 @@ const paymentStatusMetrics = computed(() => {
 
 const dynamicAdminAlert = computed(() => {
   const a = alerts.value?.[0]
-  return { title: a?.title ?? 'Action Required', text: a?.message ?? '' }
+  if (!a) return { title: '', text: '' }
+  const title = a.type === 'info' ? 'Attention Needed' : 'Action Required'
+  return { title, text: a.message ?? '' }
 })
 
 // ── Load data per tab ──────────────────────────────────────────────────────
@@ -469,8 +471,22 @@ function normalizeResourceRows(rows) {
     ai: r.ai_token_cost_aed?.toLocaleString() ?? '—',
     total: ((r.hosting_charge_aed ?? 0) + (r.ai_token_cost_aed ?? 0)).toLocaleString(),
     issues: r.flags ?? [],
+    hostingRaw: r.hosting_charge_aed ?? null,
+    aiRaw: r.ai_token_cost_aed ?? null,
   }))
 }
+
+const avgHosting = computed(() => {
+  const vals = resourceRows.value.map(r => parseFloat(r.hostingRaw)).filter(v => !isNaN(v))
+  if (!vals.length) return null
+  return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length).toLocaleString()
+})
+
+const avgAi = computed(() => {
+  const vals = resourceRows.value.map(r => parseFloat(r.aiRaw)).filter(v => !isNaN(v))
+  if (!vals.length) return null
+  return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length).toLocaleString()
+})
 
 function normalizeApprovalRows(rows) {
   return (rows || []).map(r => ({
