@@ -48,7 +48,7 @@
                                 :class="isDark ? 'text-white/80' : 'text-gray-700'">
                                 {{ currentLang === 'ar' ? 'الإجراء المتخذ من قبل' : 'Action Taken By' }}
                             </label>
-                            <input type="text"
+                            <input v-model="actionBy" type="text"
                                 :placeholder="currentLang === 'ar' ? 'أدخل الاسم والدور...' : 'Enter name and role (e.g., John Smith - Financial Analyst)'"
                                 class="w-full px-4 py-3 rounded-xl border outline-none transition-all"
                                 :class="isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#A68426]' : ' border-[#9E8338]/50 focus:border-[#A68426] placeholder:text-black/50 placeholder:text-sm'" />
@@ -59,7 +59,7 @@
                                 :class="isDark ? 'text-white/80' : 'text-gray-700'">
                                 {{ currentLang === 'ar' ? 'الإجراء المتخذ والملاحظات' : 'Action Taken & Notes' }}
                             </label>
-                            <textarea rows="4"
+                            <textarea v-model="actionNotes" rows="4"
                                 :placeholder="currentLang === 'ar' ? 'صف الإجراء المتخذ...' : 'Describe the action taken to resolve this alert...'"
                                 class="w-full px-4 py-3 rounded-xl border outline-none transition-all resize-none"
                                 :class="isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#A68426]' : 'border-[#9E8338]/50  focus:border-[#A68426] placeholder:text-black/50 placeholder:text-sm'"></textarea>
@@ -68,12 +68,12 @@
 
                     <!-- Action Buttons -->
                     <div class="flex justify-end gap-3 mt-8">
-                        <button @click="$emit('close')"
+                        <button @click="handleIgnore"
                             class="px-6 py-3 rounded-xl border text-sm font-normal transition-all"
                             :class="isDark ? 'border-white/10 text-white hover:bg-white/5' : 'border-gray-200 text-gray-700 hover:bg-gray-50'">
                             {{ currentLang === 'ar' ? 'تجاهل التنبيه' : 'Ignore Alert' }}
                         </button>
-                        <button
+                        <button @click="handleSubmit"
                             class="px-8 py-3 rounded-xl bg-[#886B19] hover:bg-[#5E4B00] text-sm text-white font-normal shadow-lg transition-all active:scale-95">
                             {{ currentLang === 'ar' ? 'إرسال الإجراء' : 'Submit Action' }}
                         </button>
@@ -85,8 +85,23 @@
 </template>
 
 <script setup>
-defineProps({ isOpen: Boolean, alert: Object, isDark: Boolean, currentLang: String });
-defineEmits(['close']);
+const props = defineProps({ isOpen: Boolean, alert: Object, isDark: Boolean, currentLang: String })
+const emit  = defineEmits(['close', 'submit', 'ignore'])
+
+const actionBy    = ref('')
+const actionNotes = ref('')
+
+const handleSubmit = () => {
+  emit('submit', { action_by: actionBy.value, action_notes: actionNotes.value })
+  actionBy.value    = ''
+  actionNotes.value = ''
+}
+
+const handleIgnore = () => {
+  emit('ignore', props.alert)
+  actionBy.value    = ''
+  actionNotes.value = ''
+}
 </script>
 
 <style scoped>
