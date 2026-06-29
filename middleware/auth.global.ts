@@ -3,8 +3,8 @@ export default defineNuxtRouteMiddleware((to) => {
   const adminToken = useCookie('admin_token')
   const rpToken    = useCookie('rp_token')
 
-  const publicPages   = ['/', '/home', '/revenue-partnership-login', '/verify-email', '/test-auth', '/superadmin/login', '/admin/login', '/admin/roles']
-  const adminPrefixes = ['/superadmin', '/admin', '/review-manager', '/review-team-member']
+  const publicPages   = ['/', '/home', '/revenue-partnership-login', '/verify-email', '/test-auth', '/admin/login', '/reset-password']
+  const adminPrefixes = ['/admin', '/review-manager', '/review-team-member']
   const rpPrefixes    = ['/revenue-partnership/admin', '/revenue-partnership/accounts', '/revenue-partnership/partner', '/revenue-partnership/notifications', '/revenue-partnership/select-dashboard']
 
   if (publicPages.includes(to.path)) return
@@ -35,6 +35,38 @@ export default defineNuxtRouteMiddleware((to) => {
   const isAdminPath = adminPrefixes.some(p => to.path.startsWith(p))
   if (isAdminPath) {
     if (!adminToken.value) return navigateTo('/admin/login')
+
+    if (to.path.startsWith('/admin/roles')) {
+      try {
+        const adminUser = useCookie('admin_user')
+        const user = typeof adminUser.value === 'string' ? JSON.parse(adminUser.value) : adminUser.value
+        if (user?.role?.name !== 'Super Admin') return navigateTo('/admin')
+      } catch {
+        return navigateTo('/admin')
+      }
+    }
+
+    if (to.path.startsWith('/admin/implementation')) {
+      try {
+        const adminUser = useCookie('admin_user')
+        const user = typeof adminUser.value === 'string' ? JSON.parse(adminUser.value) : adminUser.value
+        const role = user?.role?.name
+
+        if (to.path.startsWith('/admin/implementation/manager')) {
+          if (role !== 'Super Admin' && role !== 'Implementation Manager') return navigateTo('/admin')
+        } else if (to.path.startsWith('/admin/implementation/member') || to.path.startsWith('/admin/implementation/project')) {
+          if (role !== 'Super Admin' && role !== 'Implementation Consultant') return navigateTo('/admin')
+        } else if (to.path === '/admin/implementation' || to.path === '/admin/implementation/') {
+          // redirect index based on role
+          if (role === 'Implementation Manager')   return navigateTo('/admin/implementation/manager')
+          if (role === 'Implementation Consultant') return navigateTo('/admin/implementation/member')
+          if (role !== 'Super Admin')              return navigateTo('/admin')
+        }
+      } catch {
+        return navigateTo('/admin')
+      }
+    }
+
     return
   }
 

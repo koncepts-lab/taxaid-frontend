@@ -44,7 +44,7 @@ export function useAdminAuth() {
   const getRole    = () => _admin.value?.role?.name ?? null
 
   function redirectByRole() {
-    return navigateTo('/superadmin')
+    return navigateTo('/admin/roles')
   }
 
   return { admin: _admin, isLoggedIn, getRole, login, logout, redirectByRole }

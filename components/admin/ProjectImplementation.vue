@@ -70,7 +70,7 @@
                                             </div>
                                             <div>
                                                 <p class="text-sm font-semibold text-[#D08700]">
-                                                    {{ steps[4].status ? 'First 5 steps Completed!' :
+                                                    {{ steps[4]?.status ? 'First 5 steps Completed!' :
                                                         'First 5 steps Pending' }}
                                                 </p>
                                                 <p class="text-sm  text-[#D08700]">Click to enable client dashboard
@@ -78,7 +78,7 @@
                                             </div>
                                         </div>
 
-                                        <button :disabled="!steps[4].status"
+                                        <button :disabled="!steps[4]?.status"
                                             class="bg-[#FB2C36] hover:bg-[#E63939] text-white px-15 py-1.5 rounded-lg text-base font-normal flex items-center gap-2 transition-all shadow-lg shadow-red-200  disabled:opacity-50  disabled:cursor-not-allowed disabled:shadow-none">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                                 stroke="currentColor" stroke-width="2.5">
@@ -108,7 +108,7 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <div @click="step.clientDelay = !step.clientDelay"
+                                    <div @click="toggleDelay(step)"
                                         class="w-5 h-5 rounded border-2 cursor-pointer flex items-center justify-center transition-all"
                                         :class="step.clientDelay ? 'bg-[#00896F] border-[#00896F]' : 'bg-white border-gray-200'">
                                         <svg v-if="step.clientDelay" width="14" height="14" viewBox="0 0 24 24"
@@ -155,7 +155,7 @@
                     <p class="text-[#007C65] text-base">Click "Ready for Go Live" to finalize this project.</p>
                 </div>
             </div>
-            <button :disabled="!steps[14].status"
+            <button :disabled="!steps[14]?.status"
                 class="bg-[#00896F] hover:bg-[#006B56] text-white px-15 py-1.5 rounded-lg font-bold flex items-center gap-2 shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ">
                 <img src="/images/icons/rocket.svg" alt="Celebration" class="w-6 h-6">
 
@@ -170,6 +170,8 @@ import { ref, computed, reactive } from 'vue'
 
 const props = defineProps({ project: Object })
 const emit = defineEmits(['back'])
+
+const { updateStepProgress } = useImplementation()
 
 const activeStepId = ref(null)
 const delayInputs = reactive({})
@@ -192,67 +194,51 @@ const projectInfo = [
     { label: 'Expected Close', value: formatDate(props.project.close) },
 ]
 
-const steps = ref([
-    { id: 1, label: 'Connector activated', status: true, clientDelay: true, timestamp: '3/16/2026, 6:18:18 PM', delayReason: 'Credentials verified', isSaved: true },
-    { id: 2, label: 'Trial Balance imported', status: true, clientDelay: false, timestamp: '3/16/2026, 6:18:18 PM', delayReason: '', isSaved: false },
-    { id: 3, label: 'FS code mapping completed', status: false, clientDelay: false, timestamp: '', delayReason: '', isSaved: false },
-    { id: 4, label: 'TB integrity validation passed', status: false, clientDelay: false, timestamp: '', delayReason: '', isSaved: false },
-    { id: 5, label: 'PL- BS integrity passed', status: false, clientDelay: false, timestamp: '', delayReason: '', isSaved: false },
-    { id: 6, label: 'AR report uploaded', status: false, clientDelay: false, timestamp: '', delayReason: '', isSaved: false },
-    { id: 7, label: 'AP report uploaded', status: false, clientDelay: false, timestamp: '', delayReason: '', isSaved: false },
-    { id: 8, label: 'Budget uploaded', status: false, clientDelay: false, delayReason: '', isSaved: false },
-    { id: 9, label: 'Sales forecast uploaded', status: false, clientDelay: false, delayReason: '', isSaved: false },
-    { id: 10, label: 'PDC report', status: false, clientDelay: false, delayReason: '', isSaved: false },
-    { id: 11, label: 'Cost center mapping', status: false, clientDelay: false, delayReason: '', isSaved: false },
-    { id: 12, label: 'Cost center master', status: false, clientDelay: false, delayReason: '', isSaved: false },
-    { id: 13, label: 'Prepaid adjustments', status: false, clientDelay: false, delayReason: '', isSaved: false },
-    { id: 14, label: 'Opening balance', status: false, clientDelay: false, delayReason: '', isSaved: false },
-    { id: 15, label: 'Cost center budget', status: false, clientDelay: false, delayReason: '', isSaved: false },
-])
+// --- MOCK STEPS (commented out — replaced by API data from props.project.steps) ---
+// const steps = ref([
+//     { id: 1, label: 'Connector activated', status: true, clientDelay: true, timestamp: '3/16/2026, 6:18:18 PM', delayReason: 'Credentials verified', isSaved: true },
+//     ...15 items
+// ])
+
+const steps = ref(props.project.steps ?? [])
 
 const completedCount = computed(() => steps.value.filter(s => s.status).length)
 
-const toggleStep = (step, idx) => {
-    const isFirstStep = idx === 0;
-    const isPreviousStepDone = isFirstStep || steps.value[idx - 1].status;
-    const isNextStepDone = idx < steps.value.length - 1 && steps.value[idx + 1].status;
+const toggleStep = async (step, idx) => {
+    const isFirstStep = idx === 0
+    const isPreviousStepDone = isFirstStep || steps.value[idx - 1].status
+    const isNextStepDone = idx < steps.value.length - 1 && steps.value[idx + 1].status
 
     if (!step.status) {
-        // FORWARD: Only allow if previous is done
-        if (isPreviousStepDone) {
-            step.status = true;
-
-            // Generate exact format: 3/16/2026, 6:18:18 PM
-            step.timestamp = new Date().toLocaleString('en-US', {
-                year: 'numeric',
-                month: 'numeric',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true
-            });
-        }
+        if (!isPreviousStepDone) return
+        step.status = true
+        step.timestamp = new Date().toLocaleString('en-US', {
+            year: 'numeric', month: 'numeric', day: 'numeric',
+            hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true
+        })
     } else {
-        // BACKWARD: Only allow if next is not done
-        if (!isNextStepDone) {
-            step.status = false;
-            step.timestamp = '';
-        }
+        if (isNextStepDone) return
+        step.status = false
+        step.timestamp = ''
     }
-};
 
-const saveStepDelay = (step) => {
-    if (!step.delayReason.trim()) {
-        step.isSaved = false
-    } else {
-        step.isSaved = true
-    }
+    await updateStepProgress(step.id, { completed: step.status })
+}
+
+const toggleDelay = async (step) => {
+    step.clientDelay = !step.clientDelay
+    if (!step.clientDelay) step.delayReason = ''
+    await updateStepProgress(step.id, {
+        client_delay: step.clientDelay,
+        client_delay_reason: step.clientDelay ? step.delayReason : null,
+    })
+}
+
+const saveStepDelay = async (step) => {
+    step.isSaved = !!step.delayReason.trim()
     activeStepId.value = null
-    // Blur the input
-    if (delayInputs[step.id]) {
-        delayInputs[step.id].blur()
-    }
+    if (delayInputs[step.id]) delayInputs[step.id].blur()
+    await updateStepProgress(step.id, { client_delay_reason: step.delayReason || null })
 }
 
 const getProgressHex = (count) => {

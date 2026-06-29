@@ -92,21 +92,48 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 const emit = defineEmits(['go-to-project'])
 const headers = [
     'Client ID', 'Client Name', 'Date Assigned', 'ERP', 'Industry',
     'Expected Close', 'Progress Indicator', 'Client Delay', 'View Status'
 ]
 
+const { getMyClients } = useImplementation()
+
 const activeRowId = ref(null)
 const delayInputs = reactive({})
+const loading = ref(false)
 
-const tableData = ref([
-    { id: 1, clientId: 'client-7', name: 'Logistics Express Inc.', date: '01/10/2026', erp: 'SAP', industry: 'Technology', close: '01/10/2026', progress: 8, delayReason: '', savedDate: null },
-    { id: 2, clientId: 'client-4', name: 'Food Services Group', date: '01/10/2026', erp: 'Oracle', industry: 'Retail', close: '01/10/2026', progress: 10, delayReason: 'Wait for documentation', savedDate: '24/03/2026' },
-    { id: 3, clientId: 'client-4', name: 'Maritime Logistics', date: '01/10/2026', erp: 'Oracle', industry: 'Maritime', close: '01/10/2026', progress: 3, delayReason: '', savedDate: null },
-])
+// --- MOCK DATA (commented out — replaced by API) ---
+// const tableData = ref([
+//     { id: 1, clientId: 'client-7', name: 'Logistics Express Inc.', date: '01/10/2026', erp: 'SAP', industry: 'Technology', close: '01/10/2026', progress: 8, delayReason: '', savedDate: null },
+//     { id: 2, clientId: 'client-4', name: 'Food Services Group', date: '01/10/2026', erp: 'Oracle', industry: 'Retail', close: '01/10/2026', progress: 10, delayReason: 'Wait for documentation', savedDate: '24/03/2026' },
+//     { id: 3, clientId: 'client-4', name: 'Maritime Logistics', date: '01/10/2026', erp: 'Oracle', industry: 'Maritime', close: '01/10/2026', progress: 3, delayReason: '', savedDate: null },
+// ])
+
+const tableData = ref([])
+
+onMounted(async () => {
+    loading.value = true
+    try {
+        const data = await getMyClients()
+        tableData.value = data.map(item => ({
+            id:          item.client_id,
+            clientId:    item.client_id,
+            name:        item.client_name,
+            date:        item.date_assigned ?? '-',
+            erp:         item.erp ?? '-',
+            industry:    item.industry ?? '-',
+            close:       item.expected_date_to_close ?? '-',
+            progress:    item.progress_indicator ?? 0,
+            delayReason: '',
+            savedDate:   null,
+        }))
+    } finally {
+        loading.value = false
+    }
+})
 
 const saveDelay = (item) => {
     if (!item.delayReason.trim()) {

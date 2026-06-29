@@ -17,9 +17,9 @@
                     ]" />
             </div>
             <div class="flex items-center gap-3">
-                <button class="p-3 border rounded-xl"
-                    :class="isDark ? 'bg-white/5 border-white/10 text-[#00B794]' : 'bg-white hover:bg-[#86E4CB] border-[#04C18F80] text-[#00896F]'">
-                    <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5">
+                <button @click="loadWorkload" :disabled="loading" class="p-3 border rounded-xl transition-all"
+                    :class="[isDark ? 'bg-white/5 border-white/10 text-[#00B794]' : 'bg-white hover:bg-[#86E4CB] border-[#04C18F80] text-[#00896F]', loading ? 'opacity-50 cursor-not-allowed' : '']">
+                    <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5" :class="loading ? 'animate-spin' : ''">
                 </button>
 
 
@@ -92,33 +92,27 @@
 
                                     <!-- New Column -->
                                     <td class="px-6 py-4 text-center">
-                                        <div v-if="project.status === 'new'" class="flex justify-center">
-                                            <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <div v-if="project.isNew" class="flex justify-center">
+                                            <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
                                         </div>
                                     </td>
 
                                     <!-- Ongoing Column -->
                                     <td class="px-6 py-4 text-center">
-                                        <div v-if="project.status === 'ongoing'" class="flex justify-center">
-                                            <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <div v-if="project.isOngoing" class="flex justify-center">
+                                            <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
                                         </div>
                                     </td>
 
                                     <!-- Critical Column -->
                                     <td class="px-6 py-4 text-center">
-                                        <div v-if="project.status === 'critical'" class="flex justify-center">
-                                            <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <div v-if="project.isCritical" class="flex justify-center">
+                                            <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
                                         </div>
                                     </td>
@@ -133,29 +127,69 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+
+const props = defineProps({ isDark: Boolean, currentLang: { type: String, default: 'en' } })
+const { getConsultantWorkload, getConsultantWorkloadDetails } = useImplementation()
 
 const showModal = ref(false)
 const selectedConsultant = ref(null)
+const loading = ref(false)
+const detailsLoading = ref(false)
 
-const consultants = [
-    { name: 'Sarah Johnson', new: 1, ongoing: 3, critical: 1 },
-    { name: 'Michael Chen', new: 0, ongoing: 3, critical: 0 },
-    { name: 'Emily Rodriguez', new: 2, ongoing: 4, critical: 2 },
-    { name: 'David Kumar', new: 1, ongoing: 3, critical: 1 },
-    { name: 'Lisa Anderson', new: 0, ongoing: 2, critical: 0 },
-]
+// --- MOCK DATA (commented out — replaced by API) ---
+// const consultants = [
+//     { name: 'Sarah Johnson', new: 1, ongoing: 3, critical: 1 },
+//     { name: 'Michael Chen', new: 0, ongoing: 3, critical: 0 },
+//     { name: 'Emily Rodriguez', new: 2, ongoing: 4, critical: 2 },
+//     { name: 'David Kumar', new: 1, ongoing: 3, critical: 1 },
+//     { name: 'Lisa Anderson', new: 0, ongoing: 2, critical: 0 },
+// ]
+// const projectDetails = ref([
+//     { id: 1, name: 'Mining Resources Ltd.', status: 'new' },
+//     { id: 2, name: 'Finance First Bank', status: 'ongoing' },
+//     { id: 3, name: 'Automative Dynamics LLC', status: 'ongoing' },
+//     { id: 4, name: 'Telecom Networks Inc.', status: 'ongoing' },
+//     { id: 5, name: 'Energy Solutions Group', status: 'critical' },
+// ])
 
-const projectDetails = ref([
-    { id: 1, name: 'Mining Resources Ltd.', status: 'new' },
-    { id: 2, name: 'Finance First Bank', status: 'ongoing' },
-    { id: 3, name: 'Automative Dynamics LLC', status: 'ongoing' },
-    { id: 4, name: 'Telecom Networks Inc.', status: 'ongoing' },
-    { id: 5, name: 'Energy Solutions Group', status: 'critical' },
-])
+const consultants = ref([])
+const projectDetails = ref([])
 
-const openModal = (consultant) => {
+async function loadWorkload() {
+    loading.value = true
+    try {
+        const data = await getConsultantWorkload()
+        consultants.value = data.map(c => ({
+            consultant_id: c.consultant_id,
+            name:          c.consultant_name,
+            new:           c.new_projects,
+            ongoing:       c.ongoing_projects,
+            critical:      c.critical_projects,
+        }))
+    } finally {
+        loading.value = false
+    }
+}
+
+onMounted(loadWorkload)
+
+const openModal = async (consultant) => {
     selectedConsultant.value = consultant
     showModal.value = true
+    detailsLoading.value = true
+    projectDetails.value = []
+    try {
+        const data = await getConsultantWorkloadDetails(consultant.consultant_id)
+        projectDetails.value = data.map((p, i) => ({
+            id:       i + 1,
+            name:     p.project_name,
+            isNew:     !!p.new,
+            isOngoing: !!p.ongoing,
+            isCritical: !!p.critical,
+        }))
+    } finally {
+        detailsLoading.value = false
+    }
 }
 </script>
