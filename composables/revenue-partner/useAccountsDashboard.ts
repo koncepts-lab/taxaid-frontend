@@ -44,6 +44,7 @@ export const useAccountsDashboard = () => {
     amount: number
     voucher_number: string
     covered_client_ids: number[]
+    client_amounts?: Record<string, number>
   }) => {
     return await useRpApi('/revenue/accounts/payment-to-partner', { method: 'POST', body: data })
   }
