@@ -110,14 +110,22 @@
         <div
           class="absolute top-[110%] right-0 mt-2 w-[280px] md:w-[324px] bg-white rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-2 border border-teal-50">
           <div class="flex flex-col gap-1">
-            <div v-for="(item, index) in settingsItems" :key="index"
-              class="flex items-center gap-4 p-1 rounded-2xl hover:bg-[#E6FFF9] cursor-pointer transition-colors group/item">
-              <div class="w-10 h-10 rounded-xl flex items-center justify-center">
-                <img :src="item.icon" class="w-5 h-5" :alt="item.label" />
+            <template v-for="(item, index) in settingsItems" :key="index">
+              <NuxtLink v-if="item.to" :to="item.to"
+                class="flex items-center gap-4 p-1 rounded-2xl hover:bg-[#E6FFF9] cursor-pointer transition-colors group/item">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center">
+                  <img :src="item.icon" class="w-5 h-5" :alt="item.label" />
+                </div>
+                <span class="text-[#013E32] font-medium text-[15px]">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
+              </NuxtLink>
+              <div v-else
+                class="flex items-center gap-4 p-1 rounded-2xl hover:bg-[#E6FFF9] cursor-pointer transition-colors group/item">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center">
+                  <img :src="item.icon" class="w-5 h-5" :alt="item.label" />
+                </div>
+                <span class="text-[#013E32] font-medium text-[15px]">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
               </div>
-              <span class="text-[#013E32] font-medium text-[15px]">{{ currentLang === 'ar' ? item.labelAr : item.label
-              }}</span>
-            </div>
+            </template>
           </div>
         </div>
       </div>
@@ -298,13 +306,23 @@
 
 
 
-          <div v-for="item in settingsItems" :key="item.label"
-            class="p-2 flex items-center gap-4 font-bold text-[17px] opacity-80 rounded-2xl transition-colors hover:bg-[#E6FFF9] dark:hover:bg-[#00B68D]/10 active:bg-[#E6FFF9] cursor-pointer group">
-            <img :src="item.icon" class="w-6 h-6 transition-opacity"
-              :class="{ 'invert opacity-60 group-hover:opacity-100': isDark }" />
-            <span class="group-hover:text-[#008472] transition-colors">{{ currentLang === 'ar' ? item.labelAr :
-              item.label }}</span>
-          </div>
+          <template v-for="item in settingsItems" :key="item.label">
+            <NuxtLink v-if="item.to" :to="item.to"
+              @click="isSettingsOpen = false"
+              class="p-2 flex items-center gap-4 font-bold text-[17px] opacity-80 rounded-2xl transition-colors hover:bg-[#E6FFF9] dark:hover:bg-[#00B68D]/10 active:bg-[#E6FFF9] cursor-pointer group">
+              <img :src="item.icon" class="w-6 h-6 transition-opacity"
+                :class="{ 'invert opacity-60 group-hover:opacity-100': isDark }" />
+              <span class="group-hover:text-[#008472] transition-colors">{{ currentLang === 'ar' ? item.labelAr :
+                item.label }}</span>
+            </NuxtLink>
+            <div v-else
+              class="p-2 flex items-center gap-4 font-bold text-[17px] opacity-80 rounded-2xl transition-colors hover:bg-[#E6FFF9] dark:hover:bg-[#00B68D]/10 active:bg-[#E6FFF9] cursor-pointer group">
+              <img :src="item.icon" class="w-6 h-6 transition-opacity"
+                :class="{ 'invert opacity-60 group-hover:opacity-100': isDark }" />
+              <span class="group-hover:text-[#008472] transition-colors">{{ currentLang === 'ar' ? item.labelAr :
+                item.label }}</span>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -421,10 +439,10 @@ const onLogoutClick = () => {
   logout()
 }
 const settingsItems = [
-  { label: 'Subscription Management', labelAr: 'إدارة الاشتراك', icon: '/images/icons/Subscription-Management.svg' },
-  { label: 'Support', labelAr: 'الدعم', icon: '/images/icons/Support.svg' },
-  { label: 'Notification Preferences', labelAr: 'تفضيلات الإشعارات', icon: '/images/icons/Notification-Preferences.svg' },
-  { label: 'Security & Privacy', labelAr: 'الأمن والخصوصية', icon: '/images/icons/Security-Privacy.svg' },
+  { label: 'Subscription Management', labelAr: 'إدارة الاشتراك', icon: '/images/icons/Subscription-Management.svg', to: '/settings/subscription' },
+  { label: 'Support', labelAr: 'الدعم', icon: '/images/icons/Support.svg', to: '/settings/support' },
+  { label: 'Notification Preferences', labelAr: 'تفضيلات الإشعارات', icon: '/images/icons/Notification-Preferences.svg', to: '/settings/notifications' },
+  { label: 'Security & Privacy', labelAr: 'الأمن والخصوصية', icon: '/images/icons/Security-Privacy.svg', to: '/settings/security' },
   { label: 'Sync & Data Management', labelAr: 'المزامنة وإدارة البيانات', icon: '/images/icons/Sync-Data-Management.svg' },
 ]
 const companies = ref([
