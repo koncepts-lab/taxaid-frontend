@@ -2,7 +2,7 @@
     <div class="p-8 space-y-6">
         <!-- Main Navigation Tabs -->
         <div class="flex bg-white p-1.5 rounded-full shadow-sm w-fit border border-gray-100">
-            <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
+            <button v-for="tab in tabs" :key="tab.id" @click="setTab(tab.id)"
                 class="px-12 py-1.5 rounded-full text-sm font-normal transition-all duration-300"
                 :class="activeTab === tab.id ? 'bg-[#68FFD6] text-black shadow-sm' : 'text-black hover:text-gray-800'">
                 {{ currentLang === 'ar' ? tab.labelAr : tab.label }}
@@ -39,7 +39,15 @@ import { ref, computed } from 'vue'
 
 const props = defineProps({ isDark: Boolean, currentLang: String })
 
-const activeTab = ref('gl-master')
+const route  = useRoute()
+const router = useRouter()
+const validTabs = ['gl-master', 'pool', 'workload']
+const activeTab = ref(validTabs.includes(route.query.tab) ? route.query.tab : 'gl-master')
+
+function setTab(id) {
+    activeTab.value = id
+    router.replace({ query: { ...route.query, tab: id } })
+}
 const tabs = [
     { id: 'gl-master', label: 'GL Code Master', labelAr: 'سجل أكواد GL' },
     { id: 'pool', label: 'Implementation Pool', labelAr: 'مجموعة التنفيذ' },

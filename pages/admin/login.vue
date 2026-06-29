@@ -172,6 +172,9 @@ const loginError   = ref('')
 function dashboardRoute(adminUser) {
     const role = adminUser?.role?.name
     const dept = adminUser?.department?.name
+    if (role === 'Super Admin')                                                            return '/admin/roles'
+    if (role === 'Implementation Manager')                                                 return '/admin/implementation/manager'
+    if (role === 'Implementation Consultant')                                              return '/admin/implementation/member'
     if (role === 'Review Manager' && dept === 'Review')                                   return '/review-manager/dashboard'
     if ((role === 'Team Lead' || role === 'Review Consultant') && dept === 'Review')      return '/review-team-member/dashboard'
     return '/admin'

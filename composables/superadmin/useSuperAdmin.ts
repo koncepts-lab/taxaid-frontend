@@ -39,6 +39,11 @@ export function useSuperAdmin() {
     })
   }
 
+  async function getMe(): Promise<any> {
+    const res: any = await apiFetch('/admin/me')
+    return res.data ?? res
+  }
+
   async function getStats(): Promise<any> {
     return apiFetch('/admin/dashboard/statistics')
   }
@@ -63,7 +68,9 @@ export function useSuperAdmin() {
   }
 
   async function createUser(data: Record<string, any>): Promise<AdminUser> {
-    const res: any = await apiFetch('/admin/users', { method: 'POST', body: data })
+    const payload = { ...data, role_id: data.admin_role_id }
+    delete payload.admin_role_id
+    const res: any = await apiFetch('/admin/users', { method: 'POST', body: payload })
     return res.data ?? res
   }
 
@@ -104,7 +111,43 @@ export function useSuperAdmin() {
     return res.data ?? res
   }
 
+  async function getPartners(params: { status?: string; search?: string } = {}): Promise<any> {
+    const query = new URLSearchParams()
+    if (params.status && params.status !== 'all') query.set('status', params.status)
+    if (params.search) query.set('search', params.search)
+    const qs = query.toString()
+    return apiFetch(`/admin/partners${qs ? '?' + qs : ''}`)
+  }
+
+  async function getPartnerClients(id: number): Promise<any[]> {
+    const res: any = await apiFetch(`/admin/partners/${id}/clients`)
+    return res.data ?? res
+  }
+
+  async function togglePartnerStatus(id: number): Promise<any> {
+    const res: any = await apiFetch(`/admin/partners/${id}/status`, { method: 'PATCH' })
+    return res.data ?? res
+  }
+
+  async function resetPartnerPassword(id: number, password: string): Promise<void> {
+    await apiFetch(`/admin/partners/${id}/password`, { method: 'PATCH', body: { password } })
+  }
+
+  async function unlinkPartnerClient(partnerId: number, userId: number): Promise<void> {
+    await apiFetch(`/admin/partners/${partnerId}/clients/${userId}`, { method: 'DELETE' })
+  }
+
+  async function deletePartner(id: number): Promise<void> {
+    await apiFetch(`/admin/partners/${id}`, { method: 'DELETE' })
+  }
+
+  async function sendPartnerResetEmail(id: number): Promise<void> {
+    await apiFetch(`/admin/partners/${id}/send-reset-email`, { method: 'POST' })
+  }
+
   return {
+    getMe,
+    getPartners, getPartnerClients, togglePartnerStatus, resetPartnerPassword, unlinkPartnerClient, deletePartner, sendPartnerResetEmail,
     getStats, getSystemCounts,
     getUsers, searchUsers, getUser, createUser, updateUser, deleteUser,
     activateUser, deactivateUser, updateSystems,

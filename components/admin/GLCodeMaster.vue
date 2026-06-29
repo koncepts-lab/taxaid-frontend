@@ -24,9 +24,9 @@
                                     class="flex items-center gap-2 group/cell h-10">
                                     <template v-if="editingCell === `fs-${idx - 1}`">
                                         <input v-model="fsCodes[idx - 1]" @blur="editingCell = null"
-                                            @keyup.enter="editingCell = null" v-focus
+                                            @keyup.enter="saveCell('fs', idx - 1)" v-focus
                                             class="flex-1 min-w-0 h-full px-3 rounded-xl text-black border border-[#00896F] outline-none text-sm shadow-sm" />
-                                        <button @mousedown.prevent="editingCell = null"
+                                        <button @mousedown.prevent="saveCell('fs', idx - 1)"
                                             class="bg-[#FFF085] px-3 h-full rounded-lg text-xs text-black font-medium">Save</button>
                                     </template>
                                     <template v-else>
@@ -56,9 +56,9 @@
                                     class="flex items-center gap-2 group/cell h-10">
                                     <template v-if="editingCell === `mg-${idx - 1}`">
                                         <input v-model="mainGroups[idx - 1]" @blur="editingCell = null"
-                                            @keyup.enter="editingCell = null" v-focus
+                                            @keyup.enter="saveCell('mg', idx - 1)" v-focus
                                             class="flex-1 min-w-0 h-full px-3 text-black rounded-xl border border-[#00896F] outline-none text-sm shadow-sm" />
-                                        <button @mousedown.prevent="editingCell = null"
+                                        <button @mousedown.prevent="saveCell('mg', idx - 1)"
                                             class="bg-[#FFF085] px-3 h-full rounded-lg text-xs text-black font-medium">Save</button>
                                     </template>
                                     <template v-else>
@@ -88,9 +88,9 @@
                                     class="flex items-center gap-2 group/cell h-10">
                                     <template v-if="editingCell === `sg-${idx - 1}`">
                                         <input v-model="subGroups[idx - 1]" @blur="editingCell = null"
-                                            @keyup.enter="editingCell = null" v-focus
+                                            @keyup.enter="saveCell('sg', idx - 1)" v-focus
                                             class="flex-1 min-w-0 h-full px-3 rounded-xl text-black border border-[#00896F] outline-none text-sm shadow-sm" />
-                                        <button @mousedown.prevent="editingCell = null"
+                                        <button @mousedown.prevent="saveCell('sg', idx - 1)"
                                             class="bg-[#FFF085] px-3 h-full rounded-lg text-xs text-black font-medium">Save</button>
                                     </template>
                                     <template v-else>
@@ -141,19 +141,60 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 
-const props = defineProps({
-    isDark: Boolean,
-    currentLang: String
+const props = defineProps({ isDark: Boolean, currentLang: String })
+
+const {
+    getGLMasters,
+    createFsCode, createMainGroup, createSubGroup,
+    updateFsCode, updateMainGroup, updateSubGroup,
+    deleteFsCode, deleteMainGroup, deleteSubGroup,
+} = useImplementation()
+
+// --- MOCK DATA (commented out — replaced by API) ---
+// const fsCodes = ref(['1000', '1100', '1200', '1300', '1400'])
+// const mainGroups = ref(['Assets', 'Liabilities', 'Equity', 'Revenue', 'Expenses'])
+// const subGroups = ref(['Current Assets', 'Fixed Assets', 'Long Term Liab', 'Operating Exp', 'Sales'])
+
+// Item arrays store objects {id, value} internally; template still binds to string arrays via index
+const fsCodeItems   = ref([])
+const mainGroupItems = ref([])
+const subGroupItems  = ref([])
+
+// String arrays for template v-model compatibility
+const fsCodes    = ref([])
+const mainGroups = ref([])
+const subGroups  = ref([])
+
+onMounted(async () => {
+    const data = await getGLMasters()
+    fsCodeItems.value    = data.fs_codes   ?? []
+    mainGroupItems.value = data.main_groups ?? []
+    subGroupItems.value  = data.sub_groups  ?? []
+    fsCodes.value    = fsCodeItems.value.map(i => i.code)
+    mainGroups.value = mainGroupItems.value.map(i => i.name)
+    subGroups.value  = subGroupItems.value.map(i => i.name)
 })
-
-const fsCodes = ref(['1000', '1100', '1200', '1300', '1400'])
-const mainGroups = ref(['Assets', 'Liabilities', 'Equity', 'Revenue', 'Expenses'])
-const subGroups = ref(['Current Assets', 'Fixed Assets', 'Long Term Liab', 'Operating Exp', 'Sales'])
 
 const editingCell = ref(null)
 const vFocus = { mounted: (el) => el.focus() }
+
+const saveCell = async (type, index) => {
+    editingCell.value = null
+    if (type === 'fs' && fsCodeItems.value[index]) {
+        await updateFsCode(fsCodeItems.value[index].id, fsCodes.value[index])
+        fsCodeItems.value[index].code = fsCodes.value[index]
+    }
+    if (type === 'mg' && mainGroupItems.value[index]) {
+        await updateMainGroup(mainGroupItems.value[index].id, mainGroups.value[index])
+        mainGroupItems.value[index].name = mainGroups.value[index]
+    }
+    if (type === 'sg' && subGroupItems.value[index]) {
+        await updateSubGroup(subGroupItems.value[index].id, subGroups.value[index])
+        subGroupItems.value[index].name = subGroups.value[index]
+    }
+}
 
 const isDeleteModalOpen = ref(false)
 const pendingDelete = reactive({ type: '', index: null })
@@ -164,21 +205,44 @@ const prepareDelete = (type, index) => {
     isDeleteModalOpen.value = true
 }
 
-const confirmDelete = () => {
+const confirmDelete = async () => {
     const { type, index } = pendingDelete
-    if (type === 'fs') fsCodes.value.splice(index, 1)
-    if (type === 'mg') mainGroups.value.splice(index, 1)
-    if (type === 'sg') subGroups.value.splice(index, 1)
-
+    if (type === 'fs' && fsCodeItems.value[index]) {
+        await deleteFsCode(fsCodeItems.value[index].id)
+        fsCodes.value.splice(index, 1)
+        fsCodeItems.value.splice(index, 1)
+    }
+    if (type === 'mg' && mainGroupItems.value[index]) {
+        await deleteMainGroup(mainGroupItems.value[index].id)
+        mainGroups.value.splice(index, 1)
+        mainGroupItems.value.splice(index, 1)
+    }
+    if (type === 'sg' && subGroupItems.value[index]) {
+        await deleteSubGroup(subGroupItems.value[index].id)
+        subGroups.value.splice(index, 1)
+        subGroupItems.value.splice(index, 1)
+    }
     isDeleteModalOpen.value = false
 }
 
 const newValues = reactive({ fs: '', mg: '', sg: '' })
-const addItem = (key) => {
+const addItem = async (key) => {
     if (!newValues[key]) return
-    if (key === 'fs') fsCodes.value.push(newValues[key])
-    if (key === 'mg') mainGroups.value.push(newValues[key])
-    if (key === 'sg') subGroups.value.push(newValues[key])
+    if (key === 'fs') {
+        const item = await createFsCode(newValues[key])
+        fsCodeItems.value.push(item)
+        fsCodes.value.push(item.code)
+    }
+    if (key === 'mg') {
+        const item = await createMainGroup(newValues[key])
+        mainGroupItems.value.push(item)
+        mainGroups.value.push(item.name)
+    }
+    if (key === 'sg') {
+        const item = await createSubGroup(newValues[key])
+        subGroupItems.value.push(item)
+        subGroups.value.push(item.name)
+    }
     newValues[key] = ''
 }
 </script>
