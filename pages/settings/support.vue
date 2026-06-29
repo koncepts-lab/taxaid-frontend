@@ -1,6 +1,6 @@
 <template>
   <NuxtLayout name="dashboard">
-    <div class="mx-auto p-6 pb-20 max-w-[1100px]">
+    <div class="mx-auto p-6 pb-20">
       
       <!-- Header -->
       <div class="mb-8">
