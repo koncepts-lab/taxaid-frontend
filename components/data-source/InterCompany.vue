@@ -343,10 +343,10 @@ const configs = {
     'internal-email': {
         title: 'Internal Email Directory', titleAr: 'دليل البريد الداخلي',
         sub: 'Manage employee email addresses', subAr: 'إدارة عناوين البريد الإلكتروني للموظفين والجهات الداخلية',
-        headers: ['Employee', 'Department', 'Role', 'Email', 'Extension', 'Status'],
-        headersAr: ['الموظف', 'القسم', 'الدور', 'البريد', 'التحويلة', 'الحالة'],
-        gridCols: '50px 220px 180px 150px 250px 120px 100px',
-        minWidth: '1200px'
+        headers: ['Employee', 'Department', 'Email', 'Extension', 'Status'],
+        headersAr: ['الموظف', 'القسم', 'البريد', 'التحويلة', 'الحالة'],
+        gridCols: '50px 1fr 1fr 1fr 1fr 100px',
+        minWidth: '900px'
     },
     'customers': {
         title: 'Customer Management', titleAr: 'إدارة العملاء',
@@ -370,7 +370,7 @@ const fieldMap = {
     },
     'internal-email': {
         'Employee': 'employee_name', 'Department': 'department',
-        'Role': null, 'Email': 'email', 'Extension': 'phone_number',
+        'Email': 'email', 'Extension': 'phone_number',
     },
 }
 
@@ -475,7 +475,7 @@ const handleAddAction = async (actionId) => {
     // Auto-generate identity for contact/customer rows
     if (isApiType.value && props.type !== 'internal-email') {
         try {
-            newRow.identity = await contactsApi.generateIdentity('customer')
+            newRow.identity = await contactsApi.generateIdentity(props.type === 'customers' ? 'customer' : 'vendor')
         } catch {}
     }
 

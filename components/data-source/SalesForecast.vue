@@ -34,7 +34,16 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto rounded-[15px] border" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+        <!-- Loading -->
+        <div v-if="loading" class="flex justify-center py-12">
+            <div class="w-6 h-6 border-2 border-[#00B794] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+
+        <!-- Error -->
+        <p v-else-if="error" class="text-sm text-red-500 py-4">{{ error }}</p>
+
+        <!-- Table -->
+        <div v-else class="overflow-x-auto rounded-[15px] border" :class="isDark ? 'border-white/10' : 'border-gray-100'">
             <table class="w-full text-left rtl:text-right border-collapse min-w-[1200px]">
                 <thead>
                     <tr class="bg-[#008864] text-white">
@@ -58,8 +67,8 @@
                 </thead>
 
                 <tbody v-for="year in data" :key="year.id">
-                    <tr class=" text-white font-medium">
-                        <td class="px-6 py-3  border-white/10 bg-[#014235]">{{ year.label }}</td>
+                    <tr class="text-white font-medium">
+                        <td class="px-6 py-3 border-white/10 bg-[#014235]">{{ year.label }}</td>
                         <td class="px-4 py-3 text-center text-sm">AED</td>
                         <td class="px-4 py-3 text-center text-sm">AED</td>
                         <td class="px-4 py-3 text-center text-sm">AED</td>
@@ -69,9 +78,8 @@
                     </tr>
 
                     <template v-for="quarter in year.quarters" :key="quarter.id">
-                        <!-- Quarter Row (Light Mint) -->
                         <tr class="bg-[#C2F9E9] text-[#013E32] font-medium border-b border-[#84D7C5]/30">
-                            <td class="px-6 py-3  border-[#84D7C5]">{{ quarter.label }}</td>
+                            <td class="px-6 py-3 border-[#84D7C5]">{{ quarter.label }}</td>
                             <td class="px-4 py-3 text-center text-sm">AED</td>
                             <td class="px-4 py-3 text-center text-sm">AED</td>
                             <td class="px-4 py-3 text-center text-sm">AED</td>
@@ -82,16 +90,15 @@
 
                         <tr v-for="month in quarter.months" :key="month.label" class="border-b transition-colors"
                             :class="isDark ? 'border-white/5 hover:bg-white/5 text-white/80' : 'border-gray-100 hover:bg-gray-50 text-gray-700'">
-                            <td class="px-6 py-3 " :class="isDark ? 'border-white/5' : 'border-gray-100'">{{
-                                month.label }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ month.actual || '-' }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ month.income || '-' }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ month.forecast || '-' }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ month.possible || '-' }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ month.budget || '-' }}</td>
+                            <td class="px-6 py-3" :class="isDark ? 'border-white/5' : 'border-gray-100'">{{ month.label }}</td>
+                            <td class="px-4 py-3 text-center text-sm">{{ month.actual ?? '-' }}</td>
+                            <td class="px-4 py-3 text-center text-sm">{{ month.income ?? '-' }}</td>
+                            <td class="px-4 py-3 text-center text-sm">{{ month.forecast ?? '-' }}</td>
+                            <td class="px-4 py-3 text-center text-sm">{{ month.possible ?? '-' }}</td>
+                            <td class="px-4 py-3 text-center text-sm">{{ month.budget ?? '-' }}</td>
                             <td class="px-4 py-3 text-center text-sm font-medium"
-                                :class="parseFloat(month.diff) < 0 ? 'text-red-500' : 'text-green-600'">
-                                {{ month.diff || '-' }}
+                                :class="month.diff !== null && parseFloat(month.diff) < 0 ? 'text-red-500' : 'text-green-600'">
+                                {{ month.diff ?? '-' }}
                             </td>
                         </tr>
                     </template>
@@ -102,13 +109,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-const activeMode = ref('Hybrid')
-
 defineProps({
-    data: Array,
     isDark: Boolean,
     currentLang: String
 })
 defineEmits(['open-sales-report'])
+
+const { data, loading, error, activeMode } = useSalesForecast()
 </script>

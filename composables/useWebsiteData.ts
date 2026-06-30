@@ -246,20 +246,21 @@ export function useDataSourcePage() {
   const ds = computed(() => data.value?.dataSourcePage ?? {})
   return {
     loading, error,
-    mainTabs:           computed(() => ds.value?.mainTabs           ?? []),
-    subTabsFinancial:   computed(() => ds.value?.subTabsFinancial   ?? []),
-    subTabsContacts:    computed(() => ds.value?.subTabsContacts    ?? []),
-    settings:           computed(() => ds.value?.settings           ?? {}),
-    arData:             computed(() => ds.value?.arData             ?? []),
-    apData:             computed(() => ds.value?.apData             ?? []),
-    logs:               computed(() => ds.value?.logs               ?? {}),
-    pdcSummaryData:     computed(() => ds.value?.pdcSummaryData     ?? []),
-    pdcDetailedData:    computed(() => ds.value?.pdcDetailedData    ?? []),
-    interCompanyData:   computed(() => ds.value?.interCompanyData   ?? []),
-    dataInItems:        computed(() => ds.value?.dataInItems        ?? []),
-    costCenterReports:  computed(() => ds.value?.costCenterReports  ?? {}),
-    budget:             computed(() => ds.value?.budget             ?? {}),
-    salesForecast:      computed(() => ds.value?.salesForecast      ?? {}),
+    // ── UI config (no backend — kept as mock) ──────────────────────────────
+    mainTabs:          computed(() => ds.value?.mainTabs          ?? []),
+    subTabsFinancial:  computed(() => ds.value?.subTabsFinancial  ?? []),
+    subTabsContacts:   computed(() => ds.value?.subTabsContacts   ?? []),
+    settings:          computed(() => ds.value?.settings          ?? {}),
+    interCompanyData:  computed(() => ds.value?.interCompanyData  ?? []),
+    // costCenterReports → useCostCenter() contractData / budgetReportData (live API)
+    // ── replaced by live composables (kept for reference) ─────────────────
+    // arData        → useArAgingSummary()   arRows / arTotals
+    // apData        → useApAgingSummary()   apRows / apTotals
+    // pdcSummaryData/pdcDetailedData → usePDC()
+    // dataInItems   → useDataIn()
+    // logs          → per-tab fetchLogs() in each data-source composable
+    // budget        → useBudget() inside Budget.vue
+    // salesForecast → useSalesForecast() inside SalesForecast.vue
   }
 }
 

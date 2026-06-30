@@ -23,7 +23,10 @@
                     </div>
 
                     <div class="p-6 flex-1 overflow-hidden flex flex-col">
-                        <div class="overflow-auto rounded-[20px] border no-scrollbar flex-1 relative shadow-inner"
+                        <div v-if="loading" class="flex justify-center items-center py-16">
+                            <div class="w-8 h-8 border-2 border-[#008169] border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                        <div v-else class="overflow-auto rounded-[20px] border no-scrollbar flex-1 relative shadow-inner"
                             :class="isDark ? 'border-white/10 bg-[#001a16]' : 'border-gray-200 bg-gray-50/30'">
 
                             <table class="w-full text-left  border-collapse min-w-[1800px]">
@@ -89,7 +92,8 @@ defineProps({
     isDark: Boolean,
     currentLang: String,
     showSiNo: { type: Boolean, default: false },
-    footerTotal: { type: String, default: '' }
+    footerTotal: { type: String, default: '' },
+    loading: { type: Boolean, default: false },
 })
 defineEmits(['close'])
 </script>

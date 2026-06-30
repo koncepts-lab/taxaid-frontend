@@ -101,7 +101,6 @@
               <!-- Accounts Receivable (live API) -->
               <DataSourceAR v-if="activeSubTab === 'accounts-receivable'"
                 type="AR"
-                :data="arData"
                 :arRows="arRows"
                 :arTotals="arTotals"
                 :loading="arLoading"
@@ -112,7 +111,6 @@
               <!-- Accounts Payable (live API) -->
               <DataSourceAR v-if="activeSubTab === 'accounts-payable'"
                 type="AP"
-                :data="apData"
                 :arRows="apRows"
                 :arTotals="apTotals"
                 :loading="apLoading"
@@ -133,11 +131,10 @@
               <DataSourceCostCenterModal :isOpen="isModalOpen" :title="modalConfig.title" :columns="modalConfig.columns"
                 :data="modalConfig.data" :totalValue="modalConfig.total" :isDark="isDark" :currentLang="currentLang"
                 @close="isModalOpen = false" />
-              <DataSourceBudget v-if="activeSubTab === 'budget'" :isDark="isDark" :currentLang="currentLang"
-                @open-budget-report="handleOpenBudgetReport" :isOpen="isBudgetOpen" />
-              <DataSourceSalesForecast v-if="activeSubTab === 'sales-forecast'" :data="salesForecastItems"
+              <DataSourceBudget v-if="activeSubTab === 'budget'" :isDark="isDark" :currentLang="currentLang" />
+              <DataSourceSalesForecast v-if="activeSubTab === 'sales-forecast'"
                 :isDark="isDark" :currentLang="currentLang" @open-sales-report="isForecastModalOpen = true" />
-              <DataSourceSalesForecastModal :isOpen="isForecastModalOpen" :data="salesForecastDetailedData"
+              <DataSourceSalesForecastModal :isOpen="isForecastModalOpen" :data="[]"
                 :isDark="isDark" :currentLang="currentLang" @close="isForecastModalOpen = false" />
               <DataSourceDataIn v-if="activeSubTab === 'data-in'"
                 :dataInItems="dataInItems"
@@ -181,14 +178,17 @@ import { useDataIn } from '../../composables/data-source/useDataIn'
 import { usePDC } from '../../composables/data-source/usePDC'
 import { useTrialBalance } from '../../composables/data-source/useTrialBalance'
 
+const route  = useRoute()
+const router = useRouter()
+
 // ── AR Aging Summary (live API) ────────────────────────────────────────────
-const { rows: arRows, totals: arTotals, loading: arLoading, error: arError } = useArAgingSummary()
+const { rows: arRows, totals: arTotals, loading: arLoading, error: arError, logs: arLiveLogs } = useArAgingSummary()
 
 // ── AP Aging Summary (live API) ────────────────────────────────────────────
-const { rows: apRows, totals: apTotals, loading: apLoading, error: apError } = useApAgingSummary()
+const { rows: apRows, totals: apTotals, loading: apLoading, error: apError, logs: apLiveLogs } = useApAgingSummary()
 
 // ── Trial Balance (live API) ───────────────────────────────────────────────
-const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, updateTrialBalance } = useTrialBalance()
+const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, updateTrialBalance, tbLogs: tbLiveLogs } = useTrialBalance()
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
@@ -198,24 +198,32 @@ const isAddModalOpen = ref(false)
 const isDeleteModalOpen = ref(false);
 const itemPendingDeletion = ref(null);
 
-// ── Data from data.json ──────────────────────────────────────────────────
+// ── Data from data.json (MOCK — only what has no backend yet) ─────────────
 const {
-  mainTabs: mainTabsData,
-  subTabsFinancial: subTabsFinancialData,
-  subTabsContacts: subTabsContactsData,
-  settings: settingsData,
-  arData: arDataFromJson,
-  apData: apDataFromJson,
-  logs: logsData,
-  interCompanyData: interCompanyDataFromJson,
-  dataInItems: _dataInItemsFromJson,
-  costCenterReports,
-  budget: budgetData,
-  salesForecast: salesForecastData,
+  mainTabs: mainTabsData,              // UI config — tab labels/icons
+  subTabsFinancial: subTabsFinancialData, // UI config — sub-tab list
+  subTabsContacts: subTabsContactsData,   // UI config — sub-tab list
+  settings: settingsData,              // MOCK — settings page, no backend yet
+  interCompanyData: interCompanyDataFromJson, // MOCK — no backend yet
+  // ── replaced by live composables ──────────────────────────────────────
+  // arData        → useArAgingSummary() arRows/arTotals
+  // apData        → useApAgingSummary() apRows/apTotals
+  // logs          → per-composable fetchLogs() on all 7 tabs
+  // dataInItems   → useDataIn()
+  // budget        → useBudget() inside Budget.vue
+  // salesForecast → useSalesForecast() inside SalesForecast.vue
+  // costCenterReports → useCostCenter() contractData/budgetReportData (live API)
 } = useDataSourcePage()
 
-const activeMainTab = ref('financial')
-const activeSubTab = ref('settings')
+const activeMainTab = ref((route.query.tab || 'financial'))
+const activeSubTab  = ref((route.query.sub || 'settings'))
+
+const syncUrl = () => {
+  router.replace({ query: { ...route.query, tab: activeMainTab.value, sub: activeSubTab.value } })
+}
+
+watch(activeMainTab, (val) => { syncUrl() })
+watch(activeSubTab,  (val) => { syncUrl() })
 
 // Computed aliases so template/logic reads identically to before
 const mainTabs = computed(() => mainTabsData.value)
@@ -322,6 +330,7 @@ const {
   pdcDetailedData,
   pdcDetailedTotal,
   fetchDetailed: fetchPdcDetailed,
+  logs: pdcLiveLogs,
 } = usePDC()
 
 const pdcSummaryData = computed(() => pdcGroups.value)
@@ -343,16 +352,7 @@ watch(settingsData, (val) => {
 const currencyColumns = computed(() => settingsData.value?.currencyColumns ?? [])
 
 
-// AR / AP / Logs from composable
-const arData = computed(() => arDataFromJson.value)
-const apData = computed(() => apDataFromJson.value)
-const arLogs = computed(() => logsData.value?.ar ?? [])
-const apLogs = computed(() => logsData.value?.ap ?? [])
-const pdcLogs = computed(() => logsData.value?.pdc ?? [])
-const ccLogs = computed(() => logsData.value?.costCenter ?? [])
-const tbLogs = computed(() => logsData.value?.trialBalance ?? [])
-const budgetLogs = computed(() => logsData.value?.budget ?? [])
-const salesForecastLogs = computed(() => logsData.value?.salesForecast ?? [])
+// AR / AP — live from useArAgingSummary / useApAgingSummary (arRows, arTotals, apRows, apTotals)
 
 // Data-In items — live from backend via useDataIn composable
 const { items: dataInItems, loading: dataInLoading, error: dataInError, fetchConfig: fetchDataInConfig, uploadFile: dataInUploadFile, downloadSample: dataInDownloadSample, uploadingId: dataInUploadingId } = useDataIn()
@@ -384,21 +384,18 @@ const handleRemove = (id) => {
 }
 // interCompanyData is already declared above via watch on composable
 
-const currentAgingData = computed(() => activeSubTab.value === 'accounts-receivable' ? arData.value : apData.value)
+
 const currrentTitle = computed(() => activeSubTab.value === 'accounts-receivable' ? (currentLang.value === 'ar' ? 'حسابات القبض' : 'Accounts Receivable') : (currentLang.value === 'ar' ? 'حسابات الدفع' : 'Accounts Payable'))
 const currentLogs = computed(() => {
   const logMap = {
-    'accounts-receivable': arLogs.value,
-    'accounts-payable': apLogs.value,
-    'pdc': pdcLogs.value,
-    'cost-center': ccLogs.value,
-    'budget': budgetLogs.value,
-    'sales-forecast': salesForecastLogs.value,
-    'trial-balance': tbLogs.value
-
-
+    'accounts-receivable': arLiveLogs.value,
+    'accounts-payable':    apLiveLogs.value,
+    'pdc':                 pdcLiveLogs.value,
+    'cost-center':         ccLiveLogs.value,
+    'budget':              budgetLiveLogs.value,
+    'sales-forecast':      sfLiveLogs.value,
+    'trial-balance':       tbLiveLogs.value,
   }
-
   return logMap[activeSubTab.value] || []
 })
 const currentSubTabs = computed(() => {
@@ -409,7 +406,9 @@ const currentSubTabs = computed(() => {
 
 watch(activeMainTab, (newTab) => {
   const newArray = newTab === 'financial' ? subTabsFinancial.value : subTabsContacts.value
-  if (newArray?.length > 0) {
+  // only reset sub-tab if the current one doesn't belong to the new main tab
+  const validIds = (newArray ?? []).map(t => t.id)
+  if (newArray?.length > 0 && !validIds.includes(activeSubTab.value)) {
     activeSubTab.value = newArray[0].id
   }
 })
@@ -439,71 +438,80 @@ const getStatusClass = (status) => {
       return `${baseClasses} bg-gray-500 text-gray-600 border-gray-500`
   }
 }
-// Cost-center report columns/data from composable
-const ccMappingColumns = computed(() => costCenterReports.value?.mappingColumns ?? [])
-const ccContractColumns = computed(() => costCenterReports.value?.contractColumns ?? [])
-const ccBudgetColumns = computed(() => costCenterReports.value?.budgetColumns ?? [])
-const mappingData = computed(() => costCenterReports.value?.mappingData ?? [])
-const contractData = computed(() => costCenterReports.value?.contractData ?? [])
-const ccBudgetData = computed(() => costCenterReports.value?.budgetData ?? [])
+// Cost-center: all live from useCostCenter()
+const {
+  mappingColumns: ccMappingColumnsLive,
+  mappingData:    ccMappingDataLive,
+  contractData:   ccContractData,
+  contractTotal:  ccContractTotal,
+  budgetReportColumns: ccBudgetColumns,
+  budgetReportData:    ccBudgetData,
+  budgetReportTotal:   ccBudgetTotal,
+  logs: ccLiveLogs,
+} = useCostCenter()
+
+const ccContractColumns = [
+  { label: 'Project Name', labelAr: 'اسم المشروع',   key: 'projectName' },
+  { label: 'Status',       labelAr: 'الحالة',          key: 'status'      },
+  { label: 'Value',        labelAr: 'القيمة',           key: 'value'       },
+  { label: 'Variation',    labelAr: 'الفارق',           key: 'variation'   },
+  { label: 'Final Value',  labelAr: 'القيمة النهائية',  key: 'finalValue'  },
+]
+
 const isModalOpen = ref(false)
-const isBudgetOpen = ref(false)
 const modalConfig = ref({ title: '', columns: [], data: [], total: '-' })
 
 const handleOpenCCReport = (reportId) => {
   if (reportId === 'mapping') {
     modalConfig.value = {
-      title: currentLang.value === 'ar' ? 'تقرير تخطيط مركز التكلفة' : 'Cost Center Mapping Report',
-      columns: ccMappingColumns.value,
-      data: mappingData.value,
-      total: 'N/A'
+      title:   currentLang.value === 'ar' ? 'تقرير تخطيط مركز التكلفة' : 'Cost Center Mapping Report',
+      columns: ccMappingColumnsLive,
+      data:    ccMappingDataLive.value,
+      total:   'N/A'
     }
   } else if (reportId === 'contract') {
     modalConfig.value = {
-      title: currentLang.value === 'ar' ? 'تقرير سجل العقود الرئيسي' : 'Contract Master Detailed Report',
-      columns: ccContractColumns.value,
-      data: contractData.value,
-      total: costCenterReports.value?.contractTotal ?? '1,250,000'
+      title:   currentLang.value === 'ar' ? 'تقرير سجل العقود الرئيسي' : 'Contract Master Detailed Report',
+      columns: ccContractColumns,
+      data:    ccContractData.value,
+      total:   ccContractTotal.value,
     }
   } else if (reportId === 'budget') {
     modalConfig.value = {
-      title: currentLang.value === 'ar' ? 'تقرير ميزانية مركز التكلفة' : 'Budget Cost Center Report',
+      title:   currentLang.value === 'ar' ? 'تقرير ميزانية مركز التكلفة' : 'Budget Cost Center Report',
       columns: ccBudgetColumns.value,
-      data: ccBudgetData.value,
-      total: costCenterReports.value?.budgetTotal ?? '840,000'
+      data:    ccBudgetData.value,
+      total:   ccBudgetTotal.value,
     }
   }
   isModalOpen.value = true
 }
-// Budget report data/columns from composable
-const budgetReportData = computed(() => budgetData.value?.reportData ?? [])
-const budgetColumns = computed(() => budgetData.value?.reportColumns ?? [])
-const budgetReportTotal = computed(() => budgetData.value?.reportTotal ?? '-')
 
-// Sales forecast from composable (salesForecastData from useDataSourcePage)
-const salesForecastItems = computed(() => salesForecastData.value?.data ?? [])
-const salesForecastDetailedData = computed(() => salesForecastData.value?.detailedData ?? [])
+// Budget: Budget.vue now handles its own data via useBudget() composable
+// salesForecast: SalesForecast.vue now handles its own data via useSalesForecast() composable
 
+// Logs for budget + sales_forecast (lightweight fetch — their full composables live inside child components)
+const budgetLiveLogs = ref([])
+const sfLiveLogs = ref([])
+onMounted(async () => {
+  try {
+    const [bRes, sfRes] = await Promise.all([
+      useApi('data-source/upload-logs?module=budget'),
+      useApi('data-source/upload-logs?module=sales_forecast'),
+    ])
+    budgetLiveLogs.value = bRes?.data ?? []
+    sfLiveLogs.value     = sfRes?.data ?? []
+  } catch { /* silently ignore — logs are non-critical */ }
+})
 
 // salesForecastDetailedColumns kept for SalesForecastModal prop
 const salesForecastDetailedColumns = [
   { label: 'Project Name', labelAr: 'اسم المشروع', key: 'projectName' },
   { label: 'Customer', labelAr: 'العميل', key: 'customer' },
-  { label: 'Possibilty', labelAr: 'الاحتمالية', key: 'possibility' }, // Spelled "Possibilty" to match your image
+  { label: 'Possibilty', labelAr: 'الاحتمالية', key: 'possibility' },
   { label: 'Date', labelAr: 'التاريخ', key: 'date' },
   { label: 'AED', labelAr: 'درهم إماراتي', key: 'amount', textRight: true }
 ]
-
-
-const handleOpenBudgetReport = (id, title) => {
-  modalConfig.value = {
-    title: title,
-    columns: budgetColumns.value,
-    data: budgetReportData.value,
-    total: budgetReportTotal.value
-  }
-  isBudgetOpen.value = true
-}
 </script>
 
 <style scoped>

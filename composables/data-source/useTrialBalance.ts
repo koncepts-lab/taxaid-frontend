@@ -92,7 +92,19 @@ export function useTrialBalance() {
     }
   }
 
-  onMounted(() => fetchTrialBalance())
+  const tbLogs = ref<any[]>([])
+  const tbLogsLoading = ref(false)
+
+  const fetchLogs = async () => {
+    tbLogsLoading.value = true
+    try {
+      const result = await useApi('data-source/upload-logs?module=trial_balance') as any
+      tbLogs.value = result?.data ?? []
+    } catch { tbLogs.value = [] }
+    finally { tbLogsLoading.value = false }
+  }
+
+  onMounted(() => { fetchTrialBalance(); fetchLogs() })
 
   return {
     tbMappingData,
@@ -103,5 +115,8 @@ export function useTrialBalance() {
     tbError,
     fetchTrialBalance,
     updateTrialBalance,
+    tbLogs,
+    tbLogsLoading,
+    fetchLogs,
   }
 }

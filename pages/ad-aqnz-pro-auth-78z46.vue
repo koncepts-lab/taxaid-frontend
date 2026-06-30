@@ -194,10 +194,15 @@ const handleLogin = async () => {
     if (errors.username || errors.password) return
 
     loading.value = true
+    console.log('Attempting login with:', form.username)
     try {
         await login(form.username, form.password)
-        await navigateTo(dashboardRoute(admin.value))
+        console.log('Login successful! Admin data:', admin.value)
+        const targetRoute = dashboardRoute(admin.value)
+        console.log('Navigating to:', targetRoute)
+        await navigateTo(targetRoute)
     } catch (e) {
+        console.error('Login failed:', e)
         loginError.value = e?.data?.message ?? e?.message ?? 'Invalid credentials'
     } finally {
         loading.value = false

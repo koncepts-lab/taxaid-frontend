@@ -37,7 +37,11 @@ export function useAdminAuth() {
     tokenCookie.value = null
     userCookie.value  = null
     _admin.value      = null
-    navigateTo('/superadmin/login')
+    if (process.client) {
+      window.location.href = '/ad-aqnz-pro-auth-78z46'
+    } else {
+      navigateTo('/ad-aqnz-pro-auth-78z46')
+    }
   }
 
   const isLoggedIn = () => !!tokenCookie.value
