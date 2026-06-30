@@ -373,6 +373,7 @@
                   <th class="px-8 py-5 text-[15px] font-medium text-center">Revenue</th>
                   <th class="px-8 py-5 text-[15px] font-medium text-center">Collected</th>
                   <th class="px-8 py-5 text-[15px] font-medium text-center">Settlement</th>
+                  <th class="px-8 py-5 text-[15px] font-medium text-center whitespace-nowrap">Paid to Partner</th>
                   <th class="px-8 py-5 text-[15px] font-medium text-center whitespace-nowrap">Payment Date</th>
                   <th class="px-8 py-5 text-[15px] font-medium last:rounded-tr-2xl text-center">Payment Status</th>
                 </tr>
@@ -396,6 +397,8 @@
                     row.collected }}</td>
                   <td class="px-8 py-6 text-[14px] text-center" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{
                     row.settlement }}</td>
+                  <td class="px-8 py-6 text-[14px] text-center" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{
+                    row.actualPaid }}</td>
                   <td class="px-8 py-6 text-[14px] text-center" :class="isDark ? 'text-white/90' : 'text-[#0A0A0A]'">{{
                     row.date }}</td>
                   <td class="px-8 py-6 text-center">
@@ -661,11 +664,13 @@
             </div>
 
             <div class="grid grid-cols-2 gap-6">
-              <!-- Payment Value -->
+              <!-- Total Partner Payment (auto-calculated from per-client amounts) -->
               <div class="space-y-1.5">
-                <label class="text-[15px] font-normal text-[#1a1a1a]">Payment Value (AED) *</label>
-                <input v-model="paymentAmount" type="number" step="0.01" placeholder="0.00"
-                  class="w-full px-4 py-3 bg-white border border-[#82FFE0] rounded-xl focus:outline-none focus:border-[#00DDA3] placeholder:text-[#b0b7c1] text-[#000] text-[15px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                <label class="text-[15px] font-normal text-[#1a1a1a]">Total Partner Payment (AED)</label>
+                <div class="w-full px-4 py-3 border border-[#82FFE0] rounded-xl text-[15px]"
+                  :class="totalCommission > 0 ? 'bg-[#F0FDF4] text-[#00835D] font-medium' : 'bg-white text-[#b0b7c1]'">
+                  {{ totalCommission > 0 ? totalCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'Calculated from client amounts' }}
+                </div>
               </div>
               <!-- Voucher Number -->
               <div class="space-y-1.5">
@@ -1031,9 +1036,6 @@ const totalCommission = computed(() =>
   selectedClientIds.value.reduce((sum, id) => sum + (parseFloat(clientAmounts.value[id]) || 0), 0)
 )
 
-watch(totalCommission, (val) => {
-  if (val > 0) paymentAmount.value = val.toFixed(2)
-})
 
 const formatDate = (date) => date ? format(date, 'dd-MM-yyyy') : ''
 
@@ -1076,7 +1078,7 @@ async function loadSubTab(tab) {
       const data = await fetchNotifyCustomers()
       console.log('[loadSubTab:Notify] rows:', data?.length, data)
       notifyRows.value = (data || []).map(r => ({
-        code: r.tenant_id, source: r.partner?.code ?? 'Direct', company: r.company_name,
+        code: r.tenant_id, source: r.partner?.name ?? 'Direct', company: r.company_name,
         contact: r.contact_no ?? '—', cardType: r.card_type ?? '—', last4: r.card_last4 ? `****${r.card_last4}` : '—',
         expiry: r.card_expiry ?? '—', status: 'Expiring', action: r.last_notified_at ? 'Notified' : 'Notify',
       }))
@@ -1084,7 +1086,7 @@ async function loadSubTab(tab) {
       const data = await fetchUserMasterInfo()
       console.log('[loadSubTab:UserMaster] rows:', data?.length, data)
       userMasterRows.value = (data || []).map(r => ({
-        code: r.tenant_id, source: r.partner?.code ?? 'Direct', company: r.company_name,
+        code: r.tenant_id, source: r.partner?.name ?? 'Direct', company: r.company_name,
         bank: r.bank_details ?? '—', card: r.card_type ? `${r.card_type} *${r.card_last4}` : '—',
         contactPerson: r.contact_person ?? '—', contactNo: r.contact_no ?? '—', email: r.email ?? '—',
       }))
@@ -1096,11 +1098,13 @@ async function loadSubTab(tab) {
 
 function normalizeRow(r) {
   return {
-    code: r.tenant_id, source: r.partner?.code ?? 'Direct',
+    code: r.tenant_id, source: r.partner?.name ?? 'Direct',
     company: r.company_name, period: r.contract_period ?? '—', year: r.year ?? '—',
     rawRevenue: r.revenue_aed ?? 0, rawCollected: r.collected_aed ?? 0,
     revenue: r.revenue_aed?.toLocaleString() ?? '—', collected: r.collected_aed?.toLocaleString() ?? '—',
-    settlement: r.settlement_aed?.toLocaleString() ?? '—', date: r.last_payment_date ?? '—',
+    settlement: r.settlement_aed?.toLocaleString() ?? '—',
+    actualPaid: r.actual_paid_aed > 0 ? r.actual_paid_aed?.toLocaleString() ?? '—' : '—',
+    date: r.last_payment_date ?? '—',
     status: ({ paid: 'Paid', failed: 'Failed', pending: 'Pending', no_payments: 'No Payments' })[r.payment_status] ?? 'No Payments', reason: '—',
   }
 }
@@ -1112,7 +1116,7 @@ async function handleNotify(tenantId) {
     await sendCardExpiryNotification(tenantId)
     const data = await fetchNotifyCustomers()
     notifyRows.value = (data || []).map(r => ({
-      code: r.tenant_id, source: r.partner?.code ?? 'Direct', company: r.company_name,
+      code: r.tenant_id, source: r.partner?.name ?? 'Direct', company: r.company_name,
       contact: r.contact_no ?? '—', cardType: r.card_type ?? '—', last4: r.card_last4 ? `****${r.card_last4}` : '—',
       expiry: r.card_expiry ?? '—', status: 'Expiring', action: r.last_notified_at ? 'Notified' : 'Notify',
     }))
@@ -1141,14 +1145,15 @@ async function selectPartnerForPayment(name) {
 
 // ── Modal submit handlers ───────────────────────────────────────────────────
 async function handleSubmitPayment() {
-  if (!selectedPartnerId.value || !paymentDate.value || !paymentAmount.value || !voucherNumber.value) return
+  if (!selectedPartnerId.value || !paymentDate.value || totalCommission.value <= 0 || !voucherNumber.value) return
   await submitPaymentToPartner({
     partner_id: selectedPartnerId.value,
     payment_date: format(paymentDate.value, 'yyyy-MM-dd'),
     details: paymentDetails.value,
-    amount: parseFloat(paymentAmount.value),
+    amount: totalCommission.value,
     voucher_number: voucherNumber.value,
     covered_client_ids: selectedClientIds.value,
+    client_amounts: clientAmounts.value,
   })
   showPaymentModal.value = false
 }

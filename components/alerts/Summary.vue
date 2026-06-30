@@ -56,10 +56,15 @@
                     <!-- Actions -->
                     <td class="py-2 px-4">
                         <div class="flex items-center justify-start gap-2">
-                            <!-- Resolve Button (Only for Pending) -->
-                            <button v-if="type === 'pending'" @click="$emit('resolve', row)"
-                                class="flex items-center justify-center bg-[#765E00] hover:bg-[#5E4B00] text-white px-6 py-1.5 rounded text-sm transition-all shadow-sm">
-                                {{ t.resolve }}
+                            <!-- View Button -->
+                            <button @click="$emit('view', row)"
+                                class="flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-black px-4 py-1.5 rounded text-sm transition-all shadow-sm">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <span v-if="type !== 'pending'">{{ t.view }}</span>
                             </button>
 
                             <!-- Chat Button -->
@@ -74,15 +79,14 @@
                                 {{ t.chat }}
                             </button>
 
-                            <!-- View Button -->
-                            <button @click="$emit('view', row)"
-                                class="flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-black px-4 py-1.5 rounded text-sm transition-all shadow-sm">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                                <span v-if="type !== 'pending'">{{ t.view }}</span>
+                            <!-- Resolve Button: always occupies space to keep layout consistent -->
+                            <button
+                                :class="(row.status === 'Awaiting Action' && !row.isAutoResolve)
+                                    ? 'bg-[#765E00] hover:bg-[#5E4B00] text-white shadow-sm'
+                                    : 'invisible pointer-events-none'"
+                                class="flex items-center justify-center px-6 py-1.5 rounded text-sm transition-all"
+                                @click="row.status === 'Awaiting Action' && !row.isAutoResolve && $emit('resolve', row)">
+                                {{ t.resolve }}
                             </button>
                         </div>
                     </td>

@@ -263,18 +263,9 @@ export function useDataSourcePage() {
   }
 }
 
-export function useAlertsPage() {
-  const { data, loading, error } = useWebsiteData()
-  const pageData = computed(() => data.value?.alertsPage ?? {})
-
-  return {
-    loading,
-    error,
-    categories: computed(() => pageData.value?.categories ?? []),
-    statusMap:  computed(() => pageData.value?.statusMap  ?? {}),
-    alerts:     computed(() => pageData.value?.alerts     ?? []),
-  }
-}
+// useAlertsPage — MOCK (static data.json)
+// Replaced by composables/alerts/useAlertsPage.ts (live API)
+// export function useAlertsPage() { ... }
 
 // useAppointmentsPage moved to composables/appointment/useAppointmentsPage.ts (live API)
 export function useRevenuePartnershipLogin() {

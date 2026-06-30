@@ -118,8 +118,12 @@ const onDateChange = (val) => {
     }
 };
 
+const emit = defineEmits(['change'])
+
 const emitChange = (type, date) => {
-    console.log('Selection Changed:', type, format(date, 'yyyy-MM-dd'));
+    let formatted = date ? format(date, 'yyyy-MM-dd') : null
+    if (type === 'daily' && !formatted) formatted = format(new Date(), 'yyyy-MM-dd')
+    emit('change', { type, date: formatted })
 };
 
 
