@@ -1,4 +1,4 @@
-export const useCostCenter = () => {
+export const useCostCenterChart = () => {
   const loading    = useState<boolean>('cc_loading',  () => false)
   const error      = useState<string | null>('cc_error', () => null)
   const activeDate = useState<string>('cc_date',      () => '31-12-2025')

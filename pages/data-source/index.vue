@@ -125,11 +125,12 @@
               <DataSourcePDC v-if="activeSubTab === 'pdc'" :pdcGroups="pdcSummaryData" :isDark="isDark"
                 :currentLang="currentLang" @open-report="openPDCReport" />
               <DataSourceCostCenter v-if="activeSubTab === 'cost-center'" :isDark="isDark" :currentLang="currentLang"
+                :activeCount="ccActiveCount"
                 @open-report="handleOpenCCReport" />
               <DataSourcePDCModal :isOpen="isPDCModalOpen" :type="selectedPDCType" :data="pdcDetailedData"
                 :totalAmount="pdcDetailedTotal" :isDark="isDark" :currentLang="currentLang" @close="isPDCModalOpen = false" />
               <DataSourceCostCenterModal :isOpen="isModalOpen" :title="modalConfig.title" :columns="modalConfig.columns"
-                :data="modalConfig.data" :totalValue="modalConfig.total" :isDark="isDark" :currentLang="currentLang"
+                :data="modalConfig.data" :totals="modalConfig.totals" :isDark="isDark" :currentLang="currentLang"
                 @close="isModalOpen = false" />
               <DataSourceBudget v-if="activeSubTab === 'budget'" :isDark="isDark" :currentLang="currentLang" />
               <DataSourceSalesForecast v-if="activeSubTab === 'sales-forecast'"
@@ -153,7 +154,12 @@
                 :tbConfigData="tbConfigData"
                 :tbMappingOptions="tbMappingOptions"
                 :tbSaving="tbSaving"
-                :onUpdate="updateTrialBalance" />
+                :tbLoading="tbLoadingState"
+                :tbMeta="tbMeta"
+                :onUpdate="() => updateTrialBalance()"
+                :onUpdateConfig="(items) => updateConfigSettings(items)"
+                :onPageChange="(p) => fetchTrialBalance(p)"
+                :onPerPageChange="(pp) => fetchTrialBalance(1, pp)" />
               <DataSourceChangeLog
                 v-if="activeSubTab === 'accounts-receivable' || activeSubTab === 'accounts-payable' || activeSubTab === 'pdc' || activeSubTab === 'cost-center' || activeSubTab === 'budget' || activeSubTab === 'sales-forecast' || activeSubTab === 'trial-balance'"
                 :logs="currentLogs" :isDark="isDark" :currentLang="currentLang" />
@@ -188,7 +194,7 @@ const { rows: arRows, totals: arTotals, loading: arLoading, error: arError, logs
 const { rows: apRows, totals: apTotals, loading: apLoading, error: apError, logs: apLiveLogs } = useApAgingSummary()
 
 // ── Trial Balance (live API) ───────────────────────────────────────────────
-const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, updateTrialBalance, tbLogs: tbLiveLogs } = useTrialBalance()
+const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbLoading: tbLoadingState, tbMeta, fetchTrialBalance, updateTrialBalance, updateConfigSettings, tbLogs: tbLiveLogs } = useTrialBalance()
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
@@ -442,8 +448,9 @@ const getStatusClass = (status) => {
 const {
   mappingColumns: ccMappingColumnsLive,
   mappingData:    ccMappingDataLive,
-  contractData:   ccContractData,
-  contractTotal:  ccContractTotal,
+  contractData:        ccContractData,
+  contractTotal:       ccContractTotal,
+  contractActiveCount: ccActiveCount,
   budgetReportColumns: ccBudgetColumns,
   budgetReportData:    ccBudgetData,
   budgetReportTotal:   ccBudgetTotal,
@@ -459,7 +466,7 @@ const ccContractColumns = [
 ]
 
 const isModalOpen = ref(false)
-const modalConfig = ref({ title: '', columns: [], data: [], total: '-' })
+const modalConfig = ref({ title: '', columns: [], data: [], totals: {} })
 
 const handleOpenCCReport = (reportId) => {
   if (reportId === 'mapping') {
@@ -467,21 +474,21 @@ const handleOpenCCReport = (reportId) => {
       title:   currentLang.value === 'ar' ? 'تقرير تخطيط مركز التكلفة' : 'Cost Center Mapping Report',
       columns: ccMappingColumnsLive,
       data:    ccMappingDataLive.value,
-      total:   'N/A'
+      totals:  {},                          // no backend total → footer hidden
     }
   } else if (reportId === 'contract') {
     modalConfig.value = {
       title:   currentLang.value === 'ar' ? 'تقرير سجل العقود الرئيسي' : 'Contract Master Detailed Report',
       columns: ccContractColumns,
       data:    ccContractData.value,
-      total:   ccContractTotal.value,
+      totals:  { finalValue: ccContractTotal.value },  // total only under Final Value
     }
   } else if (reportId === 'budget') {
     modalConfig.value = {
       title:   currentLang.value === 'ar' ? 'تقرير ميزانية مركز التكلفة' : 'Budget Cost Center Report',
       columns: ccBudgetColumns.value,
       data:    ccBudgetData.value,
-      total:   ccBudgetTotal.value,
+      totals:  { budgetedCost: ccBudgetTotal.value },  // total only under Budgeted Cost
     }
   }
   isModalOpen.value = true

@@ -33,6 +33,10 @@ export const useCostCenter = () => {
   const contractTotal   = ref('0.00')
   const contractLoading = ref(false)
 
+  const contractActiveCount = computed(() =>
+    contractData.value.filter((r: any) => r.status === 'Active').length
+  )
+
   const fetchContractMaster = async () => {
     contractLoading.value = true
     try {
@@ -76,7 +80,7 @@ export const useCostCenter = () => {
 
   return {
     mappingColumns, mappingData, loading, error, fetchMappingData,
-    contractData, contractTotal, contractLoading, fetchContractMaster,
+    contractData, contractTotal, contractActiveCount, contractLoading, fetchContractMaster,
     budgetReportColumns, budgetReportData, budgetReportTotal, budgetReportLoading, fetchBudgetReport,
     logs, logsLoading, fetchLogs,
   }

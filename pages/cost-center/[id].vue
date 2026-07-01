@@ -8,12 +8,25 @@
         <div class="mx-auto max-w-[1600px] flex flex-col gap-8 pt-4">
           <CostCenterProjectDetailHeader ref="headerRef" @reload="fetchData" @export-excel="handleExportExcel"
             @export-pdf="handleExportPDF" @selected-date="handleDateChange"
-            :title="{ en: data?.cost_center, ar: data?.cost_center }" />
-          <CostCenterProjectDetailSummaryCards :summary-data="data?.contract_summary" />
-          <CostCenterProjectDetailTable ref="tableRef" :data="data" />
-          <div class="h-[500px]">
-            <CostCenterProjectDetailRevenueVsCost :data="data" />
-          </div>
+            :title="{ en: data?.cost_center ?? costCenterId, ar: data?.cost_center ?? costCenterId }" />
+
+          <!-- Skeleton -->
+          <template v-if="loading">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div v-for="i in 4" :key="i" class="rounded-2xl h-28 animate-pulse"
+                :class="isDark ? 'bg-white/10' : 'bg-gray-100'" />
+            </div>
+            <div class="rounded-2xl h-64 animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'" />
+            <div class="rounded-2xl h-[500px] animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'" />
+          </template>
+
+          <template v-else>
+            <CostCenterProjectDetailSummaryCards :summary-data="data?.contract_summary" />
+            <CostCenterProjectDetailTable ref="tableRef" :data="data" />
+            <div class="h-[500px]">
+              <CostCenterProjectDetailRevenueVsCost :data="data" />
+            </div>
+          </template>
         </div>
       </div>
 
@@ -52,27 +65,29 @@ const route = useRoute()
 const title = computed(() => decodeURIComponent(route.params.id))
 const date = computed(() => route.query.date)
 const data = ref({})
-const selectedDate = route.query.date || '31-12-2025'
+const loading = ref(true)
+const selectedDate = ref(route.query.date || '31-12-2025')
 const costCenterId = computed(() => decodeURIComponent(route.params.id))
 
 
 const fetchProjectData = async () => {
+  loading.value = true
   try {
     const response = await useApi(
-      `cost-center/cost-center-summary?date=${selectedDate}&cost_center=${costCenterId.value}`
+      `cost-center/cost-center-summary?date=${selectedDate.value}&cost_center=${costCenterId.value}`
     )
     data.value = response
-    console.log("🚀 ~ fetchProjectData ~ data:", data)
   } catch (error) {
     console.error("Error fetching detail:", error)
+  } finally {
+    loading.value = false
   }
 }
 const fetchData = () => fetchProjectData()
 
 const handleDateChange = (period) => {
-  if (tableRef.value) {
-    tableRef.value.fetchProjectData(period)
-  }
+  selectedDate.value = period.en
+  fetchProjectData()
 }
 
 // --- 3. EXPORT LOGIC ---

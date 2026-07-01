@@ -45,16 +45,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
-defineProps({
-    isDark: Boolean,
-    currentLang: String
+const props = defineProps({
+    isDark:      Boolean,
+    currentLang: String,
+    activeCount: { type: Number, default: null },
 })
 
 const activeMode = ref('Hybrid')
 
-const reportCards = [
+const reportCards = computed(() => [
     {
         id: 'mapping',
         title: 'Cost Center Mapping',
@@ -65,7 +66,9 @@ const reportCards = [
         id: 'contract',
         title: 'Contract Master',
         titleAr: 'سجل العقود الرئيسي',
-        subtext: 'Number of active projects - XXXX'
+        subtext: props.activeCount !== null
+            ? `Number of active projects - ${props.activeCount}`
+            : 'Number of active projects - ...'
     },
     {
         id: 'budget',
@@ -73,5 +76,5 @@ const reportCards = [
         titleAr: 'ميزانية مركز التكلفة',
         subtext: ''
     }
-]
+])
 </script>
