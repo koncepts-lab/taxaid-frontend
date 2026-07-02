@@ -193,7 +193,7 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-const { overallRevenueVsCost, fetchChart } = useCostCenter()
+const { overallRevenueVsCost, fetchChart } = useCostCenterChart()
 
 onMounted(() => fetchChart())
 

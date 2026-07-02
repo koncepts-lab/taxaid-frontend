@@ -214,11 +214,11 @@ const onRowLeave = () => {
   hoveredRowRect.value = null
 }
 
-const selectedDate = ref('31-12-2025') // your current selected date state
+const selectedDate = ref('31-12-2025')
 
 const goToDetail = (item) => {
   router.push({
-    path: `/cost-center/${encodeURIComponent(item.label)}`,
+    path: `/cost-center/${item.label}`,
     query: { date: selectedDate.value }
   })
 }

@@ -133,7 +133,7 @@ const selectedPeriodLabel = computed(() => {
 
 // --- FUNCTIONS ---
 
-const handleBack = () => router.back()
+const handleBack = () => router.push('/cost-center')
 
 const selectPeriod = (period) => {
     selectedPeriodKey.value = period.en

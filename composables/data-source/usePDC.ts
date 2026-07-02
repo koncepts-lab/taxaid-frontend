@@ -88,7 +88,19 @@ export function usePDC() {
         }
     }
 
-    onMounted(() => fetchSummary())
+    const logs = ref<any[]>([])
+    const logsLoading = ref(false)
+
+    const fetchLogs = async () => {
+        logsLoading.value = true
+        try {
+            const result = await useApi('data-source/upload-logs?module=pdc') as any
+            logs.value = result?.data ?? []
+        } catch { logs.value = [] }
+        finally { logsLoading.value = false }
+    }
+
+    onMounted(() => { fetchSummary(); fetchLogs() })
 
     return {
         pdcGroups,
@@ -100,5 +112,8 @@ export function usePDC() {
         detailError,
         fetchSummary,
         fetchDetailed,
+        logs,
+        logsLoading,
+        fetchLogs,
     }
 }

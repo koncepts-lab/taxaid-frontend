@@ -41,28 +41,21 @@
                                         :class="isDark ? 'border-white/5 hover:bg-white/5 text-white/80' : 'border-gray-100 hover:bg-gray-50 text-gray-700'">
                                         <td class="px-6 py-4 text-[14px] opacity-50">{{ index + 1 }}</td>
                                         <td v-for="col in columns" :key="col.key" class="px-4 py-4 text-[14px]">
-                                            {{ row[col.key] || '-' }}
+                                            {{ row[col.key] ?? '-' }}
                                         </td>
                                     </tr>
                                 </tbody>
 
                                 <!-- FOOTER INTEGRATED INTO TABLE -->
-                                <tfoot class="sticky bottom-0 z-20">
+                                <tfoot v-if="hasFooter" class="sticky bottom-0 z-20">
                                     <tr class="bg-[#61FFD6] text-[#013E32] font-bold">
-                                        <!-- Empty SI.NO cell -->
                                         <td class="px-6 py-4"></td>
-                                        <!-- Loop through columns to place values -->
                                         <td v-for="(col, index) in columns" :key="'foot-' + col.key"
                                             class="px-4 py-4 text-[14px]">
-                                            <!-- If it's the first column (Project Name Area), show "Total" -->
                                             <span v-if="index === 0">
                                                 {{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}
                                             </span>
-                                            <!-- If it's the column that matches your total data key (e.g. 'value' or 'finalValue') -->
-                                            <!-- Note: You can pass a 'totals' object to match specific columns -->
-                                            <span v-else>
-                                                {{ totals && totals[col.key] ? totals[col.key] : '-' }}
-                                            </span>
+                                            <span v-else>{{ totals[col.key] ?? '' }}</span>
                                         </td>
                                     </tr>
                                 </tfoot>
@@ -75,16 +68,20 @@
     </Teleport>
 </template>
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
-    isOpen: Boolean,
-    title: String,
-    columns: Array,
-    data: Array,
-    isDark: Boolean,
+    isOpen:      Boolean,
+    title:       String,
+    columns:     Array,
+    data:        Array,
+    isDark:      Boolean,
     currentLang: String,
-    totalValue: { type: String, default: '-' }
+    totals:      { type: Object, default: () => ({}) },
 })
 defineEmits(['close'])
+
+const hasFooter = computed(() => Object.keys(props.totals ?? {}).length > 0)
 </script>
 
 <style scoped>

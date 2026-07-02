@@ -17,8 +17,7 @@
             :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
             :oneclickreview="false" :periods="costCenterPeriods"
             @export-excel="handleExportExcel" @export-pdf="handleExportPDF"
-            @selected-date="handleDateChange" @reload="fetchData" @export="exportData"
-            @one-click-summary="showSummaryModal" />
+            @selected-date="handleDateChange" @reload="fetchData" />
           <div class="my-8">
             <CostCenterSummary ref="summaryRef" />
           </div>
@@ -77,7 +76,7 @@ const handleDateUpdate = (payload) => {
 const summaryRef = ref(null)
 const headerRef = ref(null)
 
-const { fetchChart, activeDate: ccDate } = useCostCenter()
+const { fetchChart, activeDate: ccDate } = useCostCenterChart()
 
 const costCenterPeriods = [
   // { en: 'This Year', ar: 'هذه السنة' },   // not supported — backend uses single date, no range_option
