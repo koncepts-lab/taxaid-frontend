@@ -60,37 +60,51 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-if="tbLoading && !mappingData.length">
-                            <td colspan="4" class="text-center py-10 text-gray-400 text-sm">Loading...</td>
-                        </tr>
-                        <tr v-for="item in mappingData" :key="item.id"
-                            :class="item.fsCode && item.mainGroup && item.subGroup ? 'bg-[#F0FDF4]' : 'bg-[#FFF1F2]'">
-                            <td class="p-2">
-                                <select v-if="userType === 'admin'" v-model="item.fsCode"
-                                    class="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-1 focus:ring-[#00896F] outline-none appearance-none cursor-pointer text-[#717182]">
-                                    <option value="">—</option>
-                                    <option v-for="opt in fsCodes" :key="opt" :value="opt">{{ opt }}</option>
-                                </select>
-                                <span v-else class="px-4 text-sm text-black">{{ item.fsCode || '—' }}</span>
-                            </td>
-                            <td class="p-2">
-                                <select v-if="userType === 'admin'" v-model="item.mainGroup"
-                                    class="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-1 focus:ring-[#00896F] outline-none appearance-none cursor-pointer text-[#717182]">
-                                    <option value="">—</option>
-                                    <option v-for="opt in mainGroups" :key="opt" :value="opt">{{ opt }}</option>
-                                </select>
-                                <span v-else class="px-4 text-sm text-black">{{ item.mainGroup || '—' }}</span>
-                            </td>
-                            <td class="p-2">
-                                <select v-if="userType === 'admin'" v-model="item.subGroup"
-                                    class="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-1 focus:ring-[#00896F] outline-none appearance-none cursor-pointer text-[#717182]">
-                                    <option value="">—</option>
-                                    <option v-for="opt in subGroups" :key="opt" :value="opt">{{ opt }}</option>
-                                </select>
-                                <span v-else class="px-4 text-sm text-black">{{ item.subGroup || '—' }}</span>
-                            </td>
-                            <td class="p-2 text-sm text-black">{{ item.ledger }}</td>
-                        </tr>
+                        <template v-if="tbLoading">
+                            <tr v-for="i in localPerPage" :key="'skeleton-'+i" class="animate-pulse border-b border-gray-50 last:border-0">
+                                <td class="p-2"><div class="h-[42px] bg-gray-100 rounded-lg w-full"></div></td>
+                                <td class="p-2"><div class="h-[42px] bg-gray-100 rounded-lg w-full"></div></td>
+                                <td class="p-2"><div class="h-[42px] bg-gray-100 rounded-lg w-full"></div></td>
+                                <td class="p-2"><div class="h-5 bg-gray-100 rounded w-3/4 ml-2"></div></td>
+                            </tr>
+                        </template>
+                        <template v-else-if="mappingData.length === 0">
+                            <tr>
+                                <td colspan="4" class="text-center py-10 text-gray-400 text-sm">
+                                    {{ currentLang === 'ar' ? 'لا توجد بيانات' : 'No data available' }}
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-else><!--tb color red-->
+                            <tr v-for="item in mappingData" :key="item.id"
+                                :class="item.fsCode && item.mainGroup && item.subGroup ? 'bg-[#d6ffe2]' : 'bg-[#ffdbe0]'">
+                                <td class="p-2">
+                                    <select v-if="userType === 'admin'" v-model="item.fsCode"
+                                        class="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-1 focus:ring-[#00896F] outline-none appearance-none cursor-pointer text-[#717182]">
+                                        <option value="">—</option>
+                                        <option v-for="opt in fsCodes" :key="opt" :value="opt">{{ opt }}</option>
+                                    </select>
+                                    <span v-else class="px-4 text-sm text-black">{{ item.fsCode || '—' }}</span>
+                                </td>
+                                <td class="p-2">
+                                    <select v-if="userType === 'admin'" v-model="item.mainGroup"
+                                        class="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-1 focus:ring-[#00896F] outline-none appearance-none cursor-pointer text-[#717182]">
+                                        <option value="">—</option>
+                                        <option v-for="opt in mainGroups" :key="opt" :value="opt">{{ opt }}</option>
+                                    </select>
+                                    <span v-else class="px-4 text-sm text-black">{{ item.mainGroup || '—' }}</span>
+                                </td>
+                                <td class="p-2">
+                                    <select v-if="userType === 'admin'" v-model="item.subGroup"
+                                        class="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-1 focus:ring-[#00896F] outline-none appearance-none cursor-pointer text-[#717182]">
+                                        <option value="">—</option>
+                                        <option v-for="opt in subGroups" :key="opt" :value="opt">{{ opt }}</option>
+                                    </select>
+                                    <span v-else class="px-4 text-sm text-black">{{ item.subGroup || '—' }}</span>
+                                </td>
+                                <td class="p-2 text-sm text-black">{{ item.ledger }}</td>
+                            </tr>
+                        </template>
                     </tbody>
                 </table>
             </div>
@@ -149,17 +163,27 @@
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-normal text-gray-800">Configuration Details</h3>
                     <div v-if="userType === 'admin'" class="flex items-center gap-2">
-                        <button @click="handleSaveConfig" :disabled="configSaving"
+                        <button v-if="!configLocked" @click="handleSaveConfig" :disabled="configSaving"
                             class="px-6 py-1.5 bg-[#FFF085] hover:bg-[#FACC15] text-black rounded-lg text-sm font-medium transition-all active:scale-95 disabled:opacity-50">
                             {{ configSaving ? '...' : 'Save' }}
                         </button>
-                        <button
-                            class="flex items-center gap-2 px-4 py-1.5 border bg-[#FF91751A] border-red-200 text-red-500 rounded-lg text-sm font-medium hover:bg-red-50 transition-all">
+                        <!-- Saving locks the table backend-side; Lock Table = save & lock.
+                             When locked, the same slot becomes Unlock (POST /configuration-settings/unlock). -->
+                        <button v-if="!configLocked" @click="handleSaveConfig" :disabled="configSaving"
+                            class="flex items-center gap-2 px-4 py-1.5 border bg-[#FF91751A] border-red-200 text-red-500 rounded-lg text-sm font-medium hover:bg-red-50 transition-all disabled:opacity-50">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                                 <path d="M7 11V7a5 5 0 0110 0v4" />
                             </svg>
                             Lock Table
+                        </button>
+                        <button v-else @click="handleUnlockConfig" :disabled="configSaving"
+                            class="flex items-center gap-2 px-4 py-1.5 border bg-[#F0FDFA] border-[#00B793CC] text-[#00896F] rounded-lg text-sm font-medium hover:bg-[#E6FFFA] transition-all disabled:opacity-50">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                <path d="M7 11V7a5 5 0 019.9-1" />
+                            </svg>
+                            {{ configSaving ? '...' : 'Unlock Table' }}
                         </button>
                     </div>
                 </div>
@@ -176,7 +200,7 @@
                             <tr v-for="(row, idx) in localConfigData" :key="idx">
                                 <td class="p-3 text-black text-sm">{{ row.label }}</td>
                                 <td class="p-3">
-                                    <div v-if="userType === 'admin' && !row.noFrom" class="relative">
+                                    <div v-if="userType === 'admin' && !configLocked && !row.noFrom" class="relative">
                                         <button :ref="el => setButtonRef(el, `${idx}-from`)" @click.stop="toggleCalendar(`${idx}-from`)"
                                             class="w-full flex items-center justify-between gap-2 px-2 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 hover:bg-gray-100 transition-all">
                                             <span :class="row.from ? 'text-black' : 'text-gray-400'">
@@ -190,12 +214,12 @@
                                     <span v-else class="text-black text-sm">{{ displayDate(row.from) || '' }}</span>
                                 </td>
                                 <td class="p-3">
-                                    <input v-if="userType === 'admin' && row.isYear"
+                                    <input v-if="userType === 'admin' && !configLocked && row.isYear"
                                         :value="row.to"
                                         @input="row.to = String($event.target.value)"
                                         type="number" min="2000" max="2099" placeholder="e.g. 2022"
                                         class="w-full px-2 py-1 border border-gray-200 rounded-lg text-sm text-black focus:ring-1 focus:ring-[#00896F] outline-none bg-gray-50 placeholder-gray-400" />
-                                    <div v-else-if="userType === 'admin'" class="relative">
+                                    <div v-else-if="userType === 'admin' && !configLocked" class="relative">
                                         <button :ref="el => setButtonRef(el, `${idx}-to`)" @click.stop="toggleCalendar(`${idx}-to`)"
                                             class="w-full flex items-center justify-between gap-2 px-2 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 hover:bg-gray-100 transition-all">
                                             <span :class="row.to ? 'text-black' : 'text-gray-400'">
@@ -216,7 +240,9 @@
                     class="mt-4 p-3 bg-[#FFFBEB] rounded-xl flex items-center gap-2 border border-[#FEF3C7]">
                     <span class="text-[#894B00] mt-0.5">ⓘ</span>
                     <p class="text-[11px] text-[#894B00]">
-                        Implementation consultant must fill the historical data year and lock the table before proceeding.
+                        {{ configLocked
+                            ? 'Table is locked. Click Unlock Table to make changes.'
+                            : 'Implementation consultant must fill the historical data year and lock the table before proceeding.' }}
                     </p>
                 </div>
             </div>
@@ -224,9 +250,9 @@
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-normal text-black">Integrity Check</h3>
-                    <button v-if="userType === 'admin'"
-                        class="px-6 py-1.5 border border-[#00B793CC] text-[#00896F] bg-[#86E4CB1A] rounded-lg text-sm font-medium hover:bg-[#F0FDFA] transition-all">
-                        Run Check
+                    <button v-if="userType === 'admin'" @click="handleRunCheck" :disabled="integrityLoading"
+                        class="px-6 py-1.5 border border-[#00B793CC] text-[#00896F] bg-[#86E4CB1A] rounded-lg text-sm font-medium hover:bg-[#F0FDFA] transition-all disabled:opacity-50">
+                        {{ integrityLoading ? 'Checking...' : 'Run Check' }}
                     </button>
                 </div>
                 <table class="w-full text-sm">
@@ -238,14 +264,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(check, idx) in integrityData" :key="idx"
-                            :class="!check.isValid ? 'bg-red-50' : idx % 2 === 1 ? 'bg-[#F0FDFA]/50' : ''">
+                        <tr v-for="(check, idx) in integrityRows" :key="idx"
+                            :class="check.isValid === false ? 'bg-red-50' : idx % 2 === 1 ? 'bg-[#F0FDFA]/50' : ''">
                             <td class="p-3 text-sm text-black">{{ check.label }}</td>
                             <td class="p-3 text-sm text-center">
-                                <span v-if="check.isValid" class="text-green-500"><svg width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.15852 15.4C3.15852 15.2267 3.12518 15.14 3.05852 15.14L2.59852 15.36C2.59852 15.2667 2.54518 15.2 2.43852 15.16L2.27852 15.14C2.17185 15.14 2.03852 15.1867 1.87852 15.28C1.85185 15.2134 1.81852 15.1467 1.77852 15.08C1.73852 15.0134 1.70518 14.9534 1.67852 14.9C1.50518 14.5667 1.33185 14.2 1.15852 13.8C0.998516 13.3867 0.845182 12.9934 0.698516 12.62C0.565182 12.2467 0.458516 11.9534 0.378516 11.74C0.325182 11.5667 0.265182 11.3067 0.198516 10.96C0.131849 10.6134 0.0651823 10.1734 -0.00148432 9.64002C0.145182 9.73335 0.258516 9.78002 0.338516 9.78002C0.431849 9.78002 0.518516 9.64002 0.598516 9.36002C0.638516 9.41335 0.711849 9.44002 0.818516 9.44002C0.898516 9.44002 0.958516 9.41335 0.998516 9.36002L1.31852 8.88002L1.67852 9.00002H1.69852C1.72518 9.00002 1.75185 8.98669 1.77852 8.96002C1.80518 8.93335 1.84518 8.90669 1.89852 8.88002C2.00518 8.81335 2.08518 8.78002 2.13852 8.78002L2.19852 8.80002C2.53185 8.96002 2.74518 9.25335 2.83852 9.68002C3.07852 10.6934 3.31852 11.2 3.55852 11.2C3.79852 11.2 4.07852 10.9467 4.39852 10.44C4.55852 10.1867 4.71852 9.89335 4.87852 9.56002C5.05185 9.22669 5.22518 8.85335 5.39852 8.44002C5.42518 8.60002 5.45185 8.68002 5.47852 8.68002C5.54518 8.68002 5.65852 8.51335 5.81852 8.18002C5.99185 7.84669 6.26518 7.38669 6.63852 6.80002C6.85185 6.44002 7.11852 6.03335 7.43852 5.58002C7.77185 5.12669 8.12518 4.66002 8.49852 4.18002C8.87185 3.70002 9.23185 3.24669 9.57852 2.82002C9.93852 2.39335 10.2585 2.02669 10.5385 1.72002C10.8185 1.41335 11.0252 1.21335 11.1585 1.12002C11.6652 0.773352 12.0652 0.440019 12.3585 0.120019C12.3452 0.213352 12.3252 0.300019 12.2985 0.380019C12.2852 0.446686 12.2785 0.493352 12.2785 0.520019C12.2785 0.573352 12.3052 0.600019 12.3585 0.600019L12.9185 0.320019V0.400019C12.9185 0.506686 12.9452 0.560019 12.9985 0.560019C13.0385 0.560019 13.1185 0.500019 13.2385 0.380019C13.3585 0.260019 13.4252 0.173352 13.4385 0.120019L13.3985 0.400019L14.0785 1.93119e-05L13.9185 0.360019C14.1318 0.213352 14.2852 0.140019 14.3785 0.140019C14.4318 0.140019 14.4718 0.173352 14.4985 0.240019C14.5252 0.293352 14.5385 0.346685 14.5385 0.400019C14.5385 0.480019 14.5052 0.573352 14.4385 0.680019C14.3718 0.786686 14.2852 0.913352 14.1785 1.06002C14.0985 1.16669 13.9652 1.32669 13.7785 1.54002C13.6052 1.74002 13.3385 2.04002 12.9785 2.44002C12.6185 2.82669 12.1385 3.36669 11.5385 4.06002C11.3785 4.23335 11.1318 4.54002 10.7985 4.98002C10.4652 5.40669 10.0852 5.90669 9.65852 6.48002C9.24518 7.04002 8.83185 7.60669 8.41852 8.18002C8.00518 8.75335 7.63852 9.27335 7.31852 9.74002C6.99852 10.1934 6.77185 10.5334 6.63852 10.76L5.39852 12.86C5.13185 13.3134 4.91185 13.6867 4.73852 13.98C4.56518 14.26 4.43185 14.4534 4.33852 14.56C4.13852 14.8 3.91852 15.0134 3.67852 15.2L3.49852 15.1L3.33852 15.2L3.15852 15.4Z" fill="currentColor"/></svg></span>
+                                <span v-if="check.isValid === true" class="text-green-500"><svg width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.15852 15.4C3.15852 15.2267 3.12518 15.14 3.05852 15.14L2.59852 15.36C2.59852 15.2667 2.54518 15.2 2.43852 15.16L2.27852 15.14C2.17185 15.14 2.03852 15.1867 1.87852 15.28C1.85185 15.2134 1.81852 15.1467 1.77852 15.08C1.73852 15.0134 1.70518 14.9534 1.67852 14.9C1.50518 14.5667 1.33185 14.2 1.15852 13.8C0.998516 13.3867 0.845182 12.9934 0.698516 12.62C0.565182 12.2467 0.458516 11.9534 0.378516 11.74C0.325182 11.5667 0.265182 11.3067 0.198516 10.96C0.131849 10.6134 0.0651823 10.1734 -0.00148432 9.64002C0.145182 9.73335 0.258516 9.78002 0.338516 9.78002C0.431849 9.78002 0.518516 9.64002 0.598516 9.36002C0.638516 9.41335 0.711849 9.44002 0.818516 9.44002C0.898516 9.44002 0.958516 9.41335 0.998516 9.36002L1.31852 8.88002L1.67852 9.00002H1.69852C1.72518 9.00002 1.75185 8.98669 1.77852 8.96002C1.80518 8.93335 1.84518 8.90669 1.89852 8.88002C2.00518 8.81335 2.08518 8.78002 2.13852 8.78002L2.19852 8.80002C2.53185 8.96002 2.74518 9.25335 2.83852 9.68002C3.07852 10.6934 3.31852 11.2 3.55852 11.2C3.79852 11.2 4.07852 10.9467 4.39852 10.44C4.55852 10.1867 4.71852 9.89335 4.87852 9.56002C5.05185 9.22669 5.22518 8.85335 5.39852 8.44002C5.42518 8.60002 5.45185 8.68002 5.47852 8.68002C5.54518 8.68002 5.65852 8.51335 5.81852 8.18002C5.99185 7.84669 6.26518 7.38669 6.63852 6.80002C6.85185 6.44002 7.11852 6.03335 7.43852 5.58002C7.77185 5.12669 8.12518 4.66002 8.49852 4.18002C8.87185 3.70002 9.23185 3.24669 9.57852 2.82002C9.93852 2.39335 10.2585 2.02669 10.5385 1.72002C10.8185 1.41335 11.0252 1.21335 11.1585 1.12002C11.6652 0.773352 12.0652 0.440019 12.3585 0.120019C12.3452 0.213352 12.3252 0.300019 12.2985 0.380019C12.2852 0.446686 12.2785 0.493352 12.2785 0.520019C12.2785 0.573352 12.3052 0.600019 12.3585 0.600019L12.9185 0.320019V0.400019C12.9185 0.506686 12.9452 0.560019 12.9985 0.560019C13.0385 0.560019 13.1185 0.500019 13.2385 0.380019C13.3585 0.260019 13.4252 0.173352 13.4385 0.120019L13.3985 0.400019L14.0785 1.93119e-05L13.9185 0.360019C14.1318 0.213352 14.2852 0.140019 14.3785 0.140019C14.4318 0.140019 14.4718 0.173352 14.4985 0.240019C14.5252 0.293352 14.5385 0.346685 14.5385 0.400019C14.5385 0.480019 14.5052 0.573352 14.4385 0.680019C14.3718 0.786686 14.2852 0.913352 14.1785 1.06002C14.0985 1.16669 13.9652 1.32669 13.7785 1.54002C13.6052 1.74002 13.3385 2.04002 12.9785 2.44002C12.6185 2.82669 12.1385 3.36669 11.5385 4.06002C11.3785 4.23335 11.1318 4.54002 10.7985 4.98002C10.4652 5.40669 10.0852 5.90669 9.65852 6.48002C9.24518 7.04002 8.83185 7.60669 8.41852 8.18002C8.00518 8.75335 7.63852 9.27335 7.31852 9.74002C6.99852 10.1934 6.77185 10.5334 6.63852 10.76L5.39852 12.86C5.13185 13.3134 4.91185 13.6867 4.73852 13.98C4.56518 14.26 4.43185 14.4534 4.33852 14.56C4.13852 14.8 3.91852 15.0134 3.67852 15.2L3.49852 15.1L3.33852 15.2L3.15852 15.4Z" fill="currentColor"/></svg></span>
                             </td>
                             <td class="p-3 text-sm text-center">
-                                <span v-if="!check.isValid" class="text-red-500"><svg width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.15852 15.4C3.15852 15.2267 3.12518 15.14 3.05852 15.14L2.59852 15.36C2.59852 15.2667 2.54518 15.2 2.43852 15.16L2.27852 15.14C2.17185 15.14 2.03852 15.1867 1.87852 15.28C1.85185 15.2134 1.81852 15.1467 1.77852 15.08C1.73852 15.0134 1.70518 14.9534 1.67852 14.9C1.50518 14.5667 1.33185 14.2 1.15852 13.8C0.998516 13.3867 0.845182 12.9934 0.698516 12.62C0.565182 12.2467 0.458516 11.9534 0.378516 11.74C0.325182 11.5667 0.265182 11.3067 0.198516 10.96C0.131849 10.6134 0.0651823 10.1734 -0.00148432 9.64002C0.145182 9.73335 0.258516 9.78002 0.338516 9.78002C0.431849 9.78002 0.518516 9.64002 0.598516 9.36002C0.638516 9.41335 0.711849 9.44002 0.818516 9.44002C0.898516 9.44002 0.958516 9.41335 0.998516 9.36002L1.31852 8.88002L1.67852 9.00002H1.69852C1.72518 9.00002 1.75185 8.98669 1.77852 8.96002C1.80518 8.93335 1.84518 8.90669 1.89852 8.88002C2.00518 8.81335 2.08518 8.78002 2.13852 8.78002L2.19852 8.80002C2.53185 8.96002 2.74518 9.25335 2.83852 9.68002C3.07852 10.6934 3.31852 11.2 3.55852 11.2C3.79852 11.2 4.07852 10.9467 4.39852 10.44C4.55852 10.1867 4.71852 9.89335 4.87852 9.56002C5.05185 9.22669 5.22518 8.85335 5.39852 8.44002C5.42518 8.60002 5.45185 8.68002 5.47852 8.68002C5.54518 8.68002 5.65852 8.51335 5.81852 8.18002C5.99185 7.84669 6.26518 7.38669 6.63852 6.80002C6.85185 6.44002 7.11852 6.03335 7.43852 5.58002C7.77185 5.12669 8.12518 4.66002 8.49852 4.18002C8.87185 3.70002 9.23185 3.24669 9.57852 2.82002C9.93852 2.39335 10.2585 2.02669 10.5385 1.72002C10.8185 1.41335 11.0252 1.21335 11.1585 1.12002C11.6652 0.773352 12.0652 0.440019 12.3585 0.120019C12.3452 0.213352 12.3252 0.300019 12.2985 0.380019C12.2852 0.446686 12.2785 0.493352 12.2785 0.520019C12.2785 0.573352 12.3052 0.600019 12.3585 0.600019L12.9185 0.320019V0.400019C12.9185 0.506686 12.9452 0.560019 12.9985 0.560019C13.0385 0.560019 13.1185 0.500019 13.2385 0.380019C13.3585 0.260019 13.4252 0.173352 13.4385 0.120019L13.3985 0.400019L14.0785 1.93119e-05L13.9185 0.360019C14.1318 0.213352 14.2852 0.140019 14.3785 0.140019C14.4318 0.140019 14.4718 0.173352 14.4985 0.240019C14.5252 0.293352 14.5385 0.346685 14.5385 0.400019C14.5385 0.480019 14.5052 0.573352 14.4385 0.680019C14.3718 0.786686 14.2852 0.913352 14.1785 1.06002C14.0985 1.16669 13.9652 1.32669 13.7785 1.54002C13.6052 1.74002 13.3385 2.04002 12.9785 2.44002C12.6185 2.82669 12.1385 3.36669 11.5385 4.06002C11.3785 4.23335 11.1318 4.54002 10.7985 4.98002C10.4652 5.40669 10.0852 5.90669 9.65852 6.48002C9.24518 7.04002 8.83185 7.60669 8.41852 8.18002C8.00518 8.75335 7.63852 9.27335 7.31852 9.74002C6.99852 10.1934 6.77185 10.5334 6.63852 10.76L5.39852 12.86C5.13185 13.3134 4.91185 13.6867 4.73852 13.98C4.56518 14.26 4.43185 14.4534 4.33852 14.56C4.13852 14.8 3.91852 15.0134 3.67852 15.2L3.49852 15.1L3.33852 15.2L3.15852 15.4Z" fill="currentColor"/></svg></span>
+                                <span v-if="check.isValid === false" class="text-red-500"><svg width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.15852 15.4C3.15852 15.2267 3.12518 15.14 3.05852 15.14L2.59852 15.36C2.59852 15.2667 2.54518 15.2 2.43852 15.16L2.27852 15.14C2.17185 15.14 2.03852 15.1867 1.87852 15.28C1.85185 15.2134 1.81852 15.1467 1.77852 15.08C1.73852 15.0134 1.70518 14.9534 1.67852 14.9C1.50518 14.5667 1.33185 14.2 1.15852 13.8C0.998516 13.3867 0.845182 12.9934 0.698516 12.62C0.565182 12.2467 0.458516 11.9534 0.378516 11.74C0.325182 11.5667 0.265182 11.3067 0.198516 10.96C0.131849 10.6134 0.0651823 10.1734 -0.00148432 9.64002C0.145182 9.73335 0.258516 9.78002 0.338516 9.78002C0.431849 9.78002 0.518516 9.64002 0.598516 9.36002C0.638516 9.41335 0.711849 9.44002 0.818516 9.44002C0.898516 9.44002 0.958516 9.41335 0.998516 9.36002L1.31852 8.88002L1.67852 9.00002H1.69852C1.72518 9.00002 1.75185 8.98669 1.77852 8.96002C1.80518 8.93335 1.84518 8.90669 1.89852 8.88002C2.00518 8.81335 2.08518 8.78002 2.13852 8.78002L2.19852 8.80002C2.53185 8.96002 2.74518 9.25335 2.83852 9.68002C3.07852 10.6934 3.31852 11.2 3.55852 11.2C3.79852 11.2 4.07852 10.9467 4.39852 10.44C4.55852 10.1867 4.71852 9.89335 4.87852 9.56002C5.05185 9.22669 5.22518 8.85335 5.39852 8.44002C5.42518 8.60002 5.45185 8.68002 5.47852 8.68002C5.54518 8.68002 5.65852 8.51335 5.81852 8.18002C5.99185 7.84669 6.26518 7.38669 6.63852 6.80002C6.85185 6.44002 7.11852 6.03335 7.43852 5.58002C7.77185 5.12669 8.12518 4.66002 8.49852 4.18002C8.87185 3.70002 9.23185 3.24669 9.57852 2.82002C9.93852 2.39335 10.2585 2.02669 10.5385 1.72002C10.8185 1.41335 11.0252 1.21335 11.1585 1.12002C11.6652 0.773352 12.0652 0.440019 12.3585 0.120019C12.3452 0.213352 12.3252 0.300019 12.2985 0.380019C12.2852 0.446686 12.2785 0.493352 12.2785 0.520019C12.2785 0.573352 12.3052 0.600019 12.3585 0.600019L12.9185 0.320019V0.400019C12.9185 0.506686 12.9452 0.560019 12.9985 0.560019C13.0385 0.560019 13.1185 0.500019 13.2385 0.380019C13.3585 0.260019 13.4252 0.173352 13.4385 0.120019L13.3985 0.400019L14.0785 1.93119e-05L13.9185 0.360019C14.1318 0.213352 14.2852 0.140019 14.3785 0.140019C14.4318 0.140019 14.4718 0.173352 14.4985 0.240019C14.5252 0.293352 14.5385 0.346685 14.5385 0.400019C14.5385 0.480019 14.5052 0.573352 14.4385 0.680019C14.3718 0.786686 14.2852 0.913352 14.1785 1.06002C14.0985 1.16669 13.9652 1.32669 13.7785 1.54002C13.6052 1.74002 13.3385 2.04002 12.9785 2.44002C12.6185 2.82669 12.1385 3.36669 11.5385 4.06002C11.3785 4.23335 11.1318 4.54002 10.7985 4.98002C10.4652 5.40669 10.0852 5.90669 9.65852 6.48002C9.24518 7.04002 8.83185 7.60669 8.41852 8.18002C8.00518 8.75335 7.63852 9.27335 7.31852 9.74002C6.99852 10.1934 6.77185 10.5334 6.63852 10.76L5.39852 12.86C5.13185 13.3134 4.91185 13.6867 4.73852 13.98C4.56518 14.26 4.43185 14.4534 4.33852 14.56C4.13852 14.8 3.91852 15.0134 3.67852 15.2L3.49852 15.1L3.33852 15.2L3.15852 15.4Z" fill="currentColor"/></svg></span>
                             </td>
                         </tr>
                     </tbody>
@@ -262,6 +288,67 @@
                 </div>
             </div>
         </div>
+
+        <!-- Data Integrity Error Modal -->
+        <Transition name="fade">
+            <div v-if="isIntegrityModalOpen"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl relative p-8">
+                    <button @click="isIntegrityModalOpen = false"
+                        class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    <h3 class="text-xl font-bold text-red-600 mb-4">Data Integrity Error Detected</h3>
+
+                    <p class="text-sm text-gray-700 mb-4">
+                        Errors have been detected in the following year(s) of historical data:
+                    </p>
+
+                    <div v-for="issue in integrityIssues" :key="issue.year"
+                        class="mb-3 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-red-500 shrink-0">
+                            <circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" />
+                        </svg>
+                        <span class="text-sm text-red-600 font-medium">Year: {{ issue.year }}</span>
+                        <span class="text-xs text-red-400 ml-1">({{ issue.failed.join(', ') }})</span>
+                    </div>
+
+                    <div v-if="integrityMeta && !integrityMeta.isMappingComplete"
+                        class="mb-3 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-red-500 shrink-0">
+                            <circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" />
+                        </svg>
+                        <span class="text-sm text-red-600 font-medium">
+                            {{ (integrityMeta.unmappedCount + integrityMeta.missingCount) }} ledger(s) need categorization in the mapping table
+                        </span>
+                    </div>
+
+                    <div class="p-3 bg-[#FFFBEB] border border-[#FEF3C7] rounded-xl mb-6">
+                        <p class="text-xs text-[#894B00] leading-relaxed">
+                            <span class="font-bold">Action Required:</span>
+                            Please review and correct the data for the mentioned year(s) in the Trial Balance tables.
+                            <template v-for="issue in integrityIssues" :key="'act-' + issue.year">
+                                Check the <span class="font-bold">{{ issue.failed.filter(f => f !== 'Report generation failed').join(' and ') || 'data' }} statement{{ issue.failed.length > 1 ? 's' : '' }} for year {{ issue.year }}</span> to identify the discrepancies.
+                            </template>
+                        </p>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3">
+                        <button @click="isIntegrityModalOpen = false"
+                            class="px-6 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all">
+                            Cancel
+                        </button>
+                        <button @click="handleReviewData"
+                            class="px-6 py-2 bg-[#00896F] hover:bg-[#00755f] text-white rounded-lg text-sm font-medium transition-all active:scale-95">
+                            Review Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
 
         <!-- Detailed Report Modal -->
         <Transition name="fade">
@@ -303,16 +390,30 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-if="tbLoading">
-                                    <td colspan="4" class="text-center py-10 text-gray-400 text-sm">Loading...</td>
-                                </tr>
-                                <tr v-for="(item, idx) in mappingData" :key="idx"
-                                    :class="item.fsCode ? 'bg-[#F0FDF4]' : 'bg-[#FFF1F2]'">
-                                    <td class="px-6 py-3 text-sm text-gray-900 font-medium">{{ item.fsCode || '—' }}</td>
-                                    <td class="px-6 py-3 text-sm text-gray-600">{{ item.mainGroup || '—' }}</td>
-                                    <td class="px-6 py-3 text-sm text-gray-600">{{ item.subGroup || '—' }}</td>
-                                    <td class="px-6 py-3 text-sm text-gray-700">{{ item.ledger }}</td>
-                                </tr>
+                                <template v-if="tbLoading">
+                                    <tr v-for="i in localPerPage" :key="'modal-skeleton-'+i" class="animate-pulse border-b border-gray-50 last:border-0">
+                                        <td class="px-6 py-3"><div class="h-5 bg-gray-100 rounded w-full"></div></td>
+                                        <td class="px-6 py-3"><div class="h-5 bg-gray-100 rounded w-full"></div></td>
+                                        <td class="px-6 py-3"><div class="h-5 bg-gray-100 rounded w-full"></div></td>
+                                        <td class="px-6 py-3"><div class="h-5 bg-gray-100 rounded w-3/4"></div></td>
+                                    </tr>
+                                </template>
+                                <template v-else-if="mappingData.length === 0">
+                                    <tr>
+                                        <td colspan="4" class="text-center py-10 text-gray-400 text-sm">
+                                            {{ currentLang === 'ar' ? 'لا توجد بيانات' : 'No data available' }}
+                                        </td>
+                                    </tr>
+                                </template>
+                                <template v-else>
+                                    <tr v-for="(item, idx) in mappingData" :key="idx"
+                                        :class="item.fsCode ? 'bg-[#F0FDF4]' : 'bg-[#FFF1F2]'">
+                                        <td class="px-6 py-3 text-sm text-gray-900 font-medium">{{ item.fsCode || '—' }}</td>
+                                        <td class="px-6 py-3 text-sm text-gray-600">{{ item.mainGroup || '—' }}</td>
+                                        <td class="px-6 py-3 text-sm text-gray-600">{{ item.subGroup || '—' }}</td>
+                                        <td class="px-6 py-3 text-sm text-gray-700">{{ item.ledger }}</td>
+                                    </tr>
+                                </template>
                             </tbody>
                         </table>
                     </div>
@@ -384,6 +485,13 @@ const props = defineProps({
     tbSaving:         { type: Boolean,  default: false },
     tbLoading:        { type: Boolean,  default: false },
     tbMeta:           { type: Object,   default: () => ({ current_page: 1, last_page: 1, total: 0, per_page: 10, mapped_count: 0, unmapped_count: 0 }) }, // ← default per_page for the UI component
+    integrityData:    { type: Array,    default: null },
+    integrityLoading: { type: Boolean,  default: false },
+    integrityMeta:    { type: Object,   default: null },
+    integrityIssues:  { type: Array,    default: () => [] },
+    configLocked:     { type: Boolean,  default: false },
+    onRunCheck:       { type: Function, default: null },
+    onUnlockConfig:   { type: Function, default: null },
     onUpdate:         { type: Function, default: null },
     onUpdateConfig:   { type: Function, default: null },
     onPageChange:     { type: Function, default: null },
@@ -439,32 +547,16 @@ const handlePerPageChange = () => {
     if (props.onPerPageChange) props.onPerPageChange(localPerPage.value)
 }
 
-const mappingData = computed(() =>
-    props.tbMappingData.length ? props.tbMappingData : [
-        { id: '1000', fsCode: '1000', mainGroup: 'Assets', subGroup: 'Current Assets', ledger: 'Cash and Bank' },
-        { id: '1100', fsCode: '',     mainGroup: 'Assets', subGroup: 'Current Assets', ledger: 'Accounts Receivable' },
-        { id: '1500', fsCode: '1000', mainGroup: 'Assets', subGroup: 'Fixed Assets',   ledger: 'Property & Equipment' },
-        { id: '1550', fsCode: '',     mainGroup: 'Assets', subGroup: 'Current Assets', ledger: 'Prepaid Expenses' },
-    ]
-)
+const mappingData = computed(() => props.tbMappingData)
 
-const fsCodes = computed(() =>
-    props.tbMappingOptions.fsCodes?.length
-        ? props.tbMappingOptions.fsCodes
-        : ['1000', '1100', '1500', '1550', '2000']
-)
+// Options come from the backend only (/ledgers/mapping-options via
+// mapping_masters + values on existing mappings). No local fallback —
+// dummy values here let users save mappings the report formulas can't read.
+const fsCodes = computed(() => props.tbMappingOptions.fsCodes ?? [])
 
-const mainGroups = computed(() =>
-    props.tbMappingOptions.mainGroups?.length
-        ? props.tbMappingOptions.mainGroups
-        : ['Assets', 'Liabilities', 'Equity', 'Revenue']
-)
+const mainGroups = computed(() => props.tbMappingOptions.mainGroups ?? [])
 
-const subGroups = computed(() =>
-    props.tbMappingOptions.subGroups?.length
-        ? props.tbMappingOptions.subGroups
-        : ['Current Assets', 'Fixed Assets', 'Current Liabilities', 'Long-term Liabilities']
-)
+const subGroups = computed(() => props.tbMappingOptions.subGroups ?? [])
 
 const defaultConfig = [
     { label: 'Financial Year',             from: '2025-01-01', to: '2025-12-31' },
@@ -576,11 +668,43 @@ const handleSaveConfig = async () => {
     }
 }
 
-const integrityData = ref([
-    { label: 'Trial balance',   isValid: true  },
-    { label: 'Balance Sheet',   isValid: true  },
-    { label: 'Profit and loss', isValid: false },
-])
+const handleUnlockConfig = async () => {
+    if (!props.onUnlockConfig) return
+    configSaving.value = true
+    try {
+        await props.onUnlockConfig()
+    } finally {
+        configSaving.value = false
+    }
+}
+
+// Live results come from the verify endpoint via props; isValid stays null
+// (neither tick nor cross) until Run Check has been pressed.
+const integrityRows = computed(() =>
+    props.integrityData?.length
+        ? props.integrityData
+        : [
+            { label: 'Trial balance',   isValid: null },
+            { label: 'Balance Sheet',   isValid: null },
+            { label: 'Profit and loss', isValid: null },
+        ]
+)
+
+const handleRunCheck = () => {
+    if (props.onRunCheck) props.onRunCheck()
+}
+
+// Pop the error modal whenever a completed run reports failures
+const isIntegrityModalOpen = ref(false)
+watch(() => props.integrityIssues, (issues) => {
+    if (issues && issues.length) isIntegrityModalOpen.value = true
+})
+
+// Review Data: close the modal and take the user to the mapping table
+const handleReviewData = () => {
+    isIntegrityModalOpen.value = false
+    nextTick(() => cardRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+}
 
 const handleUpdate = () => {
     if (props.onUpdate) props.onUpdate()

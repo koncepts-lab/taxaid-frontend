@@ -1,7 +1,8 @@
 <template>
-    <Transition name="fade">
-        <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div class="bg-white rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl transition-all">
+    <Teleport to="body">
+        <Transition name="fade">
+            <div v-if="isOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                <div class="bg-white rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl transition-all">
                 <!-- Header -->
                 <div class="flex items-center justify-between p-6 pb-2">
                     <h3 class="text-xl font-semibold text-gray-900">
@@ -95,7 +96,8 @@
                 </div>
             </div>
         </div>
-    </Transition>
+        </Transition>
+    </Teleport>
 </template>
 
 <script setup>

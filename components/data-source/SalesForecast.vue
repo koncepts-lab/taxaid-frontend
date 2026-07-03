@@ -34,16 +34,8 @@
             </div>
         </div>
 
-        <!-- Loading -->
-        <div v-if="loading" class="flex justify-center py-12">
-            <div class="w-6 h-6 border-2 border-[#00B794] border-t-transparent rounded-full animate-spin"></div>
-        </div>
-
-        <!-- Error -->
-        <p v-else-if="error" class="text-sm text-red-500 py-4">{{ error }}</p>
-
-        <!-- Table -->
-        <div v-else class="overflow-x-auto rounded-[15px] border" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+        <!-- Table always rendered -->
+        <div class="overflow-x-auto rounded-[15px] border" :class="isDark ? 'border-white/10' : 'border-gray-100'">
             <table class="w-full text-left rtl:text-right border-collapse min-w-[1200px]">
                 <thead>
                     <tr class="bg-[#008864] text-white">
@@ -66,9 +58,51 @@
                     </tr>
                 </thead>
 
-                <tbody v-for="year in data" :key="year.id">
-                    <tr class="text-white font-medium">
-                        <td class="px-6 py-3 border-white/10 bg-[#014235]">{{ year.label }}</td>
+                <!-- Skeleton Loading -->
+                <tbody v-if="loading">
+                    <!-- Year Row Skeleton -->
+                    <tr class="text-white font-medium bg-[#014235]">
+                        <td class="px-6 py-3 border-white/10"><div class="h-4 bg-white/20 rounded w-16 animate-pulse"></div></td>
+                        <td class="px-4 py-3 text-center text-sm">AED</td>
+                        <td class="px-4 py-3 text-center text-sm">AED</td>
+                        <td class="px-4 py-3 text-center text-sm">AED</td>
+                        <td class="px-4 py-3 text-center text-sm">AED</td>
+                        <td class="px-4 py-3 text-center text-sm">AED</td>
+                        <td class="px-4 py-3 text-center text-sm">AED</td>
+                    </tr>
+                    <!-- Quarter & Month Rows Skeleton -->
+                    <template v-for="q in 4" :key="'skeleton-q-'+q">
+                        <tr class="bg-[#C2F9E9] text-[#013E32] font-medium border-b border-[#84D7C5]/30">
+                            <td class="px-6 py-3 border-[#84D7C5]"><div class="h-4 bg-[#013E32]/20 rounded w-20 animate-pulse"></div></td>
+                            <td class="px-4 py-3 text-center text-sm">AED</td>
+                            <td class="px-4 py-3 text-center text-sm">AED</td>
+                            <td class="px-4 py-3 text-center text-sm">AED</td>
+                            <td class="px-4 py-3 text-center text-sm">AED</td>
+                            <td class="px-4 py-3 text-center text-sm">AED</td>
+                            <td class="px-4 py-3 text-center text-sm">AED</td>
+                        </tr>
+                        <tr v-for="m in 3" :key="'skeleton-m-'+q+'-'+m" class="border-b transition-colors animate-pulse"
+                            :class="isDark ? 'border-white/5' : 'border-gray-100'">
+                            <td class="px-6 py-3"><div class="h-4 rounded w-16" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+                            <td class="px-4 py-3"><div class="h-4 rounded w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+                            <td class="px-4 py-3"><div class="h-4 rounded w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+                            <td class="px-4 py-3"><div class="h-4 rounded w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+                            <td class="px-4 py-3"><div class="h-4 rounded w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+                            <td class="px-4 py-3"><div class="h-4 rounded w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+                            <td class="px-4 py-3"><div class="h-4 rounded w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+                        </tr>
+                    </template>
+                </tbody>
+
+                <!-- Error -->
+                <tbody v-else-if="error">
+                    <tr><td colspan="7" class="text-sm text-red-500 py-10 text-center">{{ error }}</td></tr>
+                </tbody>
+
+                <!-- Data -->
+                <tbody v-else v-for="year in data" :key="year.id">
+                    <tr class="text-white font-medium bg-[#014235]">
+                        <td class="px-6 py-3 border-white/10">{{ year.label }}</td>
                         <td class="px-4 py-3 text-center text-sm">AED</td>
                         <td class="px-4 py-3 text-center text-sm">AED</td>
                         <td class="px-4 py-3 text-center text-sm">AED</td>

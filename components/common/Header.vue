@@ -155,7 +155,7 @@
             <img :src="pictureUrl || '/images/avatar-company.png'"
               class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
             <div class="flex-1">
-              <h4 class="font-medium text-[#013E32] text-sm leading-tight">{{ profile?.companyLegalName || profile?.companyName || '' }}</h4>
+              <h4 class="font-medium text-[#013E32] text-sm leading-tight">{{ profile?.companyNickname || profile?.companyName || '' }}</h4>
               <p class="text-sm text-[#013E32]/70 font-medium">{{ profile?.email || '' }}</p>
               <NuxtLink to="/profile" class="text-[#00B68D] text-sm font-medium  mt-1 inline-block">View
                 Profile</NuxtLink>
@@ -338,7 +338,7 @@
             <img :src="pictureUrl || '/images/avatar-company.png'"
               class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
             <div class="flex-1">
-              <h4 class="font-medium text-[#013E32] text-sm leading-tight">{{ profile?.companyLegalName || profile?.companyName || '' }}</h4>
+              <h4 class="font-medium text-[#013E32] text-sm leading-tight">{{ profile?.companyNickname || profile?.companyName || '' }}</h4>
               <p class="text-sm text-[#013E32]/70 font-medium">{{ profile?.email || '' }}</p>
               <NuxtLink to="/profile" class="text-[#00B68D] text-sm font-medium  mt-1 inline-block">View
                 Profile</NuxtLink>

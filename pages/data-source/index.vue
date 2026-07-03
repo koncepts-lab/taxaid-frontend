@@ -156,6 +156,13 @@
                 :tbSaving="tbSaving"
                 :tbLoading="tbLoadingState"
                 :tbMeta="tbMeta"
+                :integrityData="tbIntegrityData"
+                :integrityLoading="tbIntegrityLoading"
+                :integrityMeta="tbIntegrityMeta"
+                :integrityIssues="tbIntegrityIssues"
+                :onRunCheck="() => runIntegrityCheck()"
+                :configLocked="tbConfigLocked"
+                :onUnlockConfig="() => unlockConfigSettings()"
                 :onUpdate="() => updateTrialBalance()"
                 :onUpdateConfig="(items) => updateConfigSettings(items)"
                 :onPageChange="(p) => fetchTrialBalance(p)"
@@ -194,7 +201,7 @@ const { rows: arRows, totals: arTotals, loading: arLoading, error: arError, logs
 const { rows: apRows, totals: apTotals, loading: apLoading, error: apError, logs: apLiveLogs } = useApAgingSummary()
 
 // ── Trial Balance (live API) ───────────────────────────────────────────────
-const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbLoading: tbLoadingState, tbMeta, fetchTrialBalance, updateTrialBalance, updateConfigSettings, tbLogs: tbLiveLogs } = useTrialBalance()
+const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbLoading: tbLoadingState, tbMeta, fetchTrialBalance, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, tbLogs: tbLiveLogs } = useTrialBalance()
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
