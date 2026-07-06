@@ -96,15 +96,11 @@ onMounted(() => {
   requestAnimationFrame(animate);
 });
 
-// ── Pull values from website-data.json ────────────────────────────────────
-const { financialStatements } = useMainDashboard()
+// ── Pull values from useDashboard() ───────────────────────────────────────
+const { financialStatements } = useDashboard()
 
 const financials = computed(() =>
-  (financialStatements.value?.gauges ?? [
-    { label: 'Revenue Growth',    labelAr: 'نمو الإيرادات',      value: '+8.2%', progress: 75, color: '#009848', bgColor: '#009848' },
-    { label: 'Net Profit Margin', labelAr: 'هامش الربح الصافي',  value: '+4.8%', progress: 60, color: '#036192', bgColor: '#036192' },
-    { label: 'Liquidity Status',  labelAr: 'حالة السيولة',       value: '+2.2%', progress: 35, color: '#F1B208', bgColor: '#F1B208' }
-  ]).map((g: any) => ({ ...g, bgColor: g.bgColor ?? g.color }))
+  (financialStatements.value?.gauges ?? []).map((g: any) => ({ ...g, bgColor: g.bgColor ?? g.color }))
 )
 
 // Helper to calculate marker position

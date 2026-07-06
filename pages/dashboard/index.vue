@@ -52,11 +52,27 @@
         </div>
       </div>
 
-      <!-- Onload Popup for AP Variance -->
-      <!-- <DashboardApVarianceReconciliationModal /> -->
-      <!-- <DashboardArVarianceReconciliationModal /> -->
-      <!-- <DashboardNewLedgerDetectedModal /> -->
-      <DashboardSalesForecastVarianceModal />
+      <!-- Alert-driven modals — only rendered when the matching condition is active -->
+      <DashboardApVarianceReconciliationModal
+        v-if="dashboardAlerts.ap_variance"
+        :data="dashboardAlerts.ap_variance"
+        @close="dashboardAlerts.ap_variance = null"
+        @resolved="onModalResolved" />
+      <DashboardArVarianceReconciliationModal
+        v-if="dashboardAlerts.ar_variance"
+        :data="dashboardAlerts.ar_variance"
+        @close="dashboardAlerts.ar_variance = null"
+        @resolved="onModalResolved" />
+      <DashboardNewLedgerDetectedModal
+        v-if="dashboardAlerts.missing_ledgers"
+        :data="dashboardAlerts.missing_ledgers"
+        @close="dashboardAlerts.missing_ledgers = null"
+        @resolved="onModalResolved" />
+      <DashboardSalesForecastVarianceModal
+        v-if="dashboardAlerts.sales_forecast_variance"
+        :data="dashboardAlerts.sales_forecast_variance"
+        @close="dashboardAlerts.sales_forecast_variance = null"
+        @resolved="onModalResolved" />
     </div>
   </NuxtLayout>
 </template>
@@ -65,9 +81,28 @@
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-// Config logic remains same as previous steps
-const receivableOptions = {}; // Placeholders as logic is moved to components
-const receivableSeries = [];
-const cashflowOptions = {};
-const cashflowSeries = [];
+const dashboardAlerts = ref({
+  ar_variance: null,
+  ap_variance: null,
+  missing_ledgers: null,
+  sales_forecast_variance: null,
+})
+
+// Single call for all 8 card summaries — the cards themselves read from the
+// same useDashboard() shared state, so this one fetch populates every card.
+const { fetchSummary } = useDashboard()
+
+const fetchDashboardAlerts = async () => {
+  const res = await useApi('/dashboard/alerts')
+  if (res?.status === 'success') dashboardAlerts.value = res.data
+}
+
+// A modal action (resolve/ignore/map/adjust) may clear the underlying
+// condition — refetch so the modal closes itself once it's actually resolved.
+const onModalResolved = () => fetchDashboardAlerts()
+
+onMounted(() => {
+  fetchDashboardAlerts()
+  fetchSummary()
+})
 </script>

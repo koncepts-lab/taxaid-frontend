@@ -22,14 +22,14 @@
         
         <!-- Mobile: Time Filters -->
         <div class="flex md:hidden gap-2 mt-1">
-          <button v-for="t in (cashflow?.periodFilters ?? ['3M', '6M', '1Y'])" :key="t" 
+          <button v-for="m in [3, 6, 9]" :key="m" @click.stop.prevent="selectCashflowPeriod(m)"
             class="px-4 h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
             :class="[
-              t === (cashflow?.defaultFilter ?? '6M') 
-                ? (isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35] shadow-lg') 
+              m === cashflowPeriod
+                ? (isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35] shadow-lg')
                 : (isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]')
             ]">
-            {{ t }}
+            {{ m }}M
           </button>
         </div>
       </div>
@@ -58,20 +58,20 @@
       <!-- Chart -->
       <div class="flex-1 h-[180px]">
         <ClientOnly>
-          <apexchart width="100%" height="100%" type="area" :options="chartOptions" :series="chartSeries"></apexchart>
+          <apexchart :key="cashflowPeriod" width="100%" height="100%" type="area" :options="chartOptions" :series="chartSeries"></apexchart>
         </ClientOnly>
       </div>
 
       <!-- Desktop: Vertical Time Filters -->
       <div class="hidden md:flex flex-col gap-2 pt-2 shrink-0">
-          <button v-for="t in (cashflow?.periodFilters ?? ['3M', '6M', '1Y'])" :key="t"
+          <button v-for="m in [3, 6, 9]" :key="m" @click.stop.prevent="selectCashflowPeriod(m)"
             class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
             :class="[
-              t === (cashflow?.defaultFilter ?? '6M')
+              m === cashflowPeriod
                 ? (isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35] shadow-lg')
                 : (isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]')
             ]">
-            {{ t }}
+            {{ m }}M
           </button>
       </div>
     </div>
@@ -105,27 +105,30 @@ const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Cashflow')
 const { isDark } = useTheme()
 
-// ── Pull values from website-data.json ────────────────────────────────────
-const { cashflow } = useMainDashboard()
+// ── Pull values from useDashboard() ───────────────────────────────────────
+const { cashflow, cashflowPeriod, fetchSummary } = useDashboard()
+
+const selectCashflowPeriod = (months: number) => {
+  cashflowPeriod.value = months
+  fetchSummary(['cash_flow'])
+}
 
 const chartSeries = computed(() => [
   {
     name: cashflow.value?.labels?.real ?? 'Real Scenario',
-    data: cashflow.value?.series?.realScenario ?? [2.6, 2.1, 2.5, 1.7, 2.5, 4.0, 2.9, 3.6, 2.8, 1.4, 1.9, 1.5, 3.2, 2.6, 4.1, 4.0]
+    data: cashflow.value?.series?.realScenario ?? []
   },
   {
     name: cashflow.value?.labels?.hypothetical ?? 'Hypothetical Scenario',
-    data: cashflow.value?.series?.hypotheticalScenario ?? [1.4, 0.8, 1.2, 0.9, 1.1, 2.8, 2.0, 2.3, 1.8, 1.3, 0.5, 1.5, 0.3, 2.0, 1.9, 2.9]
+    data: cashflow.value?.series?.hypotheticalScenario ?? []
   }
 ])
 
-const chartCategories = computed(() =>
-  cashflow.value?.chartCategories ?? ['May','','','Jun','','','Jul','','','Aug','','','Sep','','','Oct']
-)
+const chartCategories = computed(() => cashflow.value?.chartCategories ?? [])
 
 const realColor = computed(() => cashflow.value?.colors?.realScenario ?? '#00B794')
 const hypoColor = computed(() => cashflow.value?.colors?.hypotheticalScenario ?? '#FF7B5F')
-const yMax      = computed(() => cashflow.value?.yAxis?.max ?? 4.5)
+const yMax      = computed(() => cashflow.value?.yAxis?.max ?? 1)
 
 const chartOptions = computed(() => ({
   chart: {
@@ -148,11 +151,7 @@ const chartOptions = computed(() => ({
   dataLabels: { enabled: false },
   stroke: { curve: 'smooth', width: 3 },
   xaxis: {
-    categories: currentLang.value === 'ar'
-      ? (cashflow.value?.chartCategories?.map((_: string, i: number) =>
-          ['مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر'].flatMap((m: string) => [m,'',''])[i] ?? '')
-        ?? ['مايو','','','يونيو','','','يوليو','','','أغسطس','','','سبتمبر','','','أكتوبر'])
-      : chartCategories.value,
+    categories: chartCategories.value,
     labels: {
       style: { colors: isDark.value ? '#9CA3AF' : '#9CA3AF', fontSize: '12px' }
     },
@@ -175,26 +174,18 @@ const chartOptions = computed(() => ({
     yaxis: { lines: { show: false } },
   },
   tooltip: {
-    custom: function({series, seriesIndex, dataPointIndex, w}: any) {
-      const month = currentLang.value === 'ar' ? 'يوليو' : (cashflow.value?.tooltipSample?.month ?? 'July');
+    custom: function({ series, dataPointIndex }: any) {
+      const month = chartCategories.value[dataPointIndex] ?? '';
       const realLabel = currentLang.value === 'ar' ? 'حقيقي: ' : 'Real: ';
       const hypoLabel = currentLang.value === 'ar' ? 'افتراضي: ' : 'Hypothetical: ';
-      const realVal = cashflow.value?.tooltipSample?.real ?? 'AED 2.5M';
-      const hypoVal = cashflow.value?.tooltipSample?.hypothetical ?? 'AED 1.2M';
+      const fmt = (v: number) => `AED ${Number(v ?? 0).toFixed(1)}M`;
       return `<div class="px-3 py-2 bg-[#DFFFF6] text-[#003d35] rounded-lg shadow-lg border-none text-xs">
         <div class="font-bold mb-1">${month}</div>
-        <div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 rounded-full" style="background:${realColor.value}"></span><span>${realLabel}${realVal}</span></div>
-        <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background:${hypoColor.value}"></span><span>${hypoLabel}${hypoVal}</span></div>
+        <div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 rounded-full" style="background:${realColor.value}"></span><span>${realLabel}${fmt(series[0]?.[dataPointIndex])}</span></div>
+        <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background:${hypoColor.value}"></span><span>${hypoLabel}${fmt(series[1]?.[dataPointIndex])}</span></div>
       </div>`
     }
   },
-  annotations: {
-    xaxis: [{ x: cashflow.value?.annotationMonth ?? 'Jul', borderColor: realColor.value, strokeDashArray: 0, borderWidth: 2, opacity: 1 }],
-    points: [
-      { x: cashflow.value?.annotationMonth ?? 'Jul', y: 3.6, marker: { size: 6, fillColor: '#fff', strokeColor: realColor.value, strokeWidth: 3 } },
-      { x: cashflow.value?.annotationMonth ?? 'Jul', y: 2.3, marker: { size: 6, fillColor: '#fff', strokeColor: realColor.value, strokeWidth: 3 } }
-    ]
-  }
 }));
 </script>
 
