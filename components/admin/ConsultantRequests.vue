@@ -57,7 +57,7 @@
             <!-- Table -->
             <div class="overflow-x-auto border rounded-xl transition-colors"
                 :class="isDark ? 'border-white/10' : 'border-gray-100'">
-                <table class="w-full text-left rtl:text-right border-separate border-spacing-0 min-w-[1100px]">
+                <table class="w-full text-left rtl:text-right border-separate border-spacing-0">
                     <thead>
                         <tr class="bg-[#00896F] text-white">
                             <th v-for="h in headers" :key="h" class="px-4 py-4 text-sm font-normal tracking-wider last:border-0">
@@ -80,18 +80,25 @@
                                     {{ req.status }}
                                 </span>
                             </td>
-                            <td class="px-4 py-5 text-sm max-w-[220px] truncate" :title="req.request_note || ''">
+                            <td class="px-4 py-5 text-sm max-w-[220px] truncate" :class="!req.request_note ? 'text-center text-gray-400' : ''" :title="req.request_note || ''">
                                 {{ req.request_note || '—' }}
                             </td>
                             <td class="px-4 py-5">
-                                <button v-if="req.status === 'pending'" @click="openReview(req)"
-                                    class="bg-[#00B68D] hover:bg-[#006552] text-white px-5 py-1.5 rounded-md text-xs font-bold transition-colors">
-                                    Review
-                                </button>
-                                <button v-else @click="openView(req)"
-                                    class="bg-white border border-[#00896F] text-[#00896F] hover:bg-[#E6FDF9] px-5 py-1.5 rounded-md text-xs font-medium transition-colors">
-                                    View
-                                </button>
+                                <div class="flex items-center gap-2">
+                                    <button v-if="req.status === 'pending'" @click="openReview(req)"
+                                        class="bg-[#00B68D] hover:bg-[#006552] text-white px-5 py-1.5 rounded-md text-xs font-bold transition-colors">
+                                        Review
+                                    </button>
+                                    <button v-else @click="openView(req)"
+                                        class="bg-white border border-[#00896F] text-[#00896F] hover:bg-[#E6FDF9] px-5 py-1.5 rounded-md text-xs font-medium transition-colors">
+                                        View
+                                    </button>
+                                    <button v-if="req.has_logged_in" @click="openInfo(req)"
+                                        class="bg-white border border-[#193CB8] text-[#193CB8] hover:bg-[#DBEAFE] px-4 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5">
+                                        <span v-if="req.is_online" class="w-2 h-2 rounded-full bg-[#15803D] animate-pulse"></span>
+                                        Info
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -194,6 +201,58 @@
             </Transition>
         </Teleport>
 
+        <!-- Session Info Modal -->
+        <Teleport to="body">
+            <Transition name="fade">
+                <div v-if="showInfo" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                    <div class="bg-white rounded-2xl shadow-xl w-[460px] max-w-full flex flex-col max-h-[85vh]">
+                        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-[16px] font-semibold text-gray-900">Session Info</h3>
+                                <p class="text-xs text-gray-400 mt-0.5">{{ activeReq?.client_name || '-' }} ({{ activeReq?.client_id }}) — {{ activeReq?.username }}</p>
+                            </div>
+                            <button @click="showInfo = false" class="text-gray-400 hover:text-gray-600">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </div>
+                        <div class="p-6 space-y-4 overflow-y-auto">
+                            <div v-if="!activeReq?.sessions?.length"
+                                class="p-4 bg-gray-50 border border-gray-100 rounded-xl text-sm text-gray-500 text-center">
+                                No active session — credentials not currently in use.
+                            </div>
+                            <div v-for="s in activeReq?.sessions" :key="s.id"
+                                class="p-4 bg-[#F9FAFB] border border-gray-100 rounded-xl space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-semibold text-gray-900">{{ s.device_label }}</span>
+                                    <span class="px-3 py-0.5 rounded-full text-xs font-medium flex items-center gap-1.5"
+                                        :class="s.is_online ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-gray-100 text-gray-500'">
+                                        <span class="w-1.5 h-1.5 rounded-full" :class="s.is_online ? 'bg-[#15803D] animate-pulse' : 'bg-gray-400'"></span>
+                                        {{ s.is_online ? 'Online now' : 'Offline' }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-500">Location</span>
+                                    <span class="text-gray-800">{{ s.location || '-' }}</span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-500">IP address</span>
+                                    <span class="text-gray-800 font-mono text-xs">{{ s.ip || '-' }}</span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-500">Last active</span>
+                                    <span class="text-gray-800">{{ timeAgo(s.last_active_at) }}</span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-500">Logged in</span>
+                                    <span class="text-gray-800">{{ formatTime(s.logged_in_at) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
         <!-- View Modal -->
         <Teleport to="body">
             <Transition name="fade">
@@ -283,9 +342,14 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 
-const props = defineProps({ isDark: Boolean, currentLang: { type: String, default: 'en' } })
+const props = defineProps({
+    isDark: Boolean,
+    currentLang: { type: String, default: 'en' },
+    team: { type: String, default: 'implementation' }, // 'implementation' | 'review'
+})
 
-const { getCredentialRequests, approveCredentialRequest, rejectCredentialRequest, terminateCredentialRequest } = useImplementation()
+const { getCredentialRequests, approveCredentialRequest, rejectCredentialRequest, terminateCredentialRequest } =
+    props.team === 'review' ? useTempCredentials() : useImplementation()
 
 const headers = ['Consultant Name', 'Client Name', 'Client ID', 'Time Requested', 'Status', 'Notes', 'Action']
 
@@ -380,6 +444,13 @@ function closeReview() {
     if (approvedCreds.value) fetchRows()
 }
 
+const showInfo = ref(false)
+
+function openInfo(req) {
+    activeReq.value = req
+    showInfo.value = true
+}
+
 function openView(req) {
     activeReq.value        = req
     modalError.value       = ''
@@ -444,6 +515,18 @@ const statusPill = (status) => ({
     terminated: 'bg-[#FEE2E2] text-[#B91C1C]',
     expired:    'bg-gray-100 text-gray-500',
 }[status] || 'bg-gray-100 text-gray-500')
+
+const timeAgo = (dt) => {
+    if (!dt) return '-'
+    const secs = Math.max(0, Math.floor((Date.now() - new Date(dt).getTime()) / 1000))
+    if (secs < 60) return 'Just now'
+    const mins = Math.floor(secs / 60)
+    if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`
+    const hrs = Math.floor(mins / 60)
+    if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`
+    const days = Math.floor(hrs / 24)
+    return `${days} day${days === 1 ? '' : 's'} ago`
+}
 
 const formatTime = (dt) => {
     if (!dt) return '-'

@@ -433,6 +433,11 @@
       </div>
 
       <!-- Main Section: Client review analysis progress -->
+      <!-- Consultant Requests (temp credential approvals) -->
+      <div v-if="activeTab === 'Consultant Requests'">
+        <AdminConsultantRequests team="review" :isDark="isDark" currentLang="en" />
+      </div>
+
       <div v-if="activeTab === 'Client review analysis progress'" :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-[#E5E5E5]'" class="rounded-[20px] border shadow-sm p-8 pb-12 space-y-8">
         
         <!-- Section Header -->
@@ -530,7 +535,7 @@ const { isDark } = useTheme()
 const route = useRoute()
 const rm = useReviewManager()
 
-const tabs = ['Productivity tracker', 'Data Sync Status', 'Client fixed progress', 'Consultant workload', 'Assign Consultant', 'Client review analysis progress']
+const tabs = ['Productivity tracker', 'Data Sync Status', 'Client fixed progress', 'Consultant workload', 'Assign Consultant', 'Client review analysis progress', 'Consultant Requests']
 const activeTab = ref(route.query.tab || 'Productivity tracker')
 
 // -- data refs --

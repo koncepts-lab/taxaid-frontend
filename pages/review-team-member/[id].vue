@@ -85,6 +85,11 @@
             </div>
           </div>
 
+          <!-- Temporary Login Credentials -->
+          <div class="mb-8">
+            <AdminReviewTempCredentialCard :tenantId="detail.review.tenant_id" :isDark="isDark" />
+          </div>
+
           <!-- Meet link -->
           <div v-if="detail.review.meet_url"
                class="rounded-xl p-5 shadow-sm border mb-8 flex items-center gap-3"

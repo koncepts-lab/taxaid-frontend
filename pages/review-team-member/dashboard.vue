@@ -842,6 +842,12 @@
               </div>
             </div>
 
+            <!-- Temporary Login Credentials (only for appointments that can run the timer) -->
+            <AdminReviewTempCredentialCard
+              v-if="['Scheduled', 'Rescheduled'].includes(selectedAppointment?.status) && selectedAppointment?._raw?.tenant_id"
+              :tenantId="selectedAppointment._raw.tenant_id"
+              :isDark="isDark" />
+
           </div>
         </div>
       </div>

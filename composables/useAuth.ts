@@ -10,10 +10,19 @@ export const useAuth = () => {
   // 3. Login Logic
   const login = async (credentials: any, remember: boolean = false) => {
     try {
+      // Session tracking extras (optional server-side): browser timezone -> coarse location
+      let sessionMeta = {}
+      try {
+        sessionMeta = {
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          device_name: navigator?.platform || null,
+        }
+      } catch {}
+
       const response: any = await $fetch('/auth/login', {
         baseURL: config.public.apiBase,
         method: 'POST',
-        body: credentials,
+        body: { ...credentials, ...sessionMeta },
         headers: { 'Accept': 'application/json' }
       })
 
