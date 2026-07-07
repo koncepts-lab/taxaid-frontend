@@ -26,6 +26,8 @@
 
             <AdminConsultantWorkload v-else-if="activeTab === 'workload'" :isDark="isDark" :currentLang="currentLang" />
 
+            <AdminConsultantRequests v-else-if="activeTab === 'requests'" :isDark="isDark" :currentLang="currentLang" />
+
             <div v-else
                 class="bg-white p-20 rounded-3xl border border-dashed border-gray-200 text-center text-gray-400">
                 {{ activeTab }} Content Coming Soon
@@ -41,7 +43,7 @@ const props = defineProps({ isDark: Boolean, currentLang: String })
 
 const route  = useRoute()
 const router = useRouter()
-const validTabs = ['gl-master', 'pool', 'workload']
+const validTabs = ['gl-master', 'pool', 'workload', 'requests']
 const activeTab = ref(validTabs.includes(route.query.tab) ? route.query.tab : 'gl-master')
 
 function setTab(id) {
@@ -52,6 +54,7 @@ const tabs = [
     { id: 'gl-master', label: 'GL Code Master', labelAr: 'سجل أكواد GL' },
     { id: 'pool', label: 'Implementation Pool', labelAr: 'مجموعة التنفيذ' },
     { id: 'workload', label: 'Consultant workload', labelAr: 'عبء عمل الاستشاري' },
+    { id: 'requests', label: 'Consultant Requests', labelAr: 'طلبات الاستشاريين' },
 ]
 
 const configs = {
@@ -69,6 +72,11 @@ const configs = {
         title: 'Consultant Workload', titleAr: 'عبء عمل الاستشاري',
         sub: 'Track project distribution across consultants',
         subAr: 'تتبع توزيع المشاريع عبر الاستشاريين'
+    },
+    'requests': {
+        title: 'Consultant Requests', titleAr: 'طلبات الاستشاريين',
+        sub: 'Review temporary credential requests from implementation consultants',
+        subAr: 'مراجعة طلبات بيانات الاعتماد المؤقتة من استشاريي التنفيذ'
     }
 }
 

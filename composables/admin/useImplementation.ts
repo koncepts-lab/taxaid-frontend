@@ -97,6 +97,54 @@ export function useImplementation() {
     return res.data ?? []
   }
 
+  // Temp credential requests — consultant side
+  async function requestCredentials(clientId: string, requestNote?: string | null): Promise<any> {
+    const res: any = await apiFetch('/admin/implementation/credential-requests', {
+      method: 'POST',
+      body: { client_id: clientId, request_note: requestNote || null },
+    })
+    return res.data
+  }
+
+  async function getMyCredentialRequest(clientId: string): Promise<any | null> {
+    const res: any = await apiFetch('/admin/implementation/credential-requests/mine', {
+      params: { client_id: clientId },
+    })
+    return res.data ?? null
+  }
+
+  async function goLive(clientId: string): Promise<any> {
+    const res: any = await apiFetch(`/admin/implementation/clients/${clientId}/go-live`, { method: 'POST' })
+    return res.data
+  }
+
+  // Temp credential requests — manager side (paginated)
+  async function getCredentialRequests(opts: {
+    search?: string
+    status?: string
+    page?: number
+    per_page?: number
+  } = {}): Promise<any> {
+    const params: any = { page: opts.page ?? 1, per_page: opts.per_page ?? 10 }
+    if (opts.search) params.search = opts.search
+    if (opts.status) params.status = opts.status
+    const res: any = await apiFetch('/admin/implementation/credential-requests', { params })
+    return res.data ?? { data: [], current_page: 1, last_page: 1, total: 0 }
+  }
+
+  // single review endpoint: action = approve | reject | terminate
+  async function reviewCredentialRequest(id: number, action: 'approve' | 'reject' | 'terminate', rejectNote?: string): Promise<any> {
+    const res: any = await apiFetch(`/admin/implementation/credential-requests/${id}/review`, {
+      method: 'PATCH',
+      body: { action, ...(action === 'reject' ? { reject_note: rejectNote } : {}) },
+    })
+    return res.data
+  }
+
+  const approveCredentialRequest   = (id: number) => reviewCredentialRequest(id, 'approve')
+  const rejectCredentialRequest    = (id: number, rejectNote: string) => reviewCredentialRequest(id, 'reject', rejectNote)
+  const terminateCredentialRequest = (id: number) => reviewCredentialRequest(id, 'terminate')
+
   // Partner linking (Implementation Manager)
   async function getActivePartners(): Promise<any[]> {
     const res: any = await apiFetch('/admin/partners', { params: { status: 'active' } })
@@ -172,6 +220,13 @@ export function useImplementation() {
     getClientDelays,
     getActivePartners,
     linkPartnerToClient,
+    requestCredentials,
+    getMyCredentialRequest,
+    goLive,
+    getCredentialRequests,
+    approveCredentialRequest,
+    rejectCredentialRequest,
+    terminateCredentialRequest,
     getGLMasters,
     createFsCode, createMainGroup, createSubGroup,
     updateFsCode, updateMainGroup, updateSubGroup,

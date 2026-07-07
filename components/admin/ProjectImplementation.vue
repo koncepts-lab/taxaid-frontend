@@ -36,6 +36,76 @@
             </div>
         </div>
 
+        <!-- Temporary Login Credentials Card -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+            <div class="flex items-start justify-between gap-6 flex-wrap">
+                <div>
+                    <h3 class="text-xl font-normal mb-1 text-black">Temporary Login Credentials</h3>
+                    <p class="text-base text-[#717182]">Request temporary access to this client's account for implementation work</p>
+                </div>
+                <span v-if="credReq" class="px-3 py-1 rounded-full text-sm capitalize" :class="credStatusPill(credReq.status)">
+                    {{ credReq.status }}
+                </span>
+            </div>
+
+            <div class="mt-6">
+                <!-- No request yet, or re-requestable -->
+                <div v-if="!credReq || ['rejected', 'terminated'].includes(credReq.status)" class="space-y-4">
+                    <div v-if="credReq?.status === 'rejected'"
+                        class="p-4 bg-[#FEE2E2] border border-[#FCA5A5] rounded-xl text-sm text-[#B91C1C]">
+                        <span class="font-semibold">Rejected by manager:</span> {{ credReq.reject_note || '-' }}
+                    </div>
+                    <div v-else-if="credReq?.status === 'terminated'"
+                        class="p-4 bg-[#FEE2E2] border border-[#FCA5A5] rounded-xl text-sm text-[#B91C1C]">
+                        These credentials were terminated by the manager. You can request new ones.
+                    </div>
+                    <textarea v-model="credNote" rows="2" maxlength="500"
+                        placeholder="Note to manager (optional)..."
+                        class="w-full bg-[#F3F4F6] border-none rounded-xl px-4 py-3 text-sm text-black outline-none placeholder:text-[#717182] focus:bg-white focus:ring-1 focus:ring-[#00896F]"></textarea>
+                    <button @click="submitCredRequest" :disabled="credLoading"
+                        class="bg-[#00896F] hover:bg-[#006B56] text-white px-8 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                        {{ credLoading ? 'Requesting…' : (credReq ? 'Re-request Credentials' : 'Request Credentials') }}
+                    </button>
+                    <p v-if="credError" class="text-sm text-[#B91C1C]">{{ credError }}</p>
+                </div>
+
+                <!-- Pending -->
+                <div v-else-if="credReq.status === 'pending'"
+                    class="p-4 bg-[#FEF9C2] border border-[#FDE68A] rounded-xl text-sm text-[#CE8600]">
+                    Your request is pending manager approval. This card will show the credentials once approved.
+                </div>
+
+                <!-- Approved / Active -->
+                <div v-else-if="['approved', 'active'].includes(credReq.status)" class="space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 bg-[#F3F4F6] rounded-xl px-4 py-3 text-sm text-black font-mono break-all">
+                            {{ credReq.username }}
+                        </div>
+                        <button @click="copyCred(credReq.username, 'user')"
+                            class="bg-white border border-[#00896F] text-[#00896F] hover:bg-[#E6FDF9] px-4 py-2.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap">
+                            {{ copied === 'user' ? 'Copied!' : 'Copy' }}
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 bg-[#F3F4F6] rounded-xl px-4 py-3 text-sm text-black font-mono break-all">
+                            {{ credReq.password }}
+                        </div>
+                        <button @click="copyCred(credReq.password, 'pass')"
+                            class="bg-white border border-[#00896F] text-[#00896F] hover:bg-[#E6FDF9] px-4 py-2.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap">
+                            {{ copied === 'pass' ? 'Copied!' : 'Copy' }}
+                        </button>
+                    </div>
+                    <p class="text-xs text-[#717182]">Use these to log into the client's account. They expire automatically when the client goes live.</p>
+                </div>
+
+                <!-- Expired -->
+                <div v-else-if="credReq.status === 'expired'"
+                    class="p-4 bg-gray-100 border border-gray-200 rounded-xl text-sm text-gray-500">
+                    These credentials have expired (client is live).
+                </div>
+            </div>
+        </div>
+
         <!-- Implementation Table -->
         <div class="bg-white rounded-2xl border shadow-sm p-8 overflow-hidden">
             <h3 class="text-xl font-normal mb-1 text-black">Implementation Steps</h3>
@@ -155,23 +225,123 @@
                     <p class="text-[#007C65] text-base">Click "Ready for Go Live" to finalize this project.</p>
                 </div>
             </div>
-            <button :disabled="!steps[14]?.status"
+            <button :disabled="!steps[14]?.status || isLive" @click="showGoLiveModal = true"
                 class="bg-[#00896F] hover:bg-[#006B56] text-white px-15 py-1.5 rounded-lg font-bold flex items-center gap-2 shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ">
                 <img src="/images/icons/rocket.svg" alt="Celebration" class="w-6 h-6">
 
-                Ready for Go Live
+                {{ isLive ? 'Client is Live' : 'Ready for Go Live' }}
             </button>
         </div>
+
+        <!-- Go Live Confirmation Modal -->
+        <Teleport to="body">
+            <Transition name="fade">
+                <div v-if="showGoLiveModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                    <div class="bg-white rounded-2xl shadow-xl w-[420px] max-w-full px-8 py-8 text-center">
+                        <div class="w-14 h-14 rounded-full bg-[#D1FAE5] flex items-center justify-center mx-auto mb-4">
+                            <img src="/images/icons/rocket.svg" alt="Go Live" class="w-6 h-6">
+                        </div>
+                        <template v-if="!goLiveDone">
+                            <h3 class="text-[17px] font-semibold text-gray-900 mb-2">Set Client Live?</h3>
+                            <p class="text-sm text-gray-500 mb-1">You're marking</p>
+                            <p class="text-sm font-semibold text-gray-800 mb-1">{{ project.name }}</p>
+                            <p class="text-sm text-gray-500 mb-6">as live. All temporary login credentials for this client will be deleted.</p>
+                            <p v-if="goLiveError" class="text-sm text-[#B91C1C] mb-4">{{ goLiveError }}</p>
+                            <div class="flex gap-3 justify-center">
+                                <button @click="showGoLiveModal = false" class="px-5 py-2 border border-gray-200 rounded-md text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
+                                <button @click="confirmGoLive" :disabled="goLiveLoading"
+                                    class="px-5 py-2 bg-[#007C65] text-white rounded-md text-sm font-medium hover:bg-[#006A56] transition-colors disabled:opacity-60">
+                                    {{ goLiveLoading ? 'Processing…' : 'Confirm Go Live' }}
+                                </button>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <h3 class="text-[17px] font-semibold text-gray-900 mb-2">Client is Live!</h3>
+                            <p class="text-sm text-gray-500 mb-6">{{ project.name }} is now live. Temporary credentials have been removed.</p>
+                            <button @click="showGoLiveModal = false" class="px-5 py-2 bg-[#007C65] text-white rounded-md text-sm font-medium hover:bg-[#006A56]">Close</button>
+                        </template>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 
 const props = defineProps({ project: Object })
 const emit = defineEmits(['back'])
 
-const { updateStepProgress } = useImplementation()
+const { updateStepProgress, requestCredentials, getMyCredentialRequest, goLive } = useImplementation()
+
+// --- Temporary login credentials ---
+const credReq     = ref(null)
+const credNote    = ref('')
+const credLoading = ref(false)
+const credError   = ref('')
+const copied      = ref(null)
+
+async function loadCredRequest() {
+    try {
+        credReq.value = await getMyCredentialRequest(props.project.clientId)
+    } catch { credReq.value = null }
+}
+
+async function submitCredRequest() {
+    credLoading.value = true
+    credError.value = ''
+    try {
+        await requestCredentials(props.project.clientId, credNote.value.trim() || null)
+        credNote.value = ''
+        await loadCredRequest()
+    } catch (e) {
+        credError.value = e?.data?.message || 'Failed to submit request.'
+    } finally {
+        credLoading.value = false
+    }
+}
+
+async function copyCred(text, which) {
+    try {
+        await navigator.clipboard.writeText(text)
+        copied.value = which
+        setTimeout(() => { if (copied.value === which) copied.value = null }, 1500)
+    } catch {}
+}
+
+const credStatusPill = (status) => ({
+    pending:    'bg-[#FEF9C2] text-[#CE8600]',
+    approved:   'bg-[#D0FAE5] text-[#007C65]',
+    active:     'bg-[#DCFCE7] text-[#15803D]',
+    rejected:   'bg-[#FEE2E2] text-[#B91C1C]',
+    terminated: 'bg-[#FEE2E2] text-[#B91C1C]',
+    expired:    'bg-gray-100 text-gray-500',
+}[status] || 'bg-gray-100 text-gray-500')
+
+// --- Go Live ---
+const showGoLiveModal = ref(false)
+const goLiveLoading   = ref(false)
+const goLiveError     = ref('')
+const goLiveDone      = ref(false)
+const isLive          = ref(false)
+
+async function confirmGoLive() {
+    goLiveLoading.value = true
+    goLiveError.value = ''
+    try {
+        await goLive(props.project.clientId)
+        goLiveDone.value = true
+        isLive.value = true
+        await loadCredRequest()
+    } catch (e) {
+        goLiveError.value = e?.data?.message || 'Failed to set client live.'
+    } finally {
+        goLiveLoading.value = false
+    }
+}
+
+onMounted(loadCredRequest)
 
 const activeStepId = ref(null)
 const delayInputs = reactive({})
