@@ -4,7 +4,7 @@
     <WorkSessionGuardModal :show="showGuard" @dismiss="showGuard = false" />
 
     <!-- HEADER -->
-    <DashboardHeader userName="Team Member Dashboard" userId="Welcome, Akhil" :showChangeProfile="false" :showManageAccess="false" changeProfileLink="/profile" />
+    <DashboardHeader userName="Team Member Dashboard" userId="Welcome, Akhil" :showChangeProfile="false" :showManageAccess="false" changeProfileLink="/profile" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 py-4 space-y-6 overflow-y-auto">

@@ -2,7 +2,7 @@
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300 pb-10" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
     
     <!-- HEADER -->
-    <DashboardHeader userName="Review Manager" userId="Welcome, Akhil" :showChangeProfile="false" :adminLogout="true" logoutTo="/admin/aqnz-pro-auth-78z46" />
+    <DashboardHeader userName="Review Manager" userId="Welcome, Akhil" :showChangeProfile="false" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 py-8 space-y-8 overflow-y-auto" style="margin-top: -18px;">
