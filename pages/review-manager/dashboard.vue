@@ -2,7 +2,7 @@
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300 pb-10" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
     
     <!-- HEADER -->
-    <DashboardHeader userName="Review Manager" userId="Welcome, Akhil" :showChangeProfile="false" :adminLogout="true" logoutTo="/admin/aqnz-pro-auth-78z46" />
+    <DashboardHeader userName="Review Manager" userId="Welcome, Akhil" :showChangeProfile="false" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 py-8 space-y-8 overflow-y-auto" style="margin-top: -18px;">
@@ -433,6 +433,11 @@
       </div>
 
       <!-- Main Section: Client review analysis progress -->
+      <!-- Consultant Requests (temp credential approvals) -->
+      <div v-if="activeTab === 'Consultant Requests'">
+        <AdminConsultantRequests team="review" :isDark="isDark" currentLang="en" />
+      </div>
+
       <div v-if="activeTab === 'Client review analysis progress'" :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-[#E5E5E5]'" class="rounded-[20px] border shadow-sm p-8 pb-12 space-y-8">
         
         <!-- Section Header -->
@@ -530,7 +535,7 @@ const { isDark } = useTheme()
 const route = useRoute()
 const rm = useReviewManager()
 
-const tabs = ['Productivity tracker', 'Data Sync Status', 'Client fixed progress', 'Consultant workload', 'Assign Consultant', 'Client review analysis progress']
+const tabs = ['Productivity tracker', 'Data Sync Status', 'Client fixed progress', 'Consultant workload', 'Assign Consultant', 'Client review analysis progress', 'Consultant Requests']
 const activeTab = ref(route.query.tab || 'Productivity tracker')
 
 // -- data refs --

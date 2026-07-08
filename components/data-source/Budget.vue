@@ -155,8 +155,21 @@ const budgetSections = [
         </div>
 
         <!-- Loading state -->
-        <div v-if="loading" class="flex justify-center py-12">
-            <div class="w-6 h-6 border-2 border-[#008169] border-t-transparent rounded-full animate-spin"></div>
+        <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+            <div v-for="section in budgetSections" :key="'skel-' + section.id" class="flex flex-col gap-6 animate-pulse">
+                <div class="py-2.5 px-6 rounded-lg text-sm font-semibold transition-all duration-500"
+                    :class="isDark ? section.darkHeaderBg : section.lightHeaderBg">
+                    <div class="h-5 rounded w-1/2" :class="isDark ? 'bg-white/20' : 'bg-black/10'"></div>
+                </div>
+
+                <div v-for="item in section.items" :key="'skel-' + item.id"
+                    class="p-6 rounded-2xl border transition-all duration-300" :class="[
+                        isDark ? 'bg-white/5 border-white/10' : section.lightCardBg
+                    ]">
+                    <div class="h-5 rounded w-3/4 mb-6" :class="isDark ? 'bg-white/20' : 'bg-black/10'"></div>
+                    <div class="h-[42px] rounded-lg w-full" :class="isDark ? 'bg-white/20' : 'bg-black/10'"></div>
+                </div>
+            </div>
         </div>
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">

@@ -5,16 +5,22 @@
       <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8">
 
         <div class=" data-source-container pt-8 lg:pt-0">
-          <div class="mb-6">
-            <h1 class="font-medium transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#013E32]'"
-              style="font-size: 24px;">
-              {{ currentLang === 'ar' ? 'إدارة مصدر البيانات' : 'Data Source Management' }}
-            </h1>
-            <p class="font-normal mt-1 transition-colors duration-300"
-              :class="isDark ? 'text-white/60' : 'text-[#00000080]'" style="font-size: 14px;">
-              {{ currentLang === 'ar' ? 'إدارة مصادر البيانات المالية والجهات الاتصال وشهادات API لتكامل GST/VAT/ERP' :
-                'Manage your financial data sources, contacts, and API certificates for GST/VAT/ERP integrations' }}
-            </p>
+          <div class="mb-6 flex justify-between items-start">
+            <div>
+              <h1 class="font-medium transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#013E32]'"
+                style="font-size: 24px;">
+                {{ currentLang === 'ar' ? 'إدارة مصدر البيانات' : 'Data Source Management' }}
+              </h1>
+              <p class="font-normal mt-1 transition-colors duration-300"
+                :class="isDark ? 'text-white/60' : 'text-[#00000080]'" style="font-size: 14px;">
+                {{ currentLang === 'ar' ? 'إدارة مصادر البيانات المالية والجهات الاتصال وشهادات API لتكامل GST/VAT/ERP' :
+                  'Manage your financial data sources, contacts, and API certificates for GST/VAT/ERP integrations' }}
+              </p>
+            </div>
+            <button class="flex items-center gap-2 px-5 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm mt-1">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+              {{ currentLang === 'ar' ? 'إضافة يدوية' : 'Manual Addition' }}
+            </button>
           </div>
 
           <div class="main-tabs mb-6 flex gap-2 p-1.5 transition-all duration-500"
@@ -156,6 +162,13 @@
                 :tbSaving="tbSaving"
                 :tbLoading="tbLoadingState"
                 :tbMeta="tbMeta"
+                :integrityData="tbIntegrityData"
+                :integrityLoading="tbIntegrityLoading"
+                :integrityMeta="tbIntegrityMeta"
+                :integrityIssues="tbIntegrityIssues"
+                :onRunCheck="() => runIntegrityCheck()"
+                :configLocked="tbConfigLocked"
+                :onUnlockConfig="() => unlockConfigSettings()"
                 :onUpdate="() => updateTrialBalance()"
                 :onUpdateConfig="(items) => updateConfigSettings(items)"
                 :onPageChange="(p) => fetchTrialBalance(p)"
@@ -194,7 +207,7 @@ const { rows: arRows, totals: arTotals, loading: arLoading, error: arError, logs
 const { rows: apRows, totals: apTotals, loading: apLoading, error: apError, logs: apLiveLogs } = useApAgingSummary()
 
 // ── Trial Balance (live API) ───────────────────────────────────────────────
-const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbLoading: tbLoadingState, tbMeta, fetchTrialBalance, updateTrialBalance, updateConfigSettings, tbLogs: tbLiveLogs } = useTrialBalance()
+const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbLoading: tbLoadingState, tbMeta, fetchTrialBalance, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, tbLogs: tbLiveLogs } = useTrialBalance()
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()

@@ -15,7 +15,22 @@
             </p>
         </div>
 
-        <div v-if="loading" class="text-center py-8 text-gray-400">Loading...</div>
+        <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="i in 12" :key="'skeleton-'+i"
+                class="rounded-[20px] p-6 border relative animate-pulse"
+                :class="isDark ? 'bg-[#015F4D]/20 border-[#00B794]/30' : 'border-[#04C18F80] bg-[#00FFBC1F] shadow-sm'">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="h-7 rounded w-1/2" :class="isDark ? 'bg-white/10' : 'bg-[#008169]/10'"></div>
+                </div>
+                <div class="flex items-center justify-center mb-6">
+                    <div class="h-6 rounded w-2/3" :class="isDark ? 'bg-white/10' : 'bg-[#FF6B50]/20'"></div>
+                </div>
+                <div class="space-y-3">
+                    <div class="h-[46px] rounded-xl w-full" :class="isDark ? 'bg-white/10' : 'bg-white/50'"></div>
+                    <div class="h-[46px] rounded-xl w-full" :class="isDark ? 'bg-white/10' : 'bg-[#008169]/20'"></div>
+                </div>
+            </div>
+        </div>
         <div v-else-if="error" class="p-4 rounded-xl border border-red-200 bg-red-50 text-red-600 text-sm">{{ error }}</div>
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -83,13 +98,6 @@
                         </button>
                     </div>
                     <div v-else class="space-y-3">
-                        <input
-                            type="file"
-                            accept=".xlsx,.xls"
-                            class="hidden"
-                            :ref="el => { if (el) fileInputs[card.id] = el }"
-                            @change="onFileSelected(card, $event)"
-                        />
                         <button @click="handleDownloadSample(card)"
                             class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-sm font-medium hover:bg-[#00B794]/5 transition-all">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -216,9 +224,6 @@
 
                 <!-- Upload tabs: Download Sample + Add (IC) -->
                 <div v-else class="space-y-3">
-                    <input :key="activeBudgetTab" type="file" accept=".xlsx,.xls" class="hidden"
-                        :ref="el => { if (el) budgetFileInputs[activeBudgetTab] = el }"
-                        @change="onBudgetFileSelected(activeBudgetTab, $event)" />
                     <button @click="handleBudgetDownloadSample(activeBudgetTab)"
                         class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-sm font-medium hover:bg-[#00B794]/5 transition-all">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -264,7 +269,12 @@
         </div>
     </div>
 
-    <DataSourceUploadModal :is-open="isModalOpen" :current-lang="currentLang" @close="isModalOpen = false" />
+    <DataSourceUploadModal 
+        :is-open="isModalOpen" 
+        :current-lang="currentLang" 
+        @close="isModalOpen = false" 
+        @upload="handleModalUpload"
+    />
 
     <!-- BS / P&L detailed report modal -->
     <Teleport to="body">
@@ -347,7 +357,7 @@ const props = defineProps({
 const emit = defineEmits(['view', 'remove', 'uploaded'])
 const userType = ref('admin')
 const isModalOpen = ref(false)
-const fileInputs = ref({})
+const activeUploadTarget = ref(null)
 
 // ── Existing upload card logic ────────────────────────────────────────────────
 
@@ -357,20 +367,28 @@ const nonBudgetItems = computed(() =>
 )
 
 const openUploadModal = (card) => {
-    const input = fileInputs.value[card.id]
-    if (input) input.click()
+    activeUploadTarget.value = { type: 'datain', id: card.id }
+    isModalOpen.value = true
 }
 
-const onFileSelected = async (card, event) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-    try {
-        await props.uploadFile(card.id, file)
-        emit('uploaded', card.id)
-    } catch (err) {
-        console.error(`Upload failed for ${card.id}:`, err)
+const handleModalUpload = async (file) => {
+    if (!activeUploadTarget.value) return
+    const { type, id } = activeUploadTarget.value
+    
+    if (type === 'datain') {
+        try {
+            await props.uploadFile(id, file)
+            emit('uploaded', id)
+        } catch (err) {
+            console.error(`Upload failed for ${id}:`, err)
+        }
+    } else if (type === 'budget') {
+        try {
+            await budgetUploadFile(id, file)
+        } catch (err) {
+            console.error(`Budget upload failed for ${id}:`, err)
+        }
     }
-    event.target.value = ''
 }
 
 const getFileNameFromUrl = (url) => {
@@ -451,24 +469,12 @@ const budgetTabs = [
 ]
 
 const activeBudgetTab  = ref('fixed-asset')
-const budgetFileInputs = ref({})
 
 const activeBudgetTabData = computed(() => budgetTabs.find(t => t.id === activeBudgetTab.value))
 
 const openBudgetUploadInput = (id) => {
-    const input = budgetFileInputs.value[id]
-    if (input) input.click()
-}
-
-const onBudgetFileSelected = async (id, event) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-    try {
-        await budgetUploadFile(id, file)
-    } catch (err) {
-        console.error(`Budget upload failed for ${id}:`, err)
-    }
-    event.target.value = ''
+    activeUploadTarget.value = { type: 'budget', id: id }
+    isModalOpen.value = true
 }
 
 const handleBudgetFetch = async (id) => {

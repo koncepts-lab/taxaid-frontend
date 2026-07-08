@@ -30,7 +30,7 @@
       <div class="flex flex-col">
         <div class="text-[12px] font-medium transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? 'نسبة تكلفة البضائع المباعة إلى الإيرادات' : 'COGS to Revenue Ratio' }}</div>
         <div class="text-[40px] font-semibold leading-tight transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">{{ cogsRatio }}</div>
-        <div class="flex items-center gap-1 text-[#05B743] font-medium text-[14px] mt-1">
+        <div v-if="vsLastMonth" class="flex items-center gap-1 font-medium text-[14px] mt-1" :class="trend === 'up' ? 'text-[#05B743]' : 'text-[#E5484D]'">
           <span><img :src="trend === 'up' ? '/images/icons/up.svg' : '/images/icons/down-right.svg'" alt="trend" class="w-4 h-4 object-contain" /></span>
           <span class="text-[12px] font-Regular transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ vsLastMonth }} {{ currentLang === 'ar' ? 'مقارنة بالشهر الماضي' : 'vs last month' }}</span>
         </div>
@@ -86,10 +86,10 @@ const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'COGS')
 
 // ── Pull values from website-data.json ────────────────────────────────────
-const { cogs } = useMainDashboard()
+const { cogs } = useDashboard()
 
-const cogsRatio   = computed(() => cogs.value?.cogsToRevenueRatio ?? '65%')
-const vsLastMonth = computed(() => cogs.value?.vsLastMonth ?? '+2%')
+const cogsRatio   = computed(() => cogs.value?.cogsToRevenueRatio ?? '0%')
+const vsLastMonth = computed(() => cogs.value?.vsLastMonth ?? '')
 const trend       = computed(() => cogs.value?.trend ?? 'up')
 const footerText  = computed(() => currentLang.value === 'ar'
   ? (cogs.value?.footerTextAr ?? 'تم تحقيق كفاءة تشغيلية أكبر.\nوالآن يتم فتح هوامش ربح أعلى.')

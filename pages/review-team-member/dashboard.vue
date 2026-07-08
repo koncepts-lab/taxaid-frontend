@@ -4,7 +4,7 @@
     <WorkSessionGuardModal :show="showGuard" @dismiss="showGuard = false" />
 
     <!-- HEADER -->
-    <DashboardHeader userName="Team Member Dashboard" userId="Welcome, Akhil" :showChangeProfile="false" :showManageAccess="false" changeProfileLink="/profile" />
+    <DashboardHeader userName="Team Member Dashboard" userId="Welcome, Akhil" :showChangeProfile="false" :showManageAccess="false" changeProfileLink="/profile" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 py-4 space-y-6 overflow-y-auto">
@@ -841,6 +841,12 @@
                 {{ selectedAppointment?.notes || 'No notes available.' }}
               </div>
             </div>
+
+            <!-- Temporary Login Credentials (only for appointments that can run the timer) -->
+            <AdminReviewTempCredentialCard
+              v-if="['Scheduled', 'Rescheduled'].includes(selectedAppointment?.status) && selectedAppointment?._raw?.tenant_id"
+              :tenantId="selectedAppointment._raw.tenant_id"
+              :isDark="isDark" />
 
           </div>
         </div>

@@ -32,18 +32,20 @@
         <div class="text-[34px] font-semibold mt-1 flex items-center transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">
           <span class="mr-1"><img :src="isDark ? '/images/icons/AED-dark.svg' : '/images/icons/AED.svg'" alt="AED" class="w-7" /></span>{{ formatNumber(totalPayables) }}
         </div>
-        <div class="flex items-center gap-1 font-medium text-[14px] mt-2" :class="trend === 'down' ? 'text-[#FB7554]' : 'text-[#05B743]'">
+        <div v-if="vsLastMonth" class="flex items-center gap-1 font-medium text-[14px] mt-2" :class="trend === 'down' ? 'text-[#FB7554]' : 'text-[#05B743]'">
            <span><img :src="trend === 'down' ? '/images/icons/down-right.svg' : '/images/icons/up.svg'" alt="trend" class="w-4 h-4" /></span>
            <span>{{ vsLastMonth }} vs last month</span>
         </div>
       </div>
 
-      <!-- Small Bar Chart -->
+      <!-- Small Bar Chart — real aging buckets (0-30, 31-60, 61-90, 90+),
+           each scaled against the largest bucket. min 6% so empty buckets
+           still show a stub. -->
       <div class="flex items-end gap-2 h-20 mb-1 animate-sweep-right">
-        <div class="w-3 h-[75%] bg-[#00B794] rounded-full"></div>
-        <div class="w-3 h-[50%] bg-[#004D4E] rounded-full"></div>
-        <div class="w-3 h-[80%] bg-[#00B794] rounded-full"></div>
-        <div class="w-3 h-[55%] bg-[#004D4E] rounded-full"></div>
+        <div v-for="(bar, i) in agingBars" :key="i"
+          class="w-3 rounded-full"
+          :class="i % 2 === 0 ? 'bg-[#00B794]' : 'bg-[#004D4E]'"
+          :style="{ height: `${Math.max(6, bar)}%` }"></div>
       </div>
     </div>
 
@@ -69,13 +71,16 @@ const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Accounts Payable')
 
 // ── Pull values from website-data.json ────────────────────────────────────
-const { accountsPayable } = useMainDashboard()
+const { accountsPayable } = useDashboard()
 
-const totalPayables   = computed(() => accountsPayable.value?.totalOutstandingPayables ?? 140175)
-const vsLastMonth     = computed(() => accountsPayable.value?.vsLastMonth ?? '-8%')
-const trend           = computed(() => accountsPayable.value?.trend ?? 'down')
-const overdue         = computed(() => accountsPayable.value?.overdue ?? '₹ 35L')
-const dueInNext30Days = computed(() => accountsPayable.value?.dueInNext30Days ?? '₹ 90L')
+const totalPayables   = computed(() => accountsPayable.value?.totalOutstandingPayables ?? 0)
+// No real month-over-month comparison is available from the backend for AP —
+// leave empty rather than show a fabricated trend/percentage.
+const vsLastMonth     = computed(() => accountsPayable.value?.vsLastMonth ?? '')
+const trend           = computed(() => accountsPayable.value?.trend ?? 'up')
+const overdue         = computed(() => accountsPayable.value?.overdue ?? 0)
+const dueInNext30Days = computed(() => accountsPayable.value?.dueInNext30Days ?? 0)
+const agingBars       = computed(() => accountsPayable.value?.agingBars ?? [0, 0, 0, 0])
 
 const formatNumber = (n: number) => new Intl.NumberFormat('en-AE').format(n)
 </script>

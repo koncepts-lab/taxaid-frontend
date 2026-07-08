@@ -105,7 +105,9 @@ export function useProfile() {
       const payload = {
         first_name:               data.firstName,
         last_name:                data.lastName,
-        company_name:             data.companyName,
+        // company_name intentionally not sent — it is the company name from
+        // the accounting system (swapped in by the first connector upload)
+        // and the backend rejects edits to it. The editable label is the nickname.
         company_legal_name:       data.companyLegalName,
         company_nickname:         data.companyNickname,
         ein:                      data.ein,

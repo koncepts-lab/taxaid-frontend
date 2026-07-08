@@ -39,8 +39,9 @@
                 :fill="slice.color"
                 class="transition-all duration-300"
               />
-              <text 
-                v-if="animProgress > 50"
+              <!-- Slices under 10% are too thin to fit the label — legend carries it -->
+              <text
+                v-if="animProgress > 50 && series[index] >= 10"
                 :x="slice.textPos.x" 
                 :y="slice.textPos.y" 
                 fill="white" 
@@ -60,7 +61,7 @@
        <div class="flex flex-col gap-1 justify-center w-full max-w-[50%]">
           <div v-for="(label, index) in labels" :key="index" class="flex items-center gap-2">
              <span class="w-[10px] h-[10px] rounded-full shrink-0" :style="{ backgroundColor: colors[index] }"></span>
-             <span class="text-[14px] font-normal transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? labelsAr[index] : label }}</span>
+             <span class="text-[14px] font-normal transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? labelsAr[index] : label }} ({{ series[index] }}%)</span>
           </div>
        </div>
     </div>
@@ -75,12 +76,12 @@ const { isDark } = useTheme()
 const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Indirect Expense')
 
-// ── Pull values from website-data.json ────────────────────────────────────
-const { indirectExpense } = useMainDashboard()
+// ── Pull values from useDashboard() ───────────────────────────────────────
+const { indirectExpense } = useDashboard()
 
-const labels   = computed(() => indirectExpense.value?.labels   ?? ['Rent & Utilities', 'Salaries & Wages', 'Marketing & Advertising', 'Office Supplies', 'Others'])
-const labelsAr = computed(() => indirectExpense.value?.labelsAr ?? ['الإيجار والمرافق', 'الرواتب والأجور', 'التسويق والإعلان', 'اللوازم المكتبية', 'أخرى'])
-const series   = computed(() => indirectExpense.value?.series   ?? [35, 30, 20, 10, 5])
+const labels   = computed(() => indirectExpense.value?.labels   ?? [])
+const labelsAr = computed(() => indirectExpense.value?.labelsAr ?? [])
+const series   = computed(() => indirectExpense.value?.series   ?? [])
 const colors   = computed(() => indirectExpense.value?.colors   ?? ['#004D41', '#00966C', '#FFB100', '#D29600', '#FF7E5B'])
 
 const animProgress = ref(0);

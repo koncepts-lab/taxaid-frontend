@@ -1,8 +1,8 @@
 <template>
   <Teleport to="body">
-    <div v-if="isOpen" class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[95vh] overflow-y-auto" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-      
+
       <!-- Header & Summary -->
       <div class="sticky top-0 z-20 bg-white border-b shadow-sm">
         <!-- Top Title Bar -->
@@ -24,26 +24,26 @@
           </svg>
         </button>
         </div>
-        
+
         <!-- Summary Box -->
         <div class="px-6 py-5">
           <div class="bg-[#eefdf6] border border-[#a7f3d0] rounded-xl p-5 flex flex-col md:flex-row gap-6 mb-4">
             <div class="flex-1">
               <label class="block text-sm font-semibold text-gray-700 mb-2">Balance as per TB</label>
-              <input type="text" value="3,854,920.00" readonly class="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:outline-none" />
+              <input type="text" :value="formatAmount(data['Balance as per TB'])" readonly class="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:outline-none" />
             </div>
             <div class="flex-1">
               <label class="block text-sm font-semibold text-gray-700 mb-2">Balance as per AR report</label>
-              <input type="text" value="3,804,170.00" readonly class="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:outline-none" />
+              <input type="text" :value="formatAmount(data['Balance as per AR report'])" readonly class="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:outline-none" />
             </div>
             <div class="flex-1">
               <label class="block text-sm font-semibold text-gray-700 mb-2">Variance</label>
-              <input type="text" value="50,750.00" readonly class="w-full bg-[#fef2f2] border border-[#fca5a5] text-red-600 rounded-lg px-4 py-2.5 font-medium focus:outline-none" />
+              <input type="text" :value="formatAmount(data['Variance'])" readonly class="w-full bg-[#fef2f2] border border-[#fca5a5] text-red-600 rounded-lg px-4 py-2.5 font-medium focus:outline-none" />
             </div>
           </div>
           <div class="flex items-center gap-2 text-red-500 text-sm font-medium">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            AED 50,750.00 variance remaining - Select items below to resolve the variance.
+            AED {{ formatAmount(data['Variance']) }} variance remaining - Select items below to resolve the variance.
           </div>
         </div>
       </div>
@@ -51,7 +51,7 @@
       <!-- Content -->
       <div class="px-6 pb-6 pt-4 space-y-8">
 
-        <!-- Section 1 -->
+        <!-- Section 1: Potential reason for variance - Sales -->
         <div>
           <h3 class="text-lg font-bold text-gray-800 mb-3">Potential reason for variance - Sales</h3>
           <div class="border border-gray-200 rounded-lg overflow-hidden">
@@ -60,8 +60,7 @@
                 <tr class="bg-[#058a64] text-white text-sm">
                   <th class="py-3 px-4 font-medium">Date</th>
                   <th class="py-3 px-4 font-medium">Party Name</th>
-                  <th class="py-3 px-4 font-medium">Invoice Number</th>
-                  <th class="py-3 px-4 font-medium">Credit Days</th>
+                  <th class="py-3 px-4 font-medium">Voucher No.</th>
                   <th class="py-3 px-4 font-medium">Amount (AED)</th>
                   <th class="py-3 px-4 font-medium">Select</th>
                   <th class="py-3 px-4 font-medium">Adjustments (AED)</th>
@@ -69,47 +68,26 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100 text-sm">
-                <tr class="hover:bg-gray-50 transition-colors bg-white">
-                  <td class="py-3 px-4 flex items-center gap-2 text-gray-700">15-03-2025 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></td>
-                  <td class="py-3 px-4 text-gray-700 font-medium">Dubai Steel Suppliers</td>
-                  <td class="py-3 px-4 text-gray-600">INV-2025-567</td>
-                  <td class="py-3 px-4 text-gray-600">-</td>
-                  <td class="py-3 px-4 text-gray-700">
-                    <span :class="{'line-through text-gray-400 mr-2': appliedPurchase1 && adjustPurchase1}">32000</span>
-                    <span v-if="appliedPurchase1 && adjustPurchase1" class="font-bold text-[#058a64]">{{ adjustPurchase1 }}</span>
-                  </td>
-                  <td class="py-3 px-4"><input type="checkbox" v-model="selectedPurchase1" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" style="background: white !important; color-scheme: light !important;" /></td>
-                  <td class="py-2 px-4">
-                    <input type="text" v-model="adjustPurchase1" :placeholder="selectedPurchase1 ? '0.00' : 'Select to adjust'" :class="selectedPurchase1 ? 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300'" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!selectedPurchase1"/>
-                  </td>
-                  <td class="py-2 px-4">
-                    <button v-if="selectedPurchase1 && !appliedPurchase1" @click="appliedPurchase1 = true" class="bg-[#058a64] hover:bg-[#047857] text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors w-24 text-center">
-                      Apply
-                    </button>
-                    <button v-else-if="selectedPurchase1 && appliedPurchase1" @click="appliedPurchase1 = false" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium transition-colors w-24 flex items-center justify-center gap-1">
-                      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                      Applied
-                    </button>
-                  </td>
+                <tr v-if="salesRows.length === 0">
+                  <td colspan="7" class="py-8 px-4 text-center text-gray-500 bg-white">No sales-side variance rows found.</td>
                 </tr>
-                <tr class="hover:bg-gray-50 transition-colors bg-white">
-                  <td class="py-3 px-4 flex items-center gap-2 text-gray-700">15-03-2025 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></td>
-                  <td class="py-3 px-4 text-gray-700 font-medium">Al Ain Construction Materials</td>
-                  <td class="py-3 px-4 text-gray-600">INV-2025-589</td>
-                  <td class="py-3 px-4 text-gray-600">-</td>
+                <tr v-for="(row, i) in salesRows" :key="`sales-${i}`" class="hover:bg-gray-50 transition-colors bg-white">
+                  <td class="py-3 px-4 text-gray-700">{{ row.entry_date }}</td>
+                  <td class="py-3 px-4 text-gray-700 font-medium">{{ row.ledger_name }}</td>
+                  <td class="py-3 px-4 text-gray-600">{{ row.voucher_no }}</td>
                   <td class="py-3 px-4 text-gray-700">
-                    <span :class="{'line-through text-gray-400 mr-2': appliedPurchase2 && adjustPurchase2}">18750</span>
-                    <span v-if="appliedPurchase2 && adjustPurchase2" class="font-bold text-[#058a64]">{{ adjustPurchase2 }}</span>
+                    <span :class="{'line-through text-gray-400 mr-2': salesState[i].applied && salesState[i].adjust}">{{ row.amount }}</span>
+                    <span v-if="salesState[i].applied && salesState[i].adjust" class="font-bold text-[#058a64]">{{ salesState[i].adjust }}</span>
                   </td>
-                  <td class="py-3 px-4"><input type="checkbox" v-model="selectedPurchase2" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" style="background: white !important; color-scheme: light !important;" /></td>
+                  <td class="py-3 px-4"><input type="checkbox" v-model="salesState[i].selected" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" /></td>
                   <td class="py-2 px-4">
-                    <input type="text" v-model="adjustPurchase2" :placeholder="selectedPurchase2 ? '0.00' : 'Select to adjust'" :class="selectedPurchase2 ? 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300'" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!selectedPurchase2"/>
+                    <input type="text" v-model="salesState[i].adjust" :placeholder="salesState[i].selected ? '0.00' : 'Select to adjust'" :class="salesState[i].selected ? 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300'" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!salesState[i].selected"/>
                   </td>
                   <td class="py-2 px-4">
-                    <button v-if="selectedPurchase2 && !appliedPurchase2" @click="appliedPurchase2 = true" class="bg-[#058a64] hover:bg-[#047857] text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors w-24 text-center">
+                    <button v-if="salesState[i].selected && !salesState[i].applied" @click="salesState[i].applied = true" class="bg-[#058a64] hover:bg-[#047857] text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors w-24 text-center">
                       Apply
                     </button>
-                    <button v-else-if="selectedPurchase2 && appliedPurchase2" @click="appliedPurchase2 = false" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium transition-colors w-24 flex items-center justify-center gap-1">
+                    <button v-else-if="salesState[i].selected && salesState[i].applied" @click="salesState[i].applied = false" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium transition-colors w-24 flex items-center justify-center gap-1">
                       <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                       Applied
                     </button>
@@ -120,17 +98,16 @@
           </div>
         </div>
 
-        <!-- Section 2 -->
+        <!-- Section 2: Receipt - Unrecorded Transactions -->
         <div>
-          <h3 class="text-lg font-bold text-gray-800 mb-3">Receipts - Unrecorded Transactions</h3>
+          <h3 class="text-lg font-bold text-gray-800 mb-3">Receipt - Unrecorded Transactions</h3>
           <div class="border border-gray-200 rounded-lg overflow-hidden">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-[#058a64] text-white text-sm">
                   <th class="py-3 px-4 font-medium">Date</th>
                   <th class="py-3 px-4 font-medium">Party Name</th>
-                  <th class="py-3 px-4 font-medium">Invoice Number</th>
-                  <th class="py-3 px-4 font-medium">Credit Days</th>
+                  <th class="py-3 px-4 font-medium">Voucher No.</th>
                   <th class="py-3 px-4 font-medium">Amount (AED)</th>
                   <th class="py-3 px-4 font-medium">Select</th>
                   <th class="py-3 px-4 font-medium">Adjustments (AED)</th>
@@ -138,95 +115,29 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100 text-sm">
-                <tr class="hover:bg-gray-50 transition-colors bg-white">
-                  <td class="py-3 px-4 flex items-center gap-2 text-gray-700">15-03-2025 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></td>
-                  <td class="py-3 px-4 text-gray-700 font-medium">Dubai Steel Suppliers</td>
-                  <td class="py-3 px-4 text-gray-600">INV-2025-567</td>
-                  <td class="py-3 px-4 text-gray-600">-</td>
+                <tr v-if="receiptRows.length === 0">
+                  <td colspan="7" class="py-8 px-4 text-center text-gray-500 bg-white">No unrecorded receipt rows found.</td>
+                </tr>
+                <tr v-for="(row, i) in receiptRows" :key="`receipt-${i}`" class="hover:bg-gray-50 transition-colors bg-white">
+                  <td class="py-3 px-4 text-gray-700">{{ row.entry_date }}</td>
+                  <td class="py-3 px-4 text-gray-700 font-medium">{{ row.ledger_name }}</td>
+                  <td class="py-3 px-4 text-gray-600">{{ row.voucher_no }}</td>
                   <td class="py-3 px-4 text-gray-700">
-                    <span :class="{'line-through text-gray-400 mr-2': appliedPayment1 && adjustPayment1}">32000</span>
-                    <span v-if="appliedPayment1 && adjustPayment1" class="font-bold text-[#058a64]">{{ adjustPayment1 }}</span>
+                    <span :class="{'line-through text-gray-400 mr-2': receiptState[i].applied && receiptState[i].adjust}">{{ row.amount }}</span>
+                    <span v-if="receiptState[i].applied && receiptState[i].adjust" class="font-bold text-[#058a64]">{{ receiptState[i].adjust }}</span>
                   </td>
-                  <td class="py-3 px-4"><input type="checkbox" v-model="selectedPayment1" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" style="background: white !important; color-scheme: light !important;" /></td>
+                  <td class="py-3 px-4"><input type="checkbox" v-model="receiptState[i].selected" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" /></td>
                   <td class="py-2 px-4">
-                    <input type="text" v-model="adjustPayment1" :placeholder="selectedPayment1 ? '0.00' : 'Select to adjust'" :class="selectedPayment1 ? 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300'" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!selectedPayment1"/>
+                    <input type="text" v-model="receiptState[i].adjust" :placeholder="receiptState[i].selected ? '0.00' : 'Select to adjust'" :class="receiptState[i].selected ? 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300'" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!receiptState[i].selected"/>
                   </td>
                   <td class="py-2 px-4">
-                    <button v-if="selectedPayment1 && !appliedPayment1" @click="appliedPayment1 = true" class="bg-[#058a64] hover:bg-[#047857] text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors w-24 text-center">
+                    <button v-if="receiptState[i].selected && !receiptState[i].applied" @click="receiptState[i].applied = true" class="bg-[#058a64] hover:bg-[#047857] text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors w-24 text-center">
                       Apply
                     </button>
-                    <button v-else-if="selectedPayment1 && appliedPayment1" @click="appliedPayment1 = false" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium transition-colors w-24 flex items-center justify-center gap-1">
+                    <button v-else-if="receiptState[i].selected && receiptState[i].applied" @click="receiptState[i].applied = false" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium transition-colors w-24 flex items-center justify-center gap-1">
                       <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                       Applied
                     </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Section 3 -->
-        <div>
-          <div class="flex justify-between items-center mb-3">
-            <h3 class="text-lg font-bold text-gray-800">Manual entry - Adjustments</h3>
-            <button @click="addManualEntry" class="bg-[#56d5b0] hover:bg-[#3ebe97] text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-              Add Manual Entry Row
-            </button>
-          </div>
-          <div class="border border-gray-200 rounded-lg overflow-hidden">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-[#058a64] text-white text-sm">
-                  <th class="py-3 px-4 font-medium w-56">Date</th>
-                  <th class="py-3 px-4 font-medium w-auto">Party Name</th>
-                  <th class="py-3 px-4 font-medium w-32">Invoice Number</th>
-                  <th class="py-3 px-4 font-medium w-28">Credit Days</th>
-                  <th class="py-3 px-4 font-medium w-32">Amount (AED)</th>
-                  <th class="py-3 px-4 font-medium w-48">Sales / Return</th>
-                  <th class="py-3 px-4 font-medium w-24 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-100 text-sm">
-                <tr v-if="manualEntries.length === 0">
-                  <td colspan="7" class="py-8 px-4 text-center text-gray-500 bg-white">
-                    No manual entries. Click "Add Manual Entry Row" to add one.
-                  </td>
-                </tr>
-                <tr v-for="(entry, index) in manualEntries" :key="index" class="bg-white">
-                  <td class="py-2 px-2">
-                    <div class="relative">
-                      <input type="text" v-model="entry.date" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64]" />
-                      <svg class="w-4 h-4 text-gray-400 absolute right-3 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    </div>
-                  </td>
-                  <td class="py-2 px-2">
-                    <input type="text" v-model="entry.partyName" placeholder="Enter vendor name" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />
-                  </td>
-                  <td class="py-2 px-2">
-                    <input type="text" v-model="entry.invoiceNumber" placeholder="Enter invoice number" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />
-                  </td>
-                  <td class="py-2 px-2">
-                    <input type="text" v-model="entry.creditDays" placeholder="Enter Credit Days" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />
-                  </td>
-                  <td class="py-2 px-2">
-                    <input type="text" v-model="entry.amount" placeholder="0.00" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 text-center focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />
-                  </td>
-                  <td class="py-2 px-2">
-                    <div class="flex items-center gap-3">
-                      <label class="flex items-center gap-1.5 cursor-pointer">
-                        <input type="checkbox" v-model="entry.isSales" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" style="background: white !important; color-scheme: light !important;" />
-                        <span class="text-gray-600">Sales</span>
-                      </label>
-                      <label class="flex items-center gap-1.5 cursor-pointer">
-                        <input type="checkbox" v-model="entry.isReturn" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" style="background: white !important; color-scheme: light !important;" />
-                        <span class="text-gray-600">Return</span>
-                      </label>
-                    </div>
-                  </td>
-                  <td class="py-2 px-2 text-center">
-                    <button @click="removeManualEntry(index)" class="text-red-500 hover:text-red-700 transition-colors font-medium">Delete</button>
                   </td>
                 </tr>
               </tbody>
@@ -241,8 +152,11 @@
         <button @click="closeModal" class="px-4 py-1.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors text-sm">
           Cancel
         </button>
-        <button class="px-4 py-1.5 bg-[#a3dcc8] text-white rounded-lg font-medium cursor-not-allowed text-sm">
-          Post Variance
+        <button @click="submitAction('ignore')" :disabled="actionLoading" class="px-4 py-1.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors text-sm disabled:opacity-50">
+          Ignore
+        </button>
+        <button @click="submitAction('resolve')" :disabled="actionLoading || !data.alert_id" class="px-4 py-1.5 bg-[#058a64] hover:bg-[#047857] text-white rounded-lg font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+          Mark Resolved
         </button>
       </div>
 
@@ -252,50 +166,44 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 
-const isOpen = ref(true); // Open by default when mounted based on user request
-const currentLang = useState('currentLang', () => 'en')
-
-const selectedPurchase1 = ref(false);
-const selectedPurchase2 = ref(false);
-const selectedPayment1 = ref(false);
-
-const appliedPurchase1 = ref(false);
-const appliedPurchase2 = ref(false);
-const appliedPayment1 = ref(false);
-
-const adjustPurchase1 = ref('');
-const adjustPurchase2 = ref('');
-const adjustPayment1 = ref('');
-
-const manualEntries = ref([]);
-
-const addManualEntry = () => {
-  manualEntries.value.push({
-    date: '15-03-2025',
-    partyName: '',
-    invoiceNumber: '',
-    creditDays: '',
-    amount: '',
-    isSales: false,
-    isReturn: false
-  });
-};
-
-const removeManualEntry = (index) => {
-  manualEntries.value.splice(index, 1);
-};
-
-const closeModal = () => {
-  isOpen.value = false;
-};
-
-// Expose a way to open/close it if needed
-defineExpose({
-  isOpen,
-  closeModal
+const props = defineProps({
+  data: { type: Object, required: true },
 });
+const emit = defineEmits(['close', 'resolved']);
+
+const currentLang = useState('currentLang', () => 'en');
+
+const salesRows = computed(() => props.data?.Vouchers?.['Potential reason for variance - Sales'] ?? []);
+const receiptRows = computed(() => props.data?.Vouchers?.['Receipt - Unrecorded Transactions'] ?? []);
+
+const salesState = ref([]);
+const receiptState = ref([]);
+
+const resetRowState = (rows) => rows.map(() => ({ selected: false, adjust: '', applied: false }));
+
+watch(salesRows, (rows) => { salesState.value = resetRowState(rows); }, { immediate: true });
+watch(receiptRows, (rows) => { receiptState.value = resetRowState(rows); }, { immediate: true });
+
+const formatAmount = (v) => Number(v ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const closeModal = () => emit('close');
+
+const actionLoading = ref(false);
+const submitAction = async (type) => {
+  if (!props.data.alert_id) { emit('close'); return; }
+  actionLoading.value = true;
+  try {
+    await useApi(`/alerts/${props.data.alert_id}/action`, {
+      method: 'POST',
+      body: { type, action_by: 'Dashboard' },
+    });
+    emit('resolved');
+  } finally {
+    actionLoading.value = false;
+  }
+};
 </script>
 
 <style scoped>

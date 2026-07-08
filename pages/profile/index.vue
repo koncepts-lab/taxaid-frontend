@@ -67,8 +67,8 @@
       
       <div class="flex-1 z-10">
         <div>
-          <h2 class="text-[22px] font-semibold mb-1">{{ profile.companyName }}</h2>
-          <p class="text-white/80 text-sm mb-6">{{ profile.companyLegalName }}</p>
+          <h2 class="text-[22px] font-semibold mb-1">{{ profile.companyNickname || profile.companyName }}</h2>
+          <p class="text-white/80 text-sm mb-6">{{ profile.companyName }}</p>
         </div>
         
         <div class="flex gap-12">
@@ -160,8 +160,8 @@
           <input v-model="profile.lastName" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
         </div>
         <div>
-          <label class="block text-xs text-gray-700 mb-1">Company Name</label>
-          <input v-model="profile.companyName" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+          <label class="block text-xs text-gray-700 mb-1">Company Name <span class="text-[10px] text-gray-400">(from your accounting system - not editable)</span></label>
+          <input :value="profile.companyName" disabled class="w-full h-[40px] bg-gray-100 border border-gray-200 text-gray-500 rounded-lg px-3 py-2 text-sm cursor-not-allowed" />
         </div>
         <div>
           <div class="flex justify-between items-end mb-1">

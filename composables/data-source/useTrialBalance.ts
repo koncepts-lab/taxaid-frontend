@@ -93,6 +93,8 @@ export function useTrialBalance() {
           to:     r.to   ?? null,
           isYear: r.particulars === 'Historical data since',
         }))
+        // Saving auto-locks the table backend-side; only POST /configuration-settings/unlock releases it
+        configLocked.value = !!res.meta?.is_locked
       }
     } else {
       console.error('useTrialBalance: configuration-settings failed', (configResult as PromiseRejectedResult).reason)
@@ -101,12 +103,17 @@ export function useTrialBalance() {
     if (optionsResult.status === 'fulfilled') {
       const res: any = optionsResult.value
       if (res?.status === 'success' && res.data) {
-        const fsCodes    = res.data.fs_codes    ?? []
-        const mainGroups = res.data.main_groups ?? []
-        const subGroups  = res.data.sub_groups  ?? []
-        if (fsCodes.length)    tbMappingOptions.value.fsCodes    = fsCodes
-        if (mainGroups.length) tbMappingOptions.value.mainGroups = mainGroups
-        if (subGroups.length)  tbMappingOptions.value.subGroups  = subGroups
+        // Union: master vocabulary first (authoritative for new picks), then
+        // any values already in use on this tenant's mappings. Replacing
+        // instead of merging left selects blank when a saved value (e.g. a
+        // Tally-derived subgroup) wasn't in the master list.
+        const merge = (master: any[], harvested: any[]) =>
+          [...new Set([...(master ?? []), ...(harvested ?? [])])]
+        tbMappingOptions.value = {
+          fsCodes:    merge(res.data.fs_codes,    tbMappingOptions.value.fsCodes),
+          mainGroups: merge(res.data.main_groups, tbMappingOptions.value.mainGroups),
+          subGroups:  merge(res.data.sub_groups,  tbMappingOptions.value.subGroups),
+        }
       }
     }
 
@@ -139,6 +146,8 @@ export function useTrialBalance() {
     }
   }
 
+  const configLocked = ref(false)
+
   const updateConfigSettings = async (configItems: any[]) => {
     const settings = configItems.map((r: any) => ({
       particulars: r.label,
@@ -146,7 +155,60 @@ export function useTrialBalance() {
       to:   r.to   != null ? String(r.to)   : null,
     }))
     await useApi('/configuration-settings', { method: 'POST', body: { settings } })
+    // Backend auto-locks on save; refetch picks up meta.is_locked = true
     await fetchTrialBalance(tbPage.value, tbPerPage.value)
+  }
+
+  const unlockConfigSettings = async () => {
+    await useApi('/configuration-settings/unlock', { method: 'POST' })
+    await fetchTrialBalance(tbPage.value, tbPerPage.value)
+  }
+
+  // Integrity Check — POST /data-source/trial-balance/verify (DB-based checks)
+  const integrityData = ref([
+    { label: 'Trial balance',   isValid: null },
+    { label: 'Balance Sheet',   isValid: null },
+    { label: 'Profit and loss', isValid: null },
+  ])
+  const integrityLoading = ref(false)
+  const integrityMeta = ref({ unmappedCount: 0, missingCount: 0, isMappingComplete: true })
+  // Per-year failure detail for the "Data Integrity Error Detected" modal.
+  // Fresh array on every run so the component's watcher fires each time.
+  const integrityIssues = ref<any[]>([])
+
+  const runIntegrityCheck = async () => {
+    integrityLoading.value = true
+    try {
+      const res = await useApi('/data-source/trial-balance/verify', { method: 'POST' }) as any
+      if (res?.overall) {
+        integrityData.value = [
+          { label: 'Trial balance',   isValid: !!res.overall.trial_balance },
+          { label: 'Balance Sheet',   isValid: !!res.overall.balance_sheet },
+          { label: 'Profit and loss', isValid: !!res.overall.profit_and_loss },
+        ]
+        integrityMeta.value = {
+          unmappedCount:     res.mapping?.unmapped_count ?? 0,
+          missingCount:      res.mapping?.missing_count ?? 0,
+          isMappingComplete: !!res.mapping?.is_complete,
+        }
+
+        const issues: any[] = []
+        for (const [label, p] of Object.entries((res.periods ?? {}) as Record<string, any>)) {
+          const failed: string[] = []
+          if (p.check_net_profit && p.check_net_profit.status !== 'PASSED') failed.push('Profit and Loss')
+          if ((p.check_total_capital && p.check_total_capital.status !== 'PASSED') ||
+              (p.check_assets_vs_liabilities && p.check_assets_vs_liabilities.status !== 'PASSED')) failed.push('Balance Sheet')
+          if (p.check_trial_balance_dr_cr && p.check_trial_balance_dr_cr.status !== 'PASSED') failed.push('Trial Balance')
+          if (p.error) failed.push('Report generation failed')
+          if (failed.length) issues.push({ year: p.period ?? label, label, failed })
+        }
+        integrityIssues.value = issues
+      }
+    } catch (e) {
+      console.error('useTrialBalance: integrity check failed', e)
+    } finally {
+      integrityLoading.value = false
+    }
   }
 
   const tbLogs = ref([])
@@ -176,6 +238,13 @@ export function useTrialBalance() {
     fetchTrialBalance,
     updateTrialBalance,
     updateConfigSettings,
+    configLocked,
+    unlockConfigSettings,
+    integrityData,
+    integrityLoading,
+    integrityMeta,
+    integrityIssues,
+    runIntegrityCheck,
     tbLogs,
     tbLogsLoading,
     fetchLogs,

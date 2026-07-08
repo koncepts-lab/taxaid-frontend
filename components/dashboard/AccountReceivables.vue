@@ -21,6 +21,16 @@
       </div>
 
       <div class="flex items-center gap-3 mt-4 md:mt-0">
+        <!-- Mobile: Month Toggle (desktop version sits beside the chart) -->
+        <div class="flex md:hidden items-center gap-1 p-1 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'">
+          <button v-for="m in [6, 12]" :key="m" @click.stop.prevent="selectArPeriod(m)"
+            class="px-3 h-[22px] flex items-center justify-center rounded-md text-xs font-semibold transition-colors"
+            :class="m === arPeriod
+              ? (isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35] shadow-lg')
+              : (isDark ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-gray-800')">
+            {{ m }}M
+          </button>
+        </div>
         <!-- Legend -->
         <div class="flex flex-wrap items-center gap-3">
           <div v-for="(item, index) in legendItems" :key="index" class="flex items-center gap-2">
@@ -39,15 +49,12 @@
     </div>
 
     <!-- Chart Container -->
-    <div class="h-[180px] w-full mt-4">
-      <div class="h-full relative pl-12 pr-4">
-        <!-- Y-Axis Labels -->
-        <div class="absolute flex flex-col justify-between text-[12px] font-Regular top-0 bottom-8 transition-colors duration-300" 
+    <div class="h-[180px] w-full mt-4 flex gap-3">
+      <div class="h-full flex-1 relative pl-12 pr-4">
+        <!-- Y-Axis Labels (dynamic from data max) -->
+        <div class="absolute flex flex-col justify-between text-[12px] font-Regular top-0 bottom-8 transition-colors duration-300"
           :class="[currentLang === 'ar' ? 'right-0 items-end' : 'left-0 items-start', isDark ? 'text-white/60' : 'text-[#00000080]']">
-          <span class="h-0 flex items-center">60M</span>
-          <span class="h-0 flex items-center">40M</span>
-          <span class="h-0 flex items-center">20M</span>
-          <span class="h-0 flex items-center">0M</span>
+          <span v-for="tick in yAxisTicks" :key="tick" class="h-0 flex items-center">{{ tick }}</span>
         </div>
 
         <!-- Grid Lines -->
@@ -85,6 +92,17 @@
           <span v-for="(month, idx) in (currentLang === 'ar' ? monthsAr : months)" :key="idx" class="flex-1 text-center">{{ month }}</span>
         </div>
       </div>
+
+      <!-- Desktop: Vertical Month Toggle (matches the cashflow card) -->
+      <div class="hidden md:flex flex-col gap-2 pt-2 shrink-0">
+        <button v-for="m in [6, 12]" :key="m" @click.stop.prevent="selectArPeriod(m)"
+          class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
+          :class="m === arPeriod
+            ? (isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35] shadow-lg')
+            : (isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]')">
+          {{ m }}M
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -96,8 +114,14 @@ const { isDark } = useTheme()
 const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Account Receivables')
 
-// ── Pull values from website-data.json ────────────────────────────────────
-const { accountReceivables } = useMainDashboard()
+// ── Pull values from useDashboard() ───────────────────────────────────────
+const { accountReceivables, arPeriod, fetchSummary } = useDashboard()
+
+const selectArPeriod = (months: number) => {
+  arPeriod.value = months
+  // Timeline-only slice — the toggle doesn't need the AR report re-parsed
+  fetchSummary(['ar_timeline'])
+}
 
 const isMobile = ref(false);
 const animProgress = ref(0);
@@ -123,36 +147,52 @@ onMounted(() => {
 const legendItems   = computed(() => accountReceivables.value?.legendItems   ?? ['< 30 Days', '31-60 Days', '61-90 Days', '> 90 Days'])
 const legendItemsAr = computed(() => accountReceivables.value?.legendItemsAr ?? ['أقل من 30 يوماً', '31-60 يوماً', '61-90 يوماً', 'أكثر من 90 يوماً'])
 const colors        = computed(() => accountReceivables.value?.colors        ?? ['#003328', '#00966C', '#B2EDE3', '#E6EBEB'])
-const months        = computed(() => accountReceivables.value?.months        ?? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'])
-const monthsAr      = computed(() => accountReceivables.value?.monthsAr      ?? ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'])
+const months        = computed(() => accountReceivables.value?.months        ?? [])
+const monthsAr      = computed(() => accountReceivables.value?.monthsAr      ?? [])
 
 // Series as a flat array of arrays for stacked bar rendering
 const series = computed(() => {
   const s = accountReceivables.value?.series
   return s
     ? [s.lt30Days, s.d31to60, s.d61to90, s.gt90Days]
-    : [[12, 26, 13, 18, 15, 25], [20, 16, 10, 16, 10, 12], [12, 10, 15, 12, 18, 15], [18, 10, 12, 11, 8, 10]]
+    : [[], [], [], []]
 })
 
+// Y-axis tick labels (top→bottom) derived from the real data max, in AED M —
+// no more hardcoded 60M/40M/20M scale.
+const yAxisTicks = computed(() => {
+  const max = accountReceivables.value?.yAxisMax ?? 0;
+  const fmt = (v: number) => `${v >= 10 || v === 0 ? Math.round(v) : v.toFixed(1)}M`;
+  return [fmt(max), fmt((max * 2) / 3), fmt(max / 3), fmt(0)];
+});
+
 const getStackedSegments = (monthIndex: number) => {
-  const maxValue = accountReceivables.value?.yAxisMax ?? 60;
+  const maxValue = accountReceivables.value?.yAxisMax ?? 1;
   const segments: Array<{ height: string; bottom: string; index: number; zIndex: number }> = [];
   const zIndexes = [10000, 1000, 100, 10];
   let cumulativePercent = 0;
   series.value.forEach((seriesData: number[], seriesIndex: number) => {
     const value = seriesData[monthIndex];
-    if (value === undefined) return;
+    // Skip empty segments entirely — the pill pixel-offset below would
+    // otherwise push a zero-height bar down over the month labels.
+    if (value === undefined || value <= 0) return;
     const heightPercent = (value / maxValue) * 100 * (animProgress.value / 100);
     const currentBottom = cumulativePercent;
-    const offset = seriesIndex === 0 ? 0 : (isMobile.value ? 13 : 20);
+    const isFirst = segments.length === 0;
+    const offset = isFirst ? 0 : (isMobile.value ? 13 : 20);
     segments.push({
-      height: seriesIndex === 0 ? `${heightPercent}%` : `calc(${heightPercent}% + ${offset}px)`,
-      bottom: seriesIndex === 0 ? `${currentBottom}%` : `calc(${currentBottom}% - ${offset}px)`,
+      height: isFirst ? `${heightPercent}%` : `calc(${heightPercent}% + ${offset}px)`,
+      bottom: isFirst ? `${currentBottom}%` : `calc(${currentBottom}% - ${offset}px)`,
       index: seriesIndex,
       zIndex: zIndexes[seriesIndex] ?? 10
     });
     cumulativePercent += heightPercent;
   });
+  // Months with no value at all get a tiny base stub so the chart doesn't
+  // look empty — visual placeholder only, not data.
+  if (segments.length === 0) {
+    segments.push({ height: '4%', bottom: '0%', index: 0, zIndex: 10 });
+  }
   return segments;
 };
 

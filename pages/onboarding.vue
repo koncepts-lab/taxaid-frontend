@@ -53,28 +53,28 @@
                       <span v-if="!isRtl">‹</span> {{ t.prev }} <span v-if="isRtl">›</span>
                     </button>
                     <span class="opacity-30">|</span>
-                    <span class="text-[#04C18F] font-medium text-base md:text-lg">{{ step }}/{{ questions.length }}</span>
+                    <span class="text-[#04C18F] font-medium text-base md:text-lg">{{ step }}/{{ visibleQuestions.length }}</span>
                   </div>
                 </div>
 
                 <!-- CONTENT AREA -->
                 <div class="flex-1 overflow-y-auto pr-1 custom-scrollbar">
                   
-                  <h2 class="step-title mb-6">{{ questions[step-1].question_text }}</h2>
+                  <h2 class="step-title mb-6">{{ currentQuestion.question_text }}</h2>
 
-                  <div v-if="questions[step-1].maps_to_config_key === 'company_structure'" class="space-y-8">
+                  <div v-if="currentQuestion.maps_to_config_key === 'company_structure'" class="space-y-8">
                     <div class="space-y-4 max-w-[400px]">
-                      <button v-for="opt in questions[step-1].options" :key="opt" @click="selectEntityOption(opt)" class="option-btn" :class="{ active: selectedLabel === opt }">{{ opt }}</button>
+                      <button v-for="opt in currentQuestion.options" :key="opt" @click="selectEntityOption(opt)" class="option-btn" :class="{ active: selectedLabel === opt }">{{ opt }}</button>
                     </div>
                   </div>
                   <!-- Step 2: Company Details (Image Style) -->
-                  <div v-else-if="questions[step-1].maps_to_config_key === 'company_name'" class="space-y-6">
-                    <div class="space-y-1">
+                  <div v-else-if="currentQuestion.maps_to_config_key === 'company_name'" class="space-y-6">
+                    <div v-if="entitiesCount > 1" class="space-y-1">
                       <p class="text-white/70 text-[16px]">{{ t.entity }} {{ currentEntity }}</p>
                     </div>
 
-                    <!-- Numbered Progress Bar -->
-                    <div class="entity-progress-wrapper py-4">
+                    <!-- Numbered Progress Bar (multi-entity only) -->
+                    <div v-if="entitiesCount > 1" class="entity-progress-wrapper py-4">
                         <div v-if="entitiesCount > 1" class="progress-line-bg"></div>
                         <div v-if="entitiesCount > 1" class="progress-line-fill" :style="{ width: entitiesCount > 1 ? ((currentEntity - 1) / (entitiesCount - 1)) * 100 + '%' : '0%' }"></div>
                         <div class="dots-container" :class="{ 'justify-center': entitiesCount === 1 }">
@@ -83,9 +83,9 @@
                     </div>
 
                     <div class="space-y-5">
-                      <input v-model="entityForms[currentEntity - 1].legalName" class="image-input" :placeholder="questions[step-1].options[0]" />
+                      <input v-model="entityForms[currentEntity - 1].legalName" class="image-input" :placeholder="currentQuestion.options[0]" />
                       <div>
-                        <input v-model="entityForms[currentEntity - 1].nickName" class="image-input" :placeholder="questions[step-1].options[1]" />
+                        <input v-model="entityForms[currentEntity - 1].nickName" maxlength="15" class="image-input" :placeholder="currentQuestion.options[1]" />
                         <p class="text-white/30 text-[13px] mt-2 ml-5">{{ t.nickNameHint }}</p>
                       </div>
                     </div>
@@ -94,7 +94,7 @@
                         <span class="text-[20px] leading-none mr-2">+</span> {{ t.addEntity }}
                     </button>
 
-                    <div class="flex items-center justify-between text-white/45 text-[14px] pt-8 mt-4 border-t border-white/5 min-h-[60px]">
+                    <div v-if="entitiesCount > 1" class="flex items-center justify-between text-white/45 text-[14px] pt-8 mt-4 border-t border-white/5 min-h-[60px]">
                       <button class="nav-text-btn" :class="{ 'invisible': currentEntity <= 1 }" @click="handleSubPrevious()">
                          <span v-if="!isRtl">←</span> {{ t.prev }} <span v-if="isRtl">→</span>
                       </button>
@@ -105,9 +105,9 @@
                     </div>
                   </div>
 
-                  <div v-else-if="questions[step-1].maps_to_config_key === 'currency'" class="space-y-6">
+                  <div v-else-if="currentQuestion.maps_to_config_key === 'currency'" class="space-y-6">
                     <div class="space-y-4 max-w-[400px]">
-                        <button @click="selectedBaseCurrency = 'Yes'; selectedSpecificCurrency = questions[step-1].options.default" class="option-btn" :class="{ active: selectedBaseCurrency === 'Yes' }">{{ t.yes }}</button>
+                        <button @click="selectedBaseCurrency = 'Yes'; selectedSpecificCurrency = currentQuestion.options.default" class="option-btn" :class="{ active: selectedBaseCurrency === 'Yes' }">{{ t.yes }}</button>
                         <button @click="selectedBaseCurrency = 'No'" class="option-btn" :class="{ active: selectedBaseCurrency === 'No' }">{{ t.no }}</button>
                     </div>
 
@@ -132,7 +132,7 @@
                         <Transition name="fade-scale-fast">
                           <div v-if="showCurrencyDropdown" class="currency-dropdown-list">
                             <div 
-                              v-for="curr in questions[step-1].options.alternatives" 
+                              v-for="curr in currentQuestion.options.alternatives" 
                               :key="curr" 
                               class="currency-item"
                               :class="{ active: selectedSpecificCurrency === curr }"
@@ -147,16 +147,16 @@
                   </div>
 
                   <div v-else class="space-y-8">
-                    <div v-if="questions[step-1].type === 'text'">
-                       <input v-model="dynamicAnswers[questions[step-1].id]" class="image-input max-w-[450px]" placeholder="Type your answer..." />
+                    <div v-if="currentQuestion.type === 'text'">
+                       <input v-model="dynamicAnswers[currentQuestion.id]" class="image-input max-w-[450px]" placeholder="Type your answer..." />
                     </div>
 
                     <div v-else class="space-y-4 max-w-[400px]">
-                      <div v-for="opt in questions[step-1].options" :key="opt" class="space-y-3">
-                        <button @click="toggleDynamicOption(questions[step-1], opt)" class="option-btn" :class="{ active: isOptionSelected(questions[step-1], opt) }">{{ opt }}</button>
+                      <div v-for="opt in currentQuestion.options" :key="opt" class="space-y-3">
+                        <button @click="toggleDynamicOption(currentQuestion, opt)" class="option-btn" :class="{ active: isOptionSelected(currentQuestion, opt) }">{{ opt }}</button>
                         <Transition name="panel">
-                           <div v-if="opt === 'Other' && isOptionSelected(questions[step-1], opt)" class="pt-1">
-                              <input v-model="otherDescriptions[questions[step-1].id]" class="image-input" :placeholder="t.otherBusinessPh" />
+                           <div v-if="opt === 'Other' && isOptionSelected(currentQuestion, opt)" class="pt-1">
+                              <input v-model="otherDescriptions[currentQuestion.id]" class="image-input" :placeholder="t.otherBusinessPh" />
                            </div>
                         </Transition>
                       </div>
@@ -233,6 +233,15 @@ interface Question {
 }
 const questions = ref<Question[]>([])
 
+// Single-entity mode (for now): the entities question (company_structure) is
+// HIDDEN from the UI — the user starts at company details — but it is still
+// auto-answered as 'Single Entity' at submit so the backend's 12-answer
+// contract is untouched. All multi-entity UI stays dormant for the future.
+const visibleQuestions = computed(() =>
+  questions.value.filter(q => q.maps_to_config_key !== 'company_structure')
+)
+const currentQuestion = computed(() => visibleQuestions.value[step.value - 1])
+
 // Logic States
 const dynamicAnswers = ref<Record<number, any>>({})
 const otherDescriptions = ref<Record<number, string>>({})
@@ -299,6 +308,14 @@ const initOnboarding = async () => {
     const response: any = await useApi(`/questions?lang=${langQuery}`)
     questions.value = response.data || []
 
+    // Prefill the company-details question with the name typed at
+    // registration (served by the same GET) — shown editable so the user
+    // can correct a rough/short signup name. Nickname starts empty; the
+    // backend falls back to the confirmed company name if it stays empty.
+    if (response.meta?.company_name && !entityForms.value[0].legalName) {
+      entityForms.value[0].legalName = response.meta.company_name
+    }
+
     // Initialize answer models
     questions.value.forEach(q => {
        if (q.type === 'select') dynamicAnswers.value[q.id] = []
@@ -358,27 +375,26 @@ function selectEntityOption(opt: any) {
 
 function handleNext() {
   direction.value = 'next'
-  const currentQ = questions.value[step.value - 1]
-  
-  // Custom Flow: Step 1 (Structure)
-  if (currentQ.maps_to_config_key === 'company_structure') {
-     step.value = (selectedLabel.value === 'Single Entity') ? 4 : 2
-     return
-  }
-  
-  // Custom Flow: Step 2 (Entity Details)
+  const currentQ = currentQuestion.value
+
+  // Company details: walk through each entity before moving to the next
+  // question. (No question is ever skipped — Single Entity simply has one
+  // entity form here. A previous jump to step 4 skipped the company-name and
+  // currency questions entirely and submitted blank answers for them.)
   if (currentQ.maps_to_config_key === 'company_name') {
-    if (currentEntity.value < entitiesCount.value) { currentEntity.value++ } 
-    else { step.value = 3 }
-    return
+    if (currentEntity.value < entitiesCount.value) {
+      currentEntity.value++
+      return
+    }
   }
 
-  // Final Step check
-  if (step.value === questions.value.length) { 
+  // Final Step check (visible questions only — the hidden entities question
+  // is auto-answered at submit)
+  if (step.value === visibleQuestions.value.length) {
      syncWithBackend()
-     return 
+     return
   }
-  
+
   step.value++
 }
 
@@ -392,10 +408,7 @@ function handleSubNext() {
 function handleMainPrevious() {
   direction.value = 'prev'
   if (step.value > 1) {
-    // Jump back logic
-    if (step.value === 4 && selectedLabel.value === 'Single Entity') step.value = 1
-    else step.value--
-    
+    step.value--
     if (step.value === 1) currentEntity.value = 1
   }
 }
@@ -438,8 +451,9 @@ function isOptionSelected(q: Question, val: string) {
 }
 
 const nextDisabled = computed(() => {
-  if (questions.value.length === 0) return true
-  const q = questions.value[step.value - 1]
+  if (visibleQuestions.value.length === 0) return true
+  const q = currentQuestion.value
+  if (!q) return true
   
   if (q.maps_to_config_key === 'company_structure') return !selectedLabel.value
   if (q.maps_to_config_key === 'company_name') return !entityForms.value[currentEntity.value - 1].legalName
