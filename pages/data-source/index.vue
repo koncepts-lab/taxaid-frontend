@@ -17,7 +17,7 @@
                   'Manage your financial data sources, contacts, and API certificates for GST/VAT/ERP integrations' }}
               </p>
             </div>
-            <button class="flex items-center gap-2 px-5 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm mt-1">
+            <button @click="navigateTo('/data-source/manual-addition')" class="flex items-center gap-2 px-5 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm mt-1">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
               {{ currentLang === 'ar' ? 'إضافة يدوية' : 'Manual Addition' }}
             </button>
