@@ -12,7 +12,7 @@
         isDark ? 'bg-transparent' : 'bg-transparent'
       ]">
         <div class="relative z-10">
-          <div class="px-[15px]">
+          <div class="px-[15px] lg:min-h-[80vh]">
             <slot />
           </div>
           <CommonFooter />
