@@ -20,6 +20,24 @@ function transformSummaryRow(row: any) {
   return toMonthRow(row, base)
 }
 
+// Balance-sheet rows are snapshots — summing 12 monthly balances is not a
+// balance. The "total" column shows the latest month with data instead
+function transformSnapshotRow(row: any) {
+  const base: Record<string, any> = { name: row.particulars ?? '' }
+  if (row.is_gap) {
+    return { ...base, type: 'header', ...Object.fromEntries(MONTHS.map(k => [k, null])), total: null }
+  }
+  if (row.is_summary) base.type = 'net-row'
+  const obj: Record<string, any> = { ...base }
+  let snapshot: number | null = null
+  ;(row.months as number[] ?? []).forEach((v: number, i: number) => {
+    obj[MONTHS[i]] = v
+    if (v !== null && v !== 0) snapshot = v
+  })
+  obj.total = snapshot ?? 0
+  return obj
+}
+
 function transformDetailedRow(row: any) {
   const base: Record<string, any> = {
     mainGroup: row.main_group ?? '',
@@ -59,7 +77,7 @@ export const useBudget = () => {
 
   const fetchBS = async () => {
     const result = await useApi(`/data-source/budget/bs-data`, { params: { year: year.value } }) as any
-    bsData.value = (result?.data ?? []).map(transformSummaryRow)
+    bsData.value = (result?.data ?? []).map(transformSnapshotRow)
   }
 
   const fetchDetailed = async (type: string): Promise<any[]> => {
