@@ -160,6 +160,7 @@
                 :tbConfigData="tbConfigData"
                 :tbMappingOptions="tbMappingOptions"
                 :tbSaving="tbSaving"
+                :tbError="tbError"
                 :tbLoading="tbLoadingState"
                 :tbMeta="tbMeta"
                 :integrityData="tbIntegrityData"
@@ -207,7 +208,7 @@ const { rows: arRows, totals: arTotals, loading: arLoading, error: arError, logs
 const { rows: apRows, totals: apTotals, loading: apLoading, error: apError, logs: apLiveLogs } = useApAgingSummary()
 
 // ── Trial Balance (live API) ───────────────────────────────────────────────
-const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbLoading: tbLoadingState, tbMeta, fetchTrialBalance, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, tbLogs: tbLiveLogs } = useTrialBalance()
+const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoading: tbLoadingState, tbMeta, fetchTrialBalance, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, tbLogs: tbLiveLogs } = useTrialBalance()
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()

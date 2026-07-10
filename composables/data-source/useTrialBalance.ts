@@ -139,7 +139,11 @@ export function useTrialBalance() {
       // Refetch current page to update mapped/unmapped counts
       await fetchTrialBalance(tbPage.value, tbPerPage.value)
     } catch (e: any) {
-      tbError.value = e?.message ?? 'Failed to save mapping'
+      // 422 from the backend lists mapping values missing from the GL master
+      // list (ask a manager to add them) — show the exact values.
+      const unknown = e?.data?.unknown_values
+      tbError.value = (e?.data?.message ?? e?.message ?? 'Failed to save mapping')
+        + (Array.isArray(unknown) && unknown.length ? ` (${unknown.join(', ')})` : '')
       throw e
     } finally {
       tbSaving.value = false

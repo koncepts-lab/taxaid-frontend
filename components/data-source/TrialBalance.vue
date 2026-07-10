@@ -26,6 +26,14 @@
                 </div>
             </div>
 
+            <div v-if="tbError"
+                class="mx-6 mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+                <div class="w-4 h-4 rounded-full border border-red-500 flex items-center justify-center shrink-0">
+                    <span class="text-red-500 text-[10px] font-bold">!</span>
+                </div>
+                <p class="text-xs text-red-600">{{ tbError }}</p>
+            </div>
+
             <div v-if="userType === 'admin'"
                 class="mx-6 mb-4 p-4 bg-[#FFFBEB] border border-[#FEF3C7] rounded-xl flex items-center gap-3">
                 <div class="w-4 h-4 rounded-full border border-[#B45309] flex items-center justify-center shrink-0">
@@ -483,6 +491,7 @@ const props = defineProps({
     tbConfigData:     { type: Array,    default: () => [] },
     tbMappingOptions: { type: Object,   default: () => ({ fsCodes: [], mainGroups: [], subGroups: [] }) },
     tbSaving:         { type: Boolean,  default: false },
+    tbError:          { type: String,   default: null },
     tbLoading:        { type: Boolean,  default: false },
     tbMeta:           { type: Object,   default: () => ({ current_page: 1, last_page: 1, total: 0, per_page: 10, mapped_count: 0, unmapped_count: 0 }) }, // ← default per_page for the UI component
     integrityData:    { type: Array,    default: null },
@@ -721,8 +730,13 @@ const handleReviewData = () => {
     nextTick(() => cardRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 }
 
-const handleUpdate = () => {
-    if (props.onUpdate) props.onUpdate()
+const handleUpdate = async () => {
+    if (!props.onUpdate) return
+    try {
+        await props.onUpdate()
+    } catch {
+        // Save failure reason is surfaced via the tbError banner.
+    }
 }
 </script>
 
