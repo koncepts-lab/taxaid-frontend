@@ -26,15 +26,15 @@
                         <div v-if="loading" class="flex justify-center items-center py-16">
                             <div class="w-8 h-8 border-2 border-[#008169] border-t-transparent rounded-full animate-spin"></div>
                         </div>
-                        <div v-else class="overflow-auto rounded-[20px] border no-scrollbar flex-1 relative shadow-inner"
+                        <div v-else class="overflow-auto rounded-[20px] border budget-scroll flex-1 relative shadow-inner"
                             :class="isDark ? 'border-white/10 bg-[#001a16]' : 'border-gray-200 bg-gray-50/30'">
 
-                            <table class="w-full text-left  border-collapse min-w-[1800px]">
+                            <table class="w-full text-left border-collapse">
                                 <thead class="sticky top-0 z-30">
                                     <tr class="bg-[#008864] text-white">
                                         <th v-if="showSiNo" class="px-4 py-5 text-sm font-semibold w-40">SI.NO</th>
                                         <th v-for="col in columns" :key="col.key"
-                                            class="px-4 py-5 text-sm font-semibold whitespace-nowrap min-w-20" :class="[
+                                            class="px-3 py-5 text-sm font-semibold whitespace-nowrap" :class="[
                                                 col.key !== 'name' && col.key !== 'mainGroup' ? 'text-left' : ''
                                             ]">
                                             {{ currentLang === 'ar' ? col.labelAr : col.label }}
@@ -54,7 +54,7 @@
                                             index + 1 }}</td>
 
                                         <td v-for="col in columns" :key="col.key"
-                                            class="px-4 py-4 text-sm min-w-80 transition-colors duration-300" :class="[
+                                            class="px-3 py-4 text-sm whitespace-nowrap transition-colors duration-300" :class="[
                                                 isDark ? 'text-white/90' : 'text-black',
 
                                                 row.type === 'header' ? (isDark ? 'bg-[#023b31]' : 'bg-primary-800') :
@@ -122,5 +122,28 @@ defineEmits(['close'])
 /* Subtle shadow to indicate sticky column is active */
 .sticky {
     transition: background-color 0.3s ease;
+}
+
+.budget-scroll::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+.budget-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.budget-scroll::-webkit-scrollbar-thumb {
+    background: #04C18F80;
+    border-radius: 9999px;
+}
+
+.budget-scroll::-webkit-scrollbar-thumb:hover {
+    background: #00896F;
+}
+
+.budget-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #04C18F80 transparent;
 }
 </style>
