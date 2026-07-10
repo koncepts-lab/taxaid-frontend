@@ -153,6 +153,21 @@ export const useManualAddition = () => {
     } finally { saving.value = false }
   }
 
+  // POST /adjustments/ap/manual-adjustment — single AP entry.
+  // Backend signs the amount itself: purchase => +abs, payment => -abs.
+  const saveApAdjustment = async (payload: any) => {
+    clearMessages()
+    saving.value = true
+    try {
+      const res: any = await useApi('/adjustments/ap/manual-adjustment', { method: 'POST', body: payload })
+      success.value = res?.message || 'AP manual adjustment created successfully'
+      return res?.data || null
+    } catch (err) {
+      error.value = extractError(err)
+      return null
+    } finally { saving.value = false }
+  }
+
   const savePdc = async (type: 'in' | 'out', payload: any) => {
     clearMessages()
     saving.value = true
@@ -172,6 +187,6 @@ export const useManualAddition = () => {
     toApiDate, toNumber, clearMessages,
     fetchDebtorLedgers, fetchCostHeads, fetchLeadIds, fetchLeadDetails,
     calcSalesVariance, calcBudgetVariance, applySalesMilestone, applyBudgetMilestone,
-    saveLead, saveContract, savePdc
+    saveLead, saveContract, savePdc, saveApAdjustment
   }
 }
