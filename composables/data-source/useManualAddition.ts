@@ -154,7 +154,7 @@ export const useManualAddition = () => {
   }
 
   // POST /adjustments/ap/manual-adjustment — single AP entry.
-  // Backend signs the amount itself: purchase => +abs, payment => -abs.
+  // Backend always stores +abs(amount) as an unpaid purchase (no transaction_type).
   const saveApAdjustment = async (payload: any) => {
     clearMessages()
     saving.value = true

@@ -270,6 +270,8 @@ const applyRow = async (section, row, i) => {
 // ---------- Footer actions ----------
 const actionLoading = ref(false);
 
+// Bulk endpoint accepts type sales|return: sales creates an unpaid invoice,
+// return marks the matching invoice_number as paid.
 const appliedAdjustments = computed(() => {
   const collect = (rows, state, type) => rows
     .map((row, i) => ({ row, state: state[i] }))
@@ -284,7 +286,7 @@ const appliedAdjustments = computed(() => {
     }));
   return [
     ...collect(salesRows.value, salesState.value, 'sales'),
-    ...collect(receiptRows.value, receiptState.value, 'receipt'),
+    ...collect(receiptRows.value, receiptState.value, 'return'),
   ];
 });
 

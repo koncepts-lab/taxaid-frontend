@@ -194,10 +194,7 @@
                     <input type="text" v-model="entry.amount" placeholder="0.00" :disabled="entry.saved" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 text-center focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400 disabled:opacity-60" />
                   </td>
                   <td class="py-2 px-2">
-                    <select v-model="entry.transactionType" :disabled="entry.saved" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] disabled:opacity-60">
-                      <option value="purchase">Purchase (+)</option>
-                      <option value="payment">Payment (-)</option>
-                    </select>
+                    <span class="block w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600">Purchase (+)</span>
                   </td>
                   <td class="py-2 px-2 text-center">
                     <button v-if="!entry.saved" @click="saveManualEntry(index)" :disabled="entry.saving" class="bg-[#058a64] hover:bg-[#047857] text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50 mr-2">
@@ -339,7 +336,7 @@ const manualEntries = ref([]);
 const addManualEntry = () => {
   manualEntries.value.push({
     date: '', partyName: '', invoiceNumber: '', creditDays: '', amount: '',
-    transactionType: 'purchase', saving: false, saved: false,
+    saving: false, saved: false,
   });
 };
 
@@ -363,13 +360,12 @@ const saveManualEntry = async (index) => {
         date: toApiDate(entry.date),
         adjustment,
         credit_days: entry.creditDays !== '' ? parseInt(entry.creditDays, 10) || 0 : null,
-        transaction_type: entry.transactionType,
       },
     });
     if (res?.status === 'success') {
-      // Mirror the backend's balance math locally (this endpoint only returns the record).
-      if (entry.transactionType === 'purchase') balanceReport.value += adjustment;
-      else balanceReport.value -= adjustment;
+      // Mirror the backend's balance math locally (this endpoint only returns the
+      // record). The endpoint always creates a positive unpaid purchase.
+      balanceReport.value += adjustment;
       variance.value -= adjustment;
       entry.saved = true;
     }
@@ -383,6 +379,8 @@ const saveManualEntry = async (index) => {
 // ---------- Footer actions ----------
 const actionLoading = ref(false);
 
+// Bulk endpoint accepts transaction_type purchase|return: purchase creates an
+// unpaid bill, return marks the matching invoice_number as paid.
 const appliedAdjustments = computed(() => {
   const collect = (rows, state, type) => rows
     .map((row, i) => ({ row, state: state[i] }))
@@ -397,7 +395,7 @@ const appliedAdjustments = computed(() => {
     }));
   return [
     ...collect(purchaseRows.value, purchaseState.value, 'purchase'),
-    ...collect(paymentRows.value, paymentState.value, 'payment'),
+    ...collect(paymentRows.value, paymentState.value, 'return'),
   ];
 });
 

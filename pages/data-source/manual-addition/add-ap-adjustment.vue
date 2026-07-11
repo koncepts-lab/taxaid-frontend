@@ -50,16 +50,9 @@
                 </div>
               </div>
               <div>
-                <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Transaction Type <span class="text-red-500">*</span></label>
-                <select v-model="form.transaction_type" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm bg-white">
-                  <option value="purchase">Purchase (increases payable)</option>
-                  <option value="payment">Payment (reduces payable)</option>
-                </select>
-              </div>
-              <div>
                 <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Adjustment Amount (AED) <span class="text-red-500">*</span></label>
                 <input type="text" v-model="form.adjustment" placeholder="Enter amount" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
-                <p class="text-xs text-gray-400 mt-1">Sign is applied automatically: purchase adds, payment subtracts.</p>
+                <p class="text-xs text-gray-400 mt-1">Creates an unpaid purchase entry that increases the payable.</p>
               </div>
               <div>
                 <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Credit Days</label>
@@ -100,7 +93,6 @@ const form = ref({
   party_name: '',
   invoice_number: '',
   date: '',
-  transaction_type: 'purchase',
   adjustment: '',
   credit_days: ''
 })
@@ -113,13 +105,12 @@ const saveAdjustment = async () => {
     invoice_number: form.value.invoice_number || null,
     date: toApiDate(form.value.date),
     adjustment: toNumber(form.value.adjustment),
-    credit_days: form.value.credit_days !== '' ? parseInt(form.value.credit_days, 10) || 0 : null,
-    transaction_type: form.value.transaction_type
+    credit_days: form.value.credit_days !== '' ? parseInt(form.value.credit_days, 10) || 0 : null
   }
 
   const saved = await saveApAdjustment(payload)
   if (saved) {
-    form.value = { party_name: '', invoice_number: '', date: '', transaction_type: 'purchase', adjustment: '', credit_days: '' }
+    form.value = { party_name: '', invoice_number: '', date: '', adjustment: '', credit_days: '' }
   }
 }
 </script>
