@@ -20,26 +20,52 @@ const _timelineData       = ref<any>(null)
 const _loading            = ref(false)
 const _error              = ref<string | null>(null)
 
+// ── GAP-DAY FALLBACK TOGGLE ────────────────────────────────────────────────
+// true (default, also the behavior if this line is missing): a date with no
+// uploaded AP snapshot shows the LATEST upload on or before it, the shared
+// date state snaps to that snapshot, and the page shows a notice.
+// false: strict legacy behavior — the exact requested date only, empty when
+// nothing was uploaded that day (backend gets ?strict_date=1).
+const ENABLE_SNAPSHOT_FALLBACK = true
+// ───────────────────────────────────────────────────────────────────────────
+
+const _snapshotDate   = ref<string | null>(null)
+const _requestedDate  = ref<string | null>(null)
+const _snapshotNotice = ref(false)
+
 async function fetchAll(lang = 'en') {
   _loading.value = true
   _error.value   = null
   const date = apActiveDate.value
+  const strict = ENABLE_SNAPSHOT_FALLBACK ? {} : { strict_date: 1 }
 
   try {
     // 1. Summary table (/ap-report)
-    const summaryRes: any = await useApi('/ap-report', { params: { test_date: date } })
+    const summaryRes: any = await useApi('/ap-report', { params: { test_date: date, ...strict } })
+
+    if (ENABLE_SNAPSHOT_FALLBACK && summaryRes?.snapshot_date) {
+      _requestedDate.value  = summaryRes.requested_date ?? date
+      _snapshotDate.value   = summaryRes.snapshot_date
+      _snapshotNotice.value = summaryRes.snapshot_date !== (summaryRes.requested_date ?? date)
+      if (_snapshotNotice.value) {
+        apActiveDate.value = summaryRes.snapshot_date
+      }
+    } else {
+      _snapshotNotice.value = false
+    }
+
     if (summaryRes?.status === 'success') {
       _summary.value = summaryRes.data || []
     }
 
     // 2. Aging graph (/ap-report/aging)
-    const agingRes: any = await useApi('/ap-report/aging', { params: { test_date: date, lang } })
+    const agingRes: any = await useApi('/ap-report/aging', { params: { test_date: date, lang, ...strict } })
     if (agingRes?.status === 'success') {
       _agingData.value = agingRes.payload || {}
     }
 
     // 3. Top vendors (/ap-report/top-eight)
-    const topRes: any = await useApi('/ap-report/top-eight', { params: { test_date: date } })
+    const topRes: any = await useApi('/ap-report/top-eight', { params: { test_date: date, ...strict } })
     if (topRes?.status === 'success') {
       _topCustomers.value = topRes.payload || null
     }
@@ -74,6 +100,9 @@ export function useAccountsPayablePage() {
     timelineData: _timelineData,
     loading:      _loading,
     error:        _error,
+    snapshotDate:   _snapshotDate,
+    requestedDate:  _requestedDate,
+    snapshotNotice: _snapshotNotice,
     fetchAll,
   }
 }
