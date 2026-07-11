@@ -1,6 +1,7 @@
 export const useAlertsPage = () => {
   const route  = useRoute()
   const router = useRouter()
+  const currentLang = useState('currentLang', () => 'en')
 
   const alerts      = ref<any[]>([])
   const loading     = ref(false)
@@ -61,6 +62,8 @@ export const useAlertsPage = () => {
       period:   currentPeriod.value,
       page,
       per_page: 10,
+      // Backend returns a single-language payload: lang=ar or en (default en)
+      lang:     currentLang.value === 'ar' ? 'ar' : 'en',
     }
     if (currentPeriod.value !== 'month') params.date = currentDate.value
     return new URLSearchParams(params).toString()
@@ -109,6 +112,8 @@ export const useAlertsPage = () => {
   }
 
   watch(activeStatus, () => fetchAlerts())
+  // Rows are server-localized, so a language switch needs a refetch
+  watch(currentLang, () => fetchAlerts())
   onMounted(() => fetchAlerts())
 
   return {
