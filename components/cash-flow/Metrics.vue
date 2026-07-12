@@ -67,7 +67,7 @@
 
                 <Transition name="dropdown">
                     <div v-if="showScenarioDropdown"
-                        class="absolute top-full left-0 w-full mt-2 rounded-[24px] shadow-xl z-20 p-2"
+                        class="absolute top-full left-0 w-full mt-2 rounded-[24px] shadow-xl z-50 p-2"
                         :class="isDark ? 'bg-[#002E26] border border-[#03D8B0]' : 'bg-white border border-gray-100'">
                         <button v-for="scenario in scenarios" :key="scenario.en" 
                              @click="selectScenario(scenario)"
@@ -100,7 +100,7 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const showScenarioDropdown = ref(false)
 
-const { metrics } = useCashFlow()
+const { metrics, scenario: activeScenario, fetchProjection } = useCashFlow()
 
 const cashInHand = computed(() => metrics.value?.cashInHand ?? 'AED 0.0 M')
 const cashInHandChange = computed(() => metrics.value?.cashInHandChange ?? '0.0%')
@@ -112,7 +112,7 @@ const scenarios = computed(() => metrics.value?.scenarios ?? [
     { en: 'Future Contract', ar: 'عقد مستقبلي' }
 ])
 
-const selectedScenarioKey = ref('100% Scenario')
+const selectedScenarioKey = computed(() => activeScenario.value)
 
 const selectedScenario = computed(() => {
     const scenario = scenarios.value.find(s => s.en === selectedScenarioKey.value)
@@ -120,9 +120,11 @@ const selectedScenario = computed(() => {
     return currentLang.value === 'ar' ? scenario.ar : scenario.en
 })
 
-const selectScenario = (scenario) => {
-    selectedScenarioKey.value = scenario.en
+const selectScenario = (option) => {
     showScenarioDropdown.value = false
+    if (activeScenario.value === option.en) return
+    activeScenario.value = option.en
+    fetchProjection()
 }
 </script>
 

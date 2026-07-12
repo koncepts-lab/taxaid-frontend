@@ -42,7 +42,10 @@
                 item.isTotal ? (isDark ? 'bg-[#00D9A4]/20' : 'bg-[#68E4C4]') : ''
             ]">
             <td class="px-8 py-5">
-              <span class="font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
+              <div class="flex items-center gap-2" :class="!item.isTotal ? 'cursor-pointer' : ''" @click="!item.isTotal && toggleExpand(item)">
+                <span class="font-normal text-[14px]" :class="[isDark ? 'text-white' : 'text-[#333333]', item.isTotal ? 'font-medium' : '']">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
+                <svg v-if="!item.isTotal" class="w-2.5 h-2.5 transition-transform duration-300" :class="[expanded[item.label] ? 'rotate-180' : '', isDark ? 'text-white/70' : 'text-[#333333]']" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10L5 6Z" /></svg>
+              </div>
             </td>
             <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">{{ item.currentYear }}</td>
             <td class="px-6 py-5 text-left rtl:text-right font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ item.previousYear }}</td>
@@ -68,6 +71,33 @@
                 </div>
             </td>
           </tr>
+
+          <!-- Ledger sub-rows (Figma drill-down) -->
+          <template v-if="expanded[item.label]">
+            <tr v-if="expanded[item.label].loading" :class="isDark ? 'bg-[#04C18F1A]' : 'bg-[#A1E2D2]/40'">
+              <td colspan="6" class="px-12 py-3 text-[13px]" :class="isDark ? 'text-white/60' : 'text-black/60'">{{ currentLang === 'ar' ? 'جار التحميل...' : 'Loading...' }}</td>
+            </tr>
+            <tr v-else-if="expanded[item.label].error" :class="isDark ? 'bg-[#04C18F1A]' : 'bg-[#A1E2D2]/40'">
+              <td colspan="6" class="px-12 py-3 text-[13px] text-red-500">{{ expanded[item.label].error }}</td>
+            </tr>
+            <tr v-else-if="!expanded[item.label].rows.length" :class="isDark ? 'bg-[#04C18F1A]' : 'bg-[#A1E2D2]/40'">
+              <td colspan="6" class="px-12 py-3 text-[13px]" :class="isDark ? 'text-white/60' : 'text-black/60'">{{ currentLang === 'ar' ? 'لا توجد دفاتر لهذه الفترة' : 'No ledgers for this period' }}</td>
+            </tr>
+            <tr v-else v-for="led in expanded[item.label].rows" :key="item.label + led.name"
+              class="border-b" :class="isDark ? 'bg-[#04C18F1A] border-white/10' : 'bg-[#A1E2D2]/60 border-white'">
+              <td class="px-12 py-4">
+                <button class="text-[13px] font-medium underline underline-offset-2 hover:opacity-70 transition-opacity" :class="isDark ? 'text-white' : 'text-[#013e32]'"
+                  :title="currentLang === 'ar' ? 'عرض دفتر الأستاذ' : 'View Ledger'" @click="openLedger(led.name)">
+                  {{ led.name }}
+                </button>
+              </td>
+              <td class="px-6 py-4 text-left rtl:text-right text-[13px] font-medium" :class="isDark ? 'text-white/90' : 'text-black'">{{ led.currentYear }}</td>
+              <td class="px-6 py-4 text-left rtl:text-right text-[13px] font-medium" :class="isDark ? 'text-white/90' : 'text-black'">{{ led.previousYear }}</td>
+              <td class="px-6 py-4 text-left rtl:text-right text-[13px]" :class="isDark ? 'text-white/50' : 'text-black/50'">-</td>
+              <td class="px-6 py-4 text-left rtl:text-right text-[13px]" :class="isDark ? 'text-white/50' : 'text-black/50'">-</td>
+              <td class="px-6 py-4 text-left rtl:text-right text-[13px]" :class="isDark ? 'text-white/50' : 'text-black/50'">-</td>
+            </tr>
+          </template>
         </template>
       </tbody>
     </table>
@@ -111,7 +141,10 @@
                         item.isTotal ? (isDark ? 'bg-[#00D9A4]/20' : 'bg-[#68E4C4]') : ''
                     ]">
                     <td class="px-8 py-5">
-                      <span class="font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
+                      <div class="flex items-center gap-2" :class="!item.isTotal ? 'cursor-pointer' : ''" @click="!item.isTotal && toggleExpand(item)">
+                        <span class="font-normal text-[14px]" :class="[isDark ? 'text-white' : 'text-[#333333]', item.isTotal ? 'font-medium' : '']">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
+                        <svg v-if="!item.isTotal" class="w-2.5 h-2.5 transition-transform duration-300" :class="[expanded[item.label] ? 'rotate-180' : '', isDark ? 'text-white/70' : 'text-[#333333]']" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10L5 6Z" /></svg>
+                      </div>
                     </td>
                     <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">{{ item.currentYear }}</td>
                     <td class="px-6 py-5 text-left rtl:text-right font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ item.previousYear }}</td>
@@ -137,6 +170,33 @@
                         </div>
                     </td>
                   </tr>
+
+                  <!-- Ledger sub-rows (Figma drill-down) -->
+                  <template v-if="expanded[item.label]">
+                    <tr v-if="expanded[item.label].loading" :class="isDark ? 'bg-[#04C18F1A]' : 'bg-[#A1E2D2]/40'">
+                      <td colspan="6" class="px-12 py-3 text-[13px]" :class="isDark ? 'text-white/60' : 'text-black/60'">{{ currentLang === 'ar' ? 'جار التحميل...' : 'Loading...' }}</td>
+                    </tr>
+                    <tr v-else-if="expanded[item.label].error" :class="isDark ? 'bg-[#04C18F1A]' : 'bg-[#A1E2D2]/40'">
+                      <td colspan="6" class="px-12 py-3 text-[13px] text-red-500">{{ expanded[item.label].error }}</td>
+                    </tr>
+                    <tr v-else-if="!expanded[item.label].rows.length" :class="isDark ? 'bg-[#04C18F1A]' : 'bg-[#A1E2D2]/40'">
+                      <td colspan="6" class="px-12 py-3 text-[13px]" :class="isDark ? 'text-white/60' : 'text-black/60'">{{ currentLang === 'ar' ? 'لا توجد دفاتر لهذه الفترة' : 'No ledgers for this period' }}</td>
+                    </tr>
+                    <tr v-else v-for="led in expanded[item.label].rows" :key="'modal-' + item.label + led.name"
+                      class="border-b" :class="isDark ? 'bg-[#04C18F1A] border-white/10' : 'bg-[#A1E2D2]/60 border-white'">
+                      <td class="px-12 py-4">
+                        <button class="text-[13px] font-medium underline underline-offset-2 hover:opacity-70 transition-opacity" :class="isDark ? 'text-white' : 'text-[#013e32]'"
+                          :title="currentLang === 'ar' ? 'عرض دفتر الأستاذ' : 'View Ledger'" @click="openLedger(led.name)">
+                          {{ led.name }}
+                        </button>
+                      </td>
+                      <td class="px-6 py-4 text-left rtl:text-right text-[13px] font-medium" :class="isDark ? 'text-white/90' : 'text-black'">{{ led.currentYear }}</td>
+                      <td class="px-6 py-4 text-left rtl:text-right text-[13px] font-medium" :class="isDark ? 'text-white/90' : 'text-black'">{{ led.previousYear }}</td>
+                      <td class="px-6 py-4 text-left rtl:text-right text-[13px]" :class="isDark ? 'text-white/50' : 'text-black/50'">-</td>
+                      <td class="px-6 py-4 text-left rtl:text-right text-[13px]" :class="isDark ? 'text-white/50' : 'text-black/50'">-</td>
+                      <td class="px-6 py-4 text-left rtl:text-right text-[13px]" :class="isDark ? 'text-white/50' : 'text-black/50'">-</td>
+                    </tr>
+                  </template>
                 </template>
               </tbody>
             </table>
@@ -144,11 +204,13 @@
         </div>
       </div>
     </Teleport>
+
+    <IndirectExpenseLedgerModal v-model:open="ledgerModalOpen" :ledger="activeLedger" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
@@ -190,6 +252,46 @@ const gaugeColor = (value) => {
     if (value >= 50) return '#00d28e'
     if (value >= 25) return '#ffb74d'
     return '#fb7554'
+}
+
+// ── Ledger drill-down (Figma) ────────────────────────────────────────────────
+
+const { fetchSubgroupLedgers } = useIndirectExpense()
+
+const expanded = ref({}) // subgroup label → { loading, error, rows }
+
+const toggleExpand = async (item) => {
+  const key = item.label
+  if (expanded.value[key]) {
+    delete expanded.value[key]
+    return
+  }
+  expanded.value = { ...expanded.value, [key]: { loading: true, error: null, rows: [] } }
+  try {
+    const rows = await fetchSubgroupLedgers(key)
+    expanded.value[key] = {
+      loading: false,
+      error: null,
+      rows: rows.filter(r => !r.isTotal).map(r => ({
+        name:         r.ledger_name,
+        currentYear:  formatNumber(r.current_year),
+        previousYear: formatNumber(r.previous_year),
+      })),
+    }
+  } catch (e) {
+    expanded.value[key] = { loading: false, error: e?.message ?? 'Failed to load ledgers', rows: [] }
+  }
+}
+
+// Collapse everything when the page range/data changes — cached rows would be stale
+watch(() => props.data, () => { expanded.value = {} })
+
+const ledgerModalOpen = ref(false)
+const activeLedger    = ref('')
+
+const openLedger = (name) => {
+  activeLedger.value    = name
+  ledgerModalOpen.value = true
 }
 </script>
 

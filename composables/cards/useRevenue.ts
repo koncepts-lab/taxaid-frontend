@@ -15,7 +15,7 @@ export const useRevenue = () => {
     try {
       // Backend expects 'Custom Dates' but header emits 'Custom Range'
       const backendRangeOption = rangeOption.value === 'Custom Range' ? 'Custom Dates' : rangeOption.value
-      const body: Record<string, any> = { range_option: backendRangeOption }
+      const body: Record<string, any> = { range_option: backendRangeOption, include_ledgers: true }
       if (customFrom.value) body.custom_from = customFrom.value
       if (customTo.value)   body.custom_to   = customTo.value
 
@@ -50,6 +50,12 @@ export const useRevenue = () => {
         variance:  `${varianceSign}${item.variance_percent}`,
         progress:  Number(achievedPct.toFixed(1)),
         isSummary: item.isTotal,
+        children:  (item.children ?? []).map((c: any) => ({
+          label:    c.ledger_name,
+          labelAr:  c.ledger_name,
+          current:  formatStandardNumber(c.current_year),
+          previous: formatStandardNumber(c.previous_year),
+        })),
       }
     })
   })
