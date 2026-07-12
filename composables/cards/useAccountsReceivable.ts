@@ -144,6 +144,38 @@ async function fetchAll() {
   }
 }
 
+// ── Payment reminders ────────────────────────────────────────────────────────
+// Map of contact emails by customer name (lowercased) — used for the
+// "email not added" tooltip; fetched once from the contacts registry.
+const _contactEmails = ref<Record<string, string>>({})
+
+async function fetchContactEmails() {
+  try {
+    const res: any = await useApi('/data-source/customers')
+    const map: Record<string, string> = {}
+    for (const c of res?.data ?? []) {
+      if (c?.name) map[String(c.name).trim().toLowerCase()] = c.email ?? ''
+    }
+    _contactEmails.value = map
+  } catch { _contactEmails.value = {} }
+}
+
+// Batch send: items = [{customer, invoices: [...]}, ...] — ONE request; the
+// backend sends one mail per customer with all its invoices (1/day cooldown).
+async function sendReminders(items: { customer: string, invoices: any[] }[]) {
+  try {
+    const res: any = await useApi('/ar-report/send-reminders', { method: 'POST', body: { items } })
+    return { ok: true, results: res.results ?? [] }
+  } catch (e: any) {
+    return {
+      ok: false,
+      code: e?.data?.code ?? null,
+      message: e?.data?.message ?? 'Failed to send reminders.',
+      results: [],
+    }
+  }
+}
+
 export function useAccountsReceivablePage() {
   return {
     activeDate:         arActiveDate,
@@ -156,6 +188,9 @@ export function useAccountsReceivablePage() {
     snapshotDate:       _snapshotDate,
     requestedDate:      _requestedDate,
     snapshotNotice:     _snapshotNotice,
+    contactEmails:      _contactEmails,
     fetchAll,
+    fetchContactEmails,
+    sendReminders,
   }
 }

@@ -91,9 +91,27 @@ async function fetchAll(lang = 'en') {
   }
 }
 
+// Batch hold-for-review: items = [{customer(vendor), invoices: [...]}, ...]
+// ONE request; backend sends ONE internal mail grouped by vendor to the
+// tenant's internal_emails (1/day cooldown per invoice).
+async function holdForReview(items: { customer: string, invoices: any[] }[]) {
+  try {
+    const res: any = await useApi('/ap-report/hold-for-review', { method: 'POST', body: { items } })
+    return { ok: true, send: res.send, recipients: res.recipients, results: res.results ?? [] }
+  } catch (e: any) {
+    return {
+      ok: false,
+      code: e?.data?.code ?? null,
+      message: e?.data?.message ?? 'Failed to send hold-for-review.',
+      results: [],
+    }
+  }
+}
+
 export function useAccountsPayablePage() {
   return {
     activeDate:   apActiveDate,
+    holdForReview,
     summary:      _summary,
     agingData:    _agingData,
     topCustomers: _topCustomers,

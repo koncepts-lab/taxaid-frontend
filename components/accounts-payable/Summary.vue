@@ -78,21 +78,21 @@
                           'Select invoices to send hold payment reminders.' }}
                       </h3>
                       <div class="flex items-center gap-3">
-                        <input type="checkbox" v-model="selectAll" @change="handleSelectAll"
+                        <input type="checkbox" :checked="isGroupAllSelected(group)" @change="toggleGroupSelectAll(group)"
                           class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
                         <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
                           {{ currentLang === 'ar' ? `تحديد الكل (${fetchedInvoices[group.customer]?.length || 0})` : `Select All (${fetchedInvoices[group.customer]?.length || 0})` }}
                         </span>
                       </div>
                     </div>
-                    <button
-                      class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-3 rounded-xl flex items-center gap-3 text-[16px] font-normal transition-colors">
+                    <button @click="handleHoldForReview(group)" :disabled="sendingKey !== null || groupSelectedCount(group) === 0"
+                      class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-3 rounded-xl flex items-center gap-3 text-[16px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
                           d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                       </svg>
-                      {{ currentLang === 'ar' ? `مراجعة معلقة (${fetchedInvoices[group.customer]?.filter(inv => inv.selected).length || 0})` : `Hold for Review (${fetchedInvoices[group.customer]?.filter(inv => inv.selected).length || 0})` }}
+                      {{ sendingKey === group.customer ? '...' : (currentLang === 'ar' ? `مراجعة معلقة (${groupSelectedCount(group)})` : `Hold for Review (${groupSelectedCount(group)})`) }}
                     </button>
                   </div>
 
@@ -101,14 +101,17 @@
                       {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
                     </div>
                     <div v-else v-for="(inv, iIdx) in fetchedInvoices[group.customer]" :key="iIdx"
-                      class="grid items-center border-t border-black/5 dark:border-white/5 pt-4"
+                      class="grid items-center border-t border-black/5 dark:border-white/5 pt-4 transition-opacity"
+                      :class="inv.on_cooldown ? 'opacity-45' : ''"
                       :style="{ gridTemplateColumns: `2.25fr repeat(${tableColumns.length + 1}, minmax(0, 1fr))` }">
                       <div class="flex items-center gap-3 pr-2">
-                        <input type="checkbox" v-model="inv.selected"
-                          class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864] shrink-0">
-                        <span class="text-[16px] font-normal truncate" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'" :title="inv.invoice_no !== '0' ? inv.invoice_no : inv.description">{{
-                          inv.invoice_no !== '0' ? inv.invoice_no : inv.description
-                        }}</span>
+                        <input type="checkbox" v-model="inv.selected" :disabled="inv.on_cooldown"
+                          class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864] shrink-0 disabled:cursor-not-allowed">
+                        <span class="text-[16px] font-normal truncate"
+                          :class="[isDark ? 'text-white' : 'text-[#1A1A1A]', inv.on_cooldown ? 'underline decoration-dotted underline-offset-4 cursor-help' : '']"
+                          @mouseenter="inv.on_cooldown && showCooldownTip($event, inv)" @mouseleave="hideCooldownTip">
+                          {{ inv.invoice_no !== '0' ? inv.invoice_no : inv.description }}
+                        </span>
                       </div>
                       <div class="text-right rtl:text-left font-normal text-[16px]"
                         :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
@@ -225,22 +228,22 @@
                                 'Select invoices to send hold payment reminders.' }}
                             </h3>
                             <div class="flex items-center gap-3">
-                              <input type="checkbox" v-model="selectAll" @change="handleSelectAll"
+                              <input type="checkbox" :checked="isGroupAllSelected(group)" @change="toggleGroupSelectAll(group)"
                                 class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
                               <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
                                 {{ currentLang === 'ar' ? `تحديد الكل (${fetchedInvoices[group.customer]?.length || 0})` : `Select All (${fetchedInvoices[group.customer]?.length || 0})` }}
                               </span>
                             </div>
                           </div>
-                          <button
-                            class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-3 rounded-xl flex items-center gap-3 text-[16px] font-normal transition-colors">
+                          <button @click="handleHoldForReview(group)" :disabled="sendingKey !== null || groupSelectedCount(group) === 0"
+                            class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-3 rounded-xl flex items-center gap-3 text-[16px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
                               xmlns="http://www.w3.org/2000/svg">
                               <path
                                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-                            {{ currentLang === 'ar' ? `مراجعة معلقة (${fetchedInvoices[group.customer]?.filter(inv => inv.selected).length || 0})` : `Hold for Review (${fetchedInvoices[group.customer]?.filter(inv => inv.selected).length || 0})` }}
+                            {{ sendingKey === group.customer ? '...' : (currentLang === 'ar' ? `مراجعة معلقة (${groupSelectedCount(group)})` : `Hold for Review (${groupSelectedCount(group)})`) }}
                           </button>
                         </div>
 
@@ -249,13 +252,17 @@
                             {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
                           </div>
                           <div v-else v-for="(inv, iIdx) in fetchedInvoices[group.customer]" :key="'modal-inv-' + iIdx"
-                            class="grid items-center border-t border-black/5 dark:border-white/5 pt-4"
+                            class="grid items-center border-t border-black/5 dark:border-white/5 pt-4 transition-opacity"
+                            :class="inv.on_cooldown ? 'opacity-45' : ''"
                             :style="{ gridTemplateColumns: `2.25fr repeat(${tableColumns.length + 1}, minmax(0, 1fr))` }">
                             <div class="flex items-center gap-3 pr-2">
-                              <input type="checkbox" v-model="inv.selected"
-                                class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864] shrink-0">
-                              <span class="text-[16px] font-normal truncate" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'" :title="inv.invoice_no !== '0' ? inv.invoice_no : inv.description">{{
-                                inv.invoice_no !== '0' ? inv.invoice_no : inv.description }}</span>
+                              <input type="checkbox" v-model="inv.selected" :disabled="inv.on_cooldown"
+                                class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864] shrink-0 disabled:cursor-not-allowed">
+                              <span class="text-[16px] font-normal truncate"
+                                :class="[isDark ? 'text-white' : 'text-[#1A1A1A]', inv.on_cooldown ? 'underline decoration-dotted underline-offset-4 cursor-help' : '']"
+                                @mouseenter="inv.on_cooldown && showCooldownTip($event, inv)" @mouseleave="hideCooldownTip">
+                                {{ inv.invoice_no !== '0' ? inv.invoice_no : inv.description }}
+                              </span>
                             </div>
                             <div class="text-right rtl:text-left font-normal text-[16px]"
                               :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
@@ -289,11 +296,29 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Cooldown tooltip (fixed → never clipped, no CLS) -->
+    <Teleport to="body">
+      <div v-if="cooldownTip.show"
+        class="fixed z-[10000] pointer-events-none -translate-x-1/2 -translate-y-full px-3 py-2 rounded-lg text-[12px] font-medium shadow-lg bg-[#013E32] text-white whitespace-nowrap"
+        :style="{ left: cooldownTip.x + 'px', top: cooldownTip.y + 'px' }">
+        {{ currentLang === 'ar' ? 'يمكن إرسال التذكير التالي في' : 'Next reminder can be sent on' }}
+        <span class="text-[#5CE5C1]">{{ formatCooldownDate(cooldownTip.date) }}</span>
+      </div>
+    </Teleport>
+
+    <!-- Error-only toast (fixed → no layout shift) -->
+    <Teleport to="body">
+      <div v-if="sendStatus.message && sendStatus.type === 'error'"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10000] px-5 py-3 rounded-xl text-sm shadow-lg bg-red-600 text-white">
+        {{ sendStatus.message }}
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, reactive, computed } from 'vue'
 
 const props = defineProps({
   data: {
@@ -309,9 +334,12 @@ const props = defineProps({
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const expandedGroups = ref([]) 
-const selectAll = ref(false)
+const { holdForReview } = useAccountsPayablePage()
+
+const expandedGroups = ref([])
 const isModalOpen = ref(false)
+const sendingKey = ref(null) // vendor currently sending (per-group)
+const sendStatus = reactive({ type: '', message: '' })
 
 const fetchedInvoices = ref({})
 const loadingInvoices = ref({})
@@ -379,13 +407,78 @@ const toggleGroup = async (idx, customerName) => {
   }
 }
 
-const handleSelectAll = () => {
-  mainRows.value.forEach(group => {
-    const invoices = fetchedInvoices.value[group.customer] || []
-    invoices.forEach(inv => {
-      inv.selected = selectAll.value
+const getInvoices = (group) => fetchedInvoices.value[group?.customer] || []
+
+// Per-group Select All
+const isGroupAllSelected = (group) => {
+  const invs = getInvoices(group).filter(i => !i.on_cooldown)
+  return invs.length > 0 && invs.every(i => i.selected)
+}
+const toggleGroupSelectAll = (group) => {
+  const next = !isGroupAllSelected(group)
+  getInvoices(group).forEach(inv => { if (!inv.on_cooldown) inv.selected = next })
+}
+
+const formatCooldownDate = (d) => {
+  if (!d) return ''
+  const dt = new Date(d)
+  return isNaN(dt) ? d : dt.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+// Fixed-position cooldown tooltip (escapes table overflow clipping, no CLS)
+const cooldownTip = reactive({ show: false, x: 0, y: 0, date: '' })
+const showCooldownTip = (e, inv) => {
+  const r = e.currentTarget.getBoundingClientRect()
+  cooldownTip.x = r.left + r.width / 2
+  cooldownTip.y = r.top - 8
+  cooldownTip.date = inv.next_reminder_date
+  cooldownTip.show = true
+}
+const hideCooldownTip = () => { cooldownTip.show = false }
+
+// Selected count for a single vendor (this button's group only)
+const groupSelectedCount = (group) => getInvoices(group).filter(i => i.selected).length
+
+const flashStatus = (type, message) => {
+  sendStatus.type = type
+  sendStatus.message = message
+  setTimeout(() => { sendStatus.message = '' }, 4000)
+}
+
+// Send ONLY this vendor's selected invoices — independent per vendor.
+const handleHoldForReview = async (group) => {
+  const selected = getInvoices(group).filter(i => i.selected)
+  if (!selected.length) return
+
+  const items = [{
+    customer: group.customer,
+    invoices: selected.map(i => ({
+      invoice_no: i.invoice_no,
+      amount:     i.amount,
+      due_date:   i.due_date ?? null,
+      invoice_date: i.date_of_invoice ?? i.invoice_date ?? null,
+    })),
+  }]
+
+  sendingKey.value = group.customer
+  sendStatus.message = ''
+  try {
+    const res = await holdForReview(items)
+    if (!res.ok) {
+      flashStatus('error', res.message)
+      return
+    }
+    // No success/cooldown banner — greyed rows + hover tooltip are the feedback.
+    // Grey the invoices (sent OR already-on-cooldown) so the tooltip shows now.
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
+    const tISO = tomorrow.toISOString().slice(0, 10)
+    getInvoices(group).forEach(i => {
+      if (i.selected) { i.on_cooldown = true; i.next_reminder_date = tISO }
+      i.selected = false
     })
-  })
+  } finally {
+    sendingKey.value = null
+  }
 }
 </script>
 

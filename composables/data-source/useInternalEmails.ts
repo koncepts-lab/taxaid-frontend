@@ -8,7 +8,6 @@ export interface InternalEmail {
 
 export const useInternalEmails = () => {
   const emails = ref<InternalEmail[]>([])
-  const departments = ref<string[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -25,13 +24,6 @@ export const useInternalEmails = () => {
     }
   }
 
-  const fetchDepartments = async () => {
-    try {
-      const res = await useApi('/data-source/departments') as any
-      departments.value = res.data ?? []
-    } catch {}
-  }
-
   const createEmail = async (data: Partial<InternalEmail>): Promise<InternalEmail> => {
     const res = await useApi('/data-source/internal-emails', { method: 'POST', body: data }) as any
     return res.data
@@ -43,11 +35,9 @@ export const useInternalEmails = () => {
 
   return {
     emails,
-    departments,
     loading,
     error,
     fetchEmails,
-    fetchDepartments,
     createEmail,
     deleteEmail,
   }
