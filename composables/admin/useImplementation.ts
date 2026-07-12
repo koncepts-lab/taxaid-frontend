@@ -132,6 +132,17 @@ export function useImplementation() {
     return res.data?.data_mode ?? dataMode
   }
 
+  // TaxAid Connect activation code (one-time; regenerate until connected)
+  async function getConnectorCode(clientId: string): Promise<any> {
+    const res: any = await apiFetch(`/admin/implementation/clients/${clientId}/connector-code`)
+    return res.data ?? null
+  }
+
+  async function generateConnectorCode(clientId: string): Promise<any> {
+    const res: any = await apiFetch(`/admin/implementation/clients/${clientId}/connector-code`, { method: 'POST' })
+    return res.data
+  }
+
   // Temp credential requests — manager side (paginated)
   async function getCredentialRequests(opts: {
     search?: string
@@ -227,6 +238,8 @@ export function useImplementation() {
     goLive,
     getClientDataMode,
     setClientDataMode,
+    getConnectorCode,
+    generateConnectorCode,
     getCredentialRequests,
     approveCredentialRequest,
     rejectCredentialRequest,

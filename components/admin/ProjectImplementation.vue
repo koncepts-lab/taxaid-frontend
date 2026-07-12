@@ -36,9 +36,9 @@
             </div>
         </div>
 
-        <!-- Temporary Login Credentials (3/4) + Data Mode (1/4) -->
+        <!-- Temporary Login Credentials (2/4) + Data Mode (1/4) + TaxAid Connect (1/4) -->
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div class="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
             <div class="flex items-start justify-between gap-6 flex-wrap">
                 <div>
                     <h3 class="text-xl font-normal mb-1 text-black">Temporary Login Credentials</h3>
@@ -127,6 +127,55 @@
             </p>
             <p v-if="dmError" class="text-xs text-[#B91C1C] mt-2">{{ dmError }}</p>
             <p v-else-if="dmSaved" class="text-xs text-[#007C65] mt-2">Saved.</p>
+        </div>
+
+        <!-- TaxAid Connector Card (1/4) -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 flex flex-col">
+            <div class="flex items-start justify-between gap-2">
+                <h3 class="text-xl font-normal mb-1 text-black">TaxAid Connector</h3>
+                <span v-if="connCode?.code && !connCode?.connected && connCode?.is_expired" class="px-3 py-1 rounded-full text-sm bg-[#FEE2E2] text-[#B91C1C]">Expired</span>
+            </div>
+            <div v-if="connCode?.connected" class="mb-6">
+                <span class="inline-block px-3 py-1 rounded-full text-sm bg-[#DCFCE7] text-[#15803D]">Connected</span>
+            </div>
+            <p v-else class="text-base text-[#717182] mb-6">One-time activation code for the client's connector</p>
+
+            <!-- Connected: no more generation -->
+            <div v-if="connCode?.connected" class="space-y-2">
+                <p class="text-sm text-black capitalize"><span class="text-[#717182]">ERP:</span> {{ connCode.erp_type || '-' }}</p>
+                <p class="text-xs text-[#717182]">Connector is linked. Last sync: {{ formatDate(connCode.last_sync_at) }}.</p>
+            </div>
+
+            <!-- Code exists, not connected -->
+            <div v-else-if="connCode?.code" class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <div class="flex-1 bg-[#F3F4F6] rounded-xl px-3 py-2.5 text-sm text-black font-mono break-all">
+                        {{ connCode.code }}
+                    </div>
+                    <button @click="copyCred(connCode.code, 'conn')"
+                        class="bg-white border border-[#00896F] text-[#00896F] hover:bg-[#E6FDF9] px-3 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap">
+                        {{ copied === 'conn' ? 'Copied!' : 'Copy' }}
+                    </button>
+                </div>
+                <p class="text-xs text-[#717182]">
+                    <span v-if="connCode.is_expired">This code expired unused — generate a new one.</span>
+                    <span v-else>Valid until {{ formatDate(connCode.expires_at) }}. Paste it into the connector to link this client.</span>
+                </p>
+                <button @click="generateCode" :disabled="connLoading"
+                    class="bg-white border border-[#00896F] text-[#00896F] hover:bg-[#E6FDF9] px-6 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 disabled:opacity-50">
+                    {{ connLoading ? 'Generating…' : 'Regenerate' }}
+                </button>
+            </div>
+
+            <!-- No code yet -->
+            <div v-else class="space-y-3">
+                <button @click="generateCode" :disabled="connLoading"
+                    class="bg-[#00896F] hover:bg-[#006B56] text-white px-6 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 disabled:opacity-50">
+                    {{ connLoading ? 'Generating…' : 'Generate Code' }}
+                </button>
+            </div>
+
+            <p v-if="connError" class="text-xs text-[#B91C1C] mt-2">{{ connError }}</p>
         </div>
         </div>
 
@@ -297,7 +346,30 @@ import { ref, computed, reactive, onMounted } from 'vue'
 const props = defineProps({ project: Object })
 const emit = defineEmits(['back'])
 
-const { updateStepProgress, requestCredentials, getMyCredentialRequest, goLive, getClientDataMode, setClientDataMode } = useImplementation()
+const { updateStepProgress, requestCredentials, getMyCredentialRequest, goLive, getClientDataMode, setClientDataMode, getConnectorCode, generateConnectorCode } = useImplementation()
+
+// --- TaxAid Connect activation code ---
+const connCode    = ref(null)
+const connLoading = ref(false)
+const connError   = ref('')
+
+async function loadConnectorCode() {
+    try { connCode.value = await getConnectorCode(props.project.clientId) } catch {}
+}
+
+async function generateCode() {
+    connLoading.value = true
+    connError.value = ''
+    try {
+        await generateConnectorCode(props.project.clientId)
+        await loadConnectorCode()
+    } catch (e) {
+        connError.value = e?.data?.message || 'Failed to generate code.'
+        await loadConnectorCode()
+    } finally {
+        connLoading.value = false
+    }
+}
 
 // --- Client AR/AP data mode (hybrid | direct) ---
 const dataMode  = ref('hybrid')
@@ -397,6 +469,7 @@ async function confirmGoLive() {
 onMounted(() => {
     loadCredRequest()
     loadDataMode()
+    loadConnectorCode()
 })
 
 const activeStepId = ref(null)
