@@ -119,7 +119,10 @@ const handleReload = () => fetchAll(currentLang.value)
 
 watch(currentLang, () => fetchAll(currentLang.value))
 
-onMounted(() => fetchAll(currentLang.value))
+onMounted(() => {
+  fetchAll(currentLang.value)
+  useLocation().syncSessionLocation()
+})
 </script>
 
 <style scoped>

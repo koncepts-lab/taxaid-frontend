@@ -86,6 +86,8 @@ const activeTab = ref('profit-loss')
 
 const { filters, selectedRatioType, plRows, bsRows, ratiosRows, reportInfo, fetchTabData } = useFinancialStatement()
 
+onMounted(() => useLocation().syncSessionLocation())
+
 const dashboardData = computed(() => ({
     'profit-loss':   { rows: plRows.value },
     'balance-sheet': { rows: bsRows.value },
