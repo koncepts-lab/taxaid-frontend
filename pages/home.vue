@@ -389,6 +389,29 @@ const otp = ref(['', '', '', ''])
 const forgotEmail = ref('')
 const rememberMe = ref(true)
 
+// ---------- SESSION LOCATION (best effort) ----------
+// Resolved before submit so the permission popup doesn't race the login call.
+// Cascade: browser geolocation -> reverse-geocoded "City, Region, Country";
+// on deny/failure we send nothing and the backend falls back to timezone.
+const geoLocation = ref(null)
+onMounted(() => {
+  if (!navigator?.geolocation) return
+  navigator.geolocation.getCurrentPosition(
+    async ({ coords }) => {
+      try {
+        const res = await $fetch('https://api.bigdatacloud.net/data/reverse-geocode-client', {
+          params: { latitude: coords.latitude, longitude: coords.longitude, localityLanguage: 'en' },
+        })
+        const parts = [res?.city || res?.locality, res?.principalSubdivision, res?.countryName]
+          .filter((p) => typeof p === 'string' && p.trim())
+        if (parts.length) geoLocation.value = parts.join(', ')
+      } catch { /* backend falls back to timezone-derived location */ }
+    },
+    () => { /* denied/unavailable — timezone fallback */ },
+    { timeout: 5000, maximumAge: 600000 }
+  )
+})
+
 // Using dynamic path to avoid any potential static analysis weirdness
 const welcomeLogoPath = '/images/welcome-logo.png'
 
@@ -502,7 +525,7 @@ async function onSubmit() {
       const res = await login({
         email: form.email,
         password: form.password
-      }, rememberMe.value)
+      }, rememberMe.value, geoLocation.value)
 
       const status = res?.data?.tenant?.status      
       if (status === 'pending_onboarding') {// NEW USER / ONBOARDING: Show Welcome Card journey        
