@@ -443,7 +443,7 @@ const settingsItems = [
   { label: 'Support', labelAr: 'الدعم', icon: '/images/icons/Support.svg', to: '/settings/support' },
   { label: 'Notification Preferences', labelAr: 'تفضيلات الإشعارات', icon: '/images/icons/Notification-Preferences.svg', to: '/settings/notifications' },
   { label: 'Security & Privacy', labelAr: 'الأمن والخصوصية', icon: '/images/icons/Security-Privacy.svg', to: '/settings/security' },
-  { label: 'Sync & Data Management', labelAr: 'المزامنة وإدارة البيانات', icon: '/images/icons/Sync-Data-Management.svg' },
+  { label: 'Sync & Data Management', labelAr: 'المزامنة وإدارة البيانات', icon: '/images/icons/Sync-Data-Management.svg', to: '/settings/sync-and-data-management' },
 ]
 const companies = ref([
   { id: 1, name: 'MasterLine Mechanical LLC', logo: '/images/avatar-company.png', selected: true },
