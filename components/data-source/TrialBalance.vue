@@ -26,6 +26,14 @@
                 </div>
             </div>
 
+            <div v-if="tbError"
+                class="mx-6 mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+                <div class="w-4 h-4 rounded-full border border-red-500 flex items-center justify-center shrink-0">
+                    <span class="text-red-500 text-[10px] font-bold">!</span>
+                </div>
+                <p class="text-xs text-red-600">{{ tbError }}</p>
+            </div>
+
             <div v-if="userType === 'admin'"
                 class="mx-6 mb-4 p-4 bg-[#FFFBEB] border border-[#FEF3C7] rounded-xl flex items-center gap-3">
                 <div class="w-4 h-4 rounded-full border border-[#B45309] flex items-center justify-center shrink-0">
@@ -79,28 +87,28 @@
                             <tr v-for="item in mappingData" :key="item.id"
                                 :class="item.fsCode && item.mainGroup && item.subGroup ? 'bg-[#d6ffe2]' : 'bg-[#ffdbe0]'">
                                 <td class="p-2">
-                                    <select v-if="userType === 'admin'" v-model="item.fsCode"
-                                        class="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-1 focus:ring-[#00896F] outline-none appearance-none cursor-pointer text-[#717182]">
-                                        <option value="">—</option>
-                                        <option v-for="opt in fsCodes" :key="opt" :value="opt">{{ opt }}</option>
-                                    </select>
-                                    <span v-else class="px-4 text-sm text-black">{{ item.fsCode || '—' }}</span>
+                                    <CommonSelectDropdown v-if="userType === 'admin'" v-model="item.fsCode"
+                                        :options="fsCodes" :highlights="HIGHLIGHT_FS_CODES" />
+                                    <span v-else class="px-4 text-sm text-black flex items-center gap-1.5">
+                                        <span v-if="isHighlighted('fs', item.fsCode)" class="w-2.5 h-2.5 rounded-full bg-[#04C18F] inline-block shrink-0"></span>
+                                        {{ item.fsCode || '—' }}
+                                    </span>
                                 </td>
                                 <td class="p-2">
-                                    <select v-if="userType === 'admin'" v-model="item.mainGroup"
-                                        class="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-1 focus:ring-[#00896F] outline-none appearance-none cursor-pointer text-[#717182]">
-                                        <option value="">—</option>
-                                        <option v-for="opt in mainGroups" :key="opt" :value="opt">{{ opt }}</option>
-                                    </select>
-                                    <span v-else class="px-4 text-sm text-black">{{ item.mainGroup || '—' }}</span>
+                                    <CommonSelectDropdown v-if="userType === 'admin'" v-model="item.mainGroup" searchable
+                                        :options="mainGroups" :highlights="HIGHLIGHT_MAIN_GROUPS" />
+                                    <span v-else class="px-4 text-sm text-black flex items-center gap-1.5">
+                                        <span v-if="isHighlighted('main', item.mainGroup)" class="w-2.5 h-2.5 rounded-full bg-[#04C18F] inline-block shrink-0"></span>
+                                        {{ item.mainGroup || '—' }}
+                                    </span>
                                 </td>
                                 <td class="p-2">
-                                    <select v-if="userType === 'admin'" v-model="item.subGroup"
-                                        class="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-1 focus:ring-[#00896F] outline-none appearance-none cursor-pointer text-[#717182]">
-                                        <option value="">—</option>
-                                        <option v-for="opt in subGroups" :key="opt" :value="opt">{{ opt }}</option>
-                                    </select>
-                                    <span v-else class="px-4 text-sm text-black">{{ item.subGroup || '—' }}</span>
+                                    <CommonSelectDropdown v-if="userType === 'admin'" v-model="item.subGroup" searchable
+                                        :options="subGroups" :highlights="HIGHLIGHT_SUB_GROUPS" />
+                                    <span v-else class="px-4 text-sm text-black flex items-center gap-1.5">
+                                        <span v-if="isHighlighted('sub', item.subGroup)" class="w-2.5 h-2.5 rounded-full bg-[#04C18F] inline-block shrink-0"></span>
+                                        {{ item.subGroup || '—' }}
+                                    </span>
                                 </td>
                                 <td class="p-2 text-sm text-black">{{ item.ledger }}</td>
                             </tr>
@@ -483,6 +491,7 @@ const props = defineProps({
     tbConfigData:     { type: Array,    default: () => [] },
     tbMappingOptions: { type: Object,   default: () => ({ fsCodes: [], mainGroups: [], subGroups: [] }) },
     tbSaving:         { type: Boolean,  default: false },
+    tbError:          { type: String,   default: null },
     tbLoading:        { type: Boolean,  default: false },
     tbMeta:           { type: Object,   default: () => ({ current_page: 1, last_page: 1, total: 0, per_page: 10, mapped_count: 0, unmapped_count: 0 }) }, // ← default per_page for the UI component
     integrityData:    { type: Array,    default: null },
@@ -557,6 +566,21 @@ const fsCodes = computed(() => props.tbMappingOptions.fsCodes ?? [])
 const mainGroups = computed(() => props.tbMappingOptions.mainGroups ?? [])
 
 const subGroups = computed(() => props.tbMappingOptions.subGroups ?? [])
+
+// ---- Highlighted mapping values (edit these three arrays only) ----
+// Any value listed here gets a green dot in its dropdown option and next
+// to the field when selected.
+const HIGHLIGHT_FS_CODES = ['BS']
+const HIGHLIGHT_MAIN_GROUPS = ['Current asset']
+const HIGHLIGHT_SUB_GROUPS = ['Stock in Hand']
+
+const isHighlighted = (type, value) => {
+    if (!value) return false
+    if (type === 'fs') return HIGHLIGHT_FS_CODES.includes(value)
+    if (type === 'main') return HIGHLIGHT_MAIN_GROUPS.includes(value)
+    if (type === 'sub') return HIGHLIGHT_SUB_GROUPS.includes(value)
+    return false
+}
 
 const defaultConfig = [
     { label: 'Financial Year',             from: '2025-01-01', to: '2025-12-31' },
@@ -706,8 +730,13 @@ const handleReviewData = () => {
     nextTick(() => cardRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 }
 
-const handleUpdate = () => {
-    if (props.onUpdate) props.onUpdate()
+const handleUpdate = async () => {
+    if (!props.onUpdate) return
+    try {
+        await props.onUpdate()
+    } catch {
+        // Save failure reason is surfaced via the tbError banner.
+    }
 }
 </script>
 

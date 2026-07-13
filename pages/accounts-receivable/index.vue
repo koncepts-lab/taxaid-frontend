@@ -16,6 +16,18 @@
             :subtitle="{ en: 'Accounts Recievable Dashboard', ar: 'لوحة معلومات حسابات القبض' }"
             :periods="customPeriods" class="mb-8" @selected-date="handleDateChange" @reload="handleReload" />
 
+          <!-- Gap-day snapshot notice: shown when the selected date has no
+               uploaded AR snapshot and the latest earlier upload is displayed -->
+          <div v-if="snapshotNotice"
+            class="mb-4 -mt-4 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <span v-if="currentLang === 'ar'">عرض بيانات <b>{{ snapshotDate }}</b> (آخر تحميل) — لا توجد بيانات للتاريخ المحدد {{ requestedDate }}</span>
+            <span v-else>Showing data of <b>{{ snapshotDate }}</b> (last upload) — no data was uploaded for the selected date {{ requestedDate }}.</span>
+          </div>
+
           <AccountsReceivableAlert />
 
           <div class="mb-4 lg:mb-8">
@@ -83,7 +95,7 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { activeDate, fetchAll, summary, topCustomers, agingGraph, historicalMovement } = useAccountsReceivablePage()
+const { activeDate, fetchAll, summary, topCustomers, agingGraph, historicalMovement, snapshotNotice, snapshotDate, requestedDate } = useAccountsReceivablePage()
 
 const customPeriods = [
   // { en: 'Year to Date', ar: 'منذ بداية العام' }, // not supported — backend uses single test_date only

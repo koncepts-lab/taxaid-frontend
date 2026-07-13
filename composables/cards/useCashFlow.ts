@@ -24,6 +24,32 @@ export const useCashFlow = () => {
     }
   }
 
+  // ── ⓘ invoice-details drill-down (GET /cash-flow/customer-projection) ────
+
+  const customerDetail        = useState<any>('cashflow_customer_detail', () => null)
+  const customerDetailLoading = useState<boolean>('cashflow_customer_detail_loading', () => false)
+  const customerDetailError   = useState<string | null>('cashflow_customer_detail_error', () => null)
+
+  const fetchCustomerDetail = async (customer: string, type: 'AR' | 'AP') => {
+    customerDetailLoading.value = true
+    customerDetailError.value   = null
+    customerDetail.value        = null
+    try {
+      const qs = new URLSearchParams({ period: String(period.value), customer, type })
+      if (activeDate.value) qs.set('date', activeDate.value)
+      const res = await useApi(`/cash-flow/customer-projection?${qs.toString()}`) as any
+      if (res?.status === 'success') {
+        customerDetail.value = res.data
+      } else {
+        customerDetailError.value = res?.message ?? 'Failed to fetch customer detail'
+      }
+    } catch (err: any) {
+      customerDetailError.value = err?.data?.message ?? 'Failed to fetch customer detail'
+    } finally {
+      customerDetailLoading.value = false
+    }
+  }
+
   // ── helpers ──────────────────────────────────────────────────────────────
 
   const fmt  = (val: number) => Math.round(val).toLocaleString('en-US')
@@ -48,22 +74,60 @@ export const useCashFlow = () => {
       outgoing:        ms.map(m => fmt(d['Outgoing']?.monthly_totals?.[m] ?? 0)),
       netMovements:    ms.map(m => fmt(d['Net Cash Flow']?.monthly_totals?.[m] ?? 0)),
       closing:         ms.map(m => fmt(d['Closing Balance']?.monthly_totals?.[m] ?? 0)),
-      incomingInvoices: (d['AR File']?.customers ?? []).map((c: any) => ({
-        number:   'N/A',
-        customer: c.name,
+      incomingInvoices: (d['AR File']?.invoices ?? []).map((inv: any) => ({
+        number:   inv.invoice_no,
+        customer: inv.customer,
         type:     'AR',
-        amount:   fmt(c.total),
-        status:   'Confirmed',
-        expDate:  '-',
+        amount:   fmt(inv.amount),
+        status:   inv.status,
+        expDate:  inv.due_date,
       })),
-      outgoingInvoices: (d['AP File']?.customers ?? []).map((c: any) => ({
-        number:   'N/A',
-        customer: c.name,
+      outgoingInvoices: (d['AP File']?.invoices ?? []).map((inv: any) => ({
+        number:   inv.invoice_no,
+        customer: inv.customer,
         type:     'AP',
-        amount:   fmt(c.total),
-        status:   'Pending',
-        expDate:  '-',
+        amount:   fmt(inv.amount),
+        status:   inv.status,
+        expDate:  inv.due_date,
       })),
+    }
+  })
+
+  // ── Figma grouped sub-sections (expanded Incoming / Outgoing) ────────────
+  // invoiceType marks rows that have real invoices behind them (ⓘ modal).
+
+  const mapSectionRows = (group: any, ms: string[], invoiceType: 'AR' | 'AP' | null = null) =>
+    (group?.customers ?? []).map((c: any) => ({
+      name:        c.name,
+      invoiceType,
+      values:      ms.map(m => fmt(c.values?.[m] ?? 0)),
+    }))
+
+  const sections = computed(() => {
+    if (!rawData.value || !months.value.length) return null
+    const d  = rawData.value
+    const ms = months.value
+
+    const incoming = [
+      { key: 'ar',   title: { en: 'Collections from AR',   ar: 'التحصيلات من الذمم المدينة' }, rows: mapSectionRows(d['AR File'], ms, 'AR') },
+      { key: 'p100', title: { en: 'Projections from 100%', ar: 'توقعات 100%' },               rows: mapSectionRows(d['Sales Forecast'], ms) },
+    ]
+    if (d['Projections from 90%']) {
+      incoming.push({ key: 'p90', title: { en: 'Projections from 90%', ar: 'توقعات 90%' }, rows: mapSectionRows(d['Projections from 90%'], ms) })
+    }
+
+    const outgoing = [
+      { key: 'ap', title: { en: 'Payment to AP',      ar: 'مدفوعات الذمم الدائنة' },      rows: mapSectionRows(d['AP File'], ms, 'AP') },
+      { key: 'de', title: { en: 'Direct expenses',    ar: 'المصروفات المباشرة' },         rows: mapSectionRows(d['Direct Expenses'], ms) },
+      { key: 'ie', title: { en: 'Indirect expenses',  ar: 'المصروفات غير المباشرة' },     rows: mapSectionRows(d['Indirect Expenses'], ms) },
+    ]
+    if (d['Budget for 90% - from Cost center budget']) {
+      outgoing.push({ key: 'b90', title: { en: 'Budget for 90% - Cost center', ar: 'موازنة 90% - مركز التكلفة' }, rows: mapSectionRows(d['Budget for 90% - from Cost center budget'], ms) })
+    }
+
+    return {
+      incoming: incoming.filter(s => s.rows.length),
+      outgoing: outgoing.filter(s => s.rows.length),
     }
   })
 
@@ -136,7 +200,12 @@ export const useCashFlow = () => {
     scenario,
     activeDate,
     fetchProjection,
+    customerDetail,
+    customerDetailLoading,
+    customerDetailError,
+    fetchCustomerDetail,
     summary,
+    sections,
     metrics,
     scenarioChart,
     inflowOutflow,

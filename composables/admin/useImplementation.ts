@@ -118,6 +118,31 @@ export function useImplementation() {
     return res.data
   }
 
+  // Client AR/AP data mode (hybrid = data-in uploads, direct = connector)
+  async function getClientDataMode(clientId: string): Promise<string> {
+    const res: any = await apiFetch(`/admin/implementation/clients/${clientId}/data-mode`)
+    return res.data?.data_mode ?? 'hybrid'
+  }
+
+  async function setClientDataMode(clientId: string, dataMode: 'hybrid' | 'direct'): Promise<string> {
+    const res: any = await apiFetch(`/admin/implementation/clients/${clientId}/data-mode`, {
+      method: 'PATCH',
+      body: { data_mode: dataMode },
+    })
+    return res.data?.data_mode ?? dataMode
+  }
+
+  // TaxAid Connect activation code (one-time; regenerate until connected)
+  async function getConnectorCode(clientId: string): Promise<any> {
+    const res: any = await apiFetch(`/admin/implementation/clients/${clientId}/connector-code`)
+    return res.data ?? null
+  }
+
+  async function generateConnectorCode(clientId: string): Promise<any> {
+    const res: any = await apiFetch(`/admin/implementation/clients/${clientId}/connector-code`, { method: 'POST' })
+    return res.data
+  }
+
   // Temp credential requests — manager side (paginated)
   async function getCredentialRequests(opts: {
     search?: string
@@ -162,38 +187,26 @@ export function useImplementation() {
     return res.data ?? { fs_codes: [], main_groups: [], sub_groups: [] }
   }
 
-  async function createFsCode(code: string): Promise<any> {
-    const res: any = await apiFetch('/admin/gl/fs-codes', { method: 'POST', body: { code } })
+  // FS Codes are locked server-side (fixed to BS, P&L) — no create/update/delete.
+  // `confirm` bypasses the backend's similar-value (fuzzy duplicate) rejection.
+  async function createMainGroup(name: string, confirm = false): Promise<any> {
+    const res: any = await apiFetch('/admin/gl/main-groups', { method: 'POST', body: { name, confirm } })
     return res.data
   }
 
-  async function createMainGroup(name: string): Promise<any> {
-    const res: any = await apiFetch('/admin/gl/main-groups', { method: 'POST', body: { name } })
+  async function createSubGroup(name: string, confirm = false): Promise<any> {
+    const res: any = await apiFetch('/admin/gl/sub-groups', { method: 'POST', body: { name, confirm } })
     return res.data
   }
 
-  async function createSubGroup(name: string): Promise<any> {
-    const res: any = await apiFetch('/admin/gl/sub-groups', { method: 'POST', body: { name } })
+  async function updateMainGroup(id: number, name: string, confirm = false): Promise<any> {
+    const res: any = await apiFetch(`/admin/gl/main-groups/${id}`, { method: 'PUT', body: { name, confirm } })
     return res.data
   }
 
-  async function updateFsCode(id: number, code: string): Promise<any> {
-    const res: any = await apiFetch(`/admin/gl/fs-codes/${id}`, { method: 'PUT', body: { code } })
+  async function updateSubGroup(id: number, name: string, confirm = false): Promise<any> {
+    const res: any = await apiFetch(`/admin/gl/sub-groups/${id}`, { method: 'PUT', body: { name, confirm } })
     return res.data
-  }
-
-  async function updateMainGroup(id: number, name: string): Promise<any> {
-    const res: any = await apiFetch(`/admin/gl/main-groups/${id}`, { method: 'PUT', body: { name } })
-    return res.data
-  }
-
-  async function updateSubGroup(id: number, name: string): Promise<any> {
-    const res: any = await apiFetch(`/admin/gl/sub-groups/${id}`, { method: 'PUT', body: { name } })
-    return res.data
-  }
-
-  async function deleteFsCode(id: number): Promise<void> {
-    await apiFetch(`/admin/gl/fs-codes/${id}`, { method: 'DELETE' })
   }
 
   async function deleteMainGroup(id: number): Promise<void> {
@@ -223,13 +236,17 @@ export function useImplementation() {
     requestCredentials,
     getMyCredentialRequest,
     goLive,
+    getClientDataMode,
+    setClientDataMode,
+    getConnectorCode,
+    generateConnectorCode,
     getCredentialRequests,
     approveCredentialRequest,
     rejectCredentialRequest,
     terminateCredentialRequest,
     getGLMasters,
-    createFsCode, createMainGroup, createSubGroup,
-    updateFsCode, updateMainGroup, updateSubGroup,
-    deleteFsCode, deleteMainGroup, deleteSubGroup,
+    createMainGroup, createSubGroup,
+    updateMainGroup, updateSubGroup,
+    deleteMainGroup, deleteSubGroup,
   }
 }

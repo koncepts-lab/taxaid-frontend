@@ -352,7 +352,7 @@ const initializeExpanded = () => {
         props.data.forEach((row, i) => {
             if (row.children && row.children.length) {
                 if (expandedRows.value[i] === undefined) {
-                    expandedRows.value[i] = i === 0
+                    expandedRows.value[i] = false
                 }
             }
         })
@@ -374,7 +374,7 @@ const initializeModalExpanded = () => {
         props.data.forEach((row, i) => {
             if (row.children && row.children.length) {
                 if (modalExpandedRows.value[i] === undefined) {
-                    modalExpandedRows.value[i] = i === 0
+                    modalExpandedRows.value[i] = false
                 }
             }
         })

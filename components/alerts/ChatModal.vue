@@ -51,7 +51,7 @@
                                 currentLang === 'ar' ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none'
                             ]">
                                 {{ currentLang === 'ar'
-                                    ? `مرحباً! أنا هنا لمساعدتك بخصوص "${alert.titleAr || alert.title}". ماذا تود أن تعرف عن
+                                    ? `مرحباً! أنا هنا لمساعدتك بخصوص "${alert.title}". ماذا تود أن تعرف عن
                                 هذا التنبيه؟`
                                     : `Hi! I'm here to help you with "${alert.title}". What would you like to know about
                                 this alert?`

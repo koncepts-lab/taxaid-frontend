@@ -30,20 +30,24 @@
           <div class="bg-[#eefdf6] border border-[#a7f3d0] rounded-xl p-5 flex flex-col md:flex-row gap-6 mb-4">
             <div class="flex-1">
               <label class="block text-sm font-semibold text-gray-700 mb-2">Balance as per TB</label>
-              <input type="text" :value="formatAmount(data['Balance as per TB'])" readonly class="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:outline-none" />
+              <input type="text" :value="formatAmount(balanceTB)" readonly class="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:outline-none" />
             </div>
             <div class="flex-1">
               <label class="block text-sm font-semibold text-gray-700 mb-2">Balance as per AR report</label>
-              <input type="text" :value="formatAmount(data['Balance as per AR report'])" readonly class="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:outline-none" />
+              <input type="text" :value="formatAmount(balanceReport)" readonly class="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:outline-none" />
             </div>
             <div class="flex-1">
               <label class="block text-sm font-semibold text-gray-700 mb-2">Variance</label>
-              <input type="text" :value="formatAmount(data['Variance'])" readonly class="w-full bg-[#fef2f2] border border-[#fca5a5] text-red-600 rounded-lg px-4 py-2.5 font-medium focus:outline-none" />
+              <input type="text" :value="formatAmount(variance)" readonly :class="isResolved ? 'bg-[#eefdf6] border-[#6ee7b7] text-[#047857]' : 'bg-[#fef2f2] border-[#fca5a5] text-red-600'" class="w-full border rounded-lg px-4 py-2.5 font-medium focus:outline-none" />
             </div>
           </div>
-          <div class="flex items-center gap-2 text-red-500 text-sm font-medium">
+          <div v-if="!isResolved" class="flex items-center gap-2 text-red-500 text-sm font-medium">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            AED {{ formatAmount(data['Variance']) }} variance remaining - Select items below to resolve the variance.
+            AED {{ formatAmount(variance) }} variance remaining - Select items below to resolve the variance.
+          </div>
+          <div v-else class="flex items-center gap-2 text-[#047857] text-sm font-medium">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            Variance resolved to zero - you can now post the variance.
           </div>
         </div>
       </div>
@@ -79,18 +83,18 @@
                     <span :class="{'line-through text-gray-400 mr-2': salesState[i].applied && salesState[i].adjust}">{{ row.amount }}</span>
                     <span v-if="salesState[i].applied && salesState[i].adjust" class="font-bold text-[#058a64]">{{ salesState[i].adjust }}</span>
                   </td>
-                  <td class="py-3 px-4"><input type="checkbox" v-model="salesState[i].selected" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" /></td>
+                  <td class="py-3 px-4"><input type="checkbox" v-model="salesState[i].selected" :disabled="salesState[i].applied" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" /></td>
                   <td class="py-2 px-4">
-                    <input type="text" v-model="salesState[i].adjust" :placeholder="salesState[i].selected ? '0.00' : 'Select to adjust'" :class="salesState[i].selected ? 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300'" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!salesState[i].selected"/>
+                    <input type="text" v-model="salesState[i].adjust" :placeholder="salesState[i].selected ? String(row.amount) : 'Select to adjust'" :class="salesState[i].selected ? 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300'" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!salesState[i].selected || salesState[i].applied"/>
                   </td>
                   <td class="py-2 px-4">
-                    <button v-if="salesState[i].selected && !salesState[i].applied" @click="salesState[i].applied = true" class="bg-[#058a64] hover:bg-[#047857] text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors w-24 text-center">
-                      Apply
+                    <button v-if="salesState[i].selected && !salesState[i].applied" @click="applyRow('sales', row, i)" :disabled="salesState[i].saving" class="bg-[#058a64] hover:bg-[#047857] text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors w-24 text-center disabled:opacity-50">
+                      {{ salesState[i].saving ? 'Applying...' : 'Apply' }}
                     </button>
-                    <button v-else-if="salesState[i].selected && salesState[i].applied" @click="salesState[i].applied = false" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium transition-colors w-24 flex items-center justify-center gap-1">
+                    <span v-else-if="salesState[i].applied" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium w-24 flex items-center justify-center gap-1">
                       <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                       Applied
-                    </button>
+                    </span>
                   </td>
                 </tr>
               </tbody>
@@ -126,18 +130,18 @@
                     <span :class="{'line-through text-gray-400 mr-2': receiptState[i].applied && receiptState[i].adjust}">{{ row.amount }}</span>
                     <span v-if="receiptState[i].applied && receiptState[i].adjust" class="font-bold text-[#058a64]">{{ receiptState[i].adjust }}</span>
                   </td>
-                  <td class="py-3 px-4"><input type="checkbox" v-model="receiptState[i].selected" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" /></td>
+                  <td class="py-3 px-4"><input type="checkbox" v-model="receiptState[i].selected" :disabled="receiptState[i].applied" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" /></td>
                   <td class="py-2 px-4">
-                    <input type="text" v-model="receiptState[i].adjust" :placeholder="receiptState[i].selected ? '0.00' : 'Select to adjust'" :class="receiptState[i].selected ? 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300'" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!receiptState[i].selected"/>
+                    <input type="text" v-model="receiptState[i].adjust" :placeholder="receiptState[i].selected ? String(row.amount) : 'Select to adjust'" :class="receiptState[i].selected ? 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300'" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!receiptState[i].selected || receiptState[i].applied"/>
                   </td>
                   <td class="py-2 px-4">
-                    <button v-if="receiptState[i].selected && !receiptState[i].applied" @click="receiptState[i].applied = true" class="bg-[#058a64] hover:bg-[#047857] text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors w-24 text-center">
-                      Apply
+                    <button v-if="receiptState[i].selected && !receiptState[i].applied" @click="applyRow('receipt', row, i)" :disabled="receiptState[i].saving" class="bg-[#058a64] hover:bg-[#047857] text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors w-24 text-center disabled:opacity-50">
+                      {{ receiptState[i].saving ? 'Applying...' : 'Apply' }}
                     </button>
-                    <button v-else-if="receiptState[i].selected && receiptState[i].applied" @click="receiptState[i].applied = false" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium transition-colors w-24 flex items-center justify-center gap-1">
+                    <span v-else-if="receiptState[i].applied" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium w-24 flex items-center justify-center gap-1">
                       <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                       Applied
-                    </button>
+                    </span>
                   </td>
                 </tr>
               </tbody>
@@ -149,14 +153,15 @@
 
       <!-- Footer -->
       <div class="sticky bottom-0 z-10 bg-white px-6 py-4 border-t flex justify-end items-center gap-4">
+        <p v-if="errorMessage" class="text-sm text-red-500 mr-auto">{{ errorMessage }}</p>
         <button @click="closeModal" class="px-4 py-1.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors text-sm">
           Cancel
         </button>
-        <button @click="submitAction('ignore')" :disabled="actionLoading" class="px-4 py-1.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors text-sm disabled:opacity-50">
+        <button @click="ignoreAlert" :disabled="actionLoading" class="px-4 py-1.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors text-sm disabled:opacity-50">
           Ignore
         </button>
-        <button @click="submitAction('resolve')" :disabled="actionLoading || !data.alert_id" class="px-4 py-1.5 bg-[#058a64] hover:bg-[#047857] text-white rounded-lg font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-          Mark Resolved
+        <button @click="postVariance" :disabled="!canPost || actionLoading" :class="canPost ? 'bg-[#058a64] hover:bg-[#047857] cursor-pointer' : 'bg-[#a3dcc8] cursor-not-allowed'" class="px-4 py-1.5 text-white rounded-lg font-medium text-sm">
+          {{ actionLoading ? 'Posting...' : 'Post Variance' }}
         </button>
       </div>
 
@@ -175,31 +180,152 @@ const emit = defineEmits(['close', 'resolved']);
 
 const currentLang = useState('currentLang', () => 'en');
 
+// Header balances are reactive: initialized from the alert payload, then
+// updated from each adjustment endpoint's recalculated response.
+const balanceTB = ref(0);
+const balanceReport = ref(0);
+const variance = ref(0);
+
+watch(() => props.data, (d) => {
+  balanceTB.value = Number(d?.['Balance as per TB'] ?? 0);
+  balanceReport.value = Number(d?.['Balance as per AR report'] ?? 0);
+  variance.value = Number(d?.['Variance'] ?? 0);
+}, { immediate: true });
+
+const isResolved = computed(() => Math.abs(Number(variance.value)) < 0.005);
+
 const salesRows = computed(() => props.data?.Vouchers?.['Potential reason for variance - Sales'] ?? []);
 const receiptRows = computed(() => props.data?.Vouchers?.['Receipt - Unrecorded Transactions'] ?? []);
 
 const salesState = ref([]);
 const receiptState = ref([]);
 
-const resetRowState = (rows) => rows.map(() => ({ selected: false, adjust: '', applied: false }));
+const resetRowState = (rows) => rows.map(() => ({ selected: false, adjust: '', applied: false, saving: false }));
 
 watch(salesRows, (rows) => { salesState.value = resetRowState(rows); }, { immediate: true });
 watch(receiptRows, (rows) => { receiptState.value = resetRowState(rows); }, { immediate: true });
 
+const errorMessage = ref('');
+
 const formatAmount = (v) => Number(v ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const toNumber = (v) => {
+  const n = parseFloat(String(v ?? '').replace(/,/g, ''));
+  return isNaN(n) ? 0 : n;
+};
+// Backend requires Y-m-d; accepts daybook dates (already ISO, possibly with time) and dd-mm-yyyy input.
+const toApiDate = (value) => {
+  const v = String(value ?? '').trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0, 10);
+  const m = v.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  return v;
+};
+const extractError = (err) => {
+  const data = err?.data || err?.response?._data;
+  if (data?.errors) {
+    const first = Object.values(data.errors)[0];
+    return Array.isArray(first) ? String(first[0]) : String(first);
+  }
+  return data?.message || err?.message || 'Something went wrong';
+};
 
 const closeModal = () => emit('close');
 
+// ---------- Section 1 & 2: per-row apply ----------
+// sales   -> /adjustments/ar/sales (recalculates balances)
+// receipt -> /adjustments/ar/receipt (marks invoice paid + recalculates)
+const applyRow = async (section, row, i) => {
+  const state = section === 'sales' ? salesState.value : receiptState.value;
+  const adjustment = toNumber(state[i].adjust || row.amount);
+  if (!adjustment) { errorMessage.value = 'Enter an adjustment amount first'; return; }
+  errorMessage.value = '';
+  state[i].saving = true;
+  try {
+    const res = await useApi(`/adjustments/ar/${section}`, {
+      method: 'POST',
+      body: {
+        party_name: row.ledger_name,
+        invoice_number: row.voucher_no || null,
+        date: toApiDate(row.entry_date),
+        adjustment,
+        balance_as_per_TB: balanceTB.value,
+        Balance_as_per_AR_report: balanceReport.value,
+        variance: variance.value,
+      },
+    });
+    if (res?.status === 'success') {
+      balanceTB.value = Number(res.balance_as_per_TB);
+      balanceReport.value = Number(res.Balance_as_per_AR_report);
+      variance.value = Number(res.variance);
+      state[i].adjust = String(adjustment);
+      state[i].applied = true;
+    }
+  } catch (err) {
+    errorMessage.value = extractError(err);
+  } finally {
+    state[i].saving = false;
+  }
+};
+
+// ---------- Footer actions ----------
 const actionLoading = ref(false);
-const submitAction = async (type) => {
-  if (!props.data.alert_id) { emit('close'); return; }
+
+// Bulk endpoint accepts type sales|return: sales creates an unpaid invoice,
+// return marks the matching invoice_number as paid.
+const appliedAdjustments = computed(() => {
+  const collect = (rows, state, type) => rows
+    .map((row, i) => ({ row, state: state[i] }))
+    .filter(({ state: s }) => s?.applied)
+    .map(({ row, state: s }) => ({
+      party_name: row.ledger_name,
+      invoice_number: row.voucher_no || null,
+      date: toApiDate(row.entry_date),
+      adjustment: toNumber(s.adjust || row.amount),
+      credit_days: null,
+      type,
+    }));
+  return [
+    ...collect(salesRows.value, salesState.value, 'sales'),
+    ...collect(receiptRows.value, receiptState.value, 'return'),
+  ];
+});
+
+const canPost = computed(() => isResolved.value && appliedAdjustments.value.length > 0);
+
+const resolveAlert = async (type) => {
+  if (!props.data.alert_id) return;
+  await useApi(`/alerts/${props.data.alert_id}/action`, {
+    method: 'POST',
+    body: { type, action_by: 'Dashboard' },
+  });
+};
+
+// Post Variance: persist all applied rows via the bulk endpoint, then resolve the alert.
+const postVariance = async () => {
+  errorMessage.value = '';
   actionLoading.value = true;
   try {
-    await useApi(`/alerts/${props.data.alert_id}/action`, {
+    await useApi('/adjustments/ar/bulk', {
       method: 'POST',
-      body: { type, action_by: 'Dashboard' },
+      body: { variance: 0, adjustments: appliedAdjustments.value },
     });
+    await resolveAlert('resolve');
     emit('resolved');
+  } catch (err) {
+    errorMessage.value = extractError(err);
+  } finally {
+    actionLoading.value = false;
+  }
+};
+
+const ignoreAlert = async () => {
+  errorMessage.value = '';
+  actionLoading.value = true;
+  try {
+    await resolveAlert('ignore');
+    emit('resolved');
+  } catch (err) {
+    errorMessage.value = extractError(err);
   } finally {
     actionLoading.value = false;
   }

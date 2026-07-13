@@ -66,20 +66,31 @@
                         {{ currentLang === 'ar' ? 'حدد الفواتير لإرسال تذكيرات تعليق الدفع' : 'Select invoices to send hold payment reminders.' }}
                       </h3>
                       <div class="flex items-center gap-3">
-                        <input type="checkbox" v-model="selectAll" @change="handleSelectAll"
+                        <input type="checkbox" :checked="isGroupAllSelected(group)" @change="toggleGroupSelectAll(group)"
                           class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
                         <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
                           {{ currentLang === 'ar' ? `تحديد الكل (${getInvoices(group).length})` : `Select All (${getInvoices(group).length})` }}
                         </span>
                       </div>
                     </div>
-                    <button class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-3 rounded-xl flex items-center gap-3 text-[16px] font-normal transition-colors">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                      {{ currentLang === 'ar' ? 'مراجعة معلقة' : 'Send Reminder' }}
-                    </button>
+                    <div class="flex flex-col items-end gap-1">
+                      <button @click="handleSendReminders(group)"
+                        :disabled="sendingKey !== null || groupSelectedCount(group) === 0 || !hasEmail(group)"
+                        :title="emailTooltip(group)"
+                        class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-3 rounded-xl flex items-center gap-3 text-[16px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        {{ sendingKey === group.label
+                            ? '...'
+                            : (currentLang === 'ar' ? `إرسال تذكير (${groupSelectedCount(group)})` : `Send Reminder (${groupSelectedCount(group)})`) }}
+                      </button>
+                      <span v-if="!hasEmail(group)" class="text-[12px] text-amber-700">
+                        {{ currentLang === 'ar' ? 'لم تتم إضافة بريد لهذا العميل' : "Email for this client isn't added" }}
+                      </span>
+                    </div>
                   </div>
+
 
                   <!-- Loading spinner -->
                   <div v-if="loadingGroup === gIdx" class="flex justify-center py-6">
@@ -91,11 +102,17 @@
                       {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
                     </div>
                     <div v-for="(inv, iIdx) in getInvoices(group)" :key="iIdx"
-                      class="grid grid-cols-6 items-center border-t border-black/5 dark:border-white/5 pt-4">
+                      class="grid grid-cols-6 items-center border-t border-black/5 dark:border-white/5 pt-4 transition-opacity"
+                      :class="inv.on_cooldown ? 'opacity-45' : ''">
                       <div class="flex items-center gap-3">
-                        <input type="checkbox" v-model="inv.selected"
-                          class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
-                        <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ inv.invoiceNo }}</span>
+                        <input type="checkbox" v-model="inv.selected" :disabled="inv.on_cooldown"
+                          class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864] disabled:cursor-not-allowed">
+                        <!-- Invoice no; cooldown → dotted underline + fixed tooltip on hover -->
+                        <span class="text-[16px] font-normal"
+                          :class="[isDark ? 'text-white' : 'text-[#1A1A1A]', inv.on_cooldown ? 'underline decoration-dotted underline-offset-4 cursor-help' : '']"
+                          @mouseenter="inv.on_cooldown && showCooldownTip($event, inv)" @mouseleave="hideCooldownTip">
+                          {{ inv.invoiceNo }}
+                        </span>
                       </div>
                       <div class="text-right rtl:text-left font-normal text-[16px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
                         <span class="underline underline-offset-4 cursor-pointer">{{ inv.amount?.toLocaleString() }}</span>
@@ -229,11 +246,29 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Cooldown tooltip (fixed → never clipped, no CLS) -->
+    <Teleport to="body">
+      <div v-if="cooldownTip.show"
+        class="fixed z-[10000] pointer-events-none -translate-x-1/2 -translate-y-full px-3 py-2 rounded-lg text-[12px] font-medium shadow-lg bg-[#013E32] text-white whitespace-nowrap"
+        :style="{ left: cooldownTip.x + 'px', top: cooldownTip.y + 'px' }">
+        {{ currentLang === 'ar' ? 'يمكن إرسال التذكير التالي في' : 'Next reminder can be sent on' }}
+        <span class="text-[#5CE5C1]">{{ formatCooldownDate(cooldownTip.date) }}</span>
+      </div>
+    </Teleport>
+
+    <!-- Error-only toast (fixed → no layout shift) -->
+    <Teleport to="body">
+      <div v-if="sendStatus.message && sendStatus.type === 'error'"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10000] px-5 py-3 rounded-xl text-sm shadow-lg bg-red-600 text-white">
+        {{ sendStatus.message }}
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 
 const props = defineProps({
   data:     { type: Array,  default: () => [] },
@@ -243,11 +278,16 @@ const props = defineProps({
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
+const { contactEmails, fetchContactEmails, sendReminders } = useAccountsReceivablePage()
+
 const expandedGroups = ref([0])
-const selectAll      = ref(false)
 const isModalOpen    = ref(false)
 const loadingGroup   = ref(null)
 const invoiceCache   = ref({})
+const sendingKey     = ref(null) // label of the company currently sending (per-group)
+const sendStatus     = reactive({ type: '', message: '' })
+
+onMounted(fetchContactEmails)
 
 const arData = computed(() => props.data)
 
@@ -284,10 +324,14 @@ const toggleGroup = async (idx) => {
         .map(r => ({
           invoiceNo:  r.invoice_no,
           amount:     r.amount,
+          dueDate:    r.due_date ?? null,
+          invoiceDate: r.date_of_invoice ?? r.invoice_date ?? null,
           age30:      r.bucket_0_30,
           age3060:    r.bucket_31_60,
           age6090:    r.bucket_61_90,
           age90plus:  (r.bucket_91_180 ?? 0) + (r.bucket_181_365 ?? 0) + (r.bucket_365_plus ?? 0),
+          on_cooldown:        r.on_cooldown ?? false,
+          next_reminder_date: r.next_reminder_date ?? null,
           selected:   false
         }))
     } else {
@@ -302,10 +346,105 @@ const toggleGroup = async (idx) => {
 
 const getInvoices = (group) => invoiceCache.value[group?.label] ?? []
 
-const handleSelectAll = () => {
-  props.data.forEach(group => {
-    getInvoices(group).forEach(inv => { inv.selected = selectAll.value })
-  })
+// Per-group Select All (was toggling every group's invoices before)
+const isGroupAllSelected = (group) => {
+  const invs = getInvoices(group).filter(i => !i.on_cooldown)
+  return invs.length > 0 && invs.every(i => i.selected)
+}
+const toggleGroupSelectAll = (group) => {
+  const next = !isGroupAllSelected(group)
+  getInvoices(group).forEach(inv => { if (!inv.on_cooldown) inv.selected = next })
+}
+
+// Does this customer have an email in the contacts registry?
+const hasEmail = (group) => {
+  const key = String(group?.label ?? '').trim().toLowerCase()
+  return !!contactEmails.value[key]
+}
+
+const emailTooltip = (group) => {
+  if (hasEmail(group)) return ''
+  return currentLang.value === 'ar'
+    ? 'لم تتم إضافة بريد إلكتروني لهذا العميل — أضفه في جهات الاتصال'
+    : "Email for this client isn't added — add it in Contacts (Data Source page)"
+}
+
+const formatCooldownDate = (d) => {
+  if (!d) return ''
+  const dt = new Date(d)
+  return isNaN(dt) ? d : dt.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+// Fixed-position cooldown tooltip (escapes the table's overflow clipping, no CLS)
+const cooldownTip = reactive({ show: false, x: 0, y: 0, date: '' })
+const showCooldownTip = (e, inv) => {
+  const r = e.currentTarget.getBoundingClientRect()
+  cooldownTip.x = r.left + r.width / 2
+  cooldownTip.y = r.top - 8
+  cooldownTip.date = inv.next_reminder_date
+  cooldownTip.show = true
+}
+const hideCooldownTip = () => { cooldownTip.show = false }
+
+// Selected count for a single company (this button's group only)
+const groupSelectedCount = (group) => getInvoices(group).filter(i => i.selected).length
+
+const flashStatus = (type, message) => {
+  sendStatus.type = type
+  sendStatus.message = message
+  setTimeout(() => { sendStatus.message = '' }, 4000)
+}
+
+// Send ONLY this company's selected invoices — independent per company.
+const handleSendReminders = async (group) => {
+  const selected = getInvoices(group).filter(i => i.selected)
+  if (!selected.length) return
+
+  if (!hasEmail(group)) {
+    flashStatus('error', currentLang.value === 'ar'
+      ? `لا يوجد بريد إلكتروني لـ ${group.label}`
+      : `No email on file for ${group.label}`)
+    return
+  }
+
+  const items = [{
+    customer: group.label,
+    invoices: selected.map(i => ({
+      invoice_no: i.invoiceNo,
+      amount:     i.amount,
+      due_date:   i.dueDate,
+      invoice_date: i.invoiceDate,
+    })),
+  }]
+
+  sendingKey.value = group.label
+  sendStatus.message = ''
+  try {
+    const res = await sendReminders(items)
+    if (!res.ok) {
+      flashStatus('error', res.message)
+      return
+    }
+    const r = res.results[0] ?? {}
+    // Success + cooldown need no banner — the greyed row + hover tooltip is the
+    // feedback. Only surface a hard "no email" case as a brief fixed toast.
+    if (r.status === 'no_email') {
+      flashStatus('error', currentLang.value === 'ar' ? 'لا يوجد بريد لهذا العميل' : 'No email on file for this customer.')
+    }
+
+    // Grey the invoices (sent OR already-on-cooldown) so the tooltip shows
+    // immediately instead of the banner re-appearing. Skip when no email.
+    if (r.status !== 'no_email') {
+      const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
+      const tISO = tomorrow.toISOString().slice(0, 10)
+      getInvoices(group).forEach(i => {
+        if (i.selected) { i.on_cooldown = true; i.next_reminder_date = tISO }
+        i.selected = false
+      })
+    }
+  } finally {
+    sendingKey.value = null
+  }
 }
 </script>
 

@@ -63,10 +63,45 @@ export function useIndirectExpense() {
     }
   }
 
+  // ── Drill-down (Figma): subgroup row → ledger rows → ledger statement ────
+  // Both modes hit POST /financial-analysis/pl-ledger-details with the page's
+  // active range.
+
+  const rangeBody = () => {
+    const body: any = { range_option: rangeOption.value }
+    if (rangeOption.value === 'Custom Dates') {
+      body.custom_from = customFrom.value
+      body.custom_to   = customTo.value
+    }
+    return body
+  }
+
+  // subgroup mode: ledger rows (current/previous/variance) under a subgroup
+  async function fetchSubgroupLedgers(subgroup: string) {
+    const res: any = await useApi('/financial-analysis/pl-ledger-details', {
+      method: 'POST',
+      body: { ...rangeBody(), subgroup },
+    })
+    if (res?.status !== 'success') throw new Error(res?.message ?? 'Failed to fetch ledger breakdown')
+    return res.data ?? []
+  }
+
+  // ledger mode: daybook statement (Date/Particulars/Debit/Credit + balances)
+  async function fetchLedgerStatement(ledger: string) {
+    const res: any = await useApi('/financial-analysis/pl-ledger-details', {
+      method: 'POST',
+      body: { ...rangeBody(), ledger },
+    })
+    if (res?.status !== 'success') throw new Error(res?.message ?? 'Failed to fetch ledger statement')
+    return res // { info: {ledger, from, to}, data: {opening_balance, entries, total_debit, total_credit, closing_balance} }
+  }
+
   return {
     rangeOption,
     customFrom,
     customTo,
+    fetchSubgroupLedgers,
+    fetchLedgerStatement,
     breakdownData:    _breakdownData,
     trendData:        _trendData,
     expenseVsRevenue: _expenseVsRevenue,

@@ -28,24 +28,12 @@
             <!-- Row 1 -->
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Lead Value (ex VAT)</label>
-              <div class="relative">
-                <select class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182] appearance-none bg-white">
-                  <option value="" disabled selected hidden>Select Lead Value</option>
-                  <option>100,000</option>
-                  <option>250,000</option>
-                  <option>420,000</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
+              <input type="text" v-model="form.lead_value" placeholder="Enter Lead Value" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
             </div>
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Expected Sign Date</label>
               <div class="relative">
-                <input type="text" placeholder="15-03-2025" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                <input type="text" v-model="form.expected_sign_date" placeholder="dd-mm-yyyy" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -58,9 +46,9 @@
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Client Name</label>
               <div class="relative">
-                <select class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182] appearance-none bg-white">
-                  <option value="" disabled selected hidden>e.g., Al Dhabi Real Estate</option>
-                  <option>Al Dhabi Real Estate</option>
+                <select v-model="form.client_name" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182] appearance-none bg-white">
+                  <option value="" disabled hidden>Select client</option>
+                  <option v-for="ledger in debtorLedgers" :key="ledger" :value="ledger">{{ ledger }}</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -71,25 +59,13 @@
             </div>
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Lead ID</label>
-              <div class="relative">
-                <select class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182] appearance-none bg-white">
-                  <option value="" disabled selected hidden>Select Lead ID</option>
-                  <option>1234567</option>
-                  <option>7654321</option>
-                  <option>9876543</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
+              <input type="text" value="Auto-generated on save" disabled class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] outline-none text-gray-400 text-sm bg-gray-50" />
             </div>
 
             <!-- Row 3 -->
             <div class="md:col-span-1">
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Project Name</label>
-              <input type="text" placeholder="e.g., Al Dhabi Real Estate" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
+              <input type="text" v-model="form.project_name" placeholder="Enter project name" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
               <p class="mt-2 text-xs text-red-500 flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -134,7 +110,7 @@
                       </div>
                     </td>
                     <td class="p-2">
-                      <input type="text" v-model="milestone.details" placeholder="Describe Milestone Deliverable" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="milestone.milestone_details" placeholder="Describe Milestone Deliverable" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
                     </td>
                     <td class="p-2 w-40">
                       <input type="text" v-model="milestone.amount" placeholder="Amount" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
@@ -147,7 +123,7 @@
               </table>
               <div class="bg-[#65E2C4] px-4 py-3 flex justify-end items-center text-sm font-semibold text-[#013E32]">
                 <span class="mr-4">Total Milestone Value</span>
-                <span>420,000 AED</span>
+                <span>{{ totalMilestoneValue.toLocaleString() }} AED</span>
               </div>
               
               <!-- Pagination footer -->
@@ -225,8 +201,9 @@
                     </td>
                     <td class="p-2">
                       <div class="relative">
-                        <select v-model="budget.category" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182] appearance-none">
-                          <option value="" disabled selected hidden>Select cost head category</option>
+                        <select v-model="budget.cost_head" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182] appearance-none">
+                          <option value="" disabled hidden>Select cost head category</option>
+                          <option v-for="head in costHeads" :key="head" :value="head">{{ head }}</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -246,7 +223,7 @@
               </table>
               <div class="bg-[#65E2C4] px-4 py-3 flex justify-end items-center text-sm font-semibold text-[#013E32]">
                 <span class="mr-4">Total Budget Allocation</span>
-                <span>420,000 AED</span>
+                <span>{{ totalBudgetValue.toLocaleString() }} AED</span>
               </div>
               
               <!-- Pagination footer -->
@@ -296,9 +273,11 @@
           </div>
 
           <!-- Footer Actions -->
-          <div class="flex justify-end mt-4">
-            <button class="px-6 py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm">
-              Save Lead Data
+          <div class="flex justify-end items-center gap-4 mt-4">
+            <p v-if="error" class="text-sm text-red-500">{{ error }}</p>
+            <p v-if="success" class="text-sm text-[#00896F] font-medium">{{ success }}</p>
+            <button @click="saveLeadData" :disabled="saving" class="px-6 py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              {{ saving ? 'Saving...' : 'Save Lead Data' }}
             </button>
           </div>
 
@@ -312,20 +291,74 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useState } from '#app'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const router = useRouter()
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 
+const {
+  debtorLedgers, costHeads, saving, error, success,
+  toApiDate, toNumber, clearMessages,
+  fetchDebtorLedgers, fetchCostHeads, saveLead
+} = useManualAddition()
+
+const form = ref({
+  lead_value: '',
+  expected_sign_date: '',
+  client_name: '',
+  project_name: ''
+})
+
 const milestones = ref([
-  { date: '15-03-2025', details: 'Initial mobilization', amount: '50000' },
-  { date: '15-03-2025', details: 'First phase completion', amount: '100000' },
-  { date: '15-03-2025', details: 'Second phase completion', amount: '150000' }
+  { id: Date.now(), date: '', milestone_details: '', amount: '' }
 ])
 
+onMounted(() => {
+  clearMessages()
+  fetchDebtorLedgers()
+  fetchCostHeads()
+})
+
+const totalMilestoneValue = computed(() =>
+  milestones.value.reduce((sum, m) => sum + toNumber(m.amount), 0)
+)
+
+const totalBudgetValue = computed(() =>
+  budgets.value.reduce((sum, b) => sum + toNumber(b.amount), 0)
+)
+
+const saveLeadData = async () => {
+  const payload = {
+    lead_value: toNumber(form.value.lead_value),
+    expected_sign_date: toApiDate(form.value.expected_sign_date),
+    client_name: form.value.client_name,
+    project_name: form.value.project_name,
+    milestones: milestones.value
+      .filter(m => m.date || m.milestone_details || m.amount)
+      .map(m => ({
+        date: toApiDate(m.date),
+        milestone_details: m.milestone_details,
+        amount: toNumber(m.amount)
+      })),
+    cost_allocations: budgets.value
+      .filter(b => b.cost_head || b.amount)
+      .map(b => ({
+        cost_head: b.cost_head,
+        amount: toNumber(b.amount)
+      }))
+  }
+
+  const lead = await saveLead(payload)
+  if (lead) {
+    form.value = { lead_value: '', expected_sign_date: '', client_name: '', project_name: '' }
+    milestones.value = [{ id: Date.now(), date: '', milestone_details: '', amount: '' }]
+    budgets.value = [{ id: Date.now(), cost_head: '', amount: '' }]
+  }
+}
+
 const addMilestone = () => {
-  milestones.value.push({ id: Date.now(), date: '', details: '', amount: '' })
+  milestones.value.push({ id: Date.now(), date: '', milestone_details: '', amount: '' })
   setTimeout(() => { currentPage.value = lastPage.value }, 0)
 }
 
@@ -379,9 +412,7 @@ const goToPage = (page) => {
 
 // Budget Overview - Cost Allocation State
 const budgets = ref([
-  { id: Date.now() + 1, category: '', amount: '25000' },
-  { id: Date.now() + 2, category: '', amount: '15000' },
-  { id: Date.now() + 3, category: '', amount: '150000' }
+  { id: Date.now(), cost_head: '', amount: '' }
 ])
 
 const budgetCurrentPage = ref(1)
@@ -424,7 +455,7 @@ const budgetGoToPage = (page) => {
 }
 
 const addBudget = () => {
-  budgets.value.push({ id: Date.now(), category: '', amount: '' })
+  budgets.value.push({ id: Date.now(), cost_head: '', amount: '' })
   setTimeout(() => { budgetCurrentPage.value = budgetLastPage.value }, 0)
 }
 

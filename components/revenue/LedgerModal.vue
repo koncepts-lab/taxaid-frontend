@@ -75,7 +75,16 @@
 
                             <!-- ── Scrollable Body ── -->
                             <div class="flex-1 overflow-y-auto no-scrollbar" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-                                <table class="w-full text-sm">
+                                <div v-if="loading" class="flex items-center justify-center py-16">
+                                    <div class="w-8 h-8 border-4 border-[#00C9A2] border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                                <div v-else-if="error" class="flex items-center justify-center py-16">
+                                    <p class="text-sm font-medium text-red-600">{{ currentLang === 'ar' ? 'فشل تحميل البيانات.' : 'Failed to load data.' }}</p>
+                                </div>
+                                <div v-else-if="!bodyRows.length" class="flex items-center justify-center py-16">
+                                    <p class="text-sm font-medium" :class="isDark ? 'text-white/60' : 'text-gray-500'">{{ currentLang === 'ar' ? 'لا توجد بيانات' : 'No entries for this period' }}</p>
+                                </div>
+                                <table v-else class="w-full text-sm">
                                     <colgroup>
                                         <col style="width: 18%">
                                         <col style="width: 46%">
@@ -143,7 +152,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
     isOpen: Boolean,
@@ -155,29 +164,87 @@ defineEmits(['close'])
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-// Mock ledger body data
-const bodyRows = computed(() => [
-    { date: 'Jan 10, 2025', particulars: 'By Opening Balance', debit: '-', credit: '10,316.25', highlighted: false },
-    { date: 'Jan 10, 2025', particulars: 'To Commercial', debit: '-', credit: '43,853.25', highlighted: false },
-    { date: 'Jan 10, 2025', particulars: 'ABC Traders', debit: '-', credit: '10,316.25', highlighted: true },
-    { date: 'Jan 10, 2025', particulars: 'ABC Traders', debit: '-', credit: '43,853.25', highlighted: true },
-    { date: 'Jan 10, 2025', particulars: 'ABC Traders', debit: '-', credit: '43,853.25', highlighted: true },
-    { date: 'Jan 10, 2025', particulars: 'ABC Traders', debit: '-', credit: '43,853.25', highlighted: false },
-    { date: 'Jan 10, 2025', particulars: 'ABC Traders', debit: '-', credit: '43,853.25', highlighted: false },
-    { date: 'Jan 10, 2025', particulars: 'ABC Traders', debit: '-', credit: '43,853.25', highlighted: false },
-    { date: 'Jan 10, 2025', particulars: 'ABC Traders', debit: '-', credit: '43,853.25', highlighted: false },
-    { date: 'Jan 10, 2025', particulars: 'ABC Traders', debit: '-', credit: '43,853.25', highlighted: false },
-    { date: 'Jan 10, 2025', particulars: 'ABC Traders', debit: '-', credit: '43,853.25', highlighted: false },
-    { date: 'Jan 10, 2025', particulars: 'ABC Traders', debit: '-', credit: '43,853.25', highlighted: false },
-])
+// Same date-range state the revenue page uses (composables/cards/useRevenue.ts)
+const rangeOption = useState('revenue_range_option', () => 'Year to Date')
+const customFrom  = useState('revenue_custom_from', () => null)
+const customTo    = useState('revenue_custom_to',   () => null)
 
-const totals = computed(() => ({
-    debit: '53,995.75',
-    credit: '1,12,444.5',
-    closingDebit: '-58,448.8',
-    finalDebit: '1,12,444.5',
-    finalCredit: '1,12,444.5',
-}))
+const loading   = ref(false)
+const error     = ref(null)
+const statement = ref(null)
+
+const fetchStatement = async () => {
+    if (!props.ledgerName) return
+    loading.value = true
+    error.value   = null
+    statement.value = null
+    try {
+        const body = {
+            ledger: props.ledgerName,
+            range_option: rangeOption.value === 'Custom Range' ? 'Custom Dates' : rangeOption.value,
+        }
+        if (customFrom.value) body.custom_from = customFrom.value
+        if (customTo.value)   body.custom_to   = customTo.value
+
+        const res = await useApi('financial-analysis/pl-ledger-details', { method: 'POST', body })
+        statement.value = res?.data ?? null
+    } catch (err) {
+        error.value = err?.data?.message ?? 'Failed to load ledger'
+    } finally {
+        loading.value = false
+    }
+}
+
+watch(() => props.isOpen, (open) => { if (open) fetchStatement() })
+
+const fmt = (v) => (v === null || v === undefined) ? '-' : formatStandardNumber(v)
+
+const formatDate = (d) => {
+    if (!d) return '-'
+    const date = new Date(d)
+    return date.toLocaleDateString(currentLang.value === 'ar' ? 'ar-AE' : 'en-US', { month: 'short', day: '2-digit', year: 'numeric' })
+}
+
+const bodyRows = computed(() => {
+    const s = statement.value
+    if (!s) return []
+    const rows = []
+    rows.push({
+        date: '',
+        particulars: currentLang.value === 'ar' ? 'رصيد افتتاحي' : 'By Opening Balance',
+        debit: s.opening_balance < 0 ? fmt(Math.abs(s.opening_balance)) : '-',
+        credit: s.opening_balance >= 0 ? fmt(s.opening_balance) : '-',
+        highlighted: false,
+    })
+    for (const e of s.entries) {
+        rows.push({
+            date: formatDate(e.date),
+            particulars: e.particulars,
+            debit: fmt(e.debit),
+            credit: fmt(e.credit),
+            highlighted: false,
+        })
+    }
+    return rows
+})
+
+const totals = computed(() => {
+    const s = statement.value
+    if (!s) return { debit: '-', credit: '-', closingDebit: '-', finalDebit: '-', finalCredit: '-' }
+    const openingDr = s.opening_balance < 0 ? Math.abs(s.opening_balance) : 0
+    const openingCr = s.opening_balance >= 0 ? s.opening_balance : 0
+    const grandDr   = s.total_debit + openingDr
+    const grandCr   = s.total_credit + openingCr
+    const final     = Math.max(grandDr, grandCr)
+    return {
+        debit: fmt(s.total_debit),
+        credit: fmt(s.total_credit),
+        // closing shown on the debit side when the ledger carries a credit balance (balancing figure)
+        closingDebit: fmt(s.closing_balance >= 0 ? -s.closing_balance : Math.abs(s.closing_balance)),
+        finalDebit: fmt(final),
+        finalCredit: fmt(final),
+    }
+})
 </script>
 
 <style scoped>

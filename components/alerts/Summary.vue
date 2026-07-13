@@ -30,13 +30,13 @@
 
                     <!-- Module -->
                     <td class="py-2 px-4 text-sm font-medium" :class="isDark ? 'text-white/80' : 'text-black'">
-                        <!-- Check if data contains translation, otherwise show raw -->
-                        {{ currentLang === 'ar' ? (row.moduleAr || row.module) : row.module }}
+                        <!-- Server localizes via ?lang= — row carries one language only -->
+                        {{ row.module }}
                     </td>
 
                     <!-- Alert Title -->
                     <td class="py-2 px-4 text-sm" :class="isDark ? 'text-white/80' : 'text-black'">
-                        {{ currentLang === 'ar' ? (row.titleAr || row.title) : row.title }}
+                        {{ row.title }}
                     </td>
 
                     <!-- Date -->

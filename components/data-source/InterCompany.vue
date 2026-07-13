@@ -75,7 +75,13 @@
                     {{ currentLang === 'ar' ? 'تصدير' : 'Export' }}
                 </button>
 
-                <div class="relative" ref="addDropdownRef">
+                <!-- API tabs: Add New Entry modal -->
+                <button v-if="isApiType" @click="isAddEntryOpen = true"
+                    class="flex items-center gap-2 px-5 py-2 bg-[#008169] text-white rounded-xl text-sm font-medium hover:bg-[#006b56] transition-all">
+                    <span>{{ currentLang === 'ar' ? '+ إضافة إدخال جديد' : '+ Add New Entry' }}</span>
+                </button>
+
+                <div v-else class="relative" ref="addDropdownRef">
                     <button @click="isAddDropdownOpen = !isAddDropdownOpen"
                         class="flex items-center gap-2 px-5 py-2 bg-[#008169] text-white rounded-xl text-sm font-medium hover:bg-[#006b56] transition-all">
                         <span>{{ currentLang === 'ar' ? '+ إضافة صف' : '+ Add New Row' }}</span>
@@ -105,6 +111,15 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Add New Entry modal (customers / vendor / internal-email) -->
+        <DataSourceAddEntryModal v-model:open="isAddEntryOpen" :type="type" :currentLang="currentLang" @saved="onEntrySaved" />
+
+        <!-- Row-save error banner -->
+        <div v-if="saveError" class="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
+            <span>{{ saveError }}</span>
+            <button @click="saveError = null" class="shrink-0 font-medium hover:opacity-70">✕</button>
         </div>
 
         <!-- 3. Main Table Card -->
@@ -154,13 +169,13 @@
                             automatically and populate all the rows below.
                         </template>
                     </p>
-                    <button @click="isModalOpen = true"
+                    <button @click="isApiType ? (isAddEntryOpen = true) : (isModalOpen = true)"
                         class="flex items-center gap-2 px-8 py-3 bg-[#63DABCEB] text-[#013E32] rounded-xl font-medium hover:scale-95 transition-all">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                         </svg>
-                        {{ currentLang === 'ar' ? 'استيراد ملف الآن' : 'Import a file Now' }}
+                        {{ isApiType ? (currentLang === 'ar' ? '+ إضافة إدخال جديد' : '+ Add New Entry') : (currentLang === 'ar' ? 'استيراد ملف الآن' : 'Import a file Now') }}
                     </button>
                 </div>
 
@@ -335,42 +350,44 @@ const configs = {
     'vendor': {
         title: 'Vendor Directory', titleAr: 'دليل جهات الاتصال',
         sub: 'Manage all business vendors and their details', subAr: 'إدارة جميع جهات الاتصال التجارية وتفاصيلها',
-        headers: ['Contact_ID', 'Name', 'Type', 'Company', 'Email', 'Phone', 'TRN', 'Status'],
-        headersAr: ['معرف الاتصال', 'الاسم', 'النوع', 'الشركة', 'البريد', 'الهاتف', 'TRN', 'الحالة'],
-        gridCols: '50px 100px 180px 120px 180px 220px 150px 150px 100px',
+        headers: ['Vendor ID', 'Name', 'Tax ID', 'Contact Person', 'Email', 'Phone', 'Credit Limit (AED)', 'Status'],
+        headersAr: ['معرف المورد', 'الاسم', 'الرقم الضريبي', 'الشخص المسؤول', 'البريد', 'الهاتف', 'الحد الائتماني', 'الحالة'],
+        gridCols: '50px 120px 200px 140px 170px 220px 150px 150px 100px',
         minWidth: '1400px'
     },
     'internal-email': {
         title: 'Internal Email Directory', titleAr: 'دليل البريد الداخلي',
         sub: 'Manage employee email addresses', subAr: 'إدارة عناوين البريد الإلكتروني للموظفين والجهات الداخلية',
-        headers: ['Employee', 'Department', 'Email', 'Extension', 'Status'],
-        headersAr: ['الموظف', 'القسم', 'البريد', 'التحويلة', 'الحالة'],
-        gridCols: '50px 1fr 1fr 1fr 1fr 100px',
-        minWidth: '900px'
+        headers: ['Employee', 'Department', 'Email', 'Phone Number'],
+        headersAr: ['الموظف', 'القسم', 'البريد', 'رقم الهاتف'],
+        gridCols: '50px 1fr 1fr 1fr 1fr',
+        minWidth: '800px'
     },
     'customers': {
         title: 'Customer Management', titleAr: 'إدارة العملاء',
         sub: 'Manage customer accounts and credit information', subAr: 'إدارة حسابات العملاء ومعلومات الائتمان',
-        headers: ['Tax ID', 'Contact Person', 'Contact Details', 'Outstanding (AED)', 'Credit Limit (AED)', 'Status'],
-        headersAr: ['الرقم الضريبي', 'الشخص المسؤول', 'بيانات الاتصال', 'المبالغ المستحقة', 'الحد الائتماني', 'الحالة'],
-        gridCols: '50px 180px 200px 250px 180px 180px 100px',
-        minWidth: '1200px'
+        headers: ['Customer ID', 'Name', 'Tax ID', 'Contact Person', 'Email', 'Phone', 'Credit Limit (AED)', 'Outstanding (AED)', 'Status'],
+        headersAr: ['معرف العميل', 'الاسم', 'الرقم الضريبي', 'الشخص المسؤول', 'البريد', 'الهاتف', 'الحد الائتماني', 'المبالغ المستحقة', 'الحالة'],
+        gridCols: '50px 120px 200px 140px 170px 220px 150px 150px 150px 100px',
+        minWidth: '1550px'
     }
 }
 
 // Maps each column header to the API field key for that type
 const fieldMap = {
     'vendor': {
-        'Contact_ID': 'identity', 'Name': 'name', 'Type': 'type',
-        'Company': 'name', 'Email': 'email', 'Phone': 'phone_number', 'TRN': 'tax_id',
+        'Vendor ID': 'identity', 'Name': 'name', 'Tax ID': 'tax_id', 'Contact Person': 'contact_person',
+        'Email': 'email', 'Phone': 'phone_number', 'Credit Limit (AED)': 'credit_limit',
     },
     'customers': {
-        'Tax ID': 'tax_id', 'Contact Person': 'contact_person',
-        'Contact Details': 'email', 'Outstanding (AED)': null, 'Credit Limit (AED)': 'credit_limit',
+        'Customer ID': 'identity', 'Name': 'name', 'Tax ID': 'tax_id', 'Contact Person': 'contact_person',
+        'Email': 'email', 'Phone': 'phone_number', 'Credit Limit (AED)': 'credit_limit',
+        // computed from unpaid AR entries — wired when the backend appends it
+        'Outstanding (AED)': 'outstanding',
     },
     'internal-email': {
         'Employee': 'employee_name', 'Department': 'department',
-        'Email': 'email', 'Extension': 'phone_number',
+        'Email': 'email', 'Phone Number': 'phone_number',
     },
 }
 
@@ -389,10 +406,16 @@ const setFieldValue = (row, header, value) => {
 const contactsApi = useContacts()
 const emailsApi = useInternalEmails()
 
-const isApiType = computed(() => ['vendor', 'contacts', 'customers', 'internal-email'].includes(props.type))
+const isApiType = computed(() => ['vendor', 'customers', 'internal-email'].includes(props.type))
 
 // --- 3. STATE ---
 const isImportedLocal = ref(false) // only used for non-API types (inter-company)
+const saveError = ref(null) // row-save failures (shown as banner; apiError replaces the table)
+const isAddEntryOpen = ref(false)
+
+const onEntrySaved = (saved) => {
+    rows.value.push({ ...saved, selected: false, isNew: false, _saving: false })
+}
 const rows = ref([])
 const loading = ref(false)
 const apiError = ref(null)
@@ -428,8 +451,9 @@ const loadData = async () => {
             await contactsApi.fetchCustomers()
             rows.value = contactsApi.customers.value.map(r => ({ ...r, selected: false, isNew: false, _saving: false }))
         } else {
-            await contactsApi.fetchContacts()
-            rows.value = contactsApi.contacts.value.map(r => ({ ...r, selected: false, isNew: false, _saving: false }))
+            // vendor tab: vendors only (the old getAll fetch mixed customers in)
+            await contactsApi.fetchVendors()
+            rows.value = contactsApi.vendors.value.map(r => ({ ...r, selected: false, isNew: false, _saving: false }))
         }
     } catch (e) {
         apiError.value = e?.data?.message ?? 'Failed to load data.'
@@ -511,7 +535,11 @@ const saveRow = async (row) => {
         }
         const idx = rows.value.indexOf(row)
         if (idx !== -1) rows.value.splice(idx, 1, { ...saved, selected: false, isNew: false, _saving: false })
-    } catch {
+        saveError.value = null
+    } catch (e) {
+        // Surface validation errors (422) instead of failing silently
+        const errs = e?.data?.errors
+        saveError.value = errs ? Object.values(errs).flat().join(' ') : (e?.data?.message ?? 'Failed to save row.')
         row._saving = false
     }
 }

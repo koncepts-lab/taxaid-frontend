@@ -80,6 +80,20 @@
             </button>
           </div>
 
+          <!-- Card 5: AP Manual Adjustment -->
+          <div class="p-6 flex flex-col items-center text-center shadow-sm" style="background: #E0F9F3; border: 2px solid #6FDBBF; border-radius: 20px;">
+            <div class="mb-4">
+              <img src="/images/icons/Accounts-Payable-green.svg" alt="AP Manual Adjustment" class="w-10 h-10" />
+            </div>
+            <h3 class="text-base font-medium text-[#013E32] mb-3">{{ currentLang === 'ar' ? 'تسوية حسابات دائنة' : 'AP Manual Adjustment' }}</h3>
+            <p class="text-sm text-gray-500 mb-8 flex-1 leading-relaxed px-2">
+              {{ currentLang === 'ar' ? 'إضافة تسويات يدوية للحسابات الدائنة (مشتريات أو مدفوعات)' : 'Add manual accounts payable adjustments (purchase or payment)' }}
+            </p>
+            <button @click="router.push('/data-source/manual-addition/add-ap-adjustment')" class="w-full py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors">
+              + {{ currentLang === 'ar' ? 'إضافة تسوية' : 'Add Adjustment' }}
+            </button>
+          </div>
+
         </div>
         </div>
       </div>

@@ -34,9 +34,9 @@
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Lead ID</label>
               <div class="relative">
-                <select class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182] appearance-none bg-white">
-                  <option value="" disabled selected hidden>1234567</option>
-                  <option>1234567</option>
+                <select v-model="selectedLeadId" @change="onLeadSelected" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182] appearance-none bg-white">
+                  <option value="" disabled hidden>Select Lead ID</option>
+                  <option v-for="id in leadIds" :key="id" :value="id">{{ id }}</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -47,14 +47,14 @@
             </div>
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Customer Name</label>
-              <input type="text" value="Al Dhabi Real Estate" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
+              <input type="text" v-model="form.contract_name" placeholder="Customer name" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
             </div>
 
             <!-- Row 2 -->
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Contract Sign Date</label>
               <div class="relative">
-                <input type="text" value="15-03-2025" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                <input type="text" v-model="form.contract_sign_date" placeholder="dd-mm-yyyy" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -64,7 +64,7 @@
             </div>
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Project Name</label>
-              <input type="text" value="Al Dhabi Real Estate" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
+              <input type="text" v-model="form.project_name" placeholder="Project name" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
             </div>
           </div>
 
@@ -74,15 +74,15 @@
             <div class="bg-[#E0F9F3] border border-[#6FDBBF] rounded-lg p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Lead Sales Value</label>
-                <input type="text" value="3,854,920.00" class="w-full px-4 py-2.5 rounded-lg bg-white border-none outline-none text-gray-700 text-sm" />
+                <input type="text" :value="formatAmount(form.lead_sales_value)" readonly class="w-full px-4 py-2.5 rounded-lg bg-white border-none outline-none text-gray-700 text-sm" />
               </div>
               <div>
                 <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Final Contract Value</label>
-                <input type="text" value="3,804,170.00" class="w-full px-4 py-2.5 rounded-lg bg-white border-none outline-none text-gray-700 text-sm" />
+                <input type="text" v-model="form.final_contract_value" @blur="updateSalesVariance" placeholder="Enter final contract value" class="w-full px-4 py-2.5 rounded-lg bg-white border-none outline-none text-gray-700 text-sm" />
               </div>
               <div>
                 <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Sales Variance</label>
-                <input type="text" value="50,750.00" class="w-full px-4 py-2.5 rounded-lg border border-[#FCA5A5] bg-[#FEE2E2] outline-none text-[#EF4444] text-sm font-medium" />
+                <input type="text" :value="formatAmount(form.sales_variance)" readonly :class="salesResolved ? 'border border-[#6FDBBF] bg-[#E0F9F3] text-[#00896F]' : 'border border-[#FCA5A5] bg-[#FEE2E2] text-[#EF4444]'" class="w-full px-4 py-2.5 rounded-lg outline-none text-sm font-medium" />
               </div>
             </div>
 
@@ -90,25 +90,30 @@
             <div class="bg-[#E0F9F3] border border-[#6FDBBF] rounded-lg p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Planned Lead Budget</label>
-                <input type="text" value="3,854,920.00" class="w-full px-4 py-2.5 rounded-lg bg-white border-none outline-none text-gray-700 text-sm" />
+                <input type="text" :value="formatAmount(form.planned_lead_budget)" readonly class="w-full px-4 py-2.5 rounded-lg bg-white border-none outline-none text-gray-700 text-sm" />
               </div>
               <div>
                 <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Current Budget Value</label>
-                <input type="text" value="3,804,170.00" class="w-full px-4 py-2.5 rounded-lg bg-white border-none outline-none text-gray-700 text-sm" />
+                <input type="text" v-model="form.current_budget_value" @blur="updateBudgetVariance" placeholder="Enter current budget value" class="w-full px-4 py-2.5 rounded-lg bg-white border-none outline-none text-gray-700 text-sm" />
               </div>
               <div>
                 <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Budget Variance</label>
-                <input type="text" value="50,750.00" class="w-full px-4 py-2.5 rounded-lg border border-[#FCA5A5] bg-[#FEE2E2] outline-none text-[#EF4444] text-sm font-medium" />
+                <input type="text" :value="formatAmount(form.budget_variance)" readonly :class="budgetResolved ? 'border border-[#6FDBBF] bg-[#E0F9F3] text-[#00896F]' : 'border border-[#FCA5A5] bg-[#FEE2E2] text-[#EF4444]'" class="w-full px-4 py-2.5 rounded-lg outline-none text-sm font-medium" />
               </div>
             </div>
           </div>
 
           <!-- Warning Message -->
-          <div class="flex items-center gap-2 mb-10 text-[#EF4444] text-sm">
+          <div v-if="!salesResolved || !budgetResolved" class="flex items-center gap-2 mb-10 text-[#EF4444] text-sm">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p>Sales variance AED 50,750 unresolved - Budget variance AED 50,750 unresolved— Fill in Final amounts in both tables.</p>
+            <p>
+              <template v-if="!salesResolved">Sales variance AED {{ formatAmount(form.sales_variance) }} unresolved</template>
+              <template v-if="!salesResolved && !budgetResolved"> - </template>
+              <template v-if="!budgetResolved">Budget variance AED {{ formatAmount(form.budget_variance) }} unresolved</template>
+              — Fill in Final amounts in both tables.
+            </p>
           </div>
 
           <!-- Section 2: Contract Milestones -->
@@ -147,17 +152,17 @@
                       </div>
                     </td>
                     <td class="p-2">
-                      <input type="text" v-model="milestone.details" placeholder="Describe Milestone Deliverable" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="milestone.milestone_details" placeholder="Describe Milestone Deliverable" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
                     </td>
                     <td class="p-2 w-32">
-                      <input type="text" v-model="milestone.leadAmount" placeholder="Amount" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="milestone.lead_amount" placeholder="Amount" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
                     </td>
                     <td class="p-2 w-32">
-                      <input type="text" v-model="milestone.finalAmount" placeholder="Amount" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="milestone.final_amount" placeholder="Amount" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
                     </td>
                     <td class="p-2 w-36">
                       <div class="flex items-center gap-3">
-                        <button v-if="!milestone.isApplied" @click="milestone.isApplied = true" class="px-3 py-1.5 bg-[#00896F] text-white rounded text-xs font-medium hover:bg-[#00705a] transition-colors">Update</button>
+                        <button v-if="!milestone.isApplied" @click="applyMilestone(milestone)" class="px-3 py-1.5 bg-[#00896F] text-white rounded text-xs font-medium hover:bg-[#00705a] transition-colors">Update</button>
                         <button v-else @click="milestone.isApplied = false" class="px-3 py-1.5 bg-[#D1F2EB] text-[#00896F] rounded text-xs font-medium flex items-center gap-1 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                           Applied
@@ -170,7 +175,7 @@
               </table>
               <div class="bg-[#65E2C4] px-4 py-3 flex justify-end items-center text-sm font-semibold text-[#013E32]">
                 <span class="mr-4">Total Milestone Value</span>
-                <span>420,000 AED</span>
+                <span>{{ totalMilestoneValue.toLocaleString() }} AED</span>
               </div>
               
               <!-- Pagination footer -->
@@ -249,8 +254,9 @@
                     </td>
                     <td class="p-2">
                       <div class="relative">
-                        <select v-model="budget.category" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182] appearance-none">
-                          <option value="" disabled selected hidden>Select cost head category</option>
+                        <select v-model="budget.cost_head" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182] appearance-none">
+                          <option value="" disabled hidden>Select cost head category</option>
+                          <option v-for="head in costHeads" :key="head" :value="head">{{ head }}</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -260,14 +266,14 @@
                       </div>
                     </td>
                     <td class="p-2 w-32">
-                      <input type="text" v-model="budget.leadAmount" placeholder="Amount" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="budget.lead_amount" placeholder="Amount" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
                     </td>
                     <td class="p-2 w-32">
-                      <input type="text" v-model="budget.finalAmount" placeholder="Amount" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="budget.final_amount" placeholder="Amount" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
                     </td>
                     <td class="p-2 w-36">
                       <div class="flex items-center gap-3">
-                        <button v-if="!budget.isApplied" @click="budget.isApplied = true" class="px-3 py-1.5 bg-[#00896F] text-white rounded text-xs font-medium hover:bg-[#00705a] transition-colors">Update</button>
+                        <button v-if="!budget.isApplied" @click="applyBudget(budget)" class="px-3 py-1.5 bg-[#00896F] text-white rounded text-xs font-medium hover:bg-[#00705a] transition-colors">Update</button>
                         <button v-else @click="budget.isApplied = false" class="px-3 py-1.5 bg-[#D1F2EB] text-[#00896F] rounded text-xs font-medium flex items-center gap-1 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                           Applied
@@ -280,7 +286,7 @@
               </table>
               <div class="bg-[#65E2C4] px-4 py-3 flex justify-end items-center text-sm font-semibold text-[#013E32]">
                 <span class="mr-4">Total Budget Allocation</span>
-                <span>420,000 AED</span>
+                <span>{{ totalBudgetValue.toLocaleString() }} AED</span>
               </div>
               
               <!-- Pagination footer -->
@@ -330,9 +336,11 @@
           </div>
 
           <!-- Footer Actions -->
-          <div class="flex justify-end mt-4">
-            <button class="px-6 py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm">
-              Save Contract Data
+          <div class="flex justify-end items-center gap-4 mt-4">
+            <p v-if="error" class="text-sm text-red-500">{{ error }}</p>
+            <p v-if="success" class="text-sm text-[#00896F] font-medium">{{ success }}</p>
+            <button @click="saveContractData" :disabled="saving" class="px-6 py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              {{ saving ? 'Saving...' : 'Save Contract Data' }}
             </button>
           </div>
 
@@ -346,20 +354,179 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useState } from '#app'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const router = useRouter()
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 
+const {
+  leadIds, costHeads, saving, error, success,
+  toApiDate, toNumber, clearMessages,
+  fetchLeadIds, fetchCostHeads, fetchLeadDetails,
+  calcSalesVariance, calcBudgetVariance,
+  applySalesMilestone, applyBudgetMilestone, saveContract
+} = useManualAddition()
+
+const selectedLeadId = ref('')
+const leadDbId = ref(null) // numeric leads.id required by the store endpoint
+
+const form = ref({
+  contract_name: '',
+  contract_sign_date: '',
+  project_name: '',
+  lead_sales_value: 0,
+  final_contract_value: '',
+  sales_variance: 0,
+  planned_lead_budget: 0,
+  current_budget_value: '',
+  budget_variance: 0
+})
+
 const milestones = ref([
-  { id: Date.now() + 1, date: '15-03-2025', details: 'Initial mobilization', leadAmount: '50000', finalAmount: '0', isApplied: false },
-  { id: Date.now() + 2, date: '15-03-2025', details: 'First phase completion', leadAmount: '100000', finalAmount: '200000', isApplied: true },
-  { id: Date.now() + 3, date: '15-03-2025', details: 'Second phase completion', leadAmount: '150000', finalAmount: '0', isApplied: false }
+  { id: Date.now(), date: '', milestone_details: '', lead_amount: '', final_amount: '', isApplied: false }
 ])
 
+onMounted(() => {
+  clearMessages()
+  fetchLeadIds()
+  fetchCostHeads()
+})
+
+const formatAmount = (value) => toNumber(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+const onLeadSelected = async () => {
+  if (!selectedLeadId.value) return
+  const lead = await fetchLeadDetails(selectedLeadId.value)
+  if (!lead) return
+  leadDbId.value = lead.id
+  form.value.contract_name = lead.client_name || ''
+  form.value.project_name = lead.project_name || ''
+  form.value.lead_sales_value = toNumber(lead['Lead Sales Value'])
+  form.value.planned_lead_budget = toNumber(lead['Planned Lead Budget'])
+  // Pre-fill milestone/budget rows from the lead so Final amounts can be filled in
+  if (Array.isArray(lead.milestones) && lead.milestones.length) {
+    milestones.value = lead.milestones.map(m => ({
+      id: m.id,
+      date: m.date || '',
+      milestone_details: m.milestone_details || '',
+      lead_amount: String(m.amount ?? ''),
+      final_amount: '',
+      isApplied: false
+    }))
+  }
+  if (Array.isArray(lead.cost_allocations) && lead.cost_allocations.length) {
+    budgets.value = lead.cost_allocations.map(c => ({
+      id: c.id,
+      cost_head: c.cost_head || '',
+      lead_amount: String(c.amount ?? ''),
+      final_amount: '',
+      isApplied: false
+    }))
+  }
+  await updateSalesVariance()
+  await updateBudgetVariance()
+}
+
+const updateSalesVariance = async () => {
+  form.value.sales_variance = await calcSalesVariance(
+    toNumber(form.value.lead_sales_value),
+    toNumber(form.value.final_contract_value)
+  )
+}
+
+const updateBudgetVariance = async () => {
+  form.value.budget_variance = await calcBudgetVariance(
+    toNumber(form.value.planned_lead_budget),
+    toNumber(form.value.current_budget_value)
+  )
+}
+
+const totalMilestoneValue = computed(() =>
+  milestones.value.reduce((sum, m) => sum + toNumber(m.isApplied ? m.final_amount : 0), 0)
+)
+
+const totalBudgetValue = computed(() =>
+  budgets.value.reduce((sum, b) => sum + toNumber(b.isApplied ? b.final_amount : 0), 0)
+)
+
+const salesResolved = computed(() =>
+  toNumber(form.value.final_contract_value) > 0 &&
+  totalMilestoneValue.value === toNumber(form.value.final_contract_value)
+)
+
+const budgetResolved = computed(() =>
+  toNumber(form.value.current_budget_value) > 0 &&
+  totalBudgetValue.value === toNumber(form.value.current_budget_value)
+)
+
+const applyMilestone = async (milestone) => {
+  const result = await applySalesMilestone(
+    totalMilestoneValue.value,
+    toNumber(form.value.final_contract_value),
+    toNumber(milestone.final_amount)
+  )
+  if (result) milestone.isApplied = true
+}
+
+const applyBudget = async (budget) => {
+  const result = await applyBudgetMilestone(
+    totalBudgetValue.value,
+    toNumber(form.value.current_budget_value),
+    toNumber(budget.final_amount)
+  )
+  if (result) budget.isApplied = true
+}
+
+const saveContractData = async () => {
+  if (!leadDbId.value) {
+    error.value = 'Select a Lead ID first'
+    return
+  }
+  const payload = {
+    lead_id: leadDbId.value,
+    contract_name: form.value.contract_name,
+    contract_sign_date: toApiDate(form.value.contract_sign_date),
+    project_name: form.value.project_name,
+    lead_sales_value: toNumber(form.value.lead_sales_value),
+    final_contract_value: toNumber(form.value.final_contract_value),
+    sales_variance: toNumber(form.value.sales_variance),
+    planned_lead_budget: toNumber(form.value.planned_lead_budget),
+    current_budget_value: toNumber(form.value.current_budget_value),
+    budget_variance: toNumber(form.value.budget_variance),
+    milestones: milestones.value
+      .filter(m => m.date || m.milestone_details || m.lead_amount || m.final_amount)
+      .map(m => ({
+        date: toApiDate(m.date),
+        milestone_details: m.milestone_details,
+        lead_amount: toNumber(m.lead_amount),
+        final_amount: toNumber(m.final_amount)
+      })),
+    cost_allocations: budgets.value
+      .filter(b => b.cost_head || b.lead_amount || b.final_amount)
+      .map(b => ({
+        cost_head: b.cost_head,
+        lead_amount: toNumber(b.lead_amount),
+        final_amount: toNumber(b.final_amount)
+      }))
+  }
+
+  const contract = await saveContract(payload)
+  if (contract) {
+    selectedLeadId.value = ''
+    leadDbId.value = null
+    form.value = {
+      contract_name: '', contract_sign_date: '', project_name: '',
+      lead_sales_value: 0, final_contract_value: '', sales_variance: 0,
+      planned_lead_budget: 0, current_budget_value: '', budget_variance: 0
+    }
+    milestones.value = [{ id: Date.now(), date: '', milestone_details: '', lead_amount: '', final_amount: '', isApplied: false }]
+    budgets.value = [{ id: Date.now(), cost_head: '', lead_amount: '', final_amount: '', isApplied: false }]
+  }
+}
+
 const addMilestone = () => {
-  milestones.value.push({ id: Date.now(), date: '', details: '', leadAmount: '', finalAmount: '', isApplied: false })
+  milestones.value.push({ id: Date.now(), date: '', milestone_details: '', lead_amount: '', final_amount: '', isApplied: false })
   setTimeout(() => { currentPage.value = lastPage.value }, 0)
 }
 
@@ -413,9 +580,7 @@ const goToPage = (page) => {
 
 // Budget Overview - Cost Allocation State
 const budgets = ref([
-  { id: Date.now() + 1, category: '', leadAmount: '50000', finalAmount: '0', isApplied: false },
-  { id: Date.now() + 2, category: '', leadAmount: '100000', finalAmount: '0', isApplied: true },
-  { id: Date.now() + 3, category: '', leadAmount: '150000', finalAmount: '0', isApplied: false }
+  { id: Date.now(), cost_head: '', lead_amount: '', final_amount: '', isApplied: false }
 ])
 
 const budgetCurrentPage = ref(1)
@@ -458,7 +623,7 @@ const budgetGoToPage = (page) => {
 }
 
 const addBudget = () => {
-  budgets.value.push({ id: Date.now(), category: '', leadAmount: '', finalAmount: '', isApplied: false })
+  budgets.value.push({ id: Date.now(), cost_head: '', lead_amount: '', final_amount: '', isApplied: false })
   setTimeout(() => { budgetCurrentPage.value = budgetLastPage.value }, 0)
 }
 

@@ -33,7 +33,7 @@
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">PDC Issue Date</label>
               <div class="relative">
-                <input type="text" placeholder="dd-mm-yyyy" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                <input type="text" v-model="form.pdc_issue_date" placeholder="dd-mm-yyyy" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -44,7 +44,7 @@
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">PDC Realisation Date</label>
               <div class="relative">
-                <input type="text" placeholder="dd-mm-yyyy" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                <input type="text" v-model="form.pdc_realisation_date" placeholder="dd-mm-yyyy" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -54,19 +54,7 @@
             </div>
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Bank Name</label>
-              <div class="relative">
-                <select class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182] appearance-none bg-white">
-                  <option value="" disabled selected hidden>Select bank</option>
-                  <option>Emirates NBD</option>
-                  <option>Abu Dhabi Commercial Bank</option>
-                  <option>Dubai Islamic Bank</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
+              <input type="text" v-model="form.bank_name" placeholder="Enter bank name" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
             </div>
           </div>
 
@@ -95,10 +83,10 @@
                 <tbody class="border-b border-gray-100">
                   <tr v-for="(cheque, index) in paginatedCheques" :key="cheque.id || index" class="border-b border-gray-100/50">
                     <td class="p-2 w-48">
-                      <input type="text" v-model="cheque.number" placeholder="eg., CHQ-123456" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="cheque.cheque_number" placeholder="eg., CHQ-123456" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
                     </td>
                     <td class="p-2">
-                      <input type="text" v-model="cheque.party" placeholder="Enter party/vendor name" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="cheque.party_name" placeholder="Enter party/vendor name" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
                     </td>
                     <td class="p-2 w-40">
                       <input type="text" v-model="cheque.amount" placeholder="" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
@@ -111,7 +99,7 @@
               </table>
               <div class="bg-[#65E2C4] px-4 py-3 flex justify-end items-center text-sm font-semibold text-[#013E32]">
                 <span class="mr-4">Total PDC Amount</span>
-                <span>160,000 AED</span>
+                <span>{{ totalPdcAmount.toLocaleString() }} AED</span>
               </div>
               
               <!-- Pagination footer -->
@@ -163,13 +151,15 @@
           <!-- Section 3: Notes / Remarks -->
           <div class="mb-4">
             <h2 class="text-[16px] font-medium text-[#0A0A0A] mb-3">Notes / Remarks</h2>
-            <textarea placeholder="Add any additional notes or comments about these PDCs..." rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-white focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-gray-400 resize-y"></textarea>
+            <textarea v-model="form.remarks" placeholder="Add any additional notes or comments about these PDCs..." rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-white focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-gray-400 resize-y"></textarea>
           </div>
 
           <!-- Bottom Action -->
-          <div class="flex justify-end mt-8 border-t border-gray-100 pt-6">
-            <button class="px-6 py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors">
-              Save PDC Data
+          <div class="flex justify-end items-center gap-4 mt-8 border-t border-gray-100 pt-6">
+            <p v-if="error" class="text-sm text-red-500">{{ error }}</p>
+            <p v-if="success" class="text-sm text-[#00896F] font-medium">{{ success }}</p>
+            <button @click="savePdcData" :disabled="saving" class="px-6 py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              {{ saving ? 'Saving...' : 'Save PDC Data' }}
             </button>
           </div>
           </div>
@@ -180,7 +170,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useState } from '#app'
 
@@ -188,14 +178,52 @@ const router = useRouter()
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 
+const {
+  saving, error, success,
+  toApiDate, toNumber, clearMessages, savePdc
+} = useManualAddition()
+
+const form = ref({
+  pdc_issue_date: '',
+  pdc_realisation_date: '',
+  bank_name: '',
+  remarks: ''
+})
+
 const cheques = ref([
-  { id: Date.now() + 1, number: 'CHQ-001', party: 'Al Dhabi Contracting LLC', amount: '75000' },
-  { id: Date.now() + 2, number: 'CHQ-002', party: 'First phase completion', amount: '50000' },
-  { id: Date.now() + 3, number: '', party: '', amount: '' }
+  { id: Date.now(), cheque_number: '', party_name: '', amount: '' }
 ])
 
+onMounted(() => clearMessages())
+
+const totalPdcAmount = computed(() =>
+  cheques.value.reduce((sum, c) => sum + toNumber(c.amount), 0)
+)
+
+const savePdcData = async () => {
+  const payload = {
+    pdc_issue_date: toApiDate(form.value.pdc_issue_date),
+    pdc_realisation_date: form.value.pdc_realisation_date ? toApiDate(form.value.pdc_realisation_date) : null,
+    bank_name: form.value.bank_name || null,
+    remarks: form.value.remarks || null,
+    cheques: cheques.value
+      .filter(c => c.cheque_number || c.party_name || c.amount)
+      .map(c => ({
+        cheque_number: c.cheque_number,
+        party_name: c.party_name,
+        amount: toNumber(c.amount)
+      }))
+  }
+
+  const saved = await savePdc('out', payload)
+  if (saved) {
+    form.value = { pdc_issue_date: '', pdc_realisation_date: '', bank_name: '', remarks: '' }
+    cheques.value = [{ id: Date.now(), cheque_number: '', party_name: '', amount: '' }]
+  }
+}
+
 const addCheque = () => {
-  cheques.value.push({ id: Date.now(), number: '', party: '', amount: '' })
+  cheques.value.push({ id: Date.now(), cheque_number: '', party_name: '', amount: '' })
   setTimeout(() => { currentPage.value = lastPage.value }, 0)
 }
 

@@ -14,6 +14,7 @@ export interface Contact {
 export const useContacts = () => {
   const contacts = ref<Contact[]>([])
   const customers = ref<Contact[]>([])
+  const vendors = ref<Contact[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -43,6 +44,19 @@ export const useContacts = () => {
     }
   }
 
+  const fetchVendors = async () => {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await useApi('/data-source/vendors') as any
+      vendors.value = res.data ?? []
+    } catch (err: any) {
+      error.value = err?.data?.message ?? 'Failed to load vendors.'
+    } finally {
+      loading.value = false
+    }
+  }
+
   const createContact = async (data: Partial<Contact>): Promise<Contact> => {
     const res = await useApi('/data-source/contacts', { method: 'POST', body: data }) as any
     return res.data
@@ -50,6 +64,12 @@ export const useContacts = () => {
 
   const deleteContact = async (id: number): Promise<void> => {
     await useApi(`/data-source/contacts/${id}`, { method: 'DELETE' })
+  }
+
+  // AR/AP names not yet added as contacts (Add New Entry modal dropdown)
+  const fetchCandidates = async (type: 'customer' | 'vendor'): Promise<string[]> => {
+    const res = await useApi(`/data-source/contacts/candidates?type=${type}`) as any
+    return res.data ?? []
   }
 
   const generateIdentity = async (type: 'customer' | 'vendor'): Promise<string> => {
@@ -60,12 +80,15 @@ export const useContacts = () => {
   return {
     contacts,
     customers,
+    vendors,
     loading,
     error,
     fetchContacts,
     fetchCustomers,
+    fetchVendors,
     createContact,
     deleteContact,
+    fetchCandidates,
     generateIdentity,
   }
 }
