@@ -851,13 +851,15 @@ const passwordStatus = reactive({
   message: ''
 })
 
-const handleUpdatePassword = () => {
+const passwordSaving = ref(false)
+
+const handleUpdatePassword = async () => {
   passwordStatus.message = ''
-  
+
   if (passwordForm.new !== passwordForm.confirm) {
     passwordStatus.type = 'error'
-    passwordStatus.message = currentLang.value === 'ar' 
-      ? 'كلمة المرور الجديدة وتأكيد كلمة المرور غير متطابقتين.' 
+    passwordStatus.message = currentLang.value === 'ar'
+      ? 'كلمة المرور الجديدة وتأكيد كلمة المرور غير متطابقتين.'
       : 'New password and confirm password do not match.'
     return
   }
@@ -870,16 +872,34 @@ const handleUpdatePassword = () => {
     return
   }
 
-  // Simulate API success
-  passwordStatus.type = 'success'
-  passwordStatus.message = currentLang.value === 'ar'
-    ? 'تم تحديث كلمة المرور الخاصة بك بنجاح!'
-    : 'Your password has been updated successfully!'
-  
-  // Reset Form fields
-  passwordForm.current = ''
-  passwordForm.new = ''
-  passwordForm.confirm = ''
+  if (passwordSaving.value) return
+  passwordSaving.value = true
+
+  try {
+    await useApi('/users/change-password', {
+      method: 'POST',
+      body: {
+        current_password: passwordForm.current,
+        password: passwordForm.new,
+        password_confirmation: passwordForm.confirm,
+      },
+    })
+
+    passwordStatus.type = 'success'
+    passwordStatus.message = currentLang.value === 'ar'
+      ? 'تم تحديث كلمة المرور بنجاح! تم تسجيل الخروج من الأجهزة الأخرى.'
+      : 'Your password has been updated successfully! Other devices have been logged out.'
+
+    passwordForm.current = ''
+    passwordForm.new = ''
+    passwordForm.confirm = ''
+  } catch (err) {
+    passwordStatus.type = 'error'
+    passwordStatus.message = err?.data?.message
+      || (currentLang.value === 'ar' ? 'حدث خطأ ما، يرجى المحاولة مرة أخرى.' : 'Something went wrong. Please try again.')
+  } finally {
+    passwordSaving.value = false
+  }
 
   setTimeout(() => {
     passwordStatus.message = ''

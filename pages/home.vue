@@ -268,7 +268,7 @@
                    {{ t.continue }}
                 </button>
                 <p class="text-[18px] font-medium text-[#00000080]">
-                   {{ t.didntReceive }} <button class="text-[#00B389] font-semibold hover:underline ml-1 cursor-pointer">{{ t.clickResend }}</button>
+                   {{ t.didntReceive }} <button @click="handleResendEmail()" class="text-[#00B389] font-semibold hover:underline ml-1 cursor-pointer">{{ t.clickResend }}</button>
                 </p>
              </div>
 
@@ -306,7 +306,7 @@
                    {{ t.resetPassword }}
                 </button>
                 <p class="text-[18px] font-medium text-[#00000080] text-center">
-                   {{ t.didntReceive }} <button class="text-[#00B389] font-semibold hover:underline ml-1 cursor-pointer">{{ t.clickResend }}</button>
+                   {{ t.didntReceive }} <button @click="handleResendEmail()" class="text-[#00B389] font-semibold hover:underline ml-1 cursor-pointer">{{ t.clickResend }}</button>
                 </p>
              </div>
 
@@ -321,6 +321,9 @@
                    <svg v-if="isRtl" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 </button>
              </div>
+
+             <!-- Error / cooldown message -->
+             <p v-if="forgotError" class="mt-4 text-[14px] text-red-500 text-center">{{ forgotError }}</p>
 
              <!-- Back to Login Link -->
              <button v-if="forgotPasswordStep < 4" @click="backToLogin()" class="mt-12 flex items-center gap-2 text-[18px] font-medium text-[#00000080] hover:text-[#013E32] transition-colors group cursor-pointer">
@@ -423,7 +426,7 @@ const translations = {
     resetPassword: 'Reset Password',
     backToLogin: 'Back to Login',
     passResetTitle: 'Password Reset',
-    passResetSub: 'We send a code to',
+    passResetSub: 'Open the link in the email we sent to get your code:',
     continue: 'Continue',
     didntReceive: "Don't receive the email?",
     clickResend: 'Click to resend',
@@ -465,7 +468,7 @@ const translations = {
     resetPassword: 'إعادة تعيين كلمة المرور',
     backToLogin: 'العودة إلى تسجيل الدخول',
     passResetTitle: 'إعادة تعيين كلمة المرور',
-    passResetSub: 'نرسل كود إلى',
+    passResetSub: 'افتح الرابط في البريد الإلكتروني الذي أرسلناه للحصول على الرمز:',
     continue: 'متابعـة',
     didntReceive: 'لم تستلم البريد الإلكتروني؟',
     clickResend: 'انقر لإعادة الإرسال',
@@ -552,14 +555,92 @@ function onEmailVerified() {
   }, 1200)
 }
 
-const handleResetPassword = () => {
-  if (forgotPasswordStep.value === 1) {
-    forgotEmail.value = form.email
-    forgotPasswordStep.value = 2
-  } else if (forgotPasswordStep.value === 2) {
-    forgotPasswordStep.value = 3
-  } else if (forgotPasswordStep.value === 3) {
-    forgotPasswordStep.value = 4
+const forgotError = ref('')
+const forgotLoading = ref(false)
+const resetToken = ref('')
+
+const handleResetPassword = async () => {
+  if (forgotLoading.value) return
+  forgotError.value = ''
+
+  try {
+    if (forgotPasswordStep.value === 1) {
+      const email = form.email?.trim()
+      if (!email) {
+        forgotError.value = currentLanguage.value === 'ar' ? 'يرجى إدخال بريدك الإلكتروني' : 'Please enter your email.'
+        return
+      }
+      forgotLoading.value = true
+      await $fetch('/forgot-password', {
+        baseURL: config.public.apiBase,
+        method: 'POST',
+        body: { email },
+      })
+      forgotEmail.value = email
+      forgotPasswordStep.value = 2
+
+    } else if (forgotPasswordStep.value === 2) {
+      const code = otp.value.join('')
+      if (code.length !== 4) {
+        forgotError.value = currentLanguage.value === 'ar' ? 'يرجى إدخال الرمز المكون من 4 أرقام' : 'Please enter the 4-digit code.'
+        return
+      }
+      forgotLoading.value = true
+      const res = await $fetch('/forgot-password/verify-otp', {
+        baseURL: config.public.apiBase,
+        method: 'POST',
+        body: { email: forgotEmail.value, otp: code },
+      })
+      resetToken.value = res.reset_token
+      forgotPasswordStep.value = 3
+
+    } else if (forgotPasswordStep.value === 3) {
+      if (!form.password || form.password.length < 8) {
+        forgotError.value = currentLanguage.value === 'ar' ? 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل' : 'Password must be at least 8 characters.'
+        return
+      }
+      if (form.password !== form.confirmPassword) {
+        forgotError.value = currentLanguage.value === 'ar' ? 'كلمتا المرور غير متطابقتين' : 'Passwords do not match.'
+        return
+      }
+      forgotLoading.value = true
+      await $fetch('/reset-password', {
+        baseURL: config.public.apiBase,
+        method: 'POST',
+        body: {
+          token: resetToken.value,
+          password: form.password,
+          password_confirmation: form.confirmPassword,
+        },
+      })
+      form.password = ''
+      form.confirmPassword = ''
+      forgotPasswordStep.value = 4
+    }
+  } catch (err) {
+    forgotError.value = err?.data?.message
+      || (currentLanguage.value === 'ar' ? 'حدث خطأ ما، يرجى المحاولة مرة أخرى' : 'Something went wrong. Please try again.')
+  } finally {
+    forgotLoading.value = false
+  }
+}
+
+// "Click to resend" — backend enforces a 2-minute per-email cooldown (429)
+const handleResendEmail = async () => {
+  if (forgotLoading.value) return
+  forgotError.value = ''
+  forgotLoading.value = true
+  try {
+    await $fetch('/forgot-password', {
+      baseURL: config.public.apiBase,
+      method: 'POST',
+      body: { email: forgotEmail.value },
+    })
+  } catch (err) {
+    forgotError.value = err?.data?.message
+      || (currentLanguage.value === 'ar' ? 'حدث خطأ ما، يرجى المحاولة مرة أخرى' : 'Something went wrong. Please try again.')
+  } finally {
+    forgotLoading.value = false
   }
 }
 
@@ -567,6 +648,9 @@ const backToLogin = () => {
   isForgotPassword.value = false
   forgotPasswordStep.value = 1
   isLogin.value = true
+  otp.value = ['', '', '', '']
+  resetToken.value = ''
+  forgotError.value = ''
 }
 </script>
 
