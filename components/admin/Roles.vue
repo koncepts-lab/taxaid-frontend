@@ -1,13 +1,13 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div>
+    <!-- Header (hidden while a client config is open — SPA takeover) -->
+    <div v-if="!clientDetailOpen">
       <h1 class="text-2xl font-medium text-[#013E32]">User & System Access Management</h1>
       <p class="text-gray-500 mt-1">Centralized admin control to manage users and access across all dashboards.</p>
     </div>
 
     <!-- Top 4 Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div v-if="!clientDetailOpen" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="bg-white border border-[#D1FAE5] rounded-[10px] p-5 shadow-sm relative">
         <div class="text-gray-500 text-[13px] mb-3 flex items-center justify-between font-medium">
           <span>Total Users</span>
@@ -46,10 +46,11 @@
     </div>
 
     <!-- Tabs -->
-    <div class="flex items-center gap-2 text-sm mt-8 bg-white p-1.5 rounded-full border border-gray-100 shadow-sm w-fit overflow-x-auto">
+    <div v-if="!clientDetailOpen" class="flex items-center gap-2 text-sm mt-8 bg-white p-1.5 rounded-full border border-gray-100 shadow-sm w-fit overflow-x-auto">
       <button @click="setTab('User Management')" :class="activeTab === 'User Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">User Management</button>
       <button @click="setTab('System Access Control')" :class="activeTab === 'System Access Control' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">System Access Control</button>
       <button @click="setTab('Partner Management'); loadPartners()" :class="activeTab === 'Partner Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Partner Management</button>
+      <button @click="setTab('Tenants Management')" :class="activeTab === 'Tenants Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Tenants Management</button>
     </div>
 
     <!-- User Management Tab -->
@@ -392,6 +393,9 @@
         </div>
       </div>
     </div>
+
+    <!-- Tenants Management Tab — reusable component (review team can reuse) -->
+    <AdminClientTenants v-else-if="activeTab === 'Tenants Management'" />
 
     <!-- Partner Clients Modal -->
     <div v-if="showPartnerClientsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -851,9 +855,14 @@ const dashboards    = ref([])
 // ── Tabs & filters ────────────────────────────────────────────────────────────
 const route  = useRoute()
 const router = useRouter()
-const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management' }
-const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners' }
+const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management', clients: 'Tenants Management' }
+const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners', 'Tenants Management': 'clients' }
 const activeTab = ref(tabMap[route.query.tab] ?? 'User Management')
+
+// A client config is open (?tab=clients&id=N) → hide header/cards/tabs (SPA takeover)
+const clientDetailOpen = computed(() =>
+  activeTab.value === 'Tenants Management' && Number(route.query.id) > 0
+)
 
 function setTab(name) {
   activeTab.value = name
