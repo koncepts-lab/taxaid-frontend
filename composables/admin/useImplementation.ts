@@ -118,20 +118,6 @@ export function useImplementation() {
     return res.data
   }
 
-  // Client AR/AP data mode (hybrid = data-in uploads, direct = connector)
-  async function getClientDataMode(clientId: string): Promise<string> {
-    const res: any = await apiFetch(`/admin/implementation/clients/${clientId}/data-mode`)
-    return res.data?.data_mode ?? 'hybrid'
-  }
-
-  async function setClientDataMode(clientId: string, dataMode: 'hybrid' | 'direct'): Promise<string> {
-    const res: any = await apiFetch(`/admin/implementation/clients/${clientId}/data-mode`, {
-      method: 'PATCH',
-      body: { data_mode: dataMode },
-    })
-    return res.data?.data_mode ?? dataMode
-  }
-
   // TaxAid Connect activation code (one-time; regenerate until connected)
   async function getConnectorCode(clientId: string): Promise<any> {
     const res: any = await apiFetch(`/admin/implementation/clients/${clientId}/connector-code`)
@@ -236,8 +222,6 @@ export function useImplementation() {
     requestCredentials,
     getMyCredentialRequest,
     goLive,
-    getClientDataMode,
-    setClientDataMode,
     getConnectorCode,
     generateConnectorCode,
     getCredentialRequests,

@@ -5,7 +5,10 @@ export interface TenantRow {
   id: number
   license_id: string
   status: string
-  data_mode: string | null
+  data_mode_ar: string | null
+  data_mode_ap: string | null
+  data_mode_sales_forecast: string | null
+  data_mode_cost_center: string | null
   go_live_at: string | null
   created_at: string
   name: string | null // company_name of the tenant's users

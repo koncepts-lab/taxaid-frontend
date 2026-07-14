@@ -113,7 +113,9 @@
                 :error="arError"
                 :isDark="isDark"
                 :currentLang="currentLang"
-                :title="currrentTitle" />
+                :title="currrentTitle"
+                :activeMode="toLabel(dataModes.ar)"
+                @change-mode="(m) => handleModeChange('ar', m)" />
               <!-- Accounts Payable (live API) -->
               <DataSourceAR v-if="activeSubTab === 'accounts-payable'"
                 type="AP"
@@ -123,7 +125,9 @@
                 :error="apError"
                 :isDark="isDark"
                 :currentLang="currentLang"
-                :title="currrentTitle" />
+                :title="currrentTitle"
+                :activeMode="toLabel(dataModes.ap)"
+                @change-mode="(m) => handleModeChange('ap', m)" />
               <DataSourceInterCompany
                 v-if="activeMainTab !== 'certificate' && ['inter-company', 'vendor', 'internal-email', 'customers'].includes(activeSubTab)"
                 :key="activeSubTab" :type="activeSubTab" :data="interCompanyData" :isDark="isDark"
@@ -132,6 +136,8 @@
                 :currentLang="currentLang" @open-report="openPDCReport" />
               <DataSourceCostCenter v-if="activeSubTab === 'cost-center'" :isDark="isDark" :currentLang="currentLang"
                 :activeCount="ccActiveCount"
+                :activeMode="toLabel(dataModes.cost_center)"
+                @change-mode="(m) => handleModeChange('cost_center', m)"
                 @open-report="handleOpenCCReport" />
               <DataSourcePDCModal :isOpen="isPDCModalOpen" :type="selectedPDCType" :data="pdcDetailedData"
                 :totalAmount="pdcDetailedTotal" :isDark="isDark" :currentLang="currentLang" @close="isPDCModalOpen = false" />
@@ -202,10 +208,24 @@ const route  = useRoute()
 const router = useRouter()
 
 // ── AR Aging Summary (live API) ────────────────────────────────────────────
-const { rows: arRows, totals: arTotals, loading: arLoading, error: arError, logs: arLiveLogs } = useArAgingSummary()
+const { rows: arRows, totals: arTotals, loading: arLoading, error: arError, logs: arLiveLogs, refresh: refreshArAging } = useArAgingSummary()
 
 // ── AP Aging Summary (live API) ────────────────────────────────────────────
-const { rows: apRows, totals: apTotals, loading: apLoading, error: apError, logs: apLiveLogs } = useApAgingSummary()
+const { rows: apRows, totals: apTotals, loading: apLoading, error: apError, logs: apLiveLogs, refresh: refreshApAging } = useApAgingSummary()
+
+// ── Per-module hybrid/direct data modes (drives the sub-tab toggles) ───────
+const { modes: dataModes, fetchModes: fetchDataModes, setMode: setDataMode, toLabel, toMode } = useDataMode()
+onMounted(() => fetchDataModes())
+
+// Persist the toggle, then re-fetch the tab's data — the backend endpoints
+// read the stored mode, so a successful PATCH changes what they return.
+const handleModeChange = async (module, label) => {
+  const ok = await setDataMode(module, toMode(label))
+  if (!ok) return
+  if (module === 'ar') refreshArAging()
+  if (module === 'ap') refreshApAging()
+  // cost_center: persisted only — its actuals are connector-fed in both modes
+}
 
 // ── Trial Balance (live API) ───────────────────────────────────────────────
 const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoading: tbLoadingState, tbMeta, fetchTrialBalance, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, tbLogs: tbLiveLogs } = useTrialBalance()
