@@ -38,6 +38,7 @@
                         <FinancialStatementSummary :data="activeTabData.rows" :is-compressed="isChatOpen"
                             :filters="filters" :active-tab="activeTab" @ask-akeel="handleInfo"
                             @ratio-change="(val) => { selectedRatioType = val; fetchTabData('ratios'); }"
+                            :loading="loading" :error="error"
                             :report-info="reportInfo" />
                     </div>
                 </div>
@@ -82,9 +83,17 @@ const isFullScreenChat = ref(false)
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 const isChatOpen = ref(false)
-const activeTab = ref('profit-loss')
 
-const { filters, selectedRatioType, plRows, bsRows, ratiosRows, reportInfo, fetchTabData } = useFinancialStatement()
+// ?tab= URL sync (profit-loss | balance-sheet | ratios)
+const route  = useRoute()
+const router = useRouter()
+const validTabs = ['profit-loss', 'balance-sheet', 'ratios']
+const activeTab = ref(validTabs.includes(route.query.tab) ? route.query.tab : 'profit-loss')
+watch(activeTab, (val) => {
+    router.replace({ query: { ...route.query, tab: val } })
+})
+
+const { filters, selectedRatioType, plRows, bsRows, ratiosRows, reportInfo, loading, error, fetchTabData } = useFinancialStatement()
 
 onMounted(() => useLocation().syncSessionLocation())
 
@@ -133,8 +142,9 @@ const handleDateUpdate = (payload) => {
     }
     // For all other options let backend resolve dates from Carbon::now()
 
+    // The [activeTab, filters] watcher below fires on this assignment —
+    // calling fetchTabData here too made every date change fetch twice.
     filters.value = { range_option: rangeOption, custom_from: customFrom, custom_to: customTo }
-    fetchTabData(activeTab.value)
 }
 
 watch([activeTab, filters], () => {

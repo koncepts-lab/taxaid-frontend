@@ -70,6 +70,18 @@
             </div>
 
             <div class="flex items-center ">
+                <!-- Show-all-data toggle: OFF (default) hides rows with no data at all -->
+                <div class="flex items-center gap-2 me-4">
+                    <span class="text-xs" :class="isDark ? 'text-white/60' : 'text-black/60'">
+                        {{ currentLang === 'ar' ? 'عرض كل البيانات' : 'Show all data' }}
+                    </span>
+                    <button @click="showAllData = !showAllData" role="switch" :aria-checked="showAllData"
+                        class="relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300"
+                        :class="showAllData ? 'bg-[#00B794]' : (isDark ? 'bg-white/20' : 'bg-gray-300')">
+                        <span class="absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all duration-300"
+                            :class="showAllData ? 'start-[18px]' : 'start-0.5'"></span>
+                    </button>
+                </div>
                 <div v-if="activeTab === 'ratios'" class="w-80 relative">
                     <div @click="isOpenRatio = !isOpenRatio"
                         class="w-full border rounded-lg py-2.5 px-4 text-sm  flex justify-between items-center cursor-pointer transition-all"
@@ -154,8 +166,26 @@
                 </tr>
             </thead>
             <tbody>
+                <!-- Loading / error / empty states (previously a failed fetch left a silent blank table) -->
+                <tr v-if="loading">
+                    <td colspan="7" class="px-8 py-12 text-center text-sm"
+                        :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                        {{ currentLang === 'ar' ? 'جارٍ التحميل...' : 'Loading report...' }}
+                    </td>
+                </tr>
+                <tr v-else-if="error">
+                    <td colspan="7" class="px-8 py-12 text-center text-sm text-red-500">
+                        {{ error }}
+                    </td>
+                </tr>
+                <tr v-else-if="!visibleRows.length">
+                    <td colspan="7" class="px-8 py-12 text-center text-sm"
+                        :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                        {{ currentLang === 'ar' ? 'لا توجد بيانات متاحة' : 'No data available' }}
+                    </td>
+                </tr>
 
-                <template v-for="(row, i) in data" :key="i">
+                <template v-else v-for="(row, i) in visibleRows" :key="i">
                     <tr v-if="row.isHeader" :class="isDark ? 'bg-primary-1050' : 'bg-primary-800'">
                         <td colspan="7" class="lg:px-8 px-4 py-3 font-medium text-start"
                             :class="isDark ? 'text-white/80' : 'text-primary-950'">{{ row.label }}</td>
@@ -261,7 +291,7 @@
             :data="scheduleDetails" :title="selectedMainGroup" :isDark="isDark" @close="isScheduleModalOpen = false"
             :schedule="selectedSchedule" :activeTab="props.activeTab" :rangeOption="props.filters.range_option" :customFrom="props.filters.custom_from" :customTo="props.filters.custom_to" />
         <FinancialStatementModal :isOpen="isModalOpen" :isDark="isDark" :currentLang="currentLang"
-            :title="translatedTitle" :t="t" :data="data" :activeTab="activeTab" :selectedRatio="selectedRatio"
+            :title="translatedTitle" :t="t" :data="visibleRows" :activeTab="activeTab" :selectedRatio="selectedRatio"
             :ratioOptions="ratioOptions" :isCompressed="isCompressed" @close="isModalOpen = false"
             @handleSchedule="handleSchedule" @updateRatio="(val) => selectedRatio = val" />
     </div>
@@ -274,9 +304,38 @@ const props = defineProps({
     isCompressed: Boolean,
     activeTab: String,
     filters: Object,
-    reportInfo: Object
-
+    reportInfo: Object,
+    loading: Boolean,
+    error: String,
 });
+
+// "Show all data" toggle — OFF (default) hides rows whose every data cell
+// is empty (null/''/'-'/NA); headers stay. ON shows the report as-is.
+const showAllData = ref(false)
+
+const isEmptyCell = (v) => {
+    if (v === null || v === undefined) return true
+    const s = String(v).trim()
+    const bare = s.replace(/[%,]/g, '').trim().toUpperCase() // 'NA%' → 'NA', '0%' → '0'
+    if (bare === '' || bare === '-' || bare === 'NA' || bare === 'N/A') return true
+    // All-zero rows (e.g. Opening/Closing Stock showing 0 everywhere) count
+    // as no-data too — strip %/commas and compare numerically.
+    const n = parseFloat(s.replace(/[%,]/g, ''))
+    return !isNaN(n) && n === 0
+}
+
+const rowHasData = (row) => {
+    if (row.isHeader) return true
+    // progress deliberately excluded: ratios default it to 0, and a row with
+    // no figures is empty regardless of the gauge.
+    return [row.current, row.previous, row.budget, row.variance]
+        .some(v => !isEmptyCell(v))
+}
+
+const visibleRows = computed(() => {
+    const rows = props.data ?? []
+    return showAllData.value ? rows : rows.filter(rowHasData)
+})
 const config = useRuntimeConfig();
 const baseUrl = config.public.apiBase;
 const isDark = useTheme().isDark

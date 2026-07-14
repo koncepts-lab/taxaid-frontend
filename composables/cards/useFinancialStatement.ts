@@ -11,6 +11,7 @@ const _bsRows      = ref<any[]>([])
 const _ratiosRows  = ref<any[]>([])
 const _reportInfo  = ref({ current: '', previous: '' })
 const _loading     = ref(false)
+const _error       = ref<string | null>(null)
 
 const scheduleMap: Record<string, string | null> = {
   'Revenue':                     '01',
@@ -40,6 +41,7 @@ const fmtNum = (num: any) => {
 
 async function fetchPLData() {
   _loading.value = true
+  _error.value = null
   try {
     const payload: any = { range_option: fsFilters.value.range_option }
     if (fsFilters.value.range_option === 'Custom Dates') {
@@ -68,9 +70,12 @@ async function fetchPLData() {
         isTotal:   false,
         schedule:  scheduleMap[row.label] ?? '-',
       }))
+    } else {
+      _error.value = res?.message ?? 'Failed to load the Profit & Loss report.'
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error('Failed to fetch P&L data', e)
+    _error.value = e?.data?.message ?? 'Failed to load the Profit & Loss report.'
   } finally {
     _loading.value = false
   }
@@ -78,6 +83,7 @@ async function fetchPLData() {
 
 async function fetchBSData() {
   _loading.value = true
+  _error.value = null
   try {
     const payload: any = { range_option: fsFilters.value.range_option }
     if (fsFilters.value.range_option === 'Custom Dates') {
@@ -98,9 +104,14 @@ async function fetchBSData() {
         isTotal:   row.isTotal   || false,
         schedule:  scheduleMapBS[row.label] ?? '-',
       }))
+    } else {
+      // Previously a non-success response left the table silently blank —
+      // the "balance sheet didn't show up" symptom.
+      _error.value = res?.message ?? 'Failed to load the Balance Sheet report.'
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error('Failed to fetch BS data', e)
+    _error.value = e?.data?.message ?? 'Failed to load the Balance Sheet report.'
   } finally {
     _loading.value = false
   }
@@ -108,6 +119,7 @@ async function fetchBSData() {
 
 async function fetchRatiosData() {
   _loading.value = true
+  _error.value = null
   try {
     const payload: any = { range_option: fsFilters.value.range_option }
     if (fsFilters.value.range_option === 'Custom Dates') {
@@ -144,9 +156,12 @@ async function fetchRatiosData() {
           schedule:  '-',
         }
       })
+    } else {
+      _error.value = res?.message ?? 'Failed to load the Ratios report.'
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error('Failed to fetch Ratios data', e)
+    _error.value = e?.data?.message ?? 'Failed to load the Ratios report.'
   } finally {
     _loading.value = false
   }
@@ -167,6 +182,7 @@ export function useFinancialStatement() {
     ratiosRows:        _ratiosRows,
     reportInfo:        _reportInfo,
     loading:           _loading,
+    error:             _error,
     fetchTabData,
   }
 }
