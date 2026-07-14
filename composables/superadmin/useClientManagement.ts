@@ -66,8 +66,8 @@ export function useClientManagement() {
     saveBlob(blob, `taxaid_backup_tenant_${tenantId}_${backupId}.zip`)
   }
 
-  async function downloadLogs(requestId: string) {
-    const blob = await useAdminApi(`/connector/logs/${requestId}`, { responseType: 'blob' }) as Blob
+  async function downloadLogs(tenantId: number, requestId: string) {
+    const blob = await useAdminApi(`/connector/logs/${requestId}?tenant_id=${tenantId}`, { responseType: 'blob' }) as Blob
     saveBlob(blob, `connector_logs_${requestId}.zip`)
   }
 

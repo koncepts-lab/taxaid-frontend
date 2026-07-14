@@ -239,7 +239,7 @@ async function handleRequestLogs() {
 
 async function handleDownloadLogs() {
   try {
-    await downloadLogs(logRequestId.value)
+    await downloadLogs(props.tenantId, logRequestId.value)
     logRequestId.value = null
   } catch {
     note('Logs not uploaded yet — try again in a moment.', false)
