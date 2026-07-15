@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-[20px] p-4 flex flex-col h-[225px] relative overflow-hidden group cursor-pointer transition-all duration-300 border border-transparent"
+  <div class="rounded-[20px] p-4 flex flex-col h-[290px] relative overflow-hidden group cursor-pointer transition-all duration-300 border border-transparent"
     :class="[
       isDark ? 'bg-[#002e26]' : 'bg-white',
       isHovered ? 'shadow-[0_0_15px_#00B794] border-[#00B794]/30' : 'shadow-sm hover:shadow-[0_0_10px_#00B794]'
