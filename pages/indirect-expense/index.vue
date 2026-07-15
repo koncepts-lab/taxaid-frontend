@@ -132,7 +132,10 @@ const handleExport = (type) => {
 
 watch(currentLang, () => fetchAll(currentLang.value))
 
-onMounted(() => fetchAll(currentLang.value))
+onMounted(() => {
+  fetchAll(currentLang.value)
+  useLocation().syncSessionLocation()
+})
 
 </script>
 

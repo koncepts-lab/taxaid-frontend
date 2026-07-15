@@ -117,7 +117,10 @@ const handleDateChange = (period) => {
 
 const handleReload = () => fetchAll()
 
-onMounted(() => fetchAll())
+onMounted(() => {
+  fetchAll()
+  useLocation().syncSessionLocation()
+})
 </script>
 
 <style scoped>

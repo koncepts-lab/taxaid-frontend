@@ -17,7 +17,7 @@
 
             <div class="flex items-center gap-4 w-full lg:w-auto">
                 <div class="flex bg-[#61FFD61A] p-1 rounded-xl border border-[#84D7C5]/30">
-                    <button v-for="mode in ['Hybrid', 'Direct']" :key="mode" @click="activeMode = mode"
+                    <button v-for="mode in ['Hybrid', 'Direct']" :key="mode" @click="$emit('change-mode', mode)"
                         class="px-4 py-1.5 rounded-lg text-sm transition-all duration-300"
                         :class="activeMode === mode ? 'bg-[#00B794] text-white shadow-sm' : 'text-black/80 '">
                         {{ mode }}
@@ -180,8 +180,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 
-const activeMode = ref('Hybrid')
 const isModalOpen = ref(false)
+
+defineEmits(['change-mode'])
 
 const props = defineProps({
     // Legacy static data (AP still uses this)
@@ -190,6 +191,11 @@ const props = defineProps({
     currentLang: String,
     title: String,
     type: String, // 'AR' | 'AP'
+    // Persisted tenant data mode for this side ('Hybrid' | 'Direct')
+    activeMode: {
+        type: String,
+        default: 'Hybrid',
+    },
     // Live API data (AR only)
     arRows: {
         type: Array,

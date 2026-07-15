@@ -8,16 +8,18 @@ export const useAuth = () => {
   const config = useRuntimeConfig()
 
   // 3. Login Logic
-  const login = async (credentials: any, remember: boolean = false) => {
+  const login = async (credentials: any, remember: boolean = false, location: string | null = null) => {
     try {
-      // Session tracking extras (optional server-side): browser timezone -> coarse location
-      let sessionMeta = {}
+      // Session tracking extras (optional server-side): browser timezone -> coarse location,
+      // plus a geolocated "City, Region, Country" when the caller resolved one
+      let sessionMeta: Record<string, any> = {}
       try {
         sessionMeta = {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           device_name: navigator?.platform || null,
         }
       } catch {}
+      if (location) sessionMeta.location = location
 
       const response: any = await $fetch('/auth/login', {
         baseURL: config.public.apiBase,
@@ -27,8 +29,8 @@ export const useAuth = () => {
       })
 
       if (response.status === 'success') {
-        const cookieOptions = remember 
-          ? { maxAge: 60 * 60 * 24 * 30, path: '/' } //30days if user check rember me. elso session only
+        const cookieOptions = remember
+          ? { maxAge: 60 * 60 * 24 * 7, path: '/' } // 7 days = backend token expiry; else session-only cookie
           : { path: '/' }
 
         const authToken = useCookie('auth_token', cookieOptions)

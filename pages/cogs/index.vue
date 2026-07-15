@@ -129,7 +129,10 @@ const handleOneClickSummary = () => {
 
 watch(currentLang, () => fetchAll(currentLang.value))
 
-onMounted(() => fetchAll(currentLang.value))
+onMounted(() => {
+  fetchAll(currentLang.value)
+  useLocation().syncSessionLocation()
+})
 </script>
 
 <style scoped>

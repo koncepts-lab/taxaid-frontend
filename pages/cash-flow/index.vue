@@ -118,7 +118,10 @@ const handlePeriodChange = (months) => {
 
 const handleExport = (type) => {}
 
-onMounted(() => fetchProjection())
+onMounted(() => {
+  fetchProjection()
+  useLocation().syncSessionLocation()
+})
 </script>
 
 <style scoped>

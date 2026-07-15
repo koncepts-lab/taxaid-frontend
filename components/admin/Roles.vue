@@ -1,13 +1,13 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div>
+    <!-- Header (hidden while a client config is open — SPA takeover) -->
+    <div v-if="!clientDetailOpen">
       <h1 class="text-2xl font-medium text-[#013E32]">User & System Access Management</h1>
       <p class="text-gray-500 mt-1">Centralized admin control to manage users and access across all dashboards.</p>
     </div>
 
     <!-- Top 4 Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div v-if="!clientDetailOpen" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="bg-white border border-[#D1FAE5] rounded-[10px] p-5 shadow-sm relative">
         <div class="text-gray-500 text-[13px] mb-3 flex items-center justify-between font-medium">
           <span>Total Users</span>
@@ -45,11 +45,27 @@
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="flex items-center gap-2 text-sm mt-8 bg-white p-1.5 rounded-full border border-gray-100 shadow-sm w-fit overflow-x-auto">
-      <button @click="setTab('User Management')" :class="activeTab === 'User Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">User Management</button>
-      <button @click="setTab('System Access Control')" :class="activeTab === 'System Access Control' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">System Access Control</button>
-      <button @click="setTab('Partner Management'); loadPartners()" :class="activeTab === 'Partner Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Partner Management</button>
+    <!-- Header with Tabs and Socket Button -->
+    <div v-if="!clientDetailOpen" class="flex justify-between items-center mt-8 w-full">
+      <!-- Tabs -->
+      <div class="flex items-center gap-2 text-sm bg-white p-1.5 rounded-full border border-gray-100 shadow-sm w-fit overflow-x-auto">
+        <button @click="setTab('User Management')" :class="activeTab === 'User Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">User Management</button>
+        <button @click="setTab('System Access Control')" :class="activeTab === 'System Access Control' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">System Access Control</button>
+        <button @click="setTab('Partner Management'); loadPartners()" :class="activeTab === 'Partner Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Partner Management</button>
+        <button @click="setTab('Tenants Management')" :class="activeTab === 'Tenants Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Tenants Management</button>
+      </div>
+
+      <!-- Socket VM status badge → click opens detail modal -->
+      <button @click="openSocketModal" title="TaxAid Socket (Reverb) status"
+        :class="socketLoading ? 'bg-white text-gray-400 border-gray-200' : socketOnline ? 'text-emerald-700 border-emerald-200 bg-emerald-50 hover:bg-emerald-100' : 'text-red-600 border-red-200 bg-red-50 hover:bg-red-100'"
+        class="py-1.5 px-4 rounded-full border transition-colors flex items-center gap-2 text-[13px] font-medium whitespace-nowrap shadow-sm shrink-0 min-w-[190px] justify-center">
+        <span v-if="!socketLoading" :class="socketOnline ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'" class="w-2 h-2 rounded-full shrink-0"></span>
+        <div v-if="socketLoading" class="flex items-center gap-1.5">
+          <span>WebSocket status :</span>
+          <div class="h-3 w-10 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        <span v-else>WebSocket status : {{ socketOnline ? 'Live' : 'Offline' }}</span>
+      </button>
     </div>
 
     <!-- User Management Tab -->
@@ -390,6 +406,76 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- Tenants Management Tab — reusable component (review team can reuse) -->
+    <AdminClientTenants v-else-if="activeTab === 'Tenants Management'" />
+
+    <!-- Socket VM Status Modal -->
+    <div v-if="showSocketModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div class="flex items-center gap-3">
+            <span :class="socketOnline ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'" class="w-2.5 h-2.5 rounded-full"></span>
+            <h2 class="text-[17px] font-semibold text-gray-900">WebSocket Server — {{ socketOnline ? 'Live' : 'Down' }}</h2>
+          </div>
+          <div class="flex items-center gap-3">
+            <button @click="loadSocketStatus" :disabled="socketLoading" class="text-[13px] text-[#007C65] font-medium hover:underline disabled:opacity-50">{{ socketLoading ? 'Refreshing…' : 'Refresh' }}</button>
+            <button @click="showSocketModal = false" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 overflow-y-auto space-y-4 text-sm">
+          <div v-if="socketLoading && !socketStatus" class="py-10 text-center text-gray-400">Loading…</div>
+
+          <template v-else>
+            <!-- Reverb (always shown; falls back to — when unreachable) -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div :class="socketOnline ? 'bg-gray-50' : 'bg-red-50/60'" class="rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Reverb</div><div :class="socketOnline ? 'text-emerald-600' : 'text-red-600'" class="font-semibold">{{ socketOnline ? 'Running' : socketStatus?.data?.reverb ? 'Stopped' : 'Unreachable' }}</div></div>
+              <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Port</div><div class="font-semibold text-gray-800">{{ socketStatus?.data?.reverb?.port ?? '—' }}</div></div>
+              <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Latency</div><div class="font-semibold text-gray-800">{{ socketStatus?.data?.reverb?.latency_ms != null ? socketStatus.data.reverb.latency_ms + ' ms' : '—' }}</div></div>
+              <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Service</div><div class="font-semibold text-gray-800">{{ socketStatus?.data?.vm?.reverb_service ?? '—' }}</div></div>
+            </div>
+
+            <!-- IPs (always shown) -->
+            <div class="border border-gray-100 rounded-lg p-4">
+              <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Server IPs</div>
+              <div class="flex flex-wrap gap-2">
+                <span v-if="socketStatus?.data?.ips?.public" class="bg-[#F0FDF4] text-[#007C65] border border-emerald-100 rounded-md px-2.5 py-1 text-[13px] font-mono">{{ socketStatus.data.ips.public }} <span class="text-[10px] text-gray-400 font-sans">public</span></span>
+                <span v-for="ip in (socketStatus?.data?.ips?.local ?? [])" :key="ip" class="bg-gray-50 text-gray-700 border border-gray-200 rounded-md px-2.5 py-1 text-[13px] font-mono">{{ ip }} <span class="text-[10px] text-gray-400 font-sans">local</span></span>
+                <span v-if="!socketStatus?.data?.ips" class="text-gray-400 text-[13px]">Not available while the server is unreachable</span>
+              </div>
+            </div>
+
+            <!-- VM details (always shown) -->
+            <div class="border border-gray-100 rounded-lg p-4">
+              <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">VM Details</div>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 text-[13px]">
+                <div><span class="text-gray-400">Hostname:</span> {{ socketStatus?.data?.vm?.hostname ?? '—' }}</div>
+                <div><span class="text-gray-400">OS:</span> {{ socketStatus?.data?.vm?.os ?? '—' }}</div>
+                <div><span class="text-gray-400">Uptime:</span> {{ socketStatus?.data?.vm?.uptime ?? '—' }}</div>
+                <div><span class="text-gray-400">CPU cores:</span> {{ socketStatus?.data?.vm?.cpu_cores ?? '—' }}</div>
+                <div><span class="text-gray-400">Load (1m):</span> {{ socketStatus?.data?.vm?.load_avg?.['1m'] ?? '—' }}</div>
+                <div><span class="text-gray-400">Memory:</span> {{ socketStatus?.data?.vm?.memory ? socketStatus.data.vm.memory.used_pct + '% of ' + socketStatus.data.vm.memory.total_mb + ' MB' : '—' }}</div>
+                <div><span class="text-gray-400">Disk:</span> {{ socketStatus?.data?.vm?.disk ? socketStatus.data.vm.disk.used_pct + '% of ' + socketStatus.data.vm.disk.total_gb + ' GB' : '—' }}</div>
+                <div><span class="text-gray-400">PHP:</span> {{ socketStatus?.data?.vm?.php_version ?? '—' }}</div>
+                <div><span class="text-gray-400">Env:</span> {{ socketStatus?.data?.vm?.app_env ?? '—' }}</div>
+              </div>
+            </div>
+
+            <!-- Logs (always shown; carries the failure reason when offline) -->
+            <div class="border border-gray-100 rounded-lg p-4">
+              <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Recent Logs <span v-if="socketStatus?.data?.logs?.source" class="normal-case font-normal text-gray-400">({{ socketStatus.data.logs.source }})</span></div>
+              <pre v-if="socketStatus?.data?.logs?.lines?.length" class="bg-gray-900 text-gray-200 rounded-lg p-3 text-[11px] leading-relaxed max-h-56 overflow-auto whitespace-pre-wrap">{{ socketStatus.data.logs.lines.join('\n') }}</pre>
+              <pre v-else class="bg-gray-900 rounded-lg p-3 text-[11px] leading-relaxed max-h-56 overflow-auto whitespace-pre-wrap"><span class="text-red-400">{{ socketStatus?.reason ?? (socketStatus?.data?.reverb?.error ? 'VM reachable but Reverb refused the connection: ' + socketStatus.data.reverb.error : 'No log data available') }}</span></pre>
+            </div>
+          </template>
+        </div>
+
+        <div class="px-6 py-3 border-t border-gray-100 text-xs text-gray-400">Last checked: {{ socketStatus?.checked_at ? new Date(socketStatus.checked_at).toLocaleString() : '—' }}</div>
       </div>
     </div>
 
@@ -834,7 +920,29 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 
-const { getMe, getStats, getSystemCounts, getUsers, createUser, updateUser, deleteUser, activateUser, deactivateUser, updateSystems, getRoles, getDepartments, getDashboards, getPartners, getPartnerClients, togglePartnerStatus, unlinkPartnerClient, deletePartner, sendPartnerResetEmail } = useSuperAdmin()
+const { getMe, getStats, getSystemCounts, getUsers, createUser, updateUser, deleteUser, activateUser, deactivateUser, updateSystems, getRoles, getDepartments, getDashboards, getPartners, getPartnerClients, togglePartnerStatus, unlinkPartnerClient, deletePartner, sendPartnerResetEmail, getSocketStatus } = useSuperAdmin()
+
+// ── Socket VM status badge ────────────────────────────────────────────────────
+const socketStatus  = ref(null)
+const socketLoading = ref(true)
+const showSocketModal = ref(false)
+const socketOnline = computed(() => socketStatus.value?.online === true)
+
+async function loadSocketStatus() {
+  socketLoading.value = true
+  try {
+    socketStatus.value = await getSocketStatus()
+  } catch (e) {
+    socketStatus.value = { online: false, reason: 'Failed to reach backend' }
+  } finally {
+    socketLoading.value = false
+  }
+}
+
+function openSocketModal() {
+  showSocketModal.value = true
+  loadSocketStatus()
+}
 
 const currentAdminId = ref(null)
 const isSelf = (userId) => currentAdminId.value != null && userId == currentAdminId.value
@@ -851,9 +959,14 @@ const dashboards    = ref([])
 // ── Tabs & filters ────────────────────────────────────────────────────────────
 const route  = useRoute()
 const router = useRouter()
-const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management' }
-const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners' }
+const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management', clients: 'Tenants Management' }
+const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners', 'Tenants Management': 'clients' }
 const activeTab = ref(tabMap[route.query.tab] ?? 'User Management')
+
+// A client config is open (?tab=clients&id=N) → hide header/cards/tabs (SPA takeover)
+const clientDetailOpen = computed(() =>
+  activeTab.value === 'Tenants Management' && Number(route.query.id) > 0
+)
 
 function setTab(name) {
   activeTab.value = name
@@ -1135,5 +1248,6 @@ function formatDate(d) {
 onMounted(() => {
   loadData()
   if (activeTab.value === 'Partner Management') loadPartners()
+  loadSocketStatus()
 })
 </script>

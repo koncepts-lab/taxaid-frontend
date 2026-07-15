@@ -34,6 +34,8 @@ const isChatOpen = ref(false);
 
 const { tableData } = useTaxQueriesPage()
 
+onMounted(() => useLocation().syncSessionLocation())
+
 const currentTitle = computed(() => {
     const titles = {
         vat: 'VAT Queries',
