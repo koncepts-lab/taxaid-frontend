@@ -20,7 +20,7 @@ COPY . .
 
 # Run the Nuxt build command. 
 # Nuxt natively processes the .env file during this build step to bake in NUXT_PUBLIC_* variables.
-RUN npm run build
+RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
 
 
 # ---- STAGE 2: Runner ----
