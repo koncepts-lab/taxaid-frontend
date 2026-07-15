@@ -60,7 +60,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 
 const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
@@ -106,7 +106,7 @@ const handleDateChange = (period) => {
   summaryRef.value?.fetchSummaryData(ccDate.value)
   fetchChart()
 }
-const handleExportExcel = () => {
+const handleExportExcel = async () => {
   const childData = summaryRef.value?.tableData || []
   const childTotal = summaryRef.value?.summaryTotal
 
@@ -137,10 +137,22 @@ const handleExportExcel = () => {
     })
   }
 
-  const worksheet = XLSX.utils.json_to_sheet(exportRows)
-  const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Summary")
-  XLSX.writeFile(workbook, `Cost_Center_Summary.xlsx`)
+  const workbook = new ExcelJS.Workbook()
+  const worksheet = workbook.addWorksheet("Summary")
+  
+  if (exportRows.length > 0) {
+    worksheet.columns = Object.keys(exportRows[0]).map(key => ({ header: key, key: key, width: 20 }))
+    exportRows.forEach(row => worksheet.addRow(row))
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer()
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `Cost_Center_Summary.xlsx`
+  a.click()
+  window.URL.revokeObjectURL(url)
 }
 
 const handleExportPDF = async () => {

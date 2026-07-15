@@ -151,7 +151,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { jsPDF } from 'jspdf'; // 1. Use curly braces for destructuring
 import 'jspdf-autotable';
 import autoTable from 'jspdf-autotable';
@@ -199,7 +199,7 @@ const triggerExport = (type) => {
     showExportDropdown.value = false;
 };
 
-const exportToExcel = () => {
+const exportToExcel = async () => {
     const wsData = props.data.report.map(row => ({
         'Date': row.date,
         'Particulars': row.particulars,
@@ -207,10 +207,22 @@ const exportToExcel = () => {
         'Credit': row.credit
     }));
 
-    const ws = XLSX.utils.json_to_sheet(wsData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Ledger Report");
-    XLSX.writeFile(wb, `${props.ledgerName}_Ledger.xlsx`);
+    const workbook = new ExcelJS.Workbook();
+    const ws = workbook.addWorksheet("Ledger Report");
+    
+    if (wsData.length > 0) {
+        ws.columns = Object.keys(wsData[0]).map(key => ({ header: key, key: key, width: 20 }));
+        wsData.forEach(row => ws.addRow(row));
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${props.ledgerName}_Ledger.xlsx`;
+    a.click();
+    window.URL.revokeObjectURL(url);
 };
 
 const exportToPDF = () => {
