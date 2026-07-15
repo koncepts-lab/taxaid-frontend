@@ -67,6 +67,8 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
+onMounted(() => useLocation().syncSessionLocation())
+
 
 const handleDateUpdate = (payload) => {
   filters.value = payload;

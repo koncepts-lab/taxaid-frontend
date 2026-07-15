@@ -176,8 +176,11 @@
               </p>
             </div>
           </div>
-          <!-- Verified badge -->
-          <span v-if="mailSettings?.verified_at"
+          <!-- Verified badge (skeleton while loading so the row height never shifts) -->
+          <span v-if="mailLoading"
+            class="px-3 py-1 text-[11px] rounded-full shrink-0 w-20 h-6 animate-pulse"
+            :class="isDark ? 'bg-teal-950/60' : 'bg-gray-100'"></span>
+          <span v-else-if="mailSettings?.verified_at"
             class="px-3 py-1 text-[11px] font-semibold rounded-full shrink-0"
             :class="isDark ? 'bg-emerald-950 text-emerald-300' : 'bg-[#E6FFF9] text-[#00896F] border border-[#A2E8D6]'">
             {{ currentLang === 'ar' ? 'تم التحقق ✓' : 'Verified ✓' }}
@@ -231,7 +234,11 @@
                 ? 'بدون تحديد = يُرسل إلى جميع عناوين البريد الداخلي'
                 : 'Nothing ticked = sent to ALL internal email directory entries' }}
             </p>
-            <div v-if="availableDepartments.length" class="flex flex-wrap gap-3">
+            <div v-if="mailLoading" class="flex flex-wrap gap-3">
+              <span v-for="i in 3" :key="i" class="h-[38px] w-24 rounded-lg animate-pulse"
+                :class="isDark ? 'bg-teal-950/60' : 'bg-gray-100'"></span>
+            </div>
+            <div v-else-if="availableDepartments.length" class="flex flex-wrap gap-3">
               <label v-for="d in availableDepartments" :key="d"
                 class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-all"
                 :class="mailForm.internal_departments.includes(d)
@@ -366,8 +373,8 @@
         </Transition>
       </Teleport>
 
-      <!-- 2. TWO-FACTOR AUTHENTICATION CARD -->
-      <div class="rounded-2xl border p-6 transition-all duration-300"
+      <!-- 2. TWO-FACTOR AUTHENTICATION CARD (hidden until 2FA is implemented) -->
+      <div v-if="false" class="rounded-2xl border p-6 transition-all duration-300"
         :class="isDark ? 'bg-[#002E26] border-teal-950/40 text-white' : 'bg-white border-teal-50 shadow-[0_4px_20px_rgba(0,183,148,0.05)]'">
         
         <div class="flex items-center justify-between gap-4 mb-6">
@@ -477,7 +484,13 @@
         </div>
 
         <!-- Sessions List -->
-        <div class="space-y-3">
+        <div v-if="sessionsLoading" class="space-y-3">
+          <div v-for="i in 2" :key="'sk' + i" class="h-[100px] rounded-xl animate-pulse"
+            :class="isDark ? 'bg-teal-950/60' : 'bg-gray-100'"></div>
+        </div>
+        <!-- max 3 rows visible; more devices scroll inside (fixed cap = no layout shift) -->
+        <div v-else class="space-y-3 overflow-y-auto max-h-[330px] pr-1 sessions-scroll"
+          :class="isDark ? 'dark-scroll' : ''">
           <div v-for="session in sessions" :key="session.id"
             class="flex items-center justify-between p-4 rounded-xl border transition-all"
             :class="isDark ? 'bg-[#00251e]/80 border-teal-950/60' : ''"
@@ -580,11 +593,12 @@
                 ? 'bg-[#00251E] border-teal-900 focus:border-[#00B68D] focus:ring-[#00B68D] text-white' 
                 : 'bg-white border text-gray-900 focus:border-[#00896F] focus:ring-[#00896F]'"
               :style="!isDark ? 'border-color: #A2E8D6;' : ''">
-              <option value="15 minutes">{{ currentLang === 'ar' ? '15 دقيقة' : '15 minutes' }}</option>
-              <option value="30 minutes">{{ currentLang === 'ar' ? '30 دقيقة' : '30 minutes' }}</option>
-              <option value="1 hour">{{ currentLang === 'ar' ? 'ساعة واحدة' : '1 hour' }}</option>
-              <option value="4 hours">{{ currentLang === 'ar' ? '4 ساعات' : '4 hours' }}</option>
-              <option value="1 day">{{ currentLang === 'ar' ? 'يوم واحد' : '1 day' }}</option>
+              <option v-if="sessionTimeout === null" :value="null" disabled>
+                {{ currentLang === 'ar' ? 'اختر المدة' : 'Select duration' }}
+              </option>
+              <option v-for="opt in timeoutOptions" :key="opt.minutes" :value="opt.minutes">
+                {{ opt.label }}
+              </option>
             </select>
             <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -731,7 +745,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
@@ -740,6 +754,7 @@ const currentLang = useState('currentLang', () => 'en')
 const {
   settings: mailSettings,
   availableDepartments,
+  loading: mailLoading,
   saving: mailSaving,
   testing: mailTesting,
   fetchSettings: fetchMailSettings,
@@ -774,6 +789,8 @@ watch(mailSettings, syncMailForm)
 // Owner email — default recipient for the test-mail modal
 const ownerEmail = ref('')
 onMounted(async () => {
+  fetchSessions()
+  fetchTimeout()
   await fetchMailSettings()
   try {
     const res = await useApi('/profile')
@@ -851,13 +868,15 @@ const passwordStatus = reactive({
   message: ''
 })
 
-const handleUpdatePassword = () => {
+const passwordSaving = ref(false)
+
+const handleUpdatePassword = async () => {
   passwordStatus.message = ''
-  
+
   if (passwordForm.new !== passwordForm.confirm) {
     passwordStatus.type = 'error'
-    passwordStatus.message = currentLang.value === 'ar' 
-      ? 'كلمة المرور الجديدة وتأكيد كلمة المرور غير متطابقتين.' 
+    passwordStatus.message = currentLang.value === 'ar'
+      ? 'كلمة المرور الجديدة وتأكيد كلمة المرور غير متطابقتين.'
       : 'New password and confirm password do not match.'
     return
   }
@@ -870,16 +889,34 @@ const handleUpdatePassword = () => {
     return
   }
 
-  // Simulate API success
-  passwordStatus.type = 'success'
-  passwordStatus.message = currentLang.value === 'ar'
-    ? 'تم تحديث كلمة المرور الخاصة بك بنجاح!'
-    : 'Your password has been updated successfully!'
-  
-  // Reset Form fields
-  passwordForm.current = ''
-  passwordForm.new = ''
-  passwordForm.confirm = ''
+  if (passwordSaving.value) return
+  passwordSaving.value = true
+
+  try {
+    await useApi('/users/change-password', {
+      method: 'POST',
+      body: {
+        current_password: passwordForm.current,
+        password: passwordForm.new,
+        password_confirmation: passwordForm.confirm,
+      },
+    })
+
+    passwordStatus.type = 'success'
+    passwordStatus.message = currentLang.value === 'ar'
+      ? 'تم تحديث كلمة المرور بنجاح! تم تسجيل الخروج من الأجهزة الأخرى.'
+      : 'Your password has been updated successfully! Other devices have been logged out.'
+
+    passwordForm.current = ''
+    passwordForm.new = ''
+    passwordForm.confirm = ''
+  } catch (err) {
+    passwordStatus.type = 'error'
+    passwordStatus.message = err?.data?.message
+      || (currentLang.value === 'ar' ? 'حدث خطأ ما، يرجى المحاولة مرة أخرى.' : 'Something went wrong. Please try again.')
+  } finally {
+    passwordSaving.value = false
+  }
 
   setTimeout(() => {
     passwordStatus.message = ''
@@ -889,44 +926,42 @@ const handleUpdatePassword = () => {
 // 2FA state
 const twoFactorEnabled = ref(false)
 
-// Active Sessions state
-const sessions = ref([
-  {
-    id: 1,
-    browser: 'Chrome on Windows',
-    location: 'New York, USA',
-    lastActive: '5 minutes ago',
-    device: 'desktop',
-    isCurrent: true
-  },
-  {
-    id: 2,
-    browser: 'Safari on iPhone',
-    location: 'New York, USA',
-    lastActive: '2 hours ago',
-    device: 'mobile',
-    isCurrent: false
-  },
-  {
-    id: 3,
-    browser: 'Firefox on MacBook',
-    location: 'Boston, USA',
-    lastActive: '1 day ago',
-    device: 'desktop',
-    isCurrent: false
-  }
-])
+// Active Sessions + Session Management (backend /sessions)
+const {
+  sessions,
+  loading: sessionsLoading,
+  fetchSessions,
+  revoke,
+  revokeOthers,
+  timeoutOptions,
+  currentTimeout,
+  fetchTimeout,
+  saveTimeout,
+} = useSessions()
 
-const signOutSession = (id) => {
-  sessions.value = sessions.value.filter(session => session.id !== id)
+const signOutSession = async (id) => {
+  await revoke(id)
 }
 
-const signOutAllOtherSessions = () => {
-  sessions.value = sessions.value.filter(session => session.isCurrent)
+const signOutAllOtherSessions = async () => {
+  await revokeOthers()
 }
 
-// Session Management Timeout
-const sessionTimeout = ref('30 minutes')
+// Session Management Timeout (minutes; null = no idle limit yet chosen)
+const sessionTimeout = computed({
+  get: () => currentTimeout.value,
+  set: (v) => {
+    const minutes = v === null || v === '' ? null : Number(v)
+    currentTimeout.value = minutes
+    saveTimeout(minutes)
+  },
+})
+
+// labels + relative times are language-dependent
+watch(currentLang, () => {
+  fetchTimeout()
+  fetchSessions()
+})
 
 // Privacy Settings switches
 const shareUsageData = ref(false)
@@ -942,6 +977,26 @@ const downloadData = () => {
 </script>
 
 <style scoped>
+/* Active Sessions list — thin scrollbar matching the card palette */
+.sessions-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #A2E8D6 transparent;
+}
+.sessions-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.sessions-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sessions-scroll::-webkit-scrollbar-thumb {
+  background-color: #A2E8D6;
+  border-radius: 9999px;
+}
+.dark .sessions-scroll::-webkit-scrollbar-thumb,
+.sessions-scroll.dark-scroll::-webkit-scrollbar-thumb {
+  background-color: #013E32;
+}
+
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.3s ease;
 }

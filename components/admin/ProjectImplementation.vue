@@ -36,9 +36,9 @@
             </div>
         </div>
 
-        <!-- Temporary Login Credentials (2/4) + Data Mode (1/4) + TaxAid Connect (1/4) -->
+        <!-- Temporary Login Credentials (3/4) + TaxAid Connect (1/4) -->
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+        <div class="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
             <div class="flex items-start justify-between gap-6 flex-wrap">
                 <div>
                     <h3 class="text-xl font-normal mb-1 text-black">Temporary Login Credentials</h3>
@@ -105,28 +105,6 @@
                     These credentials have expired (client is live).
                 </div>
             </div>
-        </div>
-
-        <!-- Data Mode Card (1/4) -->
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 flex flex-col">
-            <h3 class="text-xl font-normal mb-1 text-black">Data Mode</h3>
-            <p class="text-base text-[#717182] mb-6">How this client's AR/AP data comes in</p>
-
-            <div class="flex bg-[#61FFD61A] p-1 rounded-xl border border-[#84D7C5]/30 w-full">
-                <button v-for="mode in ['hybrid', 'direct']" :key="mode"
-                    @click="changeDataMode(mode)" :disabled="dmLoading"
-                    class="flex-1 px-4 py-1.5 rounded-lg text-sm capitalize transition-all duration-300 disabled:opacity-60"
-                    :class="dataMode === mode ? 'bg-[#00B794] text-white shadow-sm' : 'text-black/80'">
-                    {{ mode }}
-                </button>
-            </div>
-
-            <p class="text-xs text-[#717182] mt-4">
-                <span v-if="dataMode === 'hybrid'"><span class="font-semibold">Hybrid:</span> AR/AP from manual data-in uploads.</span>
-                <span v-else><span class="font-semibold">Direct:</span> AR/AP from the connector's Tally sync.</span>
-            </p>
-            <p v-if="dmError" class="text-xs text-[#B91C1C] mt-2">{{ dmError }}</p>
-            <p v-else-if="dmSaved" class="text-xs text-[#007C65] mt-2">Saved.</p>
         </div>
 
         <!-- TaxAid Connector Card (1/4) -->
@@ -346,7 +324,7 @@ import { ref, computed, reactive, onMounted } from 'vue'
 const props = defineProps({ project: Object })
 const emit = defineEmits(['back'])
 
-const { updateStepProgress, requestCredentials, getMyCredentialRequest, goLive, getClientDataMode, setClientDataMode, getConnectorCode, generateConnectorCode } = useImplementation()
+const { updateStepProgress, requestCredentials, getMyCredentialRequest, goLive, getConnectorCode, generateConnectorCode } = useImplementation()
 
 // --- TaxAid Connect activation code ---
 const connCode    = ref(null)
@@ -368,35 +346,6 @@ async function generateCode() {
         await loadConnectorCode()
     } finally {
         connLoading.value = false
-    }
-}
-
-// --- Client AR/AP data mode (hybrid | direct) ---
-const dataMode  = ref('hybrid')
-const dmLoading = ref(false)
-const dmError   = ref('')
-const dmSaved   = ref(false)
-
-async function loadDataMode() {
-    try { dataMode.value = await getClientDataMode(props.project.clientId) } catch {}
-}
-
-async function changeDataMode(mode) {
-    if (mode === dataMode.value || dmLoading.value) return
-    dmLoading.value = true
-    dmError.value = ''
-    dmSaved.value = false
-    const prev = dataMode.value
-    dataMode.value = mode
-    try {
-        dataMode.value = await setClientDataMode(props.project.clientId, mode)
-        dmSaved.value = true
-        setTimeout(() => { dmSaved.value = false }, 2000)
-    } catch (e) {
-        dataMode.value = prev
-        dmError.value = e?.data?.message || 'Failed to update data mode.'
-    } finally {
-        dmLoading.value = false
     }
 }
 
@@ -468,7 +417,6 @@ async function confirmGoLive() {
 
 onMounted(() => {
     loadCredRequest()
-    loadDataMode()
     loadConnectorCode()
 })
 

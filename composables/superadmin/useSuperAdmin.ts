@@ -145,8 +145,13 @@ export function useSuperAdmin() {
     await apiFetch(`/admin/partners/${id}/send-reset-email`, { method: 'POST' })
   }
 
+  async function getSocketStatus(): Promise<any> {
+    return apiFetch('/admin/socket-status')
+  }
+
   return {
     getMe,
+    getSocketStatus,
     getPartners, getPartnerClients, togglePartnerStatus, resetPartnerPassword, unlinkPartnerClient, deletePartner, sendPartnerResetEmail,
     getStats, getSystemCounts,
     getUsers, searchUsers, getUser, createUser, updateUser, deleteUser,

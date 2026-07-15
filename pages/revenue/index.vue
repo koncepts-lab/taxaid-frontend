@@ -144,7 +144,10 @@ const handleDateSelected = (periodData) => {
 
 const handleExport = (type) => {}
 
-onMounted(() => fetchAll())
+onMounted(() => {
+  fetchAll()
+  useLocation().syncSessionLocation()
+})
 </script>
 
 <style scoped>

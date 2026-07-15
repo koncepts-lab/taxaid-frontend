@@ -112,6 +112,7 @@
               <thead>
                 <tr class="bg-[#058a64] text-white text-sm">
                   <th class="py-3 px-4 font-medium w-48">Date</th>
+                  <th class="py-3 px-4 font-medium w-auto">Project Name</th>
                   <th class="py-3 px-4 font-medium w-auto">Party Name</th>
                   <th class="py-3 px-4 font-medium w-48">Invoice Number</th>
                   <th class="py-3 px-4 font-medium w-40">Amount (AED)</th>
@@ -120,13 +121,16 @@
               </thead>
               <tbody class="divide-y divide-gray-100 text-sm">
                 <tr v-if="manualEntries.length === 0">
-                  <td colspan="5" class="py-8 px-4 text-center text-gray-500 bg-white">
+                  <td colspan="6" class="py-8 px-4 text-center text-gray-500 bg-white">
                     No manual entries. Click "Add Manual Entry Row" to add one.
                   </td>
                 </tr>
                 <tr v-for="(entry, index) in manualEntries" :key="index" class="bg-white">
                   <td class="py-2 px-2">
                     <input type="date" v-model="entry.date" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64]" />
+                  </td>
+                  <td class="py-2 px-2">
+                    <input type="text" v-model="entry.projectName" placeholder="Enter project name" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />
                   </td>
                   <td class="py-2 px-2">
                     <input type="text" v-model="entry.partyName" placeholder="Enter customer name" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />
@@ -207,7 +211,7 @@ const applyAdjustment = async (row, i) => {
 const manualEntries = ref([]);
 
 const addManualEntry = () => {
-  manualEntries.value.push({ date: '', partyName: '', invoiceNumber: '', amount: '', saving: false });
+  manualEntries.value.push({ date: '', projectName: '', partyName: '', invoiceNumber: '', amount: '', saving: false });
 };
 
 const removeManualEntry = (index) => {
@@ -222,6 +226,7 @@ const saveManualEntry = async (index) => {
       method: 'POST',
       body: {
         date: entry.date,
+        project_name: entry.projectName,
         party_name: entry.partyName,
         invoice_number: entry.invoiceNumber,
         amount: entry.amount,

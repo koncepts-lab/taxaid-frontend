@@ -1,16 +1,21 @@
+import { useDataMode } from './useDataMode'
+
 export const useSalesForecast = () => {
   const data        = ref<any[]>([])
   const loading     = ref(false)
   const error       = ref<string | null>(null)
-  const activeMode  = ref('Hybrid')
+
+  // Persisted tenant mode drives the toggle; the backend reads the stored
+  // mode itself, so /formatted is called without a mode param.
+  const { modes, fetchModes, setMode, toLabel, toMode } = useDataMode()
+  const activeMode = computed(() => toLabel(modes.value.sales_forecast))
 
   const fetch = async (date?: string) => {
     loading.value = true
     error.value   = null
     try {
-      const mode   = activeMode.value === 'Direct' ? 'direct' : 'hybrid'
       const result = await useApi('/data-source/sales-forecast/formatted', {
-        params: { mode, ...(date ? { date } : {}) },
+        params: { ...(date ? { date } : {}) },
       }) as any
       data.value = result?.data ?? []
     } catch (e: any) {
@@ -18,6 +23,12 @@ export const useSalesForecast = () => {
     } finally {
       loading.value = false
     }
+  }
+
+  // Toggle click: persist the mode, then re-fetch so the table follows it.
+  const changeMode = async (label: string) => {
+    const ok = await setMode('sales_forecast', toMode(label))
+    if (ok) await fetch()
   }
 
   const logs = ref<any[]>([])
@@ -32,8 +43,11 @@ export const useSalesForecast = () => {
     finally { logsLoading.value = false }
   }
 
-  watch(activeMode, () => fetch())
-  onMounted(() => { fetch(); fetchLogs() })
+  onMounted(async () => {
+    await fetchModes()
+    fetch()
+    fetchLogs()
+  })
 
-  return { data, loading, error, activeMode, fetch, logs, logsLoading, fetchLogs }
+  return { data, loading, error, activeMode, changeMode, fetch, logs, logsLoading, fetchLogs }
 }
