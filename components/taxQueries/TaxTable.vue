@@ -23,7 +23,7 @@
                         <tr>
                             <th class="px-4 py-3 lg:text-sm font-medium w-[20%]">Quarter</th>
                             <th class="px-4 py-3 lg:text-sm font-medium w-[20%]">Sales Budgeted</th>
-                            <th class="px-4 py-3 lg:text-sm font-medium w-[20%]">Sales Recorded</th>
+                            <th class="px-4 py-3 lg:text-sm font-medium w-[20%]">Sales Reported</th>
                             <th class="px-4 py-3 lg:text-sm font-medium w-[20%]">Variance</th>
                             <th class="px-4 py-3 lg:text-sm font-medium w-[20%]">Variance %</th>
                         </tr>

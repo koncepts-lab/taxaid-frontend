@@ -1,0 +1,132 @@
+# Definitive Cloud Build configuration for Nuxt SPA using Secret Manager Isolation & Cleanup Policies
+
+steps:
+  # Step 1: Securely pull the entire env configuration block from Secret Manager for build optimizations
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'Fetch-Secrets'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        if [[ "$BRANCH_NAME" == "main" ]]; then
+          echo "$$ENV_FILE_PROD" > .env
+        else
+          echo "$$ENV_FILE_STAGING" > .env
+        fi
+        # Append dynamic build arguments
+        echo "NUXT_PUBLIC_CURRENT_BRANCH=$BRANCH_NAME" >> .env
+    secretEnv: ['ENV_FILE_PROD', 'ENV_FILE_STAGING']
+
+  # Step 2: Ensure Artifact Registry repo exists and apply cleanup policy
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'Ensure-Repo'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Create repository if it doesn't exist
+        gcloud artifacts repositories describe ${_REPO_NAME} --location=${_REGION} || \
+        gcloud artifacts repositories create ${_REPO_NAME} --repository-format=docker --location=${_REGION} --description="Docker repository for Cloud Run deployments"
+        
+        # Apply a cleanup policy to delete images older than 10 days (864000s) but keep at least the 5 most recent
+        cat <<EOF > policy.json
+        [
+          {
+            "name": "delete-old",
+            "action": {"type": "Delete"},
+            "condition": {"olderThan": "864000s", "tagState": "ANY"}
+          },
+          {
+            "name": "keep-recent",
+            "action": {"type": "Keep"},
+            "mostRecentVersions": {"keepCount": 5}
+          }
+        ]
+        EOF
+        gcloud artifacts repositories set-cleanup-policies ${_REPO_NAME} --location=${_REGION} --policy=policy.json || true
+    waitFor: ['-']
+
+  # Step 3: Build the Docker container image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Build'
+    args:
+      - 'build'
+      - '--no-cache'
+      - '--tag'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_SERVICE_NAME}-$BRANCH_NAME:${COMMIT_SHA}'
+      - '.'
+    waitFor: ['Fetch-Secrets', 'Ensure-Repo']
+
+  # Step 4: Push the container image to Google Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Push'
+    args:
+      - 'push'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_SERVICE_NAME}-$BRANCH_NAME:${COMMIT_SHA}'
+    waitFor: ['Build']
+
+  # Step 5: Deploy the container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'Deploy'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        if [[ "$BRANCH_NAME" == "main" ]]; then
+          SECRET_NAME="${_SERVICE_NAME}-prod"
+        else
+          SECRET_NAME="${_SERVICE_NAME}-staging"
+        fi
+        
+        gcloud run deploy ${_SERVICE_NAME}-$BRANCH_NAME \
+          --image ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_SERVICE_NAME}-$BRANCH_NAME:${COMMIT_SHA} \
+          --region ${_REGION} \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 3000 \
+          --set-secrets "/etc/secrets/.env=$$SECRET_NAME:latest" \
+          --set-env-vars "NUXT_PUBLIC_CURRENT_BRANCH=$BRANCH_NAME"
+    waitFor: ['Push']
+
+  # Step 6: Clean up unrouted Cloud Run revisions older than 10 days
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'Cleanup-Revisions'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Fetching active revisions to protect them..."
+        ACTIVE_REVISIONS=$$(gcloud run services describe ${_SERVICE_NAME}-$BRANCH_NAME --region=${_REGION} --format="value(status.traffic.revisionName)" | tr ';' '\n' | sort -u)
+        
+        echo "Fetching revisions older than 10 days..."
+        OLD_REVISIONS=$$(gcloud run revisions list --service=${_SERVICE_NAME}-$BRANCH_NAME --region=${_REGION} --format="value(metadata.name)" --filter="metadata.creationTimestamp < '-P10D'")
+        
+        for rev in $$OLD_REVISIONS; do
+          if echo "$$ACTIVE_REVISIONS" | grep -qx "$$rev"; then
+            echo "Skipping active revision: $$rev"
+          else
+            echo "Deleting old revision: $$rev"
+            gcloud run revisions delete $$rev --region=${_REGION} --quiet || true
+          fi
+        done
+    waitFor: ['Deploy']
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_SERVICE_NAME}-$BRANCH_NAME:${COMMIT_SHA}'
+
+availableSecrets:
+  secretManager:
+    - versionName: 'projects/$PROJECT_ID/secrets/${_SERVICE_NAME}-prod/versions/latest'
+      env: 'ENV_FILE_PROD'
+    - versionName: 'projects/$PROJECT_ID/secrets/${_SERVICE_NAME}-staging/versions/latest'
+      env: 'ENV_FILE_STAGING'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '3600s'
+
+substitutions:
+  _REPO_NAME: 'cloud-run-source-deploy'
+  _SERVICE_NAME: 'taxaid-webapp-frontend'
+  _REGION: 'us-central1'

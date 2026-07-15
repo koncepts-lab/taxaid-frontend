@@ -23,7 +23,7 @@
                         <div class="relative " ref="exportDropdownRef">
                             <button @click="showExportDropdown = !showExportDropdown"
                                 class="flex items-center gap-2 px-4 py-1.5 border rounded-lg text-sm font-medium transition-colors md:mr-6 mr-0"
-                                :class="isDark ? 'border-white/10 text-white hover:bg-white/10' : 'border-primary-100 text-gray-700 hover:bg-gray-50'">
+                                :class="isDark ? 'bg-red-900 border-red-500 text-white hover:bg-red-800' : 'bg-red-50 border-red-500 text-red-700 hover:bg-red-100'">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M16 8l-4-4m0 0L8 8m4-4v12"
                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
@@ -37,16 +37,6 @@
                                         isDark ? 'bg-primary-900 border-primary-100 shadow-black/50' : 'bg-white border-primary-100',
                                         currentLang === 'ar' ? 'left-0' : 'right-0'
                                     ]">
-
-                                    <button @click="triggerExport('excel')"
-                                        class="w-full px-3 py-2 text-sm rounded-lg flex items-center gap-3 transition-colors"
-                                        :class="[
-                                            currentLang === 'ar' ? 'flex-row-reverse text-right' : 'text-left',
-                                            isDark ? 'text-white hover:bg-white/10' : 'text-gray-700 hover:bg-primary-700'
-                                        ]">
-                                        <span class="flex-1">{{ currentLang === 'ar' ? 'تصدير بصيغة إكسل (.xlsx)' :
-                                            'Export as Excel (.xlsx)' }}</span>
-                                    </button>
 
                                     <button @click="triggerExport('pdf')"
                                         class="w-full px-3 py-2 text-sm rounded-lg flex items-center gap-3 transition-colors"
@@ -151,7 +141,6 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf'; // 1. Use curly braces for destructuring
 import 'jspdf-autotable';
 import autoTable from 'jspdf-autotable';
@@ -191,26 +180,10 @@ const formatNumber = (val) => {
 const triggerExport = (type) => {
     if (!props.data?.report) return;
 
-    if (type === 'excel') {
-        exportToExcel();
-    } else {
+    if (type === 'pdf') {
         exportToPDF();
     }
     showExportDropdown.value = false;
-};
-
-const exportToExcel = () => {
-    const wsData = props.data.report.map(row => ({
-        'Date': row.date,
-        'Particulars': row.particulars,
-        'Debit': row.debit,
-        'Credit': row.credit
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(wsData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Ledger Report");
-    XLSX.writeFile(wb, `${props.ledgerName}_Ledger.xlsx`);
 };
 
 const exportToPDF = () => {

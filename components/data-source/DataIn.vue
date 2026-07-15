@@ -281,7 +281,8 @@
         <Transition name="modal-fade">
             <div v-if="viewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
                 <div class="absolute inset-0 bg-black/40" @click="viewModalOpen = false" />
-                <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
+                <div class="relative bg-white rounded-2xl shadow-xl w-full max-h-[85vh] flex flex-col overflow-hidden transition-all duration-300"
+                    :class="showMonthly ? 'max-w-[90vw]' : 'max-w-lg'">
                     <!-- Header -->
                     <div class="flex items-start justify-between p-6 pb-4 border-b border-gray-100">
                         <div>
@@ -294,6 +295,18 @@
                                     : (currentLang === 'ar' ? 'الدخل والمصروفات وصافي الربحية من بيانات الميزانية' : 'Income, expenses and net profitability overview from uploaded budget data') }}
                             </p>
                         </div>
+                        <div class="flex items-center gap-2 ml-auto pl-4 shrink-0">
+                            <span class="text-xs text-gray-500 whitespace-nowrap">
+                                {{ currentLang === 'ar' ? 'عرض شهري' : 'Monthly view' }}
+                            </span>
+                            <button type="button" role="switch" :aria-checked="showMonthly"
+                                @click="showMonthly = !showMonthly"
+                                class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-300 focus:outline-none"
+                                :class="showMonthly ? 'bg-[#008169]' : 'bg-gray-300'">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300"
+                                    :class="showMonthly ? 'translate-x-6' : 'translate-x-1'"></span>
+                            </button>
+                        </div>
                         <button @click="viewModalOpen = false" class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors ml-4">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -301,24 +314,39 @@
                         </button>
                     </div>
                     <!-- Table -->
-                    <div class="overflow-y-auto flex-1">
+                    <div class="overflow-auto flex-1">
                         <table class="w-full text-sm">
-                            <thead class="sticky top-0">
+                            <thead class="sticky top-0 z-10">
                                 <tr class="bg-[#005F50] text-white">
-                                    <th class="text-left px-6 py-3 font-medium">{{ currentLang === 'ar' ? 'البيان' : 'Particulars' }}</th>
-                                    <th class="text-right px-6 py-3 font-medium">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</th>
+                                    <th class="text-left px-6 py-3 font-medium whitespace-nowrap">{{ currentLang === 'ar' ? 'البيان' : 'Particulars' }}</th>
+                                    <template v-if="showMonthly">
+                                        <th v-for="(h, i) in viewModalHeaders" :key="i"
+                                            class="text-right px-4 py-3 font-medium whitespace-nowrap">{{ h }}</th>
+                                    </template>
+                                    <th class="text-right px-6 py-3 font-medium whitespace-nowrap">
+                                        {{ showMonthly
+                                            ? (currentLang === 'ar' ? 'الإجمالي' : 'Total')
+                                            : (currentLang === 'ar' ? 'الميزانية' : 'Budget') }}
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template v-for="(row, idx) in viewModalRows" :key="idx">
                                     <!-- Section header row (is_gap acts as section divider with label) -->
                                     <tr v-if="row.is_section" class="bg-[#CCFFF4]">
-                                        <td colspan="2" class="px-6 py-2.5 font-medium text-[#013E32]">{{ row.particulars }}</td>
+                                        <td :colspan="showMonthly ? viewModalHeaders.length + 2 : 2"
+                                            class="px-6 py-2.5 font-medium text-[#013E32]">{{ row.particulars }}</td>
                                     </tr>
                                     <!-- Normal or summary row -->
                                     <tr v-else :class="row.is_summary ? 'font-semibold text-[#013E32]' : 'text-gray-700 hover:bg-gray-50'">
-                                        <td class="px-6 py-3 border-b border-gray-50">{{ row.particulars }}</td>
-                                        <td class="px-6 py-3 border-b border-gray-50 text-right tabular-nums">
+                                        <td class="px-6 py-3 border-b border-gray-50 whitespace-nowrap">{{ row.particulars }}</td>
+                                        <template v-if="showMonthly">
+                                            <td v-for="(h, i) in viewModalHeaders" :key="i"
+                                                class="px-4 py-3 border-b border-gray-50 text-right tabular-nums whitespace-nowrap">
+                                                {{ (row.months[i] ?? 0).toLocaleString() }}
+                                            </td>
+                                        </template>
+                                        <td class="px-6 py-3 border-b border-gray-50 text-right tabular-nums whitespace-nowrap">
                                             {{ row.total !== null ? row.total.toLocaleString() : '—' }}
                                         </td>
                                     </tr>
@@ -432,25 +460,37 @@ onMounted(() => fetchBudgetStatuses())
 // View detailed report modal
 const viewModalOpen = ref(false)
 const viewModalType = ref("bs")
-const viewModalRows = ref([])
+const viewModalRawData = ref([])
+const viewModalHeaders = ref([])
+// false = single yearly Budget column (default), true = 12 monthly columns
+const showMonthly = ref(false)
 
-const handleViewDetailedReport = async (id) => {
-    const data = await budgetFetchViewData(id)
-    if (!data) return
+const viewModalRows = computed(() => {
+    const id = viewModalType.value
     const rows = []
-    for (const row of data.data) {
+    for (const row of viewModalRawData.value) {
         if (row.is_gap) {
-            if (row.particulars) rows.push({ particulars: row.particulars, total: null, is_section: true })
+            if (row.particulars) rows.push({ particulars: row.particulars, total: null, months: [], is_section: true })
             continue
         }
         const months = row.months || []
         const total = months.reduce((sum, v) => sum + (v || 0), 0)
-        if (id === "bs" && rows.length === 0) rows.push({ particulars: "Assets", total: null, is_section: true })
-        if (id === "bs" && row.particulars === "Shareholder’s Equity") rows.push({ particulars: "Liabilities & Equity", total: null, is_section: true })
-        rows.push({ particulars: row.particulars, total: total, is_summary: row.is_summary })
+        if (id === "bs" && rows.length === 0) rows.push({ particulars: "Assets", total: null, months: [], is_section: true })
+        if (id === "bs" && row.particulars === "Shareholder’s Equity") rows.push({ particulars: "Liabilities & Equity", total: null, months: [], is_section: true })
+        rows.push({ particulars: row.particulars, total: total, months: months, is_summary: row.is_summary })
     }
-    viewModalRows.value = rows
+    return rows
+})
+
+const handleViewDetailedReport = async (id) => {
+    const data = await budgetFetchViewData(id)
+    if (!data) return
+    viewModalRawData.value = data.data || []
+    viewModalHeaders.value = (data.headers && data.headers.length)
+        ? data.headers
+        : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
     viewModalType.value = id
+    showMonthly.value = true
     viewModalOpen.value = true
 }
 

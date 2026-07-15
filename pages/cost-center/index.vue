@@ -16,7 +16,7 @@
           <CommonDashboardHeader ref="headerRef" :title="{ en: 'Cost Center Analysis', ar: 'تحليل مركز التكلفة' }"
             :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
             :oneclickreview="false" :periods="costCenterPeriods"
-            @export-excel="handleExportExcel" @export-pdf="handleExportPDF"
+            @export-pdf="handleExportPDF"
             @selected-date="handleDateChange" @reload="fetchData" />
           <div class="my-8">
             <CostCenterSummary ref="summaryRef" />
@@ -60,7 +60,6 @@
 
 <script setup>
 import { ref } from 'vue'
-import * as XLSX from 'xlsx'
 
 const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
@@ -105,42 +104,6 @@ const handleDateChange = (period) => {
   }
   summaryRef.value?.fetchSummaryData(ccDate.value)
   fetchChart()
-}
-const handleExportExcel = () => {
-  const childData = summaryRef.value?.tableData || []
-  const childTotal = summaryRef.value?.summaryTotal
-
-  if (childData.length === 0) {
-    alert("No data available to export yet.")
-    return
-  }
-
-  // Map the main rows
-  const exportRows = childData.map(row => ({
-    "Account": row.label,
-    "Revenue": row.revenue,
-    "COGS": row.cogs,
-    "Indirect Exp": row.indirectExp,
-    "Profit": row.profit,
-    "Margin": row.margin + '%'
-  }))
-
-  // Add the Total row if it exists
-  if (childTotal) {
-    exportRows.push({
-      "Account": childTotal.label,
-      "Revenue": childTotal.revenue,
-      "COGS": childTotal.cogs,
-      "Indirect Exp": childTotal.indirectExp,
-      "Profit": childTotal.profit,
-      "Margin": childTotal.margin + '%'
-    })
-  }
-
-  const worksheet = XLSX.utils.json_to_sheet(exportRows)
-  const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Summary")
-  XLSX.writeFile(workbook, `Cost_Center_Summary.xlsx`)
 }
 
 const handleExportPDF = async () => {

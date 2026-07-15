@@ -16,7 +16,6 @@
                         :periods="customPeriods"
                         @selected-date="handleDateUpdate"
                         @reload="fetchTabData(activeTab)"
-                        @export-excel="handleExportExcel"
                         @export-pdf="handleExportPDF" />
 
                     <!-- Tabs -->
@@ -77,7 +76,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import ParticleBackground from '~/components/common/ParticleBackground.vue'
-import * as XLSX from 'xlsx'
 
 const isFullScreenChat = ref(false)
 const currentLang = useState('currentLang', () => 'en')
@@ -150,19 +148,6 @@ const handleDateUpdate = (payload) => {
 watch([activeTab, filters], () => {
     fetchTabData(activeTab.value)
 }, { immediate: true, deep: true })
-
-const handleExportExcel = () => {
-    const exportData = activeTabData.value.rows.map(row => ({
-        "Account":  row.label,
-        "Current":  row.current,
-        "Previous": row.previous,
-        "Variance": row.variance
-    }))
-    const worksheet = XLSX.utils.json_to_sheet(exportData)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1")
-    XLSX.writeFile(workbook, `Report_${activeTab.value}.xlsx`)
-}
 
 const handleExportPDF = async () => {
     if (!process.client) return
