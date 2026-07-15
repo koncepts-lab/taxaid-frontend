@@ -269,11 +269,18 @@
         </div>
     </div>
 
-    <DataSourceUploadModal 
-        :is-open="isModalOpen" 
-        :current-lang="currentLang" 
-        @close="isModalOpen = false" 
+    <DataSourceUploadModal
+        :is-open="isModalOpen"
+        :current-lang="currentLang"
+        @close="isModalOpen = false"
         @upload="handleModalUpload"
+    />
+
+    <DataSourceDataInVatUploadModal
+        :is-open="isVatModalOpen"
+        :current-lang="currentLang"
+        @close="isVatModalOpen = false"
+        @upload="handleVatUpload"
     />
 
     <!-- BS / P&L detailed report modal -->
@@ -394,15 +401,35 @@ const nonBudgetItems = computed(() =>
     props.dataInItems?.filter(item => item.id !== 'budget') ?? []
 )
 
+const isVatModalOpen = ref(false)
+
 const openUploadModal = (card) => {
+    if (card.id === 'vat_returns') {
+        isVatModalOpen.value = true
+        return
+    }
     activeUploadTarget.value = { type: 'datain', id: card.id }
     isModalOpen.value = true
+}
+
+const vatUploadError = ref('')
+
+const handleVatUpload = async ({ file, ...fields }) => {
+    vatUploadError.value = ''
+    try {
+        await uploadVat(fields, file)
+        emit('uploaded', 'vat_returns')
+    } catch (err) {
+        console.error('VAT upload failed:', err)
+        vatUploadError.value = err?.message ?? 'VAT upload failed'
+        alert(vatUploadError.value)
+    }
 }
 
 const handleModalUpload = async (file) => {
     if (!activeUploadTarget.value) return
     const { type, id } = activeUploadTarget.value
-    
+
     if (type === 'datain') {
         try {
             await props.uploadFile(id, file)
@@ -453,6 +480,7 @@ const {
     budgetFetchViewData,
     budgetDownloadSample,
     fetchBudgetStatuses,
+    uploadVat,
 } = useDataIn()
 
 onMounted(() => fetchBudgetStatuses())

@@ -12,6 +12,15 @@ export interface DataInItem {
   fileName: string | null
 }
 
+export interface VatUploadFields {
+  period_from: string // YYYY-MM-DD (from <input type="date">)
+  period_to: string   // YYYY-MM-DD
+  standard_rated_supplies: number
+  zero_rated_supplies: number
+  exempted_supplies: number
+  standard_rated_expenses: number
+}
+
 export interface BudgetItemStatus {
   isUploaded: boolean
   fileName: string | null
@@ -128,6 +137,42 @@ export const useDataIn = () => {
       await refreshItem(id)
     } finally {
       uploadingId.value = null
+    }
+  }
+
+  // ── VAT return upload — POST /tax-queries/vat/upload ──────────────────────
+  const vatUploading = ref(false)
+  const vatUploadError = ref<string | null>(null)
+
+  const uploadVat = async (fields: VatUploadFields, file: File | null): Promise<void> => {
+    vatUploading.value = true
+    vatUploadError.value = null
+
+    const url = `${config.public.apiBase}/tax-queries/vat/upload`
+    const form = new FormData()
+    if (file) form.append('file', file)
+    form.append('period_from', fields.period_from)
+    form.append('period_to', fields.period_to)
+    form.append('standard_rated_supplies', String(fields.standard_rated_supplies))
+    form.append('zero_rated_supplies', String(fields.zero_rated_supplies))
+    form.append('exempted_supplies', String(fields.exempted_supplies))
+    form.append('standard_rated_expenses', String(fields.standard_rated_expenses))
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
+        body: form,
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as any
+        throw new Error(body?.message ?? `VAT upload failed (${res.status})`)
+      }
+    } catch (err: any) {
+      vatUploadError.value = err?.message ?? 'VAT upload failed'
+      throw err
+    } finally {
+      vatUploading.value = false
     }
   }
 
@@ -309,5 +354,7 @@ export const useDataIn = () => {
     budgetStatuses, budgetUploadingId, budgetFetchingId, budgetError,
     budgetViewLoading, budgetViewData,
     budgetUploadFile, budgetFetchGet, budgetFetchViewData, budgetDownloadSample, fetchBudgetStatuses,
+    // vat
+    vatUploading, vatUploadError, uploadVat,
   }
 }

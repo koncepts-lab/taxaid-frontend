@@ -2049,6 +2049,7 @@
       }
     ],
     "tableData": {
+      "_comment_vat_unused": "NOT USED — vat is real data now, from GET /tax-queries/vat-summary (useTaxQueries.ts). This mock array below is dead, kept only for reference.",
       "vat": [
         {
           "quarter": "Q1 2025",
@@ -2140,6 +2141,7 @@
     ],
     "deadlines": [
       {
+        "_comment": "NOT USED — real VAT deadline comes from GET /tax-queries/vat-deadline (useTaxQueries.ts). This mock entry is dead, kept only for reference.",
         "label": "VAT Return Date",
         "date": "28 Jan 2026",
         "color": "orange-50"

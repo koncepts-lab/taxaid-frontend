@@ -19,28 +19,65 @@ export function useTaxQueriesPage() {
     const vatData    = ref<any[]>([])
     const vatLoading = ref(false)
     const vatError   = ref<string | null>(null)
+    const vatMessage = ref<string | null>(null)
+    const vatYears   = ref<number[]>([])
+    const selectedVatYear = ref<number | null>(null)
 
-    const fetchVatSummary = async () => {
+    const fetchVatSummary = async (year?: number | null) => {
         try {
             vatLoading.value = true
             vatError.value   = null
+            vatMessage.value = null
 
-            const response: any = await useApi('tax-queries/vat-summary', { method: 'GET' })
+            const query = year ? `?year=${year}` : ''
+            const response: any = await useApi(`tax-queries/vat-summary${query}`, { method: 'GET' })
 
             if (response?.success && Array.isArray(response.data)) {
                 vatData.value = response.data.map((row: any) => ({
-                    quarter:         row.quarter,
-                    budgeted:        row.sales_budgeted        ?? 0,
-                    recorded:        row.sales_recorded_in_vat ?? 0,
-                    variance:        row.variance              ?? 0,
-                    variancePercent: row.variance_percentage   ?? 0,
+                    quarter:                 row.quarter,
+                    budgeted:                row.sales_budgeted            ?? 0,
+                    recorded:                row.sales_recorded_in_vat     ?? 0,
+                    variance:                row.variance                  ?? 0,
+                    variancePercent:         row.variance_percentage       ?? 0,
+                    standardRatedSupplies:   row.standard_rated_supplies   ?? 0,
+                    zeroRatedSupplies:       row.zero_rated_supplies       ?? 0,
+                    exemptedSupplies:        row.exempted_supplies         ?? 0,
+                    standardRatedExpenses:   row.standard_rated_expenses   ?? 0,
                 }))
+                vatMessage.value = response.message ?? null
+                vatYears.value = Array.isArray(response.years) ? response.years : []
+                if (selectedVatYear.value === null && vatYears.value.length) {
+                    selectedVatYear.value = vatYears.value[0]
+                }
             }
         } catch (err: any) {
             vatError.value = err?.message ?? 'Failed to load VAT summary'
             console.error('useTaxQueriesPage: fetchVatSummary failed', err)
         } finally {
             vatLoading.value = false
+        }
+    }
+
+    const changeVatYear = (year: number) => {
+        selectedVatYear.value = year
+        fetchVatSummary(year)
+    }
+
+    // ── VAT deadline — GET /tax-queries/vat-deadline ──────────────────────────
+    const vatDeadline = ref<{ label: string; date: string; color: string } | null>(null)
+
+    const fetchVatDeadline = async () => {
+        try {
+            const response: any = await useApi('tax-queries/vat-deadline', { method: 'GET' })
+            if (response?.success && response.data) {
+                vatDeadline.value = {
+                    label: `VAT Return Date (${response.data.quarter} ${response.data.year})`,
+                    date:  response.data.deadline,
+                    color: 'orange-50',
+                }
+            }
+        } catch (err: any) {
+            console.error('useTaxQueriesPage: fetchVatDeadline failed', err)
         }
     }
 
@@ -55,11 +92,13 @@ export function useTaxQueriesPage() {
     // TODO: replace mock with GET /tax-queries/accounting-summary when API is ready
 
     // ── tableData — VAT from API, rest from data.json mock ────────────────────
+    // Only VAT tab is active for now — Corporate/IFRS/Accounting dummy data left
+    // here commented out, not deleted, so it's ready when those tabs come back.
     const tableData = computed(() => ({
-        vat:        vatData.value,
-        corporate:  tq.value?.tableData?.corporate  ?? [],
-        ifrs:       tq.value?.tableData?.ifrs       ?? [],
-        accounting: tq.value?.tableData?.accounting ?? [],
+        vat: vatData.value,
+        // corporate:  tq.value?.tableData?.corporate  ?? [],
+        // ifrs:       tq.value?.tableData?.ifrs       ?? [],
+        // accounting: tq.value?.tableData?.accounting ?? [],
     }))
 
     // ── Akeel AI chat ─────────────────────────────────────────────────────────
@@ -67,24 +106,44 @@ export function useTaxQueriesPage() {
     const suggestions = computed(() => tq.value?.suggestions ?? [])
 
     // ── Sidebar static data from data.json ────────────────────────────────────
-    const tabs          = computed(() => tq.value?.tabs          ?? [])
+    // Only VAT tab is real/active — Corporate/IFRS/Accounting mock tabs from
+    // data.json are commented out below, not consumed, until their APIs exist.
+    const tabs = computed(() => {
+        const vatTab = (tq.value?.tabs ?? []).find((t: any) => t.id === 'vat')
+        return vatTab ? [vatTab] : []
+        // corporate/ifrs/accounting tabs from data.json mock — not used:
+        // ...(tq.value?.tabs ?? []).filter((t: any) => t.id !== 'vat')
+    })
     const historyGroups = computed(() => tq.value?.historyGroups ?? [])
-    // TODO: deadlines — wire to GET /tax-queries/quarter-dates when deadline display logic is defined
-    const deadlines     = computed(() => tq.value?.deadlines     ?? [])
+    // VAT deadline is real, from GET /tax-queries/vat-deadline — the mock
+    // "VAT Return Date" entry in data.json is not consumed here anymore.
+    const deadlines = computed(() => {
+        // mock deadlines from data.json (VAT Return Date, CT Return Date) — not used:
+        // const mock = tq.value?.deadlines ?? []
+        return vatDeadline.value ? [vatDeadline.value] : []
+    })
 
     // ── Init ──────────────────────────────────────────────────────────────────
-    onMounted(() => fetchVatSummary())
+    onMounted(() => {
+        fetchVatSummary()
+        fetchVatDeadline()
+    })
 
     return {
         loading,
         error,
         vatLoading,
         vatError,
+        vatMessage,
+        vatYears,
+        selectedVatYear,
         tableData,
         tabs,
         deadlines,
         suggestions,
         historyGroups,
         fetchVatSummary,
+        fetchVatDeadline,
+        changeVatYear,
     }
 }
