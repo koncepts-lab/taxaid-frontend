@@ -29,7 +29,7 @@
     <div class="w-full flex items-center justify-between px-6 pt-15">
       <div class="flex items-center gap-3">
         <div class="w-[41px] h-[41px] rounded-full grid place-items-center bg-white/10 shrink-0">
-          <img src="/images/icons/revenue.svg" alt="Revenue" class="w-[24px] object-contain" />
+          <img src="/images/icons/Revenue.svg" alt="Revenue" class="w-[24px] object-contain" />
         </div>
         <div class="text-base font-medium tracking-tight text-[20px]">{{ currentLang === 'ar' ? 'الإيرادات' : 'Revenue' }}</div>
       </div>
