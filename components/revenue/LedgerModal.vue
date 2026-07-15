@@ -43,10 +43,10 @@
                     </div>
 
                     <!-- ── Table Container (Handles Horizontal Scroll) ── -->
-                    <div class="flex-1 flex flex-col min-h-0 overflow-x-auto no-scrollbar">
-                        <div class="min-w-[800px] flex flex-col flex-1">
+                    <div class="w-full flex-1 flex flex-col min-h-0 overflow-x-auto overflow-y-hidden no-scrollbar">
+                        <div class="min-w-[800px] flex flex-col flex-1 h-full">
                             <!-- ── Fixed Table Column Headers ── -->
-                            <div class="shrink-0" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+                            <div class="shrink-0 sticky top-0 z-10" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
                                 <table class="w-full text-sm">
                                     <colgroup>
                                         <col style="width: 18%">
@@ -74,7 +74,7 @@
                             </div>
 
                             <!-- ── Scrollable Body ── -->
-                            <div class="flex-1 overflow-y-auto no-scrollbar" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+                            <div class="overflow-y-auto custom-scrollbar max-h-[280px]" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
                                 <div v-if="loading" class="flex items-center justify-center py-16">
                                     <div class="w-8 h-8 border-4 border-[#00C9A2] border-t-transparent rounded-full animate-spin"></div>
                                 </div>
@@ -110,7 +110,7 @@
                             </div>
 
                             <!-- ── Fixed Footer: Last 3 Summary Rows ── -->
-                            <div class="shrink-0" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+                            <div class="shrink-0 sticky bottom-0 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
                                 <table class="w-full text-sm">
                                     <colgroup>
                                         <col style="width: 18%">
@@ -256,4 +256,12 @@ const totals = computed(() => {
 .ledger-fade-leave-to {
     opacity: 0;
 }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.15); border-radius: 10px; }
+:deep(.dark) .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.15); }
 </style>

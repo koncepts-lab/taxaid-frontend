@@ -1,6 +1,7 @@
 <template>
-    <div class="w-full transition-all duration-500 rounded-3xl overflow-hidden">
-        <div class="py-5 lg:px-8 px-4 flex justify-between items-center">
+    <div class="w-full transition-all duration-500 rounded-3xl">
+        <div class="py-5 lg:px-8 px-4 flex justify-between items-center sticky top-0 z-30 rounded-t-3xl" 
+             :class="isDark ? 'bg-[#001a14]' : 'bg-white'">
             <div>
                 <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص الإيرادات' : 'Revenue Summary' }}</p>
                 <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بالدرهم الإماراتي' : 'Values in AED' }}</p>
@@ -17,7 +18,7 @@
         </div>
 
         <!-- Inline Table Container with overflow -->
-        <div class="w-full overflow-x-auto no-scrollbar relative min-h-[200px]">
+        <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative min-h-[200px]">
             <!-- Loading Overlay -->
             <div v-if="loading" class="absolute inset-0 z-20 flex items-center justify-center bg-white/50 dark:bg-black/20 backdrop-blur-[2px]">
                 <div class="flex flex-col items-center gap-3">
@@ -33,8 +34,16 @@
                 </div>
             </div>
 
-            <table v-if="!loading && !error" class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px]">
-            <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+            <table v-if="!loading && !error" class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px] table-fixed">
+                <colgroup>
+                    <col style="width: 28%;" />
+                    <col style="width: 15%;" />
+                    <col style="width: 15%;" />
+                    <col style="width: 14%;" />
+                    <col style="width: 14%;" />
+                    <col style="width: 14%;" />
+                </colgroup>
+            <thead class="text-white sticky top-[82px] z-20" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
                 <tr class="transition-all duration-500">
                     <th :class="isCompressed ? 'px-8 py-4' : 'px-8 py-5'" class="font-medium text-[14px]">
                         {{ currentLang === 'ar' ? 'الإيرادات' : 'Revenue' }}
@@ -51,21 +60,21 @@
                     <th :class="isCompressed ? 'px-4' : 'px-6'" class="py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'السنة القادمة' : 'Year to Go' }}</th>
                 </tr>
             </thead>
-            <tbody> 
-                <template v-for="(row, i) in data" :key="i">
+            <tbody v-for="(row, i) in data" :key="i"> 
                     <!-- Parent Row -->
                     <tr :class="[
                         row.isSummary
                             ? (isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]')
-                            : (isDark ? 'bg-transparent border-b border-white/10' : 'bg-white border-b border-gray-100'),
-                        'text-[14px] font-medium transition-all duration-500'
+                            : (isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100'),
+                        'text-[14px] font-medium transition-all duration-500',
+                        (row.children && expandedRows[i]) ? 'sticky top-[142px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : ''
                     ]">
                         <!-- Label -->
                         <td :class="[isCompressed ? 'px-8 py-4' : 'px-8 py-5', isDark ? 'text-white' : 'text-[#000]', 'font-medium']">
                             <div class="flex items-center gap-2">
                                 <span>{{ currentLang === 'ar' ? row.labelAr : row.label }}</span>
                                 <button v-if="row.children && row.children.length"
-                                    @click="toggleRow(i)"
+                                    @click="toggleRow(i, $event)"
                                     class="focus:outline-none transition-transform duration-200">
                                     <svg v-if="expandedRows[i]" width="10" height="7" viewBox="0 0 10 7" fill="none">
                                         <path d="M1 6L5 2L9 6" :stroke="isDark ? '#00FFBC' : '#008864'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -127,22 +136,34 @@
                     </tr>
 
                     <!-- Child Rows -->
-                    <template v-if="row.children && expandedRows[i]">
-                        <tr v-for="(child, j) in row.children" :key="`child-${i}-${j}`"
-                            :class="[
-                                isDark ? 'bg-[#003D2E] border-b border-white/5' : 'bg-[#E8FBF3] border-b border-[#b2edd4]',
-                                'text-[14px] font-medium transition-all duration-500'
-                            ]">
+                    <tr v-if="row.children && expandedRows[i]">
+                        <td colspan="6" class="p-0 border-none">
+                            <div class="max-h-[320px] overflow-y-auto overflow-x-hidden custom-scrollbar">
+                                <table class="w-full text-left rtl:text-right border-collapse table-fixed">
+                                    <colgroup>
+                                        <col style="width: 28%;" />
+                                        <col style="width: 15%;" />
+                                        <col style="width: 15%;" />
+                                        <col style="width: 14%;" />
+                                        <col style="width: 14%;" />
+                                        <col style="width: 14%;" />
+                                    </colgroup>
+                                    <tbody>
+                                        <tr v-for="(child, j) in row.children" :key="`child-${i}-${j}`"
+                                            :class="[
+                                                isDark ? 'bg-[#003D2E] border-b border-white/5' : 'bg-[#E8FBF3] border-b border-[#b2edd4]',
+                                                'text-[14px] font-medium transition-all duration-500'
+                                            ]">
                             <td :class="[isCompressed ? 'px-8 py-4' : 'px-8 py-5']">
                                 <div class="relative inline-block group ltr:pl-4 rtl:pr-4">
                                     <!-- Tooltip -->
-                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none
+                                    <div class="absolute top-1/2 -translate-y-1/2 ltr:left-full rtl:right-full ltr:ml-2 rtl:mr-2 pointer-events-none
                                         opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap">
                                         <div class="bg-[#013e32] text-white text-[12px] font-medium px-3 py-1.5 rounded-lg shadow-lg">
                                             {{ currentLang === 'ar' ? 'عرض دفتر الأستاذ' : 'View Ledger' }}
                                         </div>
                                         <!-- Sharp Arrow -->
-                                        <div class="mx-auto" style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:8px solid #013e32;"></div>
+                                        <div class="absolute top-1/2 -translate-y-1/2 ltr:-left-1 rtl:-right-1 w-2 h-2 bg-[#013e32] rotate-45"></div>
                                     </div>
                                     <span class="underline underline-offset-4 cursor-pointer font-medium"
                                         :class="isDark ? 'text-[#00FFBC]' : 'text-[#007a57]'"
@@ -156,10 +177,13 @@
                             <td class="text-right rtl:text-left" :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white/40' : 'text-gray-400']">-</td>
                             <td class="text-center" :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white/40' : 'text-gray-400']">-</td>
                             <td class="text-center" :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white/40' : 'text-gray-400']">-</td>
-                        </tr>
-                    </template>
-                </template>
-            </tbody>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
         </table>
     </div>
 </div>
@@ -195,8 +219,16 @@
                     </div>
 
                     <!-- Modal Table -->
-                    <div class="flex-1 overflow-auto no-scrollbar" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-                        <table class="w-full text-left rtl:text-right border-collapse">
+                    <div class="w-full flex-1 overflow-auto no-scrollbar" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+                        <table class="w-full text-left rtl:text-right border-collapse table-fixed lg:min-w-full min-w-[1100px]">
+                            <colgroup>
+                                <col style="width: 28%;" />
+                                <col style="width: 15%;" />
+                                <col style="width: 15%;" />
+                                <col style="width: 14%;" />
+                                <col style="width: 14%;" />
+                                <col style="width: 14%;" />
+                            </colgroup>
                             <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
                                 <tr>
                                     <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'الإيرادات' : 'Revenue' }}</th>
@@ -227,7 +259,7 @@
                                             <div class="flex items-center gap-2">
                                                 <span>{{ currentLang === 'ar' ? row.labelAr : row.label }}</span>
                                                 <button v-if="row.children && row.children.length"
-                                                    @click="toggleModalRow(i)"
+                                                    @click="toggleModalRow(i, $event)"
                                                     class="focus:outline-none">
                                                     <svg v-if="modalExpandedRows[i]" width="10" height="7" viewBox="0 0 10 7" fill="none">
                                                         <path d="M1 6L5 2L9 6" :stroke="isDark ? '#00FFBC' : '#008864'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -273,22 +305,34 @@
                                         </td>
                                     </tr>
                                     <!-- Modal Child Rows -->
-                                    <template v-if="row.children && modalExpandedRows[i]">
-                                        <tr v-for="(child, j) in row.children" :key="`mc-${i}-${j}`"
-                                            :class="[
-                                                isDark ? 'bg-[#003D2E] border-b border-white/5' : 'bg-[#E8FBF3] border-b border-[#b2edd4]',
-                                                'text-[14px] font-medium'
-                                            ]">
+                                    <tr v-if="row.children && modalExpandedRows[i]">
+                                        <td colspan="6" class="p-0 border-none">
+                                            <div class="max-h-[320px] overflow-y-auto overflow-x-hidden custom-scrollbar">
+                                                <table class="w-full text-left rtl:text-right border-collapse table-fixed">
+                                                    <colgroup>
+                                                        <col style="width: 28%;" />
+                                                        <col style="width: 15%;" />
+                                                        <col style="width: 15%;" />
+                                                        <col style="width: 14%;" />
+                                                        <col style="width: 14%;" />
+                                                        <col style="width: 14%;" />
+                                                    </colgroup>
+                                                    <tbody>
+                                                        <tr v-for="(child, j) in row.children" :key="`mc-${i}-${j}`"
+                                                            :class="[
+                                                                isDark ? 'bg-[#003D2E] border-b border-white/5' : 'bg-[#E8FBF3] border-b border-[#b2edd4]',
+                                                                'text-[14px] font-medium'
+                                                            ]">
                                             <td class="px-8 py-4">
                                                 <div class="relative inline-block group pl-4">
                                                     <!-- Tooltip -->
-                                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none
+                                                    <div class="absolute top-1/2 -translate-y-1/2 ltr:left-full rtl:right-full ltr:ml-2 rtl:mr-2 pointer-events-none
                                                         opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap">
                                                         <div class="bg-[#013e32] text-white text-[12px] font-medium px-3 py-1.5 rounded-lg shadow-lg">
                                                             {{ currentLang === 'ar' ? 'عرض دفتر الأستاذ' : 'View Ledger' }}
                                                         </div>
                                                         <!-- Sharp Arrow -->
-                                                        <div class="mx-auto" style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:8px solid #013e32;"></div>
+                                                        <div class="absolute top-1/2 -translate-y-1/2 ltr:-left-1 rtl:-right-1 w-2 h-2 bg-[#013e32] rotate-45"></div>
                                                     </div>
                                                     <span class="underline underline-offset-4 cursor-pointer font-medium"
                                                         :class="isDark ? 'text-[#00FFBC]' : 'text-[#007a57]'"
@@ -302,8 +346,12 @@
                                             <td class="px-6 py-4 text-right" :class="isDark ? 'text-white/40' : 'text-gray-400'">-</td>
                                             <td class="px-6 py-4 text-center" :class="isDark ? 'text-white/40' : 'text-gray-400'">-</td>
                                             <td class="px-6 py-4 text-center" :class="isDark ? 'text-white/40' : 'text-gray-400'">-</td>
-                                        </tr>
-                                    </template>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 </template>
                             </tbody>
                         </table>
@@ -322,7 +370,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 
 const props = defineProps({
     data: Array,
@@ -363,8 +411,27 @@ watch(() => props.data, () => {
     initializeExpanded()
 }, { immediate: true })
 
-const toggleRow = (index) => {
-    expandedRows.value[index] = !expandedRows.value[index]
+const toggleRow = async (index, event) => {
+    const target = event?.currentTarget?.closest('tr')
+    const scrollContainer = document.querySelector('main') || window
+    const originalTop = target ? target.getBoundingClientRect().top : 0
+
+    const isCurrentlyExpanded = expandedRows.value[index]
+    Object.keys(expandedRows.value).forEach(key => {
+        expandedRows.value[key] = false
+    })
+    if (!isCurrentlyExpanded) {
+        expandedRows.value[index] = true
+    }
+
+    if (target && scrollContainer && scrollContainer.scrollBy) {
+        await nextTick()
+        const newTop = target.getBoundingClientRect().top
+        const diff = newTop - originalTop
+        if (diff !== 0) {
+            scrollContainer.scrollBy({ top: diff, behavior: 'instant' })
+        }
+    }
 }
 
 // Modal table expand state (independent)
@@ -385,8 +452,27 @@ watch(() => props.data, () => {
     initializeModalExpanded()
 }, { immediate: true })
 
-const toggleModalRow = (index) => {
-    modalExpandedRows.value[index] = !modalExpandedRows.value[index]
+const toggleModalRow = async (index, event) => {
+    const target = event?.currentTarget?.closest('tr')
+    const scrollContainer = target ? (target.closest('.overflow-auto') || window) : null
+    const originalTop = target ? target.getBoundingClientRect().top : 0
+
+    const isCurrentlyExpanded = modalExpandedRows.value[index]
+    Object.keys(modalExpandedRows.value).forEach(key => {
+        modalExpandedRows.value[key] = false
+    })
+    if (!isCurrentlyExpanded) {
+        modalExpandedRows.value[index] = true
+    }
+
+    if (target && scrollContainer && scrollContainer.scrollBy) {
+        await nextTick()
+        const newTop = target.getBoundingClientRect().top
+        const diff = newTop - originalTop
+        if (diff !== 0) {
+            scrollContainer.scrollBy({ top: diff, behavior: 'instant' })
+        }
+    }
 }
 
 const getProgressColor = (progress) => {
@@ -399,6 +485,11 @@ const getProgressColor = (progress) => {
 <style scoped>
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.15); border-radius: 10px; }
+:deep(.dark) .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.15); }
 
 path { transition: stroke-dashoffset 1s ease-in-out; }
 

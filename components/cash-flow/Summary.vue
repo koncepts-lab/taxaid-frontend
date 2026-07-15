@@ -16,7 +16,7 @@
             </div>
         </div>
 
-        <div class="w-full max-h-[60vh] overflow-auto no-scrollbar">
+        <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative min-h-[200px]">
             <CashFlowSummaryTable :is-compressed="isCompressed" />
         </div>
     </div>
@@ -35,7 +35,7 @@
                     </button>
                 </div>
 
-                <div class="flex-1 overflow-auto" :class="isDark ? 'bg-[#00141080]' : 'bg-white'">
+                <div class="w-full flex-1 overflow-auto custom-scrollbar" :class="isDark ? 'bg-[#00141080]' : 'bg-white'">
                     <CashFlowSummaryTable />
                 </div>
             </div>
@@ -64,4 +64,9 @@ const isModalOpen = ref(false)
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.15); border-radius: 10px; }
+:deep(.dark) .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.15); }
 </style>
