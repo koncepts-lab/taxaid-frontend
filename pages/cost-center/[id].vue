@@ -6,7 +6,7 @@
         : (currentLang === 'ar' ? 'ml-[170px]' : 'mr-[170px]')">
 
         <div class="mx-auto max-w-[1600px] flex flex-col gap-8 pt-4">
-          <CostCenterProjectDetailHeader ref="headerRef" @reload="fetchData" @export-excel="handleExportExcel"
+          <CostCenterProjectDetailHeader ref="headerRef" @reload="fetchData"
             @export-pdf="handleExportPDF" @selected-date="handleDateChange"
             :title="{ en: data?.cost_center ?? costCenterId, ar: data?.cost_center ?? costCenterId }" />
 
@@ -51,7 +51,6 @@
 
 <script setup>
 import { ref } from 'vue'
-import ExcelJS from 'exceljs'
 
 const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
@@ -91,43 +90,6 @@ const handleDateChange = (period) => {
 }
 
 // --- 3. EXPORT LOGIC ---
-const handleExportExcel = async () => {
-  const rowsToExport = tableRef.value?.tableData || []
-  const total = tableRef.value?.summaryTotal
-
-  if (data.length === 0) return
-
-  const exportRows = data.map(row => ({
-    "Project": row.label,
-    "Revenue": row.revenue,
-    "COGS": row.cogs,
-    "Indirect Exp": row.indirectExp,
-    "Profit": row.profit,
-    "Margin": row.margin + '%'
-  }))
-
-  if (total) {
-    exportRows.push({ "Project": total.label, "Revenue": total.revenue, "COGS": total.cogs, "Indirect Exp": total.indirectExp, "Profit": total.profit, "Margin": total.margin + '%' })
-  }
-
-  const workbook = new ExcelJS.Workbook()
-  const worksheet = workbook.addWorksheet("Project_Detail")
-  
-  if (exportRows.length > 0) {
-    worksheet.columns = Object.keys(exportRows[0]).map(key => ({ header: key, key: key, width: 20 }))
-    exportRows.forEach(row => worksheet.addRow(row))
-  }
-
-  const buffer = await workbook.xlsx.writeBuffer()
-  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-  const url = window.URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `Project_Detail_Report.xlsx`
-  a.click()
-  window.URL.revokeObjectURL(url)
-}
-
 const handleExportPDF = async () => {
   if (!process.client) return;
   const data = tableRef.value?.tableData || []

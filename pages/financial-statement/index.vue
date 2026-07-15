@@ -16,7 +16,6 @@
                         :periods="customPeriods"
                         @selected-date="handleDateUpdate"
                         @reload="fetchTabData(activeTab)"
-                        @export-excel="handleExportExcel"
                         @export-pdf="handleExportPDF" />
 
                     <!-- Tabs -->
@@ -77,7 +76,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import ParticleBackground from '~/components/common/ParticleBackground.vue'
-import ExcelJS from 'exceljs'
 
 const isFullScreenChat = ref(false)
 const currentLang = useState('currentLang', () => 'en')
@@ -150,32 +148,6 @@ const handleDateUpdate = (payload) => {
 watch([activeTab, filters], () => {
     fetchTabData(activeTab.value)
 }, { immediate: true, deep: true })
-
-const handleExportExcel = async () => {
-    const exportData = activeTabData.value.rows.map(row => ({
-        "Account":  row.label,
-        "Current":  row.current,
-        "Previous": row.previous,
-        "Variance": row.variance
-    }))
-
-    const workbook = new ExcelJS.Workbook()
-    const worksheet = workbook.addWorksheet("Sheet1")
-    
-    if (exportData.length > 0) {
-        worksheet.columns = Object.keys(exportData[0]).map(key => ({ header: key, key: key, width: 20 }))
-        exportData.forEach(row => worksheet.addRow(row))
-    }
-
-    const buffer = await workbook.xlsx.writeBuffer()
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `Report_${activeTab.value}.xlsx`
-    a.click()
-    window.URL.revokeObjectURL(url)
-}
 
 const handleExportPDF = async () => {
     if (!process.client) return
