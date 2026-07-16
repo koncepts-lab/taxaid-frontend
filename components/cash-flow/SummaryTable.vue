@@ -4,7 +4,7 @@
             <col style="width: 28%;" />
             <col v-for="month in months" :key="`col-${month}`" :style="`width: ${72 / months.length}%;`" />
         </colgroup>
-        <thead class="text-white sticky top-0 z-20" :class="isDark ? 'bg-[#002118]' : 'bg-[#008A6F]'">
+        <thead class="text-white sticky top-[82px] z-20 shadow-sm" :class="isDark ? 'bg-[#002118]' : 'bg-[#008A6F]'">
             <tr class="transition-all duration-500">
                 <th :class="isCompressed ? 'px-8 py-4' : 'px-8 py-5'" class="font-medium text-[14px]">
                     {{ currentLang === 'ar' ? 'التدفقات النقدية' : 'Cashflow' }}

@@ -43,172 +43,187 @@
                         </div>
                     </div>
 
-                    <!-- Scrollable Content Area -->
-                    <div class="flex-1 overflow-y-auto no-scrollbar">
+                    <!-- ── Table Container (Handles Horizontal Scroll) ── -->
+                    <div class="w-full flex-1 flex flex-col min-h-0 overflow-x-auto overflow-y-hidden no-scrollbar">
+                        <div class="min-w-[800px] flex flex-col flex-1 h-full">
 
-                        <!-- Loading & Empty States (Same as your logic) -->
-                        <div v-if="loading" class="flex flex-col items-center justify-center py-20">
-                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#029F80]"></div>
-                        </div>
+                            <!-- Loading & Empty States -->
+                            <div v-if="loading" class="flex flex-col items-center justify-center py-20">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#029F80]"></div>
+                            </div>
 
-                        <div v-else-if="!data || data.length === 0" class="py-20 text-center">
-                            <p :class="isDark ? 'text-white/50' : 'text-gray-400'">No data available</p>
-                        </div>
+                            <div v-else-if="!data || data.length === 0" class="py-20 text-center">
+                                <p :class="isDark ? 'text-white/50' : 'text-gray-400'">No data available</p>
+                            </div>
 
-                        <!-- Table Wrapper for Horizontal Scroll on Mobile -->
-                        <div v-else class="overflow-x-auto w-full">
-                            <table class="w-full text-sm border-collapse min-w-[800px] sm:min-w-full">
-                                <thead class="sticky top-0 z-10 text-white bg-[#029F80]">
-                                    <tr>
-                                        <th class="lg:ps-8 ps-4 py-4 text-start font-medium">Particulars</th>
-                                        <th class="px-4 py-4 text-center font-medium">Current Year</th>
-                                        <th class="px-4 py-4 text-center font-medium">Previous Year</th>
-                                        <th class="px-4 py-4 text-center font-medium">Budget</th>
-                                        <th class="px-4 py-4 text-center font-medium">Variance</th>
-                                        <th class="pe-4 py-4 text-center font-medium">Year to Go</th>
-                                    </tr>
-                                </thead>
+                            <template v-else>
+                                <!-- ── Fixed Table Column Headers ── -->
+                                <div class="shrink-0 sticky top-0 z-10">
+                                    <table class="w-full text-sm table-fixed">
+                                        <colgroup>
+                                            <col style="width: 25%">
+                                            <col style="width: 15%">
+                                            <col style="width: 15%">
+                                            <col style="width: 15%">
+                                            <col style="width: 15%">
+                                            <col style="width: 15%">
+                                        </colgroup>
+                                        <thead class="text-white bg-[#029F80]">
+                                            <tr>
+                                                <th class="lg:ps-8 ps-4 py-4 text-start font-medium">Particulars</th>
+                                                <th class="px-4 py-4 text-center font-medium">Current Year</th>
+                                                <th class="px-4 py-4 text-center font-medium">Previous Year</th>
+                                                <th class="px-4 py-4 text-center font-medium">Budget</th>
+                                                <th class="px-4 py-4 text-center font-medium">Variance</th>
+                                                <th class="pe-4 py-4 text-center font-medium">Year to Go</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
 
-                                <tbody :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
-                                    <template v-for="(item, idx) in data" :key="idx">
-                                        <!-- Your Existing Table Row Logic -->
-                                        <tr :class="[
-                                            item.isTotal
-                                                ? (isDark ? 'bg-[#00C9A7]/20 font-bold' : 'bg-[#64E9D1] font-bold')
-                                                : (isDark ? 'border-b border-white/5' : 'border-b border-gray-50 hover:bg-gray-50/50')
-                                        ]" class="transition-colors">
-                                            <td class="lg:ps-8 ps-4 py-4 text-start">
-                                                <div class="flex items-center gap-4">
-                                                    <span :class="[isDark ? 'text-white/80' : 'text-gray-700']">{{
-                                                        item.subgroup }}</span>
-                                                    <button v-if="!item.isTotal" @click="handleLedgerList(item)"
-                                                        class="p-1">
-                                                        <svg class="w-2.5 h-2.5 text-gray-400 transition-transform duration-200"
-                                                            :class="{ 'rotate-180': expandedRows.includes(item.subgroup) }"
-                                                            viewBox="0 0 10 6" fill="currentColor">
-                                                            <path d="M0 0L5 6L10 0H0Z" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                            <td class="px-4 py-4 text-center"
-                                                :class="isDark ? 'text-white/60' : 'text-gray-600'">{{
-                                                    formatNumber(item.current_year) }}</td>
-                                            <td class="px-4 py-4 text-center"
-                                                :class="isDark ? 'text-white/60' : 'text-gray-600'">{{
-                                                    formatNumber(item.previous_year) }}</td>
-                                            <td class="px-4 py-4 text-center"
-                                                :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ item.budget ?
-                                                    formatNumber(item.budget) : '-' }}</td>
-                                            <td class="px-4 py-4 text-center">
-                                                <span
-                                                    :class="[item.variance < 0 ? 'bg-red-100 text-red-600' : 'bg-[#E6F9F4] text-[#029F80]', 'px-3 py-1 rounded-full text-[11px] font-bold']">
-                                                    {{ item.variance_percent }}
-                                                </span>
-                                            </td>
-                                            <td class="pe-8 py-2">
-                                                <!-- Existing Gauge Logic -->
-                                                <div class="flex justify-center items-center">
-                                                    <div v-if="item.ytg_percent !== null" class="w-[65px] h-[32px] relative">
-                                                        <svg class="w-full h-full" viewBox="0 0 36 22">
-                                                            <circle cx="18" cy="18" r="15" fill="none"
-                                                                :stroke="isDark ? '#ffffff1a' : '#f1f1f1'"
-                                                                stroke-width="3" stroke-dasharray="47.1 94.2"
-                                                                transform="rotate(-180 18 18)" stroke-linecap="round" />
-                                                            <circle cx="18" cy="18" r="15" fill="none" :stroke="getProgressColor(item.ytg_percent)"
-                                                                stroke-width="3.5" stroke-dasharray="47.1 94.2"
-                                                                :stroke-dashoffset="Math.max(0, 47.1 - (Math.min(parseFloat(item.ytg_percent), 100) / 100) * 47.1)"
-                                                                transform="rotate(-180 18 18)" stroke-linecap="round" />
-                                                        </svg>
+                                <!-- ── Scrollable Body ── -->
+                                <div class="overflow-y-auto custom-scrollbar flex-1 max-h-[50vh]">
+                                    <table class="w-full text-sm table-fixed">
+                                        <colgroup>
+                                            <col style="width: 25%">
+                                            <col style="width: 15%">
+                                            <col style="width: 15%">
+                                            <col style="width: 15%">
+                                            <col style="width: 15%">
+                                            <col style="width: 15%">
+                                        </colgroup>
+                                        <tbody :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
+                                            <template v-for="(item, idx) in data" :key="idx">
+                                                <!-- Main Row -->
+                                                <tr :class="[
+                                                    item.isTotal
+                                                        ? (isDark ? 'bg-[#00C9A7]/20 font-bold' : 'bg-[#64E9D1] font-bold')
+                                                        : (isDark ? 'border-b border-white/5' : 'border-b border-gray-50 hover:bg-gray-50/50')
+                                                ]" class="transition-colors">
+                                                    <td class="lg:ps-8 ps-4 py-4 text-start">
+                                                        <div class="flex items-center gap-4">
+                                                            <span :class="[isDark ? 'text-white/80' : 'text-gray-700']">{{
+                                                                item.subgroup }}</span>
+                                                            <button v-if="!item.isTotal" @click="handleLedgerList(item)"
+                                                                class="p-1">
+                                                                <svg class="w-2.5 h-2.5 text-gray-400 transition-transform duration-200"
+                                                                    :class="{ 'rotate-180': expandedRows.includes(item.subgroup) }"
+                                                                    viewBox="0 0 10 6" fill="currentColor">
+                                                                    <path d="M0 0L5 6L10 0H0Z" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-4 py-4 text-center"
+                                                        :class="isDark ? 'text-white/60' : 'text-gray-600'">{{
+                                                            formatNumber(item.current_year) }}</td>
+                                                    <td class="px-4 py-4 text-center"
+                                                        :class="isDark ? 'text-white/60' : 'text-gray-600'">{{
+                                                            formatNumber(item.previous_year) }}</td>
+                                                    <td class="px-4 py-4 text-center"
+                                                        :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ item.budget ?
+                                                            formatNumber(item.budget) : '-' }}</td>
+                                                    <td class="px-4 py-4 text-center">
                                                         <span
-                                                            class="absolute bottom-0 inset-x-0 flex items-center justify-center text-[10px] font-bold"
-                                                            :class="isDark ? 'text-white' : 'text-black'">{{
-                                                                item.ytg_percent }}</span>
-                                                    </div>
-                                                    <div v-else class="text-gray-400 text-xs">-</div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Expansion Rows -->
-                                        <template v-if="expandedRows.includes(item.subgroup)">
-                                            <template v-if="expandedRows.includes(item.subgroup)">
-                                                <!-- Loading -->
-                                                <tr v-if="rowLoading[item.subgroup]" :class="[
-                                                    isDark
-                                                        ? 'bg-emerald-900/20 border-b border-gray-700/50'
-                                                        : 'bg-primary-1150 border-b border-emerald-200/70'
-                                                ]">
-                                                    <td colspan="6" class="py-5 text-center">
-                                                        <div class="animate-spin inline-block rounded-full h-5 w-5 border-b-2"
-                                                            :class="isDark ? 'border-emerald-400' : 'border-emerald-700'">
+                                                            :class="[item.variance < 0 ? 'bg-red-100 text-red-600' : 'bg-[#E6F9F4] text-[#029F80]', 'px-3 py-1 rounded-full text-[11px] font-bold']">
+                                                            {{ item.variance_percent }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="pe-8 py-2">
+                                                        <div class="flex justify-center items-center">
+                                                            <div v-if="item.ytg_percent !== null" class="w-[65px] h-[32px] relative">
+                                                                <svg class="w-full h-full" viewBox="0 0 36 22">
+                                                                    <circle cx="18" cy="18" r="15" fill="none"
+                                                                        :stroke="isDark ? '#ffffff1a' : '#f1f1f1'"
+                                                                        stroke-width="3" stroke-dasharray="47.1 94.2"
+                                                                        transform="rotate(-180 18 18)" stroke-linecap="round" />
+                                                                    <circle cx="18" cy="18" r="15" fill="none" :stroke="getProgressColor(item.ytg_percent)"
+                                                                        stroke-width="3.5" stroke-dasharray="47.1 94.2"
+                                                                        :stroke-dashoffset="Math.max(0, 47.1 - (Math.min(parseFloat(item.ytg_percent), 100) / 100) * 47.1)"
+                                                                        transform="rotate(-180 18 18)" stroke-linecap="round" />
+                                                                </svg>
+                                                                <span
+                                                                    class="absolute bottom-0 inset-x-0 flex items-center justify-center text-[10px] font-bold"
+                                                                    :class="isDark ? 'text-white' : 'text-black'">{{
+                                                                        item.ytg_percent }}</span>
+                                                            </div>
+                                                            <div v-else class="text-gray-400 text-xs">-</div>
                                                         </div>
                                                     </td>
                                                 </tr>
-
-                                                <!-- Empty State -->
-                                                <tr v-if="!rowLoading[item.subgroup] && ledgerDataMap[item.subgroup]?.length === 0"
-                                                    :class="isDark ? 'bg-emerald-950/15 border-b border-gray-800/70' : 'bg-primary-1150 border-b border-emerald-200/60'">
-                                                    <td colspan="6" class="py-4 text-center text-xs"
-                                                        :class="isDark ? 'text-white/40' : 'text-gray-400'">
-                                                        No ledger data for selected period
-                                                    </td>
-                                                </tr>
-
-                                                <!-- Ledger Data Rows -->
-                                                <tr v-for="(ledger, lIdx) in ledgerDataMap[item.subgroup]"
-                                                    :key="`ledger-${lIdx}`" :class="[
+        
+                                                <!-- Expansion Rows -->
+                                                <template v-if="expandedRows.includes(item.subgroup)">
+                                                    <!-- Loading -->
+                                                    <tr v-if="rowLoading[item.subgroup]" :class="[
                                                         isDark
-                                                            ? 'bg-emerald-950/15 hover:bg-emerald-900/25 border-b border-gray-800/70'
-                                                            : 'bg-primary-1150 hover:bg-emerald-100/80 border-b border-emerald-200/60'
+                                                            ? 'bg-emerald-900/20 border-b border-gray-700/50'
+                                                            : 'bg-primary-1150 border-b border-emerald-200/70'
                                                     ]">
-                                                    <!-- Underlined Ledger Name -->
-                                                    <td class="lg:px-8 px-4 py-3.5 text-start">
-                                                        <CommonTooltip
-                                                            :text="currentLang === 'ar' ? 'عرض دفتر الأستاذ' : 'View Ledger'"
-                                                            position="top">
-                                                            <button @click="openGlReport(ledger)"
-                                                                class="underline cursor-pointer font-medium text-left"
-                                                                :class="isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-black/80 hover:text-emerald-800'">
-                                                                {{ ledger.ledger_name || ledger.subgroup }}
-                                                            </button>
-                                                        </CommonTooltip>
-                                                    </td>
-
-                                                    <td class="px-4 py-3.5 text-center "
-                                                        :class="isDark ? 'text-gray-200' : 'text-gray-600'">
-                                                        {{ formatNumber(ledger.current_year) }}
-                                                    </td>
-
-                                                    <td class="px-4 py-3.5 text-center"
-                                                        :class="isDark ? 'text-gray-200' : 'text-gray-600'">
-                                                        {{ formatNumber(ledger.previous_year) }}
-                                                    </td>
-
-                                                    <td class="px-4 py-3.5 text-center"
-                                                        :class="isDark ? 'text-gray-200' : 'text-gray-600'">
-                                                        {{ ledger.budget ? formatNumber(ledger.budget) : '-' }}
-                                                    </td>
-
-                                                    <td class="px-4 py-3.5 text-center">
-                                                        <span v-if="ledger.variance_percent && !ledger.isTotal"
-                                                            :class="[ledger.variance < 0 ? 'bg-red-100 text-red-600' : 'bg-[#E6F9F4] text-[#029F80]', 'px-3 py-1 rounded-full text-[11px] font-bold']">
-                                                            {{ ledger.variance_percent }}
-                                                        </span>
-                                                        <span v-else :class="isDark ? 'text-gray-200' : 'text-gray-600'">-</span>
-                                                    </td>
-
-                                                    <td class="px-4 py-3.5 text-center"
-                                                        :class="isDark ? 'text-gray-200' : 'text-gray-600'">
-                                                        -
-                                                    </td>
-                                                </tr>
+                                                        <td colspan="6" class="py-5 text-center">
+                                                            <div class="animate-spin inline-block rounded-full h-5 w-5 border-b-2"
+                                                                :class="isDark ? 'border-emerald-400' : 'border-emerald-700'">
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+        
+                                                    <!-- Empty State -->
+                                                    <tr v-if="!rowLoading[item.subgroup] && ledgerDataMap[item.subgroup]?.length === 0"
+                                                        :class="isDark ? 'bg-emerald-950/15 border-b border-gray-800/70' : 'bg-primary-1150 border-b border-emerald-200/60'">
+                                                        <td colspan="6" class="py-4 text-center text-xs"
+                                                            :class="isDark ? 'text-white/40' : 'text-gray-400'">
+                                                            No ledger data for selected period
+                                                        </td>
+                                                    </tr>
+        
+                                                    <!-- Ledger Data Rows -->
+                                                    <tr v-for="(ledger, lIdx) in ledgerDataMap[item.subgroup]"
+                                                        :key="`ledger-${lIdx}`" :class="[
+                                                            isDark
+                                                                ? 'bg-emerald-950/15 hover:bg-emerald-900/25 border-b border-gray-800/70'
+                                                                : 'bg-primary-1150 hover:bg-emerald-100/80 border-b border-emerald-200/60'
+                                                        ]">
+                                                        <td class="lg:px-8 px-4 py-3.5 text-start">
+                                                            <CommonTooltip
+                                                                :text="currentLang === 'ar' ? 'عرض دفتر الأستاذ' : 'View Ledger'"
+                                                                position="top">
+                                                                <button @click="openGlReport(ledger)"
+                                                                    class="underline cursor-pointer font-medium text-left"
+                                                                    :class="isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-black/80 hover:text-emerald-800'">
+                                                                    {{ ledger.ledger_name || ledger.subgroup }}
+                                                                </button>
+                                                            </CommonTooltip>
+                                                        </td>
+                                                        <td class="px-4 py-3.5 text-center "
+                                                            :class="isDark ? 'text-gray-200' : 'text-gray-600'">
+                                                            {{ formatNumber(ledger.current_year) }}
+                                                        </td>
+                                                        <td class="px-4 py-3.5 text-center"
+                                                            :class="isDark ? 'text-gray-200' : 'text-gray-600'">
+                                                            {{ formatNumber(ledger.previous_year) }}
+                                                        </td>
+                                                        <td class="px-4 py-3.5 text-center"
+                                                            :class="isDark ? 'text-gray-200' : 'text-gray-600'">
+                                                            {{ ledger.budget ? formatNumber(ledger.budget) : '-' }}
+                                                        </td>
+                                                        <td class="px-4 py-3.5 text-center">
+                                                            <span v-if="ledger.variance_percent && !ledger.isTotal"
+                                                                :class="[ledger.variance < 0 ? 'bg-red-100 text-red-600' : 'bg-[#E6F9F4] text-[#029F80]', 'px-3 py-1 rounded-full text-[11px] font-bold']">
+                                                                {{ ledger.variance_percent }}
+                                                            </span>
+                                                            <span v-else :class="isDark ? 'text-gray-200' : 'text-gray-600'">-</span>
+                                                        </td>
+                                                        <td class="px-4 py-3.5 text-center"
+                                                            :class="isDark ? 'text-gray-200' : 'text-gray-600'">
+                                                            -
+                                                        </td>
+                                                    </tr>
+                                                </template>
                                             </template>
-
-                                        </template>
-                                    </template>
-                                </tbody>
-                            </table>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </div>
