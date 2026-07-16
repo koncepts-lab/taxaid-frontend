@@ -6,7 +6,7 @@
             :class="{ '': isDark }" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
             <!-- 2. LEFT AREA: Resizes dynamically -->
-            <div id="revenue-left-area" class="flex-1 no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-0" 
+            <div id="revenue-left-area" class="flex-1 min-w-0 no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-0" 
                  :class="[
                     isChatOpen 
                         ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')

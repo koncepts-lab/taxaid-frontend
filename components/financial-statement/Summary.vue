@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full overflow-x-auto no-scrollbar transition-all duration-500 rounded-3xl"
+    <div class="w-full transition-all duration-500 rounded-3xl"
         :class="isDark ? 'bg-[#00141050]' : 'bg-white'" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
         <div v-if="activeTab === 'schedules'" class="px-8 pb-8 flex gap-4 transition-all duration-500">
@@ -122,8 +122,10 @@
             </div>
         </div>
 
-        <table class="w-full text-start border-collapse min-w-250 ">
-            <thead class="text-white" :class="isDark ? 'bg-primary-1100' : 'bg-primary-750'">
+        <!-- Table Wrapper (Horizontal Scroll) -->
+        <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative">
+            <table class="w-full text-start border-collapse min-w-250 table-fixed">
+                <thead class="text-white sticky top-0 z-20 shadow-sm" :class="isDark ? 'bg-primary-1100' : 'bg-primary-750'">
                 <tr>
                     <template v-if="activeTab === 'ratios'">
                         <template v-if="selectedRatio === 'All Ratios'">
@@ -279,6 +281,7 @@
                 </template>
             </tbody>
         </table>
+        </div>
 
         <div v-if="reportInfo?.current" class="lg:px-8 px-4 py-6 lg:text-sm text-xs transition-all duration-500"
             :class="isDark ? 'text-white/40' : 'text-black/50'">
@@ -503,4 +506,9 @@ watch(() => props.data, (newData) => {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.15); border-radius: 10px; }
+:deep(.dark) .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.15); }
 </style>

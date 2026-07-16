@@ -162,6 +162,7 @@
             </div>
           </div>
 
+          <!--
           <div class="flex justify-between items-center mb-3">
             <span class="font-normal text-sm text-[#013E32]">{{ currentLang === 'ar' ? 'اختيار الشركات' :
               'Select Companies'
@@ -203,8 +204,10 @@
               </div>
             </div>
           </div>
+          -->
 
           <div class="border-t border-gray-100 pt-4 flex flex-col gap-8">
+            <!--
             <button class="flex items-center gap-3 text-[#013E32] text-sm font-normal group/btn">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 class="group-hover/btn:text-[#00B68D]">
@@ -220,6 +223,7 @@
               </svg>
               {{ currentLang === 'ar' ? 'التبديل إلى لوحة الشركاء' : 'Switch to Partnership' }}
             </NuxtLink>
+            -->
             <button @click="onLogoutClick" class="flex items-center gap-3 text-[#013E32] text-sm font-normal group/btn">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 class="group-hover/btn:text-red-500">
@@ -351,6 +355,7 @@
             </button>
           </div>
 
+          <!--
           <div class="flex justify-between items-center mb-3">
             <span class="font-normal text-sm text-[#013E32]">{{ currentLang === 'ar' ? 'اختيار الشركات' :
               'Select Companies'
@@ -391,9 +396,11 @@
               </div>
             </div>
           </div>
+          -->
 
 
           <div class="border-t border-gray-100 pt-4 flex flex-col gap-8">
+            <!--
             <button class="flex items-center gap-3 text-[#013E32] text-sm font-normal group/btn">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 class="group-hover/btn:text-[#00B68D]">
@@ -402,6 +409,7 @@
               </svg>
               {{ currentLang === 'ar' ? 'تصدير البيانات' : 'Export Data' }}
             </button>
+            -->
             <button class="flex items-center gap-3 text-[#013E32] text-sm font-normal group/btn">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 class="group-hover/btn:text-red-500">

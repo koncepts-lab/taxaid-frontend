@@ -1,7 +1,7 @@
 <template>
     <div class="flex flex-col xl:flex-row gap-6 mb-8 items-stretch xl:items-end w-full"> 
         <!-- Cash in Hand Card -->
-        <div class="w-full xl:flex-1 rounded-2xl p-6 relative overflow-hidden transition-all duration-300 group hover:shadow-lg"
+        <div class="w-full xl:flex-1 rounded-[25px] p-6 relative overflow-hidden transition-all duration-300 group hover:shadow-lg"
             :class="isDark ? 'bg-[#003A2ECC]' : 'bg-[#fff] text-black'">
             
             <div class="flex justify-between items-start mb-2">

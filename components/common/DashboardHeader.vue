@@ -59,58 +59,66 @@
                             <div v-if="showDateDropdown"
                                 class="absolute right-0 rtl:left-0 mt-2 border rounded-lg shadow-lg z-50 py-2 px-2 min-w-[180px]"
                                 :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-[#03D8B0]'">
-                                <div v-for="period in periods" :key="period.en" class="relative group">
-                                    <button @click="selectPeriod(period)"
-                                        class="w-full text-left rtl:text-right px-4 py-3 font-normal text-sm rounded-lg transition-colors"
-                                        :class="getDropdownItemClass(period)">
-                                        {{ currentLang === 'ar' ? period.ar : period.en }}
-                                    </button>
+                                
+                                <div v-if="isDirectCalendar" class="p-2 w-max">
+                                    <VDatePicker v-model="singleDate" :is-dark="isDark"
+                                        :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
+                                        :max-date="today" @update:model-value="handleSingleChange" />
+                                </div>
+                                <template v-else>
+                                    <div v-for="period in periods" :key="period.en" class="relative group">
+                                        <button @click="selectPeriod(period)"
+                                            class="w-full text-left rtl:text-right px-4 py-3 font-normal text-sm rounded-lg transition-colors"
+                                            :class="getDropdownItemClass(period)">
+                                            {{ currentLang === 'ar' ? period.ar : period.en }}
+                                        </button>
 
-                                    <div v-if="(period.en === 'Custom Range' || period.en === 'Custom Date') && selectedPeriodKey === period.en"
-                                        class="absolute top-0 shadow-2xl rounded-xl border overflow-hidden z-[60] w-max"
-                                        :class="[
-                                            isDark ? 'border-[#03D8B0] bg-[#002E26]' : 'border-[#03D8B0] bg-white',
-                                            currentLang === 'ar' ? 'left-full ml-2' : 'right-full mr-2'
-                                        ]">
+                                        <div v-if="(period.en === 'Custom Range' || period.en === 'Custom Date') && selectedPeriodKey === period.en"
+                                            class="absolute top-0 shadow-2xl rounded-xl border overflow-hidden z-[60] w-max"
+                                            :class="[
+                                                isDark ? 'border-[#03D8B0] bg-[#002E26]' : 'border-[#03D8B0] bg-white',
+                                                currentLang === 'ar' ? 'left-full ml-2' : 'right-full mr-2'
+                                            ]">
 
-                                        <div v-if="selectedPeriodKey === 'Custom Range'"
-                                            class="flex flex-col lg:flex-row">
-                                            <div class="p-3">
-                                                <VDatePicker v-model="range.start" :is-dark="isDark"
-                                                    :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary"
-                                                    borderless :max-date="range.end || today"
-                                                    :initial-page="prevMonthPage"
-                                                    @update:model-value="emitRangeChange" />
+                                            <div v-if="selectedPeriodKey === 'Custom Range'"
+                                                class="flex flex-col lg:flex-row">
+                                                <div class="p-3">
+                                                    <VDatePicker v-model="range.start" :is-dark="isDark"
+                                                        :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary"
+                                                        borderless :max-date="range.end || today"
+                                                        :initial-page="prevMonthPage"
+                                                        @update:model-value="emitRangeChange" />
+                                                </div>
+                                                <div class="p-3 border-t lg:border-t-0 lg:border-l"
+                                                    :class="isDark ? 'border-white/10' : 'border-gray-100'">
+                                                    <VDatePicker v-model="range.end" :is-dark="isDark"
+                                                        :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary"
+                                                        borderless :min-date="range.start || undefined" :max-date="today"
+                                                        :initial-page="currMonthPage"
+                                                        @update:model-value="emitRangeChange" />
+                                                </div>
                                             </div>
-                                            <div class="p-3 border-t lg:border-t-0 lg:border-l"
-                                                :class="isDark ? 'border-white/10' : 'border-gray-100'">
-                                                <VDatePicker v-model="range.end" :is-dark="isDark"
-                                                    :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary"
-                                                    borderless :min-date="range.start || undefined" :max-date="today"
-                                                    :initial-page="currMonthPage"
-                                                    @update:model-value="emitRangeChange" />
-                                            </div>
-                                        </div>
 
-                                        <div v-else class="p-2">
-                                            <!-- 3M / 6M projection toggle -->
-                                            <div v-if="showPeriodToggle" class="flex items-center gap-1 mb-2 p-1 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'">
-                                                <button
-                                                    v-for="m in [3, 6]" :key="m"
-                                                    @click.stop="selectProjectionPeriod(m)"
-                                                    class="flex-1 py-1.5 text-sm font-medium rounded-md transition-all"
-                                                    :class="activePeriod === m
-                                                        ? 'bg-[#03D8B0] text-black'
-                                                        : (isDark ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-gray-800')">
-                                                    {{ m }}M
-                                                </button>
+                                            <div v-else class="p-2">
+                                                <!-- 3M / 6M projection toggle -->
+                                                <div v-if="showPeriodToggle" class="flex items-center gap-1 mb-2 p-1 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'">
+                                                    <button
+                                                        v-for="m in [3, 6]" :key="m"
+                                                        @click.stop="selectProjectionPeriod(m)"
+                                                        class="flex-1 py-1.5 text-sm font-medium rounded-md transition-all"
+                                                        :class="activePeriod === m
+                                                            ? 'bg-[#03D8B0] text-black'
+                                                            : (isDark ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-gray-800')">
+                                                        {{ m }}M
+                                                    </button>
+                                                </div>
+                                                <VDatePicker v-model="singleDate" :is-dark="isDark"
+                                                    :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
+                                                    :max-date="today" @update:model-value="handleSingleChange" />
                                             </div>
-                                            <VDatePicker v-model="singleDate" :is-dark="isDark"
-                                                :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
-                                                :max-date="today" @update:model-value="handleSingleChange" />
                                         </div>
                                     </div>
-                                </div>
+                                </template>
                             </div>
                         </Transition>
                     </div>
@@ -193,6 +201,10 @@ const currentLang = useState('currentLang', () => 'en')
 // UI States
 const showDateDropdown = ref(false)
 const showExportDropdown = ref(false)
+
+const isDirectCalendar = computed(() => {
+    return props.periods.length === 1 && props.periods[0].en === 'Custom Date'
+})
 
 // 3M / 6M projection toggle (only shown when showPeriodToggle=true)
 const activePeriod = ref(3)

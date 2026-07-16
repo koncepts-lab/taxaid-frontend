@@ -42,7 +42,7 @@
     </div>
 
     <!-- Gauge Area -->
-    <div class="relative w-full px-4 mt-4 overflow-hidden max-h-[190px] md:max-h-[220px]">
+    <div class="relative w-full px-4 mt-4 overflow-visible">
       <div class="relative w-full">
         <svg class="w-full h-auto block" :viewBox="`0 0 ${svgW} ${svgH}`">
           <!-- Ticks -->
@@ -76,38 +76,36 @@
           <text :x="polarToCartesian(0).x" :y="polarToCartesian(0).y + 35" text-anchor="middle" fill="white" font-size="18" font-weight="500" opacity="0.5">100 %</text>
         </svg>
 
-        <!-- Center Value -->
-        <div class="absolute inset-0 flex flex-col items-center justify-center translate-y-2">
-          <span class="leading-none text-[40px] font-semibold -mt-[60px] block">
-  {{ Math.round(currentYearPct) }}%
-</span>
-
-          <span class="text-[11px] font-light opacity-60 mt-3 uppercase tracking-widest block">
-  {{ currentLang === 'ar' ? 'تم تحقيق الهدف' : 'Target Achieved' }}
-</span>
-
+        <!-- Center Value & Icon -->
+        <div class="absolute inset-0 flex flex-col items-center justify-center pt-[40%]">
+          <span class="leading-none text-[40px] font-semibold block">
+            {{ Math.round(currentYearPct) }}%
+          </span>
+          <span class="text-[11px] font-light opacity-60 mt-1 mb-0 uppercase tracking-widest block">
+            {{ currentLang === 'ar' ? 'تم تحقيق الهدف' : 'Target Achieved' }}
+          </span>
+          
+          <!-- Center Icon moved inside absolute container -->
+          <div 
+            class="flex justify-center"
+            :style="{ 
+              opacity: animProgress / 100, 
+              clipPath: `inset(${100 - animProgress}% 0 0 0)`
+            }"
+          >
+            <img
+              src="/images/icons/Total-Revenue.svg"
+              alt="Icon"
+              class="w-[50px] md:w-[60px] h-auto object-contain"
+            />
+          </div>
         </div>
 
       </div>
     </div>
 
-    <!-- Center Icon -->
-    <div 
-      class="flex justify-center"
-      :style="{ 
-        opacity: animProgress / 100, 
-        clipPath: `inset(${100 - animProgress}% 0 0 0)`
-      }"
-    >
-      <img
-        src="/images/icons/Total-Revenue.svg"
-        alt="Icon"
-        class="w-[60px] h-auto object-contain"
-      />
-    </div>
-
     <!-- Bottom Values -->
-    <div class="w-full text-center px-6 flex-1 flex flex-col justify-end gap-3 pb-[30px] overflow-hidden" style="max-height: 22vh;">
+    <div class="w-full text-center px-6 flex flex-col gap-3 pb-[30px]">
       <div class="mt-0">
         <div class="text-[14px] opacity-70 mb-0 uppercase tracking-widest">{{ currentLang === 'ar' ? 'إجمالي الإيرادات' : 'Total Revenue' }}</div>
         <div class="text-xl font-bold flex items-center justify-center">
@@ -142,7 +140,7 @@ const currentYearTarget   = computed(() => revenue.value?.currentYearTarget   ??
 const currentYearAchieved = computed(() => revenue.value?.currentYearAchieved ?? 0)
 
 const colors = computed(() => revenue.value?.gaugeColors ?? { lastYear: "#21E669", currentYear: "#03D8B0", balance: "#0A7C4B" })
-const svgW = 400; const svgH = 330;
+const svgW = 400; const svgH = 240;
 const cx = 200;   const cy = 180;  const r = 170;
 const strokeW = 18; const startDeg = -180; const endDeg = 0;
 const gapDeg = 9; const lastYearSpanDeg = 30;

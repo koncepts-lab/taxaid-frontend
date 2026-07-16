@@ -12,7 +12,7 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         
         <!-- Live Chat -->
-        <div class="rounded-xl p-6 flex flex-col justify-between text-white" style="background-color: #1C5F50;">
+        <div v-if="false" class="rounded-xl p-6 flex flex-col justify-between text-white" style="background-color: #1C5F50;">
           <div>
             <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background-color: #04725A; color: #04C18F;">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" /></svg>
@@ -34,9 +34,9 @@
             <h3 class="text-[18px] font-normal mb-1" style="color: #FFFFFF;">Phone Support</h3>
             <p class="text-[14px] font-normal mb-6" style="color: #FFFFFFCC;">Call us: 1-800-TAXAID (829-2443)</p>
           </div>
-          <button class="w-full transition-colors font-normal py-2.5 rounded-lg text-[14px]" style="background-color: #86E4CB; color: #0A0A0A;">
+          <a href="tel:18008292443" class="block text-center w-full transition-colors font-normal py-2.5 rounded-lg text-[14px]" style="background-color: #86E4CB; color: #0A0A0A;">
             Schedule Call
-          </button>
+          </a>
         </div>
 
         <!-- Email Support -->
@@ -48,14 +48,14 @@
             <h3 class="text-[18px] font-normal mb-1" style="color: #FFFFFF;">Email Support</h3>
             <p class="text-[14px] font-normal mb-6" style="color: #FFFFFFCC;">support@taxaid.com</p>
           </div>
-          <button class="w-full transition-colors font-normal py-2.5 rounded-lg text-[14px]" style="background-color: #86E4CB; color: #0A0A0A;">
+          <a href="mailto:support@taxaid.com" class="block text-center w-full transition-colors font-normal py-2.5 rounded-lg text-[14px]" style="background-color: #86E4CB; color: #0A0A0A;">
             Send Email
-          </button>
+          </a>
         </div>
       </div>
 
       <!-- Submit a Support Ticket Form -->
-      <div class="bg-white border border-gray-200 rounded-xl p-6 mb-8 shadow-sm">
+      <div v-if="false" class="bg-white border border-gray-200 rounded-xl p-6 mb-8 shadow-sm">
         <h2 class="text-[20px] font-normal mb-6" style="color: #101828;">Submit a Support Ticket</h2>
         
         <form @submit.prevent class="space-y-5">
@@ -172,7 +172,7 @@
       </div>
 
       <!-- Previous Tickets -->
-      <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+      <div v-if="false" class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
         <h2 class="text-[18px] font-medium text-[#101828] mb-1">Previous Tickets</h2>
         <p class="text-[13px] text-gray-500 mb-6">View and track all your support requests</p>
 
