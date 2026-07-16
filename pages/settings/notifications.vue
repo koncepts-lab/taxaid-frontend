@@ -286,7 +286,20 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
+
+const { getSettings, saveSettings, enableWebPush } = useNotificationSettings()
+
+// UI key <-> backend event_key
+const keyMap = {
+  taxDeadlines: 'tax_deadlines',
+  filingReminders: 'filing_reminders',
+  paymentDue: 'payment_due',
+  securityAlerts: 'security_alerts',
+  weeklySummary: 'weekly_summary',
+  monthlyReport: 'monthly_report',
+  systemUpdates: 'system_updates',
+}
 
 const emailSettings = ref({
   taxDeadlines: false,
@@ -310,4 +323,53 @@ const smsSettings = ref({
   taxDeadlines: true,
   urgentAlerts: true
 })
+
+// Last state confirmed by the server — used to diff and revert on failure
+let saved = { email: {}, push: {} }
+let loadedFromApi = false
+
+function snapshot() {
+  saved = {
+    email: { ...emailSettings.value },
+    push: { ...pushSettings.value },
+  }
+}
+
+onMounted(async () => {
+  try {
+    const res = await getSettings()
+    for (const row of res.data ?? []) {
+      const uiKey = Object.keys(keyMap).find(k => keyMap[k] === row.event_key)
+      if (!uiKey) continue
+      if (uiKey in emailSettings.value && row.enabled?.email !== undefined) emailSettings.value[uiKey] = row.enabled.email
+      if (uiKey in pushSettings.value && row.enabled?.push !== undefined) pushSettings.value[uiKey] = row.enabled.push
+    }
+  } catch { /* keep defaults if the API is unreachable */ }
+  snapshot()
+  loadedFromApi = true
+})
+
+// Save the changed toggle; revert it if the API rejects the change.
+async function persist(channel, settingsRef) {
+  if (!loadedFromApi) return
+  const changed = Object.keys(settingsRef.value).filter(k => settingsRef.value[k] !== saved[channel][k])
+  if (!changed.length) return
+
+  const body = { [channel]: {} }
+  for (const k of changed) body[channel][keyMap[k]] = settingsRef.value[k]
+
+  try {
+    await saveSettings(body)
+    // First time a push toggle turns ON: register this browser for push
+    if (channel === 'push' && changed.some(k => settingsRef.value[k])) {
+      try { await enableWebPush() } catch { /* unconfigured/denied — toggle still saved */ }
+    }
+    snapshot()
+  } catch {
+    for (const k of changed) settingsRef.value[k] = saved[channel][k] // revert
+  }
+}
+
+watch(emailSettings, () => persist('email', emailSettings), { deep: true })
+watch(pushSettings, () => persist('push', pushSettings), { deep: true })
 </script>

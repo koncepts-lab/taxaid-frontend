@@ -37,6 +37,10 @@ export const useAuth = () => {
         authToken.value = response.data.token
         
         user.value = response.data.user   // Saved to global state
+        // Persisted for the Reverb notification listener (survives refresh)
+        if (response.data.user?.id) {
+          try { localStorage.setItem('auth_user_id', String(response.data.user.id)) } catch {}
+        }
         return response
       }
     } catch (error) {
@@ -62,6 +66,7 @@ export const useAuth = () => {
 
     token.value = null
     user.value = null
+    try { localStorage.removeItem('auth_user_id') } catch {}
     await navigateTo('/home')
   }
 

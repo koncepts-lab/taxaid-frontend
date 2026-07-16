@@ -64,11 +64,13 @@
               <th class="py-3 px-6 font-medium whitespace-nowrap">Last Login</th>
               <th class="py-3 px-6 font-medium whitespace-nowrap">Location</th>
               <th class="py-3 px-6 font-medium whitespace-nowrap text-center">Active Sessions</th>
+              <th class="py-3 px-6 font-medium whitespace-nowrap">Status</th>
+              <th class="py-3 px-6 font-medium whitespace-nowrap text-center">Actions</th>
             </tr>
           </thead>
           <tbody class="text-sm text-gray-700">
-            <tr v-if="loading"><td colspan="6" class="py-10 text-center text-gray-400">Loading...</td></tr>
-            <tr v-else-if="!users.length"><td colspan="6" class="py-10 text-center text-gray-400">No users found.</td></tr>
+            <tr v-if="loading"><td colspan="8" class="py-10 text-center text-gray-400">Loading...</td></tr>
+            <tr v-else-if="!users.length"><td colspan="8" class="py-10 text-center text-gray-400">No users found.</td></tr>
             <tr v-for="u in users" :key="u.id" class="border-b border-gray-100 hover:bg-gray-50/50">
               <td class="py-4 px-6 font-medium text-gray-800">{{ u.name ?? '—' }}</td>
               <td class="py-4 px-6">{{ u.email }}</td>
@@ -79,11 +81,58 @@
                 <span :class="u.active_sessions > 0 ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-gray-100 text-gray-500'"
                   class="rounded-full px-2.5 py-1 text-[12px] font-medium">{{ u.active_sessions }}</span>
               </td>
+              <td class="py-4 px-6">
+                <span :class="u.status === 'live' ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-amber-100 text-amber-700'"
+                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-medium capitalize">
+                  <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
+                  {{ u.status ?? '—' }}
+                </span>
+              </td>
+              <td class="py-4 px-6 text-center">
+                <button v-if="u.status === 'live'" @click="openUserStatusModal(u, 'suspended')"
+                  class="px-3 py-1.5 border border-red-300 text-red-600 rounded-md text-[13px] font-medium hover:bg-red-50 transition-colors">
+                  Suspend
+                </button>
+                <button v-else @click="openUserStatusModal(u, 'live')"
+                  class="px-3 py-1.5 bg-[#00896F] text-white rounded-md text-[13px] font-medium hover:bg-[#00705a] transition-colors">
+                  Make Live
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+    <!-- User suspend / make-live modal -->
+    <div v-if="userStatusTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-xl shadow-lg w-[420px] max-w-full p-6">
+        <h3 class="text-[16px] font-semibold text-gray-900 mb-2">
+          {{ userStatusNext === 'live' ? 'Make user live?' : 'Suspend user?' }}
+        </h3>
+        <p class="text-sm text-gray-500 mb-4">
+          <span class="font-medium text-gray-700">{{ userStatusTarget.email }}</span><br>
+          {{ userStatusNext === 'live'
+            ? 'The user will be able to log in again.'
+            : 'The user will be blocked from logging in until made live again.' }}
+        </p>
+        <!-- Suspending requires the admin to re-enter their own password -->
+        <div v-if="userStatusNext === 'suspended'" class="mb-4">
+          <label class="block text-[13px] text-gray-600 mb-1.5">Confirm with your admin password</label>
+          <input v-model="adminPassword" type="password" placeholder="Your password" autocomplete="current-password"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
+        </div>
+        <p v-if="userStatusError" class="text-[13px] text-red-500 mb-3">{{ userStatusError }}</p>
+        <div class="flex justify-end gap-3">
+          <button @click="closeUserStatusModal" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+          <button @click="applyUserStatus" :disabled="userStatusBusy || (userStatusNext === 'suspended' && !adminPassword)"
+            :class="userStatusNext === 'live' ? 'bg-[#00896F] hover:bg-[#00705a]' : 'bg-red-600 hover:bg-red-700'"
+            class="px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-60">
+            {{ userStatusBusy ? 'Saving…' : userStatusNext === 'live' ? 'Make Live' : 'Suspend' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -96,7 +145,7 @@ const props = defineProps({
   tenantId: { type: Number, required: true },
 })
 
-const { setTenantStatus, getTenantUsers, getTenants } = useClientManagement()
+const { setTenantStatus, getTenantUsers, getTenants, setTenantUserStatus } = useClientManagement()
 
 const status = ref(null)
 const users = ref([])
@@ -137,6 +186,43 @@ async function applyStatus() {
   } finally {
     busy.value = false
     confirmStatus.value = null
+  }
+}
+
+// ── Per-user suspend / make-live modal ──────────────────────────────────────
+const userStatusTarget = ref(null)   // user row the modal is acting on
+const userStatusNext = ref(null)     // 'live' | 'suspended'
+const adminPassword = ref('')
+const userStatusBusy = ref(false)
+const userStatusError = ref('')
+
+function openUserStatusModal(user, next) {
+  userStatusTarget.value = user
+  userStatusNext.value = next
+  adminPassword.value = ''
+  userStatusError.value = ''
+}
+function closeUserStatusModal() {
+  userStatusTarget.value = null
+  userStatusNext.value = null
+}
+
+async function applyUserStatus() {
+  userStatusBusy.value = true
+  userStatusError.value = ''
+  try {
+    const res = await setTenantUserStatus(
+      props.tenantId,
+      userStatusTarget.value.id,
+      userStatusNext.value,
+      userStatusNext.value === 'suspended' ? adminPassword.value : undefined,
+    )
+    userStatusTarget.value.status = res.user?.status ?? userStatusNext.value
+    closeUserStatusModal()
+  } catch (e) {
+    userStatusError.value = e?.data?.message ?? 'Failed to update user status.'
+  } finally {
+    userStatusBusy.value = false
   }
 }
 
