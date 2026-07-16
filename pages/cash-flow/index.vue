@@ -121,6 +121,7 @@ const handleExport = (type) => {}
 onMounted(() => {
   fetchProjection()
   useLocation().syncSessionLocation()
+  useNotificationSettings().syncWebPush()
 })
 </script>
 

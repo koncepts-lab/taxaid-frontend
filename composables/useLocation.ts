@@ -34,7 +34,7 @@ const GEOCODE_PROVIDERS: GeocodeProvider[] = [
   {
     name: 'freeipapi',
     needsCoords: false,
-    url: 'https://freeipapi.com/api/json',
+    url: 'https://free.freeipapi.com/api/json', // old apex URL now 302s here
     params: () => ({}),
     parse: (r) => joinParts([r?.cityName, r?.regionName, r?.countryName]),
   },

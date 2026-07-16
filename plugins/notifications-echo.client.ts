@@ -29,9 +29,14 @@ export default defineNuxtPlugin(() => {
     auth: { headers: { Authorization: `Bearer ${token.value}`, Accept: 'application/json' } },
   })
 
-  const toast = useToast()
+  const notifications = useAppNotifications()
 
   echo.private(`user.${userId}`).listen('.notification', (e: any) => {
-    toast.add({ title: e.title, description: e.body })
+    notifications.add({
+      event_key: e.event_key || '',
+      title: e.title,
+      body: e.body,
+      target: e.target || null,
+    })
   })
 })
