@@ -17,6 +17,9 @@
     <div v-if="localError" class="w-full p-3 rounded-xl bg-red-50 text-red-600 text-sm text-center font-medium">
       {{ localError === 'auth_error' ? t.error : localError }}
     </div>
+    <div v-if="resendMessage" class="w-full p-3 rounded-xl bg-[#0092761a] text-[#009276] text-sm text-center font-medium">
+      {{ resendMessage }}
+    </div>
 
     <button 
       @click="checkStatus" 
@@ -36,8 +39,8 @@
     <div class="flex flex-col items-center gap-4 pt-2">
       <p class="text-[16px] font-medium text-[#999999]">
         {{ t.noEmail }}
-        <button @click="resend" class="text-[#00B389] font-semibold hover:underline ml-1 cursor-pointer">
-          {{ t.resendLink }}
+        <button @click="resend" :disabled="resending" class="text-[#00B389] font-semibold hover:underline ml-1 cursor-pointer disabled:opacity-50">
+          {{ resending ? '…' : t.resendLink }}
         </button>
       </p>
       
@@ -64,8 +67,11 @@ const props = defineProps({
 
 const emit = defineEmits(['verified', 'back'])
 const { login } = useAuth()
+const config = useRuntimeConfig()
 const loading = ref(false)
 const localError = ref('')
+const resending = ref(false)
+const resendMessage = ref('')
 
 const isRtl = computed(() => props.lang === 'ar')
 
@@ -75,6 +81,9 @@ const translations = {
     btnVerify: "I've Verified My Email",
     noEmail: "Didn't receive the email?",
     resendLink: 'Resend Link',
+    resent: 'A new verification link has been sent.',
+    cooldown: 'A link was just sent. Please wait a couple of minutes before trying again.',
+    resendFailed: 'Could not resend the link. Please try again.',
     backLogin: 'Back to Login',
     error: 'Email not verified yet. Please check your inbox.'
   },
@@ -83,6 +92,9 @@ const translations = {
     btnVerify: 'لقد قمت بالتحقق من بريدي الإلكتروني',
     noEmail: 'لم تستلم البريد الإلكتروني؟',
     resendLink: 'إعادة إرسال الرابط',
+    resent: 'تم إرسال رابط تحقق جديد.',
+    cooldown: 'تم إرسال رابط للتو. يرجى الانتظار بضع دقائق قبل المحاولة مرة أخرى.',
+    resendFailed: 'تعذر إعادة إرسال الرابط. يرجى المحاولة مرة أخرى.',
     backLogin: 'العودة لتسجيل الدخول',
     error: 'لم يتم التحقق من البريد الإلكتروني بعد. يرجى التحقق من صندوق الوارد الخاص بك.'
   }
@@ -111,9 +123,26 @@ const checkStatus = async () => {
   }
 }
 
-const resend = () => {
-  alert(props.lang === 'ar' ? "تم إعادة إرسال الرابط إلى " + props.email : "A new verification link has been sent to " + props.email)
-} //// add model later and add resend verification api link here!!!
+// Resend: backend disposes the old token, issues a fresh 24h one to the
+// same address (2-min cooldown, generic response — no account enumeration).
+const resend = async () => {
+  if (resending.value) return
+  resending.value = true
+  localError.value = ''
+  resendMessage.value = ''
+  try {
+    await $fetch('/auth/resend-verification', {
+      baseURL: config.public.apiBase,
+      method: 'POST',
+      body: { email: props.email },
+    })
+    resendMessage.value = t.value.resent
+  } catch (err) {
+    localError.value = err?.status === 429 ? t.value.cooldown : (err?.data?.message || t.value.resendFailed)
+  } finally {
+    resending.value = false
+  }
+}
 </script>
 
 <style scoped>
