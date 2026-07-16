@@ -16,15 +16,15 @@ export const useAlertsPage = () => {
   })
 
   const activeStatus = computed({
-    get: () => (route.query.status as string) || 'all',
+    get: () => (route.query.status as string) || 'pending',
     set: (val: string) => router.replace({ query: { ...route.query, status: val } }),
   })
 
   const categories = ref([
-    { id: 'all',      label: 'All Alerts',     labelAr: 'الكل',          color: '#009276', wheel: '/images/all-alerts.webp', textColor: '#00FFBC', title: '(Last 30 days)',     titleAr: 'الكل'       },
     { id: 'pending',  label: 'Pending Actions', labelAr: 'قيد الانتظار', color: '#B78700', wheel: '/images/pending.webp',    textColor: '#FFBC00', title: '(Required Action)',  titleAr: 'قيد الانتظار' },
     { id: 'resolved', label: 'Resolved',        labelAr: 'تم الحل',       color: '#10612A', wheel: '/images/resolved.webp',  textColor: '#29B356', title: '(Resolved Alerts)',  titleAr: 'تم الحل'    },
     { id: 'ignored',  label: 'Ignored',         labelAr: 'تم التجاهل',    color: '#666666', wheel: '/images/ignored.webp',   textColor: '#D0D0D0', title: '(Dismissed Alerts)', titleAr: 'تم التجاهل' },
+    { id: 'all',      label: 'All Alerts',     labelAr: 'الكل',          color: '#009276', wheel: '/images/all-alerts.webp', textColor: '#00FFBC', title: '(Last 30 days)',     titleAr: 'الكل'       },
   ])
 
   const statusMap = ref({

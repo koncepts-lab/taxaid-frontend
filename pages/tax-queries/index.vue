@@ -13,6 +13,9 @@
 
                 <div class="flex-1 flex flex-col gap-5 overflow-hidden">
                     <TaxQueriesTaxTable :isMinimized="isTableMinimized" :title="currentTitle" :data="currentTableData"
+                        :emptyMessage="vatMessage || 'No data available for this section.'"
+                        :years="vatYears" :selectedYear="selectedVatYear"
+                        @changeYear="changeVatYear"
                         @toggleMinimize="isTableMinimized = !isTableMinimized" class="shrink-0" />
 
                     <TaxQueriesChatWindow :isMinimized="isTableMinimized" class="flex-1 min-h-0 max-lg:hidden" />
@@ -32,13 +35,13 @@ const isTableMinimized = ref(false);
 const isSideChatOpen = ref(false);
 const isChatOpen = ref(false);
 
-const { tableData } = useTaxQueriesPage()
+const { tableData, vatMessage, vatYears, selectedVatYear, changeVatYear } = useTaxQueriesPage()
 
 onMounted(() => useLocation().syncSessionLocation())
 
 const currentTitle = computed(() => {
     const titles = {
-        vat: 'VAT Queries',
+        vat: 'VAT Returned',
         corporate: 'Corporate Tax',
         ifrs: 'IFRS',
         accounting: 'General Accounting'

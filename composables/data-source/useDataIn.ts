@@ -10,6 +10,29 @@ export interface DataInItem {
   isUploaded: boolean
   uploadDate: string | null
   fileName: string | null
+  // vat_returns only — last active quarter label + full per-quarter list
+  quarter?: string
+  returns?: VatReturnItem[]
+}
+
+export interface VatReturnItem {
+  id: number
+  label: string      // "Q2 2026" — UAE FTA quarter-year convention
+  quarter: string
+  year: number
+  period: string | null
+  uploadDate: string
+  fileName: string | null
+  hasFile: boolean
+}
+
+export interface VatUploadFields {
+  period_from: string // YYYY-MM-DD (from <input type="date">)
+  period_to: string   // YYYY-MM-DD
+  standard_rated_supplies: number
+  zero_rated_supplies: number
+  exempted_supplies: number
+  standard_rated_expenses: number
 }
 
 export interface BudgetItemStatus {
@@ -129,6 +152,61 @@ export const useDataIn = () => {
     } finally {
       uploadingId.value = null
     }
+  }
+
+  // ── VAT return upload — POST /tax-queries/vat/upload ──────────────────────
+  const vatUploading = ref(false)
+  const vatUploadError = ref<string | null>(null)
+
+  // Response includes `document_check` — a parallel box 8/11 comparison read
+  // off the PDF (informational status only, never a validation gate).
+  const uploadVat = async (fields: VatUploadFields, file: File | null): Promise<any> => {
+    vatUploading.value = true
+    vatUploadError.value = null
+
+    const url = `${config.public.apiBase}/tax-queries/vat/upload`
+    const form = new FormData()
+    if (file) form.append('file', file)
+    form.append('period_from', fields.period_from)
+    form.append('period_to', fields.period_to)
+    form.append('standard_rated_supplies', String(fields.standard_rated_supplies))
+    form.append('zero_rated_supplies', String(fields.zero_rated_supplies))
+    form.append('exempted_supplies', String(fields.exempted_supplies))
+    form.append('standard_rated_expenses', String(fields.standard_rated_expenses))
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
+        body: form,
+      })
+      const body = await res.json().catch(() => ({})) as any
+      if (!res.ok) {
+        throw new Error(body?.message ?? `VAT upload failed (${res.status})`)
+      }
+      return body
+    } catch (err: any) {
+      vatUploadError.value = err?.message ?? 'VAT upload failed'
+      throw err
+    } finally {
+      vatUploading.value = false
+    }
+  }
+
+  // ── VAT certificate preview — GET /tax-queries/vat/returns/{id}/file ──────
+  // Returns a blob object URL for inline viewing (iframe), not download.
+  // Caller must URL.revokeObjectURL() when done.
+  const fetchVatFileUrl = async (id: number): Promise<string> => {
+    const url = `${config.public.apiBase}/tax-queries/vat/returns/${id}/file`
+    const res = await fetch(url, {
+      headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
+    })
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({})) as any
+      throw new Error(body?.message ?? `Failed to load certificate (${res.status})`)
+    }
+    const blob = await res.blob()
+    return URL.createObjectURL(blob)
   }
 
   // ── Data-in sample download ────────────────────────────────────────────────
@@ -309,5 +387,7 @@ export const useDataIn = () => {
     budgetStatuses, budgetUploadingId, budgetFetchingId, budgetError,
     budgetViewLoading, budgetViewData,
     budgetUploadFile, budgetFetchGet, budgetFetchViewData, budgetDownloadSample, fetchBudgetStatuses,
+    // vat
+    vatUploading, vatUploadError, uploadVat, fetchVatFileUrl,
   }
 }
