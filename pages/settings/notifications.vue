@@ -230,8 +230,8 @@
           </div>
         </div>
 
-        <!-- SMS Notifications -->
-        <div class="bg-white border border-gray-100 rounded-[16px] shadow-sm overflow-hidden">
+        <!-- SMS Notifications(hidden for now) -->
+        <div v-if="false" class="bg-white border border-gray-100 rounded-[16px] shadow-sm overflow-hidden">
           <div class="p-6 pb-2">
             <div class="flex items-center gap-4 mb-8">
               <div class="w-10 h-10 bg-[#E8FCF2] rounded-[10px] flex items-center justify-center text-[#00835D] shrink-0">
