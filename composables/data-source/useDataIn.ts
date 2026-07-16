@@ -10,6 +10,20 @@ export interface DataInItem {
   isUploaded: boolean
   uploadDate: string | null
   fileName: string | null
+  // vat_returns only — last active quarter label + full per-quarter list
+  quarter?: string
+  returns?: VatReturnItem[]
+}
+
+export interface VatReturnItem {
+  id: number
+  label: string      // "Q2 2026" — UAE FTA quarter-year convention
+  quarter: string
+  year: number
+  period: string | null
+  uploadDate: string
+  fileName: string | null
+  hasFile: boolean
 }
 
 export interface VatUploadFields {
@@ -144,7 +158,9 @@ export const useDataIn = () => {
   const vatUploading = ref(false)
   const vatUploadError = ref<string | null>(null)
 
-  const uploadVat = async (fields: VatUploadFields, file: File | null): Promise<void> => {
+  // Response includes `document_check` — a parallel box 8/11 comparison read
+  // off the PDF (informational status only, never a validation gate).
+  const uploadVat = async (fields: VatUploadFields, file: File | null): Promise<any> => {
     vatUploading.value = true
     vatUploadError.value = null
 
@@ -164,16 +180,33 @@ export const useDataIn = () => {
         headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
         body: form,
       })
+      const body = await res.json().catch(() => ({})) as any
       if (!res.ok) {
-        const body = await res.json().catch(() => ({})) as any
         throw new Error(body?.message ?? `VAT upload failed (${res.status})`)
       }
+      return body
     } catch (err: any) {
       vatUploadError.value = err?.message ?? 'VAT upload failed'
       throw err
     } finally {
       vatUploading.value = false
     }
+  }
+
+  // ── VAT certificate preview — GET /tax-queries/vat/returns/{id}/file ──────
+  // Returns a blob object URL for inline viewing (iframe), not download.
+  // Caller must URL.revokeObjectURL() when done.
+  const fetchVatFileUrl = async (id: number): Promise<string> => {
+    const url = `${config.public.apiBase}/tax-queries/vat/returns/${id}/file`
+    const res = await fetch(url, {
+      headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
+    })
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({})) as any
+      throw new Error(body?.message ?? `Failed to load certificate (${res.status})`)
+    }
+    const blob = await res.blob()
+    return URL.createObjectURL(blob)
   }
 
   // ── Data-in sample download ────────────────────────────────────────────────
@@ -355,6 +388,6 @@ export const useDataIn = () => {
     budgetViewLoading, budgetViewData,
     budgetUploadFile, budgetFetchGet, budgetFetchViewData, budgetDownloadSample, fetchBudgetStatuses,
     // vat
-    vatUploading, vatUploadError, uploadVat,
+    vatUploading, vatUploadError, uploadVat, fetchVatFileUrl,
   }
 }

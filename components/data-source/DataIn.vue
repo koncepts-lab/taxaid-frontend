@@ -51,7 +51,37 @@
                     </div>
                 </div>
 
-                <div v-if="card.isUploaded" class="p-4 rounded-xl border mb-6 flex items-start gap-3 transition-colors"
+                <!-- VAT Returns: one certificate per quarter (Qx YYYY) — list them all -->
+                <div v-if="card.isUploaded && card.id === 'vat_returns'" class="mb-6 space-y-2">
+                    <div v-for="ret in (card.returns ?? [])" :key="ret.id"
+                        class="p-3 rounded-xl border flex items-center gap-3 transition-colors"
+                        :class="isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-100'">
+                        <div class="p-2 rounded-lg bg-[#E6FDF9] dark:bg-[#00B794]/10 text-[#008864] shrink-0">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium truncate" :class="isDark ? 'text-white/90' : 'text-gray-800'">
+                                {{ ret.label }}<span v-if="ret.fileName" class="font-normal opacity-70"> — {{ ret.fileName }}</span>
+                            </p>
+                            <p class="text-[11px] opacity-60 mt-0.5" :class="isDark ? 'text-white' : 'text-gray-500'">
+                                {{ ret.uploadDate }}
+                            </p>
+                        </div>
+                        <button v-if="ret.hasFile" @click.stop="previewVatCertificate(ret)"
+                            :title="currentLang === 'ar' ? 'عرض الشهادة' : 'Preview certificate'"
+                            class="p-2 rounded-lg border border-[#008169]/30 text-[#008169] hover:bg-[#00B794]/10 transition-all shrink-0">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div v-else-if="card.isUploaded" class="p-4 rounded-xl border mb-6 flex items-start gap-3 transition-colors"
                     :class="isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-100'">
                     <div class="p-2 rounded-lg bg-[#E6FDF9] dark:bg-[#00B794]/10 text-[#008864]">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -87,7 +117,16 @@
                 </div>
 
                 <div v-else class="space-y-3">
-                    <div v-if="card.isUploaded" class="flex gap-3">
+                    <!-- VAT Returns: adding is always allowed — same quarter replaces
+                         its certificate, a different quarter is added alongside -->
+                    <button v-if="card.id === 'vat_returns'" @click="openUploadModal(card)"
+                        class="w-full flex items-center justify-center gap-3 py-3 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 cursor-pointer">
+                        <span class="text-lg font-light">+</span>
+                        {{ card.isUploaded
+                            ? (currentLang === 'ar' ? 'إضافة / تحديث ربع سنة' : 'Add / Update Quarter')
+                            : (currentLang === 'ar' ? 'إضافة (IC)' : 'Add (IC)') }}
+                    </button>
+                    <div v-else-if="card.isUploaded" class="flex gap-3">
                         <button
                             class="flex-1 py-3 bg-[#68E4C44D] text-black rounded-xl text-sm font-medium transition-all cursor-default border-[#04C18F80] border">
                             {{ currentLang === 'ar' ? 'تم تحميل المستند' : 'Document Uploaded' }}
@@ -283,6 +322,93 @@
         @upload="handleVatUpload"
     />
 
+    <!-- VAT document figure check — informational status, not a validation -->
+    <Teleport to="body">
+        <Transition name="modal-fade">
+            <div v-if="vatCheckOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                @click.self="vatCheckOpen = false">
+                <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+                    <div class="flex items-center justify-between p-5 pb-3">
+                        <h3 class="text-base font-semibold text-gray-900">
+                            {{ currentLang === 'ar' ? 'فحص مستند الإقرار' : 'Document Figure Check' }}
+                        </h3>
+                        <button @click="vatCheckOpen = false" class="text-gray-900 hover:text-gray-600">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="px-5 pb-2 text-xs text-gray-500">
+                        {{ currentLang === 'ar'
+                            ? 'مقارنة استرشادية بين المستند والقيم المدخلة — ليست تحققاً نهائياً.'
+                            : 'Read from the uploaded PDF and compared with your entries — an extra status, not a strict validation.' }}
+                    </div>
+                    <div class="p-5 pt-3 space-y-3" v-if="vatCheckResult">
+                        <div class="p-3 rounded-xl border"
+                            :class="vatCheckResult.supplies_match ? 'border-emerald-200 bg-emerald-50' : 'border-orange-200 bg-orange-50'">
+                            <p class="text-sm font-medium" :class="vatCheckResult.supplies_match ? 'text-emerald-700' : 'text-orange-700'">
+                                {{ vatCheckResult.supplies_match ? '✓' : '⚠' }} Box 8 Totals (Supplies)
+                            </p>
+                            <p class="text-xs text-gray-600 mt-1">
+                                Document: <span class="font-semibold">{{ fmtAed(vatCheckResult.box_8_total) }}</span>
+                                &nbsp;·&nbsp; Entered (1+4+5): <span class="font-semibold">{{ fmtAed(vatCheckResult.entered_supplies_total) }}</span>
+                            </p>
+                        </div>
+                        <div class="p-3 rounded-xl border"
+                            :class="vatCheckResult.expenses_match ? 'border-emerald-200 bg-emerald-50' : 'border-orange-200 bg-orange-50'">
+                            <p class="text-sm font-medium" :class="vatCheckResult.expenses_match ? 'text-emerald-700' : 'text-orange-700'">
+                                {{ vatCheckResult.expenses_match ? '✓' : '⚠' }} Box 11 Totals (Expenses)
+                            </p>
+                            <p class="text-xs text-gray-600 mt-1">
+                                Document: <span class="font-semibold">{{ fmtAed(vatCheckResult.box_11_total) }}</span>
+                                &nbsp;·&nbsp; Entered (9): <span class="font-semibold">{{ fmtAed(vatCheckResult.entered_expenses) }}</span>
+                            </p>
+                        </div>
+                        <p class="text-[11px] text-gray-400 text-right">
+                            {{ vatCheckResult.source === 'ocr' ? 'Read via OCR' : 'Read from PDF text' }}
+                        </p>
+                    </div>
+                    <div class="flex justify-end p-5 pt-0">
+                        <button @click="vatCheckOpen = false"
+                            class="px-8 py-2 bg-[#008169] text-white rounded-xl text-sm font-medium hover:bg-[#006b56] transition-all">
+                            {{ currentLang === 'ar' ? 'حسناً' : 'OK' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
+
+    <!-- VAT certificate inline preview (view only, not download) -->
+    <Teleport to="body">
+        <Transition name="modal-fade">
+            <div v-if="vatPreviewOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                @click.self="closeVatPreview">
+                <div class="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+                    <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                        <h3 class="text-base font-semibold text-gray-900 truncate">
+                            {{ vatPreviewLabel }}
+                        </h3>
+                        <button @click="closeVatPreview" class="text-gray-900 hover:text-gray-600 transition-colors shrink-0">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex-1 min-h-0 bg-gray-50">
+                        <div v-if="vatPreviewLoading" class="h-full flex items-center justify-center text-sm text-gray-400">
+                            {{ currentLang === 'ar' ? 'جارٍ التحميل...' : 'Loading certificate...' }}
+                        </div>
+                        <div v-else-if="vatPreviewError" class="h-full flex items-center justify-center text-sm text-red-500 px-6 text-center">
+                            {{ vatPreviewError }}
+                        </div>
+                        <iframe v-else-if="vatPreviewUrl" :src="vatPreviewUrl" class="w-full h-full border-0" />
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
+
     <!-- BS / P&L detailed report modal -->
     <Teleport to="body">
         <Transition name="modal-fade">
@@ -414,11 +540,54 @@ const openUploadModal = (card) => {
 
 const vatUploadError = ref('')
 
+// VAT document figure check (box 8 / 11 read from PDF vs entered values)
+const vatCheckOpen = ref(false)
+const vatCheckResult = ref(null)
+
+const fmtAed = (v) => v === null || v === undefined
+    ? '—'
+    : Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+// VAT certificate inline preview
+const vatPreviewOpen = ref(false)
+const vatPreviewLoading = ref(false)
+const vatPreviewError = ref('')
+const vatPreviewUrl = ref('')
+const vatPreviewLabel = ref('')
+
+const previewVatCertificate = async (ret) => {
+    vatPreviewOpen.value = true
+    vatPreviewLoading.value = true
+    vatPreviewError.value = ''
+    vatPreviewLabel.value = `VAT Return ${ret.label}${ret.fileName ? ' — ' + ret.fileName : ''}`
+    try {
+        vatPreviewUrl.value = await fetchVatFileUrl(ret.id)
+    } catch (err) {
+        vatPreviewError.value = err?.message ?? 'Failed to load certificate'
+    } finally {
+        vatPreviewLoading.value = false
+    }
+}
+
+const closeVatPreview = () => {
+    vatPreviewOpen.value = false
+    if (vatPreviewUrl.value) {
+        URL.revokeObjectURL(vatPreviewUrl.value)
+        vatPreviewUrl.value = ''
+    }
+}
+
 const handleVatUpload = async ({ file, ...fields }) => {
     vatUploadError.value = ''
     try {
-        await uploadVat(fields, file)
+        const response = await uploadVat(fields, file)
         emit('uploaded', 'vat_returns')
+        // Parallel document check (box 8 / 11 vs entered figures) — extra
+        // status only, shown when the PDF was readable.
+        if (response?.document_check?.status === 'checked') {
+            vatCheckResult.value = response.document_check
+            vatCheckOpen.value = true
+        }
     } catch (err) {
         console.error('VAT upload failed:', err)
         vatUploadError.value = err?.message ?? 'VAT upload failed'
@@ -481,6 +650,7 @@ const {
     budgetDownloadSample,
     fetchBudgetStatuses,
     uploadVat,
+    fetchVatFileUrl,
 } = useDataIn()
 
 onMounted(() => fetchBudgetStatuses())

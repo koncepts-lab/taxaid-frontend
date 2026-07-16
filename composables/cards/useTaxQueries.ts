@@ -46,8 +46,17 @@ export function useTaxQueriesPage() {
                 }))
                 vatMessage.value = response.message ?? null
                 vatYears.value = Array.isArray(response.years) ? response.years : []
+
+                // First load fetches without a year filter (all uploads). Years come
+                // from actual uploaded returns — a tenant may have started at Q3/Q4,
+                // or mid-year, so never assume a Q1..Q4 calendar grid. Default the
+                // dropdown to the latest year with data and narrow the table to it.
                 if (selectedVatYear.value === null && vatYears.value.length) {
                     selectedVatYear.value = vatYears.value[0]
+                    if (vatYears.value.length > 1) {
+                        await fetchVatSummary(selectedVatYear.value)
+                        return
+                    }
                 }
             }
         } catch (err: any) {
