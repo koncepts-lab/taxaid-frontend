@@ -93,7 +93,10 @@ watch(activeTab, (val) => {
 
 const { filters, selectedRatioType, plRows, bsRows, ratiosRows, reportInfo, loading, error, fetchTabData } = useFinancialStatement()
 
-onMounted(() => useLocation().syncSessionLocation())
+onMounted(() => {
+  useLocation().syncSessionLocation()
+  useNotificationSettings().syncWebPush()
+})
 
 const dashboardData = computed(() => ({
     'profit-loss':   { rows: plRows.value },

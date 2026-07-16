@@ -147,6 +147,7 @@ const handleExport = (type) => {}
 onMounted(() => {
   fetchAll()
   useLocation().syncSessionLocation()
+  useNotificationSettings().syncWebPush()
 })
 </script>
 

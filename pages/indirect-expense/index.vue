@@ -135,6 +135,7 @@ watch(currentLang, () => fetchAll(currentLang.value))
 onMounted(() => {
   fetchAll(currentLang.value)
   useLocation().syncSessionLocation()
+  useNotificationSettings().syncWebPush()
 })
 
 </script>

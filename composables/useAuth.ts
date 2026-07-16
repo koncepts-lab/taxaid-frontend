@@ -41,6 +41,10 @@ export const useAuth = () => {
         if (response.data.user?.id) {
           try { localStorage.setItem('auth_user_id', String(response.data.user.id)) } catch {}
         }
+        // Force syncWebPush to re-register the device token under THIS new
+        // session — its backend row is tied to the session (token_id) and
+        // would otherwise still point at the previous, now-dead session
+        try { localStorage.removeItem('push_device_token_user_id') } catch {}
         return response
       }
     } catch (error) {
@@ -51,10 +55,15 @@ export const useAuth = () => {
   // 4. Logout Logic
   const logout = async () => {
     if (token.value) {
+      // This browser's push registration is disposed server-side along with
+      // the auth token — one atomic call; other logged-in devices keep theirs
+      let deviceToken: string | null = null
+      try { deviceToken = localStorage.getItem('push_device_token') } catch {}
       try {
         await $fetch('/logout', {
           baseURL: config.public.apiBase,
           method: 'POST',
+          body: deviceToken ? { device_token: deviceToken } : {},
           headers: {
             'Authorization': `Bearer ${token.value}`,
             'Accept': 'application/json'
@@ -66,7 +75,11 @@ export const useAuth = () => {
 
     token.value = null
     user.value = null
-    try { localStorage.removeItem('auth_user_id') } catch {}
+    try {
+      localStorage.removeItem('auth_user_id')
+      localStorage.removeItem('push_device_token')
+      localStorage.removeItem('push_device_token_user_id')
+    } catch {}
     await navigateTo('/home')
   }
 

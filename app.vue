@@ -2,11 +2,14 @@
   <UApp>
 
     <NuxtPage />
+    <CommonNotificationToasts />
   </UApp>
 </template>
 
 <script setup>
 useHead({
+  title: 'TaxAid AI',
+  titleTemplate: (title) => (title && title !== 'TaxAid AI' ? `${title} · TaxAid AI` : 'TaxAid AI'),
   link: [
     {
       rel: 'stylesheet',
