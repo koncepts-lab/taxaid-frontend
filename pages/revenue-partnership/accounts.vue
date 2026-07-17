@@ -895,7 +895,7 @@ const { isDark } = useTheme()
 const {
   overview, customers, alerts, loading,
   fetchOverview, fetchCustomers, fetchAlerts,
-  submitPaymentToPartner, fetchPartnerClients,
+  submitPaymentToPartner, calcPaymentTotal, fetchPartnerClients,
   addPartner, uploadHosting, uploadAiUsage, downloadTemplate,
   fetchNotifyCustomers, fetchUserMasterInfo, fetchActivePartners, sendCardExpiryNotification,
 } = useAccountsDashboard()
@@ -1032,9 +1032,23 @@ const filteredClients = computed(() => {
   return list.filter(c => c.company_name?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q))
 })
 
-const totalCommission = computed(() =>
-  selectedClientIds.value.reduce((sum, id) => sum + (parseFloat(clientAmounts.value[id]) || 0), 0)
-)
+// Backend is the source of truth for the payment total (real-time, debounced).
+const totalCommission = ref(0)
+let totalTimer = null
+watch([selectedClientIds, clientAmounts], () => {
+  clearTimeout(totalTimer)
+  const amounts = {}
+  for (const id of selectedClientIds.value) amounts[id] = parseFloat(clientAmounts.value[id]) || 0
+  if (!Object.keys(amounts).length) { totalCommission.value = 0; return }
+  totalTimer = setTimeout(async () => {
+    try {
+      const res = await calcPaymentTotal(amounts)
+      totalCommission.value = res?.total_aed ?? 0
+    } catch {
+      totalCommission.value = 0
+    }
+  }, 300)
+}, { deep: true })
 
 
 const formatDate = (date) => date ? format(date, 'dd-MM-yyyy') : ''

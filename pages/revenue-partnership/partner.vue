@@ -174,7 +174,7 @@
             <thead>
               <tr class="bg-[#00896F] text-white">
                 <th v-for="(col, cidx) in displayColumns" :key="cidx" class="px-6 py-4 font-normal text-[14px]">
-                  <div v-if="col === 'Revenue' || col === 'الإيرادات' || col === 'Collected' || col === 'المحصل' || col === 'Settlement' || col === 'التسوية'" class="flex items-center gap-1">
+                  <div v-if="col === 'Revenue' || col === 'الإيرادات' || col === 'Collected' || col === 'المحصل' || col === 'Settlement' || col === 'التسوية' || col === 'Settlement Paid' || col === 'التسوية المدفوعة'" class="flex items-center gap-1">
                     {{ col }}
                     <img src="/images/icons/dirham-black.svg" alt="AED" class="w-3 h-3 invert contrast-[200%] grayscale" />
                   </div>
@@ -191,6 +191,7 @@
                 <td class="px-6 py-4 text-[13px] text-gray-700 text-center">{{ row.revenue }}</td>
                 <td class="px-6 py-4 text-[13px] text-gray-700 text-center">{{ row.collected }}</td>
                 <td class="px-6 py-4 text-[13px] text-gray-700 text-center">{{ row.settlement }}</td>
+                <td class="px-6 py-4 text-[13px] text-gray-700 text-center">{{ row.settlementPaid }}</td>
                 <td class="px-6 py-4">
                   <span :class="row.status === 'paid' ? 'bg-[#00896F] text-white' : 'bg-[#EF4444] text-white'"
                     class="px-4 py-1 rounded-full text-[12px] font-medium block w-fit mx-auto capitalize">
@@ -234,8 +235,8 @@ const mainStats = computed(() => {
   return [
     { displayTitle: 'Total Customers', displaySubtext: 'Linked clients', icon: '/images/icons/Total-Customers.svg', isCurrency: false, value: stats.value.total_customers },
     { displayTitle: 'Total Revenue', displaySubtext: 'Expected monthly', icon: '/images/icons/Total-Revenue.svg', isCurrency: true, value: stats.value.total_revenue_aed?.toLocaleString() },
-    { displayTitle: 'Collected', displaySubtext: 'Payments received', icon: '/images/icons/Collected.svg', isCurrency: true, value: stats.value.total_collected_aed?.toLocaleString() },
-    { displayTitle: 'Settlement', displaySubtext: 'Commission owed', icon: '/images/icons/settlement.svg', isCurrency: true, value: stats.value.total_settlement_aed?.toLocaleString() },
+    { displayTitle: 'Settlement Paid', displaySubtext: 'Commission received', icon: '/images/icons/Collected.svg', isCurrency: true, value: stats.value.total_settlement_paid_aed?.toLocaleString() },
+    { displayTitle: 'Settlement Owed', displaySubtext: 'Commission outstanding', icon: '/images/icons/settlement.svg', isCurrency: true, value: stats.value.total_settlement_owed_aed?.toLocaleString() },
   ]
 })
 
@@ -248,6 +249,7 @@ const partnerCards = computed(() => {
       { displayLabel: 'Revenue', value: client.revenue_aed?.toLocaleString(), isCurrency: true },
       { displayLabel: 'Collected', value: client.collected_aed?.toLocaleString(), isCurrency: true, label: 'Collected:' },
       { displayLabel: 'Settlement', value: client.settlement_aed?.toLocaleString(), isCurrency: true, isRate: true },
+      { displayLabel: 'Settlement Paid', value: client.settlement_paid_aed?.toLocaleString(), isCurrency: true },
     ]
   }))
 })
@@ -268,8 +270,8 @@ const dynamicAlert = computed(() => {
 })
 
 // Payment table
-const columns    = ['Code', 'Company', 'Contract Period', 'Year', 'Revenue', 'Collected', 'Settlement', 'Payment Status']
-const columnsAr  = ['الرمز', 'الشركة', 'فترة العقد', 'السنة', 'الإيرادات', 'المحصل', 'التسوية', 'حالة الدفع']
+const columns    = ['Code', 'Company', 'Contract Period', 'Year', 'Revenue', 'Collected', 'Settlement', 'Settlement Paid', 'Payment Status']
+const columnsAr  = ['الرمز', 'الشركة', 'فترة العقد', 'السنة', 'الإيرادات', 'المحصل', 'التسوية', 'التسوية المدفوعة', 'حالة الدفع']
 const statuses   = computed(() => currentLang.value === 'ar' ? ['كل الحالات', 'مدفوع', 'فشل'] : ['All Statuses', 'Paid', 'Failed'])
 
 const displayColumns = computed(() => currentLang.value === 'ar' ? columnsAr : columns)
@@ -283,6 +285,7 @@ const paymentTable = computed(() => {
     revenue:    r.revenue_aed?.toLocaleString(),
     collected:  r.collected_aed?.toLocaleString(),
     settlement: r.settlement_aed?.toLocaleString(),
+    settlementPaid: r.settlement_paid_aed?.toLocaleString(),
     status:     r.payment_status,
   }))
 
