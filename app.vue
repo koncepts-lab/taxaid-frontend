@@ -2,7 +2,6 @@
   <UApp>
 
     <NuxtPage />
-    <CommonNotificationToasts />
   </UApp>
 </template>
 
