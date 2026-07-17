@@ -37,7 +37,7 @@ export const useAuth = () => {
         authToken.value = response.data.token
         
         user.value = response.data.user   // Saved to global state
-        // Persisted for the Reverb notification listener (survives refresh)
+        // Persisted so syncWebPush can bind the device token to this user
         if (response.data.user?.id) {
           try { localStorage.setItem('auth_user_id', String(response.data.user.id)) } catch {}
         }

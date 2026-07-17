@@ -45,11 +45,6 @@ export default defineNuxtConfig({
       firebaseMessagingSenderId: process.env.NUXT_PUBLIC_FIREBASE_SENDER_ID || "",
       firebaseAppId: process.env.NUXT_PUBLIC_FIREBASE_APP_ID || "",
       firebaseVapidKey: process.env.NUXT_PUBLIC_FIREBASE_VAPID_KEY || "",
-      // Reverb websocket (in-app notification toasts)
-      reverbKey: process.env.NUXT_PUBLIC_REVERB_KEY || "",
-      reverbHost: process.env.NUXT_PUBLIC_REVERB_HOST || "",
-      reverbPort: process.env.NUXT_PUBLIC_REVERB_PORT || "8080",
-      reverbScheme: process.env.NUXT_PUBLIC_REVERB_SCHEME || "http",
     },
   },
 });
