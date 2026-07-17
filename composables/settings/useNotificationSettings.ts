@@ -34,7 +34,7 @@ export function useNotificationSettings() {
     // All four web-config values must be present — a partial config makes the
     // Firebase SDK throw "Missing App configuration value" deep in getToken.
     if (!config.public.firebaseApiKey || !config.public.firebaseProjectId
-      || !config.public.firebaseMessagingSenderId || !config.public.firebaseAppId
+      || !config.public.firebaseSenderId || !config.public.firebaseAppId
       || !('Notification' in window)) {
       console.warn('[push] Firebase web config incomplete — restart the dev server after setting NUXT_PUBLIC_FIREBASE_* in .env')
       return 'unconfigured'
@@ -49,7 +49,7 @@ export function useNotificationSettings() {
     const app = getApps().length ? getApps()[0] : initializeApp({
       apiKey: config.public.firebaseApiKey,
       projectId: config.public.firebaseProjectId,
-      messagingSenderId: config.public.firebaseMessagingSenderId,
+      messagingSenderId: config.public.firebaseSenderId,
       appId: config.public.firebaseAppId,
     })
 
@@ -57,7 +57,7 @@ export function useNotificationSettings() {
     const swParams = new URLSearchParams({
       apiKey: config.public.firebaseApiKey,
       projectId: config.public.firebaseProjectId,
-      messagingSenderId: config.public.firebaseMessagingSenderId,
+      messagingSenderId: config.public.firebaseSenderId,
       appId: config.public.firebaseAppId,
     })
     const registration = await navigator.serviceWorker.register(`/firebase-messaging-sw.js?${swParams}`)
