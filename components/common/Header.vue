@@ -143,8 +143,9 @@
           </div>
         </div>
         <div class="relative">
-          <img :src="pictureUrl || '/images/avatar-company.png'"
+          <img v-if="pictureUrl" :src="pictureUrl"
             class="w-9 h-9 md:w-12 md:h-12 rounded-full border-2 border-white shadow-md object-cover" alt="Profile" />
+          <div v-else class="w-9 h-9 md:w-12 md:h-12 rounded-full border-2 border-white shadow-md bg-[#E6F9F4]"></div>
         </div>
 
         <div
@@ -152,8 +153,9 @@
           :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
           <div class="bg-[#E6F9F4] p-2 rounded-2xl flex items-center gap-4 mb-5">
-            <img :src="pictureUrl || '/images/avatar-company.png'"
+            <img v-if="pictureUrl" :src="pictureUrl"
               class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
+            <div v-else class="w-14 h-14 rounded-full border-2 border-white shadow-sm bg-white"></div>
             <div class="flex-1">
               <h4 class="font-medium text-[#013E32] text-sm leading-tight">{{ profile?.companyNickname || profile?.companyName || '' }}</h4>
               <p class="text-sm text-[#013E32]/70 font-medium">{{ profile?.email || '' }}</p>
@@ -339,8 +341,9 @@
 
         <div class="p-2 ">
           <div class="bg-[#E6F9F4] p-2 rounded-2xl flex items-center gap-4 mb-5 relative">
-            <img :src="pictureUrl || '/images/avatar-company.png'"
+            <img v-if="pictureUrl" :src="pictureUrl"
               class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
+            <div v-else class="w-14 h-14 rounded-full border-2 border-white shadow-sm bg-white"></div>
             <div class="flex-1">
               <h4 class="font-medium text-[#013E32] text-sm leading-tight">{{ profile?.companyNickname || profile?.companyName || '' }}</h4>
               <p class="text-sm text-[#013E32]/70 font-medium">{{ profile?.email || '' }}</p>
@@ -432,7 +435,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import LanguageToggle from './LanguageToggle.vue'
 import { useProfile } from '~/composables/settings/useProfile'
 
@@ -440,7 +443,13 @@ const currentLang = useState('currentLang', () => 'en')
 const { isDark, toggleTheme } = useTheme()
 const isMenuOpen = ref(false)
 
-const { profile, pictureUrl, fetchProfile } = useProfile()
+const { profile, pictureUrl, fetchProfile, refreshPicture } = useProfile()
+
+const route = useRoute()
+watch(() => route.fullPath, () => {
+  fetchProfile()
+  refreshPicture()
+})
 
 const { logout } = useAuth()//logout Logic
 const onLogoutClick = () => {

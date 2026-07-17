@@ -1,4 +1,6 @@
 // composables/useAuth.ts
+import { resetProfile } from '~/composables/settings/useProfile'
+
 export const useAuth = () => {
   // 1. Shared state for the user object
   const user = useState('auth_user', () => null)
@@ -35,7 +37,9 @@ export const useAuth = () => {
 
         const authToken = useCookie('auth_token', cookieOptions)
         authToken.value = response.data.token
-        
+
+        resetProfile()
+
         user.value = response.data.user   // Saved to global state
         // Persisted so syncWebPush can bind the device token to this user
         if (response.data.user?.id) {
@@ -75,6 +79,7 @@ export const useAuth = () => {
 
     token.value = null
     user.value = null
+    resetProfile()
     try {
       localStorage.removeItem('auth_user_id')
       localStorage.removeItem('push_device_token')
