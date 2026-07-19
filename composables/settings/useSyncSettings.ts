@@ -32,11 +32,12 @@ export interface SyncHistoryRow {
 export interface BackupInfo {
   id: number
   tenant_id: number
-  format: 'csv' | 'json'
-  status: 'queued' | 'processing' | 'ready' | 'failed'
+  format: 'xlsx' | 'json'
+  status: 'queued' | 'processing' | 'ready' | 'failed' | 'expired'
   file_size: number | null
   error: string | null
-  expires_at: string | null
+  ready_at: string | null
+  expires_at: string | null // derived server-side: ready_at + 6h
   created_at: string
 }
 
@@ -100,8 +101,9 @@ export function useSyncSettings() {
     }
   }
 
-  // Request a backup and poll until it's ready, then trigger the download.
-  const requestBackup = async (format: 'csv' | 'json') => {
+  // Request a backup and poll until it's ready. No auto-download: the user
+  // downloads explicitly; the file stays available for 6h (re-downloadable).
+  const requestBackup = async (format: 'xlsx' | 'json') => {
     backupBusy.value = true
     error.value = null
     try {
@@ -132,7 +134,6 @@ export function useSyncSettings() {
         pollBackup()
       } else {
         backupBusy.value = false
-        if (s === 'ready' && backup.value) downloadBackup(backup.value.id)
         if (s === 'failed') error.value = 'Backup failed. Please try again.'
       }
     }, 4000)
