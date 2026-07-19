@@ -23,6 +23,7 @@
                         :showReload="true"
                         :showExport="true"
                         :showPeriodToggle="true"
+                        :projectionPeriod="period"
                         :periods="cashFlowPeriods"
                         @reload="fetchProjection"
                         @selected-date="handleDateSelected"
