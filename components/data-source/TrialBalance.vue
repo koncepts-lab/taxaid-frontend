@@ -582,12 +582,14 @@ const isHighlighted = (type, value) => {
     return false
 }
 
+// Skeleton only — no prefilled dates. A tenant without a saved config must
+// enter the real details; stale-looking fallbacks got saved unnoticed.
 const defaultConfig = [
-    { label: 'Financial Year',             from: '2025-01-01', to: '2025-12-31' },
-    { label: 'VAT return (first quarter)', from: '2025-01-01', to: '2025-03-31' },
-    { label: 'CT Due date',               from: null,          to: '2025-06-30', noFrom: true },
-    { label: 'Go live date (as on)',       from: null,          to: '2025-01-01', noFrom: true },
-    { label: 'Historical data since',      from: null,          to: '2022',       noFrom: true, isYear: true },
+    { label: 'Financial Year',             from: '',   to: '' },
+    { label: 'VAT return (first quarter)', from: '',   to: '' },
+    { label: 'CT Due date',               from: null,  to: '',  noFrom: true },
+    { label: 'Go live date (as on)',       from: null,  to: '',  noFrom: true },
+    { label: 'Historical data since',      from: null,  to: '',  noFrom: true, isYear: true },
 ]
 
 // Converts any stored date string to YYYY-MM-DD for the date input

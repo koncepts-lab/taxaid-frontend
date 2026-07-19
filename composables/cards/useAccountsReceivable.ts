@@ -6,7 +6,12 @@
  * Shared state: activeDate is global so the page and all components stay in sync.
  */
 
-export const arActiveDate = ref('2024-07-04')
+const todayYMD = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+export const arActiveDate = ref(todayYMD())
 
 // ── GAP-DAY FALLBACK TOGGLE ────────────────────────────────────────────────
 // true (default, also the behavior if this line is missing): a date with no
