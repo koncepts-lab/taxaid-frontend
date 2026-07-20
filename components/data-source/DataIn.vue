@@ -42,7 +42,7 @@
                     <h3 class="text-lg font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">
                         {{ currentLang === 'ar' ? card.labelAr : card.label }}
                     </h3>
-                    <div v-if="card.isUploaded" class="text-[#03D8B0]">
+                    <div v-if="card.isUploaded && !['Cost Center Mapping', 'Prepaid Adjustments', 'Opening Balance'].includes(card.label)" class="text-[#03D8B0]">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2.5">
                             <path d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3" stroke-linecap="round"
@@ -81,7 +81,7 @@
                     </div>
                 </div>
 
-                <div v-else-if="card.isUploaded" class="p-4 rounded-xl border mb-6 flex items-start gap-3 transition-colors"
+                <div v-else-if="card.isUploaded && !['Cost Center Mapping', 'Prepaid Adjustments', 'Opening Balance'].includes(card.label)" class="p-4 rounded-xl border mb-6 flex items-start gap-3 transition-colors"
                     :class="isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-100'">
                     <div class="p-2 rounded-lg bg-[#E6FDF9] dark:bg-[#00B794]/10 text-[#008864]">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -98,7 +98,7 @@
                     </div>
                 </div>
 
-                <div v-else class=" flex items-center justify-center mb-6">
+                <div v-else-if="!['Cost Center Mapping', 'Prepaid Adjustments', 'Opening Balance'].includes(card.label)" class=" flex items-center justify-center mb-6">
                     <p class="text-base font-normal text-[#FF6B50]">
                         {{ currentLang === 'ar' ? 'لم يتم تحميل أي مستند' : 'No document uploaded' }}
                     </p>
@@ -117,40 +117,51 @@
                 </div>
 
                 <div v-else class="space-y-3">
-                    <!-- VAT Returns: adding is always allowed — same quarter replaces
-                         its certificate, a different quarter is added alongside -->
-                    <button v-if="card.id === 'vat_returns'" @click="openUploadModal(card)"
-                        class="w-full flex items-center justify-center gap-3 py-3 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 cursor-pointer">
-                        <span class="text-lg font-light">+</span>
-                        {{ card.isUploaded
-                            ? (currentLang === 'ar' ? 'إضافة / تحديث ربع سنة' : 'Add / Update Quarter')
-                            : (currentLang === 'ar' ? 'إضافة (IC)' : 'Add (IC)') }}
-                    </button>
-                    <div v-else-if="card.isUploaded" class="flex gap-3">
-                        <button
-                            class="flex-1 py-3 bg-[#68E4C44D] text-black rounded-xl text-sm font-medium transition-all cursor-default border-[#04C18F80] border">
-                            {{ currentLang === 'ar' ? 'تم تحميل المستند' : 'Document Uploaded' }}
-                        </button>
-                        <button @click="removeFile(card)"
-                            class="px-6 py-3 border bg-[#FEF2F230] border-[#FFA6A6] text-[#FF6B50] hover:bg-[#FF6B50] hover:text-white rounded-xl text-sm font-medium  transition-all active:scale-95">
-                            {{ currentLang === 'ar' ? 'حذف' : 'Remove' }}
+                    <div v-if="['Cost Center Mapping', 'Prepaid Adjustments', 'Opening Balance'].includes(card.label)" class="mt-4 flex flex-col justify-end h-full">
+                        <p class="text-[13px] text-center my-8" :class="isDark ? 'text-white/50' : 'text-[#64748B]'">
+                            {{ currentLang === 'ar' ? 'لم يتم تحديد أي تعيين بعد' : 'No mapping defined yet' }}
+                        </p>
+                        <button @click="openUploadModal(card)"
+                            class="w-full flex items-center justify-center gap-3 py-3 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 cursor-pointer mt-auto">
+                            {{ currentLang === 'ar' ? 'تعريف' : 'Define' }}
                         </button>
                     </div>
                     <div v-else class="space-y-3">
-                        <button @click="handleDownloadSample(card)"
-                            class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-sm font-medium hover:bg-[#00B794]/5 transition-all">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            {{ currentLang === 'ar' ? 'تحميل نموذج' : 'Download Sample' }}
-                        </button>
-                        <button @click="openUploadModal(card)"
-                            :disabled="uploadingId === card.id"
+                        <!-- VAT Returns: adding is always allowed — same quarter replaces
+                             its certificate, a different quarter is added alongside -->
+                        <button v-if="card.id === 'vat_returns'" @click="openUploadModal(card)"
                             class="w-full flex items-center justify-center gap-3 py-3 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 cursor-pointer">
-                            <span class="text-lg font-light">{{ uploadingId === card.id ? '…' : '+' }}</span>
-                            {{ uploadingId === card.id ? (currentLang === 'ar' ? 'جارٍ الرفع...' : 'Uploading...') : (currentLang === 'ar' ? 'إضافة (IC)' : 'Add (IC)') }}
+                            <span class="text-lg font-light">+</span>
+                            {{ card.isUploaded
+                                ? (currentLang === 'ar' ? 'إضافة / تحديث ربع سنة' : 'Add / Update Quarter')
+                                : (currentLang === 'ar' ? 'إضافة (IC)' : 'Add (IC)') }}
                         </button>
+                        <div v-else-if="card.isUploaded" class="flex gap-3">
+                            <button
+                                class="flex-1 py-3 bg-[#68E4C44D] text-black rounded-xl text-sm font-medium transition-all cursor-default border-[#04C18F80] border">
+                                {{ currentLang === 'ar' ? 'تم تحميل المستند' : 'Document Uploaded' }}
+                            </button>
+                            <button @click="removeFile(card)"
+                                class="px-6 py-3 border bg-[#FEF2F230] border-[#FFA6A6] text-[#FF6B50] hover:bg-[#FF6B50] hover:text-white rounded-xl text-sm font-medium  transition-all active:scale-95">
+                                {{ currentLang === 'ar' ? 'حذف' : 'Remove' }}
+                            </button>
+                        </div>
+                        <div v-else class="space-y-3">
+                            <button @click="handleDownloadSample(card)"
+                                class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-sm font-medium hover:bg-[#00B794]/5 transition-all">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                {{ currentLang === 'ar' ? 'تحميل نموذج' : 'Download Sample' }}
+                            </button>
+                            <button @click="openUploadModal(card)"
+                                :disabled="uploadingId === card.id"
+                                class="w-full flex items-center justify-center gap-3 py-3 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 cursor-pointer">
+                                <span class="text-lg font-light">{{ uploadingId === card.id ? '…' : '+' }}</span>
+                                {{ uploadingId === card.id ? (currentLang === 'ar' ? 'جارٍ الرفع...' : 'Uploading...') : (currentLang === 'ar' ? 'إضافة (IC)' : 'Add (IC)') }}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -307,6 +318,17 @@
             </div>
         </div>
     </div>
+    <DataSourceMappingModal
+        :is-open="isMappingModalOpen"
+        :title="mappingModalConfig.title"
+        :subtitle="mappingModalConfig.subtitle"
+        :alert-message="mappingModalConfig.alertMessage"
+        :data="mappingModalConfig.data"
+        :is-dark="isDark"
+        :current-lang="currentLang"
+        @close="isMappingModalOpen = false"
+        @update="isMappingModalOpen = false"
+    />
 
     <DataSourceUploadModal
         :is-open="isModalOpen"
@@ -528,8 +550,27 @@ const nonBudgetItems = computed(() =>
 )
 
 const isVatModalOpen = ref(false)
+const isMappingModalOpen = ref(false)
+const mappingModalConfig = ref({ title: '', subtitle: '', alertMessage: '', data: [] })
 
 const openUploadModal = (card) => {
+    if (['Cost Center Mapping', 'Prepaid Adjustments', 'Opening Balance'].includes(card.label)) {
+        mappingModalConfig.value = {
+            title: card.label === 'Cost Center Mapping' ? 'Cost Center Mapping' : card.label,
+            subtitle: 'Define and map cost center codes to groups and sub-groups',
+            alertMessage: 'Define the cost center and click Update to save the mapping.',
+            data: [
+                { fsCode: '1000', mainGroup: 'Assets', subGroup: 'Current Assets', ledger: 'Cash and Bank' },
+                { fsCode: '1000', mainGroup: 'Assets', subGroup: 'Current Assets', ledger: 'Accounts Receivable' },
+                { fsCode: '1000', mainGroup: 'Assets', subGroup: 'Fixed Assets', ledger: 'Property & Equipment' },
+                { fsCode: '1000', mainGroup: 'Assets', subGroup: 'Fixed Assets', ledger: 'Property & Equipment' },
+                { fsCode: '1000', mainGroup: 'Assets', subGroup: 'Fixed Assets', ledger: 'Property & Equipment' },
+                { fsCode: '1000', mainGroup: 'Assets', subGroup: 'Fixed Assets', ledger: 'Property & Equipment' },
+            ]
+        }
+        isMappingModalOpen.value = true
+        return
+    }
     if (card.id === 'vat_returns') {
         isVatModalOpen.value = true
         return
