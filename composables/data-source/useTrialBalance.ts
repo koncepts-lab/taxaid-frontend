@@ -19,6 +19,47 @@ export function useTrialBalance() {
     unmapped_count: 0,
   })
 
+  // Excel-style column filters — arrays of checked values per column.
+  // Empty array = no filter for that column. '(blank)' matches unmapped cells.
+  const tbFilters = ref<Record<string, string[]>>({
+    fs_code: [], main_group: [], sub_group: [], ledger_name: [],
+  })
+  // Distinct values per column from GET /opening-balance/filter-options
+  const tbFilterOptions = ref<Record<string, string[]>>({
+    fs_code: [], main_group: [], sub_group: [], ledger_name: [],
+  })
+
+  const fetchFilterOptions = async () => {
+    try {
+      const res = await useApi('/data-source/opening-balance/filter-options') as any
+      if (res?.success && res.data) tbFilterOptions.value = {
+        fs_code:     res.data.fs_code     ?? [],
+        main_group:  res.data.main_group  ?? [],
+        sub_group:   res.data.sub_group   ?? [],
+        ledger_name: res.data.ledger_name ?? [],
+      }
+    } catch (e) { console.error('useTrialBalance: filter-options failed', e) }
+  }
+
+  const filterQuery = () => {
+    const params = new URLSearchParams()
+    for (const [col, values] of Object.entries(tbFilters.value)) {
+      // All options checked = same as no filter — send nothing
+      const all = tbFilterOptions.value[col] ?? []
+      if (!values.length || (all.length && values.length === all.length)) continue
+      values.forEach(v => params.append(`${col}[]`, v))
+    }
+    const qs = params.toString()
+    return qs ? `&${qs}` : ''
+  }
+
+  // Called from the header filter dropdowns; always lands on page 1 so a
+  // shrunken result set can't leave the user on a page past the end.
+  const applyFilters = async (col: string, values: string[]) => {
+    tbFilters.value[col] = values
+    await fetchTrialBalance(1, tbPerPage.value)
+  }
+
   // Persists edits across page navigations, keyed by ledger_name
   const pendingChanges = ref({})
 
@@ -43,7 +84,7 @@ export function useTrialBalance() {
     tbError.value   = null
 
     const [mappingResult, configResult, optionsResult] = await Promise.allSettled([
-      useApi(`/data-source/opening-balance?page=${tbPage.value}&per_page=${tbPerPage.value}`),
+      useApi(`/data-source/opening-balance?page=${tbPage.value}&per_page=${tbPerPage.value}${filterQuery()}`),
       useApi('/configuration-settings'),
       useApi('/ledgers/mapping-options'),
     ])
@@ -136,8 +177,13 @@ export function useTrialBalance() {
       await useApi('/ledgers/update-mapping', { method: 'POST', body: { mappings } })
       // Clear pending after successful save
       pendingChanges.value = {}
-      // Refetch current page to update mapped/unmapped counts
-      await fetchTrialBalance(tbPage.value, tbPerPage.value)
+      // Refetch current page to update mapped/unmapped counts; refresh the
+      // filter option lists too — a save can introduce new group values
+      // (stale lists would orphan the new values from the filters).
+      await Promise.all([
+        fetchTrialBalance(tbPage.value, tbPerPage.value),
+        fetchFilterOptions(),
+      ])
     } catch (e: any) {
       // 422 from the backend lists mapping values missing from the GL master
       // list (ask a manager to add them) — show the exact values.
@@ -227,7 +273,7 @@ export function useTrialBalance() {
     finally { tbLogsLoading.value = false }
   }
 
-  onMounted(() => { fetchTrialBalance(); fetchLogs() })
+  onMounted(() => { fetchTrialBalance(); fetchLogs(); fetchFilterOptions() })
 
   return {
     tbMappingData,
@@ -239,6 +285,10 @@ export function useTrialBalance() {
     tbPage,
     tbPerPage,
     tbMeta,
+    tbFilters,
+    tbFilterOptions,
+    applyFilters,
+    fetchFilterOptions,
     fetchTrialBalance,
     updateTrialBalance,
     updateConfigSettings,

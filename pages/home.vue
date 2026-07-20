@@ -450,6 +450,7 @@ const translations = {
     emailVerifySub: 'A verification link has been sent to',
     tooManyAttempts: 'Too many login attempts. Please try again after 15 minutes.',
     accountSuspended: 'Your account has been suspended. Please contact TaxAid support.',
+    serverOffline: 'Server is under maintenance. Please try again later.',
   },
   ar: {
     welcome: 'مرحباً',
@@ -494,6 +495,7 @@ const translations = {
     emailVerifySub: 'تم إرسال رابط التحقق إلى',
     tooManyAttempts: 'محاولات تسجيل دخول كثيرة جداً. يرجى المحاولة مرة أخرى بعد 15 دقيقة.',
     accountSuspended: 'تم تعليق حسابك. يرجى التواصل مع دعم TaxAid.',
+    serverOffline: 'الخادم تحت الصيانة. يرجى المحاولة مرة أخرى لاحقاً.',
   }
 }
 
@@ -553,6 +555,9 @@ async function onSubmit() {
     } else if (err.data?.code === 'account_suspended') {
       errorVariant.value = 'error'
       errorMessage.value = t.value.accountSuspended
+    } else if (err.message?.toLowerCase().includes('fetch failed') || err.message?.toLowerCase().includes('network error') || err.message?.toLowerCase().includes('failed to fetch')) {
+      errorVariant.value = 'warning'
+      errorMessage.value = t.value.serverOffline
     } else {
       errorVariant.value = 'error'
       errorMessage.value = err.data?.message || err.message || 'Authentication failed' ///remove the err msg later in live

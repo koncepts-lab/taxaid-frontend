@@ -61,10 +61,38 @@
                 <table class="w-full text-left">
                     <thead class="bg-[#00896F] text-white">
                         <tr>
-                            <th class="px-4 py-3 rounded-tl-xl text-sm font-medium">{{ currentLang === 'ar' ? 'كود FS' : 'FS Code' }}</th>
-                            <th class="px-4 py-3 text-sm font-medium">{{ currentLang === 'ar' ? 'المجموعة الرئيسية' : 'Main Group' }}</th>
-                            <th class="px-4 py-3 font-medium">{{ currentLang === 'ar' ? 'المجموعة الفرعية' : 'Sub group' }}</th>
-                            <th class="px-4 py-3 rounded-tr-xl font-medium">{{ currentLang === 'ar' ? 'حساب الأستاذ' : 'Ledger' }}</th>
+                            <th class="px-4 py-3 rounded-tl-xl text-sm font-medium">
+                                <span class="inline-flex items-center gap-1.5">
+                                    {{ currentLang === 'ar' ? 'كود FS' : 'FS Code' }}
+                                    <DataSourceTbHeaderFilter column="fs_code" :options="tbFilterOptions.fs_code"
+                                        :selected="tbFilters.fs_code" :isDark="isDark" :currentLang="currentLang"
+                                        @apply="handleFilterApply" />
+                                </span>
+                            </th>
+                            <th class="px-4 py-3 text-sm font-medium">
+                                <span class="inline-flex items-center gap-1.5">
+                                    {{ currentLang === 'ar' ? 'المجموعة الرئيسية' : 'Main Group' }}
+                                    <DataSourceTbHeaderFilter column="main_group" :options="tbFilterOptions.main_group"
+                                        :selected="tbFilters.main_group" :isDark="isDark" :currentLang="currentLang"
+                                        @apply="handleFilterApply" />
+                                </span>
+                            </th>
+                            <th class="px-4 py-3 font-medium">
+                                <span class="inline-flex items-center gap-1.5">
+                                    {{ currentLang === 'ar' ? 'المجموعة الفرعية' : 'Sub group' }}
+                                    <DataSourceTbHeaderFilter column="sub_group" :options="tbFilterOptions.sub_group"
+                                        :selected="tbFilters.sub_group" :isDark="isDark" :currentLang="currentLang"
+                                        @apply="handleFilterApply" />
+                                </span>
+                            </th>
+                            <th class="px-4 py-3 rounded-tr-xl font-medium">
+                                <span class="inline-flex items-center gap-1.5">
+                                    {{ currentLang === 'ar' ? 'حساب الأستاذ' : 'Ledger' }}
+                                    <DataSourceTbHeaderFilter column="ledger_name" :options="tbFilterOptions.ledger_name"
+                                        :selected="tbFilters.ledger_name" :isDark="isDark" :currentLang="currentLang"
+                                        @apply="handleFilterApply" />
+                                </span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -391,10 +419,34 @@
                         <table class="w-full border-separate border-spacing-0">
                             <thead class="bg-[#00896F] text-white sticky top-0">
                                 <tr>
-                                    <th class="px-6 py-4 text-left text-sm font-semibold rounded-tl-xl">FS Code</th>
-                                    <th class="px-6 py-4 text-left text-sm font-semibold">Main Group</th>
-                                    <th class="px-6 py-4 text-left text-sm font-semibold">Sub group</th>
-                                    <th class="px-6 py-4 text-left text-sm font-semibold rounded-tr-xl">Ledger Account</th>
+                                    <th class="px-6 py-4 text-left text-sm font-semibold rounded-tl-xl">
+                                        <span class="inline-flex items-center gap-1.5">FS Code
+                                            <DataSourceTbHeaderFilter column="fs_code" :options="tbFilterOptions.fs_code"
+                                                :selected="tbFilters.fs_code" :isDark="isDark" :currentLang="currentLang"
+                                                @apply="handleFilterApply" />
+                                        </span>
+                                    </th>
+                                    <th class="px-6 py-4 text-left text-sm font-semibold">
+                                        <span class="inline-flex items-center gap-1.5">Main Group
+                                            <DataSourceTbHeaderFilter column="main_group" :options="tbFilterOptions.main_group"
+                                                :selected="tbFilters.main_group" :isDark="isDark" :currentLang="currentLang"
+                                                @apply="handleFilterApply" />
+                                        </span>
+                                    </th>
+                                    <th class="px-6 py-4 text-left text-sm font-semibold">
+                                        <span class="inline-flex items-center gap-1.5">Sub group
+                                            <DataSourceTbHeaderFilter column="sub_group" :options="tbFilterOptions.sub_group"
+                                                :selected="tbFilters.sub_group" :isDark="isDark" :currentLang="currentLang"
+                                                @apply="handleFilterApply" />
+                                        </span>
+                                    </th>
+                                    <th class="px-6 py-4 text-left text-sm font-semibold rounded-tr-xl">
+                                        <span class="inline-flex items-center gap-1.5">Ledger Account
+                                            <DataSourceTbHeaderFilter column="ledger_name" :options="tbFilterOptions.ledger_name"
+                                                :selected="tbFilters.ledger_name" :isDark="isDark" :currentLang="currentLang"
+                                                @apply="handleFilterApply" />
+                                        </span>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -505,10 +557,17 @@ const props = defineProps({
     onUpdateConfig:   { type: Function, default: null },
     onPageChange:     { type: Function, default: null },
     onPerPageChange:  { type: Function, default: null },
+    tbFilters:        { type: Object,   default: () => ({ fs_code: [], main_group: [], sub_group: [], ledger_name: [] }) },
+    tbFilterOptions:  { type: Object,   default: () => ({ fs_code: [], main_group: [], sub_group: [], ledger_name: [] }) },
+    onApplyFilter:    { type: Function, default: null },
 })
 
+const handleFilterApply = (column, values) => {
+    if (props.onApplyFilter) props.onApplyFilter(column, values)
+}
+
 const isReportModalOpen = ref(false)
-const perPageOptions = [10, 20, 30, 40] // ← add/remove options here
+const perPageOptions = [10, 20, 30, 40, 60, 80, 100] // ← add/remove options here (backend caps at 100)
 const localPerPage = ref(props.tbMeta?.per_page ?? 10)
 const cardRef = ref(null)
 
@@ -582,12 +641,14 @@ const isHighlighted = (type, value) => {
     return false
 }
 
+// Skeleton only — no prefilled dates. A tenant without a saved config must
+// enter the real details; stale-looking fallbacks got saved unnoticed.
 const defaultConfig = [
-    { label: 'Financial Year',             from: '2025-01-01', to: '2025-12-31' },
-    { label: 'VAT return (first quarter)', from: '2025-01-01', to: '2025-03-31' },
-    { label: 'CT Due date',               from: null,          to: '2025-06-30', noFrom: true },
-    { label: 'Go live date (as on)',       from: null,          to: '2025-01-01', noFrom: true },
-    { label: 'Historical data since',      from: null,          to: '2022',       noFrom: true, isYear: true },
+    { label: 'Financial Year',             from: '',   to: '' },
+    { label: 'VAT return (first quarter)', from: '',   to: '' },
+    { label: 'CT Due date',               from: null,  to: '',  noFrom: true },
+    { label: 'Go live date (as on)',       from: null,  to: '',  noFrom: true },
+    { label: 'Historical data since',      from: null,  to: '',  noFrom: true, isYear: true },
 ]
 
 // Converts any stored date string to YYYY-MM-DD for the date input

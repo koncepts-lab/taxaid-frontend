@@ -146,6 +146,14 @@
                             Active
                         </div>
 
+                        <button @click="handlePreview(cert)"
+                            class="text-gray-600 hover:text-gray-900 transition-colors">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+
                         <button @click="downloadCertificate(cert.certificate_type, cert.file_name)"
                             class="text-gray-600 hover:text-gray-900 transition-colors">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -163,6 +171,36 @@
                 </div>
             </div>
         </div>
+
+        <!-- Certificate inline preview (view only, not download) -->
+        <Teleport to="body">
+            <Transition name="modal-fade">
+                <div v-if="previewOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                    @click.self="closePreview">
+                    <div class="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+                        <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                            <h3 class="text-base font-semibold text-gray-900 truncate">
+                                {{ previewLabel }}
+                            </h3>
+                            <button @click="closePreview" class="text-gray-900 hover:text-gray-600 transition-colors shrink-0">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 6L6 18M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex-1 min-h-0 bg-gray-50">
+                            <div v-if="previewLoading" class="h-full flex items-center justify-center text-sm text-gray-400">
+                                Loading certificate...
+                            </div>
+                            <div v-else-if="previewError" class="h-full flex items-center justify-center text-sm text-red-500 px-6 text-center">
+                                {{ previewError }}
+                            </div>
+                            <iframe v-else-if="previewUrl" :src="previewUrl" class="w-full h-full border-0" />
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </div>
 </template>
 
@@ -171,8 +209,37 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue'
 
 const {
     certificates, types, loading, uploading, error,
-    uploadCertificate, deleteCertificate, downloadCertificate,
+    uploadCertificate, deleteCertificate, downloadCertificate, fetchCertificateFileUrl,
 } = useCertificate()
+
+// Inline preview (streams PDF from backend, view only)
+const previewOpen    = ref(false)
+const previewLoading = ref(false)
+const previewError   = ref('')
+const previewUrl     = ref('')
+const previewLabel   = ref('')
+
+const handlePreview = async (cert) => {
+    previewOpen.value    = true
+    previewLoading.value = true
+    previewError.value   = ''
+    previewLabel.value   = `${cert.certificate_type} — ${cert.file_name}`
+    try {
+        previewUrl.value = await fetchCertificateFileUrl(cert.certificate_type)
+    } catch (err) {
+        previewError.value = err?.data?.message ?? err?.message ?? 'Failed to load certificate'
+    } finally {
+        previewLoading.value = false
+    }
+}
+
+const closePreview = () => {
+    previewOpen.value = false
+    if (previewUrl.value) {
+        URL.revokeObjectURL(previewUrl.value)
+        previewUrl.value = ''
+    }
+}
 
 const form = reactive({ type: '', fileName: '', file: null })
 const isOpen     = ref(false)
@@ -238,4 +305,7 @@ select { background-image: none; }
 
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.modal-fade-enter-active, .modal-fade-leave-active { transition: opacity 0.2s ease; }
+.modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }
 </style>

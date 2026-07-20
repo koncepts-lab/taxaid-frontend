@@ -61,6 +61,18 @@
                                 :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-[#03D8B0]'">
                                 
                                 <div v-if="isDirectCalendar" class="p-2 w-max">
+                                    <!-- 3M / 6M projection toggle -->
+                                    <div v-if="showPeriodToggle" class="flex items-center gap-1 mb-2 p-1 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'">
+                                        <button
+                                            v-for="m in [3, 6]" :key="m"
+                                            @click.stop="selectProjectionPeriod(m)"
+                                            class="flex-1 py-1.5 text-sm font-medium rounded-md transition-all"
+                                            :class="activePeriod === m
+                                                ? 'bg-[#03D8B0] text-black'
+                                                : (isDark ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-gray-800')">
+                                            {{ m }}M
+                                        </button>
+                                    </div>
                                     <VDatePicker v-model="singleDate" :is-dark="isDark"
                                         :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
                                         :max-date="today" @update:model-value="handleSingleChange" />
@@ -161,7 +173,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { format, subMonths, startOfYear, startOfQuarter, subQuarters, subYears } from 'date-fns'
 import { DatePicker as VDatePicker } from 'v-calendar'
 import 'v-calendar/dist/style.css'
@@ -186,6 +198,7 @@ const props = defineProps({
         ]
     },
     showPeriodToggle: { type: Boolean, default: false },
+    projectionPeriod: { type: Number, default: null },
     defaultPeriod: { type: String, default: null },
     defaultRangeStart: { type: String, default: null },
     defaultRangeEnd: { type: String, default: null },
@@ -207,7 +220,8 @@ const isDirectCalendar = computed(() => {
 })
 
 // 3M / 6M projection toggle (only shown when showPeriodToggle=true)
-const activePeriod = ref(3)
+const activePeriod = ref(props.projectionPeriod ?? 3)
+watch(() => props.projectionPeriod, (v) => { if (v !== null) activePeriod.value = v })
 const selectProjectionPeriod = (months) => {
     activePeriod.value = months
     emit('period-change', months)

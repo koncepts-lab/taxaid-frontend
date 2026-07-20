@@ -18,7 +18,7 @@
         </p>
       </div>
     </div>
-    <button @click="show = false" class="p-2 transition-opacity hover:opacity-100 opacity-60">
+    <button @click="dismiss" class="p-2 transition-opacity hover:opacity-100 opacity-60">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -27,8 +27,28 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { arActiveDate } from '~/composables/cards/useAccountsReceivable'
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
-const show = ref(true)
+
+// Shown only when the backend AR-vs-ledger check reports a real mismatch.
+// POST /verify/sundry-debtors answers 200 on match and 422 on mismatch,
+// so the mismatch case lands in the catch block.
+const show = ref(false)
+const dismissed = ref(false)
+
+const runCheck = async (date) => {
+  if (!date) return
+  try {
+    await useApi('/verify/sundry-debtors', { method: 'POST', body: { date } })
+    show.value = false
+  } catch (err) {
+    show.value = !dismissed.value && err?.data?.status === 'mismatch'
+  }
+}
+
+watch(arActiveDate, (d) => { dismissed.value = false; runCheck(d) }, { immediate: true })
+
+const dismiss = () => { dismissed.value = true; show.value = false }
 </script>

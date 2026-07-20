@@ -65,12 +65,21 @@ export const useCertificate = () => {
     }
   }
 
+  // Inline preview — returns a blob object URL for iframe viewing.
+  // Caller must URL.revokeObjectURL() when done.
+  const fetchCertificateFileUrl = async (certificateType: string): Promise<string> => {
+    const blob = await useApi(`/data-source/certificates/preview?certificate_type=${encodeURIComponent(certificateType)}`, {
+      responseType: 'blob',
+    }) as Blob
+    return URL.createObjectURL(blob)
+  }
+
   onMounted(async () => {
     await fetchCertificates()
   })
 
   return {
     certificates, types, loading, uploading, error,
-    fetchCertificates, uploadCertificate, deleteCertificate, downloadCertificate,
+    fetchCertificates, uploadCertificate, deleteCertificate, downloadCertificate, fetchCertificateFileUrl,
   }
 }
