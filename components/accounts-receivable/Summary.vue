@@ -1,8 +1,8 @@
 <template>
-  <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl"
+  <div class="w-full transition-all duration-500 rounded-3xl"
     :class="isDark ? 'bg-[#00141080]' : 'bg-white shadow-sm'">
 
-    <div class="lg:px-8 px-4 py-5 flex justify-between items-center text-left rtl:text-right">
+    <div class="lg:px-8 px-4 py-5 flex justify-between items-center text-left rtl:text-right sticky top-0 z-30 rounded-t-3xl" :class="isDark ? 'bg-[#001410]' : 'bg-white'">
       <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
         {{ currentLang === 'ar' ? 'ملخص حسابات القبض' : 'Accounts Receivable Summary' }}
       </p>
@@ -14,9 +14,17 @@
       </div>
     </div>
 
-    <div class="w-full overflow-x-auto no-scrollbar">
-      <table class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1000px]">
-        <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+    <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative">
+      <table class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1000px] table-fixed">
+        <colgroup>
+            <col style="width: 25%" />
+            <col style="width: 15%" />
+            <col style="width: 15%" />
+            <col style="width: 15%" />
+            <col style="width: 15%" />
+            <col style="width: 15%" />
+        </colgroup>
+        <thead class="text-white sticky top-[82px] z-20 shadow-sm" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
           <tr>
             <th class="px-8 py-5 font-normal text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
             <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">
@@ -158,90 +166,117 @@
             </button>
           </div>
 
-          <div class="overflow-y-auto w-full no-scrollbar flex-1 relative bg-white dark:bg-[#00141080]">
-            <table class="w-full text-left rtl:text-right border-collapse relative">
-              <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
-                <tr>
-                  <th class="px-8 py-5 font-normal text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
-                  <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">
-                    <div class="flex items-center justify-end rtl:justify-start gap-2">
-                      {{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}
-                      <img src="/images/icons/edit-white.svg" class="w-[21px] h-auto" v-if="!isDark" />
-                      <svg v-else width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="opacity-70">
-                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </th>
-                  <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '>30' : '>30' }}</th>
-                  <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '30-60' : '30-60' }}</th>
-                  <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '60-90' : '60-90' }}</th>
-                  <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '<90' : '<90' }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <template v-for="(group, gIdx) in arData" :key="'modal-' + gIdx">
-                  <tr class="transition-all duration-500 border-b border-black/5 dark:border-white/5"
-                    :class="isDark ? 'hover:bg-white/5 bg-[#00141080]' : 'hover:bg-gray-50 bg-white'">
-                    <td class="px-8 py-5">
-                      <div class="flex items-center gap-2 cursor-pointer" @click="toggleGroup(gIdx)">
-                        <span class="font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? group.labelAr : group.label }}</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
-                          class="transition-transform duration-300" :class="[expandedGroups.includes(gIdx) ? 'rotate-180' : '', isDark ? 'text-white' : 'text-[#1A1A1A]']">
-                          <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      </div>
-                    </td>
-                    <td class="px-6 py-5 text-right rtl:text-left font-semibold text-[14px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">{{ group.total }}</td>
-                    <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age30 }}</td>
-                    <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age3060 }}</td>
-                    <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age6090 }}</td>
-                    <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age90plus }}</td>
-                  </tr>
+          <div class="w-full flex-1 flex flex-col min-h-0 overflow-x-auto overflow-y-hidden no-scrollbar bg-white dark:bg-[#00141080]">
+            <div class="min-w-[1000px] flex flex-col flex-1 h-full">
+              <!-- Header Table (Fixed) -->
+              <div class="shrink-0 sticky top-0 z-10" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+                <table class="w-full text-left rtl:text-right table-fixed border-collapse">
+                  <colgroup>
+                      <col style="width: 25%" />
+                      <col style="width: 15%" />
+                      <col style="width: 15%" />
+                      <col style="width: 15%" />
+                      <col style="width: 15%" />
+                      <col style="width: 15%" />
+                  </colgroup>
+                  <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+                    <tr>
+                      <th class="px-8 py-5 font-normal text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
+                      <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">
+                        <div class="flex items-center justify-end rtl:justify-start gap-2">
+                          {{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}
+                          <img src="/images/icons/edit-white.svg" class="w-[21px] h-auto" v-if="!isDark" />
+                          <svg v-else width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="opacity-70">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                          </svg>
+                        </div>
+                      </th>
+                      <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '>30' : '>30' }}</th>
+                      <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '30-60' : '30-60' }}</th>
+                      <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '60-90' : '60-90' }}</th>
+                      <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '<90' : '<90' }}</th>
+                    </tr>
+                  </thead>
+                </table>
+              </div>
 
-                  <!-- Expandable Invoice Section (modal version) -->
-                  <tr v-if="expandedGroups.includes(gIdx)">
-                    <td colspan="6" class="p-0">
-                      <div :class="isDark ? 'bg-transparent' : 'bg-[#A2E8D6]'" class="p-8">
-                        <div v-if="loadingGroup === gIdx" class="flex justify-center py-6">
-                          <div class="w-8 h-8 border-4 border-[#005A48] border-t-transparent rounded-full animate-spin"></div>
-                        </div>
-                        <div v-else class="space-y-4">
-                          <div v-if="getInvoices(group).length === 0" class="text-[14px] opacity-60 py-4" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
-                            {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
+              <!-- Scrollable Body Table -->
+              <div class="overflow-y-auto custom-scrollbar flex-1 max-h-[60vh]">
+                <table class="w-full text-left rtl:text-right table-fixed border-collapse">
+                  <colgroup>
+                      <col style="width: 25%" />
+                      <col style="width: 15%" />
+                      <col style="width: 15%" />
+                      <col style="width: 15%" />
+                      <col style="width: 15%" />
+                      <col style="width: 15%" />
+                  </colgroup>
+                  <tbody>
+                    <template v-for="(group, gIdx) in arData" :key="'modal-' + gIdx">
+                      <tr class="transition-all duration-500 border-b border-black/5 dark:border-white/5"
+                        :class="isDark ? 'hover:bg-white/5 bg-[#00141080]' : 'hover:bg-gray-50 bg-white'">
+                        <td class="px-8 py-5">
+                          <div class="flex items-center gap-2 cursor-pointer" @click="toggleGroup(gIdx)">
+                            <span class="font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? group.labelAr : group.label }}</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                              class="transition-transform duration-300" :class="[expandedGroups.includes(gIdx) ? 'rotate-180' : '', isDark ? 'text-white' : 'text-[#1A1A1A]']">
+                              <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
                           </div>
-                          <div v-for="(inv, iIdx) in getInvoices(group)" :key="'modal-inv-' + iIdx"
-                            class="grid grid-cols-6 items-center border-t border-black/5 dark:border-white/5 pt-4">
-                            <div class="flex items-center gap-3">
-                              <input type="checkbox" v-model="inv.selected"
-                                class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
-                              <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ inv.invoiceNo }}</span>
+                        </td>
+                        <td class="px-6 py-5 text-right rtl:text-left font-semibold text-[14px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">{{ group.total }}</td>
+                        <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age30 }}</td>
+                        <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age3060 }}</td>
+                        <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age6090 }}</td>
+                        <td class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ group.age90plus }}</td>
+                      </tr>
+    
+                      <!-- Expandable Invoice Section (modal version) -->
+                      <tr v-if="expandedGroups.includes(gIdx)">
+                        <td colspan="6" class="p-0">
+                          <div :class="isDark ? 'bg-transparent' : 'bg-[#A2E8D6]'" class="p-8">
+                            <div v-if="loadingGroup === gIdx" class="flex justify-center py-6">
+                              <div class="w-8 h-8 border-4 border-[#005A48] border-t-transparent rounded-full animate-spin"></div>
                             </div>
-                            <div class="text-right rtl:text-left font-normal text-[16px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
-                              <span class="underline underline-offset-4 cursor-pointer">{{ inv.amount?.toLocaleString() }}</span>
+                            <div v-else class="space-y-4">
+                              <div v-if="getInvoices(group).length === 0" class="text-[14px] opacity-60 py-4" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
+                                {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
+                              </div>
+                              <div v-for="(inv, iIdx) in getInvoices(group)" :key="'modal-inv-' + iIdx"
+                                class="grid grid-cols-6 items-center border-t border-black/5 dark:border-white/5 pt-4">
+                                <div class="flex items-center gap-3">
+                                  <input type="checkbox" v-model="inv.selected"
+                                    class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
+                                  <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ inv.invoiceNo }}</span>
+                                </div>
+                                <div class="text-right rtl:text-left font-normal text-[16px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
+                                  <span class="underline underline-offset-4 cursor-pointer">{{ inv.amount?.toLocaleString() }}</span>
+                                </div>
+                                <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age30?.toLocaleString() }}</div>
+                                <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age3060?.toLocaleString() }}</div>
+                                <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age6090?.toLocaleString() }}</div>
+                                <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age90plus?.toLocaleString() }}</div>
+                              </div>
                             </div>
-                            <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age30?.toLocaleString() }}</div>
-                            <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age3060?.toLocaleString() }}</div>
-                            <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age6090?.toLocaleString() }}</div>
-                            <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age90plus?.toLocaleString() }}</div>
                           </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </template>
-              </tbody>
-              <tfoot>
-                <tr :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'" class="transition-all duration-500 sticky bottom-0 z-10">
-                  <td class="px-8 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.total.toLocaleString() }}</td>
-                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age30.toLocaleString() }}</td>
-                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age3060.toLocaleString() }}</td>
-                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age6090.toLocaleString() }}</td>
-                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age90plus.toLocaleString() }}</td>
-                </tr>
-              </tfoot>
-            </table>
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                  <tfoot>
+                    <tr :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'" class="transition-all duration-500">
+                      <td class="px-8 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.total.toLocaleString() }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age30.toLocaleString() }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age3060.toLocaleString() }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age6090.toLocaleString() }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.age90plus.toLocaleString() }}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -454,4 +489,9 @@ input[type="checkbox"] {
 }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.15); border-radius: 10px; }
+:deep(.dark) .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.15); }
 </style>
