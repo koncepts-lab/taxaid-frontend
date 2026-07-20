@@ -32,6 +32,10 @@ export function useClientManagement() {
   const getTenantUsers = (tenantId: number) =>
     useAdminApi(`/admin/tenants/${tenantId}/users`)
 
+  // Suspend requires the acting admin's own password; making live does not.
+  const setTenantUserStatus = (tenantId: number, userId: number, status: 'live' | 'suspended', password?: string) =>
+    useAdminApi(`/admin/tenants/${tenantId}/users/${userId}/status`, { method: 'PATCH', body: { status, ...(password ? { password } : {}) } })
+
   // ── Connector controls (admin passes tenant_id) ─────────────────────────
   const getSchedule = (tenantId: number) =>
     useAdminApi(`/connector/schedule?tenant_id=${tenantId}`)
@@ -84,7 +88,7 @@ export function useClientManagement() {
   }
 
   return {
-    getTenants, setTenantStatus, getTenantUsers,
+    getTenants, setTenantStatus, getTenantUsers, setTenantUserStatus,
     getSchedule, setSchedule, syncNow, adminSyncNow, stopSync,
     openSettings, requestLogs, downloadLogs,
     getSyncHistory,

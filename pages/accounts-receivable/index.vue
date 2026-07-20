@@ -120,6 +120,7 @@ const handleReload = () => fetchAll()
 onMounted(() => {
   fetchAll()
   useLocation().syncSessionLocation()
+  useNotificationSettings().syncWebPush()
 })
 </script>
 

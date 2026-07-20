@@ -54,7 +54,8 @@
       <div class="absolute inset-0 bg-gradient-to-r from-transparent to-[#00896F]/20 pointer-events-none"></div>
       
       <div class="relative z-10">
-        <img :src="pictureUrl ?? '/default-avatar.png'" alt="Profile" class="w-20 h-20 rounded-full border-2 border-white/20 object-cover" />
+        <img v-if="pictureUrl" :src="pictureUrl" alt="Profile" class="w-20 h-20 rounded-full border-2 border-white/20 object-cover" />
+        <div v-else class="w-20 h-20 rounded-full border-2 border-white/20 bg-white/10"></div>
         <div v-if="isEditing" class="absolute bottom-0 right-0 bg-[#00896F] rounded-full p-1.5 border-2 border-white cursor-pointer hover:bg-[#00705a] transition-colors shadow-sm">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />

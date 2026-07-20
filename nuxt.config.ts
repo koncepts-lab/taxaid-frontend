@@ -38,6 +38,13 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || "http://127.0.0.1/api",
+      // Firebase web push (values from Firebase console → Add app → Web).
+      // Push is silently disabled while these are empty.
+      firebaseApiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY || "",
+      firebaseProjectId: process.env.NUXT_PUBLIC_FIREBASE_PROJECT_ID || "",
+      firebaseSenderId: process.env.NUXT_PUBLIC_FIREBASE_SENDER_ID || "",
+      firebaseAppId: process.env.NUXT_PUBLIC_FIREBASE_APP_ID || "",
+      firebaseVapidKey: process.env.NUXT_PUBLIC_FIREBASE_VAPID_KEY || "",
     },
   },
 });

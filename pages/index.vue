@@ -40,6 +40,8 @@ const bubbleGrow = ref(false)
 const showLogo = ref(false)
 const videoRef = ref(null)
 
+const { isAuthenticated } = useAuth()
+
 onMounted(async () => {
   const WHITE_TIME = 600
   const START_BUBBLE_AFTER = 150
@@ -68,7 +70,11 @@ onMounted(async () => {
   // keep logo for 8s
   await sleep(LOGO_HOLD)
 
-  navigateTo('/home')
+  if (isAuthenticated.value) {
+    navigateTo('/dashboard')
+  } else {
+    navigateTo('/home')
+  }
 })
 
 function attachVideoReady() {

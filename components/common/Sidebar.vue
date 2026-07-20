@@ -52,14 +52,14 @@ const navItems = [
     labelAr: 'الإيرادات',
     to: '/revenue',
     icon: '/images/icons/Revenue.svg',
-    activeIcon: '/images/icons/Revenue-active.svg'
+    activeIcon: '/images/icons/Revenue-Active.svg'
   },
   {
     label: 'Cashflow',
     labelAr: 'التدفق النقدي',
     to: '/cash-flow',
     icon: '/images/icons/Cashflow.svg',
-    activeIcon: '/images/icons/Cashflow-active.svg'
+    activeIcon: '/images/icons/Cashflow-Active.svg'
   },
   {
     label: 'Financial Statement',

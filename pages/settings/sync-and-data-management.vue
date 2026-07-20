@@ -78,35 +78,55 @@
         <!-- System Backup -->
         <div class="bg-white border border-gray-200 rounded-[16px] shadow-sm overflow-hidden p-6">
           <h2 class="text-[16px] font-medium text-[#101828]">System Backup</h2>
-          <p class="text-[14px] mt-0.5 text-[#4A5565] mb-6">Download all your data in CSV or JSON format</p>
+          <p class="text-[14px] mt-0.5 text-[#4A5565] mb-6">Download all your data in Excel or JSON format</p>
 
-          <div class="flex flex-wrap items-center gap-4">
-            <button @click="requestBackup('csv')" :disabled="backupBusy"
-              class="flex items-center gap-2 px-4 py-2.5 border border-[#6FDBBF] rounded-lg text-sm font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-              </svg>
-              Export Backup (CSV)
-            </button>
-            <button @click="requestBackup('json')" :disabled="backupBusy"
-              class="flex items-center gap-2 px-4 py-2.5 border border-[#6FDBBF] rounded-lg text-sm font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-              </svg>
-              Export Backup (JSON)
-            </button>
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-4">
+              <button @click="requestBackup('xlsx')" :disabled="backupBusy"
+                class="flex items-center gap-2 px-4 py-2.5 border border-[#6FDBBF] rounded-lg text-sm font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Export Backup (Excel)
+              </button>
+              <button @click="requestBackup('json')" :disabled="backupBusy"
+                class="flex items-center gap-2 px-4 py-2.5 border border-[#6FDBBF] rounded-lg text-sm font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Export Backup (JSON)
+              </button>
+            </div>
 
-            <span v-if="backupBusy" class="text-[13px] text-[#4A5565] flex items-center gap-2">
-              <svg class="animate-spin w-4 h-4 text-[#00896F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-              </svg>
-              Preparing backup ({{ backup?.status ?? 'queued' }})... download starts automatically.
-            </span>
-            <button v-else-if="backup?.status === 'ready'" @click="downloadBackup(backup.id)"
-              class="text-[13px] text-[#00896F] font-medium underline underline-offset-2">
-              Download last backup ({{ backup.format.toUpperCase() }}, {{ formatSize(backup.file_size) }})
-            </button>
+            <!-- Right side: latest backup state -->
+            <div class="flex flex-col items-end gap-1 min-w-[220px]">
+              <template v-if="backupBusy">
+                <span class="text-[13px] text-[#4A5565] flex items-center gap-2">
+                  <svg class="animate-spin w-4 h-4 text-[#00896F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
+                  Preparing backup ({{ backup?.status ?? 'queued' }})...
+                </span>
+                <span v-if="backup" class="text-[12px] text-[#99A1AF]">Requested {{ backupTime(backup.created_at) }}</span>
+              </template>
+
+              <template v-else-if="backup?.status === 'ready' && !backupExpired">
+                <button @click="downloadBackup(backup.id)"
+                  class="flex items-center gap-2 px-4 py-2.5 bg-[#00896F] rounded-lg text-sm font-medium text-white hover:bg-[#013E32] transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                  </svg>
+                  Download backup ({{ backup.format.toUpperCase() }}, {{ formatSize(backup.file_size) }})
+                </button>
+                <span class="text-[12px] text-[#99A1AF]">Requested {{ backupTime(backup.created_at) }} &middot; available until {{ backupTime(backup.expires_at) }}</span>
+              </template>
+
+              <template v-else-if="backup && (backup.status === 'expired' || backupExpired)">
+                <span class="text-[13px] text-[#4A5565]">Last export expired</span>
+                <span class="text-[12px] text-[#99A1AF]">Requested {{ backupTime(backup.created_at) }} &middot; request a new backup to download</span>
+              </template>
+            </div>
           </div>
         </div>
 
@@ -144,6 +164,17 @@ const historyDetails = (item) => {
   parts.push(`${item.rows_added} added • ${item.rows_changed} changed • ${item.rows_removed} removed`)
   return parts.join(' • ')
 }
+
+const backupTime = (iso) => {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  return `${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}, ${d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`
+}
+
+// Client-side guard so the button flips to "expired" without a reload
+const backupExpired = computed(() =>
+  backup.value?.expires_at ? new Date(backup.value.expires_at) <= new Date() : false
+)
 
 const formatSize = (bytes) => {
   if (!bytes) return '—'

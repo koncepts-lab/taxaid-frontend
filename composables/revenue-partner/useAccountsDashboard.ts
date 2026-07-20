@@ -49,6 +49,10 @@ export const useAccountsDashboard = () => {
     return await useRpApi('/revenue/accounts/payment-to-partner', { method: 'POST', body: data })
   }
 
+  const calcPaymentTotal = async (client_amounts: Record<string, number>) => {
+    return await useRpApi('/revenue/accounts/payment-to-partner/total', { method: 'POST', body: { client_amounts } })
+  }
+
   const fetchPartnerClients = async (partnerId: number) => {
     return await useRpApi(`/revenue/accounts/partners/${partnerId}/clients`)
   }
@@ -138,7 +142,7 @@ export const useAccountsDashboard = () => {
   return {
     overview, customers, alerts, loading, error,
     fetchOverview, fetchCustomers, fetchAlerts,
-    submitPaymentToPartner, fetchPartnerClients, addPartner,
+    submitPaymentToPartner, calcPaymentTotal, fetchPartnerClients, addPartner,
     uploadHosting, uploadAiUsage, downloadTemplate,
     fetchNotifyCustomers, fetchUploadedReports,
     fetchUserMasterInfo, fetchActivePartners, sendCardExpiryNotification,

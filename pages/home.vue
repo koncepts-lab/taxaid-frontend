@@ -93,7 +93,8 @@
             </template>
           </p>
 
-          <div v-if="errorMessage" class="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm text-center font-medium">
+          <div v-if="errorMessage" class="mb-4 p-3 rounded-xl text-sm text-center font-medium"
+            :class="errorVariant === 'warning' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600'">
             {{ errorMessage }}
           </div>
 
@@ -373,6 +374,7 @@ const { login, user } = useAuth()
 const config = useRuntimeConfig()
 const loading = ref(false)
 const errorMessage = ref('')
+const errorVariant = ref('error') // 'error' (red) | 'warning' (amber, lockout)
 const isEmailVerification = ref(false)
 const nextRedirect = ref('') // Store where the user should go after welcome screen 
 
@@ -446,6 +448,9 @@ const translations = {
     partnershipLogin: 'Partnership Login',
     emailVerifyTitle: 'Verification Required',
     emailVerifySub: 'A verification link has been sent to',
+    tooManyAttempts: 'Too many login attempts. Please try again after 15 minutes.',
+    accountSuspended: 'Your account has been suspended. Please contact TaxAid support.',
+    serverOffline: 'Server is under maintenance. Please try again later.',
   },
   ar: {
     welcome: 'مرحباً',
@@ -488,6 +493,9 @@ const translations = {
     partnershipLogin: 'تسجيل دخول الشركاء',
     emailVerifyTitle: 'التحقق من البريد الإلكتروني',
     emailVerifySub: 'تم إرسال رابط التحقق إلى',
+    tooManyAttempts: 'محاولات تسجيل دخول كثيرة جداً. يرجى المحاولة مرة أخرى بعد 15 دقيقة.',
+    accountSuspended: 'تم تعليق حسابك. يرجى التواصل مع دعم TaxAid.',
+    serverOffline: 'الخادم تحت الصيانة. يرجى المحاولة مرة أخرى لاحقاً.',
   }
 }
 
@@ -541,7 +549,17 @@ async function onSubmit() {
   } catch (err) {
     if (err.status === 403 && err.data?.message?.includes('verify your email')) {
       isEmailVerification.value = true
+    } else if (err.data?.code === 'too_many_attempts') {
+      errorVariant.value = 'warning' // lockout window — amber, translated copy
+      errorMessage.value = t.value.tooManyAttempts
+    } else if (err.data?.code === 'account_suspended') {
+      errorVariant.value = 'error'
+      errorMessage.value = t.value.accountSuspended
+    } else if (err.message?.toLowerCase().includes('fetch failed') || err.message?.toLowerCase().includes('network error') || err.message?.toLowerCase().includes('failed to fetch')) {
+      errorVariant.value = 'warning'
+      errorMessage.value = t.value.serverOffline
     } else {
+      errorVariant.value = 'error'
       errorMessage.value = err.data?.message || err.message || 'Authentication failed' ///remove the err msg later in live
     }
   } finally {

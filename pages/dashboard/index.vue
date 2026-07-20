@@ -106,5 +106,6 @@ onMounted(() => {
   fetchSummary()
   // deferred + throttled to once a day; never competes with the card requests
   useLocation().syncSessionLocation()
+  useNotificationSettings().syncWebPush()
 })
 </script>

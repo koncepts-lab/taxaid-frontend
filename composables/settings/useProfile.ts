@@ -66,12 +66,26 @@ async function _loadPictureBlobUrl(): Promise<void> {
   }
   const config = useRuntimeConfig()
   const token  = useCookie('auth_token')
-  try {
-    const res = await fetch(`${config.public.apiBase}/profile/picture`, {
+  const get = (cache: RequestCache) =>
+    fetch(`${config.public.apiBase}/profile/picture`, {
       headers: { Authorization: `Bearer ${token.value}` },
+      cache,
     })
-    if (res.ok) {
-      const blob = await res.blob()
+  const isImage = (b: Blob | null): b is Blob => !!b && b.size > 0 && b.type.startsWith('image/')
+
+  try {
+    let res = await get('no-cache')
+
+    if (res.status === 304 && _pictureUrl.value) return
+
+    let blob = res.ok ? await res.blob() : null
+
+    if (!isImage(blob)) {
+      res  = await get('reload')
+      blob = res.ok ? await res.blob() : null
+    }
+
+    if (isImage(blob)) {
       if (_pictureUrl.value) URL.revokeObjectURL(_pictureUrl.value)
       _pictureUrl.value = URL.createObjectURL(blob)
     } else {
@@ -80,6 +94,12 @@ async function _loadPictureBlobUrl(): Promise<void> {
   } catch {
     _pictureUrl.value = null
   }
+}
+
+export function resetProfile(): void {
+  _profile.value = null
+  if (_pictureUrl.value) URL.revokeObjectURL(_pictureUrl.value)
+  _pictureUrl.value = null
 }
 
 export function useProfile() {
@@ -150,6 +170,10 @@ export function useProfile() {
     return _profile.value?.profilePic ?? null
   }
 
+  async function refreshPicture(): Promise<void> {
+    await _loadPictureBlobUrl()
+  }
+
   return {
     profile:      _profile,
     pictureUrl:   _pictureUrl,
@@ -160,5 +184,6 @@ export function useProfile() {
     saveProfile,
     uploadPicture,
     getPictureUrl,
+    refreshPicture,
   }
 }

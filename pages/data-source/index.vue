@@ -179,7 +179,10 @@
                 :onUpdate="() => updateTrialBalance()"
                 :onUpdateConfig="(items) => updateConfigSettings(items)"
                 :onPageChange="(p) => fetchTrialBalance(p)"
-                :onPerPageChange="(pp) => fetchTrialBalance(1, pp)" />
+                :onPerPageChange="(pp) => fetchTrialBalance(1, pp)"
+                :tbFilters="tbFilters"
+                :tbFilterOptions="tbFilterOptions"
+                :onApplyFilter="(col, values) => applyFilters(col, values)" />
               <DataSourceChangeLog
                 v-if="activeSubTab === 'accounts-receivable' || activeSubTab === 'accounts-payable' || activeSubTab === 'pdc' || activeSubTab === 'cost-center' || activeSubTab === 'budget' || activeSubTab === 'sales-forecast' || activeSubTab === 'trial-balance'"
                 :logs="currentLogs" :isDark="isDark" :currentLang="currentLang" />
@@ -228,7 +231,7 @@ const handleModeChange = async (module, label) => {
 }
 
 // ── Trial Balance (live API) ───────────────────────────────────────────────
-const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoading: tbLoadingState, tbMeta, fetchTrialBalance, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, tbLogs: tbLiveLogs } = useTrialBalance()
+const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoading: tbLoadingState, tbMeta, tbFilters, tbFilterOptions, applyFilters, fetchTrialBalance, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, tbLogs: tbLiveLogs } = useTrialBalance()
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()

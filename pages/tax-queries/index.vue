@@ -37,7 +37,10 @@ const isChatOpen = ref(false);
 
 const { tableData, vatMessage, vatYears, selectedVatYear, changeVatYear } = useTaxQueriesPage()
 
-onMounted(() => useLocation().syncSessionLocation())
+onMounted(() => {
+  useLocation().syncSessionLocation()
+  useNotificationSettings().syncWebPush()
+})
 
 const currentTitle = computed(() => {
     const titles = {
