@@ -1,8 +1,8 @@
 <template>
-  <div class="w-full transition-all duration-500 rounded-3xl"
+  <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl "
     :class="isDark ? 'bg-[#00141080]' : 'bg-white shadow-sm'">
 
-    <div class="lg:px-8 px-4 py-5 flex justify-between items-center text-left rtl:text-right sticky top-0 z-30 rounded-t-3xl" :class="isDark ? 'bg-[#001410]' : 'bg-white'">
+    <div class="py-5 lg:lg: px-4 flex justify-between items-center">
       <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
         {{ currentLang === 'ar' ? 'ملخص تكلفة المبيعات' : 'COGS Summary' }}
       </p>
@@ -16,17 +16,10 @@
           class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 max-lg:hidden" @click="isModalOpen = true" />
       </div>
     </div>
-    <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative">
-      <table class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1000px] table-fixed">
-        <colgroup>
-            <col style="width: 25%" />
-            <col style="width: 15%" />
-            <col style="width: 15%" />
-            <col style="width: 15%" />
-            <col style="width: 15%" />
-            <col style="width: 15%" />
-        </colgroup>
-        <thead class="text-white sticky top-[82px] z-20 shadow-sm" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+    <div class="w-full overflow-x-auto no-scrollbar">
+
+      <table class="w-full text-left rtl:text-right border-collapse min-w-175 overflow-auto">
+        <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
           <tr>
             <th class="lg:px-8 px-4 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'تكلفة المبيعات' : 'COGS' }}
             </th>
@@ -147,48 +140,37 @@
             </button>
           </div>
 
-          <div class="w-full flex-1 flex flex-col min-h-0 overflow-x-auto overflow-y-hidden no-scrollbar" :class="isDark ? 'bg-[#00141080]' : 'bg-white'">
-            <div class="min-w-[1000px] flex flex-col flex-1 h-full">
-              <!-- Header Table (Fixed) -->
-              <div class="shrink-0 sticky top-0 z-10" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-                <table class="w-full text-left rtl:text-right table-fixed border-collapse">
-                  <colgroup>
-                      <col style="width: 25%" />
-                      <col style="width: 15%" />
-                      <col style="width: 15%" />
-                      <col style="width: 15%" />
-                      <col style="width: 15%" />
-                      <col style="width: 15%" />
-                  </colgroup>
-                  <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
-                    <tr>
-                      <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'تكلفة المبيعات' : 'COGS' }}</th>
-                      <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</th>
-                      <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }}</th>
-                      <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</th>
-                      <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'التباين' : 'Variance' }}</th>
-                      <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'السنة للذهاب' : 'Year to Go' }}</th>
-                    </tr>
-                  </thead>
-                </table>
-              </div>
-
-              <!-- Scrollable Body Table -->
-              <div class="overflow-y-auto custom-scrollbar flex-1 max-h-[60vh]">
-                <table class="w-full text-left rtl:text-right table-fixed border-collapse">
-                  <colgroup>
-                      <col style="width: 25%" />
-                      <col style="width: 15%" />
-                      <col style="width: 15%" />
-                      <col style="width: 15%" />
-                      <col style="width: 15%" />
-                      <col style="width: 15%" />
-                  </colgroup>
-                  <tbody>
+          <div class="overflow-y-auto w-full no-scrollbar flex-1 relative"
+            :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
+            <table class="w-full text-left rtl:text-right border-collapse relative">
+              <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+                <tr>
+                  <th class="lg: py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'تكلفة المبيعات' : 'COGS' }}
+                  </th>
+                  <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]">
+                    {{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}
+                  </th>
+                  <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar'
+                    ?
+                    'السنة السابقة' : 'Previous Year' }}</th>
+                  <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar'
+                    ?
+                    'الميزانية' : 'Budget' }}</th>
+                  <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar'
+                    ?
+                    'التباين'
+                    : 'Variance' }}</th>
+                  <th class="lg:px-6 px-4 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ?
+                    'السنة للذهاب'
+                    :
+                    'Year to Go' }}</th>
+                </tr>
+              </thead>
+              <tbody>
                 <template v-for="(item, idx) in tableData" :key="'modal-' + idx">
                   <tr class="transition-all duration-500 border-b"
                     :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50'">
-                    <td class="px-8 py-5">
+                    <td class="lg: py-5">
                       <span class="font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
                         currentLang === 'ar' ? item.labelAr : item.label }}</span>
                     </td>
@@ -223,9 +205,9 @@
                   </tr>
                 </template>
               </tbody>
-              <tfoot>
-                <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500 sticky bottom-0 z-10">
-                  <td class="px-8 py-5 font-semibold text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
+              <tfoot class="sticky bottom-0 z-10">
+                <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
+                  <td class="lg: py-5 font-semibold text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
                     currentLang === 'ar' ? 'إجمالي تكلفة المبيعات' : 'Total COGS' }}</td>
                   <td class="px-6 py-5 text-right rtl:text-left font-semibold text-[14px]"
                     :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.currentYear }}</td>
@@ -256,8 +238,6 @@
               </tfoot>
             </table>
           </div>
-          </div>
-        </div>
         </div>
       </div>
     </Teleport>
@@ -327,13 +307,3 @@ const summaryTotal = computed(() => {
   }
 })
 </script>
-
-<style scoped>
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.15); border-radius: 10px; }
-:deep(.dark) .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.15); }
-</style>
