@@ -18,7 +18,6 @@
                         class="mb-4 lg:mb-8"
                         :title="{ en: 'Revenue Analysis', ar: 'تحليل الإيرادات' }"
                         :subtitle="{ en: 'Comprehensive revenue tracking and insights', ar: 'تتبع شامل للإيرادات والرؤى' }"
-                        :oneclickreview="false"
                         :showDateFilter="true"
                         :showReload="true"
                         :showExport="true"
