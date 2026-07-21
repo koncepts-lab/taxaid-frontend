@@ -22,7 +22,7 @@
         
         <!-- Mobile: Time Filters -->
         <div class="flex md:hidden gap-2 mt-1">
-          <button v-for="m in [3, 6, 9]" :key="m" @click.stop.prevent="selectCashflowPeriod(m)"
+          <button v-for="m in [3, 6]" :key="m" @click.stop.prevent="selectCashflowPeriod(m)"
             class="px-4 h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
             :class="[
               m === cashflowPeriod
@@ -64,7 +64,7 @@
 
       <!-- Desktop: Vertical Time Filters -->
       <div class="hidden md:flex flex-col gap-2 pt-2 shrink-0">
-          <button v-for="m in [3, 6, 9]" :key="m" @click.stop.prevent="selectCashflowPeriod(m)"
+          <button v-for="m in [3, 6]" :key="m" @click.stop.prevent="selectCashflowPeriod(m)"
             class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
             :class="[
               m === cashflowPeriod
