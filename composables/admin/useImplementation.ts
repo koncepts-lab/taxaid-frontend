@@ -175,14 +175,38 @@ export function useImplementation() {
 
   // FS Codes are locked server-side (fixed to BS, P&L) — no create/update/delete.
   // `confirm` bypasses the backend's similar-value (fuzzy duplicate) rejection.
-  async function createMainGroup(name: string, confirm = false): Promise<any> {
-    const res: any = await apiFetch('/admin/gl/main-groups', { method: 'POST', body: { name, confirm } })
+  // `tenantId` (optional): creates a tenant-specific extra instead of a general entry.
+  async function createMainGroup(name: string, confirm = false, tenantId: number | null = null): Promise<any> {
+    const res: any = await apiFetch('/admin/gl/main-groups', { method: 'POST', body: { name, confirm, tenant_id: tenantId } })
     return res.data
   }
 
-  async function createSubGroup(name: string, confirm = false): Promise<any> {
-    const res: any = await apiFetch('/admin/gl/sub-groups', { method: 'POST', body: { name, confirm } })
+  async function createSubGroup(name: string, confirm = false, tenantId: number | null = null): Promise<any> {
+    const res: any = await apiFetch('/admin/gl/sub-groups', { method: 'POST', body: { name, confirm, tenant_id: tenantId } })
     return res.data
+  }
+
+  // Tenant-scoped list (paginated) — General list stays as-is via getGLMasters.
+  async function getGroupsForTenant(kind: 'main' | 'sub', tenantId: number, opts: { search?: string; page?: number; perPage?: number } = {}): Promise<any> {
+    const path = kind === 'main' ? '/admin/gl/main-groups' : '/admin/gl/sub-groups'
+    const params: Record<string, any> = { tenant_id: tenantId }
+    if (opts.search) params.search = opts.search
+    if (opts.page) params.page = opts.page
+    if (opts.perPage) params.per_page = opts.perPage
+    const res: any = await apiFetch(path, { params })
+    return res.data ?? { data: [], current_page: 1, per_page: opts.perPage ?? 5, last_page: 1, total: 0 }
+  }
+
+  // mode: 'custom' = directory tab (tenants that already have a custom mapping);
+  // 'all' = tenant picker/search (requires a search term server-side — this is the
+  // only tenant lookup an Implementation Manager has, /admin/tenants is Super-Admin-only).
+  async function getTenantsWithCustomMappings(opts: { mode?: 'custom' | 'all'; search?: string; page?: number; perPage?: number } = {}): Promise<any> {
+    const params: Record<string, any> = { mode: opts.mode ?? 'custom' }
+    if (opts.search) params.search = opts.search
+    if (opts.page) params.page = opts.page
+    if (opts.perPage) params.per_page = opts.perPage
+    const res: any = await apiFetch('/admin/gl/tenant-mappings', { params })
+    return res.data ?? { data: [], current_page: 1, per_page: opts.perPage ?? 5, last_page: 1, total: 0 }
   }
 
   async function updateMainGroup(id: number, name: string, confirm = false): Promise<any> {
@@ -232,5 +256,7 @@ export function useImplementation() {
     createMainGroup, createSubGroup,
     updateMainGroup, updateSubGroup,
     deleteMainGroup, deleteSubGroup,
+    getGroupsForTenant,
+    getTenantsWithCustomMappings,
   }
 }
