@@ -15,7 +15,7 @@
 
           <CommonDashboardHeader ref="headerRef" :title="{ en: 'Cost Center Analysis', ar: 'تحليل مركز التكلفة' }"
             :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
-            :oneclickreview="false" :periods="costCenterPeriods"
+            :periods="costCenterPeriods"
             @export-pdf="handleExportPDF"
             @selected-date="handleDateChange" @reload="fetchData" />
           <div class="my-8">

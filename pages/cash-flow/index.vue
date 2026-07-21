@@ -18,7 +18,6 @@
                         class="mb-4 lg:mb-8"
                         :title="{ en: 'Cash Flow Analysis', ar: 'تحليل التدفقات النقدية' }"
                         :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
-                        :oneclickreview="false"
                         :showDateFilter="true"
                         :showReload="true"
                         :showExport="true"
