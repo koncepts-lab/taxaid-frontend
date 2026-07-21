@@ -21,16 +21,7 @@
       </div>
 
       <div class="flex items-center gap-3 mt-4 md:mt-0">
-        <!-- Mobile: Month Toggle (desktop version sits beside the chart) -->
-        <div class="flex md:hidden items-center gap-1 p-1 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'">
-          <button v-for="m in [6, 12]" :key="m" @click.stop.prevent="selectArPeriod(m)"
-            class="px-3 h-[22px] flex items-center justify-center rounded-md text-xs font-semibold transition-colors"
-            :class="m === arPeriod
-              ? (isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35] shadow-lg')
-              : (isDark ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-gray-800')">
-            {{ m }}M
-          </button>
-        </div>
+
         <!-- Legend -->
         <div class="flex flex-wrap items-center gap-3">
           <div v-for="(item, index) in legendItems" :key="index" class="flex items-center gap-2">
@@ -93,16 +84,7 @@
         </div>
       </div>
 
-      <!-- Desktop: Vertical Month Toggle (matches the cashflow card) -->
-      <div class="hidden md:flex flex-col gap-2 pt-2 shrink-0">
-        <button v-for="m in [6, 12]" :key="m" @click.stop.prevent="selectArPeriod(m)"
-          class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
-          :class="m === arPeriod
-            ? (isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35] shadow-lg')
-            : (isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]')">
-          {{ m }}M
-        </button>
-      </div>
+
     </div>
   </div>
 </template>
