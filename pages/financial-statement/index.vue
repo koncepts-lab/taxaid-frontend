@@ -12,7 +12,6 @@
                     <CommonDashboardHeader
                         :title="{ en: 'Financial Statement Analysis', ar: 'تحليل القوائم المالية' }"
                         :subtitle="{ en: 'Income, balance sheet, and financial ratios overview.', ar: 'نظرة عامة على الدخل والميزانية العمومية والنسب المالية.' }"
-                        :oneclickreview="false"
                         :periods="customPeriods"
                         @selected-date="handleDateUpdate"
                         @reload="fetchTabData(activeTab)"

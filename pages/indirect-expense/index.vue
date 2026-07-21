@@ -19,7 +19,6 @@
             :title="{ en: 'Indirect Expense Analysis', ar: 'تحليل المصروفات غير المباشرة' }"
             :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
             :periods="customPeriods"
-            :oneclickreview="false"
             @selected-date="handleDateChange"
             @reload="handleReload"
             @export-excel="handleExport('excel')"
