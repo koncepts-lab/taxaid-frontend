@@ -42,7 +42,7 @@
                     <h3 class="text-lg font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">
                         {{ currentLang === 'ar' ? card.labelAr : card.label }}
                     </h3>
-                    <div v-if="card.isUploaded && !['Cost Center Mapping', 'Prepaid Adjustments', 'Opening Balance'].includes(card.label)" class="text-[#03D8B0]">
+                    <div v-if="card.isUploaded" class="text-[#03D8B0]">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2.5">
                             <path d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3" stroke-linecap="round"
@@ -81,7 +81,24 @@
                     </div>
                 </div>
 
-                <div v-else-if="card.isUploaded && !['Cost Center Mapping', 'Prepaid Adjustments', 'Opening Balance'].includes(card.label)" class="p-4 rounded-xl border mb-6 flex items-start gap-3 transition-colors"
+                <div v-else-if="card.isUploaded && MAPPING_CARD_LABELS.includes(card.label)" class="p-4 rounded-xl border mb-6 flex items-start gap-3 transition-colors"
+                    :class="isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-100'">
+                    <div class="p-2 rounded-lg bg-[#E6FDF9] dark:bg-[#00B794]/10 text-[#008864]">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium truncate" :class="isDark ? 'text-white/90' : 'text-gray-800'">
+                            {{ mappingStatusText(card) }}
+                        </p>
+                        <p class="text-[11px] opacity-60 mt-0.5" :class="isDark ? 'text-white' : 'text-gray-500'">{{
+                            card.uploadDate }}</p>
+                    </div>
+                </div>
+
+                <div v-else-if="card.isUploaded" class="p-4 rounded-xl border mb-6 flex items-start gap-3 transition-colors"
                     :class="isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-100'">
                     <div class="p-2 rounded-lg bg-[#E6FDF9] dark:bg-[#00B794]/10 text-[#008864]">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -98,7 +115,7 @@
                     </div>
                 </div>
 
-                <div v-else-if="!['Cost Center Mapping', 'Prepaid Adjustments', 'Opening Balance'].includes(card.label)" class=" flex items-center justify-center mb-6">
+                <div v-else-if="!MAPPING_CARD_LABELS.includes(card.label)" class=" flex items-center justify-center mb-6">
                     <p class="text-base font-normal text-[#FF6B50]">
                         {{ currentLang === 'ar' ? 'لم يتم تحميل أي مستند' : 'No document uploaded' }}
                     </p>
@@ -117,13 +134,23 @@
                 </div>
 
                 <div v-else class="space-y-3">
-                    <div v-if="['Cost Center Mapping', 'Prepaid Adjustments', 'Opening Balance'].includes(card.label)" class="mt-4 flex flex-col justify-end h-full">
+                    <div v-if="MAPPING_CARD_LABELS.includes(card.label) && !card.isUploaded" class="mt-4 flex flex-col justify-end h-full">
                         <p class="text-[13px] text-center my-8" :class="isDark ? 'text-white/50' : 'text-[#64748B]'">
                             {{ currentLang === 'ar' ? 'لم يتم تحديد أي تعيين بعد' : 'No mapping defined yet' }}
                         </p>
                         <button @click="openUploadModal(card)"
                             class="w-full flex items-center justify-center gap-3 py-3 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 cursor-pointer mt-auto">
                             {{ currentLang === 'ar' ? 'تعريف' : 'Define' }}
+                        </button>
+                    </div>
+                    <div v-else-if="MAPPING_CARD_LABELS.includes(card.label) && card.isUploaded" class="flex gap-3">
+                        <button
+                            class="flex-1 py-3 bg-[#68E4C44D] text-black rounded-xl text-sm font-medium transition-all cursor-default border-[#04C18F80] border">
+                            {{ mappingPillText(card) }}
+                        </button>
+                        <button @click="openUploadModal(card)"
+                            class="px-6 py-3 border border-[#008169]/30 text-[#008169] hover:bg-[#00B794]/10 rounded-xl text-sm font-medium transition-all active:scale-95 cursor-pointer">
+                            {{ currentLang === 'ar' ? 'تعديل' : 'Edit' }}
                         </button>
                     </div>
                     <div v-else class="space-y-3">
@@ -323,11 +350,20 @@
         :title="mappingModalConfig.title"
         :subtitle="mappingModalConfig.subtitle"
         :alert-message="mappingModalConfig.alertMessage"
+        :error-message="mappingModalError"
+        :success-message="mappingModalSuccess"
+        :type="mappingModalType"
         :data="mappingModalConfig.data"
+        :cost-center-options="mappingModalCostCenterOptions"
+        :loading-rows="mappingModalLoadingRows"
+        :saving="mappingModalSaving"
+        :meta="mappingModalMeta"
         :is-dark="isDark"
         :current-lang="currentLang"
         @close="isMappingModalOpen = false"
-        @update="isMappingModalOpen = false"
+        @update="handleMappingUpdate"
+        @change-page="changeMappingPage"
+        @change-per-page="changeMappingPerPage"
     />
 
     <DataSourceUploadModal
@@ -542,6 +578,12 @@ const userType = ref('admin')
 const isModalOpen = ref(false)
 const activeUploadTarget = ref(null)
 
+const {
+    fetchCostCenterMappingLedgers, fetchCostCenterOptions, saveCostCenterMappings,
+    fetchPrepaidLedgers, savePrepaidAdjustments,
+    fetchOpeningBalanceLedgers, saveOpeningBalances,
+} = useDataIn()
+
 // ── Existing upload card logic ────────────────────────────────────────────────
 
 // Filter out any backend-supplied budget item so it doesn't appear in the main grid
@@ -552,23 +594,113 @@ const nonBudgetItems = computed(() =>
 const isVatModalOpen = ref(false)
 const isMappingModalOpen = ref(false)
 const mappingModalConfig = ref({ title: '', subtitle: '', alertMessage: '', data: [] })
+const mappingModalType = ref('cost_center')
+const mappingModalCostCenterOptions = ref([])
+const mappingModalLoadingRows = ref(false)
+const mappingModalSaving = ref(false)
+const mappingModalError = ref('')
+const mappingModalSuccess = ref('')
+const mappingModalCardId = ref(null)
+const mappingModalMeta = ref({ current_page: 1, last_page: 1, total: 0, per_page: 20 })
 
-const openUploadModal = (card) => {
-    if (['Cost Center Mapping', 'Prepaid Adjustments', 'Opening Balance'].includes(card.label)) {
-        mappingModalConfig.value = {
-            title: card.label === 'Cost Center Mapping' ? 'Cost Center Mapping' : card.label,
-            subtitle: 'Define and map cost center codes to groups and sub-groups',
-            alertMessage: 'Define the cost center and click Update to save the mapping.',
-            data: [
-                { fsCode: '1000', mainGroup: 'Assets', subGroup: 'Current Assets', ledger: 'Cash and Bank' },
-                { fsCode: '1000', mainGroup: 'Assets', subGroup: 'Current Assets', ledger: 'Accounts Receivable' },
-                { fsCode: '1000', mainGroup: 'Assets', subGroup: 'Fixed Assets', ledger: 'Property & Equipment' },
-                { fsCode: '1000', mainGroup: 'Assets', subGroup: 'Fixed Assets', ledger: 'Property & Equipment' },
-                { fsCode: '1000', mainGroup: 'Assets', subGroup: 'Fixed Assets', ledger: 'Property & Equipment' },
-                { fsCode: '1000', mainGroup: 'Assets', subGroup: 'Fixed Assets', ledger: 'Property & Equipment' },
-            ]
+const MAPPING_CARD_IDS = ['cc_mapping', 'prepaid', 'opening_bal']
+const MAPPING_CARD_LABELS = ['Cost Center Mapping', 'Prepaid Adjustments', 'Opening Balance']
+
+const MAPPING_STATUS_TEXT = {
+    cc_mapping:  { en: 'Cost center mapping saved',    ar: 'تم حفظ تخطيط مراكز التكلفة' },
+    prepaid:     { en: 'Prepaid adjustments saved',    ar: 'تم حفظ تسويات المصاريف المدفوعة مقدماً' },
+    opening_bal: { en: 'Opening balance saved',         ar: 'تم حفظ الرصيد الافتتاحي' },
+}
+const MAPPING_PILL_TEXT = {
+    cc_mapping:  { en: 'Mapping Saved',     ar: 'تم حفظ التخطيط' },
+    prepaid:     { en: 'Adjustments Saved', ar: 'تم حفظ التسويات' },
+    opening_bal: { en: 'Balance Saved',     ar: 'تم حفظ الرصيد' },
+}
+
+const mappingStatusText = (card) =>
+    MAPPING_STATUS_TEXT[card.id]?.[props.currentLang === 'ar' ? 'ar' : 'en'] ?? (props.currentLang === 'ar' ? 'تم الحفظ' : 'Saved')
+
+const mappingPillText = (card) =>
+    MAPPING_PILL_TEXT[card.id]?.[props.currentLang === 'ar' ? 'ar' : 'en'] ?? (props.currentLang === 'ar' ? 'تم الحفظ' : 'Saved')
+
+const toModalRow = (r) => ({
+    fsCode: r.fs_code ?? '',
+    mainGroup: r.main_group ?? '',
+    subGroup: r.subgroup ?? r.sub_group ?? '',
+    ledger: r.ledger_name ?? '',
+    valueInBudget: r.value_in_budget ?? '',
+})
+
+// Shared paginated fetch for all 3 mapping cards — keeps rows/meta in sync
+const loadMappingPage = async (page = 1) => {
+    mappingModalLoadingRows.value = true
+    mappingModalError.value = ''
+    mappingModalSuccess.value = ''
+    try {
+        if (mappingModalCardId.value === 'cc_mapping') {
+            const { data, meta } = await fetchCostCenterMappingLedgers(page, mappingModalMeta.value.per_page)
+            mappingModalConfig.value.data = data.map(toModalRow)
+            mappingModalMeta.value = meta
+        } else if (mappingModalCardId.value === 'prepaid') {
+            const { data, meta } = await fetchPrepaidLedgers(undefined, page, mappingModalMeta.value.per_page)
+            mappingModalConfig.value.data = data.map(toModalRow)
+            mappingModalMeta.value = meta
+        } else if (mappingModalCardId.value === 'opening_bal') {
+            const { data, meta } = await fetchOpeningBalanceLedgers(page, mappingModalMeta.value.per_page)
+            mappingModalConfig.value.data = data.map(toModalRow)
+            mappingModalMeta.value = meta
         }
+    } catch (err) {
+        mappingModalError.value = err?.data?.message ?? err?.message ?? 'Failed to load ledger data.'
+    } finally {
+        mappingModalLoadingRows.value = false
+    }
+}
+
+const changeMappingPage = (page) => {
+    if (page < 1 || page > mappingModalMeta.value.last_page) return
+    loadMappingPage(page)
+}
+
+const changeMappingPerPage = (perPage) => {
+    mappingModalMeta.value.per_page = perPage
+    loadMappingPage(1)
+}
+
+const openUploadModal = async (card) => {
+    if (MAPPING_CARD_IDS.includes(card.id)) {
+        mappingModalCardId.value = card.id
+        mappingModalError.value = ''
+        mappingModalSuccess.value = ''
+        mappingModalCostCenterOptions.value = []
+        mappingModalMeta.value = { current_page: 1, last_page: 1, total: 0, per_page: 20 }
+        mappingModalConfig.value = { title: card.label, subtitle: '', alertMessage: '', data: [] }
+
+        if (card.id === 'cc_mapping') {
+            mappingModalType.value = 'cost_center'
+            mappingModalConfig.value.subtitle = 'Define and map cost center codes to groups and sub-groups'
+            mappingModalConfig.value.alertMessage = 'Define the cost center and click Update to save the mapping.'
+        } else if (card.id === 'prepaid') {
+            mappingModalType.value = 'prepaid'
+            mappingModalConfig.value.subtitle = 'Enter the budget value and monthly forecast for each prepaid ledger'
+            mappingModalConfig.value.alertMessage = 'Fill in the values and click Update to save the adjustments.'
+        } else if (card.id === 'opening_bal') {
+            mappingModalType.value = 'opening_balance'
+            mappingModalConfig.value.subtitle = 'Enter the opening balance for each ledger'
+            mappingModalConfig.value.alertMessage = 'Enter the opening balance and click Update to save.'
+        }
+
         isMappingModalOpen.value = true
+
+        if (card.id === 'cc_mapping') {
+            try {
+                mappingModalCostCenterOptions.value = await fetchCostCenterOptions()
+            } catch (err) {
+                mappingModalError.value = err?.data?.message ?? err?.message ?? 'Failed to load cost center options.'
+            }
+        }
+
+        await loadMappingPage(1)
         return
     }
     if (card.id === 'vat_returns') {
@@ -577,6 +709,31 @@ const openUploadModal = (card) => {
     }
     activeUploadTarget.value = { type: 'datain', id: card.id }
     isModalOpen.value = true
+}
+
+// Saves only the currently visible page — entries from other pages are saved
+// independently when the user navigates to and updates them.
+const handleMappingUpdate = async (payload) => {
+    mappingModalError.value = ''
+    mappingModalSuccess.value = ''
+    mappingModalSaving.value = true
+    try {
+        if (mappingModalCardId.value === 'cc_mapping') {
+            if (!payload.length) throw new Error('Select a cost center for at least one ledger.')
+            await saveCostCenterMappings(payload)
+        } else if (mappingModalCardId.value === 'prepaid') {
+            await savePrepaidAdjustments(payload)
+        } else if (mappingModalCardId.value === 'opening_bal') {
+            if (!payload.length) throw new Error('Enter an opening balance for at least one ledger.')
+            await saveOpeningBalances(payload)
+        }
+        mappingModalSuccess.value = 'Saved successfully.'
+        emit('uploaded', mappingModalCardId.value)
+    } catch (err) {
+        mappingModalError.value = err?.data?.message ?? err?.message ?? 'Failed to save. Please try again.'
+    } finally {
+        mappingModalSaving.value = false
+    }
 }
 
 const vatUploadError = ref('')

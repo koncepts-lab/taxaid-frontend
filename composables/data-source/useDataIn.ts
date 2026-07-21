@@ -86,6 +86,28 @@ const BUDGET_ALL_IDS = [
 const makeBudgetStatuses = (): Record<string, BudgetItemStatus> =>
   Object.fromEntries(BUDGET_ALL_IDS.map(id => [id, { isUploaded: false, fileName: null, uploadDate: null }]))
 
+// ── Mapping cards (Cost Center Mapping / Prepaid Adjustments / Opening Balance) ─
+
+export interface MappingLedgerRow {
+  fs_code: string
+  main_group: string
+  subgroup: string
+  ledger_name: string
+  value_in_budget?: number
+}
+
+export interface MappingMeta {
+  current_page: number
+  last_page: number
+  total: number
+  per_page: number
+}
+
+export interface MappingPage {
+  data: MappingLedgerRow[]
+  meta: MappingMeta
+}
+
 // ── Composable ─────────────────────────────────────────────────────────────────
 
 export const useDataIn = () => {
@@ -379,6 +401,48 @@ export const useDataIn = () => {
     setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
   }
 
+  // ── Cost Center Mapping ────────────────────────────────────────────────────
+  const fetchCostCenterMappingLedgers = async (page = 1, perPage = 20): Promise<MappingPage> => {
+    const res = await useApi(`/data-source/cost-center/pl-grouped-report-ledgers?page=${page}&per_page=${perPage}`) as any
+    return { data: res?.data ?? [], meta: res?.meta ?? { current_page: 1, last_page: 1, total: 0, per_page: perPage } }
+  }
+
+  const fetchCostCenterOptions = async (): Promise<string[]> => {
+    const res = await useApi('/data-source/cost-center/project-names') as any
+    return res?.data ?? []
+  }
+
+  const saveCostCenterMappings = async (mappings: Array<{ fs_code: string, main_group: string, subgroup: string, ledger_name: string, cost_center: string }>): Promise<void> => {
+    await useApi('/data-source/cost-center/cost-center-mappings', { method: 'POST', body: { mappings } })
+  }
+
+  // ── Prepaid Adjustments ────────────────────────────────────────────────────
+  const fetchPrepaidLedgers = async (year?: number, page = 1, perPage = 20): Promise<MappingPage> => {
+    const y = year ?? new Date().getFullYear()
+    const res = await useApi(`/data-source/prepaid-expense-ledgers?year=${y}&page=${page}&per_page=${perPage}`) as any
+    return { data: res?.data ?? [], meta: res?.meta ?? { current_page: 1, last_page: 1, total: 0, per_page: perPage } }
+  }
+
+  const savePrepaidAdjustments = async (entries: Array<Record<string, any>>): Promise<void> => {
+    await useApi('/data-source/prepaid-adjustments', { method: 'POST', body: { entries } })
+  }
+
+  // ── Opening Balance ────────────────────────────────────────────────────────
+  const fetchOpeningBalanceLedgers = async (page = 1, perPage = 20): Promise<MappingPage> => {
+    const res = await useApi(`/data-source/opening-balance?page=${page}&per_page=${perPage}`) as any
+    const data = (res?.data ?? []).map((r: any) => ({
+      fs_code: r.fs_code,
+      main_group: r.main_group,
+      subgroup: r.subgroup,
+      ledger_name: r.ledger_name,
+    }))
+    return { data, meta: res?.meta ?? { current_page: 1, last_page: 1, total: 0, per_page: perPage } }
+  }
+
+  const saveOpeningBalances = async (balances: Array<{ fs_code: string, main_group: string, sub_group: string, ledger_name: string, opening_balance: number }>): Promise<void> => {
+    await useApi('/data-source/opening-balance/store', { method: 'POST', body: { balances } })
+  }
+
   return {
     // data-in
     items, loading, error, uploadingId,
@@ -389,5 +453,9 @@ export const useDataIn = () => {
     budgetUploadFile, budgetFetchGet, budgetFetchViewData, budgetDownloadSample, fetchBudgetStatuses,
     // vat
     vatUploading, vatUploadError, uploadVat, fetchVatFileUrl,
+    // mapping cards
+    fetchCostCenterMappingLedgers, fetchCostCenterOptions, saveCostCenterMappings,
+    fetchPrepaidLedgers, savePrepaidAdjustments,
+    fetchOpeningBalanceLedgers, saveOpeningBalances,
   }
 }
