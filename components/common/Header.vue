@@ -39,6 +39,7 @@
       </button>
       <NuxtLink to="/dashboard">
         <img :src="isDark ? '/images/logo-dark.svg' : '/images/logo.svg'" alt="Taxaid.AI"
+          class="header-logo"
           :class="currentLang === 'ar' ? 'h-10 md:h-14 mr-0 md:mr-[30px]' : 'h-10 md:h-14 ml-0 md:ml-[30px]'" />
       </NuxtLink>
     </div>
@@ -46,22 +47,22 @@
     <div class="hidden lg:flex items-center p-1.5 rounded-full transition-all duration-300"
       :class="isDark ? 'bg-[#015F4D] text-white' : ''"
       :style="isDark ? {} : { background: 'linear-gradient(271.49deg, rgba(164, 227, 214, 0.485) 30.96%, rgba(109, 216, 193, 0.5) 109.26%)', boxShadow: '0px 4px 4px 0px #D0F7EF80' }">
-      <NuxtLink to="/dashboard" class="px-8 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/dashboard')
+      <NuxtLink to="/dashboard" class="header-nav-link px-8 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/dashboard')
         ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
         : (isDark ? 'text-white hover:text-white/80' : 'text-black hover:text-black')">
         {{ currentLang === 'ar' ? 'لوحة القيادة' : 'Dashboard' }}
       </NuxtLink>
-      <NuxtLink to="/data-source" class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/data-source')
+      <NuxtLink to="/data-source" class="header-nav-link px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/data-source')
         ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
         : (isDark ? 'text-white hover:text-white/80' : 'text-black hover:text-black')">
         {{ currentLang === 'ar' ? 'مصدر البيانات' : 'Data Source' }}
       </NuxtLink>
-      <NuxtLink to="/alerts" class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/alerts')
+      <NuxtLink to="/alerts" class="header-nav-link px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/alerts')
         ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
         : (isDark ? 'text-white hover:text-white/80' : 'text-black hover:text-black')">
         {{ currentLang === 'ar' ? 'التنبيهات' : 'Alerts' }}
       </NuxtLink>
-      <NuxtLink to="/appointment" class="px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/appointment')
+      <NuxtLink to="/appointment" class="header-nav-link px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/appointment')
         ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
         : (isDark ? 'text-white hover:text-white/80' : 'text-black hover:text-black')">
         {{ currentLang === 'ar' ? 'المواعيد' : 'Appointment' }}
@@ -78,11 +79,11 @@
       <div class="group relative block">
         <CommonTooltip :text="currentLang === 'ar' ? 'ملخص بنقرة واحدة' : 'One Click Summary'">
           <button
-            class="action-btn flash-btn w-9 h-9 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all duration-300"
+            class="header-trigger-btn action-btn flash-btn w-9 h-9 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all duration-300"
             :class="{ 'shadow-none': isDark }"
             :style="isDark ? { background: 'linear-gradient(313.43deg, rgba(4, 183, 136, 0.5) 14.29%, rgba(5, 119, 89, 0.5) 81.93%)', boxShadow: 'none' } : {}">
             <img :src="isDark ? '/images/icons/flash-dark.svg' : '/images/icons/flash.svg'"
-              class="w-5 h-5 md:w-6 md:h-6" alt="Flash" />
+              class="header-trigger-img w-5 h-5 md:w-6 md:h-6" alt="Flash" />
           </button>
         </CommonTooltip>
       </div>
@@ -90,22 +91,22 @@
       <CommonTooltip
         :text="isDark ? (currentLang === 'ar' ? 'الوضع الفاتح' : 'Light Mode') : (currentLang === 'ar' ? 'الوضع الداكن' : 'Dark Mode')">
         <button @click="toggleTheme"
-          class="action-btn theme-btn w-9 h-9 md:w-11 md:h-11 rounded-full items-center justify-center transition-all duration-300 hidden md:flex"
+          class="header-trigger-btn action-btn theme-btn w-9 h-9 md:w-11 md:h-11 rounded-full items-center justify-center transition-all duration-300 hidden md:flex"
           :class="{ 'shadow-none': isDark }"
           :style="isDark ? { background: 'linear-gradient(180deg, #057759 0%, #04B788 100%)', boxShadow: 'none' } : {}">
-          <img v-if="!isDark" src="/images/icons/dark.svg" class="w-5 h-5 md:w-6 md:h-6 invert brightness-0"
+          <img v-if="!isDark" src="/images/icons/dark.svg" class="header-trigger-img w-5 h-5 md:w-6 md:h-6 invert brightness-0"
             alt="Dark Mode" />
-          <img v-else src="/images/icons/sun.svg" class="w-5 h-5 md:w-6 md:h-6" alt="Light Mode" />
+          <img v-else src="/images/icons/sun.svg" class="header-trigger-img w-5 h-5 md:w-6 md:h-6" alt="Light Mode" />
         </button>
       </CommonTooltip>
 
       <div class="group relative">
         <button @click.stop="isSettingsOpen = true"
-          class="action-btn settings-btn w-9 h-9 md:w-11 md:h-11 rounded-full items-center justify-center transition-all duration-300 flex"
+          class="header-trigger-btn action-btn settings-btn w-9 h-9 md:w-11 md:h-11 rounded-full items-center justify-center transition-all duration-300 flex"
           :class="{ 'shadow-none': isDark }"
           :style="isDark ? { background: 'linear-gradient(313.43deg, rgba(4, 183, 135, 0.5) 14.29%, rgba(2, 83, 64, 0.5) 81.93%)', boxShadow: 'none' } : {}">
           <img :src="isDark ? '/images/icons/settings-dark.svg' : '/images/icons/settings.svg'"
-            class="w-5 h-5 md:w-6 md:h-6" alt="Settings" />
+            class="header-trigger-img w-5 h-5 md:w-6 md:h-6" alt="Settings" />
         </button>
         <div
           class="absolute top-[110%] right-0 mt-2 w-[280px] md:w-[324px] bg-white rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-2 border border-teal-50">
@@ -132,7 +133,7 @@
 
       <div class="group relative flex items-center gap-2 md:gap-4 p-1 cursor-pointer z-[100000]"
         @click.stop="isProfileOpen = true" :class="currentLang === 'ar' ? 'mr-1 md:mr-3' : 'ml-1 md:ml-3'">
-        <div class="text-right hidden lg:block" :class="currentLang === 'ar' ? 'text-left' : 'text-right'">
+        <div class="header-profile-text-container text-right hidden lg:block" :class="currentLang === 'ar' ? 'text-left' : 'text-right'">
           <div class="font-medium text-[15px] leading-tight transition-colors duration-300"
             :class="isDark ? 'text-white' : 'text-[#013E32]'">
             {{ profile?.companyNickname || profile?.companyName || '...' }}
@@ -142,7 +143,7 @@
             {{ profile?.email || '' }}
           </div>
         </div>
-        <div class="relative">
+        <div class="relative header-profile-img-container">
           <img v-if="pictureUrl" :src="pictureUrl"
             class="w-9 h-9 md:w-12 md:h-12 rounded-full border-2 border-white shadow-md object-cover" alt="Profile" />
           <div v-else class="w-9 h-9 md:w-12 md:h-12 rounded-full border-2 border-white shadow-md bg-[#E6F9F4]"></div>
@@ -581,5 +582,31 @@ onMounted(() => {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@media (max-width: 1300px) {
+  .header-logo {
+    height: auto !important;
+    max-width: 120px !important;
+  }
+  .header-nav-link {
+    font-size: 14px !important;
+    padding: 4px 15px !important;
+  }
+  .header-trigger-btn {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  .header-trigger-img {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .header-profile-img-container {
+    min-width: 48px !important;
+  }
+  .header-profile-text-container {
+    max-width: 230px !important;
+    word-wrap: break-word !important;
+  }
 }
 </style>
