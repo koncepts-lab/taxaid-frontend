@@ -32,6 +32,8 @@ const ENABLE_SNAPSHOT_FALLBACK = true
 const _snapshotDate   = ref<string | null>(null)
 const _requestedDate  = ref<string | null>(null)
 const _snapshotNotice = ref(false)
+// Tenant-wide: whether Hold-for-Review has any internal recipient configured.
+const _hasInternalEmails = ref(true)
 
 async function fetchAll(lang = 'en') {
   _loading.value = true
@@ -56,6 +58,7 @@ async function fetchAll(lang = 'en') {
 
     if (summaryRes?.status === 'success') {
       _summary.value = summaryRes.data || []
+      _hasInternalEmails.value = summaryRes.has_internal_emails ?? true
     }
 
     // 2. Aging graph (/ap-report/aging)
@@ -121,6 +124,7 @@ export function useAccountsPayablePage() {
     snapshotDate:   _snapshotDate,
     requestedDate:  _requestedDate,
     snapshotNotice: _snapshotNotice,
+    hasInternalEmails: _hasInternalEmails,
     fetchAll,
   }
 }
