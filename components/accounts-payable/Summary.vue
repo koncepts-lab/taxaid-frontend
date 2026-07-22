@@ -85,7 +85,9 @@
                         </span>
                       </div>
                     </div>
-                    <button @click="handleHoldForReview(group)" :disabled="sendingKey !== null || groupSelectedCount(group) === 0"
+                    <button @click="handleHoldForReview(group)"
+                      :disabled="sendingKey !== null || groupSelectedCount(group) === 0 || !hasInternalEmails"
+                      :title="!hasInternalEmails ? (currentLang === 'ar' ? 'لم يتم إعداد أي بريد إلكتروني داخلي — أضفه في دليل البريد الداخلي' : 'No internal email recipients configured — add them in the Internal Email Directory') : ''"
                       class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-3 rounded-xl flex items-center gap-3 text-[16px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -334,7 +336,7 @@ const props = defineProps({
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { holdForReview } = useAccountsPayablePage()
+const { holdForReview, hasInternalEmails } = useAccountsPayablePage()
 
 const expandedGroups = ref([])
 const isModalOpen = ref(false)

@@ -313,16 +313,15 @@ const props = defineProps({
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { contactEmails, fetchContactEmails, sendReminders } = useAccountsReceivablePage()
+const { sendReminders } = useAccountsReceivablePage()
 
 const expandedGroups = ref([0])
 const isModalOpen    = ref(false)
 const loadingGroup   = ref(null)
 const invoiceCache   = ref({})
+const invoiceHasEmail = ref({}) // has_email per customer label, from /ar-report/customer-details
 const sendingKey     = ref(null) // label of the company currently sending (per-group)
 const sendStatus     = reactive({ type: '', message: '' })
-
-onMounted(fetchContactEmails)
 
 const arData = computed(() => props.data)
 
@@ -354,6 +353,7 @@ const toggleGroup = async (idx) => {
       params: { test_date: props.testDate, customer_name: group.label }
     })
     if (res?.status === 'success' && Array.isArray(res.data)) {
+      invoiceHasEmail.value[group.label] = !!res.has_email
       invoiceCache.value[group.label] = res.data
         .filter(r => !r.isTotal)
         .map(r => ({
@@ -371,9 +371,11 @@ const toggleGroup = async (idx) => {
         }))
     } else {
       invoiceCache.value[group.label] = []
+      invoiceHasEmail.value[group.label] = false
     }
   } catch {
     invoiceCache.value[group.label] = []
+    invoiceHasEmail.value[group.label] = false
   } finally {
     loadingGroup.value = null
   }
@@ -391,11 +393,9 @@ const toggleGroupSelectAll = (group) => {
   getInvoices(group).forEach(inv => { if (!inv.on_cooldown) inv.selected = next })
 }
 
-// Does this customer have an email in the contacts registry?
-const hasEmail = (group) => {
-  const key = String(group?.label ?? '').trim().toLowerCase()
-  return !!contactEmails.value[key]
-}
+// Does this customer have an email? — from the customer-details response
+// fetched when the group was expanded (no separate /customers lookup).
+const hasEmail = (group) => !!invoiceHasEmail.value[group?.label]
 
 const emailTooltip = (group) => {
   if (hasEmail(group)) return ''
