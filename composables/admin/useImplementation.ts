@@ -162,8 +162,8 @@ export function useImplementation() {
     return res.data ?? []
   }
 
-  async function linkPartnerToClient(partnerId: number, userId: number): Promise<any> {
-    const res: any = await apiFetch(`/admin/partners/${partnerId}/link-client/${userId}`, { method: 'POST' })
+  async function linkPartnerToClient(partnerId: number, tenantId: number): Promise<any> {
+    const res: any = await apiFetch(`/admin/partners/${partnerId}/link-client/${tenantId}`, { method: 'POST' })
     return res.data
   }
 

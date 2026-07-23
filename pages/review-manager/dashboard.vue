@@ -647,7 +647,7 @@ async function doAssign(item) {
   assigning.value = true
   try {
     const dept = consultantList.value.find(c => c.id === item.selectedConsultantId)
-    await rm.assignConsultant(item.id, item.selectedConsultantId, dept?.department_id ?? 1)
+    await rm.assignConsultant(item.tenant_id, item.selectedConsultantId, dept?.department_id ?? 1)
     unassignedPage.value = 1
     await loadUnassigned()
   } finally {
