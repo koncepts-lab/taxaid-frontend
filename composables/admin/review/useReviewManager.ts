@@ -51,10 +51,10 @@ export function useReviewManager() {
     return res
   }
 
-  async function assignConsultant(clientUserId: number, adminId: number, departmentId: number): Promise<void> {
+  async function assignConsultant(tenantId: number, adminId: number, departmentId: number): Promise<void> {
     await apiFetch('/admin/review/clients/assign', {
       method: 'POST',
-      body: { client_user_id: clientUserId, admin_id: adminId, department_id: departmentId },
+      body: { tenant_id: tenantId, admin_id: adminId, department_id: departmentId },
     })
   }
 
