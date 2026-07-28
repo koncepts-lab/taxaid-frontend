@@ -348,7 +348,7 @@ function mapClient(item) {
         implementationStatus: item.implementation_status,
         partnerId:        item.partner_id ?? null,
         partnerName:      item.partner_name ?? null,
-        _userId:          item.id, // users.id for partner linking
+        _tenantId:        item.tenant_id, // tenants.id for partner linking
     }
 }
 
@@ -490,7 +490,7 @@ function cancelPartnerConfirm() {
 async function confirmLinkPartner() {
     partnerLinking.value = true
     try {
-        await linkPartnerToClient(selectedPartner.value.id, partnerModalClient.value._userId)
+        await linkPartnerToClient(selectedPartner.value.id, partnerModalClient.value._tenantId)
         for (const tab of ['new', 'ongoing', 'completed']) {
             const idx = poolData.value[tab].findIndex(c => c.id === partnerModalClient.value.id)
             if (idx !== -1) {

@@ -737,7 +737,7 @@
             <input type="checkbox"
               :checked="selectedClientIds.length === partnerClientsList.length && partnerClientsList.length > 0"
               :indeterminate="selectedClientIds.length > 0 && selectedClientIds.length < partnerClientsList.length"
-              @change="selectedClientIds = selectedClientIds.length === partnerClientsList.length ? [] : partnerClientsList.map(c => c.user_id)"
+              @change="selectedClientIds = selectedClientIds.length === partnerClientsList.length ? [] : partnerClientsList.map(c => c.tenant_id)"
               class="w-4 h-4 accent-[#00835D] cursor-pointer" />
             <span class="text-[14px] font-medium" :class="isDark ? 'text-white/70' : 'text-[#1a1a1a]'">Select all</span>
           </label>
@@ -745,9 +745,9 @@
 
         <!-- Client List -->
         <div class="overflow-y-auto flex-1 px-8 pb-4 divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-          <div v-for="client in filteredClients" :key="client.user_id" class="py-4">
+          <div v-for="client in filteredClients" :key="client.tenant_id" class="py-4">
             <label class="flex items-start gap-3 cursor-pointer">
-              <input type="checkbox" :value="client.user_id" v-model="selectedClientIds"
+              <input type="checkbox" :value="client.tenant_id" v-model="selectedClientIds"
                 class="w-4 h-4 accent-[#00835D] cursor-pointer flex-shrink-0 mt-0.5" />
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
@@ -756,15 +756,14 @@
                   <span v-if="client.has_paid_cycle && !client.commission_paid" class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#FEF3C7] text-[#D97706] flex-shrink-0">Not Paid</span>
                   <span v-if="client.commission_paid" class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#E0F2FE] text-[#0369A1] flex-shrink-0">Commission Paid</span>
                 </div>
-                <p class="text-[12px] mt-0.5 truncate" :class="isDark ? 'text-white/40' : 'text-gray-400'">{{ client.email }}</p>
               </div>
-              <svg v-if="selectedClientIds.includes(client.user_id)" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#04C18F] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+              <svg v-if="selectedClientIds.includes(client.tenant_id)" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#04C18F] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
             </label>
             <!-- Commission amount input -->
             <div class="mt-2 ml-7">
               <input
-                :value="clientAmounts[client.user_id] ?? ''"
-                @input="clientAmounts[client.user_id] = $event.target.value"
+                :value="clientAmounts[client.tenant_id] ?? ''"
+                @input="clientAmounts[client.tenant_id] = $event.target.value"
                 type="number" step="0.01" min="0"
                 :placeholder="client.calculated_settlement > 0 ? `Calculated settlement: AED ${client.calculated_settlement.toLocaleString()}` : 'Enter commission amount (AED)'"
                 :class="isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/20' : 'bg-[#F9FAFB] border-gray-100 text-[#1a1a1a] placeholder:text-gray-400'"
@@ -1029,7 +1028,7 @@ const filteredClients = computed(() => {
   }
 
   if (!q) return list
-  return list.filter(c => c.company_name?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q))
+  return list.filter(c => c.company_name?.toLowerCase().includes(q))
 })
 
 // Backend is the source of truth for the payment total (real-time, debounced).
