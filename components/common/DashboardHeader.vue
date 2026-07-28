@@ -62,7 +62,7 @@
                                 
                                 <div v-if="isDirectCalendar" class="p-2 w-max">
                                     <!-- 3M / 6M projection toggle -->
-                                    <div v-if="showPeriodToggle" class="flex items-center gap-1 mb-2 p-1 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'">
+                                    <div v-if="showPeriodToggle" class="flex items-center gap-1 mb-4 p-1 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'">
                                         <button
                                             v-for="m in [3, 6]" :key="m"
                                             @click.stop="selectProjectionPeriod(m)"
@@ -73,7 +73,28 @@
                                             {{ m }}M
                                         </button>
                                     </div>
-                                    <VDatePicker v-model="singleDate" :is-dark="isDark"
+
+                                    <div v-if="showPeriodToggle" class="flex flex-col gap-4 min-w-[220px]">
+                                        <!-- From -->
+                                        <div>
+                                            <label class="text-sm font-medium mb-1 block" :class="isDark ? 'text-white/80' : 'text-[#013e32]/80'">{{ currentLang === 'ar' ? 'من' : 'From' }}</label>
+                                            <div class="w-full border rounded-lg px-4 py-2.5 text-sm font-medium" :class="isDark ? 'border-[#03D8B0] text-[#03D8B0]' : 'border-[#03D8B0] text-[#03D8B0]'">
+                                                {{ fromDateFormatted }}
+                                            </div>
+                                            <span class="text-xs mt-1 block" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ fromDateLabel }}</span>
+                                        </div>
+                                        
+                                        <!-- To -->
+                                        <div>
+                                            <label class="text-sm font-medium mb-1 block" :class="isDark ? 'text-white/80' : 'text-[#013e32]/80'">{{ currentLang === 'ar' ? 'إلى' : 'To' }}</label>
+                                            <div class="w-full border rounded-lg px-4 py-2.5 text-sm font-medium" :class="isDark ? 'border-[#03D8B0] text-[#03D8B0]' : 'border-[#03D8B0] text-[#03D8B0]'">
+                                                {{ toDateFormatted }}
+                                            </div>
+                                            <span class="text-xs mt-1 block" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ currentLang === 'ar' ? 'اليوم' : 'Today' }}</span>
+                                        </div>
+                                    </div>
+
+                                    <VDatePicker v-else v-model="singleDate" :is-dark="isDark"
                                         :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
                                         :min-date="minDate" :max-date="today" @update:model-value="handleSingleChange" />
                                 </div>
@@ -113,7 +134,7 @@
 
                                             <div v-else class="p-2">
                                                 <!-- 3M / 6M projection toggle -->
-                                                <div v-if="showPeriodToggle" class="flex items-center gap-1 mb-2 p-1 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'">
+                                                <div v-if="showPeriodToggle" class="flex items-center gap-1 mb-4 p-1 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'">
                                                     <button
                                                         v-for="m in [3, 6]" :key="m"
                                                         @click.stop="selectProjectionPeriod(m)"
@@ -124,7 +145,28 @@
                                                         {{ m }}M
                                                     </button>
                                                 </div>
-                                                <VDatePicker v-model="singleDate" :is-dark="isDark"
+                                                
+                                                <div v-if="showPeriodToggle" class="flex flex-col gap-4 min-w-[220px]">
+                                                    <!-- From -->
+                                                    <div>
+                                                        <label class="text-sm font-medium mb-1 block" :class="isDark ? 'text-white/80' : 'text-[#013e32]/80'">{{ currentLang === 'ar' ? 'من' : 'From' }}</label>
+                                                        <div class="w-full border rounded-lg px-4 py-2.5 text-sm font-medium" :class="isDark ? 'border-[#03D8B0] text-[#03D8B0]' : 'border-[#03D8B0] text-[#03D8B0]'">
+                                                            {{ fromDateFormatted }}
+                                                        </div>
+                                                        <span class="text-xs mt-1 block" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ fromDateLabel }}</span>
+                                                    </div>
+                                                    
+                                                    <!-- To -->
+                                                    <div>
+                                                        <label class="text-sm font-medium mb-1 block" :class="isDark ? 'text-white/80' : 'text-[#013e32]/80'">{{ currentLang === 'ar' ? 'إلى' : 'To' }}</label>
+                                                        <div class="w-full border rounded-lg px-4 py-2.5 text-sm font-medium" :class="isDark ? 'border-[#03D8B0] text-[#03D8B0]' : 'border-[#03D8B0] text-[#03D8B0]'">
+                                                            {{ toDateFormatted }}
+                                                        </div>
+                                                        <span class="text-xs mt-1 block" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ currentLang === 'ar' ? 'اليوم' : 'Today' }}</span>
+                                                    </div>
+                                                </div>
+
+                                                <VDatePicker v-else v-model="singleDate" :is-dark="isDark"
                                                     :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
                                                     :min-date="minDate" :max-date="today" @update:model-value="handleSingleChange" />
                                             </div>
@@ -223,10 +265,26 @@ const isDirectCalendar = computed(() => {
 // 3M / 6M projection toggle (only shown when showPeriodToggle=true)
 const activePeriod = ref(props.projectionPeriod ?? 3)
 watch(() => props.projectionPeriod, (v) => { if (v !== null) activePeriod.value = v })
+
 const selectProjectionPeriod = (months) => {
     activePeriod.value = months
     emit('period-change', months)
 }
+
+const fromDateFormatted = computed(() => {
+    const d = new Date(singleDate.value || new Date())
+    d.setMonth(d.getMonth() - activePeriod.value)
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+})
+
+const toDateFormatted = computed(() => {
+    const d = new Date(singleDate.value || new Date())
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+})
+
+const fromDateLabel = computed(() => {
+    return currentLang.value === 'ar' ? `منذ ${activePeriod.value} أشهر` : `${activePeriod.value} months ago`
+})
 const today = new Date()
 
 const range = ref({ start: null, end: null })
