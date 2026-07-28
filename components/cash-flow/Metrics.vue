@@ -14,8 +14,8 @@
             <div class="flex items-end gap-3 mt-0">
                 <h2 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ cashInHand }}</h2>
                 <div class="flex flex-col items-end mb-1 ml-auto">
-                    <div class="flex items-center gap-1 text-[#32c465] font-medium">
-                        <img src="/images/icons/up.svg" alt="Up" class="w-4 h-4 object-contain">
+                    <div class="flex items-center gap-1 font-medium" :class="isNegativeCashInHandChange ? 'text-[#FF6B6B]' : 'text-[#32c465]'">
+                        <img :src="isNegativeCashInHandChange ? '/images/icons/down-right.svg' : '/images/icons/up.svg'" alt="Trend" class="w-4 h-4 object-contain">
                         <span class="text-sm">({{ cashInHandChange }})</span>
                     </div>
                     <span class="text-xs" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ currentLang === 'ar' ? 'مقارنة بالشهر الماضي' : 'vs last month' }}</span>
@@ -39,8 +39,8 @@
             <div class="flex items-end gap-3 mt-0">
                 <h2 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ ar30Days }}</h2>
                 <div class="flex flex-col items-end mb-1 ml-auto">
-                    <div class="flex items-center gap-1 text-[#FF6B6B] font-medium">
-                        <img src="/images/icons/down-right.svg" alt="Down" class="w-4 h-4">
+                    <div class="flex items-center gap-1 font-medium" :class="isPositiveAr30DaysChange ? 'text-[#00b792]' : 'text-[#FF6B6B]'">
+                        <img :src="isPositiveAr30DaysChange ? '/images/icons/up.svg' : '/images/icons/down-right.svg'" alt="Trend" class="w-4 h-4">
                         <span class="text-sm">({{ ar30DaysChange }})</span>
                     </div>
                     <span class="text-xs" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ currentLang === 'ar' ? 'مقارنة بالشهر الماضي' : 'vs last month' }}</span>
@@ -106,6 +106,16 @@ const cashInHand = computed(() => metrics.value?.cashInHand ?? 'AED 0.0 M')
 const cashInHandChange = computed(() => metrics.value?.cashInHandChange ?? '0.0%')
 const ar30Days = computed(() => metrics.value?.ar30Days ?? 'AED 0.0 M')
 const ar30DaysChange = computed(() => metrics.value?.ar30DaysChange ?? '0.0%')
+
+const isNegativeCashInHandChange = computed(() => {
+    const val = cashInHandChange.value
+    return typeof val === 'string' && val.trim().startsWith('-')
+})
+
+const isPositiveAr30DaysChange = computed(() => {
+    const val = ar30DaysChange.value
+    return typeof val === 'string' && !val.trim().startsWith('-')
+})
 
 const scenarios = computed(() => metrics.value?.scenarios ?? [
     { en: '100% Scenario', ar: 'سيناريو 100%' },
