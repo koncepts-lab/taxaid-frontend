@@ -17,6 +17,7 @@
             :subtitle="{ en: 'Comprehensive AP tracking and aging insights', ar: 'تتبع شامل لحسابات الدفع ورؤى التقادم' }" 
             :periods="customPeriods"
             class="mb-8"
+            :minDate="new Date(2026, 5, 15)"
             @selected-date="handleDateChange"
             @reload="handleReload"
           />

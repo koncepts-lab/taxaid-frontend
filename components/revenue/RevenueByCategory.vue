@@ -27,7 +27,16 @@
         </div>
       </div>
 
-      <ClientOnly v-if="!loading && !error">
+      <!-- Empty State -->
+      <div v-else-if="!loading && !error && (!series || series.every(s => !s.data || s.data.length === 0))" class="absolute inset-0 z-20 flex items-center justify-center bg-white/50 dark:bg-black/10 backdrop-blur-[2px] rounded-2xl">
+        <div class="flex flex-col items-center gap-3 text-center px-6">
+          <p class="text-sm font-medium opacity-60" :class="isDark ? 'text-white' : 'text-[#013E32]'">
+            {{ currentLang === 'ar' ? 'البيانات فارغة' : 'Data empty' }}
+          </p>
+        </div>
+      </div>
+
+      <ClientOnly v-else-if="!loading && !error">
         <apexchart
           type="bar"
           height="100%"
@@ -57,7 +66,16 @@
           
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10" :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
-            <ClientOnly>
+            <!-- Empty State -->
+            <div v-if="!loading && !error && (!series || series.every(s => !s.data || s.data.length === 0))" class="absolute inset-0 z-20 flex items-center justify-center bg-white/50 dark:bg-black/10 backdrop-blur-[2px]">
+              <div class="flex flex-col items-center gap-3 text-center px-6">
+                <p class="text-base font-medium opacity-60" :class="isDark ? 'text-white' : 'text-[#013E32]'">
+                  {{ currentLang === 'ar' ? 'البيانات فارغة' : 'Data empty' }}
+                </p>
+              </div>
+            </div>
+
+            <ClientOnly v-else-if="!loading && !error">
               <apexchart
                 type="bar"
                 height="100%"

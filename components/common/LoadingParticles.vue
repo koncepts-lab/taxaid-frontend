@@ -123,7 +123,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: white;
+  background: transparent;
 }
 
 canvas {

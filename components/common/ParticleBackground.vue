@@ -9,11 +9,16 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
+const props = defineProps({
+  delay: { type: Number, default: 0 }
+})
+
 const { isDark } = useTheme()
 
 const canvas = ref(null)
 let ctx = null
 let animationId = null
+let timeoutId = null
 let particles = []
 
 class SpreadingParticle {
@@ -112,11 +117,18 @@ const animate = () => {
 }
 
 onMounted(() => {
-  initCanvas()
+  if (props.delay > 0) {
+    timeoutId = setTimeout(() => {
+      initCanvas()
+    }, props.delay)
+  } else {
+    initCanvas()
+  }
   window.addEventListener('resize', resizeCanvas)
 })
 
 onUnmounted(() => {
+  if (timeoutId) clearTimeout(timeoutId)
   if (animationId) cancelAnimationFrame(animationId)
   window.removeEventListener('resize', resizeCanvas)
 })

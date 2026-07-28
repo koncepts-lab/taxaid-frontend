@@ -75,7 +75,7 @@
                                     </div>
                                     <VDatePicker v-model="singleDate" :is-dark="isDark"
                                         :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
-                                        :max-date="today" @update:model-value="handleSingleChange" />
+                                        :min-date="minDate" :max-date="today" @update:model-value="handleSingleChange" />
                                 </div>
                                 <template v-else>
                                     <div v-for="period in periods" :key="period.en" class="relative group">
@@ -97,7 +97,7 @@
                                                 <div class="p-3">
                                                     <VDatePicker v-model="range.start" :is-dark="isDark"
                                                         :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary"
-                                                        borderless :max-date="range.end || today"
+                                                        borderless :min-date="minDate" :max-date="range.end || today"
                                                         :initial-page="prevMonthPage"
                                                         @update:model-value="emitRangeChange" />
                                                 </div>
@@ -105,7 +105,7 @@
                                                     :class="isDark ? 'border-white/10' : 'border-gray-100'">
                                                     <VDatePicker v-model="range.end" :is-dark="isDark"
                                                         :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary"
-                                                        borderless :min-date="range.start || undefined" :max-date="today"
+                                                        borderless :min-date="range.start || minDate" :max-date="today"
                                                         :initial-page="currMonthPage"
                                                         @update:model-value="emitRangeChange" />
                                                 </div>
@@ -126,7 +126,7 @@
                                                 </div>
                                                 <VDatePicker v-model="singleDate" :is-dark="isDark"
                                                     :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
-                                                    :max-date="today" @update:model-value="handleSingleChange" />
+                                                    :min-date="minDate" :max-date="today" @update:model-value="handleSingleChange" />
                                             </div>
                                         </div>
                                     </div>
@@ -202,7 +202,8 @@ const props = defineProps({
     defaultPeriod: { type: String, default: null },
     defaultRangeStart: { type: String, default: null },
     defaultRangeEnd: { type: String, default: null },
-    defaultDate: { type: String, default: null }
+    defaultDate: { type: String, default: null },
+    minDate: { type: [Date, String], default: null }
 })
 
 const emit = defineEmits(['selected-date', 'reload', 'export-pdf', 'one-click-summary', 'period-change'])
@@ -391,6 +392,16 @@ defineExpose({ resetToDefault })
 :deep(.dark .vc-container) {
     background: transparent !important;
     border: none !important;
+}
+
+:deep(.vc-day.is-disabled),
+:deep(.vc-day.is-disabled button),
+:deep(.vc-day.is-disabled .vc-day-content),
+:deep(.vc-disabled),
+:deep(.vc-disabled *),
+:deep(button:disabled),
+:deep(button[disabled]) {
+    cursor: not-allowed !important;
 }
 </style>
 

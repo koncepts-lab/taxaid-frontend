@@ -28,45 +28,93 @@
                         @export-pdf="handleExport('pdf')"
                     />
 
-                    <div class="rounded-3xl mb-4 lg:mb-8 transition-all duration-500"
-                        :class="isDark ? 'bg-[#00141080] border-none' : 'bg-white border border-gray-100'"
-                        :style="isDark ? { boxShadow: '0px 4px 4px 0px #00000040' } : {}">
-                        <RevenueSummary 
-                            :data="summaryData" 
-                            :is-compressed="isChatOpen" 
-                            :loading="loadingBreakdown"
-                            :error="errorBreakdown"
-                        />
-                    </div>
+                    <template v-if="loadingBreakdown">
+                        <div class="relative w-full min-h-[500px]">
+                            <div class="relative z-10 space-y-4 lg:space-y-8">
+                                <!-- Summary Skeleton -->
+                                <div class="rounded-3xl p-6 border relative animate-pulse" :class="isDark ? 'bg-[#015F4D]/20 border-[#00B794]/30' : 'border-[#04C18F80] bg-[#00FFBC1F] shadow-sm'">
+                                    <div class="h-7 rounded w-1/4 mb-6" :class="isDark ? 'bg-white/10' : 'bg-[#008169]/10'"></div>
+                                    <div class="space-y-4">
+                                        <div class="h-[40px] rounded-xl w-full" :class="isDark ? 'bg-white/10' : 'bg-white/50'"></div>
+                                        <div class="h-[40px] rounded-xl w-full" :class="isDark ? 'bg-white/10' : 'bg-[#008169]/20'"></div>
+                                        <div class="h-[40px] rounded-xl w-full" :class="isDark ? 'bg-white/10' : 'bg-white/50'"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Gauge & Category Skeleton -->
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <div class="rounded-[20px] p-6 border relative animate-pulse h-[410px] lg:h-[500px] flex flex-col" :class="isDark ? 'bg-[#015F4D]/20 border-[#00B794]/30' : 'border-[#04C18F80] bg-[#00FFBC1F] shadow-sm'">
+                                        <div class="h-7 rounded w-1/2 mb-auto" :class="isDark ? 'bg-white/10' : 'bg-[#008169]/10'"></div>
+                                        <div class="w-48 h-48 rounded-full mx-auto mb-auto" :class="isDark ? 'bg-white/10' : 'bg-[#008169]/20'"></div>
+                                    </div>
+                                    <div class="rounded-[20px] p-6 border relative animate-pulse h-[410px] lg:h-[500px] flex flex-col" :class="isDark ? 'bg-[#015F4D]/20 border-[#00B794]/30' : 'border-[#04C18F80] bg-[#00FFBC1F] shadow-sm'">
+                                        <div class="h-7 rounded w-1/3 mb-10" :class="isDark ? 'bg-white/10' : 'bg-[#008169]/10'"></div>
+                                        <div class="flex items-end justify-center gap-6 h-48 mt-auto mb-10">
+                                            <div class="w-16 h-full rounded-t-xl" :class="isDark ? 'bg-white/10' : 'bg-white/50'"></div>
+                                            <div class="w-16 h-3/4 rounded-t-xl" :class="isDark ? 'bg-white/10' : 'bg-[#008169]/20'"></div>
+                                            <div class="w-16 h-1/2 rounded-t-xl" :class="isDark ? 'bg-white/10' : 'bg-white/50'"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Trend Skeleton -->
+                                <div class="rounded-[20px] p-6 border relative animate-pulse h-[400px] flex flex-col" :class="isDark ? 'bg-[#015F4D]/20 border-[#00B794]/30' : 'border-[#04C18F80] bg-[#00FFBC1F] shadow-sm'">
+                                    <div class="h-7 rounded w-1/4 mb-10" :class="isDark ? 'bg-white/10' : 'bg-[#008169]/10'"></div>
+                                    <div class="w-full flex-1 rounded-xl" :class="isDark ? 'bg-white/10' : 'bg-[#008169]/10'"></div>
+                                </div>
+                                
+                                <!-- Top Customers Skeleton -->
+                                <div class="rounded-[20px] p-6 border relative animate-pulse h-[400px] flex flex-col" :class="isDark ? 'bg-[#015F4D]/20 border-[#00B794]/30' : 'border-[#04C18F80] bg-[#00FFBC1F] shadow-sm'">
+                                    <div class="h-7 rounded w-1/3 mb-10" :class="isDark ? 'bg-white/10' : 'bg-[#008169]/10'"></div>
+                                    <div class="w-full flex-1 rounded-xl" :class="isDark ? 'bg-white/10' : 'bg-[#008169]/10'"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 lg:mb-8">
-                        <div class="h-[410px] lg:h-[500px]">
-                            <RevenueGauge 
-                                :data="gaugeData"
+                    <template v-else>
+                        <CommonParticleBackground :delay="1500" />
+                        
+                        <div class="rounded-3xl mb-4 lg:mb-8 transition-all duration-500"
+                            :class="isDark ? 'bg-[#00141080] border-none' : 'bg-white border border-gray-100'"
+                            :style="isDark ? { boxShadow: '0px 4px 4px 0px #00000040' } : {}">
+                            <RevenueSummary 
+                                :data="summaryData" 
+                                :is-compressed="isChatOpen" 
                                 :loading="loadingBreakdown"
                                 :error="errorBreakdown"
                             />
                         </div>
-                        <div class="h-[auto] lg:h-[500px]">
-                            <RevenueByCategory 
-                                :data="byCategoryData"
-                                :loading="loadingBreakdown"
-                                :error="errorBreakdown"
-                            />
-                        </div>
-                    </div>
 
-                    <div class="mb-4 lg:mb-8">
-                        <div class="h-[auto]">
-                            <RevenueTrend />
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 lg:mb-8">
+                            <div class="h-[410px] lg:h-[500px]">
+                                <RevenueGauge 
+                                    :data="gaugeData"
+                                    :loading="loadingBreakdown"
+                                    :error="errorBreakdown"
+                                />
+                            </div>
+                            <div class="h-[auto] lg:h-[500px]">
+                                <RevenueByCategory 
+                                    :data="byCategoryData"
+                                    :loading="loadingBreakdown"
+                                    :error="errorBreakdown"
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    <div>
+                        <div class="mb-4 lg:mb-8">
+                            <div class="h-[auto]">
+                                <RevenueTrend />
+                            </div>
+                        </div>
+
                         <div>
-                            <RevenueTopCustomers />
+                            <div>
+                                <RevenueTopCustomers />
+                            </div>
                         </div>
-                    </div>
+                    </template>
 
                 </div>
             </div>

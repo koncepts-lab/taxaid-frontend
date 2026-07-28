@@ -11,10 +11,10 @@
         ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
         : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
         <div class="mx-auto pt-8 lg:pt-0">
-
+<!-- TODO: -->
           <CommonDashboardHeader :title="{ en: 'Accounts Recievable', ar: 'حسابات القبض' }"
             :subtitle="{ en: 'Accounts Recievable Dashboard', ar: 'لوحة معلومات حسابات القبض' }"
-            :periods="customPeriods" class="mb-8" @selected-date="handleDateChange" @reload="handleReload" />
+            :periods="customPeriods" class="mb-8" :minDate="new Date(2026, 5, 15)" @selected-date="handleDateChange" @reload="handleReload" />
 
           <!-- Gap-day snapshot notice: shown when the selected date has no
                uploaded AR snapshot and the latest earlier upload is displayed -->
