@@ -410,7 +410,71 @@
     </div>
 
     <!-- Tenants Management Tab — reusable component (review team can reuse) -->
-    <AdminClientTenants v-else-if="activeTab === 'Tenants Management'" />
+    <div v-else-if="activeTab === 'Tenants Management'">
+      <!-- Sub tabs — same pill bar style as the rest of Roles.vue -->
+      <div class="flex items-center gap-2 text-sm bg-white p-1.5 rounded-full border border-gray-100 shadow-sm w-fit overflow-x-auto mt-4 mb-2">
+        <button @click="setTenantsSubTab('clients')"
+          :class="tenantsSubTab === 'clients' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'"
+          class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Clients</button>
+        <button @click="setTenantsSubTab('organizations')"
+          :class="tenantsSubTab === 'organizations' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'"
+          class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Organizations</button>
+      </div>
+
+      <AdminClientTenants v-if="tenantsSubTab === 'clients'" />
+
+      <!-- Organizations oversight — full registration_requests history, who approved/rejected each -->
+      <div v-else>
+        <div class="bg-[#61FFD62E] border border-[#00BE8CBD] rounded-[10px] p-4 flex flex-col md:flex-row gap-4 justify-between items-center mt-4">
+          <div class="relative w-full md:w-[40%]">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
+            <input v-model="organizationSearch" @keyup.enter="loadOrganizations(1)" type="text" placeholder="Search by company, org name, or email..." autocomplete="off" class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm" />
+          </div>
+          <select v-model="organizationStatusFilter" @change="loadOrganizations(1)" class="border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700 bg-white">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="email_verified">Email Verified</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+
+        <div class="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm mt-6">
+          <div class="w-full overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[900px]">
+              <thead>
+                <tr class="bg-[#008865] text-white text-sm">
+                  <th class="py-3 px-6 font-medium whitespace-nowrap">Company</th>
+                  <th class="py-3 px-6 font-medium whitespace-nowrap">Organization</th>
+                  <th class="py-3 px-6 font-medium whitespace-nowrap">Email</th>
+                  <th class="py-3 px-6 font-medium whitespace-nowrap">Status</th>
+                  <th class="py-3 px-6 font-medium whitespace-nowrap">Reviewed By</th>
+                  <th class="py-3 px-6 font-medium whitespace-nowrap">Submitted</th>
+                </tr>
+              </thead>
+              <tbody class="text-sm text-gray-700">
+                <tr v-if="organizationsLoading"><td colspan="6" class="py-10 text-center text-gray-400">Loading...</td></tr>
+                <tr v-else-if="!organizationRows.length"><td colspan="6" class="py-10 text-center text-gray-400">No registrations found.</td></tr>
+                <tr v-for="row in organizationRows" :key="row.id" class="border-b border-gray-100 hover:bg-gray-50/50">
+                  <td class="py-4 px-6 font-medium text-gray-800">{{ row.company_name }}</td>
+                  <td class="py-4 px-6">{{ row.org_name || '—' }}</td>
+                  <td class="py-4 px-6">{{ row.email }}</td>
+                  <td class="py-4 px-6">
+                    <span class="px-2.5 py-1 rounded-full text-[13px] font-medium capitalize" :class="organizationStatusPillClass(row.status)">{{ row.status.replace('_', ' ') }}</span>
+                  </td>
+                  <td class="py-4 px-6">{{ row.reviewed_by_name || '—' }}</td>
+                  <td class="py-4 px-6 text-gray-500">{{ row.created_at ? new Date(row.created_at).toLocaleDateString() : '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <CommonPaginationBar v-if="organizationMeta.total > 0" :meta="organizationMeta" :loading="organizationsLoading"
+            @page-change="(p) => loadOrganizations(p)" @per-page-change="(pp) => { organizationPerPage = pp; loadOrganizations(1) }" />
+        </div>
+      </div>
+    </div>
 
     <!-- Socket VM Status Modal -->
     <div v-if="showSocketModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -920,7 +984,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 
-const { getMe, getStats, getSystemCounts, getUsers, createUser, updateUser, deleteUser, activateUser, deactivateUser, updateSystems, getRoles, getDepartments, getDashboards, getPartners, getPartnerClients, togglePartnerStatus, unlinkPartnerClient, deletePartner, sendPartnerResetEmail, getSocketStatus } = useSuperAdmin()
+const { getMe, getStats, getSystemCounts, getUsers, createUser, updateUser, deleteUser, activateUser, deactivateUser, updateSystems, getRoles, getDepartments, getDashboards, getPartners, getPartnerClients, togglePartnerStatus, unlinkPartnerClient, deletePartner, sendPartnerResetEmail, getSocketStatus, getOrganizations } = useSuperAdmin()
 
 // ── Socket VM status badge ────────────────────────────────────────────────────
 const socketStatus  = ref(null)
@@ -971,6 +1035,45 @@ const clientDetailOpen = computed(() =>
 function setTab(name) {
   activeTab.value = name
   router.replace({ query: { ...route.query, tab: tabKey[name] } })
+}
+
+// Organizations oversight subtab (?tab=clients&subtab=organizations) — full registration_requests
+// history, sits alongside the existing Tenants Management client list.
+const tenantsSubTab = ref(route.query.subtab === 'organizations' ? 'organizations' : 'clients')
+function setTenantsSubTab(id) {
+  tenantsSubTab.value = id
+  router.replace({ query: { ...route.query, tab: 'clients', subtab: id === 'clients' ? undefined : id } })
+  if (id === 'organizations' && !organizationsLoaded.value) loadOrganizations()
+}
+const organizationsLoaded = ref(false)
+const organizationsLoading = ref(false)
+const organizationRows = ref([])
+const organizationMeta = ref({ current_page: 1, last_page: 1, total: 0, per_page: 10 })
+const organizationSearch = ref('')
+const organizationStatusFilter = ref('')
+const organizationPerPage = ref(10)
+
+async function loadOrganizations(page = 1) {
+  organizationsLoading.value = true
+  try {
+    const res = await getOrganizations({
+      search: organizationSearch.value || undefined,
+      status: organizationStatusFilter.value || undefined,
+      page, per_page: organizationPerPage.value,
+    })
+    organizationRows.value = res.data ?? []
+    organizationMeta.value = res.meta ?? { current_page: 1, last_page: 1, total: 0, per_page: 10 }
+    organizationsLoaded.value = true
+  } finally {
+    organizationsLoading.value = false
+  }
+}
+
+function organizationStatusPillClass(status) {
+  if (status === 'approved') return 'bg-[#D0FAE5] text-[#007C65]'
+  if (status === 'rejected') return 'bg-red-100 text-red-600'
+  if (status === 'email_verified') return 'bg-[#DBEAFE] text-[#193CB8]'
+  return 'bg-[#FEF9C2] text-[#CE8600]' // pending
 }
 const searchQuery    = ref('')
 const roleFilter     = ref('All Roles')

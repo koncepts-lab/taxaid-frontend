@@ -62,7 +62,7 @@ import { ref, computed } from 'vue'
 const props = defineProps({
   email: { type: String, required: true },
   password: { type: String, required: true },
-  lang: { type: String, default: 'en' } 
+  lang: { type: String, default: 'en' }
 })
 
 const emit = defineEmits(['verified', 'back'])
@@ -102,28 +102,30 @@ const translations = {
 
 const t = computed(() => translations[props.lang])
 
+// Verifying the email link makes login actually succeed (LoginController's registration-request
+// fallback) — so "checking status" is just attempting a real login, same as the original flow.
 const checkStatus = async () => {
   loading.value = true
   localError.value = ''
-  
+
   try {
     await login({
       email: props.email,
       password: props.password
     })
-    emit('verified') 
+    emit('verified')
   } catch (err) {
     if (err.status === 403) {
       localError.value = 'auth_error'
     } else {
-      localError.value = err.data?.message || err.message || 'auth_error' ///remove the err msg later in live
+      localError.value = err.data?.message || err.message || 'auth_error'
     }
   } finally {
     loading.value = false
   }
 }
 
-// Resend: backend disposes the old token, issues a fresh 24h one to the
+// Resend: backend disposes the old token, issues a fresh 30-min one to the
 // same address (2-min cooldown, generic response — no account enumeration).
 const resend = async () => {
   if (resending.value) return
@@ -131,7 +133,7 @@ const resend = async () => {
   localError.value = ''
   resendMessage.value = ''
   try {
-    await $fetch('/auth/resend-verification', {
+    await $fetch('/auth/register/resend-verification', {
       baseURL: config.public.apiBase,
       method: 'POST',
       body: { email: props.email },

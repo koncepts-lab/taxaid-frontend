@@ -149,9 +149,21 @@ export function useSuperAdmin() {
     return apiFetch('/admin/socket-status')
   }
 
+  // Organizations oversight (?tab=clients&subtab=organizations) — full registration_requests
+  // history (not just pending, unlike Implementation Manager's queue), same response shape.
+  async function getOrganizations(params: { status?: string; search?: string; page?: number; per_page?: number } = {}): Promise<any> {
+    const query = new URLSearchParams()
+    if (params.status) query.set('status', params.status)
+    if (params.search) query.set('search', params.search)
+    query.set('page', String(params.page ?? 1))
+    query.set('per_page', String(params.per_page ?? 10))
+    return apiFetch(`/admin/roles/organizations?${query.toString()}`)
+  }
+
   return {
     getMe,
     getSocketStatus,
+    getOrganizations,
     getPartners, getPartnerClients, togglePartnerStatus, resetPartnerPassword, unlinkPartnerClient, deletePartner, sendPartnerResetEmail,
     getStats, getSystemCounts,
     getUsers, searchUsers, getUser, createUser, updateUser, deleteUser,

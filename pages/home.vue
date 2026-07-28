@@ -376,9 +376,10 @@ const loading = ref(false)
 const errorMessage = ref('')
 const errorVariant = ref('error') // 'error' (red) | 'warning' (amber, lockout)
 const isEmailVerification = ref(false)
-const nextRedirect = ref('') // Store where the user should go after welcome screen 
+const nextRedirect = ref('') // Store where the user should go after welcome screen
 
 const router = useRouter()
+const route = useRoute()
 const isLogin = ref(true)
 const showWelcome = ref(false)
 const showWelcomeCard = ref(false)
@@ -398,6 +399,16 @@ const rememberMe = ref(true)
 const geoLocation = ref(null)
 onMounted(() => {
   useLocation().resolve().then((loc) => { if (loc) geoLocation.value = loc })
+
+  // ?mode=login|register|forgot — same convention as the admin pages' ?tab=,
+  // so a refresh or shared link keeps you on the right form.
+  if (route.query.mode === 'register') isLogin.value = false
+  else if (route.query.mode === 'forgot') { isLogin.value = true; isForgotPassword.value = true }
+})
+
+watch([isLogin, isForgotPassword], ([login, forgot]) => {
+  const mode = forgot ? 'forgot' : (login ? 'login' : 'register')
+  router.replace({ query: { ...route.query, mode } })
 })
 
 // Using dynamic path to avoid any potential static analysis weirdness
@@ -521,8 +532,10 @@ async function onSubmit() {
         password: form.password
       }, rememberMe.value, geoLocation.value)
 
-      const status = res?.data?.tenant?.status      
-      if (status === 'pending_onboarding') {// NEW USER / ONBOARDING: Show Welcome Card journey        
+      const status = res?.data?.tenant?.status
+      // pending_approval: verified but no tenant yet (admin hasn't approved) — same onboarding
+      // wizard as the old pending_onboarding case, just backed by a pending registration instead.
+      if (status === 'pending_onboarding' || status === 'pending_approval') {// NEW USER / ONBOARDING: Show Welcome Card journey
         nextRedirect.value = '/onboarding'
         showWelcome.value = true
         setTimeout(() => { showWelcomeCard.value = true }, 1200)
@@ -535,14 +548,15 @@ async function onSubmit() {
         baseURL: config.public.apiBase,
         method: 'POST',
         body: {
+          name: form.name,
           company_name: form.name,
           email: form.email,
-          contact_number: form.contactNumber,
+          phone: form.contactNumber,
           password: form.password,
           password_confirmation: form.confirmPassword
         }
       })
-      
+
       // After registration, show verification
       isEmailVerification.value = true
     }
@@ -573,9 +587,8 @@ function handleGetStarted() {
 
 function onEmailVerified() {
   isEmailVerification.value = false
-  
-//email verified destination()
-  nextRedirect.value = '/onboarding'  
+
+  nextRedirect.value = '/onboarding'
   showWelcome.value = true
   setTimeout(() => {
     showWelcomeCard.value = true

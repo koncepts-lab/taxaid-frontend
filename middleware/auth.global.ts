@@ -9,6 +9,10 @@ export default defineNuxtRouteMiddleware((to) => {
 
   if (publicPages.includes(to.path)) return
 
+  // Pre-approval onboarding is keyed by registration_id, not a login session —
+  // no account/token exists yet at this stage (created later, at admin approval).
+  if (to.path === '/onboarding' && to.query.registration_id) return
+
   const isRpPath = rpPrefixes.some(p => to.path.startsWith(p))
   if (isRpPath) {
     if (!rpToken.value) return navigateTo('/revenue-partnership-login')

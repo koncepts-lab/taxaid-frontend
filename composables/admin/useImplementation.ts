@@ -156,6 +156,35 @@ export function useImplementation() {
   const rejectCredentialRequest    = (id: number, rejectNote: string) => reviewCredentialRequest(id, 'reject', rejectNote)
   const terminateCredentialRequest = (id: number) => reviewCredentialRequest(id, 'terminate')
 
+  // New organization registration review — pending (email_verified) requests by default,
+  // paginated, same shape as getCredentialRequests above.
+  async function getRegistrationRequests(opts: {
+    search?: string
+    status?: string
+    page?: number
+    per_page?: number
+  } = {}): Promise<any> {
+    const params: any = { page: opts.page ?? 1, per_page: opts.per_page ?? 10 }
+    if (opts.search) params.search = opts.search
+    if (opts.status) params.status = opts.status
+    const res: any = await apiFetch('/admin/implementation/manager/registration-requests', { params })
+    return res ?? { data: [], meta: { current_page: 1, last_page: 1, total: 0, per_page: 10 } }
+  }
+
+  async function getRegistrationRequestDetail(id: number): Promise<any> {
+    return apiFetch(`/admin/implementation/manager/registration-requests/${id}`)
+  }
+
+  async function approveRegistrationRequest(id: number): Promise<any> {
+    const res: any = await apiFetch(`/admin/implementation/manager/registration-requests/${id}/approve`, { method: 'POST' })
+    return res.data
+  }
+
+  async function rejectRegistrationRequest(id: number): Promise<any> {
+    const res: any = await apiFetch(`/admin/implementation/manager/registration-requests/${id}/reject`, { method: 'POST' })
+    return res.data
+  }
+
   // Partner linking (Implementation Manager)
   async function getActivePartners(): Promise<any[]> {
     const res: any = await apiFetch('/admin/partners', { params: { status: 'active' } })
@@ -252,6 +281,10 @@ export function useImplementation() {
     approveCredentialRequest,
     rejectCredentialRequest,
     terminateCredentialRequest,
+    getRegistrationRequests,
+    getRegistrationRequestDetail,
+    approveRegistrationRequest,
+    rejectRegistrationRequest,
     getGLMasters,
     createMainGroup, createSubGroup,
     updateMainGroup, updateSubGroup,
