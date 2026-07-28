@@ -53,7 +53,16 @@
         </div>
       </div>
 
-      <ClientOnly v-if="!loading && !error">
+      <!-- Empty State -->
+      <div v-else-if="!loading && !error && customersData.length === 0" class="absolute inset-0 z-20 flex items-center justify-center">
+        <div class="flex flex-col items-center gap-3 text-center px-6">
+          <p class="text-sm font-medium opacity-60" :class="isDark ? 'text-white' : 'text-[#013E32]'">
+            {{ currentLang === 'ar' ? 'البيانات فارغة' : 'Data empty' }}
+          </p>
+        </div>
+      </div>
+
+      <ClientOnly v-else-if="!loading && !error">
         <apexchart
           type="line"
           height="100%"
@@ -126,7 +135,16 @@
               </div>
             </div>
 
-            <ClientOnly v-if="!loading && !error">
+            <!-- Empty State -->
+            <div v-else-if="!loading && !error && customersData.length === 0" class="absolute inset-0 z-20 flex items-center justify-center">
+              <div class="flex flex-col items-center gap-3 text-center px-6">
+                <p class="text-base font-medium opacity-60" :class="isDark ? 'text-white' : 'text-[#013E32]'">
+                  {{ currentLang === 'ar' ? 'البيانات فارغة' : 'Data empty' }}
+                </p>
+              </div>
+            </div>
+
+            <ClientOnly v-else-if="!loading && !error">
               <apexchart
                 type="line"
                 height="100%"
