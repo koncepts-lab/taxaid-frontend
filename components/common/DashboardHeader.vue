@@ -98,7 +98,7 @@
                                         :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
                                         :min-date="minDate" :max-date="today" @update:model-value="handleSingleChange" />
                                 </div>
-                                <template v-else> 
+                                <template v-else>
                                     <div v-for="period in periods" :key="period.en" class="relative group">
                                         <button @click="selectPeriod(period)"
                                             class="w-full text-left rtl:text-right px-4 py-3 font-normal text-sm rounded-lg transition-colors"
@@ -107,10 +107,10 @@
                                         </button>
 
                                         <div v-if="(period.en === 'Custom Range' || period.en === 'Custom Date') && selectedPeriodKey === period.en"
-                                            class="absolute top-0 shadow-2xl rounded-xl border overflow-hidden z-[60] w-max"
+                                            class="lg:absolute lg:top-0 static shadow-2xl rounded-xl border overflow-hidden z-[60] w-full lg:w-max mt-2 lg:mt-0"
                                             :class="[
                                                 isDark ? 'border-[#03D8B0] bg-[#002E26]' : 'border-[#03D8B0] bg-white',
-                                                currentLang === 'ar' ? 'left-full ml-2' : 'right-full mr-2'
+                                                currentLang === 'ar' ? 'lg:left-full lg:ml-2' : 'lg:right-full lg:mr-2'
                                             ]">
 
                                             <div v-if="selectedPeriodKey === 'Custom Range'"

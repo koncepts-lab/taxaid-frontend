@@ -91,7 +91,7 @@
       <CommonTooltip
         :text="isDark ? (currentLang === 'ar' ? 'الوضع الفاتح' : 'Light Mode') : (currentLang === 'ar' ? 'الوضع الداكن' : 'Dark Mode')">
         <button @click="toggleTheme"
-          class="header-trigger-btn action-btn theme-btn w-9 h-9 md:w-11 md:h-11 rounded-full items-center justify-center transition-all duration-300 hidden md:flex"
+          class="header-trigger-btn action-btn theme-btn w-9 h-9 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all duration-300"
           :class="{ 'shadow-none': isDark }"
           :style="isDark ? { background: 'linear-gradient(180deg, #057759 0%, #04B788 100%)', boxShadow: 'none' } : {}">
           <img v-if="!isDark" src="/images/icons/dark.svg" class="header-trigger-img w-5 h-5 md:w-6 md:h-6 invert brightness-0"
