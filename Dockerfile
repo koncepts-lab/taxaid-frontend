@@ -9,6 +9,11 @@ WORKDIR /app
 # This leverages Docker's layer caching.
 COPY package*.json ./
 
+# Match the npm version used to generate package-lock.json (lockfileVersion 3
+# dependency placement differs enough between npm majors to break `npm ci`'s
+# sync check against the Alpine image's bundled npm).
+RUN npm install -g npm@11
+
 # Use 'npm ci' which is faster and more reliable for CI/CD environments.
 RUN npm ci
 RUN npm audit --omit=dev --audit-level=high
