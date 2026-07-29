@@ -26,7 +26,14 @@
 
     <!-- Chart -->
     <div class="flex-1 w-full min-h-[300px] lg:min-h-[350px] relative z-10">
-      <ClientOnly>
+      <div v-if="!series || series.every(s => !s.data || s.data.length === 0)" class="absolute inset-0 z-20 flex items-center justify-center">
+        <div class="flex flex-col items-center gap-3 text-center px-6">
+          <p class="text-sm font-medium opacity-60 text-white">
+            {{ currentLang === 'ar' ? 'البيانات فارغة' : 'Data empty' }}
+          </p>
+        </div>
+      </div>
+      <ClientOnly v-else>
         <apexchart
           type="line"
           height="100%"
@@ -73,7 +80,14 @@
           
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10 min-h-[350px]">
-            <ClientOnly>
+            <div v-if="!series || series.every(s => !s.data || s.data.length === 0)" class="absolute inset-0 z-20 flex items-center justify-center">
+              <div class="flex flex-col items-center gap-3 text-center px-6">
+                <p class="text-base font-medium opacity-60 text-white">
+                  {{ currentLang === 'ar' ? 'البيانات فارغة' : 'Data empty' }}
+                </p>
+              </div>
+            </div>
+            <ClientOnly v-else>
               <apexchart
                 type="line"
                 height="100%"

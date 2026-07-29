@@ -75,7 +75,7 @@
                     <div>
                       <h3 class="text-[16px] font-normal mb-6" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
                         {{ currentLang === 'ar' ? 'حدد الفواتير لإرسال تذكيرات تعليق الدفع' :
-                          'Select invoices to send hold payment reminders.' }}
+                          'Select Invoices to hold payments' }}
                       </h3>
                       <div class="flex items-center gap-3">
                         <input type="checkbox" :checked="isGroupAllSelected(group)" @change="toggleGroupSelectAll(group)"
@@ -227,7 +227,7 @@
                           <div>
                             <h3 class="text-[16px] font-normal mb-6" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
                               {{ currentLang === 'ar' ? 'حدد الفواتير لإرسال تذكيرات تعليق الدفع' :
-                                'Select invoices to send hold payment reminders.' }}
+                                'Select Invoices to hold payments' }}
                             </h3>
                             <div class="flex items-center gap-3">
                               <input type="checkbox" :checked="isGroupAllSelected(group)" @change="toggleGroupSelectAll(group)"
