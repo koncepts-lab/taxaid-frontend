@@ -12,8 +12,79 @@
             </button>
         </div>
 
-        <!-- 2. Content Card -->
-        <div class="rounded-2xl border transition-all duration-300 p-8 space-y-6"
+        <!-- 2a. Registrations Content Card (new organization approvals) -->
+        <div v-if="activeSubTab === 'registrations'" class="rounded-2xl border transition-all duration-300 p-8 space-y-6"
+            :class="isDark ? 'bg-[#015F4D]/20 border-[#00B794]/30 text-white' : 'bg-white border-gray-100 shadow-sm text-black'">
+
+            <div class="space-y-1 text-left rtl:text-right">
+                <h3 class="text-xl font-normal">{{ currentLang === 'ar' ? 'طلبات تسجيل المنظمات' : 'Organization Registrations' }}</h3>
+                <p class="text-base text-[#717182]">{{ currentLang === 'ar' ? 'راجع طلبات المنظمات الجديدة ووافق عليها أو ارفضها' : 'Review new organization sign-ups awaiting approval' }}</p>
+            </div>
+
+            <div class="flex flex-col md:flex-row items-center gap-3">
+                <div class="relative flex-1 w-full">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400 rtl:left-auto rtl:right-0 rtl:pr-4">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+                        </svg>
+                    </span>
+                    <input v-model="registrationSearch" @keyup.enter="loadRegistrations(1)" type="text"
+                        :placeholder="currentLang === 'ar' ? 'بحث باسم الشركة أو البريد...' : 'Search by company, org name, or email...'"
+                        class="w-full py-3 border rounded-xl text-sm outline-none transition-all" :class="[
+                            currentLang === 'ar' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left',
+                            isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-[#04C18F80] text-black'
+                        ]" />
+                </div>
+                <button @click="loadRegistrations(1)" :disabled="registrationLoading" class="p-3 border rounded-xl transition-all"
+                    :class="[isDark ? 'bg-white/5 border-white/10 text-[#00B794]' : 'bg-white hover:bg-[#86E4CB] border-[#04C18F80] text-[#00896F]', registrationLoading ? 'opacity-50 cursor-not-allowed' : '']">
+                    <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5" :class="registrationLoading ? 'animate-spin' : ''">
+                </button>
+            </div>
+
+            <div class="overflow-x-auto border rounded-xl transition-colors" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+                <table class="w-full text-left rtl:text-right border-separate border-spacing-0 min-w-[900px]">
+                    <thead>
+                        <tr class="bg-[#00896F] text-white">
+                            <th class="px-4 py-4 text-sm font-normal">Company</th>
+                            <th class="px-4 py-4 text-sm font-normal">Organization</th>
+                            <th class="px-4 py-4 text-sm font-normal">Email</th>
+                            <th class="px-4 py-4 text-sm font-normal">Status</th>
+                            <th class="px-4 py-4 text-sm font-normal">Submitted</th>
+                            <th class="px-4 py-4 text-sm font-normal">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
+                        <tr v-if="registrationLoading"><td colspan="6" class="px-4 py-10 text-center text-gray-400">Loading...</td></tr>
+                        <tr v-else-if="!registrationRows.length"><td colspan="6" class="px-4 py-10 text-center text-gray-400">No pending registrations.</td></tr>
+                        <tr v-for="row in registrationRows" :key="row.id" class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-4 py-5 text-sm">{{ row.company_name }}</td>
+                            <td class="px-4 py-5 text-sm">{{ row.org_name || '-' }}</td>
+                            <td class="px-4 py-5 text-sm">{{ row.email }}</td>
+                            <td class="px-4 py-5">
+                                <span class="px-3 py-0.5 rounded-full text-sm capitalize" :class="registrationStatusPillClass(row.status)">{{ row.status.replace('_', ' ') }}</span>
+                            </td>
+                            <td class="px-4 py-5 text-sm opacity-70">{{ row.created_at ? new Date(row.created_at).toLocaleDateString() : '-' }}</td>
+                            <td class="px-4 py-5">
+                                <button @click="openRegistrationDetail(row)" class="bg-white border border-[#00896F] text-[#00896F] hover:bg-[#E6FDF9] px-4 py-1.5 rounded-md text-xs font-medium transition-colors">
+                                    Review
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div v-if="registrationMeta.last_page > 1" class="flex items-center justify-center gap-2 pt-2">
+                <button v-for="p in registrationMeta.last_page" :key="p" @click="loadRegistrations(p)"
+                    class="w-8 h-8 rounded-full text-sm transition-colors"
+                    :class="p === registrationMeta.current_page ? 'bg-[#00B794] text-white' : 'text-gray-500 hover:bg-gray-100'">
+                    {{ p }}
+                </button>
+            </div>
+        </div>
+
+        <!-- 2b. Pool Content Card -->
+        <div v-else class="rounded-2xl border transition-all duration-300 p-8 space-y-6"
             :class="isDark ? 'bg-[#015F4D]/20 border-[#00B794]/30 text-white' : 'bg-white border-gray-100 shadow-sm text-black'">
 
             <div class="space-y-1 text-left rtl:text-right">
@@ -182,6 +253,51 @@
             </div>
         </div>
 
+        <!-- Registration Review Modal -->
+        <Teleport to="body">
+            <Transition name="fade">
+                <div v-if="showRegistrationDetail" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                    <div class="bg-white rounded-2xl shadow-xl w-[560px] max-w-full flex flex-col max-h-[85vh]">
+                        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-[16px] font-semibold text-gray-900">Registration Review</h3>
+                                <p class="text-xs text-gray-400 mt-0.5">{{ registrationDetail?.company_name }}</p>
+                            </div>
+                            <button @click="showRegistrationDetail = false" class="text-gray-400 hover:text-gray-600">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </div>
+                        <div class="overflow-y-auto flex-1 p-6">
+                            <div v-if="!registrationDetail" class="text-center text-sm text-gray-400 py-8">Loading...</div>
+                            <div v-else class="space-y-3 text-sm">
+                                <div class="flex justify-between"><span class="text-gray-400">Company</span><span class="font-medium text-gray-800">{{ registrationDetail.company_name }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Organization</span><span class="font-medium text-gray-800">{{ registrationDetail.org_name || '-' }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Email</span><span class="font-medium text-gray-800">{{ registrationDetail.email }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Status</span>
+                                    <span class="px-3 py-0.5 rounded-full text-xs capitalize" :class="registrationStatusPillClass(registrationDetail.status)">{{ registrationDetail.status?.replace('_', ' ') }}</span>
+                                </div>
+                                <div class="flex justify-between"><span class="text-gray-400">Sign-up method</span><span class="font-medium text-gray-800 capitalize">{{ registrationDetail.auth_provider }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">ERP</span><span class="font-medium text-gray-800">{{ registrationDetail.erp_type || '-' }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Industry</span><span class="font-medium text-gray-800">{{ registrationDetail.industry || '-' }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Email verified</span><span class="font-medium text-gray-800">{{ registrationDetail.email_verified_at ? new Date(registrationDetail.email_verified_at).toLocaleString() : '-' }}</span></div>
+                                <div v-if="registrationDetail.reviewed_by_name" class="flex justify-between"><span class="text-gray-400">Reviewed by</span><span class="font-medium text-gray-800">{{ registrationDetail.reviewed_by_name }}</span></div>
+                            </div>
+                        </div>
+                        <div v-if="registrationDetail?.status === 'email_verified'" class="px-6 py-4 border-t border-gray-100 flex gap-3 justify-end">
+                            <button @click="rejectRegistration(registrationDetail)" :disabled="registrationActing"
+                                class="px-5 py-2 border border-red-200 text-red-600 rounded-md text-sm font-medium hover:bg-red-50 disabled:opacity-60 transition-colors">
+                                Reject
+                            </button>
+                            <button @click="approveRegistration(registrationDetail)" :disabled="registrationActing"
+                                class="px-5 py-2 bg-[#007C65] text-white rounded-md text-sm font-medium hover:bg-[#006A56] disabled:opacity-60 transition-colors">
+                                {{ registrationActing ? 'Approving…' : 'Approve — Provision Organization' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
         <!-- Partner Link Modal -->
         <Teleport to="body">
             <Transition name="fade">
@@ -301,16 +417,17 @@ import { ref, computed, onMounted } from 'vue'
 
 const props = defineProps({ isDark: Boolean, currentLang: { type: String, default: 'en' } })
 
-const { getPool, getConsultants, updateAssignment } = useImplementation()
+const { getPool, getConsultants, updateAssignment, getRegistrationRequests, getRegistrationRequestDetail, approveRegistrationRequest, rejectRegistrationRequest } = useImplementation()
 
 const route  = useRoute()
 const router = useRouter()
-const validSubTabs = ['new', 'ongoing', 'completed', 'all']
+const validSubTabs = ['new', 'ongoing', 'completed', 'all', 'registrations']
 const activeSubTab = ref(validSubTabs.includes(route.query.subtab) ? route.query.subtab : 'new')
 
 function setSubTab(id) {
     activeSubTab.value = id
     router.replace({ query: { ...route.query, subtab: id } })
+    if (id === 'registrations' && !registrationsLoaded.value) loadRegistrations()
 }
 const openDropdownId = ref(null)
 const dropdownPos = ref({ top: 0, left: 0, width: 0 })
@@ -377,11 +494,71 @@ const activeTableData = computed(() => {
 })
 
 const subTabs = computed(() => [
+    { id: 'registrations', label: 'Registrations', labelAr: 'طلبات التسجيل', count: registrationMeta.value.total },
     { id: 'new', label: 'New', labelAr: 'جديد', count: poolData.value.new.length },
     { id: 'ongoing', label: 'Ongoing', labelAr: 'قيد التنفيذ', count: poolData.value.ongoing.length },
     { id: 'completed', label: 'Completed', labelAr: 'مكتمل', count: poolData.value.completed.length },
     { id: 'all', label: 'All Projects', labelAr: 'جميع المشاريع', count: poolData.value.new.length + poolData.value.ongoing.length + poolData.value.completed.length },
 ])
+
+// --- Organization registration review (new tenants awaiting approval) ---
+const registrationsLoaded  = ref(false)
+const registrationLoading  = ref(false)
+const registrationRows     = ref([])
+const registrationMeta     = ref({ current_page: 1, last_page: 1, total: 0, per_page: 10 })
+const registrationSearch   = ref('')
+const registrationDetail   = ref(null)
+const showRegistrationDetail = ref(false)
+const registrationActing   = ref(false)
+
+async function loadRegistrations(page = 1) {
+    registrationLoading.value = true
+    try {
+        const res = await getRegistrationRequests({ search: registrationSearch.value || undefined, page, per_page: 10 })
+        registrationRows.value = res.data ?? []
+        registrationMeta.value = res.meta ?? { current_page: 1, last_page: 1, total: 0, per_page: 10 }
+        registrationsLoaded.value = true
+    } finally {
+        registrationLoading.value = false
+    }
+}
+
+async function openRegistrationDetail(row) {
+    showRegistrationDetail.value = true
+    registrationDetail.value = null
+    registrationDetail.value = await getRegistrationRequestDetail(row.id)
+}
+
+async function approveRegistration(row) {
+    registrationActing.value = true
+    try {
+        await approveRegistrationRequest(row.id)
+        showRegistrationDetail.value = false
+        await loadRegistrations(registrationMeta.value.current_page)
+    } finally {
+        registrationActing.value = false
+    }
+}
+
+async function rejectRegistration(row) {
+    registrationActing.value = true
+    try {
+        await rejectRegistrationRequest(row.id)
+        showRegistrationDetail.value = false
+        await loadRegistrations(registrationMeta.value.current_page)
+    } finally {
+        registrationActing.value = false
+    }
+}
+
+// Status pipeline badge — matches the backend's own status field, no separate progress-bar
+// endpoint (approval is synchronous, per the locked design).
+function registrationStatusPillClass(status) {
+    if (status === 'approved') return 'bg-[#D0FAE5] text-[#007C65]'
+    if (status === 'rejected') return 'bg-red-100 text-red-600'
+    if (status === 'email_verified') return 'bg-[#DBEAFE] text-[#193CB8]'
+    return 'bg-[#FEF9C2] text-[#CE8600]' // pending
+}
 
 const tabConfigs = {
     'new': { title: 'New Clients', titleAr: 'عملاء جدد', sub: 'Assign consultants to projects', headers: ['Client ID', 'Client Name', 'Date Assigned', 'ERP', 'Industry', 'Connector', 'Mobile Number', 'Email', 'Partner', 'Consultant', 'Action'], headersAr: ['المعرف', 'الاسم', 'التاريخ', 'ERP', 'الصناعة', 'الموصل', 'الهاتف', 'البريد', 'الشريك', 'المستشار', 'إجراء'] },
@@ -507,7 +684,7 @@ async function confirmLinkPartner() {
 
 onMounted(async () => {
     window.addEventListener('click', (e) => { if (!e.target.closest('button')) openDropdownId.value = null })
-    const [, consultants] = await Promise.all([loadPool(), getConsultants()])
+    const [, consultants] = await Promise.all([loadPool(), getConsultants(), loadRegistrations()])
     consultantList.value = consultants
 })
 </script>

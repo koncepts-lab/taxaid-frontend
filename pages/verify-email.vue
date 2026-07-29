@@ -166,28 +166,14 @@ onMounted(async () => {
   }
 
   try {
-    // Using your NUXT_PUBLIC_API_BASE
-    const response = await $fetch(`${config.public.apiBase}/auth/verify-email`, {
+    // registration_requests flow — only confirms the email is genuine, no
+    // account exists yet (that happens later, at admin approval).
+    await $fetch(`${config.public.apiBase}/auth/register/verify-email`, {
       method: 'GET',
       params: { token }
     })
-
-    if (response.status === 'success') {
-      // Save the Sanctum token sent by VerificationController
-      const authCookie = useCookie('auth_token', {
-        maxAge: 60 * 60 * 12 , // 12 hrs
-        path: '/'
-      })
-      authCookie.value = response.data.token
-
-      // Success redirect if it required uncomment later
-      // setTimeout(() => {
-      //   navigateTo(response.data.redirect_to || '/home')
-      // }, 1500)
-    }
   } catch (err) {
     error.value = true
-    // Grabs the error message you wrote in VerificationController
     errorMessage.value = err.data?.message || 'The link is invalid or has already been used.'
   } finally {
     loading.value = false

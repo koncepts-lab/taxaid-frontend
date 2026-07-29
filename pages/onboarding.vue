@@ -200,8 +200,8 @@
           {{ t.successTitle }}
         </h2>
         
-        <button class="relative z-10 image-next-btn !max-w-[280px] md:!max-w-[320px] !h-12 md:!h-14 !text-lg md:!text-xl" @click="goToDashboard()">
-          {{ t.goDashboard }} 
+        <button class="relative z-10 image-next-btn !max-w-[280px] md:!max-w-[320px] !h-12 md:!h-14 !text-lg md:!text-xl" @click="pendingApproval ? navigateTo('/home') : goToDashboard()">
+          {{ pendingApproval ? t.backToLogin : t.goDashboard }}
           <span class="font-bold mx-1" v-if="!isRtl">→</span>
           <span class="font-bold mx-1" v-if="isRtl">←</span>
         </button>
@@ -213,6 +213,8 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import LanguageToggle from '@/components/common/LanguageToggle.vue'
+
+const pendingApproval = ref(false) // set from /submit's response — no tenant yet, admin hasn't approved
 
 const isFinished = ref(false)
 const pageLoaded = ref(false)
@@ -260,6 +262,7 @@ const translations = {
     next: 'Next',
     finish: 'Finish',
     goDashboard: 'Go to Dashboard',
+    backToLogin: 'Back to Login',
     entity: 'Entity',
     nickNameHint: 'e.g. HQ (Max 15 characters)',
     addEntity: 'Add Another Entity',
@@ -274,6 +277,7 @@ const translations = {
     next: 'التالي',
     finish: 'إنهاء',
     goDashboard: 'الذهاب إلى لوحة القيادة',
+    backToLogin: 'العودة لتسجيل الدخول',
     entity: 'الكيان',
     nickNameHint: 'مثلاً: المقر الرئيسي (الحد الأقصى 15 حرفًا)',
     addEntity: 'إضافة كيان آخر',
@@ -332,30 +336,35 @@ const syncWithBackend = async () => {
   if (questions.value.length === 0) return
   submitting.value = true
   const langQuery = currentLanguage.value === 'ar' ? 'arb' : 'en'
-  
+
   try {
     const finalCurrency = selectedSpecificCurrency.value || 'AED'
+    const answers = questions.value.map((q, idx) => {
+        let ans = dynamicAnswers.value[q.id]
+
+        // Custom mapping based on UI logic
+        if (q.maps_to_config_key === 'company_structure') ans = selectedLabel.value
+        if (q.maps_to_config_key === 'company_name') ans = JSON.stringify({ legal_name: entityForms.value[0]?.legalName ?? '', nickname: entityForms.value[0]?.nickName ?? '' })
+        if (q.maps_to_config_key === 'currency') ans = finalCurrency
+
+        // Handle 'Other' inputs
+        if (ans === 'Other') ans = otherDescriptions.value[q.id] || 'Other'
+        if (Array.isArray(ans)) ans = ans.join(', ')
+
+        return { question_id: q.id, answer: String(ans || 'N/A') }
+    })
+
     const payload = {
       company_name: entityForms.value[0].legalName,
       country: 'UAE',
       currency: finalCurrency,
-      answers: questions.value.map((q, idx) => {
-          let ans = dynamicAnswers.value[q.id]
-          
-          // Custom mapping based on UI logic
-          if (q.maps_to_config_key === 'company_structure') ans = selectedLabel.value
-          if (q.maps_to_config_key === 'company_name') ans = JSON.stringify({ legal_name: entityForms.value[0]?.legalName ?? '', nickname: entityForms.value[0]?.nickName ?? '' })
-          if (q.maps_to_config_key === 'currency') ans = finalCurrency
-          
-          // Handle 'Other' inputs
-          if (ans === 'Other') ans = otherDescriptions.value[q.id] || 'Other'
-          if (Array.isArray(ans)) ans = ans.join(', ')
-
-          return { question_id: q.id, answer: String(ans || 'N/A') }
-      })
+      answers,
     }
+    const res: any = await useApi(`/submit?lang=${langQuery}`, { method: 'POST', body: payload })
 
-    await useApi(`/submit?lang=${langQuery}`, { method: 'POST', body: payload })
+    // Pre-approval submissions (verified registration, no tenant yet) get 'pending_review' back
+    // instead of 'dashboard' — there's nowhere to redirect to until an admin approves.
+    pendingApproval.value = res?.next === 'pending_review'
     isFinished.value = true
   } catch (error) {
     console.error("Submission failed:", error)
