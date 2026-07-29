@@ -43,7 +43,7 @@
                     <col style="width: 14%;" />
                     <col style="width: 14%;" />
                 </colgroup>
-            <thead class="text-white sticky top-[82px] z-20" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+            <thead class="text-white lg:sticky lg:top-[82px] z-20" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
                 <tr class="transition-all duration-500">
                     <th :class="isCompressed ? 'px-8 py-4' : 'px-8 py-5'" class="font-medium text-[14px]">
                         {{ currentLang === 'ar' ? 'الإيرادات' : 'Revenue' }}
@@ -67,7 +67,7 @@
                             ? (isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]')
                             : (isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100'),
                         'text-[14px] font-medium transition-all duration-500',
-                        (row.children && expandedRows[i]) ? 'sticky top-[142px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : ''
+                        (row.children && expandedRows[i]) ? 'lg:sticky lg:top-[142px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : ''
                     ]">
                         <!-- Label -->
                         <td :class="[isCompressed ? 'px-8 py-4' : 'px-8 py-5', isDark ? 'text-white' : 'text-[#000]', 'font-medium']">
