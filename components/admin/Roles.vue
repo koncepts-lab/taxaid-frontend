@@ -53,6 +53,7 @@
         <button @click="setTab('System Access Control')" :class="activeTab === 'System Access Control' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">System Access Control</button>
         <button @click="setTab('Partner Management'); loadPartners()" :class="activeTab === 'Partner Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Partner Management</button>
         <button @click="setTab('Tenants Management')" :class="activeTab === 'Tenants Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Tenants Management</button>
+        <button @click="setTab('Organizations'); if (!organizationsLoaded) loadOrganizations()" :class="activeTab === 'Organizations' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Organizations</button>
       </div>
 
       <!-- Socket VM status badge → click opens detail modal -->
@@ -411,68 +412,58 @@
 
     <!-- Tenants Management Tab — reusable component (review team can reuse) -->
     <div v-else-if="activeTab === 'Tenants Management'">
-      <!-- Sub tabs — same pill bar style as the rest of Roles.vue -->
-      <div class="flex items-center gap-2 text-sm bg-white p-1.5 rounded-full border border-gray-100 shadow-sm w-fit overflow-x-auto mt-4 mb-2">
-        <button @click="setTenantsSubTab('clients')"
-          :class="tenantsSubTab === 'clients' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'"
-          class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Clients</button>
-        <button @click="setTenantsSubTab('organizations')"
-          :class="tenantsSubTab === 'organizations' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'"
-          class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Organizations</button>
+      <AdminClientTenants />
+    </div>
+
+    <!-- Organizations Tab — full registration_requests history, who approved/rejected each -->
+    <div v-else-if="activeTab === 'Organizations'">
+      <div class="bg-[#61FFD62E] border border-[#00BE8CBD] rounded-[10px] p-4 flex flex-col md:flex-row gap-4 justify-between items-center mt-4">
+        <div class="relative w-full md:w-[40%]">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </span>
+          <input v-model="organizationSearch" @keyup.enter="loadOrganizations(1)" type="text" placeholder="Search by company, org name, or email..." autocomplete="off" class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm" />
+        </div>
+        <select v-model="organizationStatusFilter" @change="loadOrganizations(1)" class="border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700 bg-white">
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="email_verified">Email Verified</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
       </div>
 
-      <AdminClientTenants v-if="tenantsSubTab === 'clients'" />
-
-      <!-- Organizations oversight — full registration_requests history, who approved/rejected each -->
-      <div v-else>
-        <div class="bg-[#61FFD62E] border border-[#00BE8CBD] rounded-[10px] p-4 flex flex-col md:flex-row gap-4 justify-between items-center mt-4">
-          <div class="relative w-full md:w-[40%]">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            </span>
-            <input v-model="organizationSearch" @keyup.enter="loadOrganizations(1)" type="text" placeholder="Search by company, org name, or email..." autocomplete="off" class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm" />
-          </div>
-          <select v-model="organizationStatusFilter" @change="loadOrganizations(1)" class="border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700 bg-white">
-            <option value="">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="email_verified">Email Verified</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
+      <div class="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm mt-6">
+        <div class="w-full overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[900px]">
+            <thead>
+              <tr class="bg-[#008865] text-white text-sm">
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Company</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Organization</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Email</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Status</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Reviewed By</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Submitted</th>
+              </tr>
+            </thead>
+            <tbody class="text-sm text-gray-700">
+              <tr v-if="organizationsLoading"><td colspan="6" class="py-10 text-center text-gray-400">Loading...</td></tr>
+              <tr v-else-if="!organizationRows.length"><td colspan="6" class="py-10 text-center text-gray-400">No registrations found.</td></tr>
+              <tr v-for="row in organizationRows" :key="row.id" class="border-b border-gray-100 hover:bg-gray-50/50">
+                <td class="py-4 px-6 font-medium text-gray-800">{{ row.company_name }}</td>
+                <td class="py-4 px-6">{{ row.org_name || '—' }}</td>
+                <td class="py-4 px-6">{{ row.email }}</td>
+                <td class="py-4 px-6">
+                  <span class="px-2.5 py-1 rounded-full text-[13px] font-medium capitalize" :class="organizationStatusPillClass(row.status)">{{ row.status.replace('_', ' ') }}</span>
+                </td>
+                <td class="py-4 px-6">{{ row.reviewed_by_name || '—' }}</td>
+                <td class="py-4 px-6 text-gray-500">{{ row.created_at ? new Date(row.created_at).toLocaleDateString() : '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
-        <div class="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm mt-6">
-          <div class="w-full overflow-x-auto">
-            <table class="w-full text-left border-collapse min-w-[900px]">
-              <thead>
-                <tr class="bg-[#008865] text-white text-sm">
-                  <th class="py-3 px-6 font-medium whitespace-nowrap">Company</th>
-                  <th class="py-3 px-6 font-medium whitespace-nowrap">Organization</th>
-                  <th class="py-3 px-6 font-medium whitespace-nowrap">Email</th>
-                  <th class="py-3 px-6 font-medium whitespace-nowrap">Status</th>
-                  <th class="py-3 px-6 font-medium whitespace-nowrap">Reviewed By</th>
-                  <th class="py-3 px-6 font-medium whitespace-nowrap">Submitted</th>
-                </tr>
-              </thead>
-              <tbody class="text-sm text-gray-700">
-                <tr v-if="organizationsLoading"><td colspan="6" class="py-10 text-center text-gray-400">Loading...</td></tr>
-                <tr v-else-if="!organizationRows.length"><td colspan="6" class="py-10 text-center text-gray-400">No registrations found.</td></tr>
-                <tr v-for="row in organizationRows" :key="row.id" class="border-b border-gray-100 hover:bg-gray-50/50">
-                  <td class="py-4 px-6 font-medium text-gray-800">{{ row.company_name }}</td>
-                  <td class="py-4 px-6">{{ row.org_name || '—' }}</td>
-                  <td class="py-4 px-6">{{ row.email }}</td>
-                  <td class="py-4 px-6">
-                    <span class="px-2.5 py-1 rounded-full text-[13px] font-medium capitalize" :class="organizationStatusPillClass(row.status)">{{ row.status.replace('_', ' ') }}</span>
-                  </td>
-                  <td class="py-4 px-6">{{ row.reviewed_by_name || '—' }}</td>
-                  <td class="py-4 px-6 text-gray-500">{{ row.created_at ? new Date(row.created_at).toLocaleDateString() : '-' }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <CommonPaginationBar v-if="organizationMeta.total > 0" :meta="organizationMeta" :loading="organizationsLoading"
-            @page-change="(p) => loadOrganizations(p)" @per-page-change="(pp) => { organizationPerPage = pp; loadOrganizations(1) }" />
-        </div>
+        <CommonPaginationBar v-if="organizationMeta.total > 0" :meta="organizationMeta" :loading="organizationsLoading"
+          @page-change="(p) => loadOrganizations(p)" @per-page-change="(pp) => { organizationPerPage = pp; loadOrganizations(1) }" />
       </div>
     </div>
 
@@ -1023,8 +1014,8 @@ const dashboards    = ref([])
 // ── Tabs & filters ────────────────────────────────────────────────────────────
 const route  = useRoute()
 const router = useRouter()
-const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management', clients: 'Tenants Management' }
-const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners', 'Tenants Management': 'clients' }
+const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management', clients: 'Tenants Management', organizations: 'Organizations' }
+const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners', 'Tenants Management': 'clients', 'Organizations': 'organizations' }
 const activeTab = ref(tabMap[route.query.tab] ?? 'User Management')
 
 // A client config is open (?tab=clients&id=N) → hide header/cards/tabs (SPA takeover)
@@ -1037,14 +1028,7 @@ function setTab(name) {
   router.replace({ query: { ...route.query, tab: tabKey[name] } })
 }
 
-// Organizations oversight subtab (?tab=clients&subtab=organizations) — full registration_requests
-// history, sits alongside the existing Tenants Management client list.
-const tenantsSubTab = ref(route.query.subtab === 'organizations' ? 'organizations' : 'clients')
-function setTenantsSubTab(id) {
-  tenantsSubTab.value = id
-  router.replace({ query: { ...route.query, tab: 'clients', subtab: id === 'clients' ? undefined : id } })
-  if (id === 'organizations' && !organizationsLoaded.value) loadOrganizations()
-}
+// Organizations tab (?tab=organizations) — full registration_requests history.
 const organizationsLoaded = ref(false)
 const organizationsLoading = ref(false)
 const organizationRows = ref([])
@@ -1351,6 +1335,7 @@ function formatDate(d) {
 onMounted(() => {
   loadData()
   if (activeTab.value === 'Partner Management') loadPartners()
+  if (activeTab.value === 'Organizations') loadOrganizations()
   loadSocketStatus()
 })
 </script>
