@@ -98,7 +98,7 @@
                                         :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
                                         :min-date="minDate" :max-date="today" @update:model-value="handleSingleChange" />
                                 </div>
-                                <template v-else>
+                                <template v-else> 
                                     <div v-for="period in periods" :key="period.en" class="relative group">
                                         <button @click="selectPeriod(period)"
                                             class="w-full text-left rtl:text-right px-4 py-3 font-normal text-sm rounded-lg transition-colors"
