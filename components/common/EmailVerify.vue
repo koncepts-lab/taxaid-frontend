@@ -109,11 +109,11 @@ const checkStatus = async () => {
   localError.value = ''
 
   try {
-    await login({
+    const res = await login({
       email: props.email,
       password: props.password
     })
-    emit('verified')
+    emit('verified', res)
   } catch (err) {
     if (err.status === 403) {
       localError.value = 'auth_error'

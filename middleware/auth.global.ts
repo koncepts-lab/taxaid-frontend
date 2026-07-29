@@ -75,4 +75,15 @@ export default defineNuxtRouteMiddleware((to) => {
   }
 
   if (!authToken.value) return navigateTo('/home')
+
+  // Tenant-user area only (admin/rp already returned above, untouched). 'live' is the only
+  // status that reaches the real app — anything else (registered/onboarding/pending_review/
+  // implementation/suspended) is routed to the one page that decides what to show, regardless
+  // of which page was actually requested (dashboard, revenue, any subpage). Status is refreshed
+  // at login/verify/onboarding-progress time (useAuth.ts, onboarding.vue), not re-fetched from
+  // the API on every navigation.
+  const tenantStatus = useCookie('tenant_status')
+  if (to.path !== '/onboarding' && tenantStatus.value && tenantStatus.value !== 'live') {
+    return navigateTo('/onboarding')
+  }
 })

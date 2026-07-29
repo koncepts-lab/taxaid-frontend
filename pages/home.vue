@@ -99,7 +99,7 @@
           </div>
 
           <div v-if="isEmailVerification" class="w-full">
-            <CommonEmailVerify :email="form.email" :password="form.password" :lang="currentLanguage" @verified="onEmailVerified" @back="isEmailVerification = false" />
+            <CommonEmailVerify :email="form.email" :password="form.password" :lang="currentLanguage" @verified="(res) => onEmailVerified(res)" @back="isEmailVerification = false" />
           </div>
 
           <form v-else-if="!isForgotPassword" class="space-y-4" @submit.prevent="onSubmit">
@@ -533,14 +533,15 @@ async function onSubmit() {
       }, rememberMe.value, geoLocation.value)
 
       const status = res?.data?.tenant?.status
-      // pending_approval: verified but no tenant yet (admin hasn't approved) — same onboarding
-      // wizard as the old pending_onboarding case, just backed by a pending registration instead.
-      if (status === 'pending_onboarding' || status === 'pending_approval') {// NEW USER / ONBOARDING: Show Welcome Card journey
+      // 'live' is the only status that reaches the real app — everything else (registered/
+      // onboarding/pending_review/implementation/suspended) lands on the one non-live page,
+      // which decides internally what to show (verify prompt, onboarding form, waiting message).
+      if (status === 'live') {// NORMAL USER: Skip Welcome Card, go directly to Dashboard
+        router.push('/dashboard')
+      } else {// NOT LIVE YET: Show Welcome Card journey, then the onboarding page decides the rest
         nextRedirect.value = '/onboarding'
         showWelcome.value = true
         setTimeout(() => { showWelcomeCard.value = true }, 1200)
-      } else {// NORMAL USER: Skip Welcome Card, go directly to Dashboard
-        router.push('/dashboard')
       }
 
     } else {      // REGISTER
@@ -585,10 +586,15 @@ function handleGetStarted() {
   router.push(nextRedirect.value)
 }
 
-function onEmailVerified() {
+function onEmailVerified(res) {
   isEmailVerification.value = false
 
-  nextRedirect.value = '/onboarding'
+  // Same 'live'-only check as a normal login (onSubmit) — a tenant already past onboarding
+  // (e.g. restored from a backup with its answers already imported) should go straight to the
+  // dashboard, not be forced through the wizard again just because they "just verified".
+  const status = res?.data?.tenant?.status
+  nextRedirect.value = status === 'live' ? '/dashboard' : '/onboarding'
+
   showWelcome.value = true
   setTimeout(() => {
     showWelcomeCard.value = true

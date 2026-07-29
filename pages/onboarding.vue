@@ -197,13 +197,16 @@
         </div>
         
         <h2 class="relative z-10 text-white text-lg md:text-2xl font-light leading-relaxed max-w-2xl mb-10 md:mb-14 px-4">
-          {{ t.successTitle }}
+          {{ sectionTitle }}
         </h2>
         
-        <button class="relative z-10 image-next-btn !max-w-[280px] md:!max-w-[320px] !h-12 md:!h-14 !text-lg md:!text-xl" @click="pendingApproval ? navigateTo('/home') : goToDashboard()">
-          {{ pendingApproval ? t.backToLogin : t.goDashboard }}
+        <button class="relative z-10 image-next-btn !max-w-[280px] md:!max-w-[320px] !h-12 md:!h-14 !text-lg md:!text-xl" @click="handleSuccessScreenAction">
+          {{ sectionButtonLabel }}
           <span class="font-bold mx-1" v-if="!isRtl">→</span>
           <span class="font-bold mx-1" v-if="isRtl">←</span>
+        </button>
+        <button v-if="section === 'verify'" class="relative z-10 mt-4 text-white/60 hover:text-white text-sm underline" :disabled="resending" @click="resendVerification">
+          {{ resending ? '…' : t.resendLink }}
         </button>
       </div>
     </Transition>
@@ -215,6 +218,14 @@ import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import LanguageToggle from '@/components/common/LanguageToggle.vue'
 
 const pendingApproval = ref(false) // set from /submit's response — no tenant yet, admin hasn't approved
+
+// The one non-live landing page: which "not live yet" state to show. 'onboarding' is the
+// question flow (existing behavior); the other 3 reuse the success-screen layout with
+// different copy/actions.
+const section = ref<'onboarding' | 'verify' | 'pending_review' | 'implementation'>('onboarding')
+const resending = ref(false)
+const resendMessage = ref('')
+const principalEmail = ref('')
 
 const isFinished = ref(false)
 const pageLoaded = ref(false)
@@ -270,7 +281,12 @@ const translations = {
     selectCurrencyPh: 'Select your base currency',
     yes: 'Yes',
     no: 'No',
-    successTitle: "You're all set! Our implementation team will reach out soon to help you set up and start exploring insights with Akeel."
+    successTitle: "You're all set! Our implementation team will reach out soon to help you set up and start exploring insights with Akeel.",
+    verifyTitle: 'Please verify your email address to continue. Check your inbox for the verification link.',
+    pendingReviewTitle: "You're all set! Our implementation team will reach out soon to help you set up and start exploring insights with Akeel.",
+    implementationTitle: 'Your account is being set up by our implementation team. We\'ll notify you as soon as it\'s ready.',
+    resendLink: 'Resend verification email',
+    resent: 'A new verification link has been sent.',
   },
   ar: {
     prev: 'سابق',
@@ -285,7 +301,12 @@ const translations = {
     selectCurrencyPh: 'اختر عملتك الأساسية',
     yes: 'نعم',
     no: 'لا',
-    successTitle: 'أنت جاهز تمامًا! سيتواصل معك فريق التنفيذ قريبًا لمساعدتك في الإعداد والبدء في استكشاف الرؤى مع عقيل.'
+    successTitle: 'أنت جاهز تمامًا! سيتواصل معك فريق التنفيذ قريبًا لمساعدتك في الإعداد والبدء في استكشاف الرؤى مع عقيل.',
+    verifyTitle: 'يرجى التحقق من بريدك الإلكتروني للمتابعة. تحقق من صندوق الوارد الخاص بك للحصول على رابط التحقق.',
+    pendingReviewTitle: 'أنت جاهز تمامًا! سيتواصل معك فريق التنفيذ قريبًا لمساعدتك في الإعداد والبدء في استكشاف الرؤى مع عقيل.',
+    implementationTitle: 'يقوم فريق التنفيذ لدينا بإعداد حسابك. سنخبرك بمجرد أن يصبح جاهزًا.',
+    resendLink: 'إعادة إرسال رابط التحقق',
+    resent: 'تم إرسال رابط تحقق جديد.',
   }
 }
 
@@ -297,15 +318,71 @@ const transitionName = computed(() => {
 })
 const canGoMainPrevious = computed(() => step.value > 1)
 
+const sectionTitle = computed(() => ({
+  verify: t.value.verifyTitle,
+  pending_review: t.value.pendingReviewTitle,
+  implementation: t.value.implementationTitle,
+  onboarding: t.value.successTitle,
+}[section.value]))
+
+const sectionButtonLabel = computed(() =>
+  section.value === 'implementation' ? t.value.backToLogin : (pendingApproval.value ? t.value.backToLogin : t.value.goDashboard)
+)
+
+function handleSuccessScreenAction() {
+  if (section.value === 'pending_review' || section.value === 'implementation' || section.value === 'verify') {
+    navigateTo('/home')
+  } else {
+    goToDashboard()
+  }
+}
+
+async function resendVerification() {
+  if (resending.value || !principalEmail.value) return
+  resending.value = true
+  resendMessage.value = ''
+  try {
+    await useApi(`/register/resend-verification`, { method: 'POST', body: { email: principalEmail.value } })
+    resendMessage.value = t.value.resent
+  } catch (error) {
+    console.error('Resend failed:', error)
+  } finally {
+    resending.value = false
+  }
+}
+
 /** * BACKEND INTEGRATION LOGIC */
 
 const initOnboarding = async () => {
   const langQuery = currentLanguage.value === 'ar' ? 'arb' : 'en'
   try {
-    // 1. Check Status
-    const status: any = await useApi(`/status?`)
-    if (status?.completed) {
-       return navigateTo('/dashboard')
+    // 1. Resolve the unified status via /me — same field LoginController returns, works for
+    // both a still-pending registration and (defensively) a real tenant user landing here.
+    const me: any = await useApi(`/me`)
+    const tenantStatus = me?.data?.tenant?.status
+    principalEmail.value = me?.data?.user?.email ?? ''
+    useCookie('tenant_status').value = tenantStatus ?? null
+
+    if (tenantStatus === 'registered') {
+      section.value = 'verify'
+      isFinished.value = true
+      return
+    }
+    if (tenantStatus === 'pending_review') {
+      section.value = 'pending_review'
+      pendingApproval.value = true
+      isFinished.value = true
+      return
+    }
+    if (tenantStatus === 'implementation') {
+      section.value = 'implementation'
+      isFinished.value = true
+      return
+    }
+    if (tenantStatus === 'live') {
+      // Shouldn't normally land here (middleware routes live tenants to /dashboard directly),
+      // but don't strand them on the onboarding form if they do.
+      return navigateTo('/dashboard')
     }
 
     // 2. Fetch Questions
@@ -325,10 +402,69 @@ const initOnboarding = async () => {
        if (q.type === 'select') dynamicAnswers.value[q.id] = []
        else dynamicAnswers.value[q.id] = ""
     })
+
+    // 3. Resume — a user who left mid-onboarding and came back (reload, relogin, closed
+    // tab) gets their previously-saved answers back instead of restarting the form.
+    const saved: any = await useApi(`/answers`)
+    const savedAnswers: Record<string, string> = saved?.data || {}
+
+    Object.entries(savedAnswers).forEach(([questionId, answer]) => {
+      const q = questions.value.find(q => String(q.id) === String(questionId))
+      if (!q) return
+
+      if (q.maps_to_config_key === 'company_structure') {
+        selectEntityOption(answer)
+      } else if (q.maps_to_config_key === 'company_name') {
+        try {
+          const parsed = JSON.parse(answer)
+          entityForms.value[0].legalName = parsed.legal_name || entityForms.value[0].legalName
+          entityForms.value[0].nickName = parsed.nickname || entityForms.value[0].nickName
+        } catch { /* not JSON yet, ignore */ }
+      } else if (q.maps_to_config_key === 'currency') {
+        selectedSpecificCurrency.value = answer
+        selectedBaseCurrency.value = answer === 'AED' ? 'Yes' : 'No'
+      } else if (q.type === 'select') {
+        dynamicAnswers.value[q.id] = answer ? answer.split(', ') : []
+      } else {
+        dynamicAnswers.value[q.id] = answer
+      }
+    })
+
+    // Resume position: first visible question with no saved answer yet.
+    const firstUnanswered = visibleQuestions.value.findIndex(
+      q => !(String(q.id) in savedAnswers)
+    )
+    step.value = firstUnanswered === -1 ? visibleQuestions.value.length : firstUnanswered + 1
+
+    // The hidden entities question is never shown as a step — persist its auto-answer
+    // ('Single Entity' unless resumed above) right away so it's saved even if the user
+    // never reaches the final step.
+    const entityQuestion = questions.value.find(q => q.maps_to_config_key === 'company_structure')
+    if (entityQuestion) saveAnswer(entityQuestion)
   } catch (error: any) {
     console.error("Init Error:", error)
     // If unauthorized/unauthenticated, redirect home
     if (error.response?.status === 401) navigateTo('/')
+  }
+}
+
+/** Same per-question answer-value rules syncWithBackend() uses for the final submit. */
+function valueForQuestion(q: Question): string {
+  let ans: any = dynamicAnswers.value[q.id]
+  if (q.maps_to_config_key === 'company_structure') ans = selectedLabel.value
+  if (q.maps_to_config_key === 'company_name') ans = JSON.stringify({ legal_name: entityForms.value[0]?.legalName ?? '', nickname: entityForms.value[0]?.nickName ?? '' })
+  if (q.maps_to_config_key === 'currency') ans = selectedSpecificCurrency.value || 'AED'
+  if (ans === 'Other') ans = otherDescriptions.value[q.id] || 'Other'
+  if (Array.isArray(ans)) ans = ans.join(', ')
+  return String(ans || 'N/A')
+}
+
+/** Persists one question's answer immediately — what makes onboarding resumable. */
+async function saveAnswer(q: Question) {
+  try {
+    await useApi(`/submit`, { method: 'POST', body: { answers: [{ question_id: q.id, answer: valueForQuestion(q) }] } })
+  } catch (error) {
+    console.error('Save answer failed:', error)
   }
 }
 
@@ -365,6 +501,8 @@ const syncWithBackend = async () => {
     // Pre-approval submissions (verified registration, no tenant yet) get 'pending_review' back
     // instead of 'dashboard' — there's nowhere to redirect to until an admin approves.
     pendingApproval.value = res?.next === 'pending_review'
+    section.value = pendingApproval.value ? 'pending_review' : 'onboarding'
+    useCookie('tenant_status').value = pendingApproval.value ? 'pending_review' : null
     isFinished.value = true
   } catch (error) {
     console.error("Submission failed:", error)
@@ -396,6 +534,10 @@ function handleNext() {
       return
     }
   }
+
+  // Persist this question's answer now — not just at the very final submit — so
+  // leaving mid-onboarding and coming back later resumes instead of restarting.
+  saveAnswer(currentQ)
 
   // Final Step check (visible questions only — the hidden entities question
   // is auto-answered at submit)

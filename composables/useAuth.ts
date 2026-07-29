@@ -38,6 +38,12 @@ export const useAuth = () => {
         const authToken = useCookie('auth_token', cookieOptions)
         authToken.value = response.data.token
 
+        // Unified lifecycle status (registered/onboarding/pending_review/implementation/live/
+        // suspended) — read by middleware/auth.global.ts on every navigation without re-fetching
+        // from the API each time. Refreshed here and by /me (useProfileStatus) after verify.
+        const tenantStatus = useCookie('tenant_status', cookieOptions)
+        tenantStatus.value = response.data.tenant?.status ?? null
+
         resetProfile()
 
         user.value = response.data.user   // Saved to global state
@@ -79,6 +85,7 @@ export const useAuth = () => {
 
     token.value = null
     user.value = null
+    useCookie('tenant_status').value = null
     resetProfile()
     try {
       localStorage.removeItem('auth_user_id')
