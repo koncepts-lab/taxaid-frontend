@@ -5,9 +5,9 @@
 
         <div v-if="!isFullScreenChat" class="min-h-screen font-sans flex relative z-10"
             :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-            <div class="flex-1 no-scrollbar transition-all duration-500 ease-in-out lg:p-8  p-4 pt-8" :class="isChatOpen
+            <div class="flex-1 min-w-0 no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-0" :class="isChatOpen
                 ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
-                : (currentLang === 'ar' ? 'lg:ml-[170px] mr-0' : 'lg:mr-[170px] mr-0')">
+                : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
                 <div class="mx-auto">
                     <CommonDashboardHeader
                         :title="{ en: 'Financial Statement Analysis', ar: 'تحليل القوائم المالية' }"
@@ -18,7 +18,7 @@
                         @export-pdf="handleExportPDF" />
 
                     <!-- Tabs -->
-                    <div class="flex gap-3 my-8 overflow-x-auto pb-2 no-scrollbar"
+                    <div class="flex gap-3 my-8 overflow-x-auto pb-2 no-scrollbar px-4 lg:px-0"
                         :class="currentLang === 'ar' ? 'flex-row-reverse' : ''">
                         <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
                             :class="[activeTab === tab.id
