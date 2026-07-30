@@ -11,7 +11,7 @@
 
     <Transition name="fade-scale" mode="out-in">
       <div
-        v-if="!isFinished"
+        v-if="!isFinished && !booting"
         key="onboarding"
         class="relative z-10 w-full max-w-[1400px] grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center"
         :class="{ 'content-loaded': pageLoaded }"
@@ -184,37 +184,25 @@
           </Transition>
         </div>
       </div>
-
-      <!-- SUCCESS SCREEN -->
-      <div v-else key="success" class="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-6 bg-[#002B23] animate-fade-in overflow-hidden">
-        <div class="absolute inset-0 pointer-events-none">
-           <canvas ref="successParticleCanvas" class="w-full h-full opacity-60"></canvas>
-        </div>
-        
-        <div class="relative mb-8 md:mb-12 flex items-center justify-center">
-          <div class="absolute w-[200px] h-[200px] md:w-[380px] md:h-[380px] bg-[#00B794D1] rounded-full blur-[70px] md:blur-[90px] animate-pulse-slow"></div>
-          <img :src="avatarSrc" class="relative z-10 w-28 h-28 md:w-44 md:h-44 object-contain drop-shadow-[0_0_30px_rgba(4,193,143,0.5)]" alt="Success Icon" />
-        </div>
-        
-        <h2 class="relative z-10 text-white text-lg md:text-2xl font-light leading-relaxed max-w-2xl mb-10 md:mb-14 px-4">
-          {{ sectionTitle }}
-        </h2>
-        
-        <button class="relative z-10 image-next-btn !max-w-[280px] md:!max-w-[320px] !h-12 md:!h-14 !text-lg md:!text-xl" @click="handleSuccessScreenAction">
-          {{ sectionButtonLabel }}
-          <span class="font-bold mx-1" v-if="!isRtl">→</span>
-          <span class="font-bold mx-1" v-if="isRtl">←</span>
-        </button>
-        <button v-if="section === 'verify'" class="relative z-10 mt-4 text-white/60 hover:text-white text-sm underline" :disabled="resending" @click="resendVerification">
-          {{ resending ? '…' : t.resendLink }}
-        </button>
-      </div>
     </Transition>
+
+    <!-- WAITING / SUCCESS SCREEN — boxed card matching the Figma design -->
+    <HomeOnboardingWelcome
+      v-model="showOverlay"
+      :title="sectionTitle"
+      :button-label="sectionButtonLabel"
+      :show-resend="section === 'verify'"
+      :resending="resending"
+      :resend-label="t.resendLink"
+      :rtl="isRtl"
+      @action="handleSuccessScreenAction"
+      @resend="resendVerification"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import LanguageToggle from '@/components/common/LanguageToggle.vue'
 
 const pendingApproval = ref(false) // set from /submit's response — no tenant yet, admin hasn't approved
@@ -228,12 +216,13 @@ const resendMessage = ref('')
 const principalEmail = ref('')
 
 const isFinished = ref(false)
+const booting = ref(true) // true until /me's status is known — hides the wizard shell so it can't flash before we know whether to show it or the overlay
+const showOverlay = ref(false)
 const pageLoaded = ref(false)
 const submitting = ref(false)
 const step = ref(1)
 const currentEntity = ref(1)
 const direction = ref('appear')
-const avatarSrc = ref('/images/icon.png')
 const currentLanguage = ref('en')
 
 // Questions from Backend
@@ -329,6 +318,8 @@ const sectionButtonLabel = computed(() =>
   section.value === 'implementation' ? t.value.backToLogin : (pendingApproval.value ? t.value.backToLogin : t.value.goDashboard)
 )
 
+watch(isFinished, (v) => { if (v) showOverlay.value = true })
+
 function handleSuccessScreenAction() {
   if (section.value === 'pending_review' || section.value === 'implementation' || section.value === 'verify') {
     navigateTo('/home')
@@ -362,6 +353,14 @@ const initOnboarding = async () => {
     const tenantStatus = me?.data?.tenant?.status
     principalEmail.value = me?.data?.user?.email ?? ''
     useCookie('tenant_status').value = tenantStatus ?? null
+    booting.value = false
+
+    // TaxAid staff on a temp credential should never be stranded here — defensive fallback in
+    // case a stale cookie let them land on /onboarding directly (auth.global.ts / home.vue are
+    // the normal gate for this).
+    if (me?.data?.user?.account_type === 'taxaid') {
+      return navigateTo('/dashboard')
+    }
 
     if (tenantStatus === 'registered') {
       section.value = 'verify'
@@ -443,6 +442,7 @@ const initOnboarding = async () => {
     if (entityQuestion) saveAnswer(entityQuestion)
   } catch (error: any) {
     console.error("Init Error:", error)
+    booting.value = false
     // If unauthorized/unauthenticated, redirect home
     if (error.response?.status === 401) navigateTo('/')
   }
@@ -620,9 +620,6 @@ onMounted(() => {
   initOnboarding()
 })
 
-onBeforeUnmount(() => {
-  activeStopFunctions.forEach(stop => stop())
-})
 function goToDashboard() { window.location.href = '/dashboard' }
 </script>
 

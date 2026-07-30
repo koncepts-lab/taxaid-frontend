@@ -82,6 +82,12 @@ export default defineNuxtRouteMiddleware((to) => {
   // of which page was actually requested (dashboard, revenue, any subpage). Status is refreshed
   // at login/verify/onboarding-progress time (useAuth.ts, onboarding.vue), not re-fetched from
   // the API on every navigation.
+  // TaxAid staff on a temp credential (implementation_consultant/review_team) need the real
+  // dashboard even while the tenant they're working on isn't 'live' — the onboarding/waiting
+  // redirect below is only for the tenant's own users.
+  const accountType = useCookie('account_type')
+  if (accountType.value === 'taxaid') return
+
   const tenantStatus = useCookie('tenant_status')
   if (to.path !== '/onboarding' && tenantStatus.value && tenantStatus.value !== 'live') {
     return navigateTo('/onboarding')
