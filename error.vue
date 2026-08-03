@@ -51,7 +51,7 @@ const handleError = () => {
   let redirectUrl = '/home'
   
   if (adminToken.value) {
-    redirectUrl = '/admin'
+    redirectUrl = '/ad-aqnz-pro-auth-78z46'
   } else if (rpToken.value) {
     redirectUrl = '/revenue-partnership/select-dashboard'
   } else if (authToken.value) {

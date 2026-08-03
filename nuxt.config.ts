@@ -45,6 +45,7 @@ export default defineNuxtConfig({
       firebaseSenderId: process.env.NUXT_PUBLIC_FIREBASE_SENDER_ID || "",
       firebaseAppId: process.env.NUXT_PUBLIC_FIREBASE_APP_ID || "",
       firebaseVapidKey: process.env.NUXT_PUBLIC_FIREBASE_VAPID_KEY || "",
+      stripePublishableKey: process.env.NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
     },
   },
 });
