@@ -107,10 +107,10 @@
                                         </button>
 
                                         <div v-if="(period.en === 'Custom Range' || period.en === 'Custom Date') && selectedPeriodKey === period.en"
-                                            class="absolute top-0 shadow-2xl rounded-xl border overflow-hidden z-[60] w-max"
+                                            class="lg:absolute lg:top-0 static shadow-2xl rounded-xl border overflow-hidden z-[60] w-full lg:w-max mt-2 lg:mt-0"
                                             :class="[
                                                 isDark ? 'border-[#03D8B0] bg-[#002E26]' : 'border-[#03D8B0] bg-white',
-                                                currentLang === 'ar' ? 'left-full ml-2' : 'right-full mr-2'
+                                                currentLang === 'ar' ? 'lg:left-full lg:ml-2' : 'lg:right-full lg:mr-2'
                                             ]">
 
                                             <div v-if="selectedPeriodKey === 'Custom Range'"
@@ -200,9 +200,10 @@
                         <Transition name="dropdown">
                             <div v-if="showExportDropdown"
                                 class="absolute mt-2 w-56 border rounded-lg shadow-lg z-[100] py-2 px-2"
-                                :class="[isDark ? 'bg-primary-900 border-primary-100' : 'bg-white border-[#03D8B0]', currentLang === 'ar' ? 'left-0' : 'right-0']">
+                                :class="[isDark ? 'bg-primary-900 border-primary-100' : 'bg-white border-[#03D8B0]', currentLang === 'ar' ? 'left-0' : 'left-0 md:left-auto md:right-0']">
                                 <button @click="triggerExport('pdf')"
-                                    class="w-full px-4 py-3 text-sm rounded-lg flex items-center hover:bg-red-100 dark:hover:bg-white/10 text-black dark:text-white">
+                                    class="w-full px-4 py-3 text-sm rounded-lg flex items-center transition-colors"
+                                    :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-red-100 text-[#000]'">
                                     {{ currentLang === 'ar' ? 'تصدير بصيغة PDF (.pdf)' : 'Export as PDF (.pdf)' }}
                                 </button>
                             </div>

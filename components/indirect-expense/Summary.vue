@@ -27,7 +27,7 @@
             <col style="width: 15%" />
             <col style="width: 15%" />
         </colgroup>
-        <thead class="text-white sticky top-[82px] z-20 shadow-sm" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+        <thead class="text-white lg:sticky lg:top-[82px] z-20 shadow-sm" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
           <tr>
             <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'المصروفات غير المباشرة' : 'Indirect Expenses' }}</th>
             <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">

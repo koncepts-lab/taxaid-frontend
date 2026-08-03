@@ -2,7 +2,7 @@
     <div class="w-full transition-all duration-500 rounded-3xl"
         :class="isDark ? 'bg-[#00141050]' : 'bg-white'" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
-        <div v-if="activeTab === 'schedules'" class="px-8 pb-8 flex gap-4 transition-all duration-500">
+        <div v-if="activeTab === 'schedules'" class="lg:px-8 px-4 lg:pb-8 pb-4 flex flex-col lg:flex-row gap-4 transition-all duration-500">
             <div class="flex-1 relative">
                 <div @click="isOpenPL = !isOpenPL; isOpenBS = false"
                     class="w-full border rounded-lg py-3 px-4 text-sm flex justify-between items-center cursor-pointer transition-all"
@@ -125,7 +125,7 @@
         <!-- Table Wrapper (Horizontal Scroll) -->
         <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative">
             <table class="w-full text-start border-collapse min-w-250 table-fixed">
-                <thead class="text-white sticky top-0 z-20 shadow-sm" :class="isDark ? 'bg-primary-1100' : 'bg-primary-750'">
+                <thead class="text-white lg:sticky lg:top-0 z-20 shadow-sm" :class="isDark ? 'bg-primary-1100' : 'bg-primary-750'">
                 <tr>
                     <template v-if="activeTab === 'ratios'">
                         <template v-if="selectedRatio === 'All Ratios'">
