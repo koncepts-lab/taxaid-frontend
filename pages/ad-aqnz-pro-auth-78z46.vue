@@ -173,6 +173,7 @@ function dashboardRoute(adminUser) {
     const role = adminUser?.role?.name
     const dept = adminUser?.department?.name
     if (role === 'Super Admin')                                                            return '/admin/roles'
+    if (role === 'Payments Admin')                                                         return '/admin/payments'
     if (role === 'Implementation Manager')                                                 return '/admin/implementation/manager'
     if (role === 'Implementation Consultant')                                              return '/admin/implementation/member'
     if (role === 'Review Manager' && dept === 'Review')                                   return '/review-manager/dashboard'

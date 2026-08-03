@@ -2,7 +2,7 @@
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
     
     <!-- HEADER -->
-    <DashboardHeader userName="Review Manager" userId="Welcome, Akhil" :showChangeProfile="false" />
+    <DashboardHeader userName="Review Manager" :userId="'Welcome, ' + (admin?.full_name ?? '')" :showChangeProfile="false" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 py-8 space-y-8 overflow-y-auto" style="margin-top: -18px;">
@@ -161,6 +161,7 @@
 import { useReviewManager } from '@/composables/admin/review/useReviewManager'
 
 const { isDark } = useTheme()
+const { admin } = useAdminAuth()
 const rm = useReviewManager()
 
 const selectedDate      = ref(new Date().toISOString().split('T')[0])

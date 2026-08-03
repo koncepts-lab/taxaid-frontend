@@ -4,10 +4,11 @@
     <!-- HEADER -->
     <DashboardHeader
       userName="Team Member Dashboard"
-      userId="Welcome, Akhil"
+      :userId="'Welcome, ' + (admin?.full_name ?? '')"
       :showChangeProfile="true"
       :showManageAccess="true"
       changeProfileLink="/profile"
+      :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46"
     />
 
     <!-- CONTENT -->
@@ -54,6 +55,7 @@
 
 <script setup>
 const { isDark } = useTheme()
+const { admin } = useAdminAuth()
 
 definePageMeta({
   layout: false

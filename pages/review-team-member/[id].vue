@@ -2,8 +2,8 @@
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300"
        :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#F8F9FA] text-[#1a1a1a]'">
 
-    <DashboardHeader userName="Team Member Dashboard" userId="Welcome, Akhil"
-                     :showChangeProfile="true" :showManageAccess="true" changeProfileLink="/profile" />
+    <DashboardHeader userName="Team Member Dashboard" :userId="'Welcome, ' + (admin?.full_name ?? '')"
+                     :showChangeProfile="true" :showManageAccess="true" changeProfileLink="/profile" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
 
     <ClientOnly>
       <main class="flex-1 p-8" style="margin-top: -18px;">
@@ -271,6 +271,7 @@ import { useAdminMonthlyReviews } from '~/composables/admin/review/useAdminMonth
 
 const route = useRoute()
 const { isDark } = useTheme()
+const { admin } = useAdminAuth()
 const tenantId = route.params.id
 
 const { fetchByTenant, saveAnswer, completeReview } = useAdminMonthlyReviews()

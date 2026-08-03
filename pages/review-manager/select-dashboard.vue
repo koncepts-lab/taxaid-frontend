@@ -2,7 +2,7 @@
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
     
     <!-- HEADER -->
-    <DashboardHeader userName="Review Manager" userId="Welcome, Akhil" :showChangeProfile="true" />
+    <DashboardHeader userName="Review Manager" :userId="'Welcome, ' + (admin?.full_name ?? '')" :showChangeProfile="true" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
 
     <!-- CONTENT -->
     <main class="flex-1 flex flex-col items-center justify-center p-4 relative z-10 w-full">
@@ -42,6 +42,7 @@
 import { useReviewManagerSelectDashboardPage } from '@/composables/useWebsiteData'
 
 const { isDark } = useTheme()
+const { admin } = useAdminAuth()
 const { title, subtitle, cards } = useReviewManagerSelectDashboardPage()
 
 

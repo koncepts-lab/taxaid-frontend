@@ -45,7 +45,7 @@
         </CommonTooltip>
         <!-- Notifications -->
         <CommonTooltip :text="currentLang === 'ar' ? 'التنبيهات' : 'Notifications'">
-          <NuxtLink to="/revenue-partnership/notifications"
+          <NuxtLink :to="notificationsTo"
             class="w-[38px] h-[38px] rounded-full bg-[#00896F]/40 border border-[#ffffff1A] flex items-center justify-center text-white hover:bg-[#00896F]/60 transition-colors cursor-pointer">
             <img src="/images/icons/Notifications.svg" alt="Notifications" class="w-5 h-5 invert brightness-0" />
           </NuxtLink>
@@ -92,6 +92,10 @@ const props = defineProps({
   adminLogout: {
     type: Boolean,
     default: false
+  },
+  notificationsTo: {
+    type: String,
+    default: '/revenue-partnership/notifications'
   }
 })
 
