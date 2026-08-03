@@ -13,7 +13,12 @@
       </div>
 
       <div v-for="(pt, pi) in group.points" :key="pi" class="flex items-start gap-2 mb-2 pl-2">
-        <input v-model="pt.included" type="checkbox" class="h-4 w-4 shrink-0 mt-2" />
+        <button type="button" @click="cycleIncluded(pt)" title="Click to cycle: unset → included → excluded"
+          class="h-4 w-4 shrink-0 mt-2 rounded border flex items-center justify-center"
+          :class="pt.included === true ? 'bg-[#04C18F] border-[#04C18F]' : pt.included === false ? 'bg-red-50 border-red-300' : 'border-gray-300 bg-white'">
+          <svg v-if="pt.included === true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="white" class="w-3 h-3"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
+          <svg v-else-if="pt.included === false" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-3 h-3 text-red-500"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+        </button>
         <textarea v-model="pt.label" rows="2" placeholder="e.g. Up to 10 tax filings per year"
           class="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F] resize-y max-h-32 overflow-y-auto"></textarea>
         <select v-model="pt.entitlement_key" class="w-40 border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-[#00896F] mt-1">
@@ -46,6 +51,9 @@ function removeGroup(gi) {
   emit('update:modelValue', next)
 }
 function addPoint(gi) {
-  props.modelValue[gi].points.push({ label: '', included: true, entitlement_key: null })
+  props.modelValue[gi].points.push({ label: '', included: null, entitlement_key: null })
+}
+function cycleIncluded(pt) {
+  pt.included = pt.included === null ? true : pt.included === true ? false : null
 }
 </script>

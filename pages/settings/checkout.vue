@@ -45,9 +45,31 @@
           <div class="flex-1">
             <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
               <h2 class="text-[20px] font-medium text-gray-900 mb-2">Payment Details</h2>
-              <p class="text-[14px] text-gray-500 mb-8">Enter your card details to subscribe</p>
 
-              <div id="card-element" class="border rounded-lg px-4 py-3.5" style="border-color: #A2E8D6;"></div>
+              <!-- Saved card, offered first — skips re-entering card details entirely -->
+              <template v-if="defaultCard && !useNewCard">
+                <p class="text-[14px] text-gray-500 mb-6">Use your saved card, or add a different one</p>
+                <div class="border border-[#04C18F] rounded-2xl p-6 flex items-center justify-between mb-4" style="background: linear-gradient(90deg, #F0FDFA 0%, #F0FDF4 100%);">
+                  <div class="flex items-center gap-4">
+                    <div class="w-12 h-8 bg-[#DCFCE7] rounded flex items-center justify-center text-[#00A63E]">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+                    </div>
+                    <div>
+                      <p class="text-[14px] font-medium text-gray-900 capitalize">{{ defaultCard.card_brand }} •••• {{ defaultCard.card_last4 }}</p>
+                      <p class="text-[12px] text-gray-500">Expires {{ String(defaultCard.card_exp_month).padStart(2, '0') }}/{{ defaultCard.card_exp_year }}</p>
+                    </div>
+                  </div>
+                </div>
+                <button type="button" @click="switchToNewCard" class="text-sm text-[#00896F] font-medium hover:underline mb-2">Use a different card</button>
+              </template>
+
+              <!-- New card entry -->
+              <template v-else>
+                <p class="text-[14px] text-gray-500 mb-8">Enter your card details to subscribe</p>
+                <div id="card-element" class="border rounded-lg px-4 py-3.5" style="border-color: #A2E8D6;"></div>
+                <button v-if="defaultCard" type="button" @click="useNewCard = false" class="text-sm text-[#00896F] font-medium hover:underline mt-2">Use saved card instead</button>
+              </template>
+
               <p v-if="cardError" class="text-sm text-red-500 mt-2">{{ cardError }}</p>
 
               <div class="bg-[#EBFAF6] border border-[#04C18F80] rounded-lg p-4 flex gap-3 mt-6">
@@ -60,7 +82,7 @@
                   Cancel
                 </NuxtLink>
                 <button @click="submit" :disabled="submitting" type="button" class="flex-1 bg-[#00896F] text-white py-3.5 rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors disabled:opacity-50">
-                  {{ submitting ? 'Processing...' : `Subscribe — ${currency} ${price}` }}
+                  {{ submitting ? 'Processing...' : `Subscribe — ${displayPrice}` }}
                 </button>
               </div>
             </div>
@@ -74,7 +96,7 @@
               <div class="space-y-4 mb-6">
                 <div class="flex justify-between text-[14px]">
                   <span class="text-gray-600">{{ plan.name }} Plan</span>
-                  <span class="text-gray-900 font-medium">{{ currency }} {{ price }}</span>
+                  <span class="text-gray-900 font-medium">{{ displayPrice }}</span>
                 </div>
                 <div class="flex justify-between text-[14px]">
                   <span class="text-gray-600">Billing Period</span>
@@ -85,7 +107,7 @@
               <div class="border-t border-gray-100 pt-6 mb-8">
                 <div class="flex justify-between items-end">
                   <span class="text-[16px] text-gray-900 font-medium">Total Due Today</span>
-                  <span class="text-[24px] text-gray-900 font-medium">{{ currency }} {{ price }}</span>
+                  <span class="text-[24px] text-gray-900 font-medium">{{ displayPrice }}</span>
                 </div>
               </div>
 
@@ -95,8 +117,8 @@
                   <li v-for="group in features" :key="group.title" class="text-[13px] text-gray-600">
                     <p class="font-medium text-gray-900 mb-1">{{ group.title }}</p>
                     <ul class="space-y-2 mb-2">
-                      <li v-for="(point, i) in group.points" :key="i" class="flex items-start gap-2">
-                        <span class="w-1 h-1 rounded-full bg-black mt-1.5 shrink-0"></span>
+                      <li v-for="(point, i) in group.points" :key="i" :class="['flex items-start gap-2', point.included !== true ? 'text-gray-400 line-through' : '']">
+                        <span :class="['w-1 h-1 rounded-full mt-1.5 shrink-0', point.included !== true ? 'bg-gray-400' : 'bg-black']"></span>
                         {{ point.label }}
                       </li>
                     </ul>
@@ -128,7 +150,7 @@
           </div>
           <div class="flex justify-between pt-6 pb-2 items-center">
             <span class="text-[18px] text-gray-900">Total</span>
-            <span class="text-[28px] text-gray-900 font-medium">{{ currency }} {{ price }}</span>
+            <span class="text-[28px] text-gray-900 font-medium">{{ displayPrice }}</span>
           </div>
         </div>
 
@@ -144,11 +166,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { loadStripe, type Stripe, type StripeElements, type StripeCardElement } from '@stripe/stripe-js'
 
 const route = useRoute()
-const { getPlans, createSetupIntent, subscribe } = usePayment()
+const { getPlans, createSetupIntent, subscribe, getPaymentMethods } = usePayment()
 
 const planId = Number(route.query.plan_id)
 const cycle = (route.query.cycle === 'yearly' ? 'yearly' : 'monthly') as 'monthly' | 'yearly'
@@ -158,28 +180,23 @@ const submitting = ref(false)
 const success = ref(false)
 const cardError = ref('')
 const plan = ref<any>(null)
+const defaultCard = ref<any>(null)
+const useNewCard = ref(false)
 
 const priceField = computed(() => cycle === 'monthly' ? 'monthly_price' : 'annual_price')
 const currency = computed(() => plan.value?.current_version?.currency || 'AED')
 const price = computed(() => Number(plan.value?.current_version?.[priceField.value] ?? 0).toFixed(2))
+const displayPrice = computed(() => plan.value?.is_trial ? 'FREE' : `${currency.value} ${price.value}`)
 const features = computed(() => (cycle === 'monthly' ? plan.value?.current_version?.monthly_features : plan.value?.current_version?.annual_features) || [])
 
 let stripe: Stripe | null = null
 let elements: StripeElements | null = null
 let cardElement: StripeCardElement | null = null
 
-onMounted(async () => {
-  try {
-    const res = await getPlans()
-    plan.value = (res.data || []).find((p: any) => p.id === planId) || null
-  } finally {
-    loading.value = false
-  }
-
-  if (!plan.value) return
-
+async function mountCardElement() {
+  if (cardElement) return // already mounted
   const config = useRuntimeConfig()
-  stripe = await loadStripe(config.public.stripePublishableKey as string)
+  if (!stripe) stripe = await loadStripe(config.public.stripePublishableKey as string)
   if (!stripe) return
 
   elements = stripe.elements()
@@ -190,31 +207,63 @@ onMounted(async () => {
   cardElement.on('change', (event) => {
     cardError.value = event.error?.message || ''
   })
+}
+
+function switchToNewCard() {
+  useNewCard.value = true
+  nextTick(() => mountCardElement())
+}
+
+onMounted(async () => {
+  try {
+    const [plansRes, pmRes] = await Promise.all([getPlans(), getPaymentMethods()])
+    plan.value = (plansRes.data || []).find((p: any) => p.id === planId) || null
+    defaultCard.value = (pmRes.data || []).find((pm: any) => pm.is_default) || null
+  } finally {
+    loading.value = false
+  }
+
+  if (!plan.value) return
+
+  // No saved card at all — go straight to card entry, nothing to offer as "saved".
+  if (!defaultCard.value) {
+    await mountCardElement()
+  }
 })
 
 const submit = async () => {
-  if (!stripe || !cardElement || submitting.value) return
+  if (submitting.value) return
   submitting.value = true
   cardError.value = ''
 
   try {
-    const intentRes = await createSetupIntent()
-    const clientSecret = intentRes.data.client_secret
+    let paymentMethodId: string
 
-    const { error, setupIntent } = await stripe.confirmCardSetup(clientSecret, {
-      payment_method: { card: cardElement },
-    })
+    if (defaultCard.value && !useNewCard.value) {
+      paymentMethodId = defaultCard.value.stripe_payment_method_id
+    } else {
+      if (!stripe || !cardElement) { submitting.value = false; return }
 
-    if (error) {
-      cardError.value = error.message || 'Card confirmation failed'
-      submitting.value = false
-      return
+      const intentRes = await createSetupIntent()
+      const clientSecret = intentRes.data.client_secret
+
+      const { error, setupIntent } = await stripe.confirmCardSetup(clientSecret, {
+        payment_method: { card: cardElement },
+      })
+
+      if (error) {
+        cardError.value = error.message || 'Card confirmation failed'
+        submitting.value = false
+        return
+      }
+
+      paymentMethodId = setupIntent!.payment_method as string
     }
 
     await subscribe({
       plan_id: planId,
       billing_cycle: cycle,
-      payment_method_id: setupIntent!.payment_method as string,
+      payment_method_id: paymentMethodId,
     })
 
     success.value = true

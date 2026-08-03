@@ -320,35 +320,46 @@
 
       <!-- Payment Settings -->
       <h2 class="text-[18px] font-medium text-[#013E32] mb-4">Payment Settings</h2>
-      <div class="bg-white border border-gray-100 rounded-xl p-6 shadow-sm max-w-md mb-6">
-        <label class="block text-sm font-medium text-gray-900 mb-1">Default Dunning Grace Period (days)</label>
-        <p class="text-xs text-gray-500 mb-3">Applies to all subscriptions unless overridden individually in the Subscriptions tab.</p>
-        <div class="flex gap-3">
-          <input type="number" min="0" v-model.number="dunningDefault" class="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" />
-          <button @click="saveSettings" class="bg-[#00896F] text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-[#00705a] transition-colors">Save</button>
-        </div>
-      </div>
-
-      <div class="bg-white border border-gray-100 rounded-xl p-6 shadow-sm max-w-md">
-        <label class="block text-sm font-medium text-gray-900 mb-1">Free Trial</label>
-        <p class="text-xs text-gray-500 mb-3">New orgs with no subscription get this real plan (with its actual entitlements) for the trial period, at no charge. Leave the plan unset to disable trials.</p>
-        <div class="space-y-3">
-          <div>
-            <label class="block text-xs text-gray-500 mb-1">Trial Plan</label>
-            <select v-model="trialPlanId" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]">
-              <option :value="null">— None (trials disabled) —</option>
-              <option v-for="p in allPlans" :key="p.id" :value="p.id">{{ p.name }}</option>
-            </select>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white border border-gray-100 rounded-xl p-6 shadow-sm min-h-[300px] flex flex-col">
+          <label class="block text-sm font-medium text-gray-900 mb-1">Default Dunning Grace Period (days)</label>
+          <p class="text-xs text-gray-500 mb-3">Applies to all subscriptions unless overridden individually in the Subscriptions tab.</p>
+          <div class="flex gap-3 mt-auto">
+            <input type="number" min="0" v-model.number="dunningDefault" class="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" />
+            <button @click="saveSettings" class="bg-[#00896F] text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-[#00705a] transition-colors">Save</button>
           </div>
-          <div>
+        </div>
+
+        <div class="bg-white border border-gray-100 rounded-xl p-6 shadow-sm min-h-[300px] flex flex-col">
+          <label class="block text-sm font-medium text-gray-900 mb-1">Free Trial</label>
+          <p class="text-xs text-gray-500 mb-4">Every new org gets this dedicated trial plan for free — not synced to Stripe, freely editable any time.</p>
+
+          <div class="mb-4">
             <label class="block text-xs text-gray-500 mb-1">Trial Length (days)</label>
             <input type="number" min="1" v-model.number="trialDays" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" />
           </div>
-          <div class="flex gap-3">
-            <button @click="saveSettings" class="flex-1 bg-[#00896F] text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-[#00705a] transition-colors">Save</button>
-            <button v-if="trialPlanId" @click="editTrialPlan" class="flex-1 bg-white border border-gray-200 text-gray-700 text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">Edit Trial Plan</button>
+
+          <div class="mb-4">
+            <button @click="openTrialPlanModal" class="w-full bg-white border border-gray-200 text-gray-700 text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">Edit Trial Plan</button>
+          </div>
+
+          <div class="mt-auto">
+            <button @click="saveSettings" class="w-full bg-[#00896F] text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-[#00705a] transition-colors">Save</button>
           </div>
         </div>
+      </div>
+
+      <!-- TODO: remove for production — demo-only escape hatch to edit any published plan in place, bypassing normal versioning -->
+      <h2 class="text-[18px] font-medium text-[#013E32] mb-4 mt-6">Demo: Edit Any Plan</h2>
+      <div class="bg-white border border-amber-200 rounded-xl p-6 shadow-sm max-w-md">
+        <p class="text-xs text-amber-700 mb-3">For demo/testing only — edits a live plan's price/entitlements in place, even with real subscribers on it. Not for production use.</p>
+        <div class="mb-3">
+          <select v-model="demoEditPlanId" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]">
+            <option :value="null">— Select a plan —</option>
+            <option v-for="p in allPlans" :key="p.id" :value="p.id">{{ p.name }} ({{ p.status }})</option>
+          </select>
+        </div>
+        <button v-if="demoEditPlanId" @click="openDemoEditModal" class="w-full bg-white border border-amber-300 text-amber-700 text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-amber-50 transition-colors">Edit Plan (Demo)</button>
       </div>
     </div>
 
@@ -389,7 +400,7 @@
             </p>
             <p class="text-[14px] text-[#000000CC] mb-4">{{ previewPlan.description || 'No description set.' }}</p>
 
-            <div v-for="(group, gi) in (previewCycle === 'monthly' ? previewPlan.current_version?.monthly_features : previewPlan.current_version?.annual_features) ?? []" :key="gi" class="mb-3">
+            <div v-for="(group, gi) in (previewPlan.is_trial || previewCycle === 'monthly' ? previewPlan.current_version?.monthly_features : previewPlan.current_version?.annual_features) ?? []" :key="gi" class="mb-3">
               <p v-if="group.title" class="text-[13px] font-semibold text-gray-800 mb-1">{{ group.title }}</p>
               <ul class="space-y-1.5">
                 <li v-for="(pt, pi) in group.points" :key="pi" class="text-[13px] flex items-start gap-2" :class="pt.included ? 'text-gray-800' : 'text-gray-400 line-through'">
@@ -398,7 +409,7 @@
                 </li>
               </ul>
             </div>
-            <p v-if="!(previewCycle === 'monthly' ? previewPlan.current_version?.monthly_features : previewPlan.current_version?.annual_features)?.length" class="text-xs text-gray-400 mb-4">No feature list set for this plan yet.</p>
+            <p v-if="!(previewPlan.is_trial || previewCycle === 'monthly' ? previewPlan.current_version?.monthly_features : previewPlan.current_version?.annual_features)?.length" class="text-xs text-gray-400 mb-4">No feature list set for this plan yet.</p>
 
             <div v-if="previewMode === 'admin'" class="border-t border-gray-100 pt-4 mt-4">
               <p class="text-xs font-medium text-gray-500 mb-2">Entitlements (admin-only, not shown to users)</p>
@@ -421,8 +432,10 @@
       <div class="bg-white rounded-2xl w-full max-w-2xl shadow-xl overflow-hidden max-h-[90vh] overflow-y-auto">
         <div class="p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-xl font-medium text-gray-900">{{ versioningPlan ? `New Version — ${versioningPlan.name}` : 'New Plan' }}</h3>
-            <span class="text-xs text-gray-400">Step {{ wizardStep }} of 2 — {{ wizardStep === 1 ? 'General & Monthly' : 'Annual' }}</span>
+            <h3 class="text-xl font-medium text-gray-900">
+              {{ isTrialPlanEdit ? 'Edit Trial Plan' : isDemoEdit ? `Edit Plan (Demo) — ${versioningPlan?.name}` : versioningPlan ? `New Version — ${versioningPlan.name}` : 'New Plan' }}
+            </h3>
+            <span class="text-xs text-gray-400">Step {{ wizardStep }} of 2 — {{ wizardStep === 1 ? (isTrialPlanEdit ? 'General & Monthly Features' : 'General & Monthly') : (isTrialPlanEdit ? 'Annual Features' : 'Annual') }}</span>
           </div>
 
           <!-- ── STEP 1: general info + monthly ── -->
@@ -437,7 +450,7 @@
               <textarea v-model="planForm.description" rows="2" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]"></textarea>
             </div>
 
-            <div v-if="!versioningPlan" class="grid grid-cols-2 gap-4">
+            <div v-if="!versioningPlan && !isTrialPlanEdit" class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-1">Tier</label>
                 <input v-model="planForm.tier" type="text" placeholder="pro, ultimate..." class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" />
@@ -452,7 +465,7 @@
               </div>
             </div>
 
-            <div class="flex items-center gap-6">
+            <div v-if="!isTrialPlanEdit" class="flex items-center gap-6">
               <label class="flex items-center gap-2 text-sm text-gray-700">
                 <input v-model="planForm.is_popular" type="checkbox" class="h-4 w-4" />
                 Most Popular badge
@@ -464,10 +477,11 @@
             </div>
             <p v-if="planForm.is_custom" class="text-xs text-gray-400 -mt-2">Created unassigned — link it to an org afterward from the Org-Specific Plans tab.</p>
 
-            <div>
+            <div v-if="!isTrialPlanEdit">
               <label class="block text-sm font-medium text-gray-900 mb-1">Monthly Price</label>
               <input v-model.number="planForm.monthly_price" type="number" step="0.01" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" />
             </div>
+            <p v-else class="text-xs text-gray-500">Trial plans are always free — no pricing fields.</p>
 
             <!-- Entitlements are fully opt-in — pick which keys apply to this plan, not a forced complete list -->
             <div>
@@ -494,7 +508,7 @@
 
           <!-- ── STEP 2: annual ── -->
           <div v-else class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
+            <div v-if="!isTrialPlanEdit" class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-1">Annual Price</label>
                 <input v-model.number="planForm.annual_price" type="number" step="0.01" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" />
@@ -514,8 +528,8 @@
         <div class="px-6 py-5 flex gap-4 border-t border-gray-100">
           <button v-if="wizardStep === 1" @click="cancelPlanModal" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">Cancel</button>
           <button v-else @click="wizardStep = 1" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">Back</button>
-          <button v-if="wizardStep === 2" @click="submitPlan(true)" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">Save as Draft</button>
-          <button v-if="wizardStep === 1" @click="wizardStep = 2" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a]">Next: Annual</button>
+          <button v-if="wizardStep === 2 && !isTrialPlanEdit && !isDemoEdit" @click="submitPlan(true)" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">Save as Draft</button>
+          <button v-if="wizardStep === 1" @click="wizardStep = 2" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a]">{{ isTrialPlanEdit ? 'Next: Annual Features' : 'Next: Annual' }}</button>
           <button v-else @click="submitPlan(false)" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a]">Save</button>
         </div>
       </div>
@@ -643,7 +657,7 @@ const {
   getPlans, getOrgPlansGrouped, getPlanStats, getOrganizations, assignPlanToOrg, createPlan, createPlanVersion, updatePlanStatus,
   getEntitlementDefinitions, createEntitlementDefinition, toggleEntitlementDefinitionActive: apiToggleDefinitionActive,
   getSubscriptions, getPayments, setDunningOverride, getAlerts,
-  getPaymentSettings, updatePaymentSettings,
+  getPaymentSettings, updatePaymentSettings, getTrialPlan, saveTrialPlan, demoEditPlan,
 } = usePaymentsAdmin()
 
 const stats = ref({})
@@ -734,6 +748,7 @@ function openPreview(plan) {
 const planModalOpen = ref(false)
 const wizardStep = ref(1)
 const versioningPlan = ref(null)
+const isTrialPlanEdit = ref(false)
 const planForm = ref(emptyPlanForm())
 function emptyPlanForm() {
   return {
@@ -747,13 +762,48 @@ function cloneFeatureGroups(groups) {
 }
 async function openPlanModal() {
   versioningPlan.value = null
+  isTrialPlanEdit.value = false
+  isDemoEdit.value = false
   wizardStep.value = 1
   planForm.value = emptyPlanForm()
   await loadAllActiveDefinitions() // refresh so newly-added entitlement keys show up immediately
   planModalOpen.value = true
 }
+
+// Dedicated, non-Stripe-tracked trial plan — separate from the regular Plans tab wizard flow.
+async function openTrialPlanModal() {
+  versioningPlan.value = null
+  isTrialPlanEdit.value = true
+  isDemoEdit.value = false
+  wizardStep.value = 1
+  planForm.value = emptyPlanForm()
+
+  const res = await getTrialPlan()
+  const plan = res.data
+  if (plan) {
+    planForm.value.name = plan.name ?? ''
+    planForm.value.description = plan.description ?? ''
+    if (plan.current_version) {
+      planForm.value.monthly_price = Number(plan.current_version.monthly_price)
+      planForm.value.annual_price = Number(plan.current_version.annual_price)
+      planForm.value.annual_discount_percent = Number(plan.current_version.annual_discount_percent)
+      planForm.value.entitlements = { ...(plan.current_version.entitlements || {}) }
+      planForm.value.monthly_features = cloneFeatureGroups(plan.current_version.monthly_features || [])
+      planForm.value.annual_features = cloneFeatureGroups(plan.current_version.annual_features || [])
+    }
+  } else {
+    planForm.value.name = 'Trial'
+    planForm.value.monthly_price = 0
+    planForm.value.annual_price = 0
+  }
+
+  await loadAllActiveDefinitions()
+  planModalOpen.value = true
+}
 async function openVersionModal(plan) {
   versioningPlan.value = plan
+  isTrialPlanEdit.value = false
+  isDemoEdit.value = false
   wizardStep.value = 1
   planForm.value = emptyPlanForm()
   // Pre-fill from the plan's current version so editing starts from what's already live, not blank.
@@ -776,6 +826,8 @@ async function openVersionModal(plan) {
 function closePlanModal() {
   planModalOpen.value = false
   versioningPlan.value = null
+  isTrialPlanEdit.value = false
+  isDemoEdit.value = false
 }
 // Cancel on a new, never-saved plan with real data entered auto-saves as draft instead of discarding it.
 async function cancelPlanModal() {
@@ -820,6 +872,18 @@ async function submitPlan(asDraft = false) {
     entitlements: planForm.value.entitlements,
     monthly_features: planForm.value.monthly_features,
     annual_features: planForm.value.annual_features,
+  }
+  if (isTrialPlanEdit.value) {
+    await saveTrialPlan({ name: planForm.value.name, ...payload })
+    closePlanModal()
+    await loadAllPlans()
+    return
+  }
+  if (isDemoEdit.value) {
+    await demoEditPlan(versioningPlan.value.id, payload)
+    closePlanModal()
+    await Promise.all([loadPlans(), loadOrgPlans(), loadAllPlans()])
+    return
   }
   if (versioningPlan.value) {
     await createPlanVersion(versioningPlan.value.id, payload)
@@ -979,26 +1043,30 @@ function paymentsPerPageChange(pp) { paymentsMeta.value.per_page = pp; loadPayme
 
 // ── Settings ────────────────────────────────────────────────────────────
 const dunningDefault = ref(7)
-const trialPlanId = ref(null)
 const trialDays = ref(14)
-const allPlans = ref([])
+const allPlans = ref([]) // every status, every type — source for the demo-edit dropdown below
 
 async function loadAllPlans() {
-  const res = await getPlans(1, 1000, false, 'active')
+  const res = await getPlans(1, 1000)
   allPlans.value = res.data || []
 }
 async function loadSettings() {
   const res = await getPaymentSettings()
   dunningDefault.value = res.data?.dunning_grace_days_default ?? 7
-  trialPlanId.value = res.data?.trial_plan_id ?? null
   trialDays.value = res.data?.trial_days ?? 14
 }
 async function saveSettings() {
-  await updatePaymentSettings(dunningDefault.value, trialPlanId.value, trialPlanId.value ? trialDays.value : null)
+  await updatePaymentSettings(dunningDefault.value, trialDays.value)
 }
-function editTrialPlan() {
-  const plan = allPlans.value.find(p => p.id === trialPlanId.value)
-  if (plan) openVersionModal(plan)
+
+// TODO: remove for production — demo-only escape hatch (see backend PaymentAdminController::demoEditPlan)
+const demoEditPlanId = ref(null)
+const isDemoEdit = ref(false)
+async function openDemoEditModal() {
+  const plan = allPlans.value.find(p => p.id === demoEditPlanId.value)
+  if (!plan) return
+  await openVersionModal(plan)
+  isDemoEdit.value = true
 }
 
 // ── Alerts ──────────────────────────────────────────────────────────────

@@ -102,16 +102,25 @@ export function usePaymentsAdmin() {
   // ── Global settings ─────────────────────────────────────────────────────
   const getPaymentSettings = () => useAdminApi('/admin/payment-settings')
 
-  const updatePaymentSettings = (dunningGraceDaysDefault: number, trialPlanId: number | null = null, trialDays: number | null = null) =>
+  const updatePaymentSettings = (dunningGraceDaysDefault: number, trialDays: number) =>
     useAdminApi('/admin/payment-settings', {
       method: 'PATCH',
-      body: { dunning_grace_days_default: dunningGraceDaysDefault, trial_plan_id: trialPlanId, trial_days: trialDays },
+      body: { dunning_grace_days_default: dunningGraceDaysDefault, trial_days: trialDays },
     })
+
+  const getTrialPlan = () => useAdminApi('/admin/trial-plan')
+
+  const saveTrialPlan = (payload: any) =>
+    useAdminApi('/admin/trial-plan', { method: 'POST', body: payload })
+
+  // TODO: remove for production — demo-only in-place plan edit, bypasses normal versioning rules
+  const demoEditPlan = (id: number, payload: any) =>
+    useAdminApi(`/admin/plans/${id}/demo-edit`, { method: 'POST', body: payload })
 
   return {
     getPlans, getPlan, getOrgPlansGrouped, getPlanStats, getOrganizations, assignPlanToOrg, createPlan, createPlanVersion, updatePlanStatus,
     getEntitlementDefinitions, createEntitlementDefinition, toggleEntitlementDefinitionActive,
     getSubscriptions, getPayments, setDunningOverride, getAlerts,
-    getPaymentSettings, updatePaymentSettings,
+    getPaymentSettings, updatePaymentSettings, getTrialPlan, saveTrialPlan, demoEditPlan,
   }
 }

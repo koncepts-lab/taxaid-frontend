@@ -59,7 +59,8 @@
           </div>
 
           <!-- Pricing Cards -->
-          <div v-if="plans.length" class="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div v-if="sortedPlans.length" class="overflow-x-auto pt-4 pb-2">
+          <div class="grid grid-flow-col auto-cols-[calc((100%-6rem)/3)] gap-12">
             <div v-for="plan in sortedPlans" :key="plan.id" :class="['h-full bg-white rounded-2xl p-6 flex flex-col shadow-sm relative', isCurrentPlan(plan) ? 'border-2 border-[#04C18F] shadow-lg z-10' : 'border border-gray-200']">
               <div v-if="plan.is_popular || isCurrentPlan(plan)" class="absolute -top-3 left-6 flex gap-2">
                 <span v-if="plan.is_popular" class="bg-[#04C18F] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">Most Popular</span>
@@ -68,18 +69,22 @@
 
               <h4 :class="['text-[24px] font-normal text-gray-900 mb-3', (plan.is_popular || isCurrentPlan(plan)) ? 'mt-10' : '']">{{ plan.name }}</h4>
               <div class="mb-4">
-                <span class="text-[36px] font-regular text-black">{{ currency }} {{ planPrice(plan) }}</span>
-                <span class="text-[16px] text-[#000000CC]">{{ billingCycle === 'monthly' ? ' /month' : ' /year' }}</span>
+                <span v-if="plan.is_trial" class="text-[36px] font-regular text-black">FREE</span>
+                <template v-else>
+                  <span class="text-[36px] font-regular text-black">{{ currency }} {{ planPrice(plan) }}</span>
+                  <span class="text-[16px] text-[#000000CC]">{{ billingCycle === 'monthly' ? ' /month' : ' /year' }}</span>
+                </template>
               </div>
-              <p v-if="billingCycle === 'yearly' && annualMonthlyEquivalent(plan)" class="text-[14px] text-[#04C18F] mb-3 font-medium">{{ currency }} {{ annualMonthlyEquivalent(plan) }}/mo when billed annually</p>
+              <p v-if="!plan.is_trial && billingCycle === 'yearly' && annualMonthlyEquivalent(plan)" class="text-[14px] text-[#04C18F] mb-3 font-medium">{{ currency }} {{ annualMonthlyEquivalent(plan) }}/mo when billed annually</p>
               <p class="text-[16px] text-[#000000CC] mb-6">{{ plan.description }}</p>
 
               <ul class="space-y-4 mb-8 flex-1">
                 <li v-for="group in planFeatures(plan)" :key="group.title">
                   <p class="text-[13px] font-medium text-[#00896F] mb-2">{{ group.title }}</p>
                   <ul class="space-y-3 mb-3">
-                    <li v-for="(point, i) in group.points" :key="i" class="text-[14px] text-[#000000] flex items-start gap-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-[#04C18F] shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
+                    <li v-for="(point, i) in group.points" :key="i" :class="['text-[14px] flex items-start gap-3', point.included !== true ? 'text-[#00000066]' : 'text-[#000000]']">
+                      <svg v-if="point.included !== true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-red-400 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                      <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-[#04C18F] shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
                       {{ point.label }}
                     </li>
                   </ul>
@@ -94,6 +99,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
               </NuxtLink>
             </div>
+          </div>
           </div>
           <div v-else class="text-center py-10 text-[#00000080] border border-gray-200 rounded-2xl bg-white">No plans available right now.</div>
         </div>
@@ -257,15 +263,23 @@ const trialDaysLeft = computed(() => {
 const planPrice = (plan: any) => Number(plan.current_version?.[priceField.value] ?? 0).toFixed(2)
 
 const planFeatures = (plan: any) => {
+  // Trial plans have no real annual variant (price is always 0 either way) — one shared list.
+  if (plan.is_trial) return plan.current_version?.monthly_features || []
   const groups = billingCycle.value === 'monthly' ? plan.current_version?.monthly_features : plan.current_version?.annual_features
   return groups || []
 }
 
 const isCurrentPlan = (plan: any) => subscription.value?.plan_id === plan.id
 
-const sortedPlans = computed(() =>
-  [...plans.value].sort((a, b) => Number(a.current_version?.[priceField.value] ?? 0) - Number(b.current_version?.[priceField.value] ?? 0))
-)
+// Trial plans are excluded from GET /payment/plans (not selectable by anyone else) — but the
+// user currently on one needs to see their own card, so merge it in from the subscription payload.
+const sortedPlans = computed(() => {
+  const list = [...plans.value]
+  if (isTrial.value && subscription.value?.plan && !list.some(p => p.id === subscription.value.plan.id)) {
+    list.push(subscription.value.plan)
+  }
+  return list.sort((a, b) => Number(a.current_version?.[priceField.value] ?? 0) - Number(b.current_version?.[priceField.value] ?? 0))
+})
 
 // Derived, not stored — savings only shown when annual genuinely beats monthly*12.
 const annualSavingsPercent = (plan: any) => {

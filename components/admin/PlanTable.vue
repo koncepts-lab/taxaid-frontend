@@ -32,7 +32,7 @@
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
               </button>
               <div v-if="openStatusMenu === p.id" class="absolute z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-28">
-                <button v-for="s in ['draft', 'active', 'inactive']" :key="s"
+                <button v-for="s in (p.status === 'draft' ? ['draft', 'active', 'inactive'] : ['active', 'inactive'])" :key="s"
                   @click="$emit('status', p, s); openStatusMenu = null"
                   class="w-full text-left px-3 py-1.5 text-xs capitalize hover:bg-gray-50" :class="p.status === s ? 'font-semibold' : ''">{{ s }}</button>
               </div>
