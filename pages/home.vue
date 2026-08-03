@@ -477,10 +477,22 @@ async function onSubmit() {
       const accountType = res?.data?.user?.account_type
       // TaxAid staff on a temp credential need the real dashboard even while the tenant
       // they're working on isn't 'live' yet — only the tenant's own users go through
-      // onboarding/waiting. 'live' is the only status that reaches the real app for those —
-      // everything else (registered/onboarding/pending_review/implementation/suspended) lands
-      // on the one non-live page, which decides internally what to show.
-      router.push(accountType === 'taxaid' || status === 'live' ? '/dashboard' : '/onboarding')
+      // onboarding/waiting. 'live' is the only status that reaches the real app for those.
+      if (accountType === 'taxaid' || status === 'live') {
+        router.push('/dashboard')
+        return
+      }
+
+      // Still unverified — show the same verify-email screen the register flow uses, right
+      // here on login, instead of letting an unverified account into /onboarding at all.
+      if (status === 'registered') {
+        isEmailVerification.value = true
+        return
+      }
+
+      // onboarding / pending_review / implementation land on the one non-live page, which
+      // decides internally what to show.
+      router.push('/onboarding')
 
     } else {      // REGISTER
       await $fetch('/auth/register', {

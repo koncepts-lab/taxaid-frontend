@@ -191,12 +191,8 @@
       v-model="showOverlay"
       :title="sectionTitle"
       :button-label="sectionButtonLabel"
-      :show-resend="section === 'verify'"
-      :resending="resending"
-      :resend-label="t.resendLink"
       :rtl="isRtl"
       @action="handleSuccessScreenAction"
-      @resend="resendVerification"
     />
   </div>
 </template>
@@ -208,12 +204,10 @@ import LanguageToggle from '@/components/common/LanguageToggle.vue'
 const pendingApproval = ref(false) // set from /submit's response — no tenant yet, admin hasn't approved
 
 // The one non-live landing page: which "not live yet" state to show. 'onboarding' is the
-// question flow (existing behavior); the other 3 reuse the success-screen layout with
-// different copy/actions.
-const section = ref<'onboarding' | 'verify' | 'pending_review' | 'implementation'>('onboarding')
-const resending = ref(false)
-const resendMessage = ref('')
-const principalEmail = ref('')
+// question flow (existing behavior); the other 2 reuse the success-screen layout with
+// different copy/actions. An unverified account never reaches this page at all — login
+// gates that case on /home instead (see home.vue's onSubmit), so there's no 'verify' state here.
+const section = ref<'onboarding' | 'pending_review' | 'implementation'>('onboarding')
 
 const isFinished = ref(false)
 const booting = ref(true) // true until /me's status is known — hides the wizard shell so it can't flash before we know whether to show it or the overlay
@@ -271,11 +265,8 @@ const translations = {
     yes: 'Yes',
     no: 'No',
     successTitle: "You're all set! Our implementation team will reach out soon to help you set up and start exploring insights with Akeel.",
-    verifyTitle: 'Please verify your email address to continue. Check your inbox for the verification link.',
     pendingReviewTitle: "You're all set! Our implementation team will reach out soon to help you set up and start exploring insights with Akeel.",
     implementationTitle: 'Your account is being set up by our implementation team. We\'ll notify you as soon as it\'s ready.',
-    resendLink: 'Resend verification email',
-    resent: 'A new verification link has been sent.',
   },
   ar: {
     prev: 'سابق',
@@ -291,11 +282,8 @@ const translations = {
     yes: 'نعم',
     no: 'لا',
     successTitle: 'أنت جاهز تمامًا! سيتواصل معك فريق التنفيذ قريبًا لمساعدتك في الإعداد والبدء في استكشاف الرؤى مع عقيل.',
-    verifyTitle: 'يرجى التحقق من بريدك الإلكتروني للمتابعة. تحقق من صندوق الوارد الخاص بك للحصول على رابط التحقق.',
     pendingReviewTitle: 'أنت جاهز تمامًا! سيتواصل معك فريق التنفيذ قريبًا لمساعدتك في الإعداد والبدء في استكشاف الرؤى مع عقيل.',
     implementationTitle: 'يقوم فريق التنفيذ لدينا بإعداد حسابك. سنخبرك بمجرد أن يصبح جاهزًا.',
-    resendLink: 'إعادة إرسال رابط التحقق',
-    resent: 'تم إرسال رابط تحقق جديد.',
   }
 }
 
@@ -308,7 +296,6 @@ const transitionName = computed(() => {
 const canGoMainPrevious = computed(() => step.value > 1)
 
 const sectionTitle = computed(() => ({
-  verify: t.value.verifyTitle,
   pending_review: t.value.pendingReviewTitle,
   implementation: t.value.implementationTitle,
   onboarding: t.value.successTitle,
@@ -321,24 +308,10 @@ const sectionButtonLabel = computed(() =>
 watch(isFinished, (v) => { if (v) showOverlay.value = true })
 
 function handleSuccessScreenAction() {
-  if (section.value === 'pending_review' || section.value === 'implementation' || section.value === 'verify') {
+  if (section.value === 'pending_review' || section.value === 'implementation') {
     navigateTo('/home')
   } else {
     goToDashboard()
-  }
-}
-
-async function resendVerification() {
-  if (resending.value || !principalEmail.value) return
-  resending.value = true
-  resendMessage.value = ''
-  try {
-    await useApi(`/register/resend-verification`, { method: 'POST', body: { email: principalEmail.value } })
-    resendMessage.value = t.value.resent
-  } catch (error) {
-    console.error('Resend failed:', error)
-  } finally {
-    resending.value = false
   }
 }
 
@@ -351,7 +324,6 @@ const initOnboarding = async () => {
     // both a still-pending registration and (defensively) a real tenant user landing here.
     const me: any = await useApi(`/me`)
     const tenantStatus = me?.data?.tenant?.status
-    principalEmail.value = me?.data?.user?.email ?? ''
     useCookie('tenant_status').value = tenantStatus ?? null
     booting.value = false
 
@@ -362,10 +334,11 @@ const initOnboarding = async () => {
       return navigateTo('/dashboard')
     }
 
+    // Still-unverified account reaching /onboarding directly (stale link/tab, not through a
+    // normal login) — login (home.vue) is the only place that should show the verify-email
+    // screen, so bounce back there instead of rendering anything on this page for this case.
     if (tenantStatus === 'registered') {
-      section.value = 'verify'
-      isFinished.value = true
-      return
+      return navigateTo('/home')
     }
     if (tenantStatus === 'pending_review') {
       section.value = 'pending_review'
