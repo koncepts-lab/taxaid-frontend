@@ -1,12 +1,11 @@
 <template>
   <div class="w-full transition-all duration-500 rounded-3xl"
     :class="isDark ? 'bg-[#00141080]' : 'bg-white shadow-sm'">
-
-    <div class="lg:px-8 px-4 py-5 flex justify-between items-center text-left rtl:text-right sticky top-0 z-30 rounded-t-3xl" :class="isDark ? 'bg-[#001410]' : 'bg-white'">
+    <div class="py-5 lg:px-8 px-4 flex justify-between items-center sticky top-[-32px] z-30 rounded-t-3xl" :class="isDark ? 'bg-[#001a14]' : 'bg-white'">
       <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
         {{ currentLang === 'ar' ? 'ملخص حسابات القبض' : 'Accounts Receivable Summary' }}
       </p>
-      <div class="flex gap-4 items-center">
+      <div class="flex items-center gap-4">
         <p class="text-[12px] font-normal" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
           {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
         </p>
@@ -24,10 +23,10 @@
             <col style="width: 15%" />
             <col style="width: 15%" />
         </colgroup>
-        <thead class="text-white lg:sticky lg:top-[82px] z-20 shadow-sm" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
-          <tr>
-            <th class="px-8 py-5 font-normal text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
-            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">
+        <thead class="text-white lg:sticky lg:top-[32px] z-20" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+          <tr class="transition-all duration-500">
+            <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
+            <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">
               <div class="flex items-center justify-end rtl:justify-start gap-2">
                 {{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}
                 <img src="/images/icons/edit-white.svg" class="w-[21px] h-auto" v-if="!isDark" />
@@ -37,21 +36,24 @@
                 </svg>
               </div>
             </th>
-            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '>30' : '>30' }}</th>
-            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '30-60' : '30-60' }}</th>
-            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '60-90' : '60-90' }}</th>
-            <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '<90' : '<90' }}</th>
+            <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '>30' : '>30' }}</th>
+            <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '30-60' : '30-60' }}</th>
+            <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '60-90' : '60-90' }}</th>
+            <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? '<90' : '<90' }}</th>
           </tr>
         </thead>
         <tbody>
           <template v-for="group in paginatedData" :key="group.label">
             <!-- Main Group Row -->
-            <tr class="transition-all duration-500 text-[14px] font-medium"
-              :class="isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100'">
+            <tr :class="[
+                isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100',
+                'text-[14px] font-medium transition-all duration-500',
+                expandedGroups.includes(group.label) ? 'lg:sticky lg:top-[92px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : ''
+              ]">
               <td class="px-8 py-5" :class="isDark ? 'text-white' : 'text-[#000]'">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 cursor-pointer" @click="toggleGroup(group)">
                   <span>{{ currentLang === 'ar' ? group.labelAr : group.label }}</span>
-                  <button @click="toggleGroup(group)" class="focus:outline-none transition-transform duration-200">
+                  <button class="focus:outline-none transition-transform duration-200">
                     <svg v-if="expandedGroups.includes(group.label)" width="10" height="7" viewBox="0 0 10 7" fill="none">
                         <path d="M1 6L5 2L9 6" :stroke="isDark ? '#00FFBC' : '#008864'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
@@ -70,8 +72,8 @@
 
             <!-- Expandable Invoice Section -->
             <tr v-if="expandedGroups.includes(group.label)">
-              <td colspan="6" class="p-0">
-                <div :class="isDark ? '' : 'bg-[#A2E8D6]'" class="p-8">
+              <td colspan="6" class="p-0 border-none">
+                <div :class="isDark ? 'bg-[#003D2E]' : 'bg-[#E8FBF3]'" class="p-8 shadow-inner">
                   <div class="flex justify-between items-start mb-6">
                     <div>
                       <h3 class="text-[16px] font-normal mb-6" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
@@ -79,7 +81,7 @@
                       </h3>
                       <div class="flex items-center gap-3">
                         <input type="checkbox" :checked="isGroupAllSelected(group)" @change="toggleGroupSelectAll(group)"
-                          class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
+                          class="custom-checkbox">
                         <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
                           {{ currentLang === 'ar' ? `تحديد الكل (${getInvoices(group).length})` : `Select All (${getInvoices(group).length})` }}
                         </span>
@@ -114,11 +116,14 @@
                       {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
                     </div>
                     <div v-for="(inv, iIdx) in getInvoices(group)" :key="iIdx"
-                      class="grid grid-cols-6 items-center border-t border-black/5 dark:border-white/5 pt-4 transition-opacity"
-                      :class="inv.on_cooldown ? 'opacity-45' : ''">
+                      class="grid grid-cols-6 items-center border-b pt-4 pb-4 transition-opacity"
+                      :class="[
+                          inv.on_cooldown ? 'opacity-45' : '',
+                          isDark ? 'border-white/5' : 'border-[#b2edd4]'
+                      ]">
                       <div class="flex items-center gap-3">
                         <input type="checkbox" v-model="inv.selected" :disabled="inv.on_cooldown"
-                          class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864] disabled:cursor-not-allowed">
+                          class="custom-checkbox">
                         <!-- Invoice no; cooldown → dotted underline + fixed tooltip on hover -->
                         <span class="text-[16px] font-normal"
                           :class="[isDark ? 'text-white' : 'text-[#1A1A1A]', inv.on_cooldown ? 'underline decoration-dotted underline-offset-4 cursor-help' : '']"
@@ -249,12 +254,15 @@
                   </colgroup>
                   <tbody>
                     <template v-for="group in arData" :key="'modal-' + group.label">
-                      <tr class="transition-all duration-500 text-[14px] font-medium"
-                        :class="isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100'">
+                      <tr :class="[
+                          isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100',
+                          'text-[14px] font-medium transition-all duration-500',
+                          expandedGroups.includes(group.label) ? 'sticky top-[60px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : ''
+                        ]">
                         <td class="px-8 py-5" :class="isDark ? 'text-white' : 'text-[#000]'">
-                          <div class="flex items-center gap-2">
+                          <div class="flex items-center gap-2 cursor-pointer" @click="toggleGroup(group)">
                             <span>{{ currentLang === 'ar' ? group.labelAr : group.label }}</span>
-                            <button @click="toggleGroup(group)" class="focus:outline-none transition-transform duration-200">
+                            <button class="focus:outline-none transition-transform duration-200">
                               <svg v-if="expandedGroups.includes(group.label)" width="10" height="7" viewBox="0 0 10 7" fill="none">
                                   <path d="M1 6L5 2L9 6" :stroke="isDark ? '#00FFBC' : '#008864'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                               </svg>
@@ -273,8 +281,8 @@
     
                       <!-- Expandable Invoice Section (modal version) -->
                       <tr v-if="expandedGroups.includes(group.label)">
-                        <td colspan="6" class="p-0">
-                          <div :class="isDark ? 'bg-transparent' : 'bg-[#A2E8D6]'" class="p-8">
+                        <td colspan="6" class="p-0 border-none">
+                          <div :class="isDark ? 'bg-[#003D2E]' : 'bg-[#E8FBF3]'" class="p-8 shadow-inner">
                             <div v-if="loadingGroup === group.label" class="flex justify-center py-6">
                               <div class="w-8 h-8 border-4 border-[#005A48] border-t-transparent rounded-full animate-spin"></div>
                             </div>
@@ -283,10 +291,11 @@
                                 {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
                               </div>
                               <div v-for="(inv, iIdx) in getInvoices(group)" :key="'modal-inv-' + iIdx"
-                                class="grid grid-cols-6 items-center border-t border-black/5 dark:border-white/5 pt-4">
+                                class="grid grid-cols-6 items-center border-b pt-4 pb-4"
+                                :class="isDark ? 'border-white/5' : 'border-[#b2edd4]'">
                                 <div class="flex items-center gap-3">
                                   <input type="checkbox" v-model="inv.selected"
-                                    class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
+                                    class="custom-checkbox">
                                   <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ inv.invoiceNo }}</span>
                                 </div>
                                 <div class="text-right rtl:text-left font-normal text-[16px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
@@ -555,8 +564,38 @@ const handleSendReminders = async (group) => {
 </script>
 
 <style scoped>
-input[type="checkbox"] {
-  accent-color: #008864;
+.custom-checkbox {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 2px solid #b3b3b3;
+  background-color: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
+  margin: 0;
+  outline: none;
+}
+
+:deep(.dark) .custom-checkbox {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.custom-checkbox:checked {
+  background-color: #008864;
+  border-color: #008864;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 14 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 7.5L5.5 10L11 4' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size: 80%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.custom-checkbox:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

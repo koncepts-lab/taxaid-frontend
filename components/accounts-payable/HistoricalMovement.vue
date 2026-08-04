@@ -6,8 +6,8 @@
     <div class="flex lg:flex-row flex-col max-lg:gap-2 justify-between items-start mb-6 relative z-10 w-full"
       :class="isDark ? 'text-white' : 'text-[#000000]'">
       <div class="flex flex-col">
-        <h2 class="text-[17px] font-medium leading-tight">{{ currentLang === 'ar' ? 'حركة حسابات القبض التاريخية' :
-          'AR balances historical movement' }}</h2>
+        <h2 class="text-[17px] font-medium leading-tight">{{ currentLang === 'ar' ? 'حركة حسابات الدفع التاريخية' :
+          'AP balances historical movement' }}</h2>
         <p class="text-[13px] font-normal mt-1" :class="isDark ? 'text-white opacity-60' : 'text-[#00000091]'">{{
           currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
@@ -17,7 +17,7 @@
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full bg-[#FB7554]"></div>
             <span class="text-[13px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang ===
-              'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
+              'ar' ? 'رصيد حسابات الدفع' : 'Account Payable Balance' }}</span>
           </div>
         </div>
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand"
@@ -52,7 +52,7 @@
             :class="isDark ? 'border-white/5' : 'border-gray-100'">
             <div class="flex flex-col">
               <h2 class="text-lg font-medium leading-tight" :class="isDark ? 'text-white' : 'text-[#013e32]'">{{
-                currentLang === 'ar' ? 'حركة حسابات القبض التاريخية' : 'AR balances historical movement' }}</h2>
+                currentLang === 'ar' ? 'حركة حسابات الدفع التاريخية' : 'AP balances historical movement' }}</h2>
               <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang
                 === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
             </div>
@@ -62,7 +62,7 @@
                 <div class="flex items-center gap-2">
                   <div class="w-3 h-3 rounded-full bg-[#FB7554]"></div>
                   <span class="text-[13px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang
-                    === 'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
+                    === 'ar' ? 'رصيد حسابات الدفع' : 'Account Payable Balance' }}</span>
                 </div>
               </div>
               <button @click="isModalOpen = false"
