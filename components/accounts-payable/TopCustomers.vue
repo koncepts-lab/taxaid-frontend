@@ -5,8 +5,8 @@
     <!-- Header -->
     <div class="flex lg:flex-row flex-col max-lg:gap-2 justify-between items-start mb-6 text-white relative z-10">
       <div class="flex flex-col">
-        <h2 class="text-[16px] font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات القبض' :
-          'Top Account Receivable customer wise' }}</h2>
+        <h2 class="text-[16px] font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات الدفع' :
+          'Top Account Payable customer wise' }}</h2>
         <p class="text-[12px] font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بمليون درهم' :
           'Values in AED Million' }}</p>
       </div>
@@ -60,8 +60,8 @@
           <div
             class="flex justify-between items-center py-6 px-8 border-b border-white/10 text-white relative z-10 w-full">
             <div class="flex flex-col">
-              <h2 class="text-lg font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات القبض' :
-                'Top Account Receivable customer wise' }}</h2>
+              <h2 class="text-lg font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات الدفع' :
+                'Top Account Payable customer wise' }}</h2>
               <p class="text-xs font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بمليون درهم' :
                 'Values in AED Million' }}</p>
             </div>
