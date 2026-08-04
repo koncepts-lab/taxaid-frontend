@@ -3,7 +3,7 @@
         <div v-if="open" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="close">
             <div class="w-full rounded-xl flex flex-col overflow-hidden transition-all duration-500" :class="isDark ? 'bg-[#002e26]' : 'bg-white'" style="max-width: 1200px; max-height: 85vh;">
                 <!-- Header -->
-                <div class="flex justify-between items-center py-5 px-8 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
+                <div class="relative flex flex-col lg:flex-row lg:justify-between lg:items-center items-start gap-4 py-5 px-8 pr-14 rtl:pr-8 rtl:pl-14 lg:pr-8 lg:rtl:pl-8 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
                     <div class="flex flex-col">
                         <h2 class="text-lg font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
                             {{ ledger }} - {{ currentLang === 'ar' ? 'دفتر الأستاذ' : 'Ledger' }}
@@ -12,14 +12,14 @@
                             {{ currentLang === 'ar' ? 'القيم بالدرهم الإماراتي' : 'Values in AED' }}<span v-if="rangeLabel"> · {{ rangeLabel }}</span>
                         </p>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 self-start lg:self-auto">
                         <button @click="exportCsv"
                             class="flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors"
                             :class="isDark ? 'border-[#04C18F] text-white hover:bg-white/10' : 'border-gray-200 text-black hover:bg-gray-50'">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0-12l-4 4m4-4l4 4"/></svg>
                             {{ currentLang === 'ar' ? 'تصدير' : 'Export' }}
                         </button>
-                        <button @click="close" class="p-2 rounded-full transition-colors" :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-black/5 text-black'">
+                        <button @click="close" class="absolute top-4 right-4 rtl:left-4 rtl:right-auto lg:static lg:top-auto lg:right-auto lg:rtl:left-auto p-2 rounded-full transition-colors" :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-black/5 text-black'">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                     </div>

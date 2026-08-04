@@ -80,7 +80,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 
-const isChatOpen = ref(true)
+const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')

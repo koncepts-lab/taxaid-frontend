@@ -10,7 +10,7 @@
                 <img
                     :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'"
                     alt="Expand Icon"
-                    class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity hidden lg:block"
+                    class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
                     @click="isModalOpen = true"
                 />
             </div>

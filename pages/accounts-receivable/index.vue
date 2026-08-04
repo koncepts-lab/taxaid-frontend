@@ -12,8 +12,8 @@
         : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
         <div class="mx-auto pt-8 lg:pt-0">
 <!-- TODO: -->
-          <CommonDashboardHeader :title="{ en: 'Accounts Recievable', ar: 'حسابات القبض' }"
-            :subtitle="{ en: 'Accounts Recievable Dashboard', ar: 'لوحة معلومات حسابات القبض' }"
+          <CommonDashboardHeader :title="{ en: 'Accounts Receivable', ar: 'حسابات القبض' }"
+            :subtitle="{ en: 'Accounts Receivable Dashboard', ar: 'لوحة معلومات حسابات القبض' }"
             :periods="customPeriods" class="mb-8" :minDate="new Date(2026, 5, 15)" @selected-date="handleDateChange" @reload="handleReload" />
 
           <!-- Gap-day snapshot notice: shown when the selected date has no
