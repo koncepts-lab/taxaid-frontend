@@ -403,8 +403,10 @@
             <div v-for="(group, gi) in (previewPlan.is_trial || previewCycle === 'monthly' ? previewPlan.current_version?.monthly_features : previewPlan.current_version?.annual_features) ?? []" :key="gi" class="mb-3">
               <p v-if="group.title" class="text-[13px] font-semibold text-gray-800 mb-1">{{ group.title }}</p>
               <ul class="space-y-1.5">
-                <li v-for="(pt, pi) in group.points" :key="pi" class="text-[13px] flex items-start gap-2" :class="pt.included ? 'text-gray-800' : 'text-gray-400 line-through'">
-                  <span :class="pt.included ? 'text-[#04C18F]' : 'text-gray-300'">{{ pt.included ? '✓' : '✕' }}</span>
+                <li v-for="(pt, pi) in group.points" :key="pi" class="text-[13px] text-gray-800 flex items-start gap-2">
+                  <span v-if="pt.included === true" class="text-[#04C18F]">✓</span>
+                  <span v-else-if="pt.included === false" class="text-gray-300">✕</span>
+                  <span v-else class="text-gray-500">•</span>
                   {{ pt.label }}
                 </li>
               </ul>
@@ -435,14 +437,21 @@
             <h3 class="text-xl font-medium text-gray-900">
               {{ isTrialPlanEdit ? 'Edit Trial Plan' : isDemoEdit ? `Edit Plan (Demo) — ${versioningPlan?.name}` : versioningPlan ? `New Version — ${versioningPlan.name}` : 'New Plan' }}
             </h3>
-            <span class="text-xs text-gray-400">Step {{ wizardStep }} of 2 — {{ wizardStep === 1 ? (isTrialPlanEdit ? 'General & Monthly Features' : 'General & Monthly') : (isTrialPlanEdit ? 'Annual Features' : 'Annual') }}</span>
+            <div class="flex items-center gap-3">
+              <span v-if="!isTrialPlanEdit" class="text-xs text-gray-400">Step {{ wizardStep }} of 3 — {{ wizardStep === 1 ? 'General & Monthly' : wizardStep === 2 ? 'Annual' : 'Checkout Summary' }}</span>
+              <span v-else class="text-xs text-gray-400">General & Features</span>
+              <button type="button" @click="closePlanModal" class="text-gray-400 hover:text-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
           </div>
 
           <!-- ── STEP 1: general info + monthly ── -->
           <div v-if="wizardStep === 1" class="space-y-4">
             <div v-if="!versioningPlan">
               <label class="block text-sm font-medium text-gray-900 mb-1">Name</label>
-              <input v-model="planForm.name" type="text" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" />
+              <input v-model="planForm.name" type="text" class="w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" :class="!planForm.name.trim() ? 'border-red-300' : 'border-gray-200'" />
+              <p v-if="!planForm.name.trim()" class="text-xs text-red-500 mt-1">Name is required.</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-900 mb-1">Description / Tagline</label>
@@ -458,7 +467,6 @@
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-1">Status</label>
                 <select v-model="planForm.status" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]">
-                  <option value="draft">Draft</option>
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
                 </select>
@@ -479,7 +487,8 @@
 
             <div v-if="!isTrialPlanEdit">
               <label class="block text-sm font-medium text-gray-900 mb-1">Monthly Price</label>
-              <input v-model.number="planForm.monthly_price" type="number" step="0.01" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" />
+              <input v-model.number="planForm.monthly_price" type="number" step="0.01" class="w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" :class="planForm.monthly_price === null || planForm.monthly_price === '' ? 'border-red-300' : 'border-gray-200'" />
+              <p v-if="planForm.monthly_price === null || planForm.monthly_price === ''" class="text-xs text-red-500 mt-1">Monthly price is required.</p>
             </div>
             <p v-else class="text-xs text-gray-500">Trial plans are always free — no pricing fields.</p>
 
@@ -507,16 +516,22 @@
           </div>
 
           <!-- ── STEP 2: annual ── -->
-          <div v-else class="space-y-4">
+          <div v-else-if="wizardStep === 2" class="space-y-4">
             <div v-if="!isTrialPlanEdit" class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-900 mb-1">Annual Price</label>
-                <input v-model.number="planForm.annual_price" type="number" step="0.01" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" />
+                <label class="block text-sm font-medium text-gray-900 mb-1">Annual Price (Base)</label>
+                <input v-model.number="planForm.annual_base" type="number" step="0.01" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" />
+                <p class="text-xs text-gray-400 mt-1">Defaults to Monthly × 12 — editable.</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-1">Annual Discount %</label>
                 <input v-model.number="planForm.annual_discount_percent" type="number" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" />
               </div>
+            </div>
+            <div v-if="!isTrialPlanEdit">
+              <label class="block text-sm font-medium text-gray-900 mb-1">Total Annual</label>
+              <div class="w-full border border-[#04C18F] bg-[#F0FDFA] rounded-lg px-4 py-2.5 text-sm text-gray-900 font-medium">{{ planForm.annual_price?.toFixed(2) ?? '0.00' }}</div>
+              <p class="text-xs text-gray-400 mt-1">Base minus discount — this is the stored, charged annual price.</p>
             </div>
 
             <div class="flex justify-end">
@@ -524,12 +539,65 @@
             </div>
             <AdminFeatureGroupsEditor v-model="planForm.annual_features" :entitlement-keys="allActiveDefinitions" label="Annual Feature List" />
           </div>
+
+          <!-- ── STEP 3: checkout order-summary extras (discounts, taxes, included bullets) ── -->
+          <div v-else class="space-y-6">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-medium text-gray-900">Discounts</label>
+                <button type="button" @click="addDiscountRow" class="text-xs text-[#007C65] font-medium hover:underline">+ Add Discount</button>
+              </div>
+              <p class="text-xs text-gray-500 mb-2">Stacked, shown as line items on the checkout order summary. Doesn't change the real price charged.</p>
+              <div v-for="(d, i) in planForm.discounts" :key="i" class="flex items-center gap-2 mb-2">
+                <input v-model="d.name" type="text" placeholder="e.g. First Month" class="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]" />
+                <input v-model.number="d.amount" type="number" step="0.01" placeholder="Amount" class="w-24 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]" />
+                <label class="flex items-center gap-1 text-xs text-gray-600 shrink-0">
+                  <input v-model="d.is_percent" type="checkbox" class="h-3.5 w-3.5" /> %
+                </label>
+                <label class="flex items-center gap-1 text-xs text-gray-600 shrink-0">
+                  <input v-model="d.one_time" type="checkbox" class="h-3.5 w-3.5" /> One-time
+                </label>
+                <button type="button" @click="planForm.discounts.splice(i, 1)" class="text-gray-400 hover:text-red-500 shrink-0">✕</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-medium text-gray-900">Taxes</label>
+                <button type="button" @click="addTaxRow" class="text-xs text-[#007C65] font-medium hover:underline">+ Add Tax</button>
+              </div>
+              <div v-for="(tx, i) in planForm.taxes" :key="i" class="flex items-center gap-2 mb-2">
+                <input v-model="tx.name" type="text" placeholder="e.g. VAT" class="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]" />
+                <input v-model.number="tx.amount" type="number" step="0.01" placeholder="Amount" class="w-24 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]" />
+                <label class="flex items-center gap-1 text-xs text-gray-600 shrink-0">
+                  <input v-model="tx.is_percent" type="checkbox" class="h-3.5 w-3.5" /> %
+                </label>
+                <button type="button" @click="planForm.taxes.splice(i, 1)" class="text-gray-400 hover:text-red-500 shrink-0">✕</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-medium text-gray-900">What's Included (checkout summary)</label>
+                <div class="flex gap-3">
+                  <button type="button" @click="copyIncludedFromFeatures" class="text-xs text-[#007C65] font-medium hover:underline">Copy from Features</button>
+                  <button type="button" @click="planForm.checkout_included.push('')" class="text-xs text-[#007C65] font-medium hover:underline">+ Add Line</button>
+                </div>
+              </div>
+              <div v-for="(line, i) in planForm.checkout_included" :key="i" class="flex items-center gap-2 mb-2">
+                <input v-model="planForm.checkout_included[i]" type="text" placeholder="e.g. No setup fees" class="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]" />
+                <button type="button" @click="planForm.checkout_included.splice(i, 1)" class="text-gray-400 hover:text-red-500 shrink-0">✕</button>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="px-6 py-5 flex gap-4 border-t border-gray-100">
           <button v-if="wizardStep === 1" @click="cancelPlanModal" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">Cancel</button>
-          <button v-else @click="wizardStep = 1" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">Back</button>
-          <button v-if="wizardStep === 2 && !isTrialPlanEdit && !isDemoEdit" @click="submitPlan(true)" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">Save as Draft</button>
-          <button v-if="wizardStep === 1" @click="wizardStep = 2" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a]">{{ isTrialPlanEdit ? 'Next: Annual Features' : 'Next: Annual' }}</button>
+          <button v-else @click="wizardStep -= 1" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">Back</button>
+          <button v-if="!isTrialPlanEdit && !isDemoEdit" @click="submitPlan(true)" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">Save as Draft</button>
+          <button v-if="isTrialPlanEdit" @click="submitPlan(false)" :disabled="!wizardStepValid" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a] disabled:opacity-50">Save</button>
+          <button v-else-if="wizardStep === 1" @click="wizardStep = 2" :disabled="!wizardStepValid" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a] disabled:opacity-50">Next: Annual</button>
+          <button v-else-if="wizardStep === 2" @click="wizardStep = 3" :disabled="!wizardStepValid" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a] disabled:opacity-50">Next: Checkout Summary</button>
           <button v-else @click="submitPlan(false)" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a]">Save</button>
         </div>
       </div>
@@ -651,7 +719,7 @@
 
 <script setup>
 // Payments Admin CMS — authoring/monitoring only, no enforcement logic here.
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 const {
   getPlans, getOrgPlansGrouped, getPlanStats, getOrganizations, assignPlanToOrg, createPlan, createPlanVersion, updatePlanStatus,
@@ -752,13 +820,48 @@ const isTrialPlanEdit = ref(false)
 const planForm = ref(emptyPlanForm())
 function emptyPlanForm() {
   return {
-    name: '', description: '', tier: '', is_popular: false, is_custom: false, status: 'draft',
-    monthly_price: null, annual_price: null, annual_discount_percent: 0,
+    name: '', description: '', tier: '', is_popular: false, is_custom: false, status: 'active',
+    monthly_price: null, annual_price: null, annual_base: null, annual_discount_percent: 0,
     entitlements: {}, monthly_features: [], annual_features: [],
+    discounts: [], taxes: [], checkout_included: [],
   }
 }
+// Base defaults to Monthly × 12 but only while untouched — doesn't fight a manual edit.
+// Trial plans hide these fields entirely and keep a fixed $0 annual price — skip them here.
+watch(() => planForm.value.monthly_price, (monthly) => {
+  if (isTrialPlanEdit.value || planForm.value.annual_base !== null) return
+  planForm.value.annual_base = Math.round(Number(monthly || 0) * 12 * 100) / 100
+})
+
+// Total Annual = Base minus discount% — the only value actually stored as annual_price.
+watch([() => planForm.value.annual_base, () => planForm.value.annual_discount_percent], ([base, percent]) => {
+  if (isTrialPlanEdit.value) return
+  const pct = Number(percent || 0)
+  planForm.value.annual_price = Math.round(Number(base || 0) * (1 - pct / 100) * 100) / 100
+}, { immediate: true })
+
+const wizardStepValid = computed(() => {
+  if (wizardStep.value === 1) {
+    if (!versioningPlan.value && !planForm.value.name.trim()) return false
+    if (!isTrialPlanEdit.value && (planForm.value.monthly_price === null || planForm.value.monthly_price === '')) return false
+  }
+  if (wizardStep.value === 2 && !isTrialPlanEdit.value) {
+    if (planForm.value.annual_price === null || planForm.value.annual_price === '') return false
+  }
+  return true
+})
 function cloneFeatureGroups(groups) {
   return groups.map(g => ({ title: g.title, points: g.points.map(p => ({ ...p })) }))
+}
+function addDiscountRow() {
+  planForm.value.discounts.push({ name: '', amount: 0, is_percent: false, one_time: false })
+}
+function addTaxRow() {
+  planForm.value.taxes.push({ name: '', amount: 0, is_percent: true })
+}
+function copyIncludedFromFeatures() {
+  const groups = planForm.value.monthly_features
+  planForm.value.checkout_included = groups.flatMap(g => g.points.filter(p => p.included !== false).map(p => p.label)).filter(Boolean)
 }
 async function openPlanModal() {
   versioningPlan.value = null
@@ -790,6 +893,9 @@ async function openTrialPlanModal() {
       planForm.value.entitlements = { ...(plan.current_version.entitlements || {}) }
       planForm.value.monthly_features = cloneFeatureGroups(plan.current_version.monthly_features || [])
       planForm.value.annual_features = cloneFeatureGroups(plan.current_version.annual_features || [])
+      planForm.value.discounts = (plan.current_version.discounts || []).map(d => ({ ...d }))
+      planForm.value.taxes = (plan.current_version.taxes || []).map(t => ({ ...t }))
+      planForm.value.checkout_included = [...(plan.current_version.checkout_included || [])]
     }
   } else {
     planForm.value.name = 'Trial'
@@ -814,11 +920,16 @@ async function openVersionModal(plan) {
   planForm.value.status = plan.status ?? 'draft'
   if (plan.current_version) {
     planForm.value.monthly_price = Number(plan.current_version.monthly_price)
-    planForm.value.annual_price = Number(plan.current_version.annual_price)
-    planForm.value.annual_discount_percent = Number(plan.current_version.annual_discount_percent)
+    const discount = Number(plan.current_version.annual_discount_percent) || 0
+    planForm.value.annual_discount_percent = discount
+    const storedAnnual = Number(plan.current_version.annual_price)
+    planForm.value.annual_base = discount > 0 ? Math.round((storedAnnual / (1 - discount / 100)) * 100) / 100 : storedAnnual
     planForm.value.entitlements = { ...(plan.current_version.entitlements || {}) }
     planForm.value.monthly_features = cloneFeatureGroups(plan.current_version.monthly_features || [])
     planForm.value.annual_features = cloneFeatureGroups(plan.current_version.annual_features || [])
+    planForm.value.discounts = (plan.current_version.discounts || []).map(d => ({ ...d }))
+    planForm.value.taxes = (plan.current_version.taxes || []).map(t => ({ ...t }))
+    planForm.value.checkout_included = [...(plan.current_version.checkout_included || [])]
   }
   await loadAllActiveDefinitions()
   planModalOpen.value = true
@@ -872,9 +983,12 @@ async function submitPlan(asDraft = false) {
     entitlements: planForm.value.entitlements,
     monthly_features: planForm.value.monthly_features,
     annual_features: planForm.value.annual_features,
+    discounts: planForm.value.discounts,
+    taxes: planForm.value.taxes,
+    checkout_included: planForm.value.checkout_included,
   }
   if (isTrialPlanEdit.value) {
-    await saveTrialPlan({ name: planForm.value.name, ...payload })
+    await saveTrialPlan({ name: planForm.value.name, ...payload, annual_features: cloneFeatureGroups(planForm.value.monthly_features), discounts: [], taxes: [], checkout_included: [] })
     closePlanModal()
     await loadAllPlans()
     return

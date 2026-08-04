@@ -4,6 +4,7 @@
       <label class="block text-sm font-medium text-gray-900">{{ label }}</label>
       <button type="button" @click="addGroup" class="text-xs text-[#007C65] font-medium hover:underline">+ Add Section</button>
     </div>
+    <p class="text-xs text-gray-400 mb-2">Tick = green check, Cross = red (excluded), Empty = plain bullet point.</p>
 
     <div v-for="(group, gi) in modelValue" :key="gi" class="border border-gray-100 rounded-lg p-3 mb-3 bg-gray-50/50">
       <div class="flex items-center gap-2 mb-2">

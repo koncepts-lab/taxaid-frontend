@@ -44,6 +44,9 @@ export function usePaymentsAdmin() {
     entitlements: Record<string, any>
     monthly_features?: FeatureGroup[]
     annual_features?: FeatureGroup[]
+    discounts?: { name: string; amount: number; is_percent: boolean; one_time: boolean }[]
+    taxes?: { name: string; amount: number; is_percent: boolean }[]
+    checkout_included?: string[]
   }
 
   const createPlan = (data: PlanPayload) => useAdminApi('/admin/plans', { method: 'POST', body: data })

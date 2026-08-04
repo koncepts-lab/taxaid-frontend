@@ -25,8 +25,16 @@ export const usePayment = () => {
   const deletePaymentMethod = (id: number) =>
     useApi(`/payment/payment-methods/${id}`, { method: 'DELETE' })
 
+  const getBillingInfo = () => useApi('/payment/billing-info')
+
+  const saveBillingInfo = (payload: {
+    company_name?: string; tax_id?: string; street_address?: string
+    city?: string; state?: string; zip_code?: string; country?: string
+  }) => useApi('/payment/billing-info', { method: 'POST', body: payload })
+
   return {
     getPlans, getSubscription, getInvoices, createSetupIntent, subscribe, cancelSubscription,
     getPaymentMethods, addPaymentMethod, setDefaultPaymentMethod, deletePaymentMethod,
+    getBillingInfo, saveBillingInfo,
   }
 }

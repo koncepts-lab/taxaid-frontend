@@ -82,9 +82,10 @@
                 <li v-for="group in planFeatures(plan)" :key="group.title">
                   <p class="text-[13px] font-medium text-[#00896F] mb-2">{{ group.title }}</p>
                   <ul class="space-y-3 mb-3">
-                    <li v-for="(point, i) in group.points" :key="i" :class="['text-[14px] flex items-start gap-3', point.included !== true ? 'text-[#00000066]' : 'text-[#000000]']">
-                      <svg v-if="point.included !== true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-red-400 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
-                      <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-[#04C18F] shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
+                    <li v-for="(point, i) in group.points" :key="i" class="text-[14px] text-[#000000] flex items-start gap-3">
+                      <svg v-if="point.included === false" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-red-400 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                      <svg v-else-if="point.included === true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-[#04C18F] shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
+                      <span v-else class="w-5 h-5 shrink-0 flex items-center justify-center"><span class="w-1.5 h-1.5 rounded-full bg-[#000000CC]"></span></span>
                       {{ point.label }}
                     </li>
                   </ul>
@@ -176,6 +177,7 @@
                   <p class="text-sm font-medium text-gray-900 mb-1">{{ currency }} {{ Number(invoice.amount_aed).toFixed(2) }}</p>
                   <span :class="['text-[10px] font-bold px-2 py-0.5 rounded-full inline-block uppercase', invoice.status === 'paid' ? 'bg-[#E6F8F3] text-[#00896F]' : invoice.status === 'failed' ? 'bg-red-50 text-red-500' : 'bg-gray-100 text-gray-500']">{{ invoice.status }}</span>
                 </div>
+                <NuxtLink v-if="invoice.status === 'failed' && invoice.plan_id" :to="`/settings/checkout?plan_id=${invoice.plan_id}&cycle=${subscription?.billing_cycle || 'monthly'}`" class="text-xs font-medium text-[#00896F] hover:underline px-2">Retry</NuxtLink>
                 <a v-if="invoice.receipt_url" :href="invoice.receipt_url" target="_blank" class="text-gray-400 hover:text-gray-800 transition-colors p-2">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
                 </a>
