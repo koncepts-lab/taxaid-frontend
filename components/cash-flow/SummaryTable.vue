@@ -4,7 +4,7 @@
             <col style="width: 28%;" />
             <col v-for="month in months" :key="`col-${month}`" :style="`width: ${72 / months.length}%;`" />
         </colgroup>
-        <thead class="text-white sticky top-[82px] z-20 shadow-sm" :class="isDark ? 'bg-[#002118]' : 'bg-[#008A6F]'">
+        <thead class="text-white lg:sticky lg:top-[82px] z-20 shadow-sm" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
             <tr class="transition-all duration-500">
                 <th :class="isCompressed ? 'px-8 py-4' : 'px-8 py-5'" class="font-medium text-[14px]">
                     {{ currentLang === 'ar' ? 'التدفقات النقدية' : 'Cashflow' }}
@@ -26,11 +26,21 @@
             </tr>
 
             <!-- Incoming (expandable) -->
-            <tr class="transition-all duration-500 relative z-10" :class="isDark ? 'bg-transparent border-b border-white/10' : 'bg-white border-b border-gray-100'">
+            <tr class="transition-all duration-500 relative z-10" :class="[
+                isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100',
+                expandedRow === 'incoming' ? 'lg:sticky lg:top-[142px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : ''
+            ]">
                 <td :class="[cellPad, isDark ? 'text-white' : 'text-black', 'font-medium text-[14px]']">
                     <div class="flex items-center gap-2 cursor-pointer select-none" @click="toggleRow('incoming', $event)">
                         {{ currentLang === 'ar' ? 'الواردة' : 'Incoming' }}
-                        <svg class="w-2.5 h-2.5 transition-transform duration-300" :class="expandedRow === 'incoming' ? 'rotate-180' : ''" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10L5 6Z" /></svg>
+                        <button class="focus:outline-none transition-transform duration-200">
+                            <svg v-if="expandedRow === 'incoming'" width="10" height="7" viewBox="0 0 10 7" fill="none">
+                                <path d="M1 6L5 2L9 6" :stroke="isDark ? '#00FFBC' : '#008864'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <svg v-else width="10" height="7" viewBox="0 0 10 7" fill="none">
+                                <path d="M1 1L5 5L9 1" :stroke="isDark ? '#00FFBC' : '#008864'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
                     </div>
                 </td>
                 <td v-for="(value, idx) in incoming" :key="idx" :class="[cellPadX, isDark ? 'text-white/80' : 'text-black', 'text-right rtl:text-left font-medium text-[14px]']">
@@ -49,13 +59,13 @@
                             </colgroup>
                             <tbody>
                                 <template v-for="section in (sections?.incoming ?? [])" :key="section.key">
-                                    <tr :class="isDark ? 'bg-[#04C18F5E]' : 'bg-[#A1E2D2]'">
+                                    <tr :class="isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]'">
                                         <td :colspan="months.length + 1" class="px-8 py-3 font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-black'">
                                             {{ currentLang === 'ar' ? section.title.ar : section.title.en }}
                                         </td>
                                     </tr>
                                     <tr v-for="row in section.rows" :key="section.key + row.name"
-                                        :class="isDark ? 'bg-[#04C18F1A] border-b border-white/5' : 'bg-[#E8F9F5] border-b border-[#b2edd4]'">
+                                        :class="isDark ? 'bg-[#003D2E] border-b border-white/5' : 'bg-[#E8FBF3] border-b border-[#b2edd4]'">
                                         <td class="px-8 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-black'">
                                             <div class="flex items-center gap-2 group relative inline-block">
                                                 <span>{{ row.name }}</span>
@@ -86,11 +96,21 @@
             </tr>
 
             <!-- Outgoing (expandable) -->
-            <tr class="transition-all duration-500 relative z-10" :class="isDark ? 'bg-transparent border-b border-white/10' : 'bg-white border-b border-gray-100'">
+            <tr class="transition-all duration-500 relative z-10" :class="[
+                isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100',
+                expandedRow === 'outgoing' ? 'lg:sticky lg:top-[142px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : ''
+            ]">
                 <td :class="[cellPad, isDark ? 'text-white' : 'text-black', 'font-medium text-[14px]']">
                     <div class="flex items-center gap-2 cursor-pointer select-none" @click="toggleRow('outgoing', $event)">
                         {{ currentLang === 'ar' ? 'الصادرة' : 'Outgoing' }}
-                        <svg class="w-2.5 h-2.5 transition-transform duration-300" :class="expandedRow === 'outgoing' ? 'rotate-180' : ''" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10L5 6Z" /></svg>
+                        <button class="focus:outline-none transition-transform duration-200">
+                            <svg v-if="expandedRow === 'outgoing'" width="10" height="7" viewBox="0 0 10 7" fill="none">
+                                <path d="M1 6L5 2L9 6" :stroke="isDark ? '#00FFBC' : '#008864'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <svg v-else width="10" height="7" viewBox="0 0 10 7" fill="none">
+                                <path d="M1 1L5 5L9 1" :stroke="isDark ? '#00FFBC' : '#008864'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
                     </div>
                 </td>
                 <td v-for="(value, idx) in outgoing" :key="idx" :class="[cellPadX, isDark ? 'text-white/80' : 'text-black', 'text-right rtl:text-left font-medium text-[14px]']">
@@ -109,13 +129,13 @@
                             </colgroup>
                             <tbody>
                                 <template v-for="section in (sections?.outgoing ?? [])" :key="section.key">
-                                    <tr :class="isDark ? 'bg-[#04C18F5E]' : 'bg-[#A1E2D2]'">
+                                    <tr :class="isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]'">
                                         <td :colspan="months.length + 1" class="px-8 py-3 font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-black'">
                                             {{ currentLang === 'ar' ? section.title.ar : section.title.en }}
                                         </td>
                                     </tr>
                                     <tr v-for="row in section.rows" :key="section.key + row.name"
-                                        :class="isDark ? 'bg-[#04C18F1A] border-b border-white/5' : 'bg-[#E8F9F5] border-b border-[#b2edd4]'">
+                                        :class="isDark ? 'bg-[#003D2E] border-b border-white/5' : 'bg-[#E8FBF3] border-b border-[#b2edd4]'">
                                         <td class="px-8 py-3 text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-black'">
                                             <div class="flex items-center gap-2 group relative inline-block">
                                                 <span>{{ row.name }}</span>

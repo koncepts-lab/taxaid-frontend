@@ -206,6 +206,11 @@
                                     :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-red-100 text-[#000]'">
                                     {{ currentLang === 'ar' ? 'تصدير بصيغة PDF (.pdf)' : 'Export as PDF (.pdf)' }}
                                 </button>
+                                <button @click="triggerExport('excel')"
+                                    class="w-full px-4 py-3 text-sm rounded-lg flex items-center transition-colors mt-1"
+                                    :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-green-100 text-[#000]'">
+                                    {{ currentLang === 'ar' ? 'تصدير بصيغة Excel (.xlsx)' : 'Export as Excel (.xlsx)' }}
+                                </button>
                             </div>
                         </Transition>
                     </div>
@@ -331,6 +336,7 @@ const handleReload = () => {
 
 const triggerExport = (type) => {
     if (type === 'pdf') emit('export-pdf')
+    if (type === 'excel') emit('export-excel')
     showExportDropdown.value = false
 }
 

@@ -110,15 +110,11 @@
                         </div>
                     </div>
                 </div>
-                <button @click="isModalOpen = true" v-if="isCompressed" class="max-lg:hidden">
-                    <img src="/images/icons/expand-dark.svg" alt="Expand" class="w-5 h-5"
-                        :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+                <button @click="isModalOpen = true">
+                    <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon" class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+                        :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
                 </button>
-                <CommonTooltip :text="currentLang === 'ar' ? 'اسأل عقيل' : 'Ask Akeel'" position="top">
-                    <button @click="handleInfoClick" class="max-lg:hidden">
-                        <img src="/images/icons/i.svg" class="w-5 h-5" />
-                    </button>
-                </CommonTooltip>
+
             </div>
         </div>
 
@@ -187,7 +183,7 @@
                     </td>
                 </tr>
 
-                <template v-else v-for="(row, i) in visibleRows" :key="i">
+                <template v-else v-for="(row, i) in paginatedRows" :key="i">
                     <tr v-if="row.isHeader" :class="isDark ? 'bg-primary-1050' : 'bg-primary-800'">
                         <td colspan="7" class="lg:px-8 px-4 py-3 font-medium text-start"
                             :class="isDark ? 'text-white/80' : 'text-primary-950'">{{ row.label }}</td>
@@ -283,6 +279,37 @@
         </table>
         </div>
 
+        <!-- Pagination -->
+        <div v-if="visibleRows.length > 0" class="lg:py-6 py-4 px-4 lg:px-8 flex flex-wrap items-center justify-between gap-3">
+            <span class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-500'">
+                {{ currentLang === 'ar' ? 'عرض' : 'Showing' }} {{ pageStart }}–{{ pageEnd }} {{ currentLang === 'ar' ? 'من' : 'of' }} {{ totalItems }} {{ currentLang === 'ar' ? 'النتائج' : 'results' }}
+            </span>
+            <div class="flex items-center gap-1.5">
+                <button @click="goToPage(currentPage - 1)"
+                    :disabled="currentPage <= 1"
+                    class="px-3 py-1.5 rounded-lg border text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    :class="isDark ? 'border-white/10 text-white/80 bg-[#1a1a1a] hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
+                    {{ currentLang === 'ar' ? 'السابق' : 'Previous' }}
+                </button>
+                <button v-for="p in visiblePages" :key="p"
+                    @click="goToPage(p)"
+                    :class="[
+                        p === currentPage
+                            ? (isDark ? 'bg-[#00896F] text-white border-[#00896F]' : 'bg-[#00896F] text-white border-[#00896F]')
+                            : (isDark ? 'bg-[#1a1a1a] text-white/80 border-white/10 hover:bg-white/10' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'),
+                        'w-8 h-8 flex items-center justify-center rounded-lg border text-sm font-medium transition-all'
+                    ]">
+                    {{ p }}
+                </button>
+                <button @click="goToPage(currentPage + 1)"
+                    :disabled="currentPage >= totalPages"
+                    class="px-3 py-1.5 rounded-lg border text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    :class="isDark ? 'border-white/10 text-white/80 bg-[#1a1a1a] hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
+                    {{ currentLang === 'ar' ? 'التالي' : 'Next' }}
+                </button>
+            </div>
+        </div>
+
         <div v-if="reportInfo?.current" class="lg:px-8 px-4 py-6 lg:text-sm text-xs transition-all duration-500"
             :class="isDark ? 'text-white/40' : 'text-black/50'">
             {{ currentLang === 'ar' ? 'تم إنشاء التقرير للفترة' : 'Report is generated for the period' }}
@@ -301,7 +328,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 const props = defineProps({
     data: Array,
     isCompressed: Boolean,
@@ -339,6 +366,43 @@ const visibleRows = computed(() => {
     const rows = props.data ?? []
     return showAllData.value ? rows : rows.filter(rowHasData)
 })
+
+const currentPage = ref(1);
+const perPage = ref(10);
+
+const totalItems = computed(() => visibleRows.value.length);
+const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / perPage.value)));
+
+const paginatedRows = computed(() => {
+    const start = (currentPage.value - 1) * perPage.value;
+    return visibleRows.value.slice(start, start + perPage.value);
+});
+
+const pageStart = computed(() => totalItems.value === 0 ? 0 : (currentPage.value - 1) * perPage.value + 1);
+const pageEnd = computed(() => Math.min(currentPage.value * perPage.value, totalItems.value));
+
+const visiblePages = computed(() => {
+    // Show a window of pages if there are many, or all if few. Here we just show all for simplicity like Trial Balance.
+    const pages = [];
+    let start = Math.max(1, currentPage.value - 2);
+    let end = Math.min(totalPages.value, start + 4);
+    if (end - start < 4) start = Math.max(1, end - 4);
+    for (let i = start; i <= end; i++) {
+        pages.push(i);
+    }
+    return pages;
+});
+
+const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page;
+    }
+};
+
+watch(visibleRows, () => {
+    currentPage.value = 1;
+});
+
 const config = useRuntimeConfig();
 const baseUrl = config.public.apiBase;
 const isDark = useTheme().isDark

@@ -235,7 +235,7 @@ const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoad
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
-const isChatOpen = ref(true)
+const isChatOpen = ref(false)
 const isFullScreenChat = ref(false)
 const isAddModalOpen = ref(false)
 const isDeleteModalOpen = ref(false);
