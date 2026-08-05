@@ -353,7 +353,7 @@ const configs = {
         headers: ['Vendor ID', 'Name', 'Tax ID', 'Contact Person', 'Email', 'Phone', 'Credit Limit (AED)', 'Status'],
         headersAr: ['معرف المورد', 'الاسم', 'الرقم الضريبي', 'الشخص المسؤول', 'البريد', 'الهاتف', 'الحد الائتماني', 'الحالة'],
         gridCols: '50px 120px 200px 140px 170px 220px 150px 150px 100px',
-        minWidth: '1400px'
+        minWidth: '1486px'
     },
     'internal-email': {
         title: 'Internal Email Directory', titleAr: 'دليل البريد الداخلي',
