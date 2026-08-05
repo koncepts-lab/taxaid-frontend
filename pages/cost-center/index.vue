@@ -110,47 +110,7 @@ const handleDateChange = (period) => {
 }
 
 const handleExportPDF = async () => {
-  if (!process.client) return;
-
-  // 4. Access data through the ref
-  const childData = summaryRef.value?.tableData || []
-  const childTotal = summaryRef.value?.summaryTotal
-
-  if (childData.length === 0) return;
-
-  try {
-    const { default: jsPDF } = await import('jspdf');
-    const { default: autoTable } = await import('jspdf-autotable');
-    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape is better for tables
-
-    const body = childData.map(row => [
-      row.label,
-      row.revenue,
-      row.cogs,
-      row.indirectExp,
-      row.profit,
-      row.margin + '%'
-    ]);
-
-    if (childTotal) {
-      body.push([childTotal.label, childTotal.revenue, childTotal.cogs, childTotal.indirectExp, childTotal.profit, childTotal.margin + '%'])
-    }
-
-    doc.setFontSize(18);
-    doc.text(`Cost Center Summary Report`, 14, 15);
-    autoTable(doc, {
-      head: [['Particulars', 'Revenue', 'COGS', 'Indirect Exp', 'Profit', 'Margin']],
-      body: body,
-      startY: 25,
-      theme: 'grid',
-      headStyles: { fillColor: [0, 136, 100] },
-      styles: { fontSize: 9 },
-      margin: { top: 25 }
-    });
-    doc.save(`Cost_Center_Summary.pdf`);
-  } catch (error) {
-    console.error("Export Error:", error);
-  }
+  console.warn("PDF export is currently disabled.");
 };
 </script>
 
