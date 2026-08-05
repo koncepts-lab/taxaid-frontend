@@ -166,24 +166,7 @@ watch([activeTab, filters], () => {
 }, { immediate: true, deep: true })
 
 const handleExportPDF = async () => {
-    if (!process.client) return
-    try {
-        const { default: jsPDF }    = await import('jspdf')
-        const { default: autoTable } = await import('jspdf-autotable')
-        const doc = new jsPDF()
-        const body = activeTabData.value.rows.map(row => [row.label, row.current, row.previous, row.variance])
-        doc.setFontSize(18)
-        doc.text(`${activeTab.value.toUpperCase()} Report`, 14, 15)
-        autoTable(doc, {
-            head: [['Account', 'Current', 'Previous', 'Variance']],
-            body, startY: 25, theme: 'grid',
-            headStyles: { fillColor: [13, 148, 136] },
-            styles: { fontSize: 9 }, margin: { top: 25 }
-        })
-        doc.save(`Report_${activeTab.value}.pdf`)
-    } catch (error) {
-        console.error('Export Error:', error)
-    }
+    console.warn("PDF export is currently disabled.");
 }
 
 const tabs = [

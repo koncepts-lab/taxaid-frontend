@@ -96,32 +96,8 @@ const handleDateChange = (period) => {
 }
 
 // --- 3. EXPORT LOGIC ---
-const handleExportPDF = async () => {
-  if (!process.client) return;
-  const data = tableRef.value?.tableData || []
-  const total = tableRef.value?.summaryTotal
-  if (data.length === 0) return;
-
-  try {
-    const { default: jsPDF } = await import('jspdf');
-    const { default: autoTable } = await import('jspdf-autotable');
-    const doc = new jsPDF('l', 'mm', 'a4');
-
-    const body = data.map(row => [row.label, row.revenue, row.cogs, row.indirectExp, row.profit, row.margin + '%']);
-    if (total) body.push([total.label, total.revenue, total.cogs, total.indirectExp, total.profit, total.margin + '%'])
-
-    doc.text("Project Detail Performance Report", 14, 15);
-    autoTable(doc, {
-      head: [['Particulars', 'Revenue', 'COGS', 'Indirect Exp', 'Profit', 'Margin']],
-      body: body,
-      startY: 25,
-      theme: 'grid',
-      headStyles: { fillColor: [0, 136, 100] }
-    });
-    doc.save(`Project_Detail_Report.pdf`);
-  } catch (error) {
-    console.error("PDF Export Error:", error);
-  }
+const exportPDF = async () => {
+  console.warn("PDF export is currently disabled.");
 };
 onMounted(() => {
   fetchProjectData()
