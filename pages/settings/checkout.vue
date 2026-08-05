@@ -112,17 +112,28 @@
             <div v-else-if="step === 2" class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
               <h2 class="text-[20px] font-medium text-gray-900 mb-2">Payment Details</h2>
 
-              <!-- Saved card, offered first — skips re-entering card details entirely -->
-              <template v-if="defaultCard && !useNewCard">
-                <p class="text-[14px] text-gray-500 mb-6">Use your saved card, or add a different one</p>
-                <div class="border border-[#04C18F] rounded-2xl p-6 flex items-center justify-between mb-4" style="background: linear-gradient(90deg, #F0FDFA 0%, #F0FDF4 100%);">
-                  <div class="flex items-center gap-4">
-                    <div class="w-12 h-8 bg-[#DCFCE7] rounded flex items-center justify-center text-[#00A63E]">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+              <!-- Saved cards, offered first — skips re-entering card details entirely -->
+              <template v-if="savedCards.length && !useNewCard">
+                <p class="text-[14px] text-gray-500 mb-6">Choose a saved card, or add a different one</p>
+                <div class="space-y-3 mb-4">
+                  <div
+                    v-for="card in savedCards"
+                    :key="card.id"
+                    @click="selectedCardId = card.id"
+                    :class="['border rounded-2xl p-6 flex items-center justify-between cursor-pointer transition-colors', selectedCardId === card.id ? 'border-[#04C18F]' : 'border-gray-200']"
+                    :style="selectedCardId === card.id ? 'background: linear-gradient(90deg, #F0FDFA 0%, #F0FDF4 100%);' : ''"
+                  >
+                    <div class="flex items-center gap-4">
+                      <div class="w-12 h-8 bg-[#DCFCE7] rounded flex items-center justify-center text-[#00A63E]">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+                      </div>
+                      <div>
+                        <p class="text-[14px] font-medium text-gray-900 capitalize">{{ card.card_brand }} •••• {{ card.card_last4 }}</p>
+                        <p class="text-[12px] text-gray-500">Expires {{ String(card.card_exp_month).padStart(2, '0') }}/{{ card.card_exp_year }}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p class="text-[14px] font-medium text-gray-900 capitalize">{{ defaultCard.card_brand }} •••• {{ defaultCard.card_last4 }}</p>
-                      <p class="text-[12px] text-gray-500">Expires {{ String(defaultCard.card_exp_month).padStart(2, '0') }}/{{ defaultCard.card_exp_year }}</p>
+                    <div :class="['w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0', selectedCardId === card.id ? 'border-[#04C18F]' : 'border-gray-300']">
+                      <div v-if="selectedCardId === card.id" class="w-2.5 h-2.5 rounded-full bg-[#04C18F]"></div>
                     </div>
                   </div>
                 </div>
@@ -133,7 +144,7 @@
               <template v-else>
                 <p class="text-[14px] text-gray-500 mb-8">Enter your card details to subscribe</p>
                 <div id="card-element" class="border rounded-lg px-4 py-3.5" style="border-color: #A2E8D6;"></div>
-                <button v-if="defaultCard" type="button" @click="useNewCard = false" class="text-sm text-[#00896F] font-medium hover:underline mt-2">Use saved card instead</button>
+                <button v-if="savedCards.length" type="button" @click="useNewCard = false" class="text-sm text-[#00896F] font-medium hover:underline mt-2">Use saved card instead</button>
               </template>
 
               <p v-if="cardError" class="text-sm text-red-500 mt-2">{{ cardError }}</p>
@@ -175,9 +186,9 @@
                     <div class="w-12 h-8 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-900 shrink-0">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg>
                     </div>
-                    <div v-if="defaultCard && !useNewCard">
-                      <p class="text-[14px] text-gray-900 font-medium capitalize">{{ defaultCard.card_brand }} •••• {{ defaultCard.card_last4 }}</p>
-                      <p class="text-[12px] text-gray-600">Expires {{ String(defaultCard.card_exp_month).padStart(2, '0') }}/{{ defaultCard.card_exp_year }}</p>
+                    <div v-if="selectedCard && !useNewCard">
+                      <p class="text-[14px] text-gray-900 font-medium capitalize">{{ selectedCard.card_brand }} •••• {{ selectedCard.card_last4 }}</p>
+                      <p class="text-[12px] text-gray-600">Expires {{ String(selectedCard.card_exp_month).padStart(2, '0') }}/{{ selectedCard.card_exp_year }}</p>
                     </div>
                     <p v-else class="text-[14px] text-gray-900 font-medium">New card</p>
                   </div>
@@ -313,8 +324,10 @@ const submitting = ref(false)
 const success = ref(false)
 const cardError = ref('')
 const plan = ref<any>(null)
-const defaultCard = ref<any>(null)
+const savedCards = ref<any[]>([])
+const selectedCardId = ref<number | null>(null)
 const useNewCard = ref(false)
+const selectedCard = computed(() => savedCards.value.find((c: any) => c.id === selectedCardId.value) || null)
 const isFirstPayment = ref(true)
 const billing = ref<any>({ company_name: '', tax_id: '', street_address: '', city: '', state: '', zip_code: '', country: '' })
 
@@ -360,7 +373,7 @@ function switchToNewCard() {
 }
 
 function goToReview() {
-  if ((!defaultCard.value || useNewCard.value) && (!stripe || !cardElement)) return
+  if ((!selectedCard.value || useNewCard.value) && (!stripe || !cardElement)) return
   step.value = 3
 }
 
@@ -369,7 +382,8 @@ onMounted(async () => {
     const [plansRes, pmRes, billingRes] = await Promise.all([getPlans(), getPaymentMethods(), getBillingInfo()])
     plan.value = (plansRes.data || []).find((p: any) => p.id === planId) || null
     isFirstPayment.value = plansRes.is_first_payment ?? true
-    defaultCard.value = (pmRes.data || []).find((pm: any) => pm.is_default) || null
+    savedCards.value = pmRes.data || []
+    selectedCardId.value = (savedCards.value.find((pm: any) => pm.is_default) || savedCards.value[0] || null)?.id ?? null
     if (billingRes.data) {
       billing.value = {
         company_name: billingRes.data.company_name || '', tax_id: billingRes.data.tax_id || '',
@@ -384,7 +398,7 @@ onMounted(async () => {
   if (!plan.value) return
 
   // No saved card at all — go straight to card entry, nothing to offer as "saved".
-  if (!defaultCard.value) {
+  if (!savedCards.value.length) {
     await mountCardElement()
   }
 })
@@ -420,8 +434,8 @@ const submit = async () => {
 
     let paymentMethodId: string
 
-    if (defaultCard.value && !useNewCard.value) {
-      paymentMethodId = defaultCard.value.stripe_payment_method_id
+    if (selectedCard.value && !useNewCard.value) {
+      paymentMethodId = selectedCard.value.stripe_payment_method_id
     } else {
       if (!stripe || !cardElement) { submitting.value = false; return }
 
@@ -445,7 +459,8 @@ const submit = async () => {
       // (which would otherwise leave a Stripe-only card the local list never learns about).
       try {
         const pmRes = await addPaymentMethod(paymentMethodId)
-        defaultCard.value = pmRes.data
+        savedCards.value = [...savedCards.value.filter((c: any) => c.id !== pmRes.data.id), pmRes.data]
+        selectedCardId.value = pmRes.data.id
         useNewCard.value = false
       } catch {
         // non-fatal — subscribe() below still works with the raw paymentMethodId either way
