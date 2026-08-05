@@ -23,7 +23,7 @@
             class="flex items-center gap-4 p-2 rounded-xl transition-all duration-200 group"
             :class="$route.path.startsWith(item.to) ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/5'">
             <img :src="$route.path.startsWith(item.to) ? item.activeIcon : item.icon"
-              class="w-6 h-6 transition-transform duration-200 opacity-60"
+              class="w-6 h-6 transition-transform duration-200 opacity-60 brightness-0 invert"
               :class="{ 'scale-110': $route.path.startsWith(item.to) }" />
             <span class="text-lg font-medium text-white/60">
               {{ currentLang === 'ar' ? item.labelAr : item.label }}
@@ -535,6 +535,20 @@ const navItems = [
     to: '/tax-queries',
     icon: '/images/icons/Tax-Queries.svg',
     activeIcon: '/images/icons/Tax-Queries-active.svg'
+  },
+  {
+    label: 'Alerts',
+    labelAr: 'التنبيهات',
+    to: '/alerts',
+    icon: '/images/icons/Notifications.svg',
+    activeIcon: '/images/icons/Notifications.svg'
+  },
+  {
+    label: 'Appointments',
+    labelAr: 'المواعيد',
+    to: '/appointment',
+    icon: '/images/icons/calendar.svg',
+    activeIcon: '/images/icons/calendar.svg'
   },
 ]
 
