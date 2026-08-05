@@ -263,7 +263,7 @@
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showViewModal = false"></div>
 
         <!-- Modal -->
-        <div class="relative bg-white rounded-[20px] shadow-2xl w-full max-w-[600px] max-h-[90vh] mx-4 overflow-y-auto z-10 p-8 flex flex-col gap-6">
+        <div class="relative bg-white rounded-[20px] shadow-2xl w-full max-w-[600px] max-h-[78vh] mx-4 overflow-y-auto z-10 p-8 flex flex-col gap-6">
           
           <!-- Modal Header -->
           <div class="flex items-center justify-between">

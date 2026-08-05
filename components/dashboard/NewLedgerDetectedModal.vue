@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[78vh] overflow-y-auto" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
         <!-- Header -->
         <div class="px-8 pt-8 pb-4 flex justify-between items-start">

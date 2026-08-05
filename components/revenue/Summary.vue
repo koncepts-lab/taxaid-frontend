@@ -195,7 +195,7 @@
                 class="fixed inset-0 z-[10001] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
                 @click.self="isModalOpen = false">
 
-                <div class="w-full max-h-[70vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col transition-all duration-300" style="max-width: 1500px;"
+                <div class="w-full max-h-[78vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col transition-all duration-300" style="max-width: 1500px;"
                     :class="isDark ? 'bg-[#001a14] border border-white/10' : 'bg-white'">
 
                     <!-- Modal Header -->

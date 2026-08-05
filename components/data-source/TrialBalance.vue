@@ -390,7 +390,7 @@
         <Transition name="fade">
             <div v-if="isReportModalOpen"
                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                <div class="bg-white rounded-2xl w-full max-w-7xl shadow-2xl flex flex-col relative p-8 max-h-[90vh]">
+                <div class="bg-white rounded-2xl w-full max-w-7xl shadow-2xl flex flex-col relative p-8 max-h-[78vh]">
 
                     <button @click="isReportModalOpen = false"
                         class="absolute top-8 right-8 text-gray-400 hover:text-gray-600 transition-colors">

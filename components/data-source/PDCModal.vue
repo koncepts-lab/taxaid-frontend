@@ -23,7 +23,7 @@
                     </div>
 
                     <div class="p-8">
-                        <div class="overflow-x-auto rounded-[20px] border max-h-[60vh] no-scrollbar"
+                        <div class="overflow-x-auto rounded-[20px] border max-h-[78vh] no-scrollbar"
                             :class="isDark ? 'border-white/10' : 'border-gray-200'">
                             <table class="w-full text-left rtl:text-right border-collapse min-w-[1200px]">
                                 <thead class="sticky top-0 z-10">

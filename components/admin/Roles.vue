@@ -469,7 +469,7 @@
 
     <!-- Socket VM Status Modal -->
     <div v-if="showSocketModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[78vh] flex flex-col">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div class="flex items-center gap-3">
             <span :class="socketOnline ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'" class="w-2.5 h-2.5 rounded-full"></span>
@@ -536,7 +536,7 @@
 
     <!-- Partner Clients Modal -->
     <div v-if="showPartnerClientsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div class="bg-white rounded-xl shadow-lg w-[560px] max-w-full flex flex-col max-h-[90vh]">
+      <div class="bg-white rounded-xl shadow-lg w-[560px] max-w-full flex flex-col max-h-[78vh]">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <div>
             <h2 class="text-[17px] font-semibold text-gray-900">Partner Clients</h2>
@@ -660,7 +660,7 @@
 
     <!-- Configure Dashboard Access Modal -->
     <div v-if="showConfigureModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity p-4">
-      <div class="bg-white rounded-xl shadow-lg w-[600px] max-w-full overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="bg-white rounded-xl shadow-lg w-[600px] max-w-full overflow-hidden flex flex-col max-h-[78vh]">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 class="text-[19px] font-semibold text-gray-900">Configure Dashboard Access</h2>
           <button @click="showConfigureModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
@@ -709,7 +709,7 @@
 
     <!-- Edit User Modal -->
     <div v-if="showEditUserModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity p-4">
-      <div class="bg-white rounded-xl shadow-lg w-[600px] max-w-full overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="bg-white rounded-xl shadow-lg w-[600px] max-w-full overflow-hidden flex flex-col max-h-[78vh]">
         <div class="px-6 py-5 flex items-center justify-between">
           <h2 class="text-[19px] font-semibold text-gray-900">Edit User</h2>
           <button @click="showEditUserModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
@@ -797,7 +797,7 @@
 
     <!-- Add New User Modal -->
     <div v-if="showAddUserModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity p-4">
-      <div class="bg-white rounded-xl shadow-lg w-[650px] max-w-full overflow-hidden flex flex-col max-h-[95vh]">
+      <div class="bg-white rounded-xl shadow-lg w-[650px] max-w-full overflow-hidden flex flex-col max-h-[78vh]">
         <div class="px-8 py-6 flex items-center justify-between">
           <h2 class="text-[20px] font-semibold text-gray-900">Add New User</h2>
           <button @click="closeAddUserModal" class="text-gray-400 hover:text-gray-600 transition-colors">

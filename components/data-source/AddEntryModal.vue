@@ -3,7 +3,7 @@
     <Transition name="fade">
         <div v-if="open" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
             :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="close">
-            <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl relative max-h-[78vh] overflow-y-auto">
                 <div class="p-8 space-y-4">
                     <div class="flex items-center justify-between">
                         <h2 class="text-lg font-semibold text-gray-900">

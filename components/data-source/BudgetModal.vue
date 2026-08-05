@@ -5,7 +5,7 @@
                 class="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
                 :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="$emit('close')">
 
-                <div class="w-full max-w-[75vw]  transition-all duration-300 transform scale-100 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] rounded-2xl"
+                <div class="w-full max-w-[75vw]  transition-all duration-300 transform scale-100 shadow-2xl overflow-hidden flex flex-col max-h-[78vh] rounded-2xl"
                     :class="isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white'">
 
                     <div class="flex justify-between items-center p-8 "

@@ -4,7 +4,7 @@
             <div class="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
                 @click.self="$emit('close')">
 
-                <div class="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col relative transition-all duration-300"
+                <div class="bg-white rounded-lg w-full max-w-2xl max-h-[78vh] overflow-hidden shadow-2xl flex flex-col relative transition-all duration-300"
                     :class="isDark ? 'bg-[#111111] border border-white/10 text-white' : 'bg-white text-black'">
 
                     <!-- Header -->
