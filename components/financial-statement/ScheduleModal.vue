@@ -7,8 +7,8 @@
 
                 <!-- Main Panel -->
                 <div class="w-full bg-white flex flex-col transition-all duration-500 shadow-2xl
-                 max-h-[85vh] rounded-t-4xl 
-                 sm:h-auto sm:max-w-6xl sm:max-h-[90vh] sm:min-h-[40vh] sm:rounded-xl"
+                 max-h-[78vh] rounded-t-4xl 
+                 sm:h-auto sm:max-w-6xl sm:max-h-[78vh] sm:min-h-[40vh] sm:rounded-xl"
                     :class="[isDark ? 'bg-[#002e26] border-t sm:border border-white/10' : 'bg-white border-none']">
                     <!-- Mobile Drag Handle (Visual only) -->
                     <div class="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
@@ -82,7 +82,7 @@
                                 </div>
 
                                 <!-- ── Scrollable Body ── -->
-                                <div class="overflow-y-auto custom-scrollbar flex-1 max-h-[50vh]">
+                                <div class="overflow-y-auto custom-scrollbar flex-1 max-h-[78vh]">
                                     <table class="w-full text-sm table-fixed">
                                         <colgroup>
                                             <col style="width: 25%">

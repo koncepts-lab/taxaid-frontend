@@ -2,7 +2,7 @@
     <Teleport to="body">
         <Transition name="modal-fade">
             <div v-if="open" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="close">
-                <div class="w-full max-h-[70vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-500" :class="isDark ? 'bg-[#001a14] border border-white/10' : 'bg-white'" style="max-width: 1100px;">
+                <div class="w-full max-h-[78vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-500" :class="isDark ? 'bg-[#001a14] border border-white/10' : 'bg-white'" style="max-width: 1100px;">
                     <!-- ── Fixed Header ── -->
                     <div class="shrink-0 flex justify-between items-start py-5 px-4 lg:px-8 border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'">
                         <div>

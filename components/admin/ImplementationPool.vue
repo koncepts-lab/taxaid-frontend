@@ -257,7 +257,7 @@
         <Teleport to="body">
             <Transition name="fade">
                 <div v-if="showRegistrationDetail" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                    <div class="bg-white rounded-2xl shadow-xl w-[560px] max-w-full flex flex-col max-h-[85vh]">
+                    <div class="bg-white rounded-2xl shadow-xl w-[560px] max-w-full flex flex-col max-h-[78vh]">
                         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                             <div>
                                 <h3 class="text-[16px] font-semibold text-gray-900">Registration Review</h3>
@@ -302,7 +302,7 @@
         <Teleport to="body">
             <Transition name="fade">
                 <div v-if="showPartnerModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                    <div class="bg-white rounded-2xl shadow-xl w-[520px] max-w-full flex flex-col max-h-[80vh]">
+                    <div class="bg-white rounded-2xl shadow-xl w-[520px] max-w-full flex flex-col max-h-[78vh]">
                         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                             <div>
                                 <h3 class="text-[16px] font-semibold text-gray-900">Link Partner</h3>
@@ -359,7 +359,7 @@
         <Teleport to="body">
             <Transition name="fade">
                 <div v-if="showDelaysModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                    <div class="bg-white rounded-2xl shadow-xl w-[680px] max-w-full flex flex-col max-h-[80vh]">
+                    <div class="bg-white rounded-2xl shadow-xl w-[680px] max-w-full flex flex-col max-h-[78vh]">
                         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                             <div>
                                 <h3 class="text-[16px] font-semibold text-gray-900">Client Delays</h3>

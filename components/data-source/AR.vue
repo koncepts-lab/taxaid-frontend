@@ -149,7 +149,7 @@
                                         <th class="px-6 py-5 text-[15px] font-medium text-right rtl:text-left">{{ currentLang === 'ar' ? 'المبلغ' : 'Amount' }}</th>
                                     </tr>
                                 </thead>
-                                <tbody class="max-h-[50vh]">
+                                <tbody class="max-h-[78vh]">
                                     <tr v-for="i in 11" :key="i" class="border-b transition-colors"
                                         :class="isDark ? 'border-white/5 hover:bg-white/5 text-white/80' : 'border-gray-100 hover:bg-gray-50 text-gray-700'">
                                         <td class="px-6 py-4 text-[15px]">AI Dhabi Contracting LLC</td>

@@ -269,7 +269,7 @@
         <Transition name="fade">
           <div v-if="showMailerModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
             :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="showMailerModal = false">
-            <div class="w-full max-w-lg rounded-2xl bg-white max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="w-full max-w-lg rounded-2xl bg-white max-h-[78vh] overflow-y-auto shadow-2xl">
               <div class="flex items-center justify-between px-7 py-5 border-b border-gray-100">
                 <h2 class="text-lg font-semibold text-gray-900">{{ currentLang === 'ar' ? 'إعدادات المرسل (SMTP)' : 'Mailer Settings (SMTP)' }}</h2>
                 <button @click="showMailerModal = false" class="text-gray-400 hover:text-gray-600">

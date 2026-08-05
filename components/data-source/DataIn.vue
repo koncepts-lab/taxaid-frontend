@@ -472,7 +472,7 @@
         <Transition name="modal-fade">
             <div v-if="viewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
                 <div class="absolute inset-0 bg-black/40" @click="viewModalOpen = false" />
-                <div class="relative bg-white rounded-2xl shadow-xl w-full max-h-[85vh] flex flex-col overflow-hidden transition-all duration-300"
+                <div class="relative bg-white rounded-2xl shadow-xl w-full max-h-[78vh] flex flex-col overflow-hidden transition-all duration-300"
                     :class="showMonthly ? 'max-w-[90vw]' : 'max-w-lg'">
                     <!-- Header -->
                     <div class="flex items-start justify-between p-6 pb-4 border-b border-gray-100">

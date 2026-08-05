@@ -20,7 +20,7 @@
           </button>
         </div>
 
-        <div class="px-6 py-4 overflow-y-auto max-h-[80vh] no-scrollbar space-y-4">
+        <div class="px-6 py-4 overflow-y-auto max-h-[78vh] no-scrollbar space-y-4">
 
           <!-- ── Date Picker (same as appointment modal) ── -->
           <div>

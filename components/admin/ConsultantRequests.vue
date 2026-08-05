@@ -205,7 +205,7 @@
         <Teleport to="body">
             <Transition name="fade">
                 <div v-if="showInfo" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                    <div class="bg-white rounded-2xl shadow-xl w-[460px] max-w-full flex flex-col max-h-[85vh]">
+                    <div class="bg-white rounded-2xl shadow-xl w-[460px] max-w-full flex flex-col max-h-[78vh]">
                         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                             <div>
                                 <h3 class="text-[16px] font-semibold text-gray-900">Session Info</h3>
@@ -257,7 +257,7 @@
         <Teleport to="body">
             <Transition name="fade">
                 <div v-if="showView" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                    <div class="bg-white rounded-2xl shadow-xl w-[460px] max-w-full flex flex-col max-h-[85vh]">
+                    <div class="bg-white rounded-2xl shadow-xl w-[460px] max-w-full flex flex-col max-h-[78vh]">
                         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                             <div>
                                 <h3 class="text-[16px] font-semibold text-gray-900">Credential Request</h3>
