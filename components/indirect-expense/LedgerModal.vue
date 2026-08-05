@@ -54,7 +54,7 @@
                             </div>
 
                             <!-- Scrollable Body -->
-                            <div class="overflow-y-auto custom-scrollbar flex-1 max-h-[60vh]">
+                            <div class="overflow-y-auto custom-scrollbar flex-1 max-h-[78vh]">
                                 <table class="w-full text-left rtl:text-right table-fixed border-collapse">
                                     <colgroup>
                                         <col style="width: 20%" />

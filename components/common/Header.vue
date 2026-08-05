@@ -251,7 +251,7 @@
         @click="isSettingsOpen = false; isProfileOpen = false"></div>
 
       <div
-        class="fixed  bottom-0 left-0 right-0 z-[2001] lg:hidden transition-transform duration-500 ease-out rounded-t-[2.5rem] shadow-2xl border-t border-white/5 overflow-y-auto max-h-[80vh]"
+        class="fixed  bottom-0 left-0 right-0 z-[2001] lg:hidden transition-transform duration-500 ease-out rounded-t-[2.5rem] shadow-2xl border-t border-white/5 overflow-y-auto max-h-[78vh]"
         :class="[
           isSettingsOpen ? 'translate-y-0' : 'translate-y-full',
           isDark ? 'bg-[#01261f] text-white' : 'bg-white text-gray-900'
@@ -334,7 +334,7 @@
       </div>
 
       <div
-        class="fixed bottom-0 left-0 right-0 z-[201] lg:hidden transition-transform duration-500 ease-out rounded-t-2xl shadow-2xl max-h-[92vh] overflow-y-auto"
+        class="fixed bottom-0 left-0 right-0 z-[201] lg:hidden transition-transform duration-500 ease-out rounded-t-2xl shadow-2xl max-h-[78vh] overflow-y-auto"
         :class="[
           isProfileOpen ? 'translate-y-0' : 'translate-y-full',
           isDark ? 'bg-[#01261f] text-white' : 'bg-white text-gray-900'

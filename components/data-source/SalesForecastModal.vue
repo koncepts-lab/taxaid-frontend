@@ -7,7 +7,7 @@
                 @click.self="$emit('close')">
 
                 <!-- Modal Card -->
-                <div class="w-full max-w-[1200px] bg-white transition-all duration-300 transform scale-100 shadow-2xl flex flex-col h-fit max-h-[95vh]"
+                <div class="w-full max-w-[1200px] bg-white transition-all duration-300 transform scale-100 shadow-2xl flex flex-col h-fit max-h-[78vh]"
                     style="border-radius: 12px; padding: 40px;">
 
                     <!-- Top Header Section -->

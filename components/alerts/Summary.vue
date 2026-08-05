@@ -1,7 +1,7 @@
 <template>
     <!-- Root container with dynamic key for animation and height limits -->
     <div :key="type"
-        class="relative z-10 mt-6 overflow-x-auto w-full no-scrollbar rounded-2xl transition-all duration-500 animate-expand"
+        class="relative z-10 mt-6 overflow-x-auto w-full no-scrollbar rounded-2xl transition-all duration-500"
         :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
         <table class="w-full text-left rtl:text-right border-collapse min-w-[1000px] table-fixed">
@@ -179,23 +179,6 @@ const getStatusStyles = (status) => {
 </script>
 
 <style scoped>
-@keyframes expandFromMiddle {
-    0% {
-        transform: scaleX(0.2);
-        opacity: 0;
-    }
-
-    100% {
-        transform: scaleX(1);
-        opacity: 1;
-    }
-}
-
-.animate-expand {
-    transform-origin: center;
-    animation: expandFromMiddle 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;

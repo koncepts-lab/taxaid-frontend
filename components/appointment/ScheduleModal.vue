@@ -23,7 +23,7 @@
                     </button>
                 </div>
 
-                <div class="px-6 py-4 overflow-y-auto max-h-[80vh] no-scrollbar">
+                <div class="px-6 py-4 overflow-y-auto max-h-[78vh] no-scrollbar">
                     <!-- Progress Section — only shown when extra hours are being used (total used > 20) -->
                     <div v-if="props.monthlyUsageStats.extra_hours_used > 0" class="p-4 rounded-[12px] mb-4"
                         :class="isDark ? 'bg-[#00FFBC]/5 border border-[#00FFBC]/20' : 'bg-[#E6FFF5] border border-[#00FFBC]/30'">

@@ -371,7 +371,7 @@
 
     <!-- View Ticket Modal -->
     <div v-if="isViewModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40">
-      <div class="bg-white rounded-[20px] w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      <div class="bg-white rounded-[20px] w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[78vh]">
         <!-- Header -->
         <div class="px-4 py-4 flex items-center justify-between border-b border-gray-100 shrink-0">
           <h2 class="text-[18px] font-medium  text-[#0A0A0A]">TKT-002</h2>

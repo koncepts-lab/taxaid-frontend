@@ -5,7 +5,7 @@
                 class="fixed inset-0 z-[10002] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
                 @click.self="$emit('close')">
 
-                <div class="w-full max-h-[70vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+                <div class="w-full max-h-[78vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
                     style="max-width: 1100px;"
                     :class="isDark ? 'bg-[#001a14] border border-white/10' : 'bg-white'">
 

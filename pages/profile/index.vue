@@ -471,7 +471,7 @@
 
     <!-- Contact Modal -->
     <div v-if="contactModal.isOpen" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="bg-white rounded-2xl w-full max-w-md max-h-[78vh] overflow-y-auto shadow-2xl">
         <div class="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-[#E6F6F2] flex items-center justify-center text-[#00896F]">

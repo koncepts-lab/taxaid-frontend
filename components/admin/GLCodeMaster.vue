@@ -33,7 +33,7 @@
             </div>
 
             <div class="flex flex-col lg:flex-row gap-12">
-                <div class="border border-gray-100 rounded-2xl lg:w-3/5 max-h-[60vh] overflow-y-auto">
+                <div class="border border-gray-100 rounded-2xl lg:w-3/5 max-h-[78vh] overflow-y-auto">
                     <table class="w-full text-left border-separate border-spacing-0 table-fixed">
                         <thead>
                             <tr class="text-gray-800 text-sm">
@@ -282,7 +282,7 @@
 
                 <div class="flex flex-col lg:flex-row gap-12">
                     <div class="lg:w-3/5 flex flex-col gap-3">
-                        <div class="border border-gray-100 rounded-2xl max-h-[60vh] overflow-y-auto">
+                        <div class="border border-gray-100 rounded-2xl max-h-[78vh] overflow-y-auto">
                             <table class="w-full text-left border-separate border-spacing-0 table-fixed">
                                 <thead>
                                     <tr class="text-gray-800 text-sm">

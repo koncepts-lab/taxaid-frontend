@@ -2,7 +2,7 @@
     <Teleport to="body">
         <div v-if="isOpen"
             class="fixed inset-0 z-[10001] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div class="w-screen md:max-w-6xl md:max-h-[90vh] max-h-screen rounded-xl shadow-2xl overflow-hidden flex flex-col"
+            <div class="w-screen md:max-w-6xl md:max-h-[78vh] max-h-[78vh] rounded-xl shadow-2xl overflow-hidden flex flex-col"
                 :class="isDark ? 'bg-[#002e26] border border-white/10' : 'bg-white'">
 
                 <!-- Header -->
@@ -42,7 +42,7 @@
                                         class="w-full px-3 py-2 text-sm rounded-lg flex items-center gap-3 transition-colors"
                                         :class="[
                                             currentLang === 'ar' ? 'flex-row-reverse text-right' : 'text-left',
-                                            isDark ? 'text-white hover:bg-white/10' : 'text-gray-700 hover:bg-primary-700'
+                                            isDark ? 'text-red-400 hover:bg-red-500/10' : 'text-red-600 hover:bg-red-50'
                                         ]">
                                         <span class="flex-1">{{ currentLang === 'ar' ? 'تصدير بصيغة PDF (.pdf)' :
                                             'Export as PDF (.pdf)' }}</span>
@@ -141,9 +141,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { jsPDF } from 'jspdf'; // 1. Use curly braces for destructuring
-import 'jspdf-autotable';
-import autoTable from 'jspdf-autotable';
+// PDF export temporarily removed
 
 
 const props = defineProps({
@@ -187,41 +185,7 @@ const triggerExport = (type) => {
 };
 
 const exportToPDF = () => {
-    const doc = new jsPDF({
-        orientation: 'p',
-        unit: 'mm',
-        format: 'a4'
-    }); const isAr = props.currentLang === 'ar';
-
-    doc.setFontSize(18);
-    doc.text(`${props.ledgerName} - Ledger Report`, 14, 22);
-    const tableData = props.data.report.map(row => [
-        row.date || '',
-        row.particulars || '',
-        formatNumber(row.debit),
-        formatNumber(row.credit)
-    ]);
-    autoTable(doc, {
-        startY: 35,
-        head: [['Date', 'Particulars', 'Debit', 'Credit']],
-        body: tableData,
-        theme: 'striped',
-        headStyles: {
-            fillColor: [2, 159, 128], // Your #029F80 color
-            textColor: [255, 255, 255],
-            fontStyle: 'bold'
-        },
-        styles: {
-            fontSize: 8,
-            cellPadding: 3,
-        },
-        columnStyles: {
-            2: { halign: 'right' }, // Debit column
-            3: { halign: 'right' }, // Credit column
-        }
-    });
-
-    doc.save(`${props.ledgerName}_Ledger.pdf`);
+    console.warn("PDF export is currently disabled.");
 };
 </script>
 
