@@ -200,8 +200,17 @@ const chartOptions = computed(() => ({
       options: {
         plotOptions: {
           bar: {
-            columnWidth: '45%',
-            borderRadius: 4
+            columnWidth: '55%',
+            borderRadius: 4,
+            dataLabels: {
+              orientation: 'vertical'
+            }
+          }
+        },
+        dataLabels: {
+          offsetY: 0,
+          style: {
+            fontSize: '9px'
           }
         },
         xaxis: {
