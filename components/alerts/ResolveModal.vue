@@ -30,7 +30,7 @@
 
                     <!-- Alert Summary Card (Gold) -->
                     <div class="p-4 rounded-2xl text-white mb-8 shadow-sm"
-                        :class="isDark ? 'bg-[#A68426]/20 border border-[#A68426]/30' : 'bg-[#9E8338]/90'">
+                        :class="isDark ? 'bg-[#00b792]/20 border border-[#A68426]/30' : 'bg-[#00b792]/90'">
                         <h3 class="text-base font-normal mb-2" :class="isDark ? 'text-[#FFD700]' : 'text-white'">{{
                             alert.title }}</h3>
                         <p class="text-sm mb-4" :class="isDark ? 'text-white/80' : 'text-white/80'">{{ alert.description
@@ -51,7 +51,7 @@
                             <input v-model="actionBy" type="text"
                                 :placeholder="currentLang === 'ar' ? 'أدخل الاسم والدور...' : 'Enter name and role (e.g., John Smith - Financial Analyst)'"
                                 class="w-full px-4 py-3 rounded-xl border outline-none transition-all"
-                                :class="isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#A68426]' : ' border-[#9E8338]/50 focus:border-[#A68426] placeholder:text-black/50 placeholder:text-sm'" />
+                                :class="isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#04C18F]' : 'border-[#04C18F] focus:border-[#00896F] placeholder:text-black/50 placeholder:text-sm'" />
                         </div>
 
                         <div>
@@ -62,7 +62,7 @@
                             <textarea v-model="actionNotes" rows="4"
                                 :placeholder="currentLang === 'ar' ? 'صف الإجراء المتخذ...' : 'Describe the action taken to resolve this alert...'"
                                 class="w-full px-4 py-3 rounded-xl border outline-none transition-all resize-none"
-                                :class="isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#A68426]' : 'border-[#9E8338]/50  focus:border-[#A68426] placeholder:text-black/50 placeholder:text-sm'"></textarea>
+                                :class="isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#04C18F]' : 'border-[#04C18F] focus:border-[#00896F] placeholder:text-black/50 placeholder:text-sm'"></textarea>
                         </div>
                     </div>
 
@@ -74,7 +74,7 @@
                             {{ currentLang === 'ar' ? 'تجاهل التنبيه' : 'Ignore Alert' }}
                         </button>
                         <button @click="handleSubmit"
-                            class="px-8 py-3 rounded-xl bg-[#886B19] hover:bg-[#5E4B00] text-sm text-white font-normal shadow-lg transition-all active:scale-95">
+                            class="px-8 py-3 rounded-xl bg-[#00b792] hover:bg-[#00b792] text-sm text-white font-normal shadow-lg transition-all active:scale-95">
                             {{ currentLang === 'ar' ? 'إرسال الإجراء' : 'Submit Action' }}
                         </button>
                     </div>
