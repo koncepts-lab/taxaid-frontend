@@ -1,6 +1,6 @@
 <template>
     <div
-        class="relative lg:absolute z-50 lg:bottom-0 left-1/2 h-fit -translate-x-1/2 w-full max-w-4xl mx-auto flex flex-col items-center justify-end min-h-[400px] font-sans lg:mt-0 mt-10">
+        class="relative w-full float-left mt-[30px] z-50 h-fit max-w-full mx-auto flex flex-col items-center justify-end min-h-[400px] font-sans">
 
         <button @click="prevCategory"
             class="absolute left-4 lg:-left-30 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white/90 shadow-md flex items-center justify-center transition-all z-50 hover:bg-primary-250 border  hover:border-primary-800">

@@ -4,7 +4,7 @@
         <UNotifications />
         <div class="font-sans flex relative z-10" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
             <div
-                class="flex-1 h-[calc(100vh-154px)] no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-4 pt-8">
+                class="flex-1 no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-4 pt-8">
                 <div class="mx-auto">
                     <AlertsHeader @change="onDateChange" />
 
@@ -49,6 +49,7 @@
                 </div>
             </div>
         </div>
+
 
         <AlertsViewModal
             :isOpen="activeModal === 'details'"
