@@ -69,14 +69,14 @@ export const useAlertsPage = () => {
     return new URLSearchParams(params).toString()
   }
 
-  const fetchAlerts = async (date?: string | null, period?: string | null) => {
+  const fetchAlerts = async (date?: string | null, period?: string | null, page: number = 1) => {
     if (date)   currentDate.value   = date
     if (period) currentPeriod.value = period
     loading.value = true
     error.value   = null
     alerts.value  = []
     try {
-      const result = await useApi(`/alerts?${buildParams(1)}`) as any
+      const result = await useApi(`/alerts?${buildParams(page)}`) as any
       alerts.value = result?.data ?? []
       if (result?.meta) meta.value = result.meta
     } catch (e: any) {
