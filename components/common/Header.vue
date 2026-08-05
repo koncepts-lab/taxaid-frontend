@@ -19,16 +19,19 @@
 
       <div class="flex-1 overflow-y-auto py-2 no-scrollbar">
         <div class="flex flex-col gap-1">
-          <NuxtLink v-for="(item, index) in navItems" :key="index" :to="item.to" @click="isMenuOpen = false"
-            class="flex items-center gap-4 p-2 rounded-xl transition-all duration-200 group"
-            :class="$route.path.startsWith(item.to) ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/5'">
-            <img :src="$route.path.startsWith(item.to) ? item.activeIcon : item.icon"
+          <component :is="item.to ? resolveComponent('NuxtLink') : 'button'" 
+            v-for="(item, index) in navItems" :key="index" 
+            :to="item.to" 
+            @click="item.action === 'settings' ? (isMenuOpen = false, isSettingsOpen = true) : isMenuOpen = false"
+            class="flex items-center gap-4 p-2 rounded-xl transition-all duration-200 group w-full"
+            :class="(item.to && $route.path.startsWith(item.to)) ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/5'">
+            <img :src="(item.to && $route.path.startsWith(item.to)) ? item.activeIcon : item.icon"
               class="w-6 h-6 transition-transform duration-200 opacity-60 brightness-0 invert"
-              :class="{ 'scale-110': $route.path.startsWith(item.to) }" />
+              :class="{ 'scale-110': item.to && $route.path.startsWith(item.to) }" />
             <span class="text-lg font-medium text-white/60">
               {{ currentLang === 'ar' ? item.labelAr : item.label }}
             </span>
-          </NuxtLink>
+          </component>
         </div>
       </div>
     </div>
@@ -100,7 +103,7 @@
         </button>
       </CommonTooltip>
 
-      <div class="group relative">
+      <div class="group relative hidden lg:block">
         <button @click.stop="isSettingsOpen = true"
           class="header-trigger-btn action-btn settings-btn w-9 h-9 md:w-11 md:h-11 rounded-full items-center justify-center transition-all duration-300 flex"
           :class="{ 'shadow-none': isDark }"
@@ -131,7 +134,7 @@
         </div>
       </div>
 
-      <div class="group relative flex items-center gap-2 md:gap-4 p-1 cursor-pointer z-[100000]"
+      <div class="group relative hidden lg:flex items-center gap-2 md:gap-4 p-1 cursor-pointer z-[100000]"
         @click.stop="isProfileOpen = true" :class="currentLang === 'ar' ? 'mr-1 md:mr-3' : 'ml-1 md:ml-3'">
         <div class="header-profile-text-container text-right hidden lg:block" :class="currentLang === 'ar' ? 'text-left' : 'text-right'">
           <div class="font-medium text-[15px] leading-tight transition-colors duration-300"
@@ -549,6 +552,20 @@ const navItems = [
     to: '/appointment',
     icon: '/images/icons/calendar.svg',
     activeIcon: '/images/icons/calendar.svg'
+  },
+  {
+    label: 'Profile',
+    labelAr: 'الملف الشخصي',
+    to: '/profile',
+    icon: '/images/icons/settings.svg',
+    activeIcon: '/images/icons/settings-dark.svg'
+  },
+  {
+    label: 'Settings',
+    labelAr: 'الإعدادات',
+    action: 'settings',
+    icon: '/images/icons/settings.svg',
+    activeIcon: '/images/icons/settings-dark.svg'
   },
 ]
 
