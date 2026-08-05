@@ -1,10 +1,10 @@
 <template>
     <!-- Root container with dynamic key for animation and height limits -->
     <div :key="type"
-        class="relative z-10 mt-6 w-full overflow-auto rounded-2xl  transition-all duration-500 animate-expand 2xl:max-h-92.5 max-h-62.5"
+        class="relative z-10 mt-6 overflow-x-auto w-full no-scrollbar rounded-2xl transition-all duration-500 animate-expand"
         :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
-        <table class="w-full text-left rtl:text-right border-collapse min-w-[1000px]">
+        <table class="w-full text-left rtl:text-right border-collapse min-w-[1000px] table-fixed">
             <!-- Sticky Header -->
             <thead class="sticky top-0 z-20">
                 <tr :class="[config.headerBg, 'text-white transition-colors duration-500']">

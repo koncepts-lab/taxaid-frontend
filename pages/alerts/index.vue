@@ -28,23 +28,13 @@
                             @chat="openModal('chat', $event)"
                         />
 
-                        <!-- Load More -->
-                        <div v-if="meta.current_page < meta.last_page" class="flex justify-center mt-6">
-                            <button
-                                @click="loadMore()"
-                                :disabled="loadingMore"
-                                class="px-8 py-3 rounded-xl bg-[#008864] hover:bg-[#006b4f] text-white text-sm font-normal transition-all disabled:opacity-60 flex items-center gap-2">
-                                <span v-if="loadingMore"
-                                    class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                                {{ loadingMore
-                                    ? (currentLang === 'ar' ? 'جاري التحميل...' : 'Loading...')
-                                    : (currentLang === 'ar' ? 'تحميل المزيد' : 'Load More')
-                                }}
-                                <span v-if="!loadingMore" class="text-white/60 text-xs">
-                                    ({{ alerts.length }} / {{ meta.total }})
-                                </span>
-                            </button>
-                        </div>
+                        <!-- Pagination -->
+                        <CommonPaginationBar 
+                            v-if="meta.last_page > 1" 
+                            :meta="meta" 
+                            :loading="loading" 
+                            @page-change="fetchAlerts(null, null, $event)" 
+                        />
                     </template>
                 </div>
             </div>
