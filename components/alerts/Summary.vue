@@ -1,7 +1,7 @@
 <template>
     <!-- Root container with dynamic key for animation and height limits -->
     <div :key="type"
-        class="relative z-10 mt-6 overflow-x-auto w-full no-scrollbar rounded-2xl transition-all duration-500"
+        class="relative z-10 mt-6 overflow-x-auto w-full max-w-full custom-scrollbar rounded-2xl transition-all duration-500"
         :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
         <table class="w-full text-left rtl:text-right border-collapse min-w-[1000px] table-fixed">
@@ -9,11 +9,11 @@
             <thead class="sticky top-0 z-20">
                 <tr :class="[config.headerBg, 'text-white transition-colors duration-500']">
                     <th class="py-4 px-6 font-normal text-base w-16"></th>
-                    <th class="py-2 px-4 font-normal text-base">{{ t.module }}</th>
+                    <th class="py-2 px-4 font-normal text-base w-32">{{ t.module }}</th>
                     <th class="py-4 px-4 font-normal text-base">{{ t.title }}</th>
-                    <th class="py-4 px-4 font-normal text-base">{{ t.date }}</th>
-                    <th class="py-4 px-4 font-normal text-base">{{ t.status }}</th>
-                    <th class="py-4 px-4 font-normal text-base">{{ t.actions }}</th>
+                    <th class="py-4 px-4 font-normal text-base w-32">{{ t.date }}</th>
+                    <th class="py-4 px-4 font-normal text-base w-48">{{ t.status }}</th>
+                    <th class="py-4 px-4 font-normal text-base w-80">{{ t.actions }}</th>
                 </tr>
             </thead>
 
@@ -179,17 +179,27 @@ const getStatusStyles = (status) => {
 </script>
 
 <style scoped>
-::-webkit-scrollbar {
+.custom-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
 
-::-webkit-scrollbar-thumb {
+.custom-scrollbar::-webkit-scrollbar-thumb {
     background: rgba(128, 128, 128, 0.3);
     border-radius: 10px;
 }
 
-::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
+}
+
+@media (min-width: 1024px) {
+    .custom-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .custom-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
 }
 </style>
