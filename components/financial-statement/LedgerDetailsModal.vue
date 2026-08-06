@@ -2,7 +2,7 @@
     <Teleport to="body">
         <div v-if="isOpen"
             class="fixed inset-0 z-[10001] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div class="w-screen md:max-w-6xl md:max-h-[78vh] max-h-[78vh] rounded-xl shadow-2xl overflow-hidden flex flex-col"
+            <div class="w-screen md:max-w-6xl md:max-h-[78vh] max-h-[78vh] rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar shadow-2xl overflow-hidden flex flex-col"
                 :class="isDark ? 'bg-[#002e26] border border-white/10' : 'bg-white'">
 
                 <!-- Header -->

@@ -1,6 +1,7 @@
 <template>
+    <Teleport to="body">
     <Transition name="modal">
-        <div v-if="modelValue" class="fixed inset-0 z-[1001] flex items-center justify-center p-4">
+        <div v-if="modelValue" class="fixed inset-0 z-[1200] flex items-center justify-center p-4">
             <!-- Backdrop -->
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="$emit('update:modelValue', false)"></div>
             
@@ -92,9 +93,9 @@
                         </div>
 
                         <!-- Date & Time Row -->
-                        <div class="flex items-center gap-3">
+                        <div class="flex flex-col md:flex-row md:items-center gap-3">
                             <!-- Date Picker -->
-                            <div class="relative flex-1">
+                            <div class="relative w-full md:flex-1">
                                 <button @click="toggleDropdown('calendar')"
                                     class="w-full pl-4 pr-10 h-[44px] rounded-[10px] border flex items-center justify-between transition-all cursor-pointer font-normal"
                                     :class="isDark 
@@ -217,6 +218,7 @@
             </div>
         </div>
     </Transition>
+    </Teleport>
 </template>
 
 <script setup>

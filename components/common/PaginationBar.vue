@@ -1,19 +1,19 @@
 <template>
-  <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 mt-2">
-    <span class="text-sm text-gray-500">
+  <div class="px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row items-center justify-between gap-3 border-t border-gray-100 mt-2">
+    <span class="text-xs md:text-sm text-gray-500 text-center md:text-left">
       Showing {{ pageStart }}–{{ pageEnd }} of {{ meta.total }} results
     </span>
 
-    <div class="flex items-center gap-1.5">
+    <div class="flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
       <button @click="goToPage(meta.current_page - 1)"
         :disabled="meta.current_page <= 1 || loading"
-        class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+        class="px-2 md:px-3 py-1 md:py-1.5 rounded-lg border border-gray-200 text-xs md:text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
         Previous
       </button>
 
       <template v-for="p in visiblePages" :key="p">
         <span v-if="p === '...'"
-          class="w-8 h-8 flex items-center justify-center text-sm text-gray-400 select-none">
+          class="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-xs md:text-sm text-gray-400 select-none">
           &hellip;
         </span>
         <button v-else
@@ -21,22 +21,24 @@
           :class="p === meta.current_page
             ? 'bg-[#00896F] text-white border-[#00896F]'
             : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
-          class="w-8 h-8 flex items-center justify-center rounded-lg border text-sm font-medium transition-all">
+          class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg border text-xs md:text-sm font-medium transition-all">
           {{ p }}
         </button>
       </template>
 
       <button @click="goToPage(meta.current_page + 1)"
         :disabled="meta.current_page >= meta.last_page || loading"
-        class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+        class="px-2 md:px-3 py-1 md:py-1.5 rounded-lg border border-gray-200 text-xs md:text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
         Next
       </button>
 
-      <span class="ml-3 text-sm text-gray-500 whitespace-nowrap">Rows per page:</span>
-      <select v-model="localPerPage" @change="$emit('per-page-change', localPerPage)"
-        class="border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white text-gray-700 focus:ring-1 focus:ring-[#00896F] outline-none appearance-none">
-        <option v-for="opt in perPageOptions" :key="opt" :value="opt">{{ opt }}</option>
-      </select>
+      <div class="flex items-center gap-2 mt-2 md:mt-0 w-full md:w-auto justify-center md:justify-start">
+        <span class="text-xs md:text-sm text-gray-500 whitespace-nowrap">Rows per page:</span>
+        <select v-model="localPerPage" @change="$emit('per-page-change', localPerPage)"
+          class="border border-gray-200 rounded-lg px-2 py-1 md:py-1.5 text-xs md:text-sm bg-white text-gray-700 focus:ring-1 focus:ring-[#00896F] outline-none appearance-none">
+          <option v-for="opt in perPageOptions" :key="opt" :value="opt">{{ opt }}</option>
+        </select>
+      </div>
     </div>
   </div>
 </template>

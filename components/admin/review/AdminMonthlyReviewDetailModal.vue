@@ -1,9 +1,9 @@
 <template>
   <Transition name="modal">
-    <div v-if="modelValue" class="fixed inset-0 z-[1010] flex items-center justify-center p-4">
+    <div v-if="modelValue" class="fixed inset-0 z-[1010] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4">
       <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="$emit('update:modelValue', false)"></div>
 
-      <div class="relative w-full max-w-[680px] bg-white rounded-[24px] shadow-2xl overflow-hidden flex flex-col max-h-[78vh]" @click.stop>
+      <div class="relative w-full max-w-[680px] bg-white rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar shadow-2xl overflow-hidden flex flex-col max-h-[78vh]" @click.stop>
         <!-- Header -->
         <div class="flex items-start justify-between px-8 pt-8 pb-4 flex-shrink-0">
           <div>
