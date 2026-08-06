@@ -9,19 +9,21 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="flex items-center gap-3">
+                <div class="flex flex-col md:flex-row md:items-center gap-3 w-full lg:w-auto">
                     <!-- Search Bar -->
-                    <div class="relative">
+                    <div class="relative w-full">
                         <input type="text"
                             v-model="searchQuery"
                             :placeholder="currentLang === 'ar' ? 'بحث في المواعيد...' : 'Search Appointments...'"
-                            class="pl-6 pr-12 h-[40px] rounded-[10px] border border-[#04C18F] focus:outline-none focus:ring-1 focus:ring-[#04C18F]/30 transition-all w-[346px] max-md:w-full"
+                            class="pl-6 pr-12 h-[40px] rounded-[10px] border border-[#04C18F] focus:outline-none focus:ring-1 focus:ring-[#04C18F]/30 transition-all w-full md:w-[346px]"
                             :class="isDark ? 'bg-[#002E26] text-white placeholder:text-white/40' : 'bg-white text-[#111111]/60 placeholder:text-[#111111]/40'"
                         />
                         <svg class="w-6 h-6 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" :class="isDark ? 'text-white/40' : 'text-[#111111]/40'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
+
+                    <div class="flex items-center gap-3">
 
                     <!-- Reload Button -->
                     <button
@@ -40,6 +42,7 @@
                         </svg>
                         <span class="text-sm">{{ currentLang === 'ar' ? 'جدولة موعد' : 'Schedule Appointment' }}</span>
                     </button>
+                </div>
                 </div>
             </div>
         </div>

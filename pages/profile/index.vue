@@ -1,6 +1,6 @@
 <template>
   <NuxtLayout name="dashboard">
-    <div class="flex-1 p-8 space-y-6">
+    <div class="flex-1 p-0 md:p-8 space-y-6">
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-24 text-gray-400 text-sm">Loading profile...</div>
 
@@ -12,7 +12,7 @@
    
 
     <!-- Page Header -->
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0 mb-6">
       <div>
         <h1 class="text-[26px] font-semibold text-[#004D40] mb-1">Company Profile</h1>
         <p class="text-[15px] text-gray-500">Manage Company Information and details</p>
@@ -72,7 +72,7 @@
           <p class="text-white/80 text-sm mb-6">{{ profile.companyName }}</p>
         </div>
         
-        <div class="flex gap-12">
+        <div class="flex flex-col md:flex-row gap-3 md:gap-12">
           <div>
             <p class="text-[#00FFB2] text-xs mb-1">EIN</p>
             <p class="text-sm text-white/90">{{ profile.ein }}</p>
@@ -227,7 +227,7 @@
             
             <div class="flex-1 py-1">
               <p class="text-sm font-medium text-gray-900 mb-1">{{ profile.permanentAddress.street }}</p>
-              <p class="text-sm text-gray-600">{{ profile.permanentAddress.city }}, {{ profile.permanentAddress.state }} {{ profile.permanentAddress.zip }}</p>
+              <p class="text-sm text-gray-600">{{ profile.permanentAddress.city }} {{ profile.permanentAddress.state }} {{ profile.permanentAddress.zip }}</p>
             </div>
           </div>
 
@@ -242,8 +242,8 @@
                 <input v-model="profile.permanentAddress.street" class="w-full pl-9 h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
               </div>
             </div>
-            <div class="flex gap-4">
-              <div class="flex-1">
+            <div class="flex flex-col md:flex-row gap-4">
+              <div class="w-full md:flex-1">
                 <label class="block text-xs text-gray-700 mb-1">City</label>
                 <div class="relative">
                   <input v-model="profile.permanentAddress.city" placeholder="City" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" />
@@ -252,7 +252,7 @@
                   </span>
                 </div>
               </div>
-              <div class="w-1/3">
+              <div class="w-full md:w-1/3">
                 <label class="block text-xs text-gray-700 mb-1">State</label>
                 <div class="relative">
                   <input v-model="profile.permanentAddress.state" placeholder="State" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" />
@@ -261,7 +261,7 @@
                   </span>
                 </div>
               </div>
-              <div class="w-1/3">
+              <div class="w-full md:w-1/3">
                 <label class="block text-xs text-gray-700 mb-1">Z!P Code</label>
                 <input v-model="profile.permanentAddress.zip" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
               </div>
@@ -309,8 +309,8 @@
                     <input v-model="addr.street" class="w-full pl-9 h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
                   </div>
                 </div>
-                <div class="flex gap-4">
-                  <div class="flex-1">
+                <div class="flex flex-col md:flex-row gap-4">
+                  <div class="w-full md:flex-1">
                     <label class="block text-xs text-gray-700 mb-1">City</label>
                     <div class="relative">
                       <input v-model="addr.city" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" />
@@ -319,7 +319,7 @@
                       </span>
                     </div>
                   </div>
-                  <div class="w-1/3">
+                  <div class="w-full md:w-1/3">
                     <label class="block text-xs text-gray-700 mb-1">State</label>
                     <div class="relative">
                       <input v-model="addr.state" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" />
@@ -328,7 +328,7 @@
                       </span>
                     </div>
                   </div>
-                  <div class="w-1/3">
+                  <div class="w-full md:w-1/3">
                     <label class="block text-xs text-gray-700 mb-1">ZIP Code</label>
                     <input v-model="addr.zip" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
                   </div>
@@ -354,7 +354,7 @@
         </button>
       </div>
       <div class="space-y-3">
-        <div v-for="(entity, index) in profile.relatedEntities" :key="index" class="bg-[#EBFAF680] border border-[#E9F3F0] rounded-xl p-4 flex items-center justify-between gap-4 transition-all">
+        <div v-for="(entity, index) in profile.relatedEntities" :key="index" class="bg-[#EBFAF680] border border-[#E9F3F0] rounded-xl p-4 flex items-center justify-between gap-4 transition-all" style="word-wrap: anywhere;">
           <div class="flex items-center gap-4">
             <div class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" /></svg>
@@ -386,7 +386,7 @@
         </button>
       </div>
       <div class="space-y-3">
-        <div v-for="(contact, index) in profile.keyContacts" :key="index" class="bg-[#EBFAF680] border border-[#E9F3F0] rounded-xl p-4 flex items-center justify-between gap-4 transition-all">
+        <div v-for="(contact, index) in profile.keyContacts" :key="index" class="bg-[#EBFAF680] border border-[#E9F3F0] rounded-xl p-4 flex items-center justify-between gap-4 transition-all" style="word-wrap: anywhere;">
           <div class="flex items-center gap-4">
             <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0" style="background: linear-gradient(180deg, #013E32 0%, #007760 100%);">
                {{ profile.firstName?.substring(0, 2).toUpperCase() || 'NA' }}

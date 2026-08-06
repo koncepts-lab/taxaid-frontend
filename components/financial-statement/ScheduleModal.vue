@@ -8,7 +8,7 @@
                 <!-- Main Panel -->
                 <div class="w-full bg-white flex flex-col transition-all duration-500 shadow-2xl
                  max-h-[78vh] rounded-t-4xl 
-                 sm:h-auto sm:max-w-6xl sm:max-h-[78vh] sm:min-h-[40vh] sm:rounded-xl"
+                 sm:h-auto sm:max-w-6xl sm:max-h-[78vh] sm:min-h-[40vh] sm:rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar"
                     :class="[isDark ? 'bg-[#002e26] border-t sm:border border-white/10' : 'bg-white border-none']">
                     <!-- Mobile Drag Handle (Visual only) -->
                     <div class="sm:hidden flex justify-center pt-3 pb-1 shrink-0">

@@ -73,12 +73,12 @@ const confirm = () => {
 </script>
 
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+  <div v-if="isOpen" class="fixed inset-0 z-[100] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4">
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="close"></div>
 
     <!-- Modal Content -->
-    <div class="relative w-full max-w-[1000px] bg-white rounded-xl shadow-xl overflow-hidden flex flex-col"
+    <div class="relative w-full max-w-[1000px] bg-white rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar shadow-xl overflow-hidden flex flex-col"
          :class="isDark ? 'bg-[#013E32] text-white border border-[#00B794]/30' : 'bg-white text-gray-900 border border-gray-200'">
       
       <!-- Header -->

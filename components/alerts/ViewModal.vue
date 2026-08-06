@@ -2,10 +2,10 @@
     <Teleport to="body">
         <Transition name="fade">
             <div v-if="isOpen"
-                class="fixed inset-0 z-[1000] flex items-center justify-center p-3 bg-black/60 backdrop-blur-sm"
+                class="fixed inset-0 z-[1000] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-3 bg-black/60 backdrop-blur-sm"
                 :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="$emit('close')">
 
-                <div class="w-full max-w-xl transition-all duration-300 border rounded-2xl p-6"
+                <div class="w-full max-w-xl transition-all duration-300 border rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar p-6"
                     :class="isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white'">
 
                     <div class="flex justify-between items-start mb-8">
