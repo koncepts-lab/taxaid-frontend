@@ -60,6 +60,24 @@ export function useTicketing() {
     return res.data ?? res
   }
 
+  async function downloadTicketAttachment(id: number | string, fileName: string, isReview = false): Promise<void> {
+    const path = isReview ? `/admin/tickets/review-attachments/${id}/download` : `/admin/tickets/attachments/${id}/download`
+    const blob = await apiFetch(path, { responseType: 'blob' }) as Blob
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  // Caller must URL.revokeObjectURL() when done (e.g. on tab close/modal close).
+  async function previewTicketAttachmentUrl(id: number | string, isReview = false): Promise<string> {
+    const path = isReview ? `/admin/tickets/review-attachments/${id}/preview` : `/admin/tickets/attachments/${id}/preview`
+    const blob = await apiFetch(path, { responseType: 'blob' }) as Blob
+    return URL.createObjectURL(blob)
+  }
+
   async function getMyTickets(filter?: Record<string, any>) {
     const res: any = await apiFetch('/admin/tickets', { params: filter })
     return unwrapPage(res)
@@ -184,6 +202,7 @@ export function useTicketing() {
   return {
     getTicketMeta, getTicket, getNotifications, markNotificationRead,
     searchClientUsers, createTicket, getMyTickets, getMyTicketStats,
+    downloadTicketAttachment, previewTicketAttachmentUrl,
     getTeamLeadDashboard, getTeamLeadTickets, reviewAsTeamLead,
     getMyTeamMembers, addTeamMember, removeTeamMember, searchTeamMemberCandidates,
     getTechDashboard, getAllTicketsForTech, reviewAsTech, progressTicket,

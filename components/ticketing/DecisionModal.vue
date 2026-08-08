@@ -174,8 +174,19 @@
                             </div>
                             <p v-if="!ticket?.attachments?.length" class="text-sm text-black/50 ">No Attachments</p>
                             <ul v-else class="space-y-1">
-                                <li v-for="att in ticket.attachments" :key="att.id" class="text-sm text-[#008169]">
-                                    <a :href="att.file_path" target="_blank" rel="noopener">{{ att.file_name }}</a>
+                                <li v-for="att in ticket.attachments" :key="att.id" class="text-sm text-[#008169] flex items-center gap-3">
+                                    <span>{{ att.file_name }}</span>
+                                    <button type="button" @click="previewAttachment(att)" title="View" class="text-black/50 hover:text-black">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+                                            <circle cx="12" cy="12" r="3" />
+                                        </svg>
+                                    </button>
+                                    <button type="button" @click="downloadAttachment(att)" title="Download" class="text-black/50 hover:text-black">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                                        </svg>
+                                    </button>
                                 </li>
                             </ul>
                         </div>
@@ -302,10 +313,43 @@
             </div>
         </Transition>
     </Teleport>
+
+    <!-- Attachment inline preview (view only, not download) -->
+    <Teleport to="body">
+        <Transition name="modal-fade">
+            <div v-if="previewOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                @click.self="closePreview">
+                <div class="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+                    <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                        <h3 class="text-base font-semibold text-gray-900 truncate">
+                            {{ previewLabel }}
+                        </h3>
+                        <button @click="closePreview" class="text-gray-900 hover:text-gray-600 transition-colors shrink-0">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex-1 min-h-0 bg-gray-50">
+                        <div v-if="previewLoading" class="h-full flex items-center justify-center text-sm text-gray-400">
+                            Loading attachment...
+                        </div>
+                        <div v-else-if="previewError" class="h-full flex items-center justify-center text-sm text-red-500 px-6 text-center">
+                            {{ previewError }}
+                        </div>
+                        <iframe v-else-if="previewUrl" :src="previewUrl" class="w-full h-full border-0" />
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
 </template>
 
 <script setup>
 import { ref, computed, reactive, watch } from 'vue'
+import { useTicketing } from '~/composables/admin/useTicketing'
+
+const { downloadTicketAttachment, previewTicketAttachmentUrl } = useTicketing()
 
 const props = defineProps({
     isOpen: Boolean,
@@ -360,6 +404,38 @@ const groupedActivities = computed(() => {
     })
     return grouped
 })
+
+const previewOpen    = ref(false)
+const previewLoading = ref(false)
+const previewError   = ref('')
+const previewUrl     = ref('')
+const previewLabel   = ref('')
+
+async function previewAttachment(att) {
+    previewOpen.value    = true
+    previewLoading.value = true
+    previewError.value   = ''
+    previewLabel.value   = att.file_name
+    try {
+        previewUrl.value = await previewTicketAttachmentUrl(att.id)
+    } catch (err) {
+        previewError.value = err?.data?.message ?? err?.message ?? 'Failed to load attachment'
+    } finally {
+        previewLoading.value = false
+    }
+}
+
+function closePreview() {
+    previewOpen.value = false
+    if (previewUrl.value) {
+        URL.revokeObjectURL(previewUrl.value)
+        previewUrl.value = ''
+    }
+}
+
+async function downloadAttachment(att) {
+    await downloadTicketAttachment(att.id, att.file_name)
+}
 
 const getScoreClasses = (score) => {
     if (score === undefined || score === null) return ''
@@ -439,4 +515,7 @@ input[type=range]::-webkit-slider-thumb {
     border: 2px solid #00896F;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+.modal-fade-enter-active, .modal-fade-leave-active { transition: opacity 0.2s ease; }
+.modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }
 </style>
