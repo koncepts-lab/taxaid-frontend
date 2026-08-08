@@ -97,7 +97,7 @@ onMounted(async () => {
 })
 
 function goBack() {
-  navigateTo('/review-manager/dashboard?tab=Consultant workload')
+  navigateTo('/admin/review-team/manager/dashboard?tab=Consultant workload')
 }
 </script>
 

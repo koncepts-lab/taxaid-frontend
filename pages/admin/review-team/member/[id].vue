@@ -11,7 +11,7 @@
         <!-- Header -->
         <div class="mb-8 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <NuxtLink to="/review-team-member/dashboard?tab=client"
+            <NuxtLink to="/admin/review-team/member/dashboard?tab=client"
                       class="transition-colors"
                       :class="isDark ? 'text-[#10FFD4] hover:text-[#10FFD4]/80' : 'text-[#004D40] hover:text-[#00332A]'">
               <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

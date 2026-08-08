@@ -13,8 +13,6 @@ const VALID_ADMIN_PATHS = new Set([
   '/admin/implementation/project',
   '/admin/payments',
   '/admin/notifications',
-  '/admin/activity-log',
-  '/admin/Review-Dashboard',
   '/admin/ticketing',
   '/admin/ticketing/ticketing-dashboard',
 ])
@@ -25,7 +23,7 @@ export default defineEventHandler((event) => {
   if (!path.startsWith('/admin')) return
   if (!getCookie(event, 'admin_token')) return // anonymous — let it 404 normally, reveal nothing
 
-  const isValid = VALID_ADMIN_PATHS.has(path) || path.startsWith('/admin/Review-Dashboard/')
+  const isValid = VALID_ADMIN_PATHS.has(path) || path.startsWith('/admin/review-team/')
 
   if (!isValid) {
     return sendRedirect(event, '/ad-aqnz-pro-auth-78z46', 302)

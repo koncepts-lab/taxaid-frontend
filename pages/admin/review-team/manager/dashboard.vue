@@ -322,7 +322,7 @@
                 <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientRequest }}</td>
                 <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientAnalysis }}</td>
                 <td class="py-6 px-8">
-                  <button @click="navigateTo(`/review-manager/consultant-workload-details?admin_id=${item.id}`)"
+                  <button @click="navigateTo(`/admin/review-team/manager/consultant-workload-details?admin_id=${item.id}`)"
                           class="px-4 py-2 rounded-[8px] bg-[#82FFE0] text-[#0A0A0A] text-[13px] font-medium hover:bg-[#6eddc5] transition-colors cursor-pointer"
                           :class="isDark ? 'bg-[#1b5e50] text-white' : ''">
                     View Details
@@ -678,7 +678,7 @@ function getProgressColor(value, total) {
 }
 
 function navigateToActivityLog() {
-  navigateTo('/review-manager/activity-log')
+  navigateTo('/admin/review-team/manager/activity-log')
 }
 </script>
 

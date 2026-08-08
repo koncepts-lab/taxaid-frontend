@@ -87,7 +87,7 @@ const SYSTEM_CARDS = computed(() => {
         ? 'Log daily activity, manage client appointments, and track review progress.'
         : 'Manage team workload, client sync status, and assignment across consultants.',
       buttonLabel: 'Access Review Dashboard',
-      route: role === 'Review Consultant' ? '/review-team-member/dashboard' : '/review-manager/dashboard'
+      route: role === 'Review Consultant' ? '/admin/review-team/member/dashboard' : '/admin/review-team/manager/dashboard'
     },
     'Revenue Partnership Dashboard': {
       icon: '/images/icons/Revenue-Partnership.svg', title: 'Revenue Partnership Dashboard',

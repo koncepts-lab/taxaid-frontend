@@ -8,8 +8,8 @@ const OWN_DASHBOARD_ROUTES: Record<string, string> = {
   'Payments Admin': '/admin/payments',
   'Implementation Manager': '/admin/implementation/manager',
   'Implementation Consultant': '/admin/implementation/member',
-  'Review Manager': '/review-manager/dashboard',
-  'Review Consultant': '/review-team-member/dashboard',
+  'Review Manager': '/admin/review-team/manager/dashboard',
+  'Review Consultant': '/admin/review-team/member/dashboard',
   'Partner Admin': '/admin/revenue-partner/admin',
   'Partner Account': '/admin/revenue-partner/accounts',
 }

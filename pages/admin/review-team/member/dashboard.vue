@@ -620,7 +620,7 @@
                           }">{{ s.status }}</span>
                   </td>
                   <td class="py-4 px-6 text-right">
-                    <NuxtLink :to="`/review-team-member/${s.tenantId}`"
+                    <NuxtLink :to="`/admin/review-team/member/${s.tenantId}`"
                               class="flex items-center justify-end gap-1 text-[13px] font-medium transition-colors hover:opacity-80"
                               :class="isDark ? 'text-[#10FFD4]' : 'text-[#00896F]'">
                       Project Details
@@ -1072,7 +1072,7 @@ function navigateTab(tab) {
 }
 
 function navigateToActivityLog() {
-  navigateTo('/review-team-member/activity-log')
+  navigateTo('/admin/review-team/member/activity-log')
 }
 
 watch(activeMainTab, async (tab) => {

@@ -218,7 +218,7 @@ const formattedDate = computed(() => {
 })
 
 function goBack() {
-  navigateTo('/review-manager/dashboard')
+  navigateTo('/admin/review-team/manager/dashboard')
 }
 </script>
 
