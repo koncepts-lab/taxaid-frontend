@@ -1,11 +1,11 @@
 <template>
     <Transition name="modal">
-        <div v-if="modelValue" class="fixed inset-0 z-[1001] flex items-center justify-center p-4">
+        <div v-if="modelValue" class="fixed inset-0 z-[1001] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4">
             <!-- Backdrop -->
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="$emit('update:modelValue', false)"></div>
 
             <!-- Modal Card -->
-            <div class="relative w-full max-w-[560px] rounded-[24px] shadow-2xl overflow-hidden transition-all"
+            <div class="relative w-full max-w-[560px] rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar shadow-2xl overflow-hidden transition-all"
                 :class="isDark ? 'bg-[#002E26] border border-[#03D8B0]/20' : 'bg-white border border-gray-100'"
                 @click.stop>
 

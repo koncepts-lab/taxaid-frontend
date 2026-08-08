@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[78vh] overflow-y-auto" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+    <div class="fixed inset-0 z-[99999] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-black/50 backdrop-blur-sm">
+      <div class="bg-white rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar shadow-2xl w-full max-w-6xl max-h-[78vh] overflow-y-auto" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
       <!-- Header & Summary -->
       <div class="sticky top-0 z-20 bg-white border-b shadow-sm">

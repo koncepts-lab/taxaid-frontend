@@ -1,10 +1,10 @@
 <template>
     <Teleport to="body" v-if="isOpen">
         <Transition name="fade" appear>
-            <div class="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            <div class="fixed inset-0 z-[1200] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-black/60 backdrop-blur-sm"
                 :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="$emit('close')">
 
-                <div class="w-full max-w-md transition-all duration-300 transform scale-100 shadow-2xl relative text-center rounded-2xl p-8"
+                <div class="w-full max-w-md transition-all duration-300 transform scale-100 shadow-2xl relative text-center rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar p-8"
                     :class="isDark ? 'bg-[#111111] border border-white/10' : 'bg-white'">
 
                     <!-- Close Button -->

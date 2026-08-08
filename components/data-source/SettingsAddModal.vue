@@ -5,7 +5,7 @@
                 class="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
                 :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
-                <div class="w-full max-w-xl transition-all duration-300 shadow-2xl rounded-xl p-6"
+                <div class="w-full max-w-xl transition-all duration-300 shadow-2xl rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar p-6"
                     :class="isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white'">
 
                     <div class="flex justify-between items-start mb-8">

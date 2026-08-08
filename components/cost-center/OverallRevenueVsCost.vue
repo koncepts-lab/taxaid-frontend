@@ -224,13 +224,14 @@ const chartOptions = computed(() => ({
       borderRadiusApplication: 'end',
       dataLabels: {
         position: 'top',
+        orientation: 'vertical'
       },
     }
   },
   colors: ['#FB7554', '#03D8B0'],
   dataLabels: {
     enabled: true,
-    offsetY: -35,
+    offsetY: -45,
     style: {
       fontSize: '11px',
       colors: ['#FB7554', '#03D8B0']

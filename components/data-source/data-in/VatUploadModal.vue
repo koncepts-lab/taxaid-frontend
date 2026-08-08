@@ -2,7 +2,7 @@
     <Teleport to="body">
         <Transition name="fade">
             <div v-if="isOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                <div class="bg-white rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl transition-all max-h-[78vh] overflow-y-auto">
+                <div class="bg-white rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar w-full max-w-xl overflow-hidden shadow-2xl transition-all max-h-[78vh] overflow-y-auto">
                 <!-- Header -->
                 <div class="flex items-center justify-between p-6 pb-2">
                     <h3 class="text-xl font-semibold text-gray-900">

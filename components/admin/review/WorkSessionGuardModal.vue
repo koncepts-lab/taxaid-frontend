@@ -1,12 +1,12 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div v-if="show" class="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4">
         <!-- Backdrop -->
         <div class="absolute inset-0 bg-black/40" @click="$emit('dismiss')" />
 
         <!-- Modal card -->
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col items-center gap-4">
+        <div class="relative bg-white rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar shadow-2xl w-full max-w-sm p-6 flex flex-col items-center gap-4">
           <!-- Icon -->
           <div class="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center">
             <svg class="w-7 h-7 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
