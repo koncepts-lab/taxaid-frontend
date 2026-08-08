@@ -1,6 +1,6 @@
 <template>
     <NuxtLayout name="admin">
-        <CommonParticleBackground />
+        <!-- <CommonParticleBackground /> -->
         <AdminSelectDashboard />
     </NuxtLayout>
 </template>

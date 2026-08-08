@@ -1,17 +1,53 @@
 <template>
   <NuxtLayout name="admin">
     <div class="p-4 md:p-8 max-w-[100vw] overflow-x-hidden">
-      <CommonNotificationsList :groups="notificationGroups" :loading="loading" />
+      <CommonNotificationsList
+        :groups="notificationGroups"
+        :tabs="tabs"
+        :active-tab="activeTab"
+        :loading="loading"
+        @update:active-tab="onTabChange"
+      />
     </div>
   </NuxtLayout>
 </template>
 
 <script setup>
-// TODO: NEED Alerts — no generic admin notifications API exists yet (Payments Admin has its own
-// real Alerts tab under /admin/payments; this page is the shared landing for every other admin
-// role until each gets real backend data). Currently always empty, not mock — nothing to show yet.
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+
+const { fetchNotifications, toGroups } = useNotifications()
 
 const loading = ref(false)
 const notificationGroups = ref([])
+const activeTab = ref('All')
+const tabs = ref([
+  { name: 'All', count: 0 },
+  { name: 'Ticket', count: 0 },
+  { name: 'Default', count: 0 },
+])
+
+async function load() {
+  loading.value = true
+  try {
+    const res = await fetchNotifications({ mode: 'page', per_page: 50 })
+    const items = res?.data ?? []
+    notificationGroups.value = toGroups(items)
+
+    const ticketCount = items.filter(i => i.category === 'ticket').length
+    const defaultCount = items.filter(i => i.category === 'default').length
+    tabs.value = [
+      { name: 'All', count: items.length },
+      { name: 'Ticket', count: ticketCount },
+      { name: 'Default', count: defaultCount },
+    ]
+  } finally {
+    loading.value = false
+  }
+}
+
+function onTabChange(name) {
+  activeTab.value = name
+}
+
+onMounted(load)
 </script>

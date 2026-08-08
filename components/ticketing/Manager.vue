@@ -1,4 +1,7 @@
 <template>
+  <!-- TODO: currently not used — no role maps to this screen since the ticketing pipeline
+       restructure (2026-08-06). See .localdata/claude/work/ticketing/integration/ui-backend-audit.md
+       finding #1. Decide whether to delete, repurpose, or leave as-is before touching. -->
   <div class="space-y-6">
     <!-- Stat Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

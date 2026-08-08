@@ -169,17 +169,8 @@ const showPassword = ref(false)
 const loading      = ref(false)
 const loginError   = ref('')
 
-function dashboardRoute(adminUser) {
-    const role = adminUser?.role?.name
-    const dept = adminUser?.department?.name
-    if (role === 'Super Admin')                                                            return '/admin/roles'
-    if (role === 'Payments Admin')                                                         return '/admin/payments'
-    if (role === 'Implementation Manager')                                                 return '/admin/implementation/manager'
-    if (role === 'Implementation Consultant')                                              return '/admin/implementation/member'
-    if (role === 'Review Manager' && dept === 'Review')                                   return '/review-manager/dashboard'
-    if ((role === 'Team Lead' || role === 'Review Consultant') && dept === 'Review')      return '/review-team-member/dashboard'
-    return '/admin'
-}
+// Every admin role lands on the shared select-dashboard screen (components/admin/SelectDashboard.vue)
+// after login — it decides per-role what cards/directory to show, not this page.
 
 const handleLogin = async () => {
     errors.username = ''
@@ -199,9 +190,7 @@ const handleLogin = async () => {
     try {
         await login(form.username, form.password)
         console.log('Login successful! Admin data:', admin.value)
-        const targetRoute = dashboardRoute(admin.value)
-        console.log('Navigating to:', targetRoute)
-        await navigateTo(targetRoute)
+        await navigateTo('/admin')
     } catch (e) {
         console.error('Login failed:', e)
         loginError.value = e?.data?.message ?? e?.message ?? 'Invalid credentials'

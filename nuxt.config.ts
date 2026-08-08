@@ -16,7 +16,7 @@ export default defineNuxtConfig({
   css: ["~/assets/main.css"],
 
   // Register revenue-partnership components by filename only (no path prefix)
-  // so <DashboardHeader> and <DashboardFooter> continue to work everywhere
+  // so <DashboardFooter> etc continue to work everywhere unprefixed
   components: [
     { path: "~/components", pathPrefix: true },
     // { path: "~/components/common", pathPrefix: false },

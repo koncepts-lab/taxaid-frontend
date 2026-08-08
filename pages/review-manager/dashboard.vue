@@ -3,7 +3,7 @@
     
     <!-- HEADER -->
     <!-- TODO: NEED Alerts — Review Manager has no real notification data yet; points at the shared /admin/notifications page (empty for now) instead of the old /revenue-partnership/notifications, which needs an rp_token this role doesn't have. -->
-    <DashboardHeader userName="Review Manager" :userId="'Welcome, ' + (admin?.full_name ?? '')" :showChangeProfile="false" notificationsTo="/admin/notifications" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
+    <AdminDashboardHeader :userName="admin?.role?.name ?? 'Review Manager'" :userId="'Welcome, ' + (admin?.full_name ?? '')" :showChangeProfile="false" notificationsTo="/admin/notifications" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 py-8 space-y-8 overflow-y-auto" style="margin-top: -18px;">

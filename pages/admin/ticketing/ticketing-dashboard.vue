@@ -2,8 +2,8 @@
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
 
     <!-- HEADER -->
-    <DashboardHeader
-      userName="Team Member Dashboard"
+    <AdminDashboardHeader
+      :userName="admin?.role?.name ?? 'Team Member Dashboard'"
       :userId="'Welcome, ' + (admin?.full_name ?? '')"
       :showChangeProfile="true"
       :showManageAccess="true"

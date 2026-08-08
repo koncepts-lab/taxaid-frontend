@@ -3,7 +3,7 @@
     :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
 
     <!-- HEADER -->
-    <DashboardHeader role="Accounts" name="Revenue Partnership" />
+    <AdminDashboardHeader :userName="admin?.role?.name ?? 'Accounts'" :userId="'Welcome, ' + (admin?.full_name ?? '')" showChangeProfile changeProfileLink="/admin/revenue-partner/accounts" />
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 pb-[0px] pt-8 space-y-6 overflow-y-auto" style="margin-top: -18px;">
@@ -890,6 +890,7 @@ import { format } from 'date-fns'
 definePageMeta({ layout: false })
 
 const { isDark } = useTheme()
+const { admin } = useAdminAuth()
 
 const {
   overview, customers, alerts, loading,

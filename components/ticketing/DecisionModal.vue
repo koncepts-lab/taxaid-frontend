@@ -14,12 +14,12 @@
                                 class="flex items-center justify-between w-full gap-3 mb-1">
                                 <h2 class="text-xl font-normal text-black">
                                     {{
-                                        ticket?.id
+                                        ticket?.ticket_custom_id
                                     }}
                                 </h2>
                                 <span :class="getStatusClasses(ticket?.status)"
                                     class="px-3 py-1 rounded-full text-xs border border-[#008169]/10">
-                                    {{ ticket?.status || 'Manager Approved' }}
+                                    {{ ticket?.status }}
                                 </span>
                             </div>
                             <div v-else class="flex items-center justify-between w-full gap-3 mb-1">
@@ -33,7 +33,7 @@
                                 </h2>
                                 <span :class="getStatusClasses(ticket?.status)"
                                     class="px-3 py-1 rounded-full text-xs border border-[#008169]/10">
-                                    {{ ticket?.status || 'Manager Approved' }}
+                                    {{ ticket?.status }}
                                 </span>
                             </div>
                             <p v-if="role !== 'team_member'" class="text-sm text-black/50">
@@ -46,7 +46,7 @@
                             </p>
                             <div v-if="role !== 'team_member'"
                                 class="mt-4 inline-block px-4 py-1 border border-[#E1E1E1] rounded-md text-sm font-medium text-black">
-                                {{ ticket?.id || 'TKT-012' }}
+                                {{ ticket?.ticket_custom_id }}
                             </div>
                         </div>
                         <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 transition-colors">
@@ -60,6 +60,26 @@
                     <!-- Scrollable Body -->
                     <div class="flex-1 overflow-y-auto p-6 pt-0 space-y-8 no-scrollbar border-separate">
 
+                        <!-- Skeleton — shown while ticket detail is still loading, keeps height
+                             stable so the Activity & Comments cards popping in don't shift anything -->
+                        <div v-if="!ticket" class="space-y-8 animate-pulse">
+                            <div class="border-[.8px] border-[#04C18F] rounded-lg p-6 space-y-3">
+                                <div v-for="n in 6" :key="n" class="h-4 bg-gray-100 rounded" :style="{ width: n % 2 ? '70%' : '50%' }"></div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="h-5 bg-gray-100 rounded w-40"></div>
+                                <div class="rounded-lg p-5 bg-gray-50 space-y-3">
+                                    <div class="h-4 bg-gray-200 rounded w-1/3"></div>
+                                    <div class="h-4 bg-gray-200 rounded w-full"></div>
+                                </div>
+                                <div class="rounded-lg p-5 bg-gray-50 space-y-3">
+                                    <div class="h-4 bg-gray-200 rounded w-1/3"></div>
+                                    <div class="h-4 bg-gray-200 rounded w-full"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <template v-else>
                         <!-- Main Info Box -->
                         <div class="border-[.8px] border-[#04C18F] rounded-lg p-6 space-y-3"
                             :class="isDark ? 'bg-white/5' : 'bg-white'">
@@ -150,7 +170,12 @@
                                 </svg>
                                 <span>Attachments</span>
                             </div>
-                            <p class="text-sm text-black/50 ">No Attachments</p>
+                            <p v-if="!ticket?.attachments?.length" class="text-sm text-black/50 ">No Attachments</p>
+                            <ul v-else class="space-y-1">
+                                <li v-for="att in ticket.attachments" :key="att.id" class="text-sm text-[#008169]">
+                                    <a :href="att.file_path" target="_blank" rel="noopener">{{ att.file_name }}</a>
+                                </li>
+                            </ul>
                         </div>
 
                         <!-- Decision Section -->
@@ -195,19 +220,19 @@
                             <div v-if="role == 'tech_team'" class="w-full">
                                 <!-- Label -->
                                 <label class="block text-sm font-normal text-black mb-1.5">
-                                    Estimated Cost ($) *
+                                    Estimated Cost (AED) *
                                 </label>
 
                                 <!-- Input Container -->
                                 <div class="relative group">
-                                    <!-- Dollar Sign Icon -->
+                                    <!-- Currency Label -->
                                     <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <span class="text-gray-400 text-xl font-light">$</span>
+                                        <span class="text-gray-400 text-sm font-medium">AED</span>
                                     </span>
 
                                     <!-- Input Field -->
                                     <input type="text" v-model="estimatedCost" placeholder="5000"
-                                        class="w-full pl-10 pr-4 py-2.5 bg-white border border-[#04C18F80] rounded-lg text-black placeholder:text-gray-300 outline-none focus:ring-1 focus:ring-[#00BE8C] focus:border-[#00BE8C] transition-all shadow-sm" />
+                                        class="w-full pl-14 pr-4 py-2.5 bg-white border border-[#04C18F80] rounded-lg text-black placeholder:text-gray-300 outline-none focus:ring-1 focus:ring-[#00BE8C] focus:border-[#00BE8C] transition-all shadow-sm" />
                                 </div>
 
                                 <!-- Helper Text -->
@@ -215,7 +240,7 @@
                                     Enter estimated development cost including resources and time
                                 </p>
                             </div>
-                            <div class="space-y-3 border-t py-3 border-black/10">
+                            <div v-if="role !== 'tech_team'" class="space-y-3 border-t py-3 border-black/10">
                                 <label class="text-sm" :class="isDark ? 'text-white' : 'text-gray-900'">Your Decision
                                     *</label>
                                 <div class="grid gap-3 mt-3"
@@ -234,17 +259,24 @@
                                 </div>
                             </div>
                         </div>
+                        </template>
 
                     </div>
 
                     <!-- Footer -->
                     <div v-if="mode === 'review'"
-                        class="p-8 bg-gray-50/50 flex justify-end gap-5 border-t border-gray-100">
-                        <button @click="$emit('close')"
-                            class="px-4 py-2.5 bg-white border border-gray-200 text-black rounded-lg text-sm">Cancel</button>
-                        <button @click="submitDecision"
-                            class="flex items-center gap-4 px-10 py-2.5 bg-[#008169] hover:bg-[#006B56] text-white rounded-lg text-sm shadow-lg active:scale-95 font-bold">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                        class="p-8 bg-gray-50/50 border-t border-gray-100">
+                        <p v-if="error" class="text-red-600 text-sm mb-3 text-right">{{ error }}</p>
+                        <div class="flex justify-end gap-5">
+                        <button @click="$emit('close')" :disabled="submitting"
+                            class="px-4 py-2.5 bg-white border border-gray-200 text-black rounded-lg text-sm disabled:opacity-50">Cancel</button>
+                        <button @click="submitDecision" :disabled="submitting || !ticket"
+                            class="flex items-center gap-4 px-10 py-2.5 bg-[#008169] hover:bg-[#006B56] text-white rounded-lg text-sm shadow-lg active:scale-95 font-bold disabled:opacity-50">
+                            <svg v-if="submitting" width="16" height="16" viewBox="0 0 24 24" fill="none" class="animate-spin">
+                                <circle cx="12" cy="12" r="9" stroke="white" stroke-width="3" stroke-opacity="0.25"></circle>
+                                <path d="M21 12a9 9 0 0 0-9-9" stroke="white" stroke-width="3" stroke-linecap="round"></path>
+                            </svg>
+                            <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <g clip-path="url(#clip0_8633_3931)">
                                     <path
@@ -260,8 +292,9 @@
                                     </clipPath>
                                 </defs>
                             </svg>
-                            Submit
+                            {{ submitting ? 'Submitting…' : 'Submit' }}
                         </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -277,15 +310,24 @@ const props = defineProps({
     isDark: Boolean,
     ticket: Object,
     mode: { type: String, default: 'review' },
-    role: { type: String, default: 'admin' }
+    role: { type: String, default: 'admin' },
+    submitting: Boolean,
+    error: { type: String, default: '' }
 })
-watch(() => props.role, (newRole) => {
-    console.log("DEBUG ROLE:", newRole)
-}, { immediate: true })
 const emit = defineEmits(['close', 'submit'])
 
 const feasibilityScore = ref(5)
+const estimatedCost = ref('')
 const decisionData = reactive({ comment: '', status: 'approve' })
+
+watch(() => props.isOpen, (open) => {
+    if (open) {
+        feasibilityScore.value = 5
+        estimatedCost.value = ''
+        decisionData.comment = ''
+        decisionData.status = 'approve'
+    }
+})
 
 const feasibilityLabel = computed(() => {
     if (feasibilityScore.value <= 3) return 'Low Priority'
@@ -294,11 +336,11 @@ const feasibilityLabel = computed(() => {
 })
 
 const ticketMetadata = computed(() => ({
-    Client: props.ticket?.client || 'ACME Corp',
-    Issue: props.ticket?.title || '-',
-    Type: props.ticket?.type || 'Feature Suggestion',
-    Created_by: 'Mike Chen',
-    Created_on: '11/3/2025',
+    Client: props.ticket?.client_source_name || '-',
+    Issue: props.ticket?.issue || props.ticket?.title || '-',
+    Type: props.ticket?.type || '-',
+    Created_by: props.ticket?.created_by || '-',
+    Created_on: props.ticket?.created_at || '-',
     Department: props.ticket?.department || '-',
     Description: props.ticket?.description || '-'
 }))
@@ -361,7 +403,12 @@ const decisionOptions = computed(() => {
 
 const submitDecision = () => {
     if (props.mode === 'view') { emit('close'); return }
-    emit('submit', { id: props.ticket?.id, score: feasibilityScore.value, ...decisionData })
+    emit('submit', {
+        id: props.ticket?.id,
+        score: feasibilityScore.value,
+        estimatedCost: estimatedCost.value,
+        ...decisionData,
+    })
 }
 </script>
 

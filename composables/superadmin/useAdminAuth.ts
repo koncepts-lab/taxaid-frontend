@@ -1,5 +1,3 @@
-import { ref } from 'vue'
-
 interface AdminUser {
   id: number
   full_name: string
@@ -10,12 +8,15 @@ interface AdminUser {
   department: { id: number; name: string }
 }
 
-const _admin = ref<AdminUser | null>(null)
-
 export function useAdminAuth() {
   const config      = useRuntimeConfig()
   const tokenCookie = useCookie<string | null>('admin_token', { maxAge: 60 * 60 * 24 * 7 })
   const userCookie  = useCookie<string | null>('admin_user',  { maxAge: 60 * 60 * 24 * 7 })
+  // useState, not a module-level ref: a plain ref here is created once per server
+  // process and reused across every SSR request, leaking one user's session state
+  // into another's render (or into a stale null after a concurrent logout) — the
+  // cause of the "logged out on refresh" bug. useState is per-request on the server.
+  const _admin = useState<AdminUser | null>('admin_auth_user', () => null)
 
   if (!_admin.value && userCookie.value) {
     try { _admin.value = JSON.parse(userCookie.value) } catch {}
