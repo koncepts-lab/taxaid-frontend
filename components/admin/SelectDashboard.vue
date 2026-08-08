@@ -66,7 +66,7 @@ const SYSTEM_CARDS = computed(() => {
     'Admin Dashboard': {
       icon: '/images/icons/Revenue-Partnership.svg', title: 'Admin Dashboard',
       description: 'Manage system roles, access control, and client oversight within your assigned systems.',
-      buttonLabel: 'Access Admin Dashboard', route: '/admin/roles'
+      buttonLabel: 'Access Admin Dashboard', route: '/admin/management'
     },
     'Payments Dashboard': {
       icon: '/images/icons/Revenue-Partnership.svg', title: 'Payments Dashboard',

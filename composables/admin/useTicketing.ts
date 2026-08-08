@@ -139,15 +139,15 @@ export function useTicketing() {
     return res.data ?? res
   }
 
-  // Manager (Review Manager)
+  // Manager (department escalation tier, between VP and Admin)
   async function getManagerDashboard(): Promise<any> {
     const res: any = await apiFetch('/admin/manager/dashboard')
     return res.data ?? res
   }
 
-  async function getManagerTickets(filter?: Record<string, any>): Promise<any[]> {
+  async function getManagerTickets(filter?: Record<string, any>) {
     const res: any = await apiFetch('/admin/manager/tickets', { params: filter })
-    return res.data ?? res
+    return unwrapPage(res)
   }
 
   async function reviewAsManager(id: number | string, formData: FormData): Promise<any> {

@@ -4,7 +4,8 @@
 // nothing, matching auth.global.ts's existing posture for unauthenticated admin access.
 const VALID_ADMIN_PATHS = new Set([
   '/admin',
-  '/admin/roles',
+  '/admin-reset-password',
+  '/admin/management',
   '/admin/dashboard',
   '/admin/implementation',
   '/admin/implementation/manager',

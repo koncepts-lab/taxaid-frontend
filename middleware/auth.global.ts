@@ -3,7 +3,7 @@ export default defineNuxtRouteMiddleware((to) => {
   const adminToken = useCookie('admin_token')
   const rpToken    = useCookie('rp_token')
 
-  const publicPages   = ['/', '/home', '/revenue-partnership-login', '/verify-email', '/ad-aqnz-pro-auth-78z46', '/reset-password','/ticketing/ticketing-dashboard']
+  const publicPages   = ['/', '/home', '/revenue-partnership-login', '/verify-email', '/ad-aqnz-pro-auth-78z46', '/admin-reset-password', '/reset-password','/ticketing/ticketing-dashboard']
   const adminPrefixes = ['/admin', '/review-manager', '/review-team-member']
   const rpPrefixes    = ['/revenue-partnership/admin', '/revenue-partnership/accounts', '/revenue-partnership/partner', '/revenue-partnership/notifications', '/revenue-partnership/select-dashboard']
 
@@ -40,7 +40,7 @@ export default defineNuxtRouteMiddleware((to) => {
   if (isAdminPath) {
     if (!adminToken.value) throw createError({ statusCode: 404, statusMessage: 'Page Not Found', fatal: true })
 
-    if (to.path.startsWith('/admin/roles')) {
+    if (to.path.startsWith('/admin/management')) {
       try {
         const adminUser = useCookie('admin_user')
         const user = typeof adminUser.value === 'string' ? JSON.parse(adminUser.value) : adminUser.value

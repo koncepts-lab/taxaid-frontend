@@ -696,6 +696,21 @@
               {{ selectedDashboards.length }} Dashboards Selected
             </div>
           </div>
+
+          <div class="mt-6" v-if="isManagerUser">
+            <h3 class="text-[15px] font-semibold text-gray-900">Roles Under Me</h3>
+            <p class="text-gray-500 text-[13px] mt-0.5">Tickets raised by these roles route to this manager after VP approval.</p>
+            <div class="space-y-2 mt-3">
+              <label v-for="r in reportableRoles" :key="r.id"
+                :title="isLockedElsewhere(r) ? `Already assigned to ${managerName(r.reports_to_manager_id)}` : ''"
+                class="border rounded-lg p-3 flex items-center gap-3 transition-colors"
+                :class="isLockedElsewhere(r) ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed hover:bg-gray-100' : (selectedRoleIds.includes(r.id) ? 'bg-[#F0FDF4] border-[#86EFAC] cursor-pointer' : 'border-gray-200 hover:border-gray-300 bg-white cursor-pointer')">
+                <input type="checkbox" :value="r.id" v-model="selectedRoleIds" :disabled="isLockedElsewhere(r)" class="w-[18px] h-[18px] rounded border border-gray-300 bg-white accent-[#007C65] cursor-pointer shadow-sm disabled:cursor-not-allowed" />
+                <div class="flex-1 text-[14px] font-medium text-gray-900">{{ r.name }}</div>
+                <span v-if="isLockedElsewhere(r)" class="text-[12px] text-gray-500">Assigned to {{ managerName(r.reports_to_manager_id) }}</span>
+              </label>
+            </div>
+          </div>
         </div>
         <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3 bg-white">
           <button @click="showConfigureModal = false" class="px-5 py-2 rounded-md border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors">Cancel</button>
@@ -710,11 +725,17 @@
     <!-- Edit User Modal -->
     <div v-if="showEditUserModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity p-4">
       <div class="bg-white rounded-xl shadow-lg w-[600px] max-w-full overflow-hidden flex flex-col max-h-[78vh]">
-        <div class="px-6 py-5 flex items-center justify-between">
-          <h2 class="text-[19px] font-semibold text-gray-900">Edit User</h2>
-          <button @click="showEditUserModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
+        <div class="px-6 py-5 flex items-center justify-between gap-3">
+          <h2 class="text-[19px] font-semibold text-gray-900 whitespace-nowrap">Edit User</h2>
+          <div class="flex items-center gap-3">
+            <button v-if="!editUser?.welcome_email_sent_at" @click="handleResendWelcomeEmail" :disabled="resendingMail" class="px-4 py-1.5 rounded-md border border-[#FDE68A] bg-[#FFFBEB] text-[#92400E] text-[13px] font-medium hover:bg-[#FEF3C7] transition-colors disabled:opacity-60 flex items-center gap-2 whitespace-nowrap">
+              <svg v-if="resendingMail" width="13" height="13" viewBox="0 0 24 24" fill="none" class="animate-spin"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" fill="none"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+              {{ resendingMail ? 'Sending…' : 'Resend Login Mail' }}
+            </button>
+            <button @click="showEditUserModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
         </div>
         <div class="px-6 py-2 overflow-y-auto space-y-5">
           <div>
@@ -740,21 +761,41 @@
             </div>
           </div>
           <div>
-            <label class="block text-[14px] font-semibold text-gray-900 mb-2">Department</label>
+            <label class="block text-[14px] font-semibold text-gray-900 mb-2">Department *</label>
             <div class="relative">
               <select v-model="editUserForm.department_id" class="w-full appearance-none border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] bg-white shadow-sm">
-                <option :value="null">No Department</option>
+                <option :value="null" disabled>Select Department</option>
                 <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
               </select>
               <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-400"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
             </div>
           </div>
+          <div>
+            <label class="block text-[14px] font-semibold text-gray-900 mb-2">Title (Optional)</label>
+            <input v-model="editUserForm.title" type="text" placeholder="e.g. Client Delivery" class="w-full border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] placeholder-gray-400 shadow-sm" />
+          </div>
+          <div>
+            <label class="block text-[14px] font-semibold text-gray-900 mb-2">Description (Optional)</label>
+            <input v-model="editUserForm.description" type="text" placeholder="e.g. Implementation, Review" class="w-full border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] placeholder-gray-400 shadow-sm" />
+          </div>
+          <div>
+            <label class="block text-[14px] font-semibold text-gray-900 mb-2">Notes (Optional)</label>
+            <textarea v-model="editUserForm.notes" rows="2" placeholder="Internal notes" class="w-full border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] placeholder-gray-400 shadow-sm resize-none"></textarea>
+          </div>
         </div>
+        <p v-if="resendMailStatus" class="px-6 text-sm" :class="resendMailStatus.ok ? 'text-[#007C65]' : 'text-red-600'">{{ resendMailStatus.message }}</p>
+        <p v-if="editUserError" class="px-6 text-sm text-red-600">{{ editUserError }}</p>
+        <p v-if="resetPasswordStatus" class="px-6 text-sm" :class="resetPasswordStatus.ok ? 'text-[#007C65]' : 'text-red-600'">{{ resetPasswordStatus.message }}</p>
         <div class="px-6 py-5 flex items-center justify-end gap-3 bg-white mt-2">
-          <button @click="showEditUserModal = false" class="px-5 py-2 rounded-md border border-gray-200 text-gray-700 text-[14px] font-medium hover:bg-gray-50 transition-colors">Cancel</button>
-          <button @click="handleEditUser" class="bg-[#007C65] text-white px-5 py-2 rounded-md font-medium text-[14px] flex items-center gap-2 hover:bg-[#006A56] transition-colors shadow-sm">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            Save Changes
+          <button @click="handleResetUserPassword" :disabled="resettingPassword" class="px-5 py-2 rounded-md border border-gray-200 bg-white text-gray-700 text-[14px] font-medium hover:bg-gray-50 transition-colors disabled:opacity-60 flex items-center gap-2 whitespace-nowrap">
+            <svg v-if="resettingPassword" width="14" height="14" viewBox="0 0 24 24" fill="none" class="animate-spin"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" fill="none"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+            {{ resettingPassword ? 'Sending…' : 'Reset User Password' }}
+          </button>
+          <button @click="showEditUserModal = false" :disabled="savingUser" class="px-5 py-2 rounded-md border border-gray-200 bg-white text-gray-700 text-[14px] font-medium hover:bg-gray-50 transition-colors disabled:opacity-60 flex items-center gap-2 whitespace-nowrap">Cancel</button>
+          <button @click="handleEditUser" :disabled="savingUser" class="bg-[#007C65] text-white px-5 py-2 rounded-md font-medium text-[14px] flex items-center gap-2 hover:bg-[#006A56] transition-colors shadow-sm disabled:opacity-60 whitespace-nowrap">
+            <svg v-if="savingUser" width="16" height="16" viewBox="0 0 24 24" fill="none" class="animate-spin"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" fill="none"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+            <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            {{ savingUser ? 'Saving…' : 'Save Changes' }}
           </button>
         </div>
       </div>
@@ -856,10 +897,10 @@
               <p class="text-[13px] text-gray-500 mt-1.5">Role determines default dashboard access and permissions</p>
             </div>
             <div>
-              <label class="block text-[14px] font-semibold text-gray-900 mb-2">Department</label>
+              <label class="block text-[14px] font-semibold text-gray-900 mb-2">Department *</label>
               <div class="relative">
                 <select v-model="newUserForm.department_id" class="w-full appearance-none border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] bg-white shadow-sm">
-                  <option :value="null">No Department</option>
+                  <option :value="null" disabled>Select Department</option>
                   <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-400"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
@@ -869,6 +910,19 @@
               <label class="block text-[14px] font-semibold text-gray-900 mb-2">Initial Password *</label>
               <input v-model="newUserForm.password" type="password" placeholder="Min. 6 characters" autocomplete="new-password" class="w-full border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] placeholder-gray-400 shadow-sm" />
               <p class="text-[13px] text-gray-500 mt-2">User must change password on first login</p>
+            </div>
+            <div>
+              <label class="block text-[14px] font-semibold text-gray-900 mb-2">Title (Optional)</label>
+              <input v-model="newUserForm.title" type="text" placeholder="e.g. Client Delivery" class="w-full border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] placeholder-gray-400 shadow-sm" />
+              <p class="text-[13px] text-gray-500 mt-1.5">Shown on this user's dashboard cards, if applicable</p>
+            </div>
+            <div>
+              <label class="block text-[14px] font-semibold text-gray-900 mb-2">Description (Optional)</label>
+              <input v-model="newUserForm.description" type="text" placeholder="e.g. Implementation, Review" class="w-full border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] placeholder-gray-400 shadow-sm" />
+            </div>
+            <div>
+              <label class="block text-[14px] font-semibold text-gray-900 mb-2">Notes (Optional)</label>
+              <textarea v-model="newUserForm.notes" rows="2" placeholder="Internal notes" class="w-full border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] placeholder-gray-400 shadow-sm resize-none"></textarea>
             </div>
           </div>
 
@@ -938,9 +992,11 @@
           </div>
         </div>
 
+        <p v-if="createUserError" class="text-red-600 text-sm px-8 mb-3">{{ createUserError }}</p>
+
         <!-- Footer -->
         <div class="px-8 py-5 bg-white mt-2 flex items-center justify-between gap-4 border-t border-gray-100">
-          <button v-if="addUserStep > 1" @click="addUserStep--" class="w-1/2 py-2.5 rounded-md border border-gray-200 text-gray-700 text-[15px] font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 shadow-sm">
+          <button v-if="addUserStep > 1" @click="addUserStep--" :disabled="creatingUser" class="w-1/2 py-2.5 rounded-md border border-gray-200 text-gray-700 text-[15px] font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             Back
           </button>
@@ -948,9 +1004,10 @@
             Next
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </button>
-          <button v-if="addUserStep === 3" @click="handleCreateUser" class="w-1/2 bg-[#007C65] text-white py-2.5 rounded-md font-medium text-[15px] flex items-center justify-center gap-2 hover:bg-[#006A56] transition-colors shadow-sm">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            Create User
+          <button v-if="addUserStep === 3" @click="handleCreateUser" :disabled="creatingUser" class="w-1/2 bg-[#007C65] text-white py-2.5 rounded-md font-medium text-[15px] flex items-center justify-center gap-2 hover:bg-[#006A56] transition-colors shadow-sm disabled:opacity-60">
+            <svg v-if="creatingUser" width="18" height="18" viewBox="0 0 24 24" fill="none" class="animate-spin"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" fill="none"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            {{ creatingUser ? 'Creating…' : 'Create User' }}
           </button>
         </div>
       </div>
@@ -967,15 +1024,19 @@
         </div>
         <h2 class="text-[22px] font-semibold text-gray-900 mb-3">User created successfully</h2>
         <p class="text-gray-600 text-[15px] px-4 leading-relaxed">Permissions and dashboard access have been configured.</p>
+        <p class="text-[14px] mt-3" :class="createUserMailSent ? 'text-[#007C65]' : 'text-[#D97706]'">
+          {{ createUserMailSent ? 'Login details have been emailed.' : 'The welcome email could not be sent.' }}
+        </p>
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 
-const { getMe, getStats, getSystemCounts, getUsers, createUser, updateUser, deleteUser, activateUser, deactivateUser, updateSystems, getRoles, getDepartments, getDashboards, getPartners, getPartnerClients, togglePartnerStatus, unlinkPartnerClient, deletePartner, sendPartnerResetEmail, getSocketStatus, getOrganizations } = useSuperAdmin()
+const { getMe, getStats, getSystemCounts, getUsers, createUser, updateUser, deleteUser, activateUser, deactivateUser, updateSystems, getRoles, getDepartments, getDashboards, getPartners, getPartnerClients, togglePartnerStatus, unlinkPartnerClient, deletePartner, sendPartnerResetEmail, getSocketStatus, getOrganizations, updateReportsToManager, resendWelcomeEmail, resetUserPassword } = useSuperAdmin()
 
 // ── Socket VM status badge ────────────────────────────────────────────────────
 const socketStatus  = ref(null)
@@ -1010,6 +1071,16 @@ const users         = ref([])
 const roles         = ref([])
 const departments   = ref([])
 const dashboards    = ref([])
+const configureRoleTier = ref(null)
+const isManagerUser = computed(() => configureRoleTier.value === 'manager')
+const selectedRoleIds = ref([])
+const reportableRoles = computed(() => roles.value.filter(r => r.ticket_tier === 'lead' || r.ticket_tier === 'member'))
+function isLockedElsewhere(role) {
+  return !!role.reports_to_manager_id && role.reports_to_manager_id !== configureUser.value?.id
+}
+function managerName(managerId) {
+  return users.value.find(u => u.id === managerId)?.full_name ?? 'another manager'
+}
 
 // ── Tabs & filters ────────────────────────────────────────────────────────────
 const route  = useRoute()
@@ -1186,8 +1257,8 @@ async function handleDeletePartner() {
 }
 
 // ── Forms ─────────────────────────────────────────────────────────────────────
-const newUserForm = ref({ full_name: '', email: '', phone_number: '', admin_role_id: null, department_id: null, password: '' })
-const editUserForm = ref({ full_name: '', email: '', phone_number: '', admin_role_id: null, department_id: null })
+const newUserForm = ref({ full_name: '', email: '', phone_number: '', admin_role_id: null, department_id: null, password: '', title: '', description: '', notes: '' })
+const editUserForm = ref({ full_name: '', email: '', phone_number: '', admin_role_id: null, department_id: null, title: '', description: '', notes: '' })
 
 // ── Computed ──────────────────────────────────────────────────────────────────
 const filteredUsers = computed(() => {
@@ -1241,15 +1312,21 @@ const dashboardNameMap = {
 }
 
 // ── Modal openers ─────────────────────────────────────────────────────────────
-function openConfigureModal(user) {
+async function openConfigureModal(user) {
   configureUser.value      = user
   selectedDashboards.value = (user.assigned_systems ?? []).map(s => dashboardNameMap[s] ?? s)
+  const role = roles.value.find(r => r.id === user.admin_role_id)
+  configureRoleTier.value = role?.ticket_tier ?? null
+  selectedRoleIds.value = reportableRoles.value.filter(r => r.reports_to_manager_id === user.id).map(r => r.id)
   showConfigureModal.value = true
 }
 
 function openEditModal(user) {
   editUser.value     = user
-  editUserForm.value = { full_name: user.full_name, email: user.email, phone_number: user.phone_number ?? '', admin_role_id: user.admin_role_id, department_id: user.department_id }
+  editUserForm.value = { full_name: user.full_name, email: user.email, phone_number: user.phone_number ?? '', admin_role_id: user.admin_role_id, department_id: user.department_id, title: user.meta?.title ?? '', description: user.meta?.description ?? '', notes: user.meta?.notes ?? '' }
+  resendMailStatus.value = null
+  resetPasswordStatus.value = null
+  editUserError.value = ''
   showEditUserModal.value = true
 }
 
@@ -1261,14 +1338,66 @@ function openDeleteModal(user) {
 // ── Handlers ──────────────────────────────────────────────────────────────────
 async function handleSaveConfigure() {
   await updateSystems(configureUser.value.id, selectedDashboards.value)
+  if (isManagerUser.value) {
+    const managerId = configureUser.value.id
+    for (const role of reportableRoles.value) {
+      const shouldBeAssigned = selectedRoleIds.value.includes(role.id)
+      const isAssignedToMe = role.reports_to_manager_id === managerId
+      if (shouldBeAssigned && !isAssignedToMe) await updateReportsToManager(role.id, managerId)
+      else if (!shouldBeAssigned && isAssignedToMe) await updateReportsToManager(role.id, null)
+    }
+  }
   showConfigureModal.value = false
   await loadData()
 }
 
+const savingUser = ref(false)
+const editUserError = ref('')
 async function handleEditUser() {
-  await updateUser(editUser.value.id, editUserForm.value)
-  showEditUserModal.value = false
-  await loadData()
+  savingUser.value = true
+  editUserError.value = ''
+  try {
+    await updateUser(editUser.value.id, editUserForm.value)
+    showEditUserModal.value = false
+    await loadData()
+  } catch (err) {
+    const errors = err?.data?.errors
+    editUserError.value = errors ? Object.values(errors).flat().join(' ') : (err?.data?.message || 'Failed to save changes.')
+  } finally {
+    savingUser.value = false
+  }
+}
+
+const resendingMail = ref(false)
+const resendMailStatus = ref(null)
+async function handleResendWelcomeEmail() {
+  resendingMail.value = true
+  resendMailStatus.value = null
+  try {
+    const res = await resendWelcomeEmail(editUser.value.id)
+    resendMailStatus.value = { ok: true, message: res.message }
+    editUser.value.welcome_email_sent_at = new Date().toISOString()
+    await loadData()
+  } catch (err) {
+    resendMailStatus.value = { ok: false, message: err?.data?.message || 'Failed to resend email.' }
+  } finally {
+    resendingMail.value = false
+  }
+}
+
+const resettingPassword = ref(false)
+const resetPasswordStatus = ref(null)
+async function handleResetUserPassword() {
+  resettingPassword.value = true
+  resetPasswordStatus.value = null
+  try {
+    const res = await resetUserPassword(editUser.value.id)
+    resetPasswordStatus.value = { ok: res.mail_sent !== false, message: res.message }
+  } catch (err) {
+    resetPasswordStatus.value = { ok: false, message: err?.data?.message || 'Failed to send reset link.' }
+  } finally {
+    resettingPassword.value = false
+  }
 }
 
 async function handleDeleteUser() {
@@ -1287,15 +1416,19 @@ async function handleToggleStatus(user) {
 function closeAddUserModal() {
   showAddUserModal.value = false
   setTimeout(() => { addUserStep.value = 1 }, 300)
-  newUserForm.value      = { full_name: '', email: '', phone_number: '', admin_role_id: null, department_id: null, password: '' }
+  newUserForm.value      = { full_name: '', email: '', phone_number: '', admin_role_id: null, department_id: null, password: '', title: '', description: '', notes: '' }
   selectedDashboards.value = []
 }
 
 const createUserError = ref('')
+const creatingUser = ref(false)
+const createUserMailSent = ref(true)
 async function handleCreateUser() {
   createUserError.value = ''
+  creatingUser.value = true
   try {
-    await createUser({ ...newUserForm.value, assigned_systems: selectedDashboards.value })
+    const res = await createUser({ ...newUserForm.value, assigned_systems: selectedDashboards.value })
+    createUserMailSent.value = res?.mail_sent !== false
     closeAddUserModal()
     showCreateSuccessModal.value = true
     await loadData()
@@ -1307,6 +1440,8 @@ async function handleCreateUser() {
     } else {
       createUserError.value = msg || 'Failed to create user. Please check all fields.'
     }
+  } finally {
+    creatingUser.value = false
   }
 }
 

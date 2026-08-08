@@ -110,7 +110,17 @@
                         </p>
                     </div>
 
-                    <form @submit.prevent="handleForgotPassword" class="space-y-4">
+                    <div v-if="forgotSent" class="text-center space-y-4">
+                        <p class="text-sm text-[#717182]">
+                            {{ currentLang === 'ar' ? 'إذا كان هذا البريد الإلكتروني مسجلاً، فقد تم إخطار المسؤول الأعلى.' :
+                                "If that email is registered, a Super Admin has been notified and will send you a reset link shortly." }}
+                        </p>
+                        <button type="button" @click="authMode = 'login'; forgotSent = false; form.email = ''"
+                            class="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-black transition-colors pt-2 font-medium">
+                            {{ currentLang === 'ar' ? 'العودة لتسجيل الدخول' : 'Back to Login' }}
+                        </button>
+                    </div>
+                    <form v-else @submit.prevent="handleForgotPassword" class="space-y-4">
                         <div class="space-y-1.5 text-left">
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-4 transition-colors"
@@ -131,9 +141,9 @@
                             </p>
                         </div>
 
-                        <button type="submit"
-                            class="w-full py-3 bg-[#014E40] hover:bg-[#00342A] text-white rounded-[40px] font-bold text-sm transition-all active:scale-95 shadow-lg">
-                            {{ currentLang === 'ar' ? 'إعادة تعيين كلمة المرور' : 'Reset Password' }}
+                        <button type="submit" :disabled="forgotSubmitting"
+                            class="w-full py-3 bg-[#014E40] hover:bg-[#00342A] text-white rounded-[40px] font-bold text-sm transition-all active:scale-95 shadow-lg disabled:opacity-60">
+                            {{ forgotSubmitting ? '...' : (currentLang === 'ar' ? 'إعادة تعيين كلمة المرور' : 'Reset Password') }}
                         </button>
 
                         <button type="button" @click="authMode = 'login'; errors.email = ''"
@@ -160,7 +170,9 @@ const props = defineProps({
     isDark: Boolean
 })
 
-const { login, admin } = useAdminAuth()
+const { login, admin, forgotPassword } = useAdminAuth()
+const forgotSubmitting = ref(false)
+const forgotSent = ref(false)
 
 const authMode     = ref('login')
 const form         = reactive({ username: '', password: '', email: '' })
@@ -199,13 +211,21 @@ const handleLogin = async () => {
     }
 }
 
-const handleForgotPassword = () => {
+const handleForgotPassword = async () => {
     errors.email = ''
     if (!form.email) {
         errors.email = props.currentLang === 'ar' ? 'يرجى إدخال بريدك الإلكتروني' : 'Please enter your email'
         return
     }
-    console.log('Sending reset link...')
+    forgotSubmitting.value = true
+    try {
+        await forgotPassword(form.email)
+        forgotSent.value = true
+    } catch (e) {
+        errors.email = e?.data?.message ?? 'Something went wrong. Please try again.'
+    } finally {
+        forgotSubmitting.value = false
+    }
 }
 </script>
 

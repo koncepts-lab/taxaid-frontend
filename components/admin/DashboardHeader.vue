@@ -108,12 +108,19 @@ const currentLang = useState('currentLang')
 const { isDark, toggleTheme } = useTheme()
 
 const notificationCount = ref(0)
+const route = useRoute()
 
 if (props.adminLogout) {
   const { fetchNotifications } = useNotifications()
-  fetchNotifications({ mode: 'dashboard' })
-    .then(res => { notificationCount.value = (res?.ticket_count ?? 0) + (res?.default_count ?? 0) })
-    .catch(() => {})
+
+  function loadNotificationCount() {
+    fetchNotifications({ mode: 'dashboard' })
+      .then(res => { notificationCount.value = (res?.ticket_count ?? 0) + (res?.default_count ?? 0) })
+      .catch(() => {})
+  }
+
+  onMounted(loadNotificationCount)
+  watch(() => route.path, loadNotificationCount)
 }
 
 function handleLogout() {

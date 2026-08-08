@@ -49,11 +49,11 @@
     </div>
 
     <!-- Tabs -->
-    <div class="flex flex-wrap items-center justify-between gap-4 mt-8 px-2">
+    <div class="flex flex-wrap items-center justify-between gap-2 mt-8 px-2 py-1.5 bg-white rounded-full border border-gray-100 shadow-sm">
       <button v-for="tab in tabs" :key="tab.key" @click="activeTab = tab.key; fetchTickets(1)"
         :class="activeTab === tab.key ? 'bg-[#7DF5D4] text-[#006A56] font-semibold' : 'text-gray-700 font-medium hover:text-gray-900'"
         class="px-8 py-2 rounded-full transition-colors">
-        {{ tab.label }}
+        {{ tab.label }} ({{ (tab.key === 'all' ? dashboard.total_tickets : dashboard[tab.key]) ?? 0 }})
       </button>
     </div>
 

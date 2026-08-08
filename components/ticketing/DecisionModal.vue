@@ -28,7 +28,8 @@
                                         role === 'tech_team' ? 'Technical Feasibility & Cost Assessment' :
                                             role === 'team_lead' ? 'Team Lead Priority Scoring' :
                                                 role === 'vp' ? 'Approval Decision - VP of Technology' :
-                                                    'Approval Decision - Admin'
+                                                    role === 'manager' ? 'Approval Decision - Manager' :
+                                                        'Approval Decision - Admin'
                                     }}
                                 </h2>
                                 <span :class="getStatusClasses(ticket?.status)"
@@ -41,7 +42,8 @@
                                     role === 'tech_team' ? 'Score technical aspects' :
                                         role === 'team_lead' ? 'Score and prioritize' :
                                             role === 'vp' ? 'Score technical feasibility and estimate implementation costs.' :
-                                                'Review tickets awaiting your decision.'
+                                                role === 'manager' ? 'Review tickets awaiting your approval.' :
+                                                    'Review tickets awaiting your decision.'
                                 }}
                             </p>
                             <div v-if="role !== 'team_member'"

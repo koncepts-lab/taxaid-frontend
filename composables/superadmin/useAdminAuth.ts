@@ -34,6 +34,24 @@ export function useAdminAuth() {
     _admin.value      = res.admin ?? res.user ?? null
   }
 
+  async function forgotPassword(email: string): Promise<void> {
+    await $fetch('/admin/forgot-password', {
+      baseURL: config.public.apiBase,
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: { email },
+    })
+  }
+
+  async function resetPassword(token: string, password: string, passwordConfirmation: string): Promise<void> {
+    await $fetch('/admin/reset-password', {
+      baseURL: config.public.apiBase,
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: { token, password, password_confirmation: passwordConfirmation },
+    })
+  }
+
   function logout() {
     tokenCookie.value = null
     userCookie.value  = null
@@ -49,8 +67,8 @@ export function useAdminAuth() {
   const getRole    = () => _admin.value?.role?.name ?? null
 
   function redirectByRole() {
-    return navigateTo('/admin/roles')
+    return navigateTo('/admin/management')
   }
 
-  return { admin: _admin, isLoggedIn, getRole, login, logout, redirectByRole }
+  return { admin: _admin, isLoggedIn, getRole, login, logout, redirectByRole, forgotPassword, resetPassword }
 }

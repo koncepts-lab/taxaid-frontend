@@ -88,24 +88,26 @@
       </div>
     </div>
 
-    <!-- Department Group Report — fixed 2 cards, always rendered (no pop-in CLS since the
-         count never varies), real numbers fill in once loaded. -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div v-for="m in managerReportDisplay" :key="m.group_name" class="border border-gray-200 rounded-[16px] p-6 bg-white shadow-sm space-y-6">
+    <!-- Manager Report — one card per Manager account, horizontal scroll once there are more
+         than fit on screen. -->
+    <div v-if="loadingManagerReport" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div v-for="n in 2" :key="n" class="border border-gray-200 rounded-[16px] p-6 bg-white shadow-sm space-y-3 animate-pulse">
+        <div v-for="i in 5" :key="i" class="h-5 bg-gray-100 rounded"></div>
+      </div>
+    </div>
+    <div v-else-if="managerReport.length" :class="managerReport.length > 4 ? 'flex gap-4 overflow-x-auto pb-1' : 'grid grid-cols-1 md:grid-cols-2 gap-4'">
+      <div v-for="m in managerReport" :key="m.manager_id" class="border border-gray-200 rounded-[16px] p-6 bg-white shadow-sm space-y-6" :class="managerReport.length > 4 ? 'flex-shrink-0 w-[calc(50%-8px)] min-w-[380px]' : ''">
         <div>
           <h3 class="text-[17px] font-medium text-gray-800 flex items-center gap-2">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
               <polyline points="16 7 22 7 22 13"></polyline>
             </svg>
-            {{ m.group_name }}
+            {{ m.title }}
           </h3>
-          <p class="text-gray-500 text-sm mt-1">{{ m.departments.join(', ') }}</p>
+          <p v-if="m.description" class="text-gray-500 text-sm mt-1">{{ m.description }}</p>
         </div>
-        <div v-if="loadingManagerReport" class="space-y-3 animate-pulse">
-          <div v-for="n in 4" :key="n" class="h-5 bg-gray-100 rounded"></div>
-        </div>
-        <div v-else class="space-y-3">
+        <div class="space-y-3">
           <div class="flex justify-between items-center text-[15px]">
             <span class="text-gray-500">Total Tickets:</span>
             <span class="text-gray-900 font-medium">{{ m.total_tickets }}</span>
@@ -127,11 +129,11 @@
     </div>
 
     <!-- Tabs -->
-    <div class="flex flex-wrap items-center justify-between gap-2 mt-8 px-2 text-sm">
-      <button v-for="tab in tabs" :key="tab.key" @click="activeTab = tab.key; fetchTickets(1)"
+    <div class="flex flex-wrap items-center justify-between gap-2 mt-8 px-2 py-1.5 bg-white rounded-full border border-gray-100 shadow-sm">
+      <button v-for="tab in tabs" :key="tab.key" @click="setActiveTab(tab.key)"
         :class="activeTab === tab.key ? 'bg-[#7DF5D4] text-[#006A56] font-semibold' : 'text-gray-700 font-medium hover:text-gray-900'"
         class="px-6 py-2 rounded-full transition-colors whitespace-nowrap">
-        {{ tab.label }}
+        {{ tab.label }} ({{ dashboard[tab.key] ?? 0 }})
       </button>
     </div>
 
@@ -244,16 +246,8 @@ async function loadDashboard() {
   dashboard.value = await getAdminDashboard()
 }
 
-// Department-group report — 2 fixed cards (Client Delivery / Growth & Tech), backend-driven
-// numbers. Static shells shown below so both cards render immediately with correct titles;
-// real stats replace the skeleton once the fetch resolves.
-const DEPARTMENT_GROUPS_DISPLAY = [
-  { group_name: 'Client Delivery', departments: ['Implementation', 'Review'] },
-  { group_name: 'Growth & Tech', departments: ['Tech', 'Marketing', 'Revenue'] },
-]
 const managerReport = ref([])
 const loadingManagerReport = ref(true)
-const managerReportDisplay = computed(() => managerReport.value.length ? managerReport.value : DEPARTMENT_GROUPS_DISPLAY)
 
 async function loadManagerReport() {
   loadingManagerReport.value = true
@@ -274,13 +268,21 @@ const tabs = [
   { key: 'scrapped', label: 'Scrapped' },
   { key: 'future', label: 'Future' },
 ]
-const activeTab = ref('pending')
+const route = useRoute()
+const router = useRouter()
+const activeTab = ref(tabs.some(t => t.key === route.query.tab) ? route.query.tab : 'pending')
 const searchTerm = ref('')
 const tickets = ref([])
 const loadingTickets = ref(false)
 const perPage = ref(10)
 const pageMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
 const fillerRowCount = computed(() => Math.max(0, perPage.value - Math.max(tickets.value.length, 1)))
+
+function setActiveTab(key) {
+  activeTab.value = key
+  router.replace({ query: { ...route.query, tab: key } })
+  fetchTickets(1)
+}
 
 async function fetchTickets(page = 1) {
   loadingTickets.value = true

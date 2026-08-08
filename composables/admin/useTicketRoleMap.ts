@@ -3,6 +3,7 @@ const TIER_TO_UI_TOKEN: Record<string, string> = {
   lead: 'team_lead',
   tech_team: 'tech_team',
   vp: 'vp',
+  manager: 'manager',
   admin: 'admin',
 }
 

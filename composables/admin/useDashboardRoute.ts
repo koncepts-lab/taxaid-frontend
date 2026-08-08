@@ -3,8 +3,8 @@
 // (Super Admin, Admin, VP, Tech Team) have no distinct card-2 destination —
 // Super Admin gets the directory instead, the rest are ticketing-only.
 const OWN_DASHBOARD_ROUTES: Record<string, string> = {
-  'Admin': '/admin/roles',
-  'Super Admin': '/admin/roles',
+  'Admin': '/admin/management',
+  'Super Admin': '/admin/management',
   'Payments Admin': '/admin/payments',
   'Implementation Manager': '/admin/implementation/manager',
   'Implementation Consultant': '/admin/implementation/member',
