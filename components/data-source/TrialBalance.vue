@@ -502,9 +502,11 @@
                                 class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
                                 Next
                             </button>
-                            <span class="ml-3 text-sm text-gray-500 whitespace-nowrap">Rows per page:</span>
+                            <span class="ml-3 text-sm text-gray-500 whitespace-nowrap">
+                                {{ currentLang === 'ar' ? 'صفوف لكل صفحة:' : 'Rows per page:' }}
+                            </span>
                             <select v-model="localPerPage" @change="handlePerPageChange"
-                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white text-gray-700 focus:ring-1 focus:ring-[#00896F] outline-none">
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white text-gray-700 focus:ring-1 focus:ring-[#00896F] outline-none appearance-none">
                                 <option v-for="opt in perPageOptions" :key="opt" :value="opt">{{ opt }}</option>
                             </select>
                         </div>
