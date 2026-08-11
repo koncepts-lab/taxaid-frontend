@@ -18,12 +18,10 @@
   class="absolute inset-0 flex items-center justify-center transition-opacity duration-700 z-40"
   :class="showLogo ? 'opacity-100' : 'opacity-0'"
 >
-  <video
-    src="/videos/splash-logo.webm"
-    class="w-[700px] max-w-full h-auto"
-    autoplay
-    muted
-    playsinline
+  <img
+    src="/images/logo.svg"
+    alt="Taxaid Logo"
+    class="w-[350px] max-w-full h-auto"
   />
 </div>
 
