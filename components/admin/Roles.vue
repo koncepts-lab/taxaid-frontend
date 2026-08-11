@@ -54,6 +54,7 @@
         <button @click="setTab('Partner Management'); loadPartners()" :class="activeTab === 'Partner Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Partner Management</button>
         <button @click="setTab('Tenants Management')" :class="activeTab === 'Tenants Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Tenants Management</button>
         <button @click="setTab('Organizations'); if (!organizationsLoaded) loadOrganizations()" :class="activeTab === 'Organizations' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Organizations</button>
+        <button @click="setTab('AI Settings')" :class="activeTab === 'AI Settings' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">AI Settings</button>
       </div>
 
       <!-- Socket VM status badge → click opens detail modal -->
@@ -465,6 +466,11 @@
         <CommonPaginationBar v-if="organizationMeta.total > 0" :meta="organizationMeta" :loading="organizationsLoading"
           @page-change="(p) => loadOrganizations(p)" @per-page-change="(pp) => { organizationPerPage = pp; loadOrganizations(1) }" />
       </div>
+    </div>
+
+    <!-- AI Settings — global instructions, kill switch, catalog, chat prompts -->
+    <div v-else-if="activeTab === 'AI Settings'">
+      <AdminAiSettings />
     </div>
 
     <!-- Socket VM Status Modal -->
@@ -1085,8 +1091,8 @@ function managerName(managerId) {
 // ── Tabs & filters ────────────────────────────────────────────────────────────
 const route  = useRoute()
 const router = useRouter()
-const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management', clients: 'Tenants Management', organizations: 'Organizations' }
-const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners', 'Tenants Management': 'clients', 'Organizations': 'organizations' }
+const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management', clients: 'Tenants Management', organizations: 'Organizations', 'ai-settings': 'AI Settings' }
+const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners', 'Tenants Management': 'clients', 'Organizations': 'organizations', 'AI Settings': 'ai-settings' }
 const activeTab = ref(tabMap[route.query.tab] ?? 'User Management')
 
 // A client config is open (?tab=clients&id=N) → hide header/cards/tabs (SPA takeover)

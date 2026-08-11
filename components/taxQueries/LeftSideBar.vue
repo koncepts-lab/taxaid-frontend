@@ -46,10 +46,10 @@
                         <div class="flex gap-1">
                             <span
                                 class="text-xs bg-primary-150 text-primary-200 border border-primary-100 px-1.5 py-0.5 rounded font-medium flex items-center">
-                                <span class="w-2 h-2 bg-green-500 rounded-full inline-block mr-1"></span> Online
+                                <span class="w-2 h-2 rounded-full inline-block mr-1" :class="status === 1 ? 'bg-green-500' : 'bg-red-400'"></span> {{ status === 1 ? 'Online' : 'Offline' }}
                             </span>
-                            <span
-                                class="text-xs bg-secondary-50/40 text-secondary-100 px-1.5 py-0.5 rounded border border-secondary-50 font-medium">8,001/10,485
+                            <span v-if="usage.tokens_total"
+                                class="text-xs bg-secondary-50/40 text-secondary-100 px-1.5 py-0.5 rounded border border-secondary-50 font-medium">{{ usage.tokens_used }}/{{ usage.tokens_total }}
                                 Tokens</span>
                         </div>
                     </div>
@@ -64,7 +64,7 @@
                         </div>
                     </div>
 
-                    <button
+                    <button @click="startNewChat"
                         class="w-full bg-primary-250 hover:bg-primary-300 text-white py-2.5 rounded-xl font-bold text-sm transition-all mb-4">+
                         New Chat</button>
 
@@ -79,7 +79,7 @@
                     </div>
 
                     <!-- TRIGGER FOR STEP 2: SEARCH -->
-                    <div class="mt-4 relative">
+                    <div class="mt-4 relative" @click="viewMode = 'history'">
                         <input type="text" readonly placeholder="Search Chat"
                             class="w-full bg-gray-50 border border-primary-100/33 rounded-xl p-3 text-xs placeholder:font-semibold placeholder:text-gray-500 focus:outline-none cursor-pointer" />
                         <img src="/images/icons/search.svg" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2" />
@@ -89,9 +89,9 @@
                     <div class="mt-4 flex-1 overflow-hidden flex flex-col cursor-pointer">
                         <p class="text-sm font-normal text-black/50 tracking-widest mb-3 shrink-0 uppercase">Recent</p>
                         <div class="overflow-y-auto space-y-3 pr-2 no-scrollbar">
-                            <p v-for="query in recentQueries" :key="query"
+                            <p v-for="chat in chats" :key="chat.id" @click="selectChat(chat.id)"
                                 class="text-sm text-black/70 truncate cursor-pointer hover:text-primary-500 transition-colors">
-                                {{ query }}
+                                {{ chat.title || 'Untitled chat' }}
                             </p>
                         </div>
                     </div>
@@ -130,18 +130,18 @@
                         class="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 opacity-40" />
                 </div>
 
-                <button
+                <button @click="startNewChat"
                     class="w-full bg-[#00B68D] hover:bg-[#00A37E] text-white py-2 rounded-xl font-medium text-base flex items-center justify-center gap-2 mb-5">
                     <span class="text-2xl font-light">+</span> New Chat
                 </button>
 
                 <div class="flex-1 overflow-y-auto no-scrollbar space-y-8">
-                    <div v-for="group in historyGroups" :key="group.label">
-                        <h3 class="text-black/50 font-normal text-base mb-2">{{ group.label }}</h3>
+                    <div>
+                        <h3 class="text-black/50 font-normal text-base mb-2">Chats</h3>
                         <div class="space-y-2">
-                            <p v-for="(query, idx) in group.queries" :key="idx"
-                                class="text-black/70 text-base leading-relaxed cursor-pointer">
-                                {{ query }}
+                            <p v-for="chat in filteredChats" :key="chat.id" @click="selectChat(chat.id)"
+                                class="text-black/70 text-base leading-relaxed cursor-pointer hover:text-primary-500 transition-colors">
+                                {{ chat.title || 'Untitled chat' }}
                             </p>
                         </div>
                         <div class="h-px bg-primary-100/20 w-full mt-6"></div>
@@ -173,9 +173,30 @@ watch(() => props.isSideChatOpen, (val) => {
     if (!val) setTimeout(() => viewMode.value = 'menu', 300);
 });
 
-const { tabs, historyGroups, deadlines } = useTaxQueriesPage()
+const { tabs, deadlines } = useTaxQueriesPage()
 
-const recentQueries = computed(() => historyGroups.value[0]?.queries ?? []);
+const { chats, status, usage, activeChatId, fetchChats, createChat, resumeChat } = useAkeel()
+
+const filteredChats = computed(() => {
+    if (!searchQuery.value.trim()) return chats.value
+    const q = searchQuery.value.toLowerCase()
+    return chats.value.filter((c) => (c.title || '').toLowerCase().includes(q))
+})
+
+async function startNewChat() {
+    await createChat()
+    viewMode.value = 'menu'
+}
+
+async function selectChat(id) {
+    activeChatId.value = id
+    await resumeChat(id)
+    viewMode.value = 'menu'
+}
+
+onMounted(() => {
+    fetchChats()
+})
 </script>
 
 <style scoped>

@@ -1,0 +1,52 @@
+// composables/admin/useAdminAi.ts
+// All admin-side AI calls: per-tenant monitoring/controls (client management "AI" subtab) +
+// global settings/catalog/chat-prompts (top-level "AI Settings" tab). One composable, both
+// screens consume it. All calls go through useAdminApi (admin_token).
+export function useAdminAi() {
+  // ── Per-tenant (client management "AI" subtab) ──────────────────────────
+  const getClientAi = (tenantId: number) =>
+    useAdminApi(`/admin/ai/clients/${tenantId}`)
+
+  const toggleClientAi = (tenantId: number, password?: string) =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/toggle`, { method: 'PATCH', body: password ? { password } : {} })
+
+  const getClientAiSettings = (tenantId: number) =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/settings`)
+
+  const updateClientAiSettings = (tenantId: number, settings: Array<{ name: string; value: string }>) =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/settings`, { method: 'PUT', body: { settings } })
+
+  // ── Global (top-level "AI Settings" tab) ────────────────────────────────
+  const getSettings = () => useAdminApi('/admin/ai/settings')
+  const updateSettings = (body: { system_instructions: string | null; ai_enabled_globally: boolean }) =>
+    useAdminApi('/admin/ai/settings', { method: 'PUT', body })
+
+  const qs = (params?: Record<string, any>) => params ? `?${new URLSearchParams(params).toString()}` : ''
+
+  const getDataLinks = (params?: { page?: number; per_page?: number }) => useAdminApi(`/admin/ai/data-links${qs(params)}`)
+  const updateDataLink = (id: number, body: { label: string; context: string; category?: string | null; is_active: boolean }) =>
+    useAdminApi(`/admin/ai/data-links/${id}`, { method: 'PUT', body })
+
+  const getRules = (params?: { page?: number; per_page?: number }) => useAdminApi(`/admin/ai/rules${qs(params)}`)
+  const updateRule = (id: number, body: { label: string; context_template: string | null; category?: string | null; is_active: boolean }) =>
+    useAdminApi(`/admin/ai/rules/${id}`, { method: 'PUT', body })
+
+  const getAlertRules = (params?: { page?: number; per_page?: number }) => useAdminApi(`/admin/ai/alert-rules${qs(params)}`)
+  const updateAlertRule = (id: number, body: { alert_title: string; category: string | null; priority: string; rag_prompt_instruction: string | null; is_active: boolean }) =>
+    useAdminApi(`/admin/ai/alert-rules/${id}`, { method: 'PUT', body })
+
+  const getChatPrompts = (params?: { page?: number; per_page?: number }) => useAdminApi(`/admin/ai/chat-prompts${qs(params)}`)
+  const createChatPrompt = (body: any) => useAdminApi('/admin/ai/chat-prompts', { method: 'POST', body })
+  const updateChatPrompt = (id: number, body: any) => useAdminApi(`/admin/ai/chat-prompts/${id}`, { method: 'PUT', body })
+  const deleteChatPrompt = (id: number) => useAdminApi(`/admin/ai/chat-prompts/${id}`, { method: 'DELETE' })
+  const cloneChatPrompt = (id: number, page: string) => useAdminApi(`/admin/ai/chat-prompts/${id}/clone`, { method: 'POST', body: { page } })
+
+  return {
+    getClientAi, toggleClientAi, getClientAiSettings, updateClientAiSettings,
+    getSettings, updateSettings,
+    getDataLinks, updateDataLink,
+    getRules, updateRule,
+    getAlertRules, updateAlertRule,
+    getChatPrompts, createChatPrompt, updateChatPrompt, deleteChatPrompt, cloneChatPrompt,
+  }
+}
