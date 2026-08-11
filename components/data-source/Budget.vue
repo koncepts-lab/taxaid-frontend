@@ -135,23 +135,7 @@ const budgetSections = [
                 </p>
             </div>
 
-            <div class="flex items-center gap-4">
-                <!-- Year picker -->
-                <div class="flex items-center gap-2">
-                    <label class="text-sm text-gray-500">{{ currentLang === 'ar' ? 'السنة' : 'Year' }}</label>
-                    <input type="number" v-model.number="year"
-                        class="w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#008169]"
-                        :min="2020" :max="2030" />
-                </div>
 
-                <button @click="isVarianceModalOpen = true"
-                    class="flex items-center gap-2 px-4 py-2.5 bg-[#00896A] text-white rounded-lg text-[14px] font-medium hover:bg-[#007056] transition-colors whitespace-nowrap shadow-sm">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {{ currentLang === 'ar' ? 'التحقق من التباين' : 'Check Variance' }}
-                </button>
-            </div>
         </div>
 
         <!-- Loading state -->
