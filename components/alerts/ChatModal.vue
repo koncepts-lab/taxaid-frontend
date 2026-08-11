@@ -52,7 +52,8 @@
                                         : 'bg-white border border-gray-100 text-gray-800'),
                                 m.role !== 'user' && (currentLang === 'ar' ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none')
                             ]">
-                                {{ m.content }}
+                                <span v-if="m.role === 'user'" class="whitespace-pre-wrap">{{ m.content }}</span>
+                                <div v-else class="md-content" v-html="renderMarkdown(m.content)"></div>
                             </div>
                         </div>
                         <div v-if="sending" class="text-xs" :class="isDark ? 'text-white/50' : 'text-black/50'">
@@ -114,6 +115,7 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 const chatInput = ref('');
 
+const { renderMarkdown } = useMarkdown()
 const { messages, sending, activeChatId, error, createChat, sendMessage } = useAkeel()
 
 // A fresh alert-context conversation each time the modal opens for a new alert —
@@ -149,4 +151,10 @@ const handleSend = async () => {
 .no-scrollbar::-webkit-scrollbar {
     display: none;
 }
+/* TODO: add more scopes  */
+.md-content :deep(p) { margin: 0 0 0.5em; }
+.md-content :deep(p:last-child) { margin-bottom: 0; }
+.md-content :deep(ul), .md-content :deep(ol) { margin: 0 0 0.5em 1.25em; }
+.md-content :deep(strong) { font-weight: 600; }
+.md-content :deep(code) { background: rgba(0,0,0,0.06); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
 </style>

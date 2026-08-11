@@ -2,7 +2,7 @@
   <div class="space-y-6 mt-4">
 
     <!-- Kill switch -->
-    <div class="bg-white border border-gray-200 rounded-[16px] shadow-sm p-6">
+    <div class="bg-white border border-[#D1FAE5] rounded-[10px] shadow-sm p-6">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 class="text-[16px] font-medium text-[#101828]">AI / Akeel Access</h2>
@@ -44,19 +44,19 @@
 
     <!-- 4 stat cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bg-white border border-gray-100 rounded-xl shadow-sm p-5">
+      <div class="bg-white border border-[#D1FAE5] rounded-[10px] shadow-sm p-5">
         <p class="text-[13px] text-[#4A5565]">Flagged Chats</p>
         <p class="text-2xl font-semibold text-[#101828] mt-1">{{ loading ? '—' : data.flagged_chats_total }}</p>
       </div>
-      <div class="bg-white border border-gray-100 rounded-xl shadow-sm p-5">
+      <div class="bg-white border border-[#D1FAE5] rounded-[10px] shadow-sm p-5">
         <p class="text-[13px] text-[#4A5565]">Total Tokens</p>
         <p class="text-2xl font-semibold text-[#101828] mt-1">{{ loading ? '—' : data.tokens_used_total?.toLocaleString() }}</p>
       </div>
-      <div class="bg-white border border-gray-100 rounded-xl shadow-sm p-5">
+      <div class="bg-white border border-[#D1FAE5] rounded-[10px] shadow-sm p-5">
         <p class="text-[13px] text-[#4A5565]">Total Requests</p>
         <p class="text-2xl font-semibold text-[#101828] mt-1">{{ loading ? '—' : data.requests_used_total }}</p>
       </div>
-      <div class="bg-white border border-gray-100 rounded-xl shadow-sm p-5">
+      <div class="bg-white border border-[#D1FAE5] rounded-[10px] shadow-sm p-5">
         <p class="text-[13px] text-[#4A5565]">Live Status</p>
         <p class="text-2xl font-semibold mt-1" :class="data.live_status === 'online' ? 'text-[#00896F]' : 'text-gray-400'">
           {{ loading ? '—' : (data.live_status === 'online' ? 'Online' : 'Offline') }}
@@ -65,7 +65,7 @@
     </div>
 
     <!-- Usage graph -->
-    <div class="bg-white border border-gray-100 rounded-xl shadow-sm p-6">
+    <div class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6">
       <h2 class="text-[16px] font-medium text-[#101828] mb-4">Token Usage by Period</h2>
       <div v-if="!data.graph?.length" class="text-sm text-gray-400 py-10 text-center">No usage data yet.</div>
       <client-only v-else>
@@ -74,7 +74,7 @@
     </div>
 
     <!-- Org settings editor -->
-    <div class="bg-white border border-gray-100 rounded-xl shadow-sm p-6">
+    <div class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6">
       <h2 class="text-[16px] font-medium text-[#101828] mb-1">AI Chat Settings</h2>
       <p class="text-[13px] text-[#4A5565] mb-4">0 = unlimited, unless noted otherwise.</p>
       <div class="space-y-4" v-if="settings.length">

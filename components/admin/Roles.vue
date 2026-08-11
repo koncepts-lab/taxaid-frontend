@@ -52,9 +52,9 @@
         <button @click="setTab('User Management')" :class="activeTab === 'User Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">User Management</button>
         <button @click="setTab('System Access Control')" :class="activeTab === 'System Access Control' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">System Access Control</button>
         <button @click="setTab('Partner Management'); loadPartners()" :class="activeTab === 'Partner Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Partner Management</button>
-        <button @click="setTab('Tenants Management')" :class="activeTab === 'Tenants Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Tenants Management</button>
-        <button @click="setTab('Organizations'); if (!organizationsLoaded) loadOrganizations()" :class="activeTab === 'Organizations' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Organizations</button>
+        <button @click="setTab('Tenants Management')" :class="activeTab === 'Tenants Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Organization Management</button>
         <button @click="setTab('AI Settings')" :class="activeTab === 'AI Settings' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">AI Settings</button>
+        <button @click="setTab('Organizations'); if (!organizationsLoaded) loadOrganizations()" :class="activeTab === 'Organizations' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">New User Requests</button>
       </div>
 
       <!-- Socket VM status badge → click opens detail modal -->
@@ -131,7 +131,7 @@
 
       <!-- User Table -->
       <div class="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm mt-6">
-        <div class="w-full overflow-x-auto">
+        <div class="w-full overflow-x-auto min-h-[520px]">
           <table class="w-full text-left border-collapse min-w-[1000px]">
             <thead>
               <tr class="bg-[#008865] text-white text-sm">
@@ -146,7 +146,11 @@
               </tr>
             </thead>
             <tbody class="text-sm text-gray-700">
-              <tr v-if="loading"><td colspan="8" class="py-10 text-center text-gray-400">Loading...</td></tr>
+              <template v-if="loading">
+                <tr v-for="n in 10" :key="'sk'+n" class="border-b border-gray-100">
+                  <td v-for="c in 8" :key="c" class="py-4 px-6"><div class="h-4 bg-gray-100 rounded animate-pulse" :style="{ width: skeletonWidth(c) }"></div></td>
+                </tr>
+              </template>
               <tr v-else-if="!filteredUsers.length"><td colspan="8" class="py-10 text-center text-gray-400">No users found.</td></tr>
               <tr v-for="user in filteredUsers" :key="user.id" class="border-b border-gray-100 hover:bg-gray-50/50">
                 <td class="py-4 px-6 text-gray-800 font-medium">{{ user.full_name }}</td>
@@ -271,7 +275,7 @@
 
       <!-- System Access Table -->
       <div class="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm mt-6">
-        <div class="w-full overflow-x-auto">
+        <div class="w-full overflow-x-auto min-h-[520px]">
           <table class="w-full text-left border-collapse min-w-[1000px]">
             <thead>
               <tr class="bg-[#008865] text-white text-sm">
@@ -283,7 +287,11 @@
               </tr>
             </thead>
             <tbody class="text-sm text-gray-700">
-              <tr v-if="loading"><td colspan="5" class="py-10 text-center text-gray-400">Loading...</td></tr>
+              <template v-if="loading">
+                <tr v-for="n in 10" :key="'sk'+n" class="border-b border-gray-100">
+                  <td v-for="c in 5" :key="c" class="py-4 px-6"><div class="h-4 bg-gray-100 rounded animate-pulse" :style="{ width: skeletonWidth(c) }"></div></td>
+                </tr>
+              </template>
               <tr v-else-if="!systemFilteredUsers.length"><td colspan="5" class="py-10 text-center text-gray-400">No users found.</td></tr>
               <tr v-for="user in systemFilteredUsers" :key="user.id" class="border-b border-gray-100 hover:bg-gray-50/50">
                 <td class="py-4 px-6 text-gray-800 font-medium">
@@ -359,7 +367,7 @@
 
       <!-- Partners Table -->
       <div class="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm mt-6">
-        <div class="w-full overflow-x-auto">
+        <div class="w-full overflow-x-auto min-h-[520px]">
           <table class="w-full text-left border-collapse min-w-[900px]">
             <thead>
               <tr class="bg-[#008865] text-white text-sm">
@@ -373,7 +381,11 @@
               </tr>
             </thead>
             <tbody class="text-sm text-gray-700">
-              <tr v-if="partnerLoading"><td colspan="7" class="py-10 text-center text-gray-400">Loading...</td></tr>
+              <template v-if="partnerLoading">
+                <tr v-for="n in 10" :key="'sk'+n" class="border-b border-gray-100">
+                  <td v-for="c in 7" :key="c" class="py-4 px-6"><div class="h-4 bg-gray-100 rounded animate-pulse" :style="{ width: skeletonWidth(c) }"></div></td>
+                </tr>
+              </template>
               <tr v-else-if="!partners.length"><td colspan="7" class="py-10 text-center text-gray-400">No partners found.</td></tr>
               <tr v-for="p in partners" :key="p.id" class="border-b border-gray-100 hover:bg-gray-50/50">
                 <td class="py-4 px-6 font-medium text-gray-800">{{ p.name }}</td>
@@ -435,7 +447,7 @@
       </div>
 
       <div class="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm mt-6">
-        <div class="w-full overflow-x-auto">
+        <div class="w-full overflow-x-auto min-h-[520px]">
           <table class="w-full text-left border-collapse min-w-[900px]">
             <thead>
               <tr class="bg-[#008865] text-white text-sm">
@@ -448,7 +460,11 @@
               </tr>
             </thead>
             <tbody class="text-sm text-gray-700">
-              <tr v-if="organizationsLoading"><td colspan="6" class="py-10 text-center text-gray-400">Loading...</td></tr>
+              <template v-if="organizationsLoading">
+                <tr v-for="n in 10" :key="'sk'+n" class="border-b border-gray-100">
+                  <td v-for="c in 6" :key="c" class="py-4 px-6"><div class="h-4 bg-gray-100 rounded animate-pulse" :style="{ width: skeletonWidth(c) }"></div></td>
+                </tr>
+              </template>
               <tr v-else-if="!organizationRows.length"><td colspan="6" class="py-10 text-center text-gray-400">No registrations found.</td></tr>
               <tr v-for="row in organizationRows" :key="row.id" class="border-b border-gray-100 hover:bg-gray-50/50">
                 <td class="py-4 px-6 font-medium text-gray-800">{{ row.company_name }}</td>
@@ -1044,6 +1060,11 @@ import { ref, computed, onMounted } from 'vue'
 
 const { getMe, getStats, getSystemCounts, getUsers, createUser, updateUser, deleteUser, activateUser, deactivateUser, updateSystems, getRoles, getDepartments, getDashboards, getPartners, getPartnerClients, togglePartnerStatus, unlinkPartnerClient, deletePartner, sendPartnerResetEmail, getSocketStatus, getOrganizations, updateReportsToManager, resendWelcomeEmail, resetUserPassword } = useSuperAdmin()
 
+function skeletonWidth(col) {
+  const widths = ['85%', '70%', '60%', '55%', '65%', '50%', '45%', '40%']
+  return widths[(col - 1) % widths.length]
+}
+
 // ── Socket VM status badge ────────────────────────────────────────────────────
 const socketStatus  = ref(null)
 const socketLoading = ref(true)
@@ -1091,8 +1112,8 @@ function managerName(managerId) {
 // ── Tabs & filters ────────────────────────────────────────────────────────────
 const route  = useRoute()
 const router = useRouter()
-const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management', clients: 'Tenants Management', organizations: 'Organizations', 'ai-settings': 'AI Settings' }
-const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners', 'Tenants Management': 'clients', 'Organizations': 'organizations', 'AI Settings': 'ai-settings' }
+const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management', clients: 'Tenants Management', 'organization-management': 'Tenants Management', organizations: 'Organizations', 'new-user-requests': 'Organizations', 'ai-settings': 'AI Settings' }
+const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners', 'Tenants Management': 'organization-management', 'Organizations': 'new-user-requests', 'AI Settings': 'ai-settings' }
 const activeTab = ref(tabMap[route.query.tab] ?? 'User Management')
 
 // A client config is open (?tab=clients&id=N) → hide header/cards/tabs (SPA takeover)

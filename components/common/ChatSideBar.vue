@@ -116,7 +116,7 @@
                         </p>
                     </div>
 
-                    <div class="space-y-3 lg:mb-6 mb-3">
+                    <div v-if="promptQuestions.length" class="space-y-3 lg:mb-6 mb-3">
                         <h3 class="text-sm font-light lg:mb-3 mb-1.5" :class="isDark ? 'text-white/60' : 'text-black'">
                             {{ currentLang === 'ar' ? 'أسئلة سريعة' : 'Quick Questions' }}
                         </h3>
@@ -142,7 +142,7 @@
                                     {{ tip.heading }}
                                 </h4>
                                 <p class="font-light lg:text-xs text-[10px]"
-                                    :class="isDark ? 'text-white/60' : 'text-black'" v-html="tip.body"></p>
+                                    :class="isDark ? 'text-white/60' : 'text-black'">{{ tip.body }}</p>
                             </div>
                         </div>
                     </div>
@@ -150,11 +150,12 @@
 
                 <div v-else class="space-y-3">
                     <div v-for="(m, idx) in messages" :key="idx"
-                        class="max-w-[85%] rounded-xl px-3 py-2 text-sm whitespace-pre-wrap"
+                        class="max-w-[85%] rounded-xl px-3 py-2 text-sm"
                         :class="m.role === 'user'
                             ? (isDark ? 'ml-auto bg-primary-600 text-white' : 'ml-auto bg-primary-600 text-white')
                             : (isDark ? 'bg-white/10 text-white' : 'bg-primary-100/10 text-black')">
-                        {{ m.content }}
+                        <span v-if="m.role === 'user'" class="whitespace-pre-wrap">{{ m.content }}</span>
+                        <div v-else class="md-content" v-html="renderMarkdown(m.content)"></div>
                     </div>
                     <div v-if="sending" class="text-xs opacity-60" :class="isDark ? 'text-white' : 'text-black'">
                         {{ currentLang === 'ar' ? 'عقيل يكتب...' : 'Akeel is typing...' }}
@@ -201,6 +202,7 @@
 const isDark = useTheme().isDark
 const currentLang = useState('currentLang', () => 'en')
 
+const { renderMarkdown } = useMarkdown()
 const { messages, status, usage, sending, error, activeChatId, sendMessage, fetchChats } = useAkeel()
 
 // This widget is only ever mounted on report/feature pages, never on the dedicated
@@ -274,4 +276,10 @@ async function send() {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+.md-content :deep(p) { margin: 0 0 0.5em; }
+.md-content :deep(p:last-child) { margin-bottom: 0; }
+.md-content :deep(ul), .md-content :deep(ol) { margin: 0 0 0.5em 1.25em; }
+.md-content :deep(strong) { font-weight: 600; }
+.md-content :deep(code) { background: rgba(0,0,0,0.06); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
 </style>

@@ -17,25 +17,36 @@ export function useAdminAi() {
     useAdminApi(`/admin/ai/clients/${tenantId}/settings`, { method: 'PUT', body: { settings } })
 
   // ── Global (top-level "AI Settings" tab) ────────────────────────────────
+  // ai_global_settings is now row-per-instruction: seeded/default rows (is_default=true) can't
+  // be removed, admin can freely add their own on top. All rows join into one system prompt.
   const getSettings = () => useAdminApi('/admin/ai/settings')
-  const updateSettings = (body: { system_instructions: string | null; ai_enabled_globally: boolean }) =>
-    useAdminApi('/admin/ai/settings', { method: 'PUT', body })
+  const addSetting = (instruction: string) =>
+    useAdminApi('/admin/ai/settings', { method: 'POST', body: { instruction } })
+  const deleteSetting = (id: number) =>
+    useAdminApi(`/admin/ai/settings/${id}`, { method: 'DELETE' })
 
-  const qs = (params?: Record<string, any>) => params ? `?${new URLSearchParams(params).toString()}` : ''
+  const getUsageSnapshot = () => useAdminApi('/admin/ai/usage-snapshot')
 
-  const getDataLinks = (params?: { page?: number; per_page?: number }) => useAdminApi(`/admin/ai/data-links${qs(params)}`)
+  const qs = (params?: Record<string, any>) => {
+    if (!params) return ''
+    const clean = Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== ''))
+    const s = new URLSearchParams(clean).toString()
+    return s ? `?${s}` : ''
+  }
+
+  const getDataLinks = (params?: { page?: number; per_page?: number; search?: string; domain?: string; category?: string }) => useAdminApi(`/admin/ai/data-links${qs(params)}`)
   const updateDataLink = (id: number, body: { label: string; context: string; category?: string | null; is_active: boolean }) =>
     useAdminApi(`/admin/ai/data-links/${id}`, { method: 'PUT', body })
 
-  const getRules = (params?: { page?: number; per_page?: number }) => useAdminApi(`/admin/ai/rules${qs(params)}`)
+  const getRules = (params?: { page?: number; per_page?: number; search?: string; domain?: string; category?: string }) => useAdminApi(`/admin/ai/rules${qs(params)}`)
   const updateRule = (id: number, body: { label: string; context_template: string | null; category?: string | null; is_active: boolean }) =>
     useAdminApi(`/admin/ai/rules/${id}`, { method: 'PUT', body })
 
-  const getAlertRules = (params?: { page?: number; per_page?: number }) => useAdminApi(`/admin/ai/alert-rules${qs(params)}`)
+  const getAlertRules = (params?: { page?: number; per_page?: number; search?: string; domain?: string; category?: string; priority?: string }) => useAdminApi(`/admin/ai/alert-rules${qs(params)}`)
   const updateAlertRule = (id: number, body: { alert_title: string; category: string | null; priority: string; rag_prompt_instruction: string | null; is_active: boolean }) =>
     useAdminApi(`/admin/ai/alert-rules/${id}`, { method: 'PUT', body })
 
-  const getChatPrompts = (params?: { page?: number; per_page?: number }) => useAdminApi(`/admin/ai/chat-prompts${qs(params)}`)
+  const getChatPrompts = (params?: { page?: number; per_page?: number; search?: string }) => useAdminApi(`/admin/ai/chat-prompts${qs(params)}`)
   const createChatPrompt = (body: any) => useAdminApi('/admin/ai/chat-prompts', { method: 'POST', body })
   const updateChatPrompt = (id: number, body: any) => useAdminApi(`/admin/ai/chat-prompts/${id}`, { method: 'PUT', body })
   const deleteChatPrompt = (id: number) => useAdminApi(`/admin/ai/chat-prompts/${id}`, { method: 'DELETE' })
@@ -43,7 +54,7 @@ export function useAdminAi() {
 
   return {
     getClientAi, toggleClientAi, getClientAiSettings, updateClientAiSettings,
-    getSettings, updateSettings,
+    getSettings, addSetting, deleteSetting, getUsageSnapshot,
     getDataLinks, updateDataLink,
     getRules, updateRule,
     getAlertRules, updateAlertRule,

@@ -22,7 +22,7 @@
                             class="text-blacktext-sm font-medium tracking-widest flex items-center justify-center gap-1 mb-1">
                             <img src="/images/icons/bulb.svg" /> {{ tip.heading }}
                         </p>
-                        <p class="text-sm font-light text-black" v-html="tip.body"></p>
+                        <p class="text-sm font-light text-black">{{ tip.body }}</p>
                     </div>
                 </template>
             </div>
@@ -30,9 +30,10 @@
 
         <div v-else class="flex-1 overflow-y-auto space-y-3 py-2">
             <div v-for="(m, idx) in messages" :key="idx"
-                class="max-w-[80%] rounded-xl px-4 py-2.5 text-sm whitespace-pre-wrap"
-                :class="m.role === 'user' ? 'ml-auto bg-[#00B69B] text-white' : 'bg-primary-100/10 text-black'">
-                {{ m.content }}
+                class="max-w-[80%] rounded-xl px-4 py-2.5 text-sm"
+                :class="m.role === 'user' ? 'ml-auto bg-[#00B69B] text-white whitespace-pre-wrap' : 'bg-primary-100/10 text-black'">
+                <span v-if="m.role === 'user'">{{ m.content }}</span>
+                <div v-else class="md-content" v-html="renderMarkdown(m.content)"></div>
             </div>
             <div v-if="sending" class="text-xs text-black/50">Akeel is typing...</div>
             <div v-if="chatGettingLong" class="text-xs text-amber-600">
@@ -63,6 +64,7 @@
 <script setup>
 defineProps(['isMinimized']);
 
+const { renderMarkdown } = useMarkdown()
 const { messages, activeChatId, sending, chatGettingLong, usageWarning, error, sendMessage } = useAkeel()
 const { questions: promptQuestions, tips: promptTips, fetchPrompts } = useAkeelPrompts()
 
@@ -91,3 +93,11 @@ async function send() {
     await sendMessage(message)
 }
 </script>
+
+<style scoped>
+.md-content :deep(p) { margin: 0 0 0.5em; }
+.md-content :deep(p:last-child) { margin-bottom: 0; }
+.md-content :deep(ul), .md-content :deep(ol) { margin: 0 0 0.5em 1.25em; }
+.md-content :deep(strong) { font-weight: 600; }
+.md-content :deep(code) { background: rgba(0,0,0,0.06); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
+</style>
