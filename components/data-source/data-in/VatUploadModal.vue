@@ -61,7 +61,7 @@
                                     {{ selectedFile.name }}
                                 </template>
                             </p>
-                            <p class="text-xs text-gray-900">
+                            <p class="text-sm font-medium text-gray-600">
                                 <template v-if="!selectedFile">
                                     {{ currentLang === 'ar' ? 'ملفات PDF فقط' : 'PDF files only' }}
                                 </template>
@@ -73,36 +73,36 @@
                     </div>
 
                     <!-- VAT figures -->
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-4 mt-2">
                         <div>
-                            <label class="text-xs font-medium text-gray-500 mb-1 block">Period From</label>
+                            <label class="text-sm font-semibold text-gray-800 mb-1 block">Period From</label>
                             <input v-model="form.period_from" type="date"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#008169]" />
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-base text-gray-900 focus:outline-none focus:border-[#008169]" />
                         </div>
                         <div>
-                            <label class="text-xs font-medium text-gray-500 mb-1 block">Period To</label>
+                            <label class="text-sm font-semibold text-gray-800 mb-1 block">Period To</label>
                             <input v-model="form.period_to" type="date"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#008169]" />
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-base text-gray-900 focus:outline-none focus:border-[#008169]" />
                         </div>
                         <div>
-                            <label class="text-xs font-medium text-gray-500 mb-1 block">Standard Rated Supplies</label>
+                            <label class="text-sm font-semibold text-gray-800 mb-1 block">Standard Rated Supplies</label>
                             <input v-model.number="form.standard_rated_supplies" type="number" step="0.01"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#008169]" />
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-base text-gray-900 focus:outline-none focus:border-[#008169]" />
                         </div>
                         <div>
-                            <label class="text-xs font-medium text-gray-500 mb-1 block">Zero Rated Supplies</label>
+                            <label class="text-sm font-semibold text-gray-800 mb-1 block">Zero Rated Supplies</label>
                             <input v-model.number="form.zero_rated_supplies" type="number" step="0.01"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#008169]" />
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-base text-gray-900 focus:outline-none focus:border-[#008169]" />
                         </div>
                         <div>
-                            <label class="text-xs font-medium text-gray-500 mb-1 block">Exempted Supplies</label>
+                            <label class="text-sm font-semibold text-gray-800 mb-1 block">Exempted Supplies</label>
                             <input v-model.number="form.exempted_supplies" type="number" step="0.01"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#008169]" />
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-base text-gray-900 focus:outline-none focus:border-[#008169]" />
                         </div>
                         <div>
-                            <label class="text-xs font-medium text-gray-500 mb-1 block">Standard Rated Expenses</label>
+                            <label class="text-sm font-semibold text-gray-800 mb-1 block">Standard Rated Expenses</label>
                             <input v-model.number="form.standard_rated_expenses" type="number" step="0.01"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#008169]" />
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-base text-gray-900 focus:outline-none focus:border-[#008169]" />
                         </div>
                     </div>
                 </div>
