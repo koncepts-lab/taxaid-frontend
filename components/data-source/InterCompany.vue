@@ -186,7 +186,10 @@
                         :class="row.selected ? (isDark ? 'bg-[#00896F]/10' : 'bg-[#E6FDF9]') : 'hover:bg-gray-50/50'">
                         <div class="w-10 shrink-0">
                             <input type="checkbox" v-model="row.selected" @change="handleRowSelect(row)"
-                                class="w-4 h-4 rounded border-2 border-black/50 bg-white cursor-pointer accent-[#008169]" />
+                                class="w-4 h-4 rounded cursor-pointer transition-all"
+                                :class="[
+                                    isDark ? 'bg-white/10 border-white/20 accent-[#00896F]' : 'bg-white border-gray-300 text-[#00896F] focus:ring-[#00896F] accent-[#00896F]'
+                                ]" />
                         </div>
                         <div class="flex-1 grid gap-3 items-center"
                             :style="{ gridTemplateColumns: currentConfig.gridCols }">
@@ -225,104 +228,106 @@
         </div>
 
         <!-- 4. Import Modal -->
-        <Transition name="fade">
-            <div v-if="isModalOpen"
-                class="fixed inset-0 z-[1100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-                @click.self="isModalOpen = false">
-                <div class="bg-white rounded-2xl w-full max-w-xl shadow-2xl relative overflow-hidden">
-                    <button @click="isModalOpen = false"
-                        class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M18 6L6 18M6 6l12 12" />
-                        </svg>
-                    </button>
+        <Teleport to="body">
+            <Transition name="fade">
+                <div v-if="isModalOpen"
+                    class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+                    @click.self="isModalOpen = false">
+                    <div class="bg-white rounded-2xl w-full max-w-xl shadow-2xl relative overflow-hidden">
+                        <button @click="isModalOpen = false"
+                            class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                        </button>
 
-                    <div class="p-8 space-y-6">
-                        <div class="space-y-1">
-                            <h2 class="text-lg font-normal text-gray-900">
-                                {{ currentLang === 'ar' ? 'استيراد بيانات الإعدادات' : 'Import Settings Data' }}
-                            </h2>
-                            <p class="text-base text-[#717182]">
-                                {{ currentLang === 'ar' ? 'ارفع ملف إكسل لاستيراد بيانات الإعدادات إلى النظام' :
-                                    'Upload Excel file to import settings data into the system' }}
-                            </p>
-                        </div>
-
-                        <!-- Info Alert -->
-                        <div class="bg-[#E1FFF7] border border-[#04C18F80] rounded-2xl p-4 flex items-start gap-2">
-                            <div
-                                class="w-4 h-4 rounded-full border-2 border-[#0A0A0AA8] flex items-center justify-center shrink-0">
-                                <span class="text-[#0A0A0AA8] font-bold text-[10px]">!</span>
+                        <div class="p-8 space-y-6">
+                            <div class="space-y-1">
+                                <h2 class="text-lg font-normal text-gray-900">
+                                    {{ currentLang === 'ar' ? 'استيراد بيانات الإعدادات' : 'Import Settings Data' }}
+                                </h2>
+                                <p class="text-base text-[#717182]">
+                                    {{ currentLang === 'ar' ? 'ارفع ملف إكسل لاستيراد بيانات الإعدادات إلى النظام' :
+                                        'Upload Excel file to import settings data into the system' }}
+                                </p>
                             </div>
-                            <p class="text-sm text-[#00000078]">
-                                <template v-if="currentLang === 'ar'">
-                                    يرجى التأكد من أن ملف إكسل يتبع التنسيق الصحيح. قم بتحميل النموذج أدناه للمراجعة.
-                                </template>
-                                <template v-else>
-                                    Please ensure your Excel file follows the correct format. Download the template
-                                    below for reference.
-                                </template>
-                            </p>
-                        </div>
 
-                        <div class="flex justify-center">
-                            <button
-                                class="flex items-center gap-2 px-6 py-2.5 bg-[#00896F] text-white rounded-[8px] text-sm font-normal hover:bg-[#006b56] transition-all">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                                </svg>
-                                {{ currentLang === 'ar' ? 'تحميل نموذج إكسل' : 'Download Excel Template' }}
-                            </button>
-                        </div>
-
-                        <div>
-                            <input type="file" ref="fileInput" class="hidden" accept=".xlsx, .xls"
-                                @change="(e) => selectedFile = e.target.files[0]" />
-                            <div @click="triggerPicker" @dragover.prevent="isDragging = true"
-                                @dragleave.prevent="isDragging = false" @drop.prevent="handleDrop"
-                                class="border-2 rounded-[10px] p-12 flex flex-col items-center justify-center transition-all cursor-pointer"
-                                :class="[
-                                    isDragging ? 'border-[#008169] bg-[#E6FDF9]' : 'border-[#04C18F80] bg-white',
-                                    selectedFile ? 'border-solid border-[#008169]' : ''
-                                ]">
-                                <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-3">
-                                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
-                                        :stroke="selectedFile ? '#008169' : '#C0FFF3'" stroke-width="1.5">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                        <path d="M14 2v6h6M8 13h8M8 17h8M10 9H8" />
-                                    </svg>
+                            <!-- Info Alert -->
+                            <div class="bg-[#E1FFF7] border border-[#04C18F80] rounded-2xl p-4 flex items-start gap-2">
+                                <div
+                                    class="w-4 h-4 rounded-full border-2 border-[#0A0A0AA8] flex items-center justify-center shrink-0">
+                                    <span class="text-[#0A0A0AA8] font-bold text-[10px]">!</span>
                                 </div>
-                                <div class="text-center">
-                                    <template v-if="!selectedFile">
-                                        <p class="text-base font-normal text-black">{{ currentLang === 'ar' ?
-                                            'قم بإسقاط ملف إكسل هنا' : 'Drop your Excel file here' }}</p>
-                                        <p class="text-black">{{ currentLang === 'ar' ? 'أو انقر للتصفح' :
-                                            'or click to browse' }}</p>
+                                <p class="text-sm text-[#00000078]">
+                                    <template v-if="currentLang === 'ar'">
+                                        يرجى التأكد من أن ملف إكسل يتبع التنسيق الصحيح. قم بتحميل النموذج أدناه للمراجعة.
                                     </template>
                                     <template v-else>
-                                        <p class="text-lg font-semibold text-[#008169]">{{ selectedFile.name }}</p>
-                                        <p class="text-xs text-gray-500 mt-1">Ready to import ({{ (selectedFile.size /
-                                            1024).toFixed(1) }} KB)</p>
+                                        Please ensure your Excel file follows the correct format. Download the template
+                                        below for reference.
                                     </template>
-                                    <p class="text-sm text-black/50 mt-2">{{ currentLang === 'ar' ?
-                                        'يدعم ملفات .xlsx, .xls(بحد أقصى 10 ميجابايت) ' :
-                                        'Supports.xlsx, .xls files(Max 10MB)'
-                                    }}</p>
+                                </p>
+                            </div>
+
+                            <div class="flex justify-center">
+                                <button
+                                    class="flex items-center gap-2 px-6 py-2.5 bg-[#00896F] text-white rounded-[8px] text-sm font-normal hover:bg-[#006b56] transition-all">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                                    </svg>
+                                    {{ currentLang === 'ar' ? 'تحميل نموذج إكسل' : 'Download Excel Template' }}
+                                </button>
+                            </div>
+
+                            <div>
+                                <input type="file" ref="fileInput" class="hidden" accept=".xlsx, .xls"
+                                    @change="(e) => selectedFile = e.target.files[0]" />
+                                <div @click="triggerPicker" @dragover.prevent="isDragging = true"
+                                    @dragleave.prevent="isDragging = false" @drop.prevent="handleDrop"
+                                    class="border-2 rounded-[10px] p-12 flex flex-col items-center justify-center transition-all cursor-pointer"
+                                    :class="[
+                                        isDragging ? 'border-[#008169] bg-[#E6FDF9]' : 'border-[#04C18F80] bg-white',
+                                        selectedFile ? 'border-solid border-[#008169]' : ''
+                                    ]">
+                                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-3">
+                                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+                                            :stroke="selectedFile ? '#008169' : '#C0FFF3'" stroke-width="1.5">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                            <path d="M14 2v6h6M8 13h8M8 17h8M10 9H8" />
+                                        </svg>
+                                    </div>
+                                    <div class="text-center">
+                                        <template v-if="!selectedFile">
+                                            <p class="text-base font-normal text-black">{{ currentLang === 'ar' ?
+                                                'قم بإسقاط ملف إكسل هنا' : 'Drop your Excel file here' }}</p>
+                                            <p class="text-black">{{ currentLang === 'ar' ? 'أو انقر للتصفح' :
+                                                'or click to browse' }}</p>
+                                        </template>
+                                        <template v-else>
+                                            <p class="text-lg font-semibold text-[#008169]">{{ selectedFile.name }}</p>
+                                            <p class="text-xs text-gray-500 mt-1">Ready to import ({{ (selectedFile.size /
+                                                1024).toFixed(1) }} KB)</p>
+                                        </template>
+                                        <p class="text-sm text-black/50 mt-2">{{ currentLang === 'ar' ?
+                                            'يدعم ملفات .xlsx, .xls(بحد أقصى 10 ميجابايت) ' :
+                                            'Supports.xlsx, .xls files(Max 10MB)'
+                                        }}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="flex justify-end pt-4">
-                            <button @click="simulateImport"
-                                class="px-10 py-2 bg-[#00896F] text-white rounded-xl active:scale-95 transition-all">
-                                {{ currentLang === 'ar' ? 'استيراد' : 'Import' }}
-                            </button>
+                            <div class="flex justify-end pt-4">
+                                <button @click="simulateImport"
+                                    class="px-10 py-2 bg-[#00896F] text-white rounded-xl active:scale-95 transition-all">
+                                    {{ currentLang === 'ar' ? 'استيراد' : 'Import' }}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </Transition>
+            </Transition>
+        </Teleport>
     </div>
 </template>
 

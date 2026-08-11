@@ -1,6 +1,6 @@
 <template>
   <div
-    class="rounded-3xl p-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-sm"
+    class="rounded-3xl p-8 h-auto md:h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-sm"
     :class="isDark ? 'bg-[#003d35]' : 'bg-[#014235]'"
   >
     <!-- Background styling to match the dark green background of the card in the design.
@@ -9,7 +9,7 @@
          I will use text-white for this entire block to match the design. -->
          
     <!-- Header -->
-    <div class="flex justify-between items-start mb-4 relative z-10 text-white">
+    <div class="flex flex-col md:flex-row justify-between items-start mb-4 relative z-10 text-white gap-4 md:gap-0">
       <div class="flex flex-col">
         <h2 class="text-[18px] font-medium leading-tight">
           {{ currentLang === 'ar' ? 'إجمالي الإيرادات مقابل التكلفة' : 'Overall Revenue vs Cost' }}
@@ -47,7 +47,7 @@
     </div>
 
     <!-- Sub Legend mapping (A - J) -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-y-4 gap-x-2 text-[13px] text-white/90 w-full px-8 mt-2 relative z-10">
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-y-4 gap-x-2 text-[13px] text-white/90 w-full px-0 md:px-8 mt-2 relative z-10">
       <div class="flex items-center gap-1.5 whitespace-nowrap">
         <span class="text-[#03D8B0] font-semibold">A</span>
         <span class="opacity-80">- {{ currentLang === 'ar' ? 'سكني' : 'Residential Project' }}</span>
@@ -136,7 +136,7 @@
                 </ClientOnly>
             </div>
             <!-- Sub Legend mapping (A - J) -->
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-y-4 gap-x-2 text-[13px] text-white/90 w-full px-8 mt-2 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-y-4 gap-x-2 text-[13px] text-white/90 w-full px-0 md:px-8 mt-2 relative z-10">
                 <div class="flex items-center gap-1.5 whitespace-nowrap">
                   <span class="text-[#03D8B0] font-semibold">A</span>
                   <span class="opacity-80">- {{ currentLang === 'ar' ? 'سكني' : 'Residential Project' }}</span>
@@ -187,15 +187,24 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
+const windowWidth = ref(1024)
 const { overallRevenueVsCost, fetchChart } = useCostCenterChart()
 
-onMounted(() => fetchChart())
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    windowWidth.value = window.innerWidth
+    const handleResize = () => { windowWidth.value = window.innerWidth }
+    window.addEventListener('resize', handleResize)
+    onUnmounted(() => window.removeEventListener('resize', handleResize))
+  }
+  fetchChart()
+})
 
 const categories = computed(() => overallRevenueVsCost.value?.categories ?? [])
 const mappingFullNames = computed(() => overallRevenueVsCost.value?.mappingFullNames ?? {})
@@ -224,14 +233,14 @@ const chartOptions = computed(() => ({
       borderRadiusApplication: 'end',
       dataLabels: {
         position: 'top',
-        orientation: 'vertical'
+        orientation: windowWidth.value < 768 ? 'vertical' : 'horizontal'
       },
     }
   },
   colors: ['#FB7554', '#03D8B0'],
   dataLabels: {
     enabled: true,
-    offsetY: -45,
+    offsetY: -35,
     style: {
       fontSize: '11px',
       colors: ['#FB7554', '#03D8B0']

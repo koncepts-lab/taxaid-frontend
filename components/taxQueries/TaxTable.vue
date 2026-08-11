@@ -1,5 +1,5 @@
 <template>
-    <div class="transition-all duration-300 bg-white rounded-2xl">
+    <div class="transition-all duration-300 bg-white rounded-2xl w-full max-w-full overflow-hidden">
         <div class="flex lg:flex-row flex-col justify-between lg:items-center items-start px-4 py-2">
             <h2 v-if="!isMinimized" class="text-base font-medium text-primary-450">{{ title }} Summary</h2>
 
@@ -23,8 +23,8 @@
             </div>
         </div>
 
-        <div v-if="!isMinimized" class="bg-white rounded-b-2xl border border-emerald-50 shadow-sm overflow-hidden">
-            <div class="overflow-auto lg:max-h-60 max-h-auto">
+        <div v-if="!isMinimized" class="bg-white rounded-b-2xl border border-emerald-50 shadow-sm w-full">
+            <div class="overflow-x-auto lg:max-h-60 max-h-auto w-full">
                 <table class="w-full text-left text-[11px] border-collapse min-w-[900px]">
                     <thead class="bg-primary-500 text-white font-medium text-sm sticky top-0 z-10">
                         <tr>
@@ -54,7 +54,7 @@
                             </tr>
                             <tr v-if="isExpandable(row) && expandedIdx === idx" class="bg-emerald-50/30 border-b border-gray-50">
                                 <td colspan="5" class="px-4 py-3">
-                                    <div class="flex flex-wrap gap-6 text-xs text-secondary-150/80" style="padding-left: 20%;">
+                                    <div class="flex flex-col md:flex-row flex-wrap gap-2 md:gap-6 text-xs text-secondary-150/80 pl-0 md:pl-[20%]">
                                         <div>
                                             <span class="text-gray-400">Standard Rated Supplies: </span>
                                             <span class="font-semibold">{{ formatInMillions(row.standardRatedSupplies) }}</span>

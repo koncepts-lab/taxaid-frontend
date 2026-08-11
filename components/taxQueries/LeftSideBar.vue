@@ -79,10 +79,9 @@
                     </div>
 
                     <!-- TRIGGER FOR STEP 2: SEARCH -->
-                    <div class="mt-4 relative"
-                        @click="alert('Search Clicked! This will open the full chat history view on mobile.')">
-                        <input type="text" readonly placeholder="Search Chat" @click="viewMode = 'history'"
-                            class="w-full bg-gray-50 border border-primary-100/33 rounded-xl p-3 text-xs focus:outline-none cursor-pointer" />
+                    <div class="mt-4 relative">
+                        <input type="text" readonly placeholder="Search Chat"
+                            class="w-full bg-gray-50 border border-primary-100/33 rounded-xl p-3 text-xs placeholder:font-semibold placeholder:text-gray-500 focus:outline-none cursor-pointer" />
                         <img src="/images/icons/search.svg" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2" />
                     </div>
 
