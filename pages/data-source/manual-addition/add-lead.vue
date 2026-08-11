@@ -122,7 +122,7 @@
                         </div>
                         <transition name="fade-slide">
                           <div v-if="activeCalendar === 'milestone-' + index"
-                            class="absolute top-[calc(100%+8px)] right-0 z-[9999] bg-white border border-gray-100 rounded-2xl shadow-2xl p-2">
+                            class="absolute top-[calc(100%+8px)] left-0 z-[9999] bg-white border border-gray-100 rounded-2xl shadow-2xl p-2">
                             <VDatePicker v-model="milestone.date" @update:model-value="activeCalendar = null" color="teal" borderless />
                           </div>
                         </transition>
