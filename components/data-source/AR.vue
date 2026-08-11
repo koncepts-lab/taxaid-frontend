@@ -83,13 +83,13 @@
                         </td>
                     </tr>
 
-                    <tr v-for="(row, index) in arRows" :key="index" class="border-b transition-all duration-300"
+                    <tr v-for="(row, index) in paginatedRows" :key="index" class="border-b transition-all duration-300"
                         :class="[
                           row.is_total
                             ? (isDark ? 'bg-[#00B794]/20 border-[#00B794]/30 font-semibold' : 'bg-[#e8fdf7] border-[#84D7C5] font-semibold')
                             : (isDark ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50/50')
                         ]">
-                        <td class="px-6 py-4 text-sm" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ row.is_total ? '—' : index + 1 }}</td>
+                        <td class="px-6 py-4 text-sm" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ row.is_total ? '—' : (currentPage - 1) * perPage + index + 1 }}</td>
                         <td class="px-4 py-4 text-sm font-medium" :class="isDark ? 'text-white' : 'text-[#0A0A0A]'">{{ row.customer }}</td>
                         <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.amount) }}</td>
                         <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.not_due) }}</td>
@@ -113,17 +113,53 @@
             </table>
         </div>
 
+        <!-- Pagination -->
+        <div v-if="arRows.length > 0" class="lg:py-6 py-4 px-4 lg:px-0 flex flex-wrap items-center justify-between gap-3">
+            <span class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-500'">
+                {{ currentLang === 'ar' ? 'عرض' : 'Showing' }} {{ pageStart }}–{{ pageEnd }} {{ currentLang === 'ar' ? 'من' : 'of' }} {{ totalItems }} {{ currentLang === 'ar' ? 'النتائج' : 'results' }}
+            </span>
+            <div class="flex items-center gap-1.5">
+                <button @click="goToPage(currentPage - 1)"
+                    :disabled="currentPage <= 1"
+                    class="px-3 py-1.5 rounded-lg border text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    :class="isDark ? 'border-white/10 text-white/80 bg-[#1a1a1a] hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
+                    {{ currentLang === 'ar' ? 'السابق' : 'Previous' }}
+                </button>
+                <button v-for="p in visiblePages" :key="p"
+                    @click="goToPage(p)"
+                    :class="[
+                        p === currentPage
+                            ? (isDark ? 'bg-[#00896F] text-white border-[#00896F]' : 'bg-[#00896F] text-white border-[#00896F]')
+                            : (isDark ? 'bg-[#1a1a1a] text-white/80 border-white/10 hover:bg-white/10' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'),
+                        'w-8 h-8 flex items-center justify-center rounded-lg border text-sm font-medium transition-all'
+                    ]">
+                    {{ p }}
+                </button>
+                <button @click="goToPage(currentPage + 1)"
+                    :disabled="currentPage >= totalPages"
+                    class="px-3 py-1.5 rounded-lg border text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    :class="isDark ? 'border-white/10 text-white/80 bg-[#1a1a1a] hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
+                    {{ currentLang === 'ar' ? 'التالي' : 'Next' }}
+                </button>
+            </div>
+        </div>
+
         <Teleport to="body">
-            <Transition name="fade">
+            <Transition name="bottom-sheet">
                 <div v-if="isModalOpen"
-                    class="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                    class="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4"
                     :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="isModalOpen = false">
 
-                    <div class="w-full max-w-[90vw] bg-white transition-all duration-300 transform scale-100 shadow-2xl rounded-lg p-6"
-                        :class="isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white'">
+                    <div class="w-full bg-white flex flex-col transition-all duration-500 shadow-2xl max-h-[78vh] rounded-t-4xl sm:h-auto sm:max-w-[90vw] sm:max-h-[78vh] sm:min-h-[40vh] sm:rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 overflow-y-auto no-scrollbar"
+                        :class="isDark ? 'bg-[#01261f] border-t sm:border border-white/10' : 'bg-white border-none'">
 
-                        <div class="flex justify-between items-center mb-8 px-4">
-                            <h2 class="text-2xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+                        <!-- Mobile Drag Handle (Visual only) -->
+                        <div class="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
+                            <div class="w-12 h-1.5 rounded-full bg-gray-300/30"></div>
+                        </div>
+
+                        <div class="flex justify-between items-center mb-4 sm:mb-8 px-4 sm:px-6 pt-2 sm:pt-6 shrink-0">
+                            <h2 class="text-lg sm:text-2xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
                                 {{ title }} - {{ currentLang === 'ar' ? 'تقرير مفصل' : 'Detailed Report' }}
                             </h2>
                             <button @click="isModalOpen = false"
@@ -135,8 +171,9 @@
                             </button>
                         </div>
 
-                        <div class="overflow-x-auto rounded-[20px] border"
-                            :class="isDark ? 'border-white/10' : 'border-gray-200'">
+                        <div class="w-full flex-1 flex flex-col min-h-0 overflow-x-auto overflow-y-auto no-scrollbar px-4 sm:px-6 pb-4 sm:pb-6">
+                            <div class="rounded-[20px] border overflow-y-auto"
+                                :class="isDark ? 'border-white/10' : 'border-gray-200'">
                             <table class="w-full text-left rtl:text-right border-collapse min-w-[1200px]">
                                 <thead>
                                     <tr class="bg-[#008864] text-white">
@@ -149,7 +186,7 @@
                                         <th class="px-6 py-5 text-[15px] font-medium text-right rtl:text-left">{{ currentLang === 'ar' ? 'المبلغ' : 'Amount' }}</th>
                                     </tr>
                                 </thead>
-                                <tbody class="max-h-[78vh]">
+                                <tbody>
                                     <tr v-for="i in 11" :key="i" class="border-b transition-colors"
                                         :class="isDark ? 'border-white/5 hover:bg-white/5 text-white/80' : 'border-gray-100 hover:bg-gray-50 text-gray-700'">
                                         <td class="px-6 py-4 text-[15px]">AI Dhabi Contracting LLC</td>
@@ -172,6 +209,7 @@
                         </div>
                     </div>
                 </div>
+            </div>
             </Transition>
         </Teleport>
     </div>
@@ -228,6 +266,46 @@ const formatNumber = (val) => {
         maximumFractionDigits: 2,
     })
 }
+
+// Pagination
+const currentPage = ref(1);
+const perPage = ref(10);
+const totalItems = computed(() => props.arRows.length);
+const totalPages = computed(() => Math.ceil(totalItems.value / perPage.value) || 1);
+
+const paginatedRows = computed(() => {
+    const start = (currentPage.value - 1) * perPage.value;
+    return props.arRows.slice(start, start + perPage.value);
+});
+
+const pageStart = computed(() => totalItems.value === 0 ? 0 : (currentPage.value - 1) * perPage.value + 1);
+const pageEnd = computed(() => Math.min(currentPage.value * perPage.value, totalItems.value));
+
+const visiblePages = computed(() => {
+    const maxVisible = 5;
+    let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2));
+    let end = start + maxVisible - 1;
+    if (end > totalPages.value) {
+        end = totalPages.value;
+        start = Math.max(1, end - maxVisible + 1);
+    }
+    const pages = [];
+    for (let i = start; i <= end; i++) {
+        pages.push(i);
+    }
+    return pages;
+});
+
+const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page;
+    }
+};
+
+watch(() => props.arRows, () => {
+    currentPage.value = 1;
+}, { deep: true });
+
 </script>
 
 <style scoped>
