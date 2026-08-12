@@ -15,7 +15,7 @@
           <p class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-500'">
             {{ currentLang === 'ar' ? 'انقر على أي بطاقة للحصول على رؤى وتوصيات مدعومة بالذكاء الاصطناعي.' : 'Click any card for AI-powered insights & recommendations.' }}
           </p>
-        </div>
+        </div>  
 
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20 mx-4 lg:mx-0">
           <div v-for="(card, index) in cards" :key="index" @click="navigateTo('/chat-with-akeel')"
