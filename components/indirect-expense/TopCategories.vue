@@ -2,14 +2,14 @@
   <div class="w-full h-full rounded-[30px] p-8 relative flex flex-col overflow-hidden"
     :style="{ background: 'linear-gradient(90.74deg, #008C68 9.63%, #007053 50.16%, #00523D 91.47%)' }">
     <!-- Header Area -->
-    <div class="flex flex-col lg:flex-row justify-between items-start flex-shrink-0 mb-4 px-2">
+    <div class="flex flex-row justify-between items-start flex-shrink-0 mb-4 px-2">
       <div class="mb-4 lg:mb-0">
         <h2 class="text-[22px] font-medium text-white">{{ currentLang === 'ar' ? 'أفضل 5 فئات للمصروفات غير المباشرة' : 'Top 5 Indirect Expense Categories' }}</h2>
         <p class="text-[16px] font-normal mt-1 text-white/60">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
       </div>
-      <div class="flex items-center gap-3 lg:gap-4 w-full lg:w-auto justify-between lg:justify-end">
+      <div class="flex items-center gap-3 lg:gap-4 w-full lg:w-auto max-w-[60px] lg:max-w-none justify-end">
         <img src="/images/icons/info-white.svg" alt="Info" class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" />
-        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity hidden lg:block" @click="isModalOpen = true" />
+        <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
       </div>
     </div>
 

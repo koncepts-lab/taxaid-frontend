@@ -1,68 +1,23 @@
 <template>
-    <div
+    <!-- <div
         class="relative w-full float-left mt-[30px] z-50 h-fit max-w-full mx-auto flex flex-col items-center justify-end min-h-[400px] font-sans">
+        ... (graphical wheel commented out) ...
+    </div> -->
 
-        <button @click="prevCategory"
-            class="absolute left-4 lg:-left-30 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white/90 shadow-md flex items-center justify-center transition-all z-50 hover:bg-primary-250 border  hover:border-primary-800">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5">
-                <path d="M15 18l-6-6 6-6" />
-            </svg>
+    <div class="relative w-full flex flex-wrap justify-center gap-3 mt-4 mb-6 z-30 pb-4">
+        <!-- Updated @click to use setCategory for v-model sync -->
+        <button v-for="(cat, index) in categoriesWithIcons" :key="cat.id" @click="setCategory(index)"
+            class="flex items-center gap-1 px-5 py-2.5 rounded-full transition-all duration-300 text-sm font-medium border "
+            :class="activeIndex === index
+                ? ' text-white border-white border-[#008472] shadow-lg scale-105'
+                : 'bg-[#F1F3F4] text-black/70 border-transparent hover:bg-gray-200'"
+            :style="activeIndex === index ? { backgroundColor: cat.color } : {}">
+            <div class="w-4 h-4 [&>svg]:w-full [&>svg]:h-full" v-html="cat.icon.template"></div>
+            {{ currentLang === 'ar' ? cat.labelAr : cat.label }}
+            <span class="ml-1 bg-white/20 px-2 py-0.5 rounded-full text-[10px]">
+                {{ cat.count }}
+            </span>
         </button>
-
-        <div class="relative w-full flex flex-col items-center">
-            <div class="relative w-full max-w-[600px] h-[300px] lg:h-[340px]">
-
-                <img :key="activeIndex" :src="categoriesWithIcons[activeIndex]?.wheel" alt="Gauge Background"
-                    class="w-full h-auto block absolute inset-0" />
-
-                <Transition :name="transitionName">
-                    <div :key="activeIndex"
-                        class="absolute inset-0 flex flex-col items-center justify-center pt-20 text-white">
-                        <div class="opacity-30 mb-2 w-10 h-10 flex items-center justify-center [&>svg]:!w-full [&>svg]:!h-full"
-                            :style="{ color: categoriesWithIcons[activeIndex]?.textColor }"
-                            v-html="categoriesWithIcons[activeIndex]?.icon?.template">
-                        </div>
-                        <h2 class="text-2xl lg:text-4xl font-semibold tracking-wide"
-                            :style="{ color: categoriesWithIcons[activeIndex]?.textColor }">
-                            {{ currentLang === 'ar' ? categoriesWithIcons[activeIndex]?.labelAr :
-                                categoriesWithIcons[activeIndex]?.label }}
-                        </h2>
-                        <p class="text-xs lg:text-lg opacity-60"
-                            :style="{ color: categoriesWithIcons[activeIndex]?.textColor }">
-                            {{ currentLang === 'ar' ? categoriesWithIcons[activeIndex]?.titleAr ||
-                                categoriesWithIcons[activeIndex]?.title : categoriesWithIcons[activeIndex]?.title }}
-                        </p>
-                        <span class="text-4xl lg:text-4xl font-semibold mt-4"
-                            :style="{ color: categoriesWithIcons[activeIndex]?.textColor }">
-                            {{ categoriesWithIcons[activeIndex]?.count }}
-                        </span>
-                    </div>
-                </Transition>
-            </div>
-        </div>
-
-        <button @click="nextCategory"
-            class="absolute z-30 right-4 lg:-right-30 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center  transition-all z-20 hover:bg-primary-250   hover:border-primary-800 border">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5">
-                <path d="M9 18l6-6-6-6" />
-            </svg>
-        </button>
-
-        <div class="flex flex-wrap justify-center gap-3 mt-[-35px] z-30 pb-10">
-            <!-- Updated @click to use setCategory for v-model sync -->
-            <button v-for="(cat, index) in categoriesWithIcons" :key="cat.id" @click="setCategory(index)"
-                class="flex items-center gap-1 px-5 py-2.5 rounded-full transition-all duration-300 text-sm font-medium border "
-                :class="activeIndex === index
-                    ? ' text-white border-white border-[#008472] shadow-lg scale-105'
-                    : 'bg-[#F1F3F4] text-black/70 border-transparent hover:bg-gray-200'"
-                :style="activeIndex === index ? { backgroundColor: cat.color } : {}">
-                <div class="w-4 h-4 [&>svg]:w-full [&>svg]:h-full" v-html="cat.icon.template"></div>
-                {{ currentLang === 'ar' ? cat.labelAr : cat.label }}
-                <span class="ml-1 bg-white/20 px-2 py-0.5 rounded-full text-[10px]">
-                    {{ cat.count }}
-                </span>
-            </button>
-        </div>
     </div>
 </template>
 

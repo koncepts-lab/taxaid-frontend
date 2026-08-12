@@ -8,19 +8,7 @@
                 <div class="mx-auto">
                     <AlertsHeader @change="onDateChange" />
 
-                    <!-- Mobile Status Pill Layout -->
-                    <div class="mt-4 md:hidden relative" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-                        <div class="w-full bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 rounded-full p-1.5 flex gap-1 shadow-sm overflow-x-auto no-scrollbar">
-                            <button v-for="(cat, idx) in enrichedCategories" :key="'mob-stat-'+cat.id" @click="activeIndex = idx"
-                                class="flex-1 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center justify-center gap-2"
-                                :class="activeIndex === idx ? 'bg-[#013E32] text-white shadow-md' : 'text-gray-700 dark:text-white/70 hover:bg-gray-100 dark:hover:bg-white/10'">
-                                {{ currentLang === 'ar' ? cat.labelAr : cat.label }}
-                                <span class="px-2 py-0.5 rounded-full text-xs" :class="activeIndex === idx ? 'bg-white/20' : 'bg-gray-200 dark:bg-white/10'">
-                                    {{ cat.count }}
-                                </span>
-                            </button>
-                        </div>
-                    </div>
+                    <!-- Mobile Status Pill Layout (Removed) -->
 
                     <!-- Loading state -->
                     <div v-if="loading" class="flex items-center justify-center py-16">
@@ -33,6 +21,10 @@
                     </div>
 
                     <template v-else>
+                        <AlertsWheel
+                            v-model:activeIndex="activeIndex"
+                            :categories="enrichedCategories"
+                        />
                         <AlertsSummary
                             :type="activeStatus"
                             :data="filteredData"
@@ -78,12 +70,6 @@
             :currentLang="currentLang"
             @close="closeModal"
         />
-        <div class="hidden md:block">
-            <AlertsWheel
-                v-model:activeIndex="activeIndex"
-                :categories="enrichedCategories"
-            />
-        </div>
     </NuxtLayout>
 </template>
 

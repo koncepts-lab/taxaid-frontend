@@ -42,7 +42,7 @@
                         </button>
                         <Transition name="dropdown">
                             <div v-if="showDateDropdown"
-                                class="absolute right-0 rtl:left-0 mt-2 border rounded-lg shadow-lg z-[100] py-2 px-2 min-w-[180px]"
+                                class="absolute left-0 rtl:right-0 mt-2 border rounded-lg shadow-lg z-[100] py-2 px-2 min-w-[180px]"
                                 :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-[#03D8B0]'">
                                 <button v-for="period in periods" :key="period.en" @click="selectPeriod(period)"
                                     class="w-full text-left rtl:text-right px-4 py-3 font-normal text-sm rounded-lg transition-colors"
