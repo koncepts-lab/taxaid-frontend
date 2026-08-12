@@ -2,7 +2,7 @@
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
 
     <!-- HEADER -->
-    <DashboardHeader userName="Team Member Dashboard" userId="Welcome, Akhil" :showChangeProfile="true" :showManageAccess="true" changeProfileLink="/profile" />
+    <AdminDashboardHeader :userName="admin?.role?.name ?? 'Team Member Dashboard'" :userId="'Welcome, ' + (admin?.full_name ?? '')" :showChangeProfile="true" :showManageAccess="true" changeProfileLink="/profile" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 py-8 space-y-8 overflow-y-auto" style="margin-top: -18px;">
@@ -174,6 +174,7 @@ import { useActivityTracking } from '~/composables/admin/review/useActivityTrack
 
 const router = useRouter()
 const { isDark } = useTheme()
+const { admin } = useAdminAuth()
 
 const { fetchDailyLogs, dailyLogsMeta } = useActivityTracking()
 

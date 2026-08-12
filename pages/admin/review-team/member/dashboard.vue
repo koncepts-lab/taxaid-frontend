@@ -4,7 +4,8 @@
     <WorkSessionGuardModal :show="showGuard" @dismiss="showGuard = false" />
 
     <!-- HEADER -->
-    <DashboardHeader userName="Team Member Dashboard" userId="Welcome, Akhil" :showChangeProfile="false" :showManageAccess="false" changeProfileLink="/profile" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
+    <!-- TODO: NEED Alerts — Review Team Member / Review Consultant has no real notification data yet; points at the shared /admin/notifications page (empty for now) instead of the old /revenue-partnership/notifications, which needs an rp_token this role doesn't have. -->
+    <AdminDashboardHeader :userName="admin?.role?.name ?? 'Team Member Dashboard'" :userId="'Welcome, ' + (admin?.full_name ?? '')" :showChangeProfile="false" :showManageAccess="false" changeProfileLink="/profile" notificationsTo="/admin/notifications" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 py-4 space-y-6 overflow-y-auto">
@@ -619,7 +620,7 @@
                           }">{{ s.status }}</span>
                   </td>
                   <td class="py-4 px-6 text-right">
-                    <NuxtLink :to="`/review-team-member/${s.tenantId}`"
+                    <NuxtLink :to="`/admin/review-team/member/${s.tenantId}`"
                               class="flex items-center justify-end gap-1 text-[13px] font-medium transition-colors hover:opacity-80"
                               :class="isDark ? 'text-[#10FFD4]' : 'text-[#00896F]'">
                       Project Details
@@ -1012,6 +1013,7 @@ import WorkSessionGuardModal from '~/components/admin/review/WorkSessionGuardMod
 import SessionTimerRow from '~/components/admin/review/SessionTimerRow.vue'
 
 const { isDark } = useTheme()
+const { admin } = useAdminAuth()
 
 // ── Composables ───────────────────────────────────────────────
 const {
@@ -1070,7 +1072,7 @@ function navigateTab(tab) {
 }
 
 function navigateToActivityLog() {
-  navigateTo('/review-team-member/activity-log')
+  navigateTo('/admin/review-team/member/activity-log')
 }
 
 watch(activeMainTab, async (tab) => {

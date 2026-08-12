@@ -7,9 +7,9 @@
     </div>
 
     <!-- Left: Logo -->
-    <div class="flex items-center mt-2">
+    <NuxtLink to="/admin" class="flex items-center mt-2">
       <img :src="isDark ? '/images/logo-dark.svg' : '/images/logo.svg'" alt="Taxaid.AI" class="w-[180px] h-auto" />
-    </div>
+    </NuxtLink>
 
     <!-- Right: Profile & Actions -->
     <div class="flex items-center gap-6">
@@ -45,9 +45,14 @@
         </CommonTooltip>
         <!-- Notifications -->
         <CommonTooltip :text="currentLang === 'ar' ? 'التنبيهات' : 'Notifications'">
-          <NuxtLink to="/revenue-partnership/notifications"
-            class="w-[38px] h-[38px] rounded-full bg-[#00896F]/40 border border-[#ffffff1A] flex items-center justify-center text-white hover:bg-[#00896F]/60 transition-colors cursor-pointer">
+          <NuxtLink :to="notificationsTo"
+            class="relative w-[38px] h-[38px] rounded-full bg-[#00896F]/40 border border-[#ffffff1A] flex items-center justify-center text-white hover:bg-[#00896F]/60 transition-colors cursor-pointer">
             <img src="/images/icons/Notifications.svg" alt="Notifications" class="w-5 h-5 invert brightness-0" />
+            <span v-if="notificationCount > 0"
+              class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center text-[10px] font-semibold leading-none text-white border-2"
+              :style="isDark ? { background: '#04B788', borderColor: '#0a1f1a' } : { background: '#00896F', borderColor: '#F0F0F0' }">
+              {{ notificationCount > 99 ? '99+' : notificationCount }}
+            </span>
           </NuxtLink>
         </CommonTooltip>
 
@@ -92,11 +97,31 @@ const props = defineProps({
   adminLogout: {
     type: Boolean,
     default: false
+  },
+  notificationsTo: {
+    type: String,
+    default: '/revenue-partnership/notifications'
   }
 })
 
 const currentLang = useState('currentLang')
 const { isDark, toggleTheme } = useTheme()
+
+const notificationCount = ref(0)
+const route = useRoute()
+
+if (props.adminLogout) {
+  const { fetchNotifications } = useNotifications()
+
+  function loadNotificationCount() {
+    fetchNotifications({ mode: 'dashboard' })
+      .then(res => { notificationCount.value = (res?.ticket_count ?? 0) + (res?.default_count ?? 0) })
+      .catch(() => {})
+  }
+
+  onMounted(loadNotificationCount)
+  watch(() => route.path, loadNotificationCount)
+}
 
 function handleLogout() {
   if (props.adminLogout) {

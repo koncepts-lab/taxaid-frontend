@@ -4,7 +4,7 @@
     :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
     <!-- HEADER -->
-    <DashboardHeader />
+    <AdminDashboardHeader />
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 pb-[0px] pt-8 space-y-6 overflow-y-auto" style="margin-top: -18px;">

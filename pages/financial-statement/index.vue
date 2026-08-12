@@ -17,6 +17,20 @@
                         @reload="fetchTabData(activeTab)"
                         @export-pdf="handleExportPDF" />
 
+                    <!-- Gap-day snapshot notice: shown when the Balance Sheet
+                         "as of" date has no exact ledger snapshot and the
+                         latest earlier one is displayed (same pattern as
+                         AR/AP's snapshotNotice). -->
+                    <div v-if="activeTab === 'balance-sheet' && bsSnapshotNotice"
+                        class="mb-4 -mt-4 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-sm">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                        <span v-if="currentLang === 'ar'">عرض بيانات <b>{{ bsSnapshotDate }}</b> (آخر مزامنة) — لا توجد بيانات للتاريخ المحدد {{ bsRequestedDate }}</span>
+                        <span v-else>Showing data of <b>{{ bsSnapshotDate }}</b> (last sync) — no data was synced for the selected date {{ bsRequestedDate }}.</span>
+                    </div>
+
                     <!-- Tabs -->
                     <div class="flex gap-3 my-8 overflow-x-auto pb-2 no-scrollbar px-4 lg:px-0"
                         :class="currentLang === 'ar' ? 'flex-row-reverse' : ''">
@@ -90,7 +104,7 @@ watch(activeTab, (val) => {
     router.replace({ query: { ...route.query, tab: val } })
 })
 
-const { filters, selectedRatioType, plRows, bsRows, ratiosRows, reportInfo, loading, error, fetchTabData } = useFinancialStatement()
+const { filters, selectedRatioType, plRows, bsRows, ratiosRows, reportInfo, loading, error, fetchTabData, bsSnapshotDate, bsRequestedDate, bsSnapshotNotice } = useFinancialStatement()
 
 onMounted(() => {
   useLocation().syncSessionLocation()

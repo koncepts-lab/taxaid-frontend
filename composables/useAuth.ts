@@ -38,6 +38,18 @@ export const useAuth = () => {
         const authToken = useCookie('auth_token', cookieOptions)
         authToken.value = response.data.token
 
+        // Unified lifecycle status (registered/onboarding/pending_review/implementation/live/
+        // suspended) — read by middleware/auth.global.ts on every navigation without re-fetching
+        // from the API each time. Refreshed here and by /me (useProfileStatus) after verify.
+        const tenantStatus = useCookie('tenant_status', cookieOptions)
+        tenantStatus.value = response.data.tenant?.status ?? null
+
+        // 'tenant' | 'taxaid' — lets middleware/auth.global.ts skip the onboarding/waiting
+        // redirect for TaxAid staff on a temp credential, who need the real dashboard even
+        // while the tenant they're working on isn't 'live' yet.
+        const accountType = useCookie('account_type', cookieOptions)
+        accountType.value = response.data.user?.account_type ?? null
+
         resetProfile()
 
         user.value = response.data.user   // Saved to global state
@@ -79,6 +91,8 @@ export const useAuth = () => {
 
     token.value = null
     user.value = null
+    useCookie('tenant_status').value = null
+    useCookie('account_type').value = null
     resetProfile()
     try {
       localStorage.removeItem('auth_user_id')

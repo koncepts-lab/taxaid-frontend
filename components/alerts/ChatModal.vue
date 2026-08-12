@@ -42,28 +42,32 @@
                     <div class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar"
                         :class="isDark ? 'bg-[#001410]' : 'bg-gray-50'">
 
-                        <!-- Initial Bot Message -->
-                        <div class="flex flex-col items-start max-w-[85%]">
+                        <div v-for="(m, idx) in messages" :key="idx" class="flex flex-col max-w-[85%]"
+                            :class="m.role === 'user' ? 'items-end ml-auto' : 'items-start'">
                             <div class="p-4 shadow-sm text-[15px] leading-relaxed transition-all duration-300" :class="[
-                                isDark
-                                    ? 'bg-white/10 border border-white/10 text-white/90'
-                                    : 'bg-white border border-gray-100 text-gray-800',
-                                currentLang === 'ar' ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none'
+                                m.role === 'user'
+                                    ? 'bg-primary-250 text-white rounded-2xl'
+                                    : (isDark
+                                        ? 'bg-white/10 border border-white/10 text-white/90'
+                                        : 'bg-white border border-gray-100 text-gray-800'),
+                                m.role !== 'user' && (currentLang === 'ar' ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none')
                             ]">
-                                {{ currentLang === 'ar'
-                                    ? `مرحباً! أنا هنا لمساعدتك بخصوص "${alert.title}". ماذا تود أن تعرف عن
-                                هذا التنبيه؟`
-                                    : `Hi! I'm here to help you with "${alert.title}". What would you like to know about
-                                this alert?`
-                                }}
+                                <span v-if="m.role === 'user'" class="whitespace-pre-wrap">{{ m.content }}</span>
+                                <div v-else class="md-content" v-html="renderMarkdown(m.content)"></div>
                             </div>
-                            <span class="text-[10px] text-gray-400 mt-2 mx-1">5:18 PM</span>
+                        </div>
+                        <div v-if="sending" class="text-xs" :class="isDark ? 'text-white/50' : 'text-black/50'">
+                            {{ currentLang === 'ar' ? 'عقيل يكتب...' : 'Akeel is typing...' }}
                         </div>
                     </div>
 
                     <!-- Footer / Input -->
-                    <div class="p-5 border-t flex items-center gap-3 shrink-0 transition-colors duration-300"
+                    <div class="px-5 pt-5 pb-2 border-t transition-colors duration-300" v-if="error"
                         :class="isDark ? 'bg-[#001a16] border-white/10' : 'bg-white border-gray-100'">
+                        <p class="text-xs text-red-500">{{ error }}</p>
+                    </div>
+                    <div class="p-5 flex items-center gap-3 shrink-0 transition-colors duration-300"
+                        :class="[isDark ? 'bg-[#001a16] border-white/10' : 'bg-white border-gray-100', !error && 'border-t']">
 
                         <button class="p-2 transition-colors"
                             :class="isDark ? 'text-white/40 hover:text-white/70' : 'text-gray-400 hover:text-gray-600'">
@@ -75,15 +79,15 @@
                         </button>
 
                         <div class="flex-1 relative">
-                            <input v-model="chatInput" type="text"
+                            <input v-model="chatInput" type="text" :disabled="sending"
                                 :placeholder="currentLang === 'ar' ? 'اكتب رسالتك...' : 'Type your message...'"
-                                class="w-full border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-[#00B68D] outline-none transition-all"
+                                class="w-full border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-[#00B68D] outline-none transition-all disabled:opacity-50"
                                 :class="isDark
                                     ? 'bg-white/5 text-white placeholder:text-white/30'
                                     : 'bg-gray-100 text-black placeholder:text-black/40'" @keyup.enter="handleSend" />
                         </div>
 
-                        <button @click="handleSend"
+                        <button @click="handleSend" :disabled="sending"
                             class="p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center"
                             :class="isDark ? 'bg-[#03D8B0] text-[#01261f]' : 'bg-primary-250 text-white hover:bg-[#03D8B0]'">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -99,23 +103,37 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-
-// Using your global state logic instead of props
-const { isDark } = useTheme();
-const currentLang = useState('currentLang', () => 'en');
+import { ref, watch } from 'vue';
 
 const props = defineProps({
     isOpen: Boolean,
-    alert: Object
+    alert: Object,
+    isDark: Boolean,
+    currentLang: String,
 });
 
 const emit = defineEmits(['close']);
 const chatInput = ref('');
 
-const handleSend = () => {
-    if (!chatInput.value.trim()) return;
+const { renderMarkdown } = useMarkdown()
+const { messages, sending, activeChatId, error, createChat, sendMessage } = useAkeel()
+
+// A fresh alert-context conversation each time the modal opens for a new alert —
+// not the same shared chat as the sidebar/full-page widgets.
+watch(() => props.isOpen, async (open) => {
+    if (!open || !props.alert?.id) return
+    activeChatId.value = null
+    messages.value = []
+    const domains = props.alert?.module ? [String(props.alert.module).toUpperCase()] : []
+    await createChat()
+    await sendMessage(`Tell me about this alert: "${props.alert?.title}"`, domains)
+})
+
+const handleSend = async () => {
+    if (!chatInput.value.trim() || sending.value) return;
+    const message = chatInput.value
     chatInput.value = '';
+    await sendMessage(message)
 };
 </script>
 
@@ -133,4 +151,10 @@ const handleSend = () => {
 .no-scrollbar::-webkit-scrollbar {
     display: none;
 }
+/* TODO: add more scopes  */
+.md-content :deep(p) { margin: 0 0 0.5em; }
+.md-content :deep(p:last-child) { margin-bottom: 0; }
+.md-content :deep(ul), .md-content :deep(ol) { margin: 0 0 0.5em 1.25em; }
+.md-content :deep(strong) { font-weight: 600; }
+.md-content :deep(code) { background: rgba(0,0,0,0.06); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
 </style>
