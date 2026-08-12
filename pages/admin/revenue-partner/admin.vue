@@ -2,7 +2,7 @@
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
     
     <!-- HEADER -->
-    <DashboardHeader userName="Admin User" userId="ADMIN-001" showChangeProfile changeProfileLink="/revenue-partnership/admin" />
+    <AdminDashboardHeader :userName="admin?.role?.name ?? 'Admin'" :userId="'Welcome, ' + (admin?.full_name ?? '')" showChangeProfile changeProfileLink="/admin/revenue-partner/admin" />
 
     <!-- CONTENT --> 
     <main class="flex-1 px-8 pb-[0px] pt-8 space-y-6 overflow-y-auto" style="margin-top: -18px;">
@@ -295,6 +295,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 definePageMeta({ layout: false })
 
 const { isDark } = useTheme()
+const { admin } = useAdminAuth()
 
 const {
   overview, alerts, charts, loading,

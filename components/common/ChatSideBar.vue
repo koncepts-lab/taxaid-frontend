@@ -64,14 +64,13 @@
                         <div class="flex items-center gap-2">
                             <div
                                 class="bg-primary-150 border border-primary-100 rounded-md flex items-center justify-center lg:p-1 p-0.5 gap-1">
-                                <span class="inline-block w-2 h-2 bg-primary-200 rounded-full"></span>
-                                <span class="text-primary-200 text-xs">{{ currentLang === 'ar' ? 'متصل' :
-                                    'Online'
-                                }}</span>
+                                <span class="inline-block w-2 h-2 rounded-full"
+                                    :class="status === 1 ? 'bg-primary-200' : 'bg-red-400'"></span>
+                                <span class="text-primary-200 text-xs">{{ statusLabel }}</span>
                             </div>
-                            <div class="border border-secondary-50 rounded-md flex items-center lg:p-1 p-0.5 gap-1"
+                            <div v-if="usage.tokens_total" class="border border-secondary-50 rounded-md flex items-center lg:p-1 p-0.5 gap-1"
                                 :class="isDark ? 'bg-secondary-50/25' : 'bg-secondary-50/40'">
-                                <span class="text-secondary-100 text-xs">8,001/10,485 {{ currentLang === 'ar' ? 'رمز' :
+                                <span class="text-secondary-100 text-xs">{{ usage.tokens_used }}/{{ usage.tokens_total }} {{ currentLang === 'ar' ? 'رمز' :
                                     'Tokens'
                                     }}</span>
                             </div>
@@ -98,75 +97,82 @@
             </div>
 
             <div class="flex-1 lg:p-6 p-3 overflow-y-auto no-scrollbar">
-                <div class="text-center lg:mb-8 mb-3">
-                    <img src="/images/akeel.webp" alt="Akeel"
-                        class="lg:w-15 w-10 lg:h-15 h-10 rounded-full object-contain mx-auto lg:mb-4 mb-2" />
-                    <h2 class="lg:text-lg text-base font-medium" :class="isDark ? 'text-white' : 'text-gray-800'">
-                        {{ currentLang === 'ar' ? 'دعنا نفكر مع عقيل' : "Let's Brainstorm with Akeel" }}
-                    </h2>
-                    <p class="text-xs font-light" :class="isDark ? 'text-white/60' : ' text-black'">
-                        <template v-if="currentLang === 'ar'">
-                            يمكنك طرح الأسئلة بالعربية أو الإنجليزية. جرّب أن تطلب مقاييس محددة أو مقارنات!
-                        </template>
-                        <template v-else>
-                            You can ask questions in English or Arabic. Try asking for specific <br
-                                class="max-lg:hidden" /> metrics or
-                            comparisons!
-                        </template>
-                    </p>
-                </div>
+                <template v-if="!messages.length">
+                    <div class="text-center lg:mb-8 mb-3">
+                        <img src="/images/akeel.webp" alt="Akeel"
+                            class="lg:w-15 w-10 lg:h-15 h-10 rounded-full object-contain mx-auto lg:mb-4 mb-2" />
+                        <h2 class="lg:text-lg text-base font-medium" :class="isDark ? 'text-white' : 'text-gray-800'">
+                            {{ currentLang === 'ar' ? 'دعنا نفكر مع عقيل' : "Let's Brainstorm with Akeel" }}
+                        </h2>
+                        <p class="text-xs font-light" :class="isDark ? 'text-white/60' : ' text-black'">
+                            <template v-if="currentLang === 'ar'">
+                                يمكنك طرح الأسئلة بالعربية أو الإنجليزية. جرّب أن تطلب مقاييس محددة أو مقارنات!
+                            </template>
+                            <template v-else>
+                                You can ask questions in English or Arabic. Try asking for specific <br
+                                    class="max-lg:hidden" /> metrics or
+                                comparisons!
+                            </template>
+                        </p>
+                    </div>
 
-                <div class="space-y-3 lg:mb-6 mb-3">
-                    <h3 class="text-sm font-light lg:mb-3 mb-1.5" :class="isDark ? 'text-white/60' : 'text-black'">
-                        {{ currentLang === 'ar' ? 'أسئلة سريعة' : 'Quick Questions' }}
-                    </h3>
+                    <div v-if="promptQuestions.length" class="space-y-3 lg:mb-6 mb-3">
+                        <h3 class="text-sm font-light lg:mb-3 mb-1.5" :class="isDark ? 'text-white/60' : 'text-black'">
+                            {{ currentLang === 'ar' ? 'أسئلة سريعة' : 'Quick Questions' }}
+                        </h3>
 
-                    <button v-for="q in quickQuestions" :key="q.label"
-                        class="w-full lg:p-4 p-2 border rounded-xl transition-colors text-sm font-normal flex items-center gap-3 max-lg:mb-1.5"
-                        :class="[
-                            isDark ? 'bg-primary-100/5 border-primary-100/33 text-white/80 hover:bg-white/10' : 'bg-primary-100/5 border-primary-100/33 text-gray-700 hover:bg-primary-100/10'
-                        ]">
-                        <img :src="q.icon" alt="icon" class="w-5 h-5 shrink-0" :class="{ '': isDark }" />
-                        <span class="text-start flex-1 lg:text-base text-sm">{{ currentLang === 'ar' ? q.labelAr :
-                            q.label
-                            }}</span>
-                    </button>
-                </div>
+                        <button v-for="(q, qi) in promptQuestions" :key="qi" @click="ask(q)"
+                            class="w-full lg:p-4 p-2 border rounded-xl transition-colors text-sm font-normal flex items-center gap-3 max-lg:mb-1.5"
+                            :class="[
+                                isDark ? 'bg-primary-100/5 border-primary-100/33 text-white/80 hover:bg-white/10' : 'bg-primary-100/5 border-primary-100/33 text-gray-700 hover:bg-primary-100/10'
+                            ]">
+                            <img src="/images/icons/chat-1.svg" alt="icon" class="w-5 h-5 shrink-0" />
+                            <span class="text-start flex-1 lg:text-base text-sm">{{ q }}</span>
+                        </button>
+                    </div>
 
-                <div class="border rounded-xl lg:p-4 p-2"
-                    :class="isDark ? 'bg-white/5 border-white/10' : 'bg-white border-primary-100/33'">
-                    <div class="flex items-start gap-3">
-                        <img src="/images/icons/bulb.svg" alt="Pro Tips" class="w-5 h-5 mt-1 opacity-80"
-                            :class="isDark ? '' : ''" />
-                        <div class="text-start">
-                            <h4 class="font-medium lg:text-sm text-xs mb-1"
-                                :class="isDark ? 'text-white' : 'text-black'">
-                                {{ currentLang === 'ar' ? 'نصائح احترافية' : 'Pro tips' }}
-                            </h4>
-                            <p class="font-light lg:text-xs text-[10px]"
-                                :class="isDark ? 'text-white/60' : 'text-black'">
-                                <template v-if="currentLang === 'ar'">
-                                    يمكنك طرح الأسئلة بالعربية أو الإنجليزية. جرّب أن تطلب مقاييس محددة أو مقارنات!
-                                </template>
-                                <template v-else>
-                                    You can ask questions in English or Arabic. Try asking for specific metrics or
-                                    comparisons!
-                                </template>
-                            </p>
+                    <div v-for="(tip, ti) in promptTips" :key="ti" class="border rounded-xl lg:p-4 p-2 mb-3"
+                        :class="isDark ? 'bg-white/5 border-white/10' : 'bg-white border-primary-100/33'">
+                        <div class="flex items-start gap-3">
+                            <img src="/images/icons/bulb.svg" alt="Pro Tips" class="w-5 h-5 mt-1 opacity-80"
+                                :class="isDark ? '' : ''" />
+                            <div class="text-start">
+                                <h4 class="font-medium lg:text-sm text-xs mb-1"
+                                    :class="isDark ? 'text-white' : 'text-black'">
+                                    {{ tip.heading }}
+                                </h4>
+                                <p class="font-light lg:text-xs text-[10px]"
+                                    :class="isDark ? 'text-white/60' : 'text-black'">{{ tip.body }}</p>
+                            </div>
                         </div>
+                    </div>
+                </template>
+
+                <div v-else class="space-y-3">
+                    <div v-for="(m, idx) in messages" :key="idx"
+                        class="max-w-[85%] rounded-xl px-3 py-2 text-sm"
+                        :class="m.role === 'user'
+                            ? (isDark ? 'ml-auto bg-primary-600 text-white' : 'ml-auto bg-primary-600 text-white')
+                            : (isDark ? 'bg-white/10 text-white' : 'bg-primary-100/10 text-black')">
+                        <span v-if="m.role === 'user'" class="whitespace-pre-wrap">{{ m.content }}</span>
+                        <div v-else class="md-content" v-html="renderMarkdown(m.content)"></div>
+                    </div>
+                    <div v-if="sending" class="text-xs opacity-60" :class="isDark ? 'text-white' : 'text-black'">
+                        {{ currentLang === 'ar' ? 'عقيل يكتب...' : 'Akeel is typing...' }}
                     </div>
                 </div>
             </div>
 
             <div class="p-4" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
+                <p v-if="error" class="text-xs text-red-500 mb-2">{{ error }}</p>
                 <div class="flex items-center border rounded-[10px] pl-2 pr-1 py-1 gap-2"
                     :class="isDark ? 'border-white/10 bg-white/5' : 'border-primary-100'">
-                    <input type="text"
+                    <input type="text" v-model="draft" @keyup.enter="send"
                         :placeholder="currentLang === 'ar' ? 'اسأل عن بياناتك المالية...' : 'Ask about your financials....'"
                         class="flex-1 bg-transparent focus:outline-none transition-colors text-sm lg:py-2 py-1"
                         :class="isDark ? 'text-white placeholder:text-white/30' : 'placeholder:text-black/30'" />
-                    <button
-                        class="p-2 bg-primary-600 hover:bg-primary-700 text-white rounded-[5px] transition-colors shrink-0">
+                    <button @click="send" :disabled="sending"
+                        class="p-2 bg-primary-600 hover:bg-primary-700 text-white rounded-[5px] transition-colors shrink-0 disabled:opacity-50">
                         <img src="/images/icons/chat.svg" alt="Send" class="lg:w-6 lg:h-6 w-4 h-4"
                             :class="currentLang === 'ar' ? 'transform scale-x-[-1]' : ''" />
                     </button>
@@ -196,18 +202,41 @@
 const isDark = useTheme().isDark
 const currentLang = useState('currentLang', () => 'en')
 
-const quickQuestions = [
-    { label: 'How strong is your business?', labelAr: 'ما مدى قوة عملك؟', icon: '/images/icons/chat-1.svg' },
-    { label: 'What areas need attention?', labelAr: 'ما المجالات التي تحتاج اهتماماً؟', icon: '/images/icons/chat-2.svg' },
-    { label: 'How to improve cash flow?', labelAr: 'كيف تحسّن التدفق النقدي؟', icon: '/images/icons/chat-3.svg' },
-    { label: 'Revenue growth analysis?', labelAr: 'تحليل نمو الإيرادات؟', icon: '/images/icons/chat-1.svg' },
-]
+const { renderMarkdown } = useMarkdown()
+const { messages, status, usage, sending, error, activeChatId, sendMessage, fetchChats } = useAkeel()
+
+// This widget is only ever mounted on report/feature pages, never on the dedicated
+// /chat-with-akeel history page — a conversation here shouldn't survive navigating away
+// (only /chat-with-akeel offers resumable history via its session list).
+onBeforeUnmount(() => {
+    activeChatId.value = null
+    messages.value = []
+})
+
+const statusLabel = computed(() => {
+    if (currentLang.value === 'ar') return status.value === 1 ? 'متصل' : 'غير متصل'
+    return status.value === 1 ? 'Online' : 'Offline'
+})
+
+const { questions: promptQuestions, tips: promptTips, fetchPrompts } = useAkeelPrompts()
 
 const isChatOpen = defineModel('isChatOpen')
 defineEmits(['update:activeTab', 'expand'])
 
-const openChat = () => { isChatOpen.value = true }
+const route = useRoute()
+const openChat = () => { isChatOpen.value = true; fetchChats(); fetchPrompts(route.name?.toString() ?? 'default') }
 const closeChat = () => { isChatOpen.value = false }
+
+const draft = ref('')
+async function ask(question) {
+    await sendMessage(question)
+}
+async function send() {
+    if (!draft.value.trim() || sending.value) return
+    const message = draft.value
+    draft.value = ''
+    await sendMessage(message)
+}
 </script>
 <style scoped>
 /* Force Slide Up Animation for Mobile Only */
@@ -247,4 +276,10 @@ const closeChat = () => { isChatOpen.value = false }
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+.md-content :deep(p) { margin: 0 0 0.5em; }
+.md-content :deep(p:last-child) { margin-bottom: 0; }
+.md-content :deep(ul), .md-content :deep(ol) { margin: 0 0 0.5em 1.25em; }
+.md-content :deep(strong) { font-weight: 600; }
+.md-content :deep(code) { background: rgba(0,0,0,0.06); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
 </style>

@@ -21,6 +21,7 @@
 
       <AdminClientConnector v-if="activeSubtab === 'connector'" :key="selectedId" :tenant-id="selectedId" />
       <AdminClientStatusUsers v-else-if="activeSubtab === 'status'" :key="selectedId" :tenant-id="selectedId" />
+      <AdminClientAkeel v-else-if="activeSubtab === 'ai'" :key="selectedId" :tenant-id="selectedId" />
     </div>
 
     <div v-else>
@@ -88,6 +89,7 @@ const { getTenants } = useClientManagement()
 const subtabs = [
   { key: 'connector', label: 'Connector' },
   { key: 'status', label: 'Status & Users' },
+  { key: 'ai', label: 'AI / Akeel' },
 ]
 
 // ── SPA query state ─────────────────────────────────────────────────────────

@@ -1,56 +1,11 @@
 <template>
   <div class="relative min-h-screen w-full bg-[#fff] overflow-hidden" :dir="isRtl ? 'rtl' : 'ltr'">
-    <!-- WELCOME OVERLAY SCREEN -->
-    <div v-if="showWelcome" class="absolute inset-0 z-50 min-h-screen w-full flex items-center justify-center overflow-hidden text-center animate-expand-bg" style="background: radial-gradient(circle at center, #0C5B55 0%, #002B23 100%)">
-      <div v-if="showWelcomeCard" class="relative z-[55] flex flex-col items-center max-w-2xl w-full animate-slide-in-right-far">
-        <CommonParticleBackground/>
-
-        <!-- Content Card -->
-        <div class="welcome-card rounded-[40px] p-10 md:p-16 w-full relative overflow-hidden">
-          <!-- Glow effect -->
-          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[#0C5B55]/40 blur-[100px] rounded-full pointer-events-none"></div>
-
-          <div class="relative z-10 flex flex-col items-center">
-             <!-- Logo -->
-             <img :src="welcomeLogoPath" alt="Taxaid" class="w-full max-w-[200px] mb-8" />
-
-             <h1 class="text-[48px] font-semibold text-[#53FFDE] mb-2 leading-tight">
-               {{ t.welcomeTitle }}
-             </h1>
-             <h2 class="text-[36px] font-normal text-[#DEFFF9] mb-6">
-               {{ t.welcomeSubtitle }}
-             </h2>
-
-             <p class="text-[18px] font-light text-[#FFFFFFFA] leading-relaxed mb-10 max-w-lg mx-auto">
-               {{ t.welcomeDesc }}
-             </p>
-
-             <button 
-               @click="handleGetStarted"
-               class="group relative inline-flex items-center justify-center w-full max-w-[250px] py-3.5 text-[16px] font-medium text-white rounded-full btn-premium cursor-pointer"
-             >
-               {{ t.getStarted }}
-               <svg class="w-5 h-5 ml-2 transition-transform duration-200 group-hover:translate-x-1" 
-                    :class="isRtl ? 'rotate-180 group-hover:-translate-x-1 group-hover:translate-x-0' : ''"
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-               </svg>
-             </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- MAIN SCREEN -->
     <div class="w-full min-h-screen flex items-center justify-center relative z-10">
       <div class="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2 overflow-hidden">
       
       <!-- LEFT : FORM SECTION -->
-      <section class="flex flex-col justify-center items-center px-6 lg:px-20 py-10 order-2 lg:order-1 relative bg-[#fff]"
-               :style="{
-                 transform: showWelcome ? (isRtl ? 'translateX(100vw)' : 'translateX(-100vw)') : 'translateX(0)',
-                 transition: 'transform 1s cubic-bezier(0.65, 0, 0.15, 1)'
-               }">
+      <section class="flex flex-col justify-center items-center px-6 lg:px-20 py-10 order-2 lg:order-1 relative bg-[#fff]">
         <!-- Logo (Absolute Top-Left on Desktop, Relative on Mobile) -->
         <!-- Logic: in RTL, this should be Top-Right? Usually logos stay or flip. Let's flip it for mirroring. -->
         <div class="absolute top-10 hidden lg:block" :class="isRtl ? 'right-10' : 'left-10'">
@@ -99,7 +54,7 @@
           </div>
 
           <div v-if="isEmailVerification" class="w-full">
-            <CommonEmailVerify :email="form.email" :password="form.password" :lang="currentLanguage" @verified="onEmailVerified" @back="isEmailVerification = false" />
+            <CommonEmailVerify :email="form.email" :password="form.password" :lang="currentLanguage" @verified="(res) => onEmailVerified(res)" @back="isEmailVerification = false" />
           </div>
 
           <form v-else-if="!isForgotPassword" class="space-y-4" @submit.prevent="onSubmit">
@@ -376,13 +331,10 @@ const loading = ref(false)
 const errorMessage = ref('')
 const errorVariant = ref('error') // 'error' (red) | 'warning' (amber, lockout)
 const isEmailVerification = ref(false)
-const nextRedirect = ref('') // Store where the user should go after welcome screen
 
 const router = useRouter()
 const route = useRoute()
 const isLogin = ref(true)
-const showWelcome = ref(false)
-const showWelcomeCard = ref(false)
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 const currentLanguage = ref('en')
@@ -411,9 +363,6 @@ watch([isLogin, isForgotPassword], ([login, forgot]) => {
   router.replace({ query: { ...route.query, mode } })
 })
 
-// Using dynamic path to avoid any potential static analysis weirdness
-const welcomeLogoPath = '/images/welcome-logo.png'
-
 const isRtl = computed(() => currentLanguage.value === 'ar')
 
 const translations = {
@@ -438,10 +387,6 @@ const translations = {
 
     heroSub: 'Analyze deeper.',
     heroMain: 'Decide faster. Grow smarter.',
-    welcomeTitle: 'Welcome to',
-    welcomeSubtitle: 'TaxAid Financial Analytics!',
-    welcomeDesc: 'Let’s personalize your dashboard to match your business goals. It’ll only take a minute.',
-    getStarted: 'Get Started',
     // Forgot Password Flow
     forgotPassTitle: 'Forgot Password',
     forgotPassSub: 'Please enter the email associated with your account.',
@@ -483,10 +428,6 @@ const translations = {
     signInLink: 'تسجيل الدخول هنا',
     heroSub: 'تحليل أعمق.',
     heroMain: 'قرر بشكل أسرع. كن أكثر ذكاءً.',
-    welcomeTitle: 'مرحبًا بك في',
-    welcomeSubtitle: 'TaxAid للتحليلات المالية!',
-    welcomeDesc: 'دعنا نخصص لوحة التحكم الخاصة بك لتناسب أهداف عملك. لن يستغرق الأمر سوى دقيقة واحدة.',
-    getStarted: 'البدء',
     // Arabic Forgot Password Flow
     forgotPassTitle: 'هل نسيت كلمة السر',
     forgotPassSub: 'يرجى إدخال البريد الإلكتروني المرتبط بحسابك.',
@@ -533,15 +474,25 @@ async function onSubmit() {
       }, rememberMe.value, geoLocation.value)
 
       const status = res?.data?.tenant?.status
-      // pending_approval: verified but no tenant yet (admin hasn't approved) — same onboarding
-      // wizard as the old pending_onboarding case, just backed by a pending registration instead.
-      if (status === 'pending_onboarding' || status === 'pending_approval') {// NEW USER / ONBOARDING: Show Welcome Card journey
-        nextRedirect.value = '/onboarding'
-        showWelcome.value = true
-        setTimeout(() => { showWelcomeCard.value = true }, 1200)
-      } else {// NORMAL USER: Skip Welcome Card, go directly to Dashboard
+      const accountType = res?.data?.user?.account_type
+      // TaxAid staff on a temp credential need the real dashboard even while the tenant
+      // they're working on isn't 'live' yet — only the tenant's own users go through
+      // onboarding/waiting. 'live' is the only status that reaches the real app for those.
+      if (accountType === 'taxaid' || status === 'live') {
         router.push('/dashboard')
+        return
       }
+
+      // Still unverified — show the same verify-email screen the register flow uses, right
+      // here on login, instead of letting an unverified account into /onboarding at all.
+      if (status === 'registered') {
+        isEmailVerification.value = true
+        return
+      }
+
+      // onboarding / pending_review / implementation land on the one non-live page, which
+      // decides internally what to show.
+      router.push('/onboarding')
 
     } else {      // REGISTER
       await $fetch('/auth/register', {
@@ -581,18 +532,14 @@ async function onSubmit() {
   }
 }
 
-function handleGetStarted() {
-  router.push(nextRedirect.value)
-}
-
-function onEmailVerified() {
+function onEmailVerified(res) {
   isEmailVerification.value = false
 
-  nextRedirect.value = '/onboarding'
-  showWelcome.value = true
-  setTimeout(() => {
-    showWelcomeCard.value = true
-  }, 1200)
+  // Same 'live'-only check as a normal login (onSubmit) — a tenant already past onboarding
+  // (e.g. restored from a backup with its answers already imported) should go straight to the
+  // dashboard, not be forced through the wizard again just because they "just verified".
+  const status = res?.data?.tenant?.status
+  router.push(status === 'live' ? '/dashboard' : '/onboarding')
 }
 
 const forgotError = ref('')
@@ -730,57 +677,5 @@ input:-webkit-autofill:active {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideInRightFar {
-  from {
-    opacity: 0;
-    transform: translateX(100vw);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.animate-slide-in-right-far {
-  animation: slideInRightFar 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes expandFromRight {
-  0% { clip-path: inset(0 0 0 100%); }
-  100% { clip-path: inset(0 0 0 0); }
-}
-
-.animate-expand-bg {
-  animation: expandFromRight 1s cubic-bezier(0.65, 0, 0.15, 1) forwards;
-}
-
-/* Welcome card — gradient border + glass effect */
-.welcome-card {
-  background: #0F0F0F4A;
-  backdrop-filter: blur(72.9px);
-  -webkit-backdrop-filter: blur(72.9px);
-  box-shadow: 0px 4px 4px 0px #00000040;
-}
-
-/* Gradient border via pseudo-element (border-image breaks border-radius) */
-.welcome-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 40px;
-  padding: 1px;
-  background: linear-gradient(125.98deg, rgba(0, 114, 92, 0.28) 0%, rgba(0, 112, 90, 0.28) 93.88%);
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  z-index: 0;
 }
 </style>

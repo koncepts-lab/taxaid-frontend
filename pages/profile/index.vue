@@ -29,8 +29,8 @@
         </button>
       </div>
       <div v-else class="flex gap-3">
-        <button 
-          @click="isEditing = false"
+        <button
+          @click="handleCancel"
           class="px-5 py-2 border border-gray-200 text-gray-700 bg-white rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
         >
           Cancel
@@ -54,7 +54,7 @@
       <div class="absolute inset-0 bg-gradient-to-r from-transparent to-[#00896F]/20 pointer-events-none"></div>
       
       <div class="relative z-10">
-        <img v-if="pictureUrl" :src="pictureUrl" alt="Profile" class="w-20 h-20 rounded-full border-2 border-white/20 object-cover" />
+        <img v-if="previewUrl || pictureUrl" :src="previewUrl || pictureUrl" alt="Profile" class="w-20 h-20 rounded-full border-2 border-white/20 object-cover" />
         <div v-else class="w-20 h-20 rounded-full border-2 border-white/20 bg-white/10"></div>
         <div v-if="isEditing" class="absolute bottom-0 right-0 bg-[#00896F] rounded-full p-1.5 border-2 border-white cursor-pointer hover:bg-[#00705a] transition-colors shadow-sm">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-white">
@@ -546,12 +546,29 @@ import { useProfile } from '~/composables/settings/useProfile'
 const { profile, pictureUrl, loading, saving, error, fetchProfile, saveProfile, uploadPicture } = useProfile()
 
 const isEditing = ref(false)
+const pendingPictureFile = ref<File | null>(null)
+const previewUrl = ref<string | null>(null)
 
 onMounted(() => fetchProfile())
+
+function discardPendingPicture() {
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+  previewUrl.value = null
+  pendingPictureFile.value = null
+}
+
+function handleCancel() {
+  discardPendingPicture()
+  isEditing.value = false
+}
 
 async function handleSave() {
   if (!profile.value) return
   try {
+    if (pendingPictureFile.value) {
+      await uploadPicture(pendingPictureFile.value)
+      discardPendingPicture()
+    }
     await saveProfile(profile.value)
     isEditing.value = false
   } catch {
@@ -559,10 +576,12 @@ async function handleSave() {
   }
 }
 
-async function handleFileUpload(event: Event) {
+function handleFileUpload(event: Event) {
   const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
-    await uploadPicture(target.files[0])
+    if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+    pendingPictureFile.value = target.files[0]
+    previewUrl.value = URL.createObjectURL(pendingPictureFile.value)
   }
 }
 

@@ -19,48 +19,6 @@
 
       <!-- Form -->
       <form @submit.prevent="onLogin" class="w-full space-y-5">
-        
-        <!-- Login As Selector -->
-        <div class="relative">
-          <label class="block text-[14px] font-normal text-[#0A0A0A] mb-2">
-            {{ currentLang === 'ar' ? labels.loginAsAr : labels.loginAs }}
-          </label>
-          <div 
-            @click="isDropdownOpen = !isDropdownOpen"
-            class="relative h-[48px] w-full border border-[#04C18F80] rounded-[10px] px-4 flex items-center justify-between cursor-pointer hover:border-[#00705a] transition-all"
-            :class="{ 'border-[#00705a] ring-1 ring-[#00705a]': isDropdownOpen }"
-          >
-            <span class="text-[14px] font-normal text-[#0A0A0A]">{{ displayRole }}</span>
-            <svg 
-              class="w-5 h-5 text-[#94a3b8] transition-transform duration-300"
-              :class="{ 'rotate-180': isDropdownOpen }"
-              fill="none" viewBox="0 0 24 24" stroke="currentColor"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-
-          <!-- Custom Dropdown Menu  -->
-          <Transition name="fade-slide">
-            <div 
-              v-if="isDropdownOpen"
-              class="absolute top-full left-0 right-0 mt-2 bg-white border border-[#0000000D] rounded-[16px] shadow-[0_15px_40px_rgba(0,0,0,0.08)] overflow-hidden z-50 p-1.5"
-            >
-              <div 
-                v-for="role in rolesList" 
-                :key="role.id"
-                @click="selectRole(role.id)"
-                class="flex items-center px-4 py-3 rounded-[10px] cursor-pointer transition-all text-[14px] font-normal"
-                :class="{ 
-                  'bg-[#E2FAF4] text-[#00705a] font-medium': selectedRole === role.id, 
-                  'text-[#0A0A0A] hover:bg-[#F8FAFC]': selectedRole !== role.id 
-                }"
-              >
-                {{ role.label }}
-              </div>
-            </div>
-          </Transition>
-        </div>
 
         <!-- Email Address -->
         <div class="relative">
@@ -142,7 +100,6 @@ definePageMeta({
 const {
   title, titleAr,
   subtitle, subtitleAr,
-  roles: rolesEn, rolesAr,
   labels, placeholders, footer
 } = useRevenuePartnershipLogin()
 
@@ -151,37 +108,15 @@ const { login } = useRevenueAuth()
 const currentLang  = useState('currentLang', () => 'en')
 const email        = ref('')
 const password     = ref('')
-const isDropdownOpen = ref(false)
-const selectedRole = ref('Partner')
 const isLoggingIn  = ref(false)
 const loginError   = ref('')
-
-const rolesList = computed(() => {
-  return rolesEn.value.map((role, idx) => ({
-    id: role,
-    label: currentLang.value === 'ar' ? rolesAr.value[idx] : role
-  }))
-})
-
-const displayRole = computed(() => {
-  const index = rolesEn.value.indexOf(selectedRole.value)
-  if (index === -1) return selectedRole.value
-  return currentLang.value === 'ar' ? rolesAr.value[index] : selectedRole.value
-})
-
-function selectRole(roleId) {
-  selectedRole.value = roleId
-  isDropdownOpen.value = false
-}
 
 async function onLogin() {
   if (isLoggingIn.value) return
   loginError.value = ''
   isLoggingIn.value = true
   try {
-    const roleMap = { Partner: 'partner', Accounts: 'accounts', Admin: 'admin' }
-    const role = roleMap[selectedRole.value] ?? selectedRole.value.toLowerCase()
-    await login(role, email.value, password.value)
+    await login(email.value, password.value)
   } catch (err) {
     loginError.value = err?.data?.message ?? 'Login failed. Please check your credentials.'
   } finally {

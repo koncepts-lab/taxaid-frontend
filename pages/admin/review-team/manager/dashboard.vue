@@ -2,7 +2,8 @@
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300 pb-10" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
     
     <!-- HEADER -->
-    <DashboardHeader userName="Review Manager" userId="Welcome, Akhil" :showChangeProfile="false" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
+    <!-- TODO: NEED Alerts — Review Manager has no real notification data yet; points at the shared /admin/notifications page (empty for now) instead of the old /revenue-partnership/notifications, which needs an rp_token this role doesn't have. -->
+    <AdminDashboardHeader :userName="admin?.role?.name ?? 'Review Manager'" :userId="'Welcome, ' + (admin?.full_name ?? '')" :showChangeProfile="false" notificationsTo="/admin/notifications" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 py-8 space-y-8 overflow-y-auto" style="margin-top: -18px;">
@@ -321,7 +322,7 @@
                 <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientRequest }}</td>
                 <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientAnalysis }}</td>
                 <td class="py-6 px-8">
-                  <button @click="navigateTo(`/review-manager/consultant-workload-details?admin_id=${item.id}`)"
+                  <button @click="navigateTo(`/admin/review-team/manager/consultant-workload-details?admin_id=${item.id}`)"
                           class="px-4 py-2 rounded-[8px] bg-[#82FFE0] text-[#0A0A0A] text-[13px] font-medium hover:bg-[#6eddc5] transition-colors cursor-pointer"
                           :class="isDark ? 'bg-[#1b5e50] text-white' : ''">
                     View Details
@@ -532,6 +533,7 @@ import { computed, ref, onMounted } from 'vue'
 import { useReviewManager } from '@/composables/admin/review/useReviewManager'
 
 const { isDark } = useTheme()
+const { admin } = useAdminAuth()
 const route = useRoute()
 const rm = useReviewManager()
 
@@ -676,7 +678,7 @@ function getProgressColor(value, total) {
 }
 
 function navigateToActivityLog() {
-  navigateTo('/review-manager/activity-log')
+  navigateTo('/admin/review-team/manager/activity-log')
 }
 </script>
 

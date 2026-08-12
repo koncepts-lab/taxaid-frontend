@@ -67,11 +67,11 @@ export function useSuperAdmin() {
     return res.data ?? res
   }
 
-  async function createUser(data: Record<string, any>): Promise<AdminUser> {
+  async function createUser(data: Record<string, any>): Promise<AdminUser & { mail_sent?: boolean }> {
     const payload = { ...data, role_id: data.admin_role_id }
     delete payload.admin_role_id
     const res: any = await apiFetch('/admin/users', { method: 'POST', body: payload })
-    return res.data ?? res
+    return { ...(res.data ?? res), mail_sent: res.mail_sent }
   }
 
   async function updateUser(id: number, data: Record<string, any>): Promise<AdminUser> {
@@ -95,10 +95,27 @@ export function useSuperAdmin() {
     await apiFetch(`/admin/users/${id}/assigned-systems`, { method: 'PATCH', body: { assigned_systems: systems } })
   }
 
+  async function resendWelcomeEmail(id: number): Promise<{ status: string; message: string; mail_sent: boolean }> {
+    return await apiFetch(`/admin/users/${id}/resend-welcome-email`, { method: 'POST' })
+  }
+
+  async function resetUserPassword(id: number): Promise<{ message: string; mail_sent: boolean }> {
+    return await apiFetch(`/admin/users/${id}/reset-password`, { method: 'POST' })
+  }
+
   async function getRoles(): Promise<AdminRole[]> {
     const res: any = await apiFetch('/admin/roles')
     const list = res.data ?? res
     return list.filter((r: any) => r.id !== null)
+  }
+
+  async function getManagers(): Promise<any[]> {
+    const res: any = await apiFetch('/admin/roles/managers')
+    return res.data ?? res
+  }
+
+  async function updateReportsToManager(roleId: number, managerId: number | null): Promise<void> {
+    await apiFetch(`/admin/roles/${roleId}/reports-to-manager`, { method: 'PATCH', body: { manager_id: managerId } })
   }
 
   async function getDepartments(): Promise<Department[]> {
@@ -167,7 +184,8 @@ export function useSuperAdmin() {
     getPartners, getPartnerClients, togglePartnerStatus, resetPartnerPassword, unlinkPartnerClient, deletePartner, sendPartnerResetEmail,
     getStats, getSystemCounts,
     getUsers, searchUsers, getUser, createUser, updateUser, deleteUser,
-    activateUser, deactivateUser, updateSystems,
+    activateUser, deactivateUser, updateSystems, resendWelcomeEmail,
     getRoles, getDepartments, getDashboards,
+    getManagers, updateReportsToManager, resetUserPassword,
   }
 }

@@ -13,6 +13,12 @@ const _reportInfo  = ref({ current: '', previous: '' })
 const _loading     = ref(false)
 const _error       = ref<string | null>(null)
 
+// Gap-day snapshot notice for the Balance Sheet tab — same pattern as
+// useAccountsReceivable/useAccountsPayable's snapshot_date fallback.
+const _bsSnapshotDate   = ref<string | null>(null)
+const _bsRequestedDate  = ref<string | null>(null)
+const _bsSnapshotNotice = ref(false)
+
 const scheduleMap: Record<string, string | null> = {
   'Revenue':                     '01',
   'Direct Expenses':             '02',
@@ -92,6 +98,12 @@ async function fetchBSData() {
     }
     const res: any = await useApi('/financial-analysis/bs-maingroup-totals', { method: 'POST', body: payload })
     if (res?.status === 'success') {
+      const requested = res.info?.requested_date ?? null
+      const snapshot  = res.info?.snapshot_date  ?? null
+      _bsRequestedDate.value  = requested
+      _bsSnapshotDate.value   = snapshot
+      _bsSnapshotNotice.value = !!(requested && snapshot && requested !== snapshot)
+
       _bsRows.value = (res.report || []).map((row: any) => ({
         label:    row.label,
         current:  fmtNum(row.current_year),
@@ -181,6 +193,9 @@ export function useFinancialStatement() {
     bsRows:            _bsRows,
     ratiosRows:        _ratiosRows,
     reportInfo:        _reportInfo,
+    bsSnapshotDate:    _bsSnapshotDate,
+    bsRequestedDate:   _bsRequestedDate,
+    bsSnapshotNotice:  _bsSnapshotNotice,
     loading:           _loading,
     error:             _error,
     fetchTabData,

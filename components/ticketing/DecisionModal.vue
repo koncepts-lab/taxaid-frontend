@@ -14,12 +14,12 @@
                                 class="flex items-center justify-between w-full gap-3 mb-1">
                                 <h2 class="text-xl font-normal text-black">
                                     {{
-                                        ticket?.id
+                                        ticket?.ticket_custom_id
                                     }}
                                 </h2>
                                 <span :class="getStatusClasses(ticket?.status)"
                                     class="px-3 py-1 rounded-full text-xs border border-[#008169]/10">
-                                    {{ ticket?.status || 'Manager Approved' }}
+                                    {{ ticket?.status }}
                                 </span>
                             </div>
                             <div v-else class="flex items-center justify-between w-full gap-3 mb-1">
@@ -28,12 +28,13 @@
                                         role === 'tech_team' ? 'Technical Feasibility & Cost Assessment' :
                                             role === 'team_lead' ? 'Team Lead Priority Scoring' :
                                                 role === 'vp' ? 'Approval Decision - VP of Technology' :
-                                                    'Approval Decision - Admin'
+                                                    role === 'manager' ? 'Approval Decision - Manager' :
+                                                        'Approval Decision - Admin'
                                     }}
                                 </h2>
                                 <span :class="getStatusClasses(ticket?.status)"
                                     class="px-3 py-1 rounded-full text-xs border border-[#008169]/10">
-                                    {{ ticket?.status || 'Manager Approved' }}
+                                    {{ ticket?.status }}
                                 </span>
                             </div>
                             <p v-if="role !== 'team_member'" class="text-sm text-black/50">
@@ -41,12 +42,13 @@
                                     role === 'tech_team' ? 'Score technical aspects' :
                                         role === 'team_lead' ? 'Score and prioritize' :
                                             role === 'vp' ? 'Score technical feasibility and estimate implementation costs.' :
-                                                'Review tickets awaiting your decision.'
+                                                role === 'manager' ? 'Review tickets awaiting your approval.' :
+                                                    'Review tickets awaiting your decision.'
                                 }}
                             </p>
                             <div v-if="role !== 'team_member'"
                                 class="mt-4 inline-block px-4 py-1 border border-[#E1E1E1] rounded-md text-sm font-medium text-black">
-                                {{ ticket?.id || 'TKT-012' }}
+                                {{ ticket?.ticket_custom_id }}
                             </div>
                         </div>
                         <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 transition-colors">
@@ -60,6 +62,26 @@
                     <!-- Scrollable Body -->
                     <div class="flex-1 overflow-y-auto p-6 pt-0 space-y-8 no-scrollbar border-separate">
 
+                        <!-- Skeleton — shown while ticket detail is still loading, keeps height
+                             stable so the Activity & Comments cards popping in don't shift anything -->
+                        <div v-if="!ticket" class="space-y-8 animate-pulse">
+                            <div class="border-[.8px] border-[#04C18F] rounded-lg p-6 space-y-3">
+                                <div v-for="n in 6" :key="n" class="h-4 bg-gray-100 rounded" :style="{ width: n % 2 ? '70%' : '50%' }"></div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="h-5 bg-gray-100 rounded w-40"></div>
+                                <div class="rounded-lg p-5 bg-gray-50 space-y-3">
+                                    <div class="h-4 bg-gray-200 rounded w-1/3"></div>
+                                    <div class="h-4 bg-gray-200 rounded w-full"></div>
+                                </div>
+                                <div class="rounded-lg p-5 bg-gray-50 space-y-3">
+                                    <div class="h-4 bg-gray-200 rounded w-1/3"></div>
+                                    <div class="h-4 bg-gray-200 rounded w-full"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <template v-else>
                         <!-- Main Info Box -->
                         <div class="border-[.8px] border-[#04C18F] rounded-lg p-6 space-y-3"
                             :class="isDark ? 'bg-white/5' : 'bg-white'">
@@ -150,7 +172,23 @@
                                 </svg>
                                 <span>Attachments</span>
                             </div>
-                            <p class="text-sm text-black/50 ">No Attachments</p>
+                            <p v-if="!ticket?.attachments?.length" class="text-sm text-black/50 ">No Attachments</p>
+                            <ul v-else class="space-y-1">
+                                <li v-for="att in ticket.attachments" :key="att.id" class="text-sm text-[#008169] flex items-center gap-3">
+                                    <span>{{ att.file_name }}</span>
+                                    <button type="button" @click="previewAttachment(att)" title="View" class="text-black/50 hover:text-black">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+                                            <circle cx="12" cy="12" r="3" />
+                                        </svg>
+                                    </button>
+                                    <button type="button" @click="downloadAttachment(att)" title="Download" class="text-black/50 hover:text-black">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                                        </svg>
+                                    </button>
+                                </li>
+                            </ul>
                         </div>
 
                         <!-- Decision Section -->
@@ -195,19 +233,19 @@
                             <div v-if="role == 'tech_team'" class="w-full">
                                 <!-- Label -->
                                 <label class="block text-sm font-normal text-black mb-1.5">
-                                    Estimated Cost ($) *
+                                    Estimated Cost (AED) *
                                 </label>
 
                                 <!-- Input Container -->
                                 <div class="relative group">
-                                    <!-- Dollar Sign Icon -->
+                                    <!-- Currency Label -->
                                     <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <span class="text-gray-400 text-xl font-light">$</span>
+                                        <span class="text-gray-400 text-sm font-medium">AED</span>
                                     </span>
 
                                     <!-- Input Field -->
                                     <input type="text" v-model="estimatedCost" placeholder="5000"
-                                        class="w-full pl-10 pr-4 py-2.5 bg-white border border-[#04C18F80] rounded-lg text-black placeholder:text-gray-300 outline-none focus:ring-1 focus:ring-[#00BE8C] focus:border-[#00BE8C] transition-all shadow-sm" />
+                                        class="w-full pl-14 pr-4 py-2.5 bg-white border border-[#04C18F80] rounded-lg text-black placeholder:text-gray-300 outline-none focus:ring-1 focus:ring-[#00BE8C] focus:border-[#00BE8C] transition-all shadow-sm" />
                                 </div>
 
                                 <!-- Helper Text -->
@@ -215,7 +253,7 @@
                                     Enter estimated development cost including resources and time
                                 </p>
                             </div>
-                            <div class="space-y-3 border-t py-3 border-black/10">
+                            <div v-if="role !== 'tech_team'" class="space-y-3 border-t py-3 border-black/10">
                                 <label class="text-sm" :class="isDark ? 'text-white' : 'text-gray-900'">Your Decision
                                     *</label>
                                 <div class="grid gap-3 mt-3"
@@ -234,17 +272,24 @@
                                 </div>
                             </div>
                         </div>
+                        </template>
 
                     </div>
 
                     <!-- Footer -->
                     <div v-if="mode === 'review'"
-                        class="p-8 bg-gray-50/50 flex justify-end gap-5 border-t border-gray-100">
-                        <button @click="$emit('close')"
-                            class="px-4 py-2.5 bg-white border border-gray-200 text-black rounded-lg text-sm">Cancel</button>
-                        <button @click="submitDecision"
-                            class="flex items-center gap-4 px-10 py-2.5 bg-[#008169] hover:bg-[#006B56] text-white rounded-lg text-sm shadow-lg active:scale-95 font-bold">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                        class="p-8 bg-gray-50/50 border-t border-gray-100">
+                        <p v-if="error" class="text-red-600 text-sm mb-3 text-right">{{ error }}</p>
+                        <div class="flex justify-end gap-5">
+                        <button @click="$emit('close')" :disabled="submitting"
+                            class="px-4 py-2.5 bg-white border border-gray-200 text-black rounded-lg text-sm disabled:opacity-50">Cancel</button>
+                        <button @click="submitDecision" :disabled="submitting || !ticket"
+                            class="flex items-center gap-4 px-10 py-2.5 bg-[#008169] hover:bg-[#006B56] text-white rounded-lg text-sm shadow-lg active:scale-95 font-bold disabled:opacity-50">
+                            <svg v-if="submitting" width="16" height="16" viewBox="0 0 24 24" fill="none" class="animate-spin">
+                                <circle cx="12" cy="12" r="9" stroke="white" stroke-width="3" stroke-opacity="0.25"></circle>
+                                <path d="M21 12a9 9 0 0 0-9-9" stroke="white" stroke-width="3" stroke-linecap="round"></path>
+                            </svg>
+                            <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <g clip-path="url(#clip0_8633_3931)">
                                     <path
@@ -260,8 +305,39 @@
                                     </clipPath>
                                 </defs>
                             </svg>
-                            Submit
+                            {{ submitting ? 'Submitting…' : 'Submit' }}
                         </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
+
+    <!-- Attachment inline preview (view only, not download) -->
+    <Teleport to="body">
+        <Transition name="modal-fade">
+            <div v-if="previewOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                @click.self="closePreview">
+                <div class="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+                    <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                        <h3 class="text-base font-semibold text-gray-900 truncate">
+                            {{ previewLabel }}
+                        </h3>
+                        <button @click="closePreview" class="text-gray-900 hover:text-gray-600 transition-colors shrink-0">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex-1 min-h-0 bg-gray-50">
+                        <div v-if="previewLoading" class="h-full flex items-center justify-center text-sm text-gray-400">
+                            Loading attachment...
+                        </div>
+                        <div v-else-if="previewError" class="h-full flex items-center justify-center text-sm text-red-500 px-6 text-center">
+                            {{ previewError }}
+                        </div>
+                        <iframe v-else-if="previewUrl" :src="previewUrl" class="w-full h-full border-0" />
                     </div>
                 </div>
             </div>
@@ -271,21 +347,33 @@
 
 <script setup>
 import { ref, computed, reactive, watch } from 'vue'
+import { useTicketing } from '~/composables/admin/useTicketing'
+
+const { downloadTicketAttachment, previewTicketAttachmentUrl } = useTicketing()
 
 const props = defineProps({
     isOpen: Boolean,
     isDark: Boolean,
     ticket: Object,
     mode: { type: String, default: 'review' },
-    role: { type: String, default: 'admin' }
+    role: { type: String, default: 'admin' },
+    submitting: Boolean,
+    error: { type: String, default: '' }
 })
-watch(() => props.role, (newRole) => {
-    console.log("DEBUG ROLE:", newRole)
-}, { immediate: true })
 const emit = defineEmits(['close', 'submit'])
 
 const feasibilityScore = ref(5)
+const estimatedCost = ref('')
 const decisionData = reactive({ comment: '', status: 'approve' })
+
+watch(() => props.isOpen, (open) => {
+    if (open) {
+        feasibilityScore.value = 5
+        estimatedCost.value = ''
+        decisionData.comment = ''
+        decisionData.status = 'approve'
+    }
+})
 
 const feasibilityLabel = computed(() => {
     if (feasibilityScore.value <= 3) return 'Low Priority'
@@ -294,11 +382,11 @@ const feasibilityLabel = computed(() => {
 })
 
 const ticketMetadata = computed(() => ({
-    Client: props.ticket?.client || 'ACME Corp',
-    Issue: props.ticket?.title || '-',
-    Type: props.ticket?.type || 'Feature Suggestion',
-    Created_by: 'Mike Chen',
-    Created_on: '11/3/2025',
+    Client: props.ticket?.client_source_name || '-',
+    Issue: props.ticket?.issue || props.ticket?.title || '-',
+    Type: props.ticket?.type || '-',
+    Created_by: props.ticket?.created_by || '-',
+    Created_on: props.ticket?.created_at || '-',
     Department: props.ticket?.department || '-',
     Description: props.ticket?.description || '-'
 }))
@@ -316,6 +404,38 @@ const groupedActivities = computed(() => {
     })
     return grouped
 })
+
+const previewOpen    = ref(false)
+const previewLoading = ref(false)
+const previewError   = ref('')
+const previewUrl     = ref('')
+const previewLabel   = ref('')
+
+async function previewAttachment(att) {
+    previewOpen.value    = true
+    previewLoading.value = true
+    previewError.value   = ''
+    previewLabel.value   = att.file_name
+    try {
+        previewUrl.value = await previewTicketAttachmentUrl(att.id)
+    } catch (err) {
+        previewError.value = err?.data?.message ?? err?.message ?? 'Failed to load attachment'
+    } finally {
+        previewLoading.value = false
+    }
+}
+
+function closePreview() {
+    previewOpen.value = false
+    if (previewUrl.value) {
+        URL.revokeObjectURL(previewUrl.value)
+        previewUrl.value = ''
+    }
+}
+
+async function downloadAttachment(att) {
+    await downloadTicketAttachment(att.id, att.file_name)
+}
 
 const getScoreClasses = (score) => {
     if (score === undefined || score === null) return ''
@@ -361,7 +481,12 @@ const decisionOptions = computed(() => {
 
 const submitDecision = () => {
     if (props.mode === 'view') { emit('close'); return }
-    emit('submit', { id: props.ticket?.id, score: feasibilityScore.value, ...decisionData })
+    emit('submit', {
+        id: props.ticket?.id,
+        score: feasibilityScore.value,
+        estimatedCost: estimatedCost.value,
+        ...decisionData,
+    })
 }
 </script>
 
@@ -390,4 +515,7 @@ input[type=range]::-webkit-slider-thumb {
     border: 2px solid #00896F;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+.modal-fade-enter-active, .modal-fade-leave-active { transition: opacity 0.2s ease; }
+.modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }
 </style>

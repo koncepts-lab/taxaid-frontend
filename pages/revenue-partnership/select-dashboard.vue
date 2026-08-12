@@ -3,7 +3,7 @@
     :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
 
     <!-- HEADER -->
-    <DashboardHeader userName="Admin User" userId="ADMIN-001" :showChangeProfile="true" />
+    <AdminDashboardHeader userName="Admin User" userId="ADMIN-001" :showChangeProfile="true" />
 
     <!-- CONTENT -->
     <main class="flex-1 flex flex-col items-center justify-center p-4 relative z-10 w-full">
