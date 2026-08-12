@@ -69,9 +69,9 @@
                 </p>
             </div>
 
-            <div class="flex items-center ">
+            <div class="flex items-center w-full lg:w-auto">
                 <!-- Show-all-data toggle: OFF (default) hides rows with no data at all -->
-                <div class="flex items-center gap-2 me-4">
+                <div class="flex items-center gap-2 me-4 shrink-0">
                     <span class="text-xs" :class="isDark ? 'text-white/60' : 'text-black/60'">
                         {{ currentLang === 'ar' ? 'عرض كل البيانات' : 'Show all data' }}
                     </span>
@@ -82,7 +82,7 @@
                             :class="showAllData ? 'start-[18px]' : 'start-0.5'"></span>
                     </button>
                 </div>
-                <div v-if="activeTab === 'ratios'" class="w-80 relative">
+                <div v-if="activeTab === 'ratios'" class="flex-1 lg:w-80 lg:flex-none relative">
                     <div @click="isOpenRatio = !isOpenRatio"
                         class="w-full border rounded-lg py-2.5 px-4 text-sm  flex justify-between items-center cursor-pointer transition-all"
                         :class="[

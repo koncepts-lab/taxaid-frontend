@@ -128,7 +128,7 @@
             </button>
           </div>
           
-          <div class="w-full flex-1 flex flex-col min-h-0 overflow-x-auto overflow-y-hidden no-scrollbar bg-white dark:bg-[#00141080]">
+          <div class="w-full flex-1 flex flex-col min-h-0 overflow-x-auto overflow-y-hidden custom-scrollbar bg-white dark:bg-[#00141080]">
             <div class="min-w-[1100px] flex flex-col flex-1 h-full">
               <!-- Header Table (Fixed) -->
               <div class="shrink-0 sticky top-0 z-10" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">

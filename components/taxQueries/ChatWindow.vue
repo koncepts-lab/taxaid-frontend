@@ -51,7 +51,7 @@
                     <img src="/images/icons/pin.svg" class="w-5 h-5" alt="Chat Icon" />
                 </span>
                 <input type="text" v-model="draft" @keyup.enter="send" placeholder="Ask about your financials...."
-                    class="w-full bg-white border border-primary-100 rounded-xl lg:py-4 py-2 pl-12 pr-10 text-sm placeholder:font-semibold placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-emerald-400" />
+                    class="w-full bg-white border border-primary-100 rounded-xl lg:py-4 py-2 pl-12 pr-10 text-sm text-[#000] placeholder:font-semibold placeholder:text-[#b9b9b9] focus:outline-none focus:ring-1 focus:ring-emerald-400" />
                 <button @click="send" :disabled="sending"
                     class="absolute lg:right-2 right-1 top-1/2 -translate-y-1/2 bg-[#00B69B] lg:p-2.5 p-1.5 rounded-xl text-white hover:bg-[#008472] transition-colors disabled:opacity-50">
                     <img src="/images/icons/chat.svg" class="lg:w-6 lg:h-6 w-5 h-5" alt="Send Icon" />

@@ -74,7 +74,7 @@
                     <!-- Search Chat — filters Recent in place, no navigation -->
                     <div class="mt-4 relative">
                         <input v-model="searchQuery" type="text" placeholder="Search Chat"
-                            class="w-full bg-gray-50 border border-primary-100/33 rounded-xl p-3 text-xs placeholder:font-semibold placeholder:text-gray-500 focus:outline-none" />
+                            class="w-full bg-gray-50 border border-primary-100/33 rounded-xl p-3 text-xs text-[#000] placeholder:font-semibold placeholder:text-[#b9b9b9] focus:outline-none" />
                         <img v-if="!searchQuery" src="/images/icons/search.svg" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2" />
                         <button v-else @click="searchQuery = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>

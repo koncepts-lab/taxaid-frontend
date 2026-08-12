@@ -5,12 +5,12 @@
                 class="fixed inset-0 z-[1100] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-black/60 backdrop-blur-sm"
                 :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="$emit('close')">
 
-                <div class="w-full max-w-[75vw] bg-white transition-all duration-300 transform scale-100 shadow-2xl overflow-hidden rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar flex flex-col max-h-[78vh]"
+                <div class="w-full max-w-full lg:max-w-[75vw] bg-white transition-all duration-300 transform scale-100 shadow-2xl overflow-hidden rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar flex flex-col md:max-h-[78vh]"
                     :class="isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white'">
 
                     <!-- Header -->
-                    <div class="flex justify-between items-center p-8">
-                        <h2 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">
+                    <div class="flex justify-between items-center p-5 md:p-8">
+                        <h2 class="text-xl md:text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">
                             {{ title }}
                         </h2>
                         <button @click="$emit('close')"
@@ -23,8 +23,8 @@
                     </div>
 
                     <!-- Body (Scrollable Table Container) -->
-                    <div class="px-8 pb-8 flex-1 overflow-hidden flex flex-col">
-                        <div class="overflow-auto rounded-[20px] border no-scrollbar flex-1 relative"
+                    <div class="px-5 md:px-8 pb-5 md:pb-8 flex-1 overflow-hidden flex flex-col">
+                        <div class="overflow-auto rounded-[20px] border custom-scrollbar flex-1 relative"
                             :class="isDark ? 'border-white/10' : 'border-gray-200'">
                             <table class="w-full text-left rtl:text-right border-collapse min-w-[1200px]">
                                 <thead class="sticky top-0 z-20">
