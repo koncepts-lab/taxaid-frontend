@@ -73,26 +73,29 @@ const confirm = () => {
 </script>
 
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-[100] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4">
-    <!-- Backdrop -->
-    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="close"></div>
+  <Teleport to="body">
+    <Transition name="fade">
+      <div v-if="isOpen"
+          class="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          @click.self="close">
 
-    <!-- Modal Content -->
-    <div class="relative w-full max-w-[1000px] bg-white rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar shadow-xl overflow-hidden flex flex-col"
-         :class="isDark ? 'bg-[#013E32] text-white border border-[#00B794]/30' : 'bg-white text-gray-900 border border-gray-200'">
-      
-      <!-- Header -->
-      <div class="p-6 pb-4 relative">
-        <button @click="close" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-
-        <h2 class="text-[22px] font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">Cost Center Master Variance</h2>
-        <p class="text-[15px] font-medium mt-1" :class="isDark ? 'text-white/80' : 'text-gray-800'">Variance detected — review before replacing</p>
-        <p class="text-[14px] mt-1" :class="isDark ? 'text-white/60' : 'text-gray-500'">Differences found between your uploaded file and the current document</p>
-      </div>
+        <!-- Modal Content -->
+        <div class="w-full max-w-5xl transition-all duration-300 shadow-2xl rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar flex flex-col"
+            :class="isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white'">
+          
+          <!-- Header -->
+          <div class="flex justify-between items-start mb-6 p-6 pb-0">
+            <div>
+              <h2 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Cost Center Master Variance</h2>
+              <p class="text-[15px] font-medium mt-1" :class="isDark ? 'text-white/80' : 'text-gray-800'">Variance detected — review before replacing</p>
+              <p class="text-[14px] mt-1" :class="isDark ? 'text-white/60' : 'text-gray-500'">Differences found between your uploaded file and the current document</p>
+            </div>
+            <button @click="close" class="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors shrink-0">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" :class="isDark ? 'text-white' : 'text-gray-400'">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
       <div class="px-6 flex-1 overflow-y-auto">
         <!-- Alert Banner -->
@@ -196,6 +199,8 @@ const confirm = () => {
         </button>
       </div>
 
-    </div>
-  </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
