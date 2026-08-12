@@ -25,42 +25,37 @@ class SpreadingParticle {
   constructor(W, H) {
     this.W = W
     this.H = H
-    this.reset()
+    this.reset(true)
   }
 
   reset(immediate = false) {
-    this.angle = Math.random() * Math.PI * 2
-    this.x = this.W / 2
-    this.y = this.H / 2
+    this.x = Math.random() * this.W
+    this.y = Math.random() * this.H
     
-    // Spread further 
-    const isFar = Math.random() < 0.4
-    const maxDist = isFar
-      ? Math.hypot(this.W, this.H) * (1.5 + Math.random() * 1.5)
-      : Math.hypot(this.W, this.H) * (0.6 + Math.random() * 0.8)
-
-    // Fast movement
-    const speed = 1.5 + Math.random() * 3.5
-    this.vx = Math.cos(this.angle) * speed
-    this.vy = Math.sin(this.angle) * speed
+    // Smooth random drifting velocity
+    this.vx = (Math.random() - 0.5) * 1.5
+    this.vy = (Math.random() - 0.5) * 1.5
     
     this.size = 0.8 + Math.random() * 1.5
-    this.maxLife = maxDist / speed
-    this.delay = immediate ? 0 : Math.random() * 100
-    this.age = -this.delay
+    this.maxLife = 200 + Math.random() * 300
+    this.age = immediate ? Math.random() * this.maxLife : 0
   }
 
   update() {
     this.age++
-    if (this.age < 0) return
-
     if (this.age > this.maxLife) {
-      this.reset(true)
+      this.reset()
       return
     }
 
     this.x += this.vx
     this.y += this.vy
+
+    // Wrap around screen boundaries for continuous effect
+    if (this.x < 0) this.x = this.W
+    if (this.x > this.W) this.x = 0
+    if (this.y < 0) this.y = this.H
+    if (this.y > this.H) this.y = 0
   }
 
   draw(ctx, isDark) {
@@ -95,7 +90,7 @@ const resizeCanvas = () => {
   canvas.value.height = window.innerHeight
 
   particles = []
-  const count = 350 // High density for 'everywhere' feel
+  const count = 100 // Reduced density for a cleaner look
   for (let i = 0; i < count; i++) {
     const p = new SpreadingParticle(canvas.value.width, canvas.value.height)
     // Randomize initial age to fill the screen immediately

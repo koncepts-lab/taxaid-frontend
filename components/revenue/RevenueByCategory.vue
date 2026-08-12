@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-3xl p-8 h-full flex flex-col transition-all duration-500"
+  <div class="relative z-[1] rounded-3xl p-8 h-full flex flex-col transition-all duration-500"
     :class="isDark ? 'bg-[#00141080] border-none shadow-none' : 'bg-white shadow-sm border border-gray-100'">
     <div class="flex justify-between items-start mb-4">
       <div class="flex flex-col">

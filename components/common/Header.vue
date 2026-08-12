@@ -92,7 +92,7 @@
 
       <div class="group relative block">
         <CommonTooltip :text="currentLang === 'ar' ? 'ملخص بنقرة واحدة' : 'One Click Summary'">
-          <button
+          <button @click="navigateTo('/one-click-summary')"
             class="header-trigger-btn action-btn flash-btn w-9 h-9 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all duration-300"
             :class="{ 'shadow-none': isDark }"
             :style="isDark ? { background: 'linear-gradient(313.43deg, rgba(4, 183, 136, 0.5) 14.29%, rgba(5, 119, 89, 0.5) 81.93%)', boxShadow: 'none' } : {}">
@@ -487,6 +487,13 @@ const toggleCompany = (id) => {
   if (company) company.selected = !company.selected
 }
 const navItems = [
+  {
+    label: 'One Click Summary',
+    labelAr: 'ملخص بنقرة واحدة',
+    to: '/one-click-summary',
+    icon: '/images/icons/Financial-Statement.svg',
+    activeIcon: '/images/icons/Financial-Statement-active.svg'
+  },
   {
     label: 'Revenue',
     labelAr: 'الإيرادات',

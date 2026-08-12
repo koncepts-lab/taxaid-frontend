@@ -83,9 +83,7 @@
                             class="w-6 h-6 opacity-70 hover:opacity-100"
                             :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'transform scale-x-[-1]' : '']" />
                     </button>
-                    <a href="/chat-with-akeel" target="_blank" rel="noopener noreferrer" class="max-lg:hidden">
-                        <img src="/images/icons/open-new.svg" alt="Minimize Chat" :class="isDark ? 'invert' : ''" />
-                    </a>
+
                     <button @click="closeChat" class="rounded-full transition-colors"
                         :class="isDark ? 'text-white hover:bg-white/10' : 'text-black hover:bg-black/5'">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
