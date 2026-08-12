@@ -122,7 +122,8 @@ const rawData = computed(() => props.data)
 const yMax = computed(() => {
   const allVals = chartSeries.value.flatMap(s => s.data)
   const max = Math.max(...allVals, 0)
-  return Math.ceil(max + 1)
+  // Add 20% headroom for top-aligned data labels, especially when rotated vertically on mobile
+  return Math.ceil(max * 1.2 + 1)
 })
 
 const chartOptions = computed(() => ({
@@ -208,8 +209,15 @@ const chartOptions = computed(() => ({
         plotOptions: {
           bar: {
             columnWidth: '45%',
-            borderRadius: 4
+            borderRadius: 4,
+            dataLabels: {
+              position: 'top',
+              orientation: 'vertical'
+            }
           }
+        },
+        dataLabels: {
+          offsetY: -40
         },
         xaxis: {
           labels: {

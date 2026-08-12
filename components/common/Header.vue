@@ -20,28 +20,30 @@
       <div class="flex-1 overflow-y-auto py-2 no-scrollbar">
         <div class="flex flex-col gap-1">
           <template v-for="(item, index) in navItems" :key="index">
-            <NuxtLink v-if="item.to"
-              :to="item.to" 
-              @click="isMenuOpen = false"
-              class="flex items-center gap-4 p-2 rounded-xl transition-all duration-200 group w-full"
-              :class="$route.path.startsWith(item.to) ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/5'">
-              <img :src="$route.path.startsWith(item.to) ? item.activeIcon : item.icon"
-                class="w-6 h-6 transition-transform duration-200 opacity-60 brightness-0 invert"
-                :class="{ 'scale-110': $route.path.startsWith(item.to) }" />
-              <span class="text-lg font-medium text-white/60">
-                {{ currentLang === 'ar' ? item.labelAr : item.label }}
-              </span>
-            </NuxtLink>
+            <template v-if="item.label !== 'One Click Summary'">
+              <NuxtLink v-if="item.to"
+                :to="item.to" 
+                @click="isMenuOpen = false"
+                class="flex items-center gap-4 p-2 rounded-xl transition-all duration-200 group w-full"
+                :class="$route.path.startsWith(item.to) ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/5'">
+                <img :src="$route.path.startsWith(item.to) ? item.activeIcon : item.icon"
+                  class="w-6 h-6 transition-transform duration-200 opacity-60 brightness-0 invert"
+                  :class="{ 'scale-110': $route.path.startsWith(item.to) }" />
+                <span class="text-lg font-medium text-white/60">
+                  {{ currentLang === 'ar' ? item.labelAr : item.label }}
+                </span>
+              </NuxtLink>
 
-            <button v-else
-              @click="item.action === 'settings' ? (isMenuOpen = false, isSettingsOpen = true) : isMenuOpen = false"
-              class="flex items-center gap-4 p-2 rounded-xl transition-all duration-200 group w-full text-white/70 hover:text-white hover:bg-white/5">
-              <img :src="item.icon"
-                class="w-6 h-6 transition-transform duration-200 opacity-60 brightness-0 invert" />
-              <span class="text-lg font-medium text-white/60">
-                {{ currentLang === 'ar' ? item.labelAr : item.label }}
-              </span>
-            </button>
+              <button v-else
+                @click="item.action === 'settings' ? (isMenuOpen = false, isSettingsOpen = true) : isMenuOpen = false"
+                class="flex items-center gap-4 p-2 rounded-xl transition-all duration-200 group w-full text-white/70 hover:text-white hover:bg-white/5">
+                <img :src="item.icon"
+                  class="w-6 h-6 transition-transform duration-200 opacity-60 brightness-0 invert" />
+                <span class="text-lg font-medium text-white/60">
+                  {{ currentLang === 'ar' ? item.labelAr : item.label }}
+                </span>
+              </button>
+            </template>
           </template>
         </div>
       </div>

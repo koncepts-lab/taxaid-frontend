@@ -82,7 +82,7 @@
           <div class="w-2 h-2 lg:h-3 lg:w-3 rounded-full" :style="{ backgroundColor: colors.lastYear }"></div>
           <span class="text-[12px] lg:whitespace-nowrap whitespace-normal font-light lg:text-center text-left">{{ currentLang === 'ar' ? 'العام الماضي' : 'Previous Year' }} ({{ lastYearPct }}%)</span>
         </div>
-        <div class="text-[18px] font-medium lg:text-center text-left">
+        <div class="text-[14px] lg:text-[18px] font-medium lg:text-center text-left">
           <template v-if="currentLang === 'ar'">{{ formatToMillions(props.data?.previousValue || 0) }} مليون د.إ</template>
           <template v-else>AED {{ formatToMillions(props.data?.previousValue || 0) }}M</template>
         </div>
@@ -92,7 +92,7 @@
           <div class="w-2 h-2 lg:h-3 lg:w-3 rounded-full" :style="{ backgroundColor: colors.currentYear }"></div>
           <span class="text-[12px] font-light lg:whitespace-nowrap whitespace-normal lg:text-center text-left">{{ currentLang === 'ar' ? 'الحالي' : 'Current' }} ({{ Math.round(currentYearPct) }}%)</span>
         </div>
-        <div class="text-[18px] font-medium lg:text-center text-left">
+        <div class="text-[14px] lg:text-[18px] font-medium lg:text-center text-left">
           <template v-if="currentLang === 'ar'">{{ formatToMillions(currentYearAchieved) }} مليون د.إ</template>
           <template v-else>AED {{ formatToMillions(currentYearAchieved) }}M</template>
         </div>
@@ -102,7 +102,7 @@
           <div class="w-2 h-2 lg:h-3 lg:w-3 rounded-full" :style="{ backgroundColor: colors.balance }"></div>
           <span class="text-[12px] font-light lg:whitespace-nowrap whitespace-normal lg:text-center text-left">{{ currentLang === 'ar' ? 'المستهدف' : 'Target' }} (100%)</span>
         </div>
-        <div class="text-[18px] font-medium lg:text-center text-left">
+        <div class="text-[14px] lg:text-[18px] font-medium lg:text-center text-left">
           <template v-if="currentLang === 'ar'">{{ formatToMillions(currentYearTarget) }} مليون د.إ</template>
           <template v-else>AED {{ formatToMillions(currentYearTarget) }}M</template>
         </div>
@@ -120,7 +120,7 @@
               <p class="text-xs opacity-70 font-normal mt-1 text-white">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
             </div>
             <div class="flex items-center gap-4">
-              <img src="/images/icons/info.svg" alt="Info Icon" class="w-5 h-5 cursor-pointer hover:opacity-100" />
+              <img src="/images/icons/info-white.svg" alt="Info Icon" class="w-5 h-5 cursor-pointer hover:opacity-100" />
               <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                 <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
               </button>

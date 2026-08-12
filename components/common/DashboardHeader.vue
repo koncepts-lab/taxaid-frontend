@@ -37,7 +37,7 @@
 
                     <!-- Date Filter -->
                     <div v-if="showDateFilter" class="relative" ref="dateDropdownRef">
-                        <button @click="showDateDropdown = !showDateDropdown"
+                        <button @click="showDateDropdown = !showDateDropdown; if(showDateDropdown) showExportDropdown = false"
                             class="flex items-center space-x-2 rtl:space-x-reverse px-4 h-[40px] rounded-lg border transition-colors"
                             :class="isDark ? 'bg-[#002E26] border-[#03D8B0] text-white' : 'bg-white border-[#03D8B0] text-black hover:bg-teal-50'">
                             <svg class="w-4 h-4" :class="isDark ? 'text-[#03D8B0]' : 'text-black/50'" fill="none"
@@ -191,7 +191,7 @@
 
                     <!-- Export Group -->
                     <div class="relative" v-if="showExport">
-                        <button @click="showExportDropdown = !showExportDropdown"
+                        <button @click="showExportDropdown = !showExportDropdown; if(showExportDropdown) showDateDropdown = false"
                             class="w-[40px] h-[40px] flex items-center justify-center border rounded-lg transition-all"
                             :class="isDark ? 'bg-red-900 border-red-500' : 'bg-red-50 border-red-500 hover:bg-red-100'">
                             <img src="/images/icons/export.svg" alt="Export" class="w-5 h-5"

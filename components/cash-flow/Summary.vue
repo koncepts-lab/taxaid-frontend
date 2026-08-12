@@ -22,7 +22,8 @@
     </div>
 
     <!-- Fullscreen Modal -->
-    <Teleport to="body">
+    <ClientOnly>
+        <Teleport to="body">
         <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
             <div class="w-full rounded-xl flex flex-col overflow-hidden transition-all duration-500" :class="isDark ? 'bg-[#002e26]' : 'bg-white'" style="max-width: 1500px; margin: 0 15px; max-height: 90vh;">
                 <div class="flex justify-between items-center py-6 px-8 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
@@ -36,11 +37,12 @@
                 </div>
 
                 <div class="w-full flex-1 overflow-auto custom-scrollbar" :class="isDark ? 'bg-[#00141080]' : 'bg-white'">
-                    <CashFlowSummaryTable />
+                    <CashFlowSummaryTable :is-modal="true" />
                 </div>
             </div>
         </div>
-    </Teleport>
+        </Teleport>
+    </ClientOnly>
 </template>
 
 <script setup>
