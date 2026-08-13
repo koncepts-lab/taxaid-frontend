@@ -12,6 +12,18 @@
             @export-pdf="handleExportPDF" @selected-date="handleDateChange"
             :title="{ en: data?.cost_center ?? costCenterId, ar: data?.cost_center ?? costCenterId }" />
 
+          <!-- Gap-period snapshot notice: shown when the requested date has no
+               cost center data and the latest earlier period is displayed -->
+          <div v-if="snapshotNotice"
+            class="-mt-4 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <span v-if="currentLang === 'ar'">عرض بيانات <b>{{ data?.snapshot_date }}</b> (آخر بيانات متاحة) — لا توجد بيانات للتاريخ المحدد {{ data?.requested_date }}</span>
+            <span v-else>Showing data of <b>{{ data?.snapshot_date }}</b> (latest available) — no data for the selected date {{ data?.requested_date }}.</span>
+          </div>
+
           <!-- Skeleton -->
           <template v-if="loading">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -67,19 +79,25 @@ const headerRef = ref(null)
 const tableRef = ref(null)
 const route = useRoute()
 
-const title = computed(() => decodeURIComponent(route.params.id))
+const todayDDMMYYYY = () => {
+  const d = new Date()
+  return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`
+}
+
 const date = computed(() => route.query.date)
 const data = ref({})
 const loading = ref(true)
-const selectedDate = ref(route.query.date || '31-12-2025')
+const selectedDate = ref(route.query.date || todayDDMMYYYY())
 const costCenterId = computed(() => decodeURIComponent(route.params.id))
-
+const snapshotNotice = computed(() => {
+  return !!(data.value?.snapshot_date && data.value?.requested_date && data.value.snapshot_date !== data.value.requested_date)
+})
 
 const fetchProjectData = async () => {
   loading.value = true
   try {
     const response = await useApi(
-      `cost-center/cost-center-summary?date=${selectedDate.value}&cost_center=${costCenterId.value}`
+      `cost-center/cost-center-summary?date=${selectedDate.value}&cost_center_id=${costCenterId.value}`
     )
     data.value = response
   } catch (error) {

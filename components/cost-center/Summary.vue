@@ -214,11 +214,16 @@ const onRowLeave = () => {
   hoveredRowRect.value = null
 }
 
-const selectedDate = ref('31-12-2025')
+const todayDDMMYYYY = () => {
+  const d = new Date()
+  return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`
+}
+
+const selectedDate = ref(todayDDMMYYYY())
 
 const goToDetail = (item) => {
   router.push({
-    path: `/cost-center/${item.label}`,
+    path: `/cost-center/${item.id}`,
     query: { date: selectedDate.value }
   })
 }
@@ -226,6 +231,7 @@ const goToDetail = (item) => {
 // Mapping Function to clean and format API data
 const mapApiData = (item) => {
   return {
+    id: item.id,
     label: item.cost_center,
     labelAr: item.cost_center, // API doesn't provide Arabic, using same for now
     revenue: item.revenue,
@@ -237,7 +243,7 @@ const mapApiData = (item) => {
   }
 }
 
-const fetchSummaryData = async (dateStr = '31-12-2025') => {
+const fetchSummaryData = async (dateStr = selectedDate.value) => {
   isLoading.value = true
   try {
     // 2. Use a Template Literal for a dynamic URL

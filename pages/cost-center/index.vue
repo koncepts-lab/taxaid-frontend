@@ -88,9 +88,14 @@ const costCenterPeriods = [
   { en: 'Custom Date', ar: 'تاريخ مخصص' },    // ✅ maps to ?date=dd-MM-yyyy
 ]
 
+const todayDDMMYYYY = () => {
+  const d = new Date()
+  return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`
+}
+
 const fetchData = async () => {
   if (headerRef.value) headerRef.value.resetToDefault()
-  ccDate.value = '31-12-2025'
+  ccDate.value = todayDDMMYYYY()
   await Promise.all([
     summaryRef.value?.fetchSummaryData(),
     fetchChart()
