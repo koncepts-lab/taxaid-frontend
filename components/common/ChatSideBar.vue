@@ -183,15 +183,7 @@
             <img src="/images/akeel.webp" alt="" class="h-full w-auto object-contain" />
         </button>
 
-        <button
-            class="fixed bottom-18 lg:hidden right-4 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 z-50"
-            :style="{
-                background: 'linear-gradient(313.43deg, #00D39B 14.29%, #009276 81.93%)',
-                boxShadow: isDark ? '0 0 20px #00D6AD' : '0 4px 10px rgba(0,0,0,0.1)'
-            }">
-            <img :src="isDark ? '/images/icons/flash-dark.svg' : '/images/icons/flash-dark.svg'" class="w-6 h-6"
-                alt="Flash" />
-        </button>
+
 
     </div>
 </template>
