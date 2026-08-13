@@ -173,11 +173,57 @@
         </div>
         <div>
           <label class="block text-xs text-gray-700 mb-1">Email</label>
-          <div class="relative">
-             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-black">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
-             </span>
-             <input v-model="profile.email" class="w-full pl-9 bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+          <div class="flex gap-2">
+            <div class="relative flex-1">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-black">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
+              </span>
+              <input v-model="profile.email" @input="onEmailInput" class="w-full pl-9 bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+            </div>
+            <button
+              v-if="emailChanged && !emailVerified"
+              type="button"
+              @click="handleVerifyEmailClick"
+              :disabled="emailOtp.sending"
+              class="shrink-0 px-4 py-2 rounded-lg text-sm font-medium border transition-colors disabled:opacity-50"
+              :class="emailOtp.codeSent ? 'border-[#00896F] text-[#00896F] bg-white' : 'bg-[#00C853] text-white border-[#00C853] hover:bg-[#00b34a]'"
+            >
+              {{ emailOtp.sending ? 'Sending...' : (emailOtp.codeSent ? 'Verify' : 'Verify Email') }}
+            </button>
+            <span v-if="emailVerified" class="shrink-0 flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium bg-[#E6F6F2] text-[#00896F] border border-[#00896F]">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+              Verified
+            </span>
+          </div>
+
+          <div v-if="emailChanged && emailOtp.codeSent && !emailVerified" class="mt-2 bg-[#EBFAF680] border border-[#E9F3F0] rounded-lg p-3">
+            <p class="text-xs text-gray-600 mb-2">A code was sent to <strong>{{ profile.email }}</strong>.</p>
+            <div class="flex gap-2 items-center">
+              <input
+                v-model="emailOtp.code"
+                maxlength="4"
+                inputmode="numeric"
+                placeholder="4-digit code"
+                class="w-32 h-[36px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 text-sm focus:outline-none focus:border-[#00896F]"
+              />
+              <button
+                type="button"
+                @click="handleConfirmOtp"
+                :disabled="emailOtp.confirming || emailOtp.code.length !== 4"
+                class="px-4 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] disabled:opacity-50"
+              >
+                {{ emailOtp.confirming ? 'Checking...' : 'Confirm' }}
+              </button>
+              <button
+                type="button"
+                @click="handleResendOtp"
+                :disabled="emailOtp.resendCooldown > 0 || emailOtp.sending"
+                class="text-xs text-[#00896F] hover:underline disabled:opacity-50 disabled:no-underline"
+              >
+                {{ emailOtp.resendCooldown > 0 ? `Resend (${emailOtp.resendCooldown}s)` : 'Resend code' }}
+              </button>
+            </div>
+            <p v-if="emailOtp.error" class="text-xs text-red-600 mt-2">{{ emailOtp.error }}</p>
           </div>
         </div>
         <div>
@@ -540,16 +586,98 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useProfile } from '~/composables/settings/useProfile'
 
-const { profile, pictureUrl, loading, saving, error, fetchProfile, saveProfile, uploadPicture } = useProfile()
+const { profile, pictureUrl, loading, saving, error, fetchProfile, saveProfile, sendEmailChangeCode, verifyEmailChangeCode, uploadPicture } = useProfile()
 
 const isEditing = ref(false)
 const pendingPictureFile = ref<File | null>(null)
 const previewUrl = ref<string | null>(null)
 
+// Original saved email, kept separate from profile.email (which the input
+// mutates live) so we can tell whether the user actually changed it.
+const savedEmail = ref('')
+const emailVerified = ref(false)
+const emailVerifiedFor = ref('') // which address the "Verified" state applies to
+const emailOtp = ref({
+  sending: false,
+  confirming: false,
+  codeSent: false,
+  code: '',
+  error: '',
+  resendCooldown: 0,
+})
+let resendTimer: ReturnType<typeof setInterval> | null = null
+
+const emailChanged = computed(() => !!profile.value && profile.value.email !== savedEmail.value)
+
 onMounted(() => fetchProfile())
+
+watch(profile, (p) => {
+  if (p && !savedEmail.value) savedEmail.value = p.email
+})
+
+function resetEmailVerificationState() {
+  emailVerified.value = false
+  emailVerifiedFor.value = ''
+  emailOtp.value = { sending: false, confirming: false, codeSent: false, code: '', error: '', resendCooldown: 0 }
+  if (resendTimer) { clearInterval(resendTimer); resendTimer = null }
+}
+
+function onEmailInput() {
+  // Any further edit to the email invalidates a previous verification.
+  if (emailVerified.value && profile.value?.email !== emailVerifiedFor.value) {
+    resetEmailVerificationState()
+  }
+}
+
+function startResendCooldown() {
+  emailOtp.value.resendCooldown = 120
+  resendTimer = setInterval(() => {
+    emailOtp.value.resendCooldown -= 1
+    if (emailOtp.value.resendCooldown <= 0 && resendTimer) {
+      clearInterval(resendTimer)
+      resendTimer = null
+    }
+  }, 1000)
+}
+
+async function handleVerifyEmailClick() {
+  if (!profile.value?.email) return
+  emailOtp.value.error = ''
+  emailOtp.value.sending = true
+  try {
+    await sendEmailChangeCode(profile.value.email)
+    emailOtp.value.codeSent = true
+    emailOtp.value.code = ''
+    startResendCooldown()
+  } catch (err: any) {
+    emailOtp.value.error = err?.message ?? 'Failed to send code.'
+  } finally {
+    emailOtp.value.sending = false
+  }
+}
+
+async function handleResendOtp() {
+  await handleVerifyEmailClick()
+}
+
+async function handleConfirmOtp() {
+  if (!profile.value?.email) return
+  emailOtp.value.error = ''
+  emailOtp.value.confirming = true
+  try {
+    await verifyEmailChangeCode(profile.value.email, emailOtp.value.code)
+    emailVerified.value = true
+    emailVerifiedFor.value = profile.value.email
+    emailOtp.value.codeSent = false
+  } catch (err: any) {
+    emailOtp.value.error = err?.message ?? 'Invalid or expired code.'
+  } finally {
+    emailOtp.value.confirming = false
+  }
+}
 
 function discardPendingPicture() {
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
@@ -559,6 +687,8 @@ function discardPendingPicture() {
 
 function handleCancel() {
   discardPendingPicture()
+  if (profile.value && savedEmail.value) profile.value.email = savedEmail.value
+  resetEmailVerificationState()
   isEditing.value = false
 }
 
@@ -569,7 +699,16 @@ async function handleSave() {
       await uploadPicture(pendingPictureFile.value)
       discardPendingPicture()
     }
-    await saveProfile(profile.value)
+    // If the email was changed but never verified, don't send it — the
+    // backend would silently drop it anyway, but this avoids a confusing
+    // round trip and keeps the displayed value from flipping back.
+    const payload = { ...profile.value }
+    if (emailChanged.value && (!emailVerified.value || emailVerifiedFor.value !== profile.value.email)) {
+      payload.email = savedEmail.value
+    }
+    await saveProfile(payload)
+    savedEmail.value = profile.value.email
+    resetEmailVerificationState()
     isEditing.value = false
   } catch {
     // error is stored in composable error ref
