@@ -1,6 +1,6 @@
 <template>
   <header
-    class="relative z-[1100] flex items-center justify-between px-4 md:px-8 py-1 md:py-2 bg-transparent mt-0 mb-2">
+    class="relative z-[1100] flex items-center justify-between px-4 md:px-8 pt-1 pb-[15px] md:py-2 bg-transparent mt-0 mb-2">
     <div v-if="isMenuOpen" class="fixed inset-0 bg-black/50 z-[100] lg:hidden transition-opacity duration-300"
       @click="isMenuOpen = false"></div>
 
@@ -147,7 +147,7 @@
         </div>
       </div>
 
-      <div class="group relative hidden lg:flex items-center gap-2 md:gap-4 p-1 cursor-pointer z-[100000]"
+      <div class="group relative flex items-center gap-2 md:gap-4 p-1 cursor-pointer z-[100000]"
         @click.stop="isProfileOpen = true" :class="currentLang === 'ar' ? 'mr-1 md:mr-3' : 'ml-1 md:ml-3'">
         <div class="header-profile-text-container text-right hidden lg:block" :class="currentLang === 'ar' ? 'text-left' : 'text-right'">
           <div class="font-medium text-[15px] leading-tight transition-colors duration-300"
@@ -573,13 +573,7 @@ const navItems = [
     icon: '/images/icons/calendar.svg',
     activeIcon: '/images/icons/calendar.svg'
   },
-  {
-    label: 'Profile',
-    labelAr: 'الملف الشخصي',
-    to: '/profile',
-    icon: '/images/icons/settings.svg',
-    activeIcon: '/images/icons/settings-dark.svg'
-  },
+
   {
     label: 'Settings',
     labelAr: 'الإعدادات',
