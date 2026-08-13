@@ -33,23 +33,41 @@
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">PDC Issue Date</label>
               <div class="relative">
-                <input type="text" v-model="form.pdc_issue_date" placeholder="dd-mm-yyyy" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div @click="activeCalendar = activeCalendar === 'issue' ? null : 'issue'"
+                  class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] outline-none bg-white flex items-center justify-between cursor-pointer transition-all">
+                  <span :class="!form.pdc_issue_date ? 'text-[#717182]' : 'text-gray-700'" class="text-sm">
+                    {{ form.pdc_issue_date ? new Date(form.pdc_issue_date).toLocaleDateString('en-GB').replace(/\//g, '-') : 'dd-mm-yyyy' }}
+                  </span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
+                <transition name="fade-slide">
+                  <div v-if="activeCalendar === 'issue'"
+                    class="absolute top-[calc(100%+8px)] left-0 z-[9999] bg-white border border-gray-100 rounded-2xl shadow-2xl p-2">
+                    <VDatePicker v-model="form.pdc_issue_date" @update:model-value="activeCalendar = null" color="teal" borderless />
+                  </div>
+                </transition>
               </div>
             </div>
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">PDC Realisation Date</label>
               <div class="relative">
-                <input type="text" v-model="form.pdc_realisation_date" placeholder="dd-mm-yyyy" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div @click="activeCalendar = activeCalendar === 'realisation' ? null : 'realisation'"
+                  class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] outline-none bg-white flex items-center justify-between cursor-pointer transition-all">
+                  <span :class="!form.pdc_realisation_date ? 'text-[#717182]' : 'text-gray-700'" class="text-sm">
+                    {{ form.pdc_realisation_date ? new Date(form.pdc_realisation_date).toLocaleDateString('en-GB').replace(/\//g, '-') : 'dd-mm-yyyy' }}
+                  </span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
+                <transition name="fade-slide">
+                  <div v-if="activeCalendar === 'realisation'"
+                    class="absolute top-[calc(100%+8px)] left-0 z-[9999] bg-white border border-gray-100 rounded-2xl shadow-2xl p-2">
+                    <VDatePicker v-model="form.pdc_realisation_date" @update:model-value="activeCalendar = null" color="teal" borderless />
+                  </div>
+                </transition>
               </div>
             </div>
             <div>
@@ -173,10 +191,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useState } from '#app'
+import { DatePicker as VDatePicker } from 'v-calendar'
 
 const router = useRouter()
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
+const activeCalendar = ref(null)
 
 const {
   saving, error, success,

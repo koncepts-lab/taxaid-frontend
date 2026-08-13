@@ -253,9 +253,8 @@ const chartOptions = computed(() => ({
   },
   yaxis: [
     {
-      min: 0,
-      // Dynamically set max based on data
-      max: Math.ceil(Math.max(...customersData.value.map((c: any) => c.value), 1)),
+      // Dynamically set max based on data, without enforcing min: 0 to allow negative values
+      max: customersData.value.length ? Math.ceil(Math.max(...customersData.value.map((c: any) => c.value), 1)) : 1,
       tickAmount: 5,
       axisBorder: {
         show: true,

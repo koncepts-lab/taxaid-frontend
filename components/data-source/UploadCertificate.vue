@@ -250,6 +250,7 @@ const fileInputRef = ref(null)
 const selectOption = (option) => {
     form.type = option
     isOpen.value = false
+    formError.value = ''
 }
 
 const handleClickOutside = (e) => {

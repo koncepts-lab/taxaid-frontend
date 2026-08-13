@@ -123,7 +123,7 @@
         </div>
 
         <!-- 3. Main Table Card -->
-        <div class="rounded-2xl border shadow-sm overflow-x-auto transition-all duration-300"
+        <div class="rounded-2xl border shadow-sm overflow-x-auto custom-scrollbar transition-all duration-300"
             :class="isDark ? 'bg-transparent border-white/10' : 'bg-white border-gray-100'">
             <div :style="{ minWidth: currentConfig.minWidth }">
                 <!-- Teal Header -->
@@ -374,7 +374,7 @@ const configs = {
         headers: ['Customer ID', 'Name', 'Tax ID', 'Contact Person', 'Email', 'Phone', 'Credit Limit (AED)', 'Outstanding (AED)', 'Status'],
         headersAr: ['معرف العميل', 'الاسم', 'الرقم الضريبي', 'الشخص المسؤول', 'البريد', 'الهاتف', 'الحد الائتماني', 'المبالغ المستحقة', 'الحالة'],
         gridCols: '50px 120px 200px 140px 170px 220px 150px 150px 150px 100px',
-        minWidth: '1550px'
+        minWidth: '1650px'
     }
 }
 

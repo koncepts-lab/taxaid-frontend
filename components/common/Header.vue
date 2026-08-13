@@ -1,6 +1,6 @@
 <template>
   <header
-    class="relative z-[1100] flex items-center justify-between px-4 md:px-8 py-1 md:py-2 bg-transparent mt-0 mb-2">
+    class="relative z-[1100] flex items-center justify-between px-4 md:px-8 pt-1 pb-[15px] md:py-2 bg-transparent mt-0 mb-2">
     <div v-if="isMenuOpen" class="fixed inset-0 bg-black/50 z-[100] lg:hidden transition-opacity duration-300"
       @click="isMenuOpen = false"></div>
 
@@ -20,28 +20,30 @@
       <div class="flex-1 overflow-y-auto py-2 no-scrollbar">
         <div class="flex flex-col gap-1">
           <template v-for="(item, index) in navItems" :key="index">
-            <NuxtLink v-if="item.to"
-              :to="item.to" 
-              @click="isMenuOpen = false"
-              class="flex items-center gap-4 p-2 rounded-xl transition-all duration-200 group w-full"
-              :class="$route.path.startsWith(item.to) ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/5'">
-              <img :src="$route.path.startsWith(item.to) ? item.activeIcon : item.icon"
-                class="w-6 h-6 transition-transform duration-200 opacity-60 brightness-0 invert"
-                :class="{ 'scale-110': $route.path.startsWith(item.to) }" />
-              <span class="text-lg font-medium text-white/60">
-                {{ currentLang === 'ar' ? item.labelAr : item.label }}
-              </span>
-            </NuxtLink>
+            <template v-if="item.label !== 'One Click Summary'">
+              <NuxtLink v-if="item.to"
+                :to="item.to" 
+                @click="isMenuOpen = false"
+                class="flex items-center gap-4 p-2 rounded-xl transition-all duration-200 group w-full"
+                :class="$route.path.startsWith(item.to) ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/5'">
+                <img :src="$route.path.startsWith(item.to) ? item.activeIcon : item.icon"
+                  class="w-6 h-6 transition-transform duration-200 opacity-60 brightness-0 invert"
+                  :class="{ 'scale-110': $route.path.startsWith(item.to) }" />
+                <span class="text-lg font-medium text-white/60">
+                  {{ currentLang === 'ar' ? item.labelAr : item.label }}
+                </span>
+              </NuxtLink>
 
-            <button v-else
-              @click="item.action === 'settings' ? (isMenuOpen = false, isSettingsOpen = true) : isMenuOpen = false"
-              class="flex items-center gap-4 p-2 rounded-xl transition-all duration-200 group w-full text-white/70 hover:text-white hover:bg-white/5">
-              <img :src="item.icon"
-                class="w-6 h-6 transition-transform duration-200 opacity-60 brightness-0 invert" />
-              <span class="text-lg font-medium text-white/60">
-                {{ currentLang === 'ar' ? item.labelAr : item.label }}
-              </span>
-            </button>
+              <button v-else
+                @click="item.action === 'settings' ? (isMenuOpen = false, isSettingsOpen = true) : isMenuOpen = false"
+                class="flex items-center gap-4 p-2 rounded-xl transition-all duration-200 group w-full text-white/70 hover:text-white hover:bg-white/5">
+                <img :src="item.icon"
+                  class="w-6 h-6 transition-transform duration-200 opacity-60 brightness-0 invert" />
+                <span class="text-lg font-medium text-white/60">
+                  {{ currentLang === 'ar' ? item.labelAr : item.label }}
+                </span>
+              </button>
+            </template>
           </template>
         </div>
       </div>
@@ -145,7 +147,7 @@
         </div>
       </div>
 
-      <div class="group relative hidden lg:flex items-center gap-2 md:gap-4 p-1 cursor-pointer z-[100000]"
+      <div class="group relative flex items-center gap-2 md:gap-4 p-1 cursor-pointer z-[100000]"
         @click.stop="isProfileOpen = true" :class="currentLang === 'ar' ? 'mr-1 md:mr-3' : 'ml-1 md:ml-3'">
         <div class="header-profile-text-container text-right hidden lg:block" :class="currentLang === 'ar' ? 'text-left' : 'text-right'">
           <div class="font-medium text-[15px] leading-tight transition-colors duration-300"
@@ -354,7 +356,7 @@
           isDark ? 'bg-[#01261f] text-white' : 'bg-white text-gray-900'
         ]" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
-        <div class="p-2 ">
+        <div class="p-[20px]">
           <div class="bg-[#E6F9F4] p-2 rounded-2xl flex items-center gap-4 mb-5 relative">
             <img v-if="pictureUrl" :src="pictureUrl"
               class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
@@ -365,7 +367,7 @@
               <NuxtLink to="/profile" class="text-[#00B68D] text-sm font-medium  mt-1 inline-block">View
                 Profile</NuxtLink>
             </div>
-            <button @click="isSettingsOpen = false"
+            <button @click="isProfileOpen = false"
               class="absolute top-1 right-0 p-2 opacity-50 hover:opacity-100 transition-opacity">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M18 6L6 18M6 6l12 12" />
@@ -438,11 +440,7 @@
             </button>
           </div>
 
-          <div class="mt-6 pt-4 border-t border-gray-100 flex justify-center items-center gap-4 text-xs text-gray-400">
-            <NuxtLink to="/privacy">{{ currentLang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' }}</NuxtLink>
-            <span class="h-3 w-px bg-gray-300"></span>
-            <NuxtLink to="/terms">{{ currentLang === 'ar' ? 'شروط الخدمة' : 'Terms of Service' }}</NuxtLink>
-          </div>
+
         </div>
       </div>
     </Teleport>
@@ -571,13 +569,7 @@ const navItems = [
     icon: '/images/icons/calendar.svg',
     activeIcon: '/images/icons/calendar.svg'
   },
-  {
-    label: 'Profile',
-    labelAr: 'الملف الشخصي',
-    to: '/profile',
-    icon: '/images/icons/settings.svg',
-    activeIcon: '/images/icons/settings-dark.svg'
-  },
+
   {
     label: 'Settings',
     labelAr: 'الإعدادات',

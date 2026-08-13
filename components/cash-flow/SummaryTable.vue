@@ -4,7 +4,7 @@
             <col style="width: 28%;" />
             <col v-for="month in months" :key="`col-${month}`" :style="`width: ${72 / months.length}%;`" />
         </colgroup>
-        <thead class="text-white lg:sticky lg:top-[82px] z-20 shadow-sm" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+        <thead class="text-white z-20 shadow-sm" :class="[isDark ? 'bg-[#002B21]' : 'bg-[#008864]', isModal ? 'sticky top-0' : 'lg:sticky lg:top-[82px]']">
             <tr class="transition-all duration-500">
                 <th :class="isCompressed ? 'px-8 py-4' : 'px-8 py-5'" class="font-medium text-[14px]">
                     {{ currentLang === 'ar' ? 'التدفقات النقدية' : 'Cashflow' }}
@@ -28,7 +28,7 @@
             <!-- Incoming (expandable) -->
             <tr class="transition-all duration-500 relative z-10" :class="[
                 isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100',
-                expandedRow === 'incoming' ? 'lg:sticky lg:top-[142px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : ''
+                expandedRow === 'incoming' ? (isModal ? 'sticky top-[52px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : 'lg:sticky lg:top-[142px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10') : ''
             ]">
                 <td :class="[cellPad, isDark ? 'text-white' : 'text-black', 'font-medium text-[14px]']">
                     <div class="flex items-center gap-2 cursor-pointer select-none" @click="toggleRow('incoming', $event)">
@@ -98,7 +98,7 @@
             <!-- Outgoing (expandable) -->
             <tr class="transition-all duration-500 relative z-10" :class="[
                 isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100',
-                expandedRow === 'outgoing' ? 'lg:sticky lg:top-[142px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : ''
+                expandedRow === 'outgoing' ? (isModal ? 'sticky top-[52px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : 'lg:sticky lg:top-[142px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10') : ''
             ]">
                 <td :class="[cellPad, isDark ? 'text-white' : 'text-black', 'font-medium text-[14px]']">
                     <div class="flex items-center gap-2 cursor-pointer select-none" @click="toggleRow('outgoing', $event)">
@@ -194,7 +194,11 @@
 import { ref, computed, nextTick } from 'vue'
 
 const props = defineProps({
-    isCompressed: Boolean
+    isCompressed: Boolean,
+    isModal: {
+        type: Boolean,
+        default: false
+    }
 })
 
 const { isDark } = useTheme()

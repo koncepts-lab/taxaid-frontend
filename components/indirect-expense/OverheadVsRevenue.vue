@@ -208,7 +208,10 @@ const chartOptions = computed(() => ({
         plotOptions: {
           bar: {
             columnWidth: '45%',
-            borderRadius: 4
+            borderRadius: 4,
+            dataLabels: {
+              orientation: 'vertical'
+            }
           }
         },
         xaxis: {

@@ -54,22 +54,22 @@
 
       <!-- Alert-driven modals — only rendered when the matching condition is active -->
       <DashboardApVarianceReconciliationModal
-        v-if="dashboardAlerts.ap_variance"
+        v-if="dashboardAlerts.ap_variance && !isMobile"
         :data="dashboardAlerts.ap_variance"
         @close="dashboardAlerts.ap_variance = null"
         @resolved="onModalResolved" />
       <DashboardArVarianceReconciliationModal
-        v-if="dashboardAlerts.ar_variance"
+        v-if="dashboardAlerts.ar_variance && !isMobile"
         :data="dashboardAlerts.ar_variance"
         @close="dashboardAlerts.ar_variance = null"
         @resolved="onModalResolved" />
       <DashboardNewLedgerDetectedModal
-        v-if="dashboardAlerts.missing_ledgers"
+        v-if="dashboardAlerts.missing_ledgers && !isMobile"
         :data="dashboardAlerts.missing_ledgers"
         @close="dashboardAlerts.missing_ledgers = null"
         @resolved="onModalResolved" />
       <DashboardSalesForecastVarianceModal
-        v-if="dashboardAlerts.sales_forecast_variance"
+        v-if="dashboardAlerts.sales_forecast_variance && !isMobile"
         :data="dashboardAlerts.sales_forecast_variance"
         @close="dashboardAlerts.sales_forecast_variance = null"
         @resolved="onModalResolved" />
@@ -78,8 +78,12 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+
+const isMobile = ref(false)
 
 const dashboardAlerts = ref({
   ar_variance: null,
@@ -102,6 +106,13 @@ const fetchDashboardAlerts = async () => {
 const onModalResolved = () => fetchDashboardAlerts()
 
 onMounted(() => {
+  isMobile.value = window.innerWidth < 768;
+  const updateIsMobile = () => {
+    isMobile.value = window.innerWidth < 768;
+  };
+  window.addEventListener('resize', updateIsMobile);
+  onUnmounted(() => window.removeEventListener('resize', updateIsMobile));
+
   fetchDashboardAlerts()
   fetchSummary()
   // deferred + throttled to once a day; never competes with the card requests

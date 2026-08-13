@@ -71,7 +71,7 @@
                             <div class="flex flex-col">
                                 <h4 class="text-base font-normal">{{ alert.actionTitle }}</h4>
                                 <p class="text-sm opacity-90 my-3 leading-relaxed">
-                                    {{ alert.actionNote }}
+                                    This alert requires attention and action from the responsible team or department.
                                 </p>
                                 <div v-if="alert.status !== 'Awaiting Action'"
                                     class="flex flex-wrap gap-y-2 gap-x-8 text-xs font-medium">
