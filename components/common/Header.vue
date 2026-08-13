@@ -356,7 +356,7 @@
           isDark ? 'bg-[#01261f] text-white' : 'bg-white text-gray-900'
         ]" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
-        <div class="p-2 ">
+        <div class="p-[20px]">
           <div class="bg-[#E6F9F4] p-2 rounded-2xl flex items-center gap-4 mb-5 relative">
             <img v-if="pictureUrl" :src="pictureUrl"
               class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
@@ -367,7 +367,7 @@
               <NuxtLink to="/profile" class="text-[#00B68D] text-sm font-medium  mt-1 inline-block">View
                 Profile</NuxtLink>
             </div>
-            <button @click="isSettingsOpen = false"
+            <button @click="isProfileOpen = false"
               class="absolute top-1 right-0 p-2 opacity-50 hover:opacity-100 transition-opacity">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M18 6L6 18M6 6l12 12" />
@@ -440,11 +440,7 @@
             </button>
           </div>
 
-          <div class="mt-6 pt-4 border-t border-gray-100 flex justify-center items-center gap-4 text-xs text-gray-400">
-            <NuxtLink to="/privacy">{{ currentLang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' }}</NuxtLink>
-            <span class="h-3 w-px bg-gray-300"></span>
-            <NuxtLink to="/terms">{{ currentLang === 'ar' ? 'شروط الخدمة' : 'Terms of Service' }}</NuxtLink>
-          </div>
+
         </div>
       </div>
     </Teleport>
