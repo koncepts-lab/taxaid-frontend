@@ -42,7 +42,8 @@
             <div :class="reverbRunning ? 'bg-gray-50' : 'bg-red-50/60'" class="rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Reverb</div><div :class="reverbRunning ? 'text-emerald-600' : 'text-red-600'" class="font-semibold">{{ reverbRunning ? 'Running' : status?.data?.reverb ? 'Stopped' : 'Unreachable' }}</div></div>
             <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Latency</div><div class="font-semibold text-gray-800">{{ status?.data?.reverb?.latency_ms != null ? status.data.reverb.latency_ms + ' ms' : '—' }}</div></div>
             <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Service</div><div class="font-semibold text-gray-800">{{ status?.data?.reverb?.service ?? '—' }}</div></div>
-            <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Queue</div><div :class="status?.data?.queue?.running ? 'text-emerald-600' : 'text-red-600'" class="font-semibold">{{ status?.data?.queue?.service ?? '—' }}</div></div>
+            <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Queue (general)</div><div :class="status?.data?.queue?.general?.running ? 'text-emerald-600' : 'text-red-600'" class="font-semibold">{{ status?.data?.queue?.general?.service ?? '—' }}</div></div>
+            <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Queue (connector)</div><div :class="status?.data?.queue?.connector?.running ? 'text-emerald-600' : 'text-red-600'" class="font-semibold">{{ status?.data?.queue?.connector?.service ?? '—' }}</div></div>
             <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Failed Jobs</div><div class="font-semibold text-gray-800">{{ status?.data?.queue?.failed_jobs ?? '—' }}</div></div>
             <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Scheduler</div><div :class="status?.data?.scheduler?.running ? 'text-emerald-600' : 'text-red-600'" class="font-semibold">{{ status?.data?.scheduler?.service ?? '—' }}</div></div>
             <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Redis</div><div :class="status?.data?.redis?.connected ? 'text-emerald-600' : 'text-red-600'" class="font-semibold">{{ status?.data?.redis?.connected ? (status.data.redis.latency_ms + ' ms') : 'Down' }}</div></div>
@@ -82,7 +83,8 @@
               <select v-model="logSource" @change="load" class="text-xs border border-gray-200 rounded-md px-2 py-1 text-gray-600">
                 <option value="system">System</option>
                 <option value="reverb">Reverb</option>
-                <option value="queue">Queue</option>
+                <option value="queue">Queue (general)</option>
+                <option value="queue-connector">Queue (connector)</option>
                 <option value="scheduler">Scheduler</option>
               </select>
             </div>
