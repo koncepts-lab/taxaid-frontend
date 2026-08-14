@@ -8,27 +8,24 @@
       
       <!-- 4 Circle -->
       <div class="circle offset-down z-10">
-        <p class="top-text">OOOPS</p>
         <h1 class="main-number">4</h1>
-        <p class="bottom-text">WE'RE SORRY</p>
       </div>
 
       <!-- 0 Circle -->
       <div class="circle center-circle z-20">
-        <p class="top-text">PAGE NOT</p>
+        <p class="top-text" style="text-transform: none;">Oops..</p>
         <h1 class="main-number">0</h1>
-        <p class="bottom-text">FOUND</p>
       </div>
 
       <!-- 4 Circle -->
       <div class="circle offset-up z-10">
-        <p class="top-text">SOMETHING</p>
         <h1 class="main-number">4</h1>
-        <p class="bottom-text">IS BROKEN</p>
       </div>
-      
+
     </div>
-    
+
+    <p class="below-text">PAGE NOT FOUND</p>
+
     <!-- Go back button -->
     <button @click="handleError" class="return-btn">
       BACK TO HOME →
@@ -68,6 +65,7 @@ const handleError = () => {
   background-color: #0d0e11;
   overflow: hidden;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
@@ -177,12 +175,13 @@ const handleError = () => {
 }
 
 .top-text {
-  font-size: 11px;
+  font-size: 18px;
+  font-weight: 600;
   letter-spacing: 0.2em;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   position: absolute;
-  top: 45px;
+  top: 40px;
 }
 
 .main-number {
@@ -201,6 +200,16 @@ const handleError = () => {
   text-transform: uppercase;
   position: absolute;
   bottom: 45px;
+}
+
+.below-text {
+  position: relative;
+  z-index: 30;
+  margin-top: 30px;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
 }
 
 .return-btn {
