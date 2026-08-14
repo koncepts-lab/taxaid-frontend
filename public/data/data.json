@@ -2177,11 +2177,6 @@
     ],
     "subTabsFinancial": [
       {
-        "id": "settings",
-        "label": "Settings",
-        "labelAr": "الإعدادات"
-      },
-      {
         "id": "data-in",
         "label": "Data In",
         "labelAr": "إدخال البيانات"
@@ -2225,6 +2220,11 @@
         "id": "budget",
         "label": "Budget",
         "labelAr": "الميزانية"
+      },
+      {
+        "id": "settings",
+        "label": "Settings",
+        "labelAr": "الإعدادات"
       }
     ],
     "subTabsContacts": [

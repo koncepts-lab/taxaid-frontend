@@ -120,7 +120,7 @@
 
         <!-- Table Wrapper (Horizontal Scroll) -->
         <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative">
-            <table class="w-full text-start border-collapse min-w-250 table-fixed">
+            <table class="w-full text-start border-collapse min-w-[900px] lg:min-w-full table-fixed">
                 <thead class="text-white lg:sticky lg:top-0 z-20 shadow-sm" :class="isDark ? 'bg-primary-1100' : 'bg-primary-750'">
                 <tr>
                     <template v-if="activeTab === 'ratios'">
