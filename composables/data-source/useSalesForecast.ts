@@ -31,6 +31,27 @@ export const useSalesForecast = () => {
     if (ok) await fetch()
   }
 
+  const detailedRows = ref<any[]>([])
+  const detailedLoading = ref(false)
+
+  const fetchDetailedReport = async () => {
+    detailedLoading.value = true
+    try {
+      const result = await useApi('/data-source/sales-forecast') as any
+      detailedRows.value = (result?.data ?? []).map((row: any) => ({
+        projectName: row.project_name,
+        customer: row.customer,
+        possibility: row.possibility,
+        date: row.forecast_date,
+        amount: row.invoice_value,
+      }))
+    } catch {
+      detailedRows.value = []
+    } finally {
+      detailedLoading.value = false
+    }
+  }
+
   const logs = ref<any[]>([])
   const logsLoading = ref(false)
 
@@ -49,5 +70,5 @@ export const useSalesForecast = () => {
     fetchLogs()
   })
 
-  return { data, loading, error, activeMode, changeMode, fetch, logs, logsLoading, fetchLogs }
+  return { data, loading, error, activeMode, changeMode, fetch, logs, logsLoading, fetchLogs, detailedRows, detailedLoading, fetchDetailedReport }
 }

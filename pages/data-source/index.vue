@@ -67,7 +67,8 @@
               ]">
 
               <div class="sub-tabs flex gap-2" :class="activeMainTab === 'contacts' ? 'w-full' : 'min-w-max'">
-                <button v-for="tab in currentSubTabs" :key="tab.id" @click="activeSubTab = tab.id"
+                <!-- TODO: settings/inter-company have no backend yet — hidden, not removed -->
+                <button v-for="tab in currentSubTabs" v-show="tab.id !== 'settings' && tab.id !== 'inter-company'" :key="tab.id" @click="activeSubTab = tab.id"
                   class="px-6 py-2.5 transition-all duration-300 whitespace-nowrap text-[15px] font-normal" :class="[
                     activeMainTab === 'contacts' ? 'flex-1 rounded-full' : 'rounded-[40px]',
                     activeSubTab === tab.id
@@ -146,8 +147,8 @@
                 @close="isModalOpen = false" />
               <DataSourceBudget v-if="activeSubTab === 'budget'" :isDark="isDark" :currentLang="currentLang" />
               <DataSourceSalesForecast v-if="activeSubTab === 'sales-forecast'"
-                :isDark="isDark" :currentLang="currentLang" @open-sales-report="isForecastModalOpen = true" />
-              <DataSourceSalesForecastModal :isOpen="isForecastModalOpen" :data="[]"
+                :isDark="isDark" :currentLang="currentLang" @open-sales-report="openSalesForecastReport" />
+              <DataSourceSalesForecastModal :isOpen="isForecastModalOpen" :data="salesForecastDetailedData"
                 :isDark="isDark" :currentLang="currentLang" @close="isForecastModalOpen = false" />
               <DataSourceDataIn v-if="activeSubTab === 'data-in'"
                 :dataInItems="dataInItems"
@@ -259,7 +260,8 @@ const {
 } = useDataSourcePage()
 
 const activeMainTab = ref((route.query.tab || 'financial'))
-const activeSubTab  = ref((route.query.sub || 'settings'))
+// TODO: was 'settings' — that tab is hidden (no backend yet), default to first visible tab instead
+const activeSubTab  = ref((route.query.sub || 'data-in'))
 
 const syncUrl = () => {
   router.replace({ query: { ...route.query, tab: activeMainTab.value, sub: activeSubTab.value } })
@@ -278,6 +280,13 @@ const canScrollLeft = ref(false)
 const canScrollRight = ref(false)
 let resizeObserver = null
 const isForecastModalOpen = ref(false)
+const salesForecastDetailedData = ref([])
+
+const openSalesForecastReport = (rows) => {
+  salesForecastDetailedData.value = rows
+  isForecastModalOpen.value = true
+}
+
 const updateArrowVisibility = () => {
   const el = subTabsContainer.value
   if (!el) return
