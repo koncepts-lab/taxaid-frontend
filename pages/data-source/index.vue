@@ -66,11 +66,11 @@
                 activeMainTab === 'contacts' ? 'rounded-full' : 'rounded-[10px]'
               ]">
 
-              <div class="sub-tabs flex gap-2" :class="activeMainTab === 'contacts' ? 'w-full' : 'min-w-max'">
+              <div class="sub-tabs flex gap-2 w-full justify-center">
                 <!-- TODO: settings/inter-company have no backend yet — hidden, not removed -->
                 <button v-for="tab in currentSubTabs" v-show="tab.id !== 'settings' && tab.id !== 'inter-company'" :key="tab.id" @click="activeSubTab = tab.id"
-                  class="px-6 py-2.5 transition-all duration-300 whitespace-nowrap text-[15px] font-normal" :class="[
-                    activeMainTab === 'contacts' ? 'flex-1 rounded-full' : 'rounded-[40px]',
+                  class="px-6 py-2.5 flex-1 transition-all duration-300 whitespace-nowrap text-[15px] font-normal text-center" :class="[
+                    activeMainTab === 'contacts' ? 'rounded-full' : 'rounded-[40px]',
                     activeSubTab === tab.id
                       ? (isDark ? 'bg-white text-[#013E32] shadow-md' : 'bg-white text-black shadow-sm')
                       : (isDark ? 'text-white/70 hover:text-white' : 'text-[#013E32] hover:bg-white/10')

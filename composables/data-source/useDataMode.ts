@@ -18,15 +18,20 @@ const DEFAULTS: Record<DataModeModule, DataMode> = {
 export const useDataMode = () => {
   const modes = useState<Record<DataModeModule, DataMode>>('data-modes', () => ({ ...DEFAULTS }))
   const loading = useState<boolean>('data-modes-loading', () => false)
+  const loaded = useState<boolean>('data-modes-loaded', () => false)
   const saving = ref(false)
   const error = ref<string | null>(null)
 
-  const fetchModes = async () => {
+  // Shared app-wide state — skip the network round-trip on repeat mounts
+  // (e.g. re-entering a data-source tab) unless the caller explicitly wants fresh data.
+  const fetchModes = async (force = false) => {
+    if (loaded.value && !force) return
     loading.value = true
     error.value = null
     try {
       const result = await useApi('/data-source/data-modes') as any
       if (result?.data) modes.value = { ...modes.value, ...result.data }
+      loaded.value = true
     } catch (e: any) {
       error.value = e?.data?.message ?? 'Failed to load data modes.'
     } finally {

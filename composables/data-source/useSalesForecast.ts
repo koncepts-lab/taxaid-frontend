@@ -64,8 +64,8 @@ export const useSalesForecast = () => {
     finally { logsLoading.value = false }
   }
 
-  onMounted(async () => {
-    await fetchModes()
+  onMounted(() => {
+    fetchModes()
     fetch()
     fetchLogs()
   })
