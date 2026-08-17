@@ -24,7 +24,7 @@
                     </button>
                 </div>
 
-                <button @click="$emit('open-sales-report')"
+                <button @click="openDetailedReport"
                     class="flex items-center gap-2 px-5 py-2.5 bg-[#68E4C4] hover:bg-[#52c9ac] text-[#013E32] rounded-xl text-sm font-medium transition-all whitespace-nowrap shadow-sm">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
@@ -147,7 +147,12 @@ defineProps({
     isDark: Boolean,
     currentLang: String
 })
-defineEmits(['open-sales-report'])
+const emit = defineEmits(['open-sales-report'])
 
-const { data, loading, error, activeMode, changeMode } = useSalesForecast()
+const { data, loading, error, activeMode, changeMode, detailedRows, fetchDetailedReport } = useSalesForecast()
+
+const openDetailedReport = async () => {
+  await fetchDetailedReport()
+  emit('open-sales-report', detailedRows.value)
+}
 </script>

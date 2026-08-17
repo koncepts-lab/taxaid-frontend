@@ -199,15 +199,15 @@
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-normal text-gray-800">Configuration Details</h3>
                     <div v-if="userType === 'admin'" class="flex items-center gap-2">
-                        <button v-if="!configLocked" @click="handleSaveConfig" :disabled="configSaving"
-                            class="px-6 py-1.5 bg-[#FFF085] hover:bg-[#FACC15] text-black rounded-lg text-sm font-medium transition-all active:scale-95 disabled:opacity-50">
-                            {{ configSaving ? '...' : 'Save' }}
-                        </button>
                         <!-- Saving locks the table backend-side; Lock Table = save & lock.
                              When locked, the same slot becomes Unlock (POST /configuration-settings/unlock). -->
                         <button v-if="!configLocked" @click="handleSaveConfig" :disabled="configSaving"
                             class="flex items-center gap-2 px-4 py-1.5 border bg-[#FF91751A] border-red-200 text-red-500 rounded-lg text-sm font-medium hover:bg-red-50 transition-all disabled:opacity-50">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg v-if="configSaving" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin shrink-0">
+                                <circle cx="12" cy="12" r="9" stroke-opacity="0.25" />
+                                <path d="M21 12a9 9 0 0 0-9-9" />
+                            </svg>
+                            <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                                 <path d="M7 11V7a5 5 0 0110 0v4" />
                             </svg>
@@ -215,11 +215,15 @@
                         </button>
                         <button v-else @click="handleUnlockConfig" :disabled="configSaving"
                             class="flex items-center gap-2 px-4 py-1.5 border bg-[#F0FDFA] border-[#00B793CC] text-[#00896F] rounded-lg text-sm font-medium hover:bg-[#E6FFFA] transition-all disabled:opacity-50">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg v-if="configSaving" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin shrink-0">
+                                <circle cx="12" cy="12" r="9" stroke-opacity="0.25" />
+                                <path d="M21 12a9 9 0 0 0-9-9" />
+                            </svg>
+                            <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                                 <path d="M7 11V7a5 5 0 019.9-1" />
                             </svg>
-                            {{ configSaving ? '...' : 'Unlock Table' }}
+                            Unlock Table
                         </button>
                     </div>
                 </div>

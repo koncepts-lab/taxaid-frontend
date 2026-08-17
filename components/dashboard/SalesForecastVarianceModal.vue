@@ -30,20 +30,24 @@
           <div class="bg-[#eefdf6] border border-[#a7f3d0] rounded-xl p-5 flex flex-col md:flex-row gap-6 mb-4">
             <div class="flex-1">
               <label class="block text-sm font-semibold text-gray-700 mb-2">Actual Revenue (Invoiced)</label>
-              <input type="text" :value="formatAmount(data.actual_revenue)" readonly class="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:outline-none" />
+              <input type="text" :value="formatAmount(actualRevenue)" readonly class="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:outline-none" />
             </div>
             <div class="flex-1">
               <label class="block text-sm font-semibold text-gray-700 mb-2">Balance as per sales forecast</label>
-              <input type="text" :value="formatAmount(data.forecasted_revenue)" readonly class="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:outline-none" />
+              <input type="text" :value="formatAmount(forecastedRevenue)" readonly class="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:outline-none" />
             </div>
             <div class="flex-1">
               <label class="block text-sm font-semibold text-gray-700 mb-2">Variance</label>
-              <input type="text" :value="formatAmount(data.variance)" readonly class="w-full bg-[#fef2f2] border border-[#fca5a5] text-red-600 rounded-lg px-4 py-2.5 font-medium focus:outline-none" />
+              <input type="text" :value="formatAmount(variance)" readonly :class="isResolved ? 'bg-[#eefdf6] border-[#6ee7b7] text-[#047857]' : 'bg-[#fef2f2] border-[#fca5a5] text-red-600'" class="w-full border rounded-lg px-4 py-2.5 font-medium focus:outline-none" />
             </div>
           </div>
-          <div class="flex items-center gap-2 text-red-500 text-sm font-medium">
+          <div v-if="!isResolved" class="flex items-center gap-2 text-red-500 text-sm font-medium">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            AED {{ formatAmount(data.variance) }} variance remaining — select and adjust items below.
+            AED {{ formatAmount(variance) }} variance remaining — select and adjust items below.
+          </div>
+          <div v-else class="flex items-center gap-2 text-[#047857] text-sm font-medium">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            All variance has been resolved. You can now post this record.
           </div>
         </div>
       </div>
@@ -76,22 +80,24 @@
                   <td class="py-3 px-4 text-gray-700 font-medium">{{ row['Party Name'] }}</td>
                   <td class="py-3 px-4 text-gray-600">{{ row['Invoice Number'] }}</td>
                   <td class="py-3 px-4 text-gray-700">
-                    <span :class="{'line-through text-gray-400 mr-2': rowState[i].applied && rowState[i].adjust}">{{ row['Amount'] }}</span>
-                    <span v-if="rowState[i].applied && rowState[i].adjust" class="font-bold text-[#058a64]">{{ rowState[i].adjust }}</span>
+                    <span :class="{'line-through text-gray-400 mr-2': rowState[i].selected && rowState[i].adjust}">{{ row['Amount'] }}</span>
+                    <span v-if="rowState[i].selected && rowState[i].adjust" class="font-bold text-[#058a64]">{{ rowState[i].adjust }}</span>
                   </td>
-                  <td class="py-3 px-4 text-center"><input type="checkbox" v-model="rowState[i].selected" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64] cursor-pointer" /></td>
+                  <td class="py-3 px-4 text-center"><input type="checkbox" v-model="rowState[i].selected" @change="onRowToggle(rowState[i])" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64] cursor-pointer" /></td>
                   <td class="py-2 px-4">
                     <input type="text" v-model="rowState[i].adjust" :placeholder="rowState[i].selected ? '0.00' : 'Select to adjust'" :class="rowState[i].selected ? 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300'" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!rowState[i].selected"/>
                   </td>
                   <td class="py-2 px-4 text-center">
-                    <button v-if="rowState[i].selected && !rowState[i].applied" @click="applyAdjustment(row, i)" :disabled="rowState[i].saving" class="bg-[#058a64] hover:bg-[#047857] text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors w-24 text-center cursor-pointer disabled:opacity-50">
-                      Apply
-                    </button>
-                    <button v-else-if="rowState[i].selected && rowState[i].applied" @click="rowState[i].applied = false" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium transition-colors w-24 flex items-center justify-center gap-1 cursor-pointer">
+                    <span v-if="rowState[i].selected" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium w-24 inline-flex items-center justify-center gap-1">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                       Applied
-                    </button>
+                    </span>
                   </td>
+                </tr>
+                <tr v-if="reasonRows.length > 0" class="bg-[#a7f3d0] font-bold text-gray-800">
+                  <td colspan="3" class="py-3 px-4 text-right">Total sales</td>
+                  <td class="py-3 px-4">{{ formatAmount(selectedRowsTotal) }}</td>
+                  <td colspan="3"></td>
                 </tr>
               </tbody>
             </table>
@@ -142,7 +148,6 @@
                     <input type="text" v-model="entry.amount" placeholder="0.00" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 text-center focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />
                   </td>
                   <td class="py-2 px-2 text-center">
-                    <button @click="saveManualEntry(index)" :disabled="entry.saving" class="text-[#058a64] hover:text-[#047857] transition-colors font-medium cursor-pointer mr-3 disabled:opacity-50">Save</button>
                     <button @click="removeManualEntry(index)" class="text-red-500 hover:text-red-700 transition-colors font-medium cursor-pointer">Delete</button>
                   </td>
                 </tr>
@@ -155,8 +160,12 @@
 
       <!-- Footer -->
       <div class="sticky bottom-0 z-10 bg-white px-6 py-4 border-t flex justify-end items-center gap-4">
+        <p v-if="errorMessage" class="text-sm text-red-500 mr-auto">{{ errorMessage }}</p>
         <button @click="closeModal" class="px-6 py-2 border border-gray-200 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors text-sm cursor-pointer">
-          Close
+          Cancel
+        </button>
+        <button @click="postVariance" :disabled="!canPost || actionLoading" :class="canPost ? 'bg-[#058a64] hover:bg-[#047857] cursor-pointer' : 'bg-[#a3dcc8] cursor-not-allowed'" class="px-8 py-2 text-white rounded-lg font-medium text-sm">
+          {{ actionLoading ? 'Posting...' : 'Post Variance' }}
         </button>
       </div>
 
@@ -176,66 +185,137 @@ const emit = defineEmits(['close', 'resolved']);
 
 const currentLang = useState('currentLang', () => 'en');
 
+// Server-supplied starting point — never mutated directly. Everything below
+// is a live local preview computed on top of it; only Post Variance writes
+// anything to the backend.
+const baseActual = ref(0);
+const baseForecasted = ref(0);
+
+watch(() => props.data, (d) => {
+  baseActual.value = Number(d?.actual_revenue ?? 0);
+  baseForecasted.value = Number(d?.forecasted_revenue ?? 0);
+}, { immediate: true });
+
 const reasonRows = computed(() => props.data?.reasons ?? []);
 const rowState = ref([]);
 
-watch(reasonRows, (rows) => {
-  rowState.value = rows.map(() => ({ selected: false, adjust: '', applied: false, saving: false }));
-}, { immediate: true });
+const resetRowState = (rows) => rows.map(() => ({ selected: false, adjust: '' }));
+watch(reasonRows, (rows) => { rowState.value = resetRowState(rows); }, { immediate: true });
 
 const formatAmount = (v) => Number(v ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const toNumber = (v) => {
+  const n = parseFloat(String(v ?? '').replace(/,/g, ''));
+  return isNaN(n) ? 0 : n;
+};
+const extractError = (err) => {
+  const data = err?.data || err?.response?._data;
+  if (data?.errors) {
+    const first = Object.values(data.errors)[0];
+    return Array.isArray(first) ? String(first[0]) : String(first);
+  }
+  return data?.message || err?.message || 'Something went wrong';
+};
 
 const closeModal = () => emit('close');
 
-const applyAdjustment = async (row, i) => {
-  rowState.value[i].saving = true;
-  try {
-    await useApi('/data-source/sales-forecast/update-adjustments', {
-      method: 'POST',
-      body: {
-        date: row['Date'],
-        party_name: row['Party Name'],
-        invoice_number: row['Invoice Number'],
-        amount: row['Amount'],
-        adjustments: rowState.value[i].adjust,
-        current_date: props.date,
-      },
-    });
-    rowState.value[i].applied = true;
-    emit('resolved');
-  } finally {
-    rowState.value[i].saving = false;
-  }
+const onRowToggle = (rowState) => {
+  if (!rowState.selected) rowState.adjust = '';
 };
 
+// ---------- Manual entries (local only until Post Variance) ----------
 const manualEntries = ref([]);
 
 const addManualEntry = () => {
-  manualEntries.value.push({ date: '', projectName: '', partyName: '', invoiceNumber: '', amount: '', saving: false });
+  manualEntries.value.push({ date: '', projectName: '', partyName: '', invoiceNumber: '', amount: '' });
 };
 
-const removeManualEntry = (index) => {
-  manualEntries.value.splice(index, 1);
+const removeManualEntry = (index) => manualEntries.value.splice(index, 1);
+
+const validManualEntries = computed(() =>
+  manualEntries.value.filter((e) => e.partyName && e.date && e.invoiceNumber && toNumber(e.amount))
+);
+
+// ---------- Live local preview ----------
+// A selected reason row swaps its own contribution from the original amount to
+// the typed adjustment (the backend replaces invoice_value, it doesn't add to
+// it) — every manual entry is a brand-new forecast row, so it adds in full.
+const selectedRowsTotal = computed(() =>
+  reasonRows.value.reduce((sum, row, i) => rowState.value[i]?.selected
+    ? sum + toNumber(rowState.value[i].adjust || row['Amount'])
+    : sum, 0)
+);
+
+const forecastedRevenue = computed(() => {
+  let total = baseForecasted.value;
+  reasonRows.value.forEach((row, i) => {
+    if (rowState.value[i]?.selected) {
+      total += toNumber(rowState.value[i].adjust || row['Amount']) - toNumber(row['Amount']);
+    }
+  });
+  validManualEntries.value.forEach((e) => { total += toNumber(e.amount); });
+  return total;
+});
+
+const actualRevenue = computed(() => baseActual.value);
+const variance = computed(() => Math.abs(actualRevenue.value - forecastedRevenue.value));
+const isResolved = computed(() => variance.value < 0.005);
+
+// ---------- Footer actions ----------
+const errorMessage = ref('');
+const actionLoading = ref(false);
+
+const canPost = computed(() =>
+  isResolved.value && (reasonRows.value.some((_, i) => rowState.value[i]?.selected) || validManualEntries.value.length > 0)
+);
+
+const resolveAlert = async (type) => {
+  if (!props.data.alert_id) return;
+  await useApi(`/alerts/${props.data.alert_id}/action`, {
+    method: 'POST',
+    body: { type, action_by: 'Dashboard' },
+  });
 };
 
-const saveManualEntry = async (index) => {
-  const entry = manualEntries.value[index];
-  manualEntries.value[index].saving = true;
+// Post Variance is the only action that writes anything to the backend — every
+// selected reason row and manual entry gets sent, then the alert is resolved.
+const postVariance = async () => {
+  errorMessage.value = '';
+  actionLoading.value = true;
   try {
-    await useApi('/data-source/sales-forecast/store', {
-      method: 'POST',
-      body: {
-        date: entry.date,
-        project_name: entry.projectName,
-        party_name: entry.partyName,
-        invoice_number: entry.invoiceNumber,
-        amount: entry.amount,
-      },
-    });
-    manualEntries.value.splice(index, 1);
+    for (let i = 0; i < reasonRows.value.length; i++) {
+      if (!rowState.value[i]?.selected) continue;
+      const row = reasonRows.value[i];
+      await useApi('/data-source/sales-forecast/update-adjustments', {
+        method: 'POST',
+        body: {
+          date: row['Date'],
+          party_name: row['Party Name'],
+          invoice_number: row['Invoice Number'],
+          original_invoice_number: row['Invoice Number'],
+          amount: row['Amount'],
+          adjustments: toNumber(rowState.value[i].adjust || row['Amount']),
+          current_date: props.date,
+        },
+      });
+    }
+    for (const entry of validManualEntries.value) {
+      await useApi('/data-source/sales-forecast/store', {
+        method: 'POST',
+        body: {
+          date: entry.date,
+          project_name: entry.projectName,
+          party_name: entry.partyName,
+          invoice_number: entry.invoiceNumber,
+          amount: entry.amount,
+        },
+      });
+    }
+    await resolveAlert('resolve');
     emit('resolved');
+  } catch (err) {
+    errorMessage.value = extractError(err);
   } finally {
-    if (manualEntries.value[index]) manualEntries.value[index].saving = false;
+    actionLoading.value = false;
   }
 };
 </script>

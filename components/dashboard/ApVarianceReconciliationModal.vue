@@ -80,18 +80,15 @@
                   <td class="py-3 px-4 text-gray-700 font-medium">{{ row.ledger_name }}</td>
                   <td class="py-3 px-4 text-gray-600">{{ row.voucher_no }}</td>
                   <td class="py-3 px-4 text-gray-700">
-                    <span :class="{'line-through text-gray-400 mr-2': purchaseState[i].applied && purchaseState[i].adjust}">{{ row.amount }}</span>
-                    <span v-if="purchaseState[i].applied && purchaseState[i].adjust" class="font-bold text-[#058a64]">{{ purchaseState[i].adjust }}</span>
+                    <span :class="{'line-through text-gray-400 mr-2': purchaseState[i].selected && purchaseState[i].adjust}">{{ row.amount }}</span>
+                    <span v-if="purchaseState[i].selected && purchaseState[i].adjust" class="font-bold text-[#058a64]">{{ purchaseState[i].adjust }}</span>
                   </td>
-                  <td class="py-3 px-4"><input type="checkbox" v-model="purchaseState[i].selected" :disabled="purchaseState[i].applied" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" /></td>
+                  <td class="py-3 px-4"><input type="checkbox" v-model="purchaseState[i].selected" @change="onRowToggle(purchaseState[i], row)" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" /></td>
                   <td class="py-2 px-4">
-                    <input type="text" v-model="purchaseState[i].adjust" :placeholder="purchaseState[i].selected ? String(row.amount) : 'Select to adjust'" :class="purchaseState[i].selected ? 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300'" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!purchaseState[i].selected || purchaseState[i].applied"/>
+                    <input type="text" v-model="purchaseState[i].adjust" :placeholder="purchaseState[i].selected ? String(row.amount) : 'Select to adjust'" :class="purchaseState[i].selected ? 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300'" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!purchaseState[i].selected"/>
                   </td>
                   <td class="py-2 px-4">
-                    <button v-if="purchaseState[i].selected && !purchaseState[i].applied" @click="applyRow('purchase', row, i)" :disabled="purchaseState[i].saving" class="bg-[#058a64] hover:bg-[#047857] text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors w-24 text-center disabled:opacity-50">
-                      {{ purchaseState[i].saving ? 'Applying...' : 'Apply' }}
-                    </button>
-                    <span v-else-if="purchaseState[i].applied" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium w-24 flex items-center justify-center gap-1">
+                    <span v-if="purchaseState[i].selected" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium w-24 flex items-center justify-center gap-1">
                       <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                       Applied
                     </span>
@@ -127,18 +124,15 @@
                   <td class="py-3 px-4 text-gray-700 font-medium">{{ row.ledger_name }}</td>
                   <td class="py-3 px-4 text-gray-600">{{ row.voucher_no }}</td>
                   <td class="py-3 px-4 text-gray-700">
-                    <span :class="{'line-through text-gray-400 mr-2': paymentState[i].applied && paymentState[i].adjust}">{{ row.amount }}</span>
-                    <span v-if="paymentState[i].applied && paymentState[i].adjust" class="font-bold text-[#058a64]">{{ paymentState[i].adjust }}</span>
+                    <span :class="{'line-through text-gray-400 mr-2': paymentState[i].selected && paymentState[i].adjust}">{{ row.amount }}</span>
+                    <span v-if="paymentState[i].selected && paymentState[i].adjust" class="font-bold text-[#058a64]">{{ paymentState[i].adjust }}</span>
                   </td>
-                  <td class="py-3 px-4"><input type="checkbox" v-model="paymentState[i].selected" :disabled="paymentState[i].applied" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" /></td>
+                  <td class="py-3 px-4"><input type="checkbox" v-model="paymentState[i].selected" @change="onRowToggle(paymentState[i], row)" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" /></td>
                   <td class="py-2 px-4">
-                    <input type="text" v-model="paymentState[i].adjust" :placeholder="paymentState[i].selected ? String(row.amount) : 'Select to adjust'" :class="paymentState[i].selected ? 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300'" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!paymentState[i].selected || paymentState[i].applied"/>
+                    <input type="text" v-model="paymentState[i].adjust" :placeholder="paymentState[i].selected ? String(row.amount) : 'Select to adjust'" :class="paymentState[i].selected ? 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300'" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!paymentState[i].selected"/>
                   </td>
                   <td class="py-2 px-4">
-                    <button v-if="paymentState[i].selected && !paymentState[i].applied" @click="applyRow('payment', row, i)" :disabled="paymentState[i].saving" class="bg-[#058a64] hover:bg-[#047857] text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors w-24 text-center disabled:opacity-50">
-                      {{ paymentState[i].saving ? 'Applying...' : 'Apply' }}
-                    </button>
-                    <span v-else-if="paymentState[i].applied" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium w-24 flex items-center justify-center gap-1">
+                    <span v-if="paymentState[i].selected" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium w-24 flex items-center justify-center gap-1">
                       <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                       Applied
                     </span>
@@ -179,32 +173,34 @@
                 </tr>
                 <tr v-for="(entry, index) in manualEntries" :key="index" class="bg-white">
                   <td class="py-2 px-2">
-                    <input type="text" v-model="entry.date" placeholder="dd-mm-yyyy" :disabled="entry.saved" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400 disabled:opacity-60" />
+                    <input type="text" v-model="entry.date" placeholder="dd-mm-yyyy" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />
                   </td>
                   <td class="py-2 px-2">
-                    <input type="text" v-model="entry.partyName" placeholder="Enter vendor name" :disabled="entry.saved" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400 disabled:opacity-60" />
+                    <input type="text" v-model="entry.partyName" placeholder="Enter vendor name" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />
                   </td>
                   <td class="py-2 px-2">
-                    <input type="text" v-model="entry.invoiceNumber" placeholder="Enter bill number" :disabled="entry.saved" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400 disabled:opacity-60" />
+                    <input type="text" v-model="entry.invoiceNumber" placeholder="Enter bill number" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />
                   </td>
                   <td class="py-2 px-2">
-                    <input type="text" v-model="entry.creditDays" placeholder="e.g., 30" :disabled="entry.saved" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400 disabled:opacity-60" />
+                    <input type="text" v-model="entry.creditDays" placeholder="e.g., 30" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />
                   </td>
                   <td class="py-2 px-2">
-                    <input type="text" v-model="entry.amount" placeholder="0.00" :disabled="entry.saved" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 text-center focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400 disabled:opacity-60" />
+                    <input type="text" v-model="entry.amount" placeholder="0.00" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 text-center focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />
                   </td>
                   <td class="py-2 px-2">
-                    <span class="block w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600">Purchase (+)</span>
+                    <div class="flex items-center gap-3">
+                      <label class="flex items-center gap-1.5 text-gray-600">
+                        <input type="checkbox" :checked="entry.type === 'purchase'" @change="entry.type = 'purchase'" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" />
+                        Sales
+                      </label>
+                      <label class="flex items-center gap-1.5 text-gray-600">
+                        <input type="checkbox" :checked="entry.type === 'return'" @change="entry.type = 'return'" class="w-4 h-4 rounded border-gray-300 bg-white text-[#058a64] focus:ring-[#058a64]" />
+                        Return
+                      </label>
+                    </div>
                   </td>
                   <td class="py-2 px-2 text-center">
-                    <button v-if="!entry.saved" @click="saveManualEntry(index)" :disabled="entry.saving" class="bg-[#058a64] hover:bg-[#047857] text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50 mr-2">
-                      {{ entry.saving ? 'Saving...' : 'Save' }}
-                    </button>
-                    <button v-if="!entry.saved" @click="removeManualEntry(index)" class="text-red-500 hover:text-red-700 transition-colors font-medium">Delete</button>
-                    <span v-else class="text-[#047857] font-medium flex items-center justify-center gap-1">
-                      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                      Saved
-                    </span>
+                    <button @click="removeManualEntry(index)" class="text-red-500 hover:text-red-700 transition-colors font-medium">Delete</button>
                   </td>
                 </tr>
               </tbody>
@@ -243,19 +239,18 @@ const emit = defineEmits(['close', 'resolved']);
 
 const currentLang = useState('currentLang', () => 'en');
 
-// Header balances are reactive: initialized from the alert payload, then
-// updated from each adjustment endpoint's recalculated response.
-const balanceTB = ref(0);
-const balanceReport = ref(0);
-const variance = ref(0);
+// Server-supplied starting point — never mutated directly. Everything below
+// is a live local preview computed on top of it; only Post Variance writes
+// anything to the backend.
+const baseBalanceTB = ref(0);
+const baseBalanceReport = ref(0);
+const baseVariance = ref(0);
 
 watch(() => props.data, (d) => {
-  balanceTB.value = Number(d?.['Balance as per TB'] ?? 0);
-  balanceReport.value = Number(d?.['Balance as per AP report'] ?? 0);
-  variance.value = Number(d?.['Variance'] ?? 0);
+  baseBalanceTB.value = Number(d?.['Balance as per TB'] ?? 0);
+  baseBalanceReport.value = Number(d?.['Balance as per AP report'] ?? 0);
+  baseVariance.value = Number(d?.['Variance'] ?? 0);
 }, { immediate: true });
-
-const isResolved = computed(() => Math.abs(Number(variance.value)) < 0.005);
 
 const purchaseRows = computed(() => props.data?.Vouchers?.['Potential reason for variance - Purchase'] ?? []);
 const paymentRows = computed(() => props.data?.Vouchers?.['Payment - Unrecorded Transactions'] ?? []);
@@ -263,7 +258,7 @@ const paymentRows = computed(() => props.data?.Vouchers?.['Payment - Unrecorded 
 const purchaseState = ref([]);
 const paymentState = ref([]);
 
-const resetRowState = (rows) => rows.map(() => ({ selected: false, adjust: '', applied: false, saving: false }));
+const resetRowState = (rows) => rows.map(() => ({ selected: false, adjust: '', applied: false }));
 
 watch(purchaseRows, (rows) => { purchaseState.value = resetRowState(rows); }, { immediate: true });
 watch(paymentRows, (rows) => { paymentState.value = resetRowState(rows); }, { immediate: true });
@@ -294,87 +289,58 @@ const extractError = (err) => {
 
 const closeModal = () => emit('close');
 
-// ---------- Section 1 & 2: per-row apply ----------
-// purchase -> /adjustments/ap/purchase (recalculates balances)
-// payment  -> /adjustments/ap/payment (marks invoice paid + recalculates)
-const applyRow = async (section, row, i) => {
-  const state = section === 'purchase' ? purchaseState.value : paymentState.value;
-  const adjustment = toNumber(state[i].adjust || row.amount);
-  if (!adjustment) { errorMessage.value = 'Enter an adjustment amount first'; return; }
-  errorMessage.value = '';
-  state[i].saving = true;
-  try {
-    const res = await useApi(`/adjustments/ap/${section}`, {
-      method: 'POST',
-      body: {
-        party_name: row.ledger_name,
-        invoice_number: row.voucher_no || null,
-        date: toApiDate(row.entry_date),
-        adjustment,
-        balance_as_per_TB: balanceTB.value,
-        Balance_as_per_AP_report: balanceReport.value,
-        variance: variance.value,
-      },
-    });
-    if (res?.status === 'success') {
-      balanceTB.value = Number(res.balance_as_per_TB);
-      balanceReport.value = Number(res.Balance_as_per_AP_report);
-      variance.value = Number(res.variance);
-      state[i].adjust = String(adjustment);
-      state[i].applied = true;
-    }
-  } catch (err) {
-    errorMessage.value = extractError(err);
-  } finally {
-    state[i].saving = false;
-  }
+// Unchecking a row clears its adjustment too, so it stops contributing.
+const onRowToggle = (rowState) => {
+  if (!rowState.selected) rowState.adjust = '';
 };
 
-// ---------- Section 3: manual entries -> /adjustments/ap/manual-adjustment ----------
+// ---------- Section 3: manual entries (local only until Post Variance) ----------
 const manualEntries = ref([]);
 
 const addManualEntry = () => {
-  manualEntries.value.push({
-    date: '', partyName: '', invoiceNumber: '', creditDays: '', amount: '',
-    saving: false, saved: false,
-  });
+  manualEntries.value.push({ date: '', partyName: '', invoiceNumber: '', creditDays: '', amount: '', type: 'purchase' });
 };
 
 const removeManualEntry = (index) => manualEntries.value.splice(index, 1);
 
-const saveManualEntry = async (index) => {
-  const entry = manualEntries.value[index];
-  const adjustment = toNumber(entry.amount);
-  if (!entry.partyName || !entry.date || !adjustment) {
-    errorMessage.value = 'Manual entry needs party name, date and amount';
-    return;
-  }
-  errorMessage.value = '';
-  entry.saving = true;
-  try {
-    const res = await useApi('/adjustments/ap/manual-adjustment', {
-      method: 'POST',
-      body: {
-        party_name: entry.partyName,
-        invoice_number: entry.invoiceNumber || null,
-        date: toApiDate(entry.date),
-        adjustment,
-        credit_days: entry.creditDays !== '' ? parseInt(entry.creditDays, 10) || 0 : null,
-      },
-    });
-    if (res?.status === 'success') {
-      // Mirror the backend's balance math locally (this endpoint only returns the
-      // record). The endpoint always creates a positive unpaid purchase.
-      balanceReport.value += adjustment;
-      variance.value -= adjustment;
-      entry.saved = true;
-    }
-  } catch (err) {
-    errorMessage.value = extractError(err);
-  } finally {
-    entry.saving = false;
-  }
-};
+const validManualEntries = computed(() =>
+  manualEntries.value.filter((e) => e.partyName && e.date && toNumber(e.amount))
+);
+
+// ---------- Live local preview ----------
+// purchase/manual-purchase add to the report balance; payment/return remove
+// from it — but every applied item reduces the variance by its own amount
+// regardless of direction, since each one explains away that much of the gap.
+const balanceTB = computed(() => baseBalanceTB.value);
+
+const balanceReport = computed(() => {
+  let total = baseBalanceReport.value;
+  purchaseRows.value.forEach((row, i) => {
+    if (purchaseState.value[i]?.selected) total += toNumber(purchaseState.value[i].adjust || row.amount);
+  });
+  paymentRows.value.forEach((row, i) => {
+    if (paymentState.value[i]?.selected) total -= toNumber(paymentState.value[i].adjust || row.amount);
+  });
+  validManualEntries.value.forEach((e) => {
+    const amt = toNumber(e.amount);
+    total += e.type === 'return' ? -amt : amt;
+  });
+  return total;
+});
+
+const variance = computed(() => {
+  let resolved = 0;
+  purchaseRows.value.forEach((row, i) => {
+    if (purchaseState.value[i]?.selected) resolved += toNumber(purchaseState.value[i].adjust || row.amount);
+  });
+  paymentRows.value.forEach((row, i) => {
+    if (paymentState.value[i]?.selected) resolved += toNumber(paymentState.value[i].adjust || row.amount);
+  });
+  validManualEntries.value.forEach((e) => { resolved += toNumber(e.amount); });
+  return baseVariance.value - resolved;
+});
+
+const isResolved = computed(() => Math.abs(Number(variance.value)) < 0.005);
 
 // ---------- Footer actions ----------
 const actionLoading = ref(false);
@@ -384,7 +350,7 @@ const actionLoading = ref(false);
 const appliedAdjustments = computed(() => {
   const collect = (rows, state, type) => rows
     .map((row, i) => ({ row, state: state[i] }))
-    .filter(({ state: s }) => s?.applied)
+    .filter(({ state: s }) => s?.selected)
     .map(({ row, state: s }) => ({
       party_name: row.ledger_name,
       invoice_number: row.voucher_no || null,
@@ -393,15 +359,22 @@ const appliedAdjustments = computed(() => {
       credit_days: null,
       transaction_type: type,
     }));
+  const manual = validManualEntries.value.map((e) => ({
+    party_name: e.partyName,
+    invoice_number: e.invoiceNumber || null,
+    date: toApiDate(e.date),
+    adjustment: toNumber(e.amount),
+    credit_days: e.creditDays !== '' ? parseInt(e.creditDays, 10) || 0 : null,
+    transaction_type: e.type,
+  }));
   return [
     ...collect(purchaseRows.value, purchaseState.value, 'purchase'),
     ...collect(paymentRows.value, paymentState.value, 'return'),
+    ...manual,
   ];
 });
 
-const canPost = computed(() =>
-  isResolved.value && (appliedAdjustments.value.length > 0 || manualEntries.value.some((e) => e.saved))
-);
+const canPost = computed(() => isResolved.value && appliedAdjustments.value.length > 0);
 
 const resolveAlert = async (type) => {
   if (!props.data.alert_id) return;
@@ -411,18 +384,17 @@ const resolveAlert = async (type) => {
   });
 };
 
-// Post Variance: persist all applied section rows via the bulk endpoint
-// (manual entries are already stored individually), then resolve the alert.
+// Post Variance is the only action that writes anything to the backend —
+// every selected row and manual entry goes in one bulk call, then the alert
+// is resolved.
 const postVariance = async () => {
   errorMessage.value = '';
   actionLoading.value = true;
   try {
-    if (appliedAdjustments.value.length > 0) {
-      await useApi('/adjustments/ap/bulk', {
-        method: 'POST',
-        body: { variance: 0, adjustments: appliedAdjustments.value },
-      });
-    }
+    await useApi('/adjustments/ap/bulk', {
+      method: 'POST',
+      body: { variance: 0, adjustments: appliedAdjustments.value },
+    });
     await resolveAlert('resolve');
     emit('resolved');
   } catch (err) {

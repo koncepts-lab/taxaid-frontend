@@ -11,16 +11,16 @@
       <div v-if="loading" class="text-center py-20 text-[#00000080]">Loading...</div>
 
       <template v-else>
-        <!-- Trial Banner -->
-        <div v-if="subscription && isTrial" class="rounded-2xl text-white p-8 mb-10 flex justify-between items-center shadow-lg" style="background: linear-gradient(90deg, #B45309 0%, #92400E 100%);">
+        <!-- Trial Banner — one card for both on_trial and trial_ended, only the text (computed below) changes -->
+        <div v-if="showTrialBanner" class="rounded-2xl text-white p-8 mb-10 flex justify-between items-center shadow-lg" style="background: linear-gradient(90deg, #B45309 0%, #92400E 100%);">
           <div>
             <p class="text-[14px] text-white mb-1 font-normal">Free Trial</p>
-            <h2 class="text-[30px] font-normal mb-1">{{ subscription.plan_name }}</h2>
-            <p class="text-[16px] text-white font-light">Trial ends on {{ formatDate(subscription.end_date) }} — add a payment method before then to keep access</p>
+            <h2 class="text-[30px] font-normal mb-1">{{ trialBannerTitle }}</h2>
+            <p class="text-[16px] text-white font-light">{{ trialBannerSubtext }}</p>
           </div>
           <div class="text-right">
-            <p class="text-[14px] text-white font-light">Trial Ends</p>
-            <p class="text-[24px] text-white font-light">{{ trialDaysLeft }} day{{ trialDaysLeft === 1 ? '' : 's' }} left</p>
+            <p class="text-[14px] text-white font-light">{{ trialBannerRightLabel }}</p>
+            <p class="text-[24px] text-white font-light">{{ trialBannerRightValue }}</p>
           </div>
         </div>
 
@@ -40,7 +40,7 @@
           </div>
         </div>
         <div v-else class="rounded-2xl p-8 mb-10 text-center border border-gray-200 bg-white">
-          <p class="text-[16px] text-[#00000080]">You don't have an active subscription yet — choose a plan below to get started.</p>
+          <p class="text-[16px] text-[#00000080]">{{ noSubscriptionMessage }}</p>
         </div>
 
         <!-- Available Plans -->
@@ -242,6 +242,7 @@ const loading = ref(true)
 const billingCycle = ref<'monthly' | 'yearly'>('monthly')
 const plans = ref<any[]>([])
 const subscription = ref<any>(null)
+const orgSubscriptionStatus = ref<any>(null) // { id, status: org active/inactive, subscription: on_trial|trial_ended|active|expired|none, date, days }
 const invoices = ref<any[]>([])
 const paymentMethods = ref<any[]>([])
 
@@ -260,6 +261,28 @@ const trialDaysLeft = computed(() => {
   if (!subscription.value?.end_date) return 0
   const diffMs = new Date(subscription.value.end_date).getTime() - Date.now()
   return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)))
+})
+
+const noSubscriptionMessage = computed(() => {
+  const status = orgSubscriptionStatus.value?.subscription
+  if (status === 'expired') return 'Your subscription has expired — choose a plan below to continue.'
+  return "You don't have an active subscription yet — choose a plan below to get started."
+})
+
+// One trial banner, two states — active trial (has a live subscription row) vs trial_ended (none active, org status says trial_ended)
+const isTrialActive = computed(() => !!(subscription.value && isTrial.value))
+const isTrialEndedState = computed(() => !subscription.value && orgSubscriptionStatus.value?.subscription === 'trial_ended')
+const showTrialBanner = computed(() => isTrialActive.value || isTrialEndedState.value)
+
+const trialBannerTitle = computed(() => isTrialActive.value ? subscription.value.plan_name : 'Trial Ended')
+const trialBannerSubtext = computed(() => isTrialActive.value
+  ? `Trial ends on ${formatDate(subscription.value.end_date)} — add a payment method before then to keep access`
+  : `Your trial ended on ${formatDate(orgSubscriptionStatus.value?.date)} — choose a plan below to continue`)
+const trialBannerRightLabel = computed(() => isTrialActive.value ? 'Trial Ends' : 'Trial Ended')
+const trialBannerRightValue = computed(() => {
+  if (isTrialActive.value) return `${trialDaysLeft.value} day${trialDaysLeft.value === 1 ? '' : 's'} left`
+  const days = orgSubscriptionStatus.value?.days
+  return `${days} day${days === 1 ? '' : 's'} ago`
 })
 
 const planPrice = (plan: any) => Number(plan.current_version?.[priceField.value] ?? 0).toFixed(2)
@@ -373,6 +396,7 @@ onMounted(async () => {
     ])
     plans.value = plansRes.data || []
     subscription.value = subRes.data || null
+    orgSubscriptionStatus.value = subRes.organization || null
     invoices.value = invoicesRes.data || []
     paymentMethods.value = pmRes.data || []
   } finally {

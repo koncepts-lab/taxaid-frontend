@@ -2225,6 +2225,16 @@
         "id": "budget",
         "label": "Budget",
         "labelAr": "الميزانية"
+      },
+      {
+        "id": "settings",
+        "label": "Settings",
+        "labelAr": "الإعدادات"
+      },
+      {
+        "id": "inter-company",
+        "label": "Inter Company",
+        "labelAr": "بين الشركات"
       }
     ],
     "subTabsContacts": [
