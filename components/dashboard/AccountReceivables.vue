@@ -128,7 +128,7 @@ onMounted(() => {
 });
 const legendItems   = computed(() => accountReceivables.value?.legendItems   ?? ['< 30 Days', '31-60 Days', '61-90 Days', '> 90 Days'])
 const legendItemsAr = computed(() => accountReceivables.value?.legendItemsAr ?? ['أقل من 30 يوماً', '31-60 يوماً', '61-90 يوماً', 'أكثر من 90 يوماً'])
-const colors        = computed(() => accountReceivables.value?.colors        ?? ['#003328', '#00966C', '#B2EDE3', '#E6EBEB'])
+const colors        = computed(() => accountReceivables.value?.colors        ?? (isDark.value ? ['rgb(0, 183, 148)', '#00966C', '#B2EDE3', '#E6EBEB'] : ['#003328', '#00966C', '#B2EDE3', '#E6EBEB']))
 const months        = computed(() => accountReceivables.value?.months        ?? [])
 const monthsAr      = computed(() => accountReceivables.value?.monthsAr      ?? [])
 

@@ -26,7 +26,7 @@
             class="px-4 h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
             :class="[
               m === cashflowPeriod
-                ? (isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35] shadow-lg')
+                ? (isDark ? 'bg-white/20 text-white' : 'text-white bg-[#003d35] shadow-lg')
                 : (isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]')
             ]">
             {{ m }}M
@@ -68,7 +68,7 @@
             class="w-[35px] h-[25px] flex items-center justify-center rounded-full text-xs font-semibold transition-colors"
             :class="[
               m === cashflowPeriod
-                ? (isDark ? 'bg-white text-[#003d35]' : 'text-white bg-[#003d35] shadow-lg')
+                ? (isDark ? 'bg-white/20 text-white' : 'text-white bg-[#003d35] shadow-lg')
                 : (isDark ? 'bg-white/10 text-white' : 'bg-[#E0E7E6] text-[#003d35]')
             ]">
             {{ m }}M
