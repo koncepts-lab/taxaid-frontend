@@ -497,12 +497,50 @@
             <div>
               <label class="block text-sm font-medium text-gray-900 mb-2">Entitlements</label>
               <p class="text-xs text-gray-500 mb-2">Add only the limits/features that apply to this plan. For testing, unlimited-style values (e.g. 999) are fine — nothing is enforced yet.</p>
-              <div v-for="key in Object.keys(planForm.entitlements)" :key="key" class="flex items-center gap-3 mb-2">
-                <span class="text-xs text-gray-600 w-2/5 truncate" :title="key">{{ definitionLabel(key) }}</span>
-                <input v-if="definitionType(key) === 'boolean'" type="checkbox" v-model="planForm.entitlements[key]" class="h-4 w-4" />
-                <input v-else type="number" v-model.number="planForm.entitlements[key]" class="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]" />
-                <button type="button" @click="removeEntitlement(key)" class="text-gray-400 hover:text-red-500 shrink-0">✕</button>
-              </div>
+              <template v-for="key in Object.keys(planForm.entitlements)" :key="key">
+                <!-- 'ai' is a single bundled entitlement (enabled + model + thinking + caps), not a
+                     plain scalar — custom multi-field editor instead of the generic row below. -->
+                <div v-if="key === 'ai'" class="border border-gray-200 rounded-lg p-3 mb-2">
+                  <div class="flex items-center justify-between mb-3">
+                    <label class="flex items-center gap-2 text-sm font-medium text-gray-900">
+                      <input type="checkbox" v-model="planForm.entitlements.ai.enabled" class="h-4 w-4" /> AI (Akeel) Enabled
+                    </label>
+                    <button type="button" @click="removeEntitlement(key)" class="text-gray-400 hover:text-red-500 shrink-0">✕</button>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1">Model</label>
+                      <select v-model="planForm.entitlements.ai.model" class="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]">
+                        <option v-for="m in aiModelOptions" :key="m.value" :value="m.value">{{ m.label }}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1">Thinking Level</label>
+                      <select v-model="planForm.entitlements.ai.thinking" class="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]">
+                        <option v-for="t in aiThinkingOptions" :key="t.value" :value="t.value">{{ t.label }}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1">Max Requests / month</label>
+                      <input type="number" min="0" v-model.number="planForm.entitlements.ai.max_requests" @change="clampNonNegative(planForm.entitlements.ai, 'max_requests')" class="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]" />
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1">Max Tokens / month</label>
+                      <input type="number" min="0" v-model.number="planForm.entitlements.ai.max_tokens" @change="clampNonNegative(planForm.entitlements.ai, 'max_tokens')" class="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]" />
+                    </div>
+                  </div>
+                </div>
+
+                <div v-else class="flex items-center gap-3 mb-2">
+                  <span class="text-xs text-gray-600 w-2/5 truncate" :title="key">{{ definitionLabel(key) }}</span>
+                  <select v-if="definitionAllowedValues(key).length" v-model="planForm.entitlements[key]" class="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]">
+                    <option v-for="opt in definitionAllowedValues(key)" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                  </select>
+                  <input v-else-if="definitionType(key) === 'boolean'" type="checkbox" v-model="planForm.entitlements[key]" class="h-4 w-4" />
+                  <input v-else type="number" min="0" v-model.number="planForm.entitlements[key]" @change="clampNonNegative(planForm.entitlements, key)" class="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]" />
+                  <button type="button" @click="removeEntitlement(key)" class="text-gray-400 hover:text-red-500 shrink-0">✕</button>
+                </div>
+              </template>
               <div class="flex items-center gap-2 mt-2">
                 <select v-model="entitlementToAdd" class="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]">
                   <option value="">Select an entitlement to add…</option>
@@ -708,6 +746,15 @@
               <label class="block text-sm font-medium text-gray-900 mb-1">Category</label>
               <input v-model="definitionForm.category" type="text" placeholder="communications" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" />
             </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-900 mb-1">Allowed values (optional — turns this into a dropdown per plan)</label>
+              <div v-for="(opt, i) in definitionForm.allowed_values" :key="i" class="flex items-center gap-2 mb-2">
+                <input v-model="opt.value" type="text" placeholder="value" class="w-2/5 border border-gray-200 rounded-md px-3 py-1.5 text-sm font-mono focus:outline-none focus:border-[#00896F]" />
+                <input v-model="opt.label" type="text" placeholder="label shown to admin" class="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]" />
+                <button type="button" @click="definitionForm.allowed_values.splice(i, 1)" class="text-gray-400 hover:text-red-500 shrink-0">✕</button>
+              </div>
+              <button type="button" @click="definitionForm.allowed_values.push({ value: '', label: '' })" class="text-xs text-[#007C65] font-medium hover:underline">+ Add value</button>
+            </div>
           </div>
         </div>
         <div class="px-6 py-5 flex gap-4 border-t border-gray-100">
@@ -725,7 +772,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 
 const {
   getPlans, getOrgPlansGrouped, getPlanStats, getOrganizations, assignPlanToOrg, createPlan, createPlanVersion, updatePlanStatus,
-  getEntitlementDefinitions, createEntitlementDefinition, toggleEntitlementDefinitionActive: apiToggleDefinitionActive,
+  getEntitlementDefinitions, createEntitlementDefinition, toggleEntitlementDefinitionActive: apiToggleDefinitionActive, getAiModelOptions,
   getSubscriptions, getPayments, setDunningOverride, getAlerts,
   getPaymentSettings, updatePaymentSettings, getTrialPlan, saveTrialPlan, demoEditPlan,
 } = usePaymentsAdmin()
@@ -962,10 +1009,29 @@ function definitionLabel(key) {
 function definitionType(key) {
   return allActiveDefinitions.value.find(d => d.key === key)?.type ?? 'numeric'
 }
+function definitionAllowedValues(key) {
+  return allActiveDefinitions.value.find(d => d.key === key)?.allowed_values ?? []
+}
+const aiModelOptions = ref([])
+const aiThinkingOptions = ref([])
+async function loadAiModelOptions() {
+  const res = await getAiModelOptions()
+  aiModelOptions.value = res?.models ?? []
+  aiThinkingOptions.value = res?.thinking_levels ?? []
+}
+function clampNonNegative(obj, key) {
+  if ((obj[key] ?? 0) < 0) obj[key] = 0
+}
 function addEntitlement() {
   if (!entitlementToAdd.value) return
+  if (entitlementToAdd.value === 'ai') {
+    planForm.value.entitlements.ai = { enabled: true, model: 'gemini-flash', thinking: 'medium', max_requests: 200, max_tokens: 5000 }
+    entitlementToAdd.value = ''
+    return
+  }
   const def = allActiveDefinitions.value.find(d => d.key === entitlementToAdd.value)
-  planForm.value.entitlements[entitlementToAdd.value] = def?.type === 'boolean' ? false : 0
+  const options = def?.allowed_values ?? []
+  planForm.value.entitlements[entitlementToAdd.value] = options.length ? options[0].value : (def?.type === 'boolean' ? false : 0)
   entitlementToAdd.value = ''
 }
 function removeEntitlement(key) {
@@ -1109,16 +1175,20 @@ async function loadAllActiveDefinitions() {
 const definitionModalOpen = ref(false)
 const definitionForm = ref(emptyDefinitionForm())
 function emptyDefinitionForm() {
-  return { key: '', label: '', description: '', type: 'numeric', unit: '', category: '' }
+  return { key: '', label: '', description: '', type: 'numeric', unit: '', category: '', allowed_values: [] }
 }
 function openDefinitionModal() {
   definitionForm.value = emptyDefinitionForm()
   definitionModalOpen.value = true
 }
 async function submitDefinition() {
-  await createEntitlementDefinition(definitionForm.value)
+  const payload = { ...definitionForm.value }
+  const values = payload.allowed_values.filter(o => o.value && o.label)
+  payload.allowed_values = values.length ? values : null
+  await createEntitlementDefinition(payload)
   definitionModalOpen.value = false
   await loadDefinitions()
+  await loadAllActiveDefinitions()
 }
 async function toggleDefinitionActive(def) {
   await apiToggleDefinitionActive(def.id)
@@ -1225,7 +1295,7 @@ function goPastduePage(p) { pastdueMeta.value.current_page = p; loadAlerts() }
 
 onMounted(async () => {
   await Promise.all([
-    loadStats(), loadAllActiveDefinitions(), loadAlerts(),
+    loadStats(), loadAllActiveDefinitions(), loadAlerts(), loadAiModelOptions(),
     loadPlans(), loadOrgPlans(), loadDefinitions(), loadSubscriptions(), loadPayments(), loadSettings(), loadAllPlans(),
   ])
 })

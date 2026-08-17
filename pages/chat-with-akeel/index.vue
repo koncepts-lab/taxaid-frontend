@@ -5,7 +5,7 @@
                 <TaxQueriesLeftSideBar @close="isFullScreenChat = true" />
             </aside>
             <main class="flex-1">
-                <TaxQueriesChatWindow :isMinimized="false" class="flex-1 min-h-0 h-[calc(100vh-90px)] ml-12" />
+                <TaxQueriesChatWindow :isMinimized="false" :enableUpload="true" class="flex-1 min-h-0 h-[calc(100vh-90px)] ml-12" />
             </main>
         </div>
     </NuxtLayout>

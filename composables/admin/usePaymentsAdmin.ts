@@ -73,6 +73,10 @@ export function usePaymentsAdmin() {
   const toggleEntitlementDefinitionActive = (id: number) =>
     useAdminApi(`/admin/entitlement-definitions/${id}/toggle-active`, { method: 'PATCH' })
 
+  // Drives the 'ai' entitlement's model/thinking selects — sourced from config('ai.php'), not
+  // hardcoded here, so adding a model backend-side needs no frontend change.
+  const getAiModelOptions = () => useAdminApi('/admin/ai/model-options')
+
   // ── Subscriptions / payments monitoring ────────────────────────────────
   const getSubscriptions = (page = 1, perPage = 10, status?: string) => {
     const q = new URLSearchParams({ page: String(page), per_page: String(perPage) })
@@ -122,7 +126,7 @@ export function usePaymentsAdmin() {
 
   return {
     getPlans, getPlan, getOrgPlansGrouped, getPlanStats, getOrganizations, assignPlanToOrg, createPlan, createPlanVersion, updatePlanStatus,
-    getEntitlementDefinitions, createEntitlementDefinition, toggleEntitlementDefinitionActive,
+    getEntitlementDefinitions, createEntitlementDefinition, toggleEntitlementDefinitionActive, getAiModelOptions,
     getSubscriptions, getPayments, setDunningOverride, getAlerts,
     getPaymentSettings, updatePaymentSettings, getTrialPlan, saveTrialPlan, demoEditPlan,
   }

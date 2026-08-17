@@ -18,7 +18,7 @@
         </div>  
 
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20 mx-4 lg:mx-0">
-          <div v-for="(card, index) in cards" :key="index" @click="navigateTo('/chat-with-akeel')"
+          <div v-for="(card, index) in cards" :key="index" @click="openCard(card)"
             class="group rounded-2xl p-6 border transition-all duration-300 hover:shadow-lg cursor-pointer flex flex-col h-full"
             :class="isDark ? 'bg-[#01261f]/50 border-white/5 hover:border-[#008169]/50' : 'bg-white border-gray-100 hover:border-[#008169]/30'">
             
@@ -137,7 +137,9 @@ const cards = ref([
     subtitleEn: 'Outstanding Invoices',
     subtitleAr: 'الفواتير المستحقة',
     descEn: 'Monitor outstanding invoices and payments owed to your business. Track aging receivables, improve collection processes, and manage customer payment terms.',
-    descAr: 'مراقبة الفواتير المستحقة والمدفوعات المستحقة لعملك. تتبع الذمم المدينة القديمة وتحسين عمليات التحصيل وإدارة شروط الدفع للعملاء.'
+    descAr: 'مراقبة الفواتير المستحقة والمدفوعات المستحقة لعملك. تتبع الذمم المدينة القديمة وتحسين عمليات التحصيل وإدارة شروط الدفع للعملاء.',
+    dataLinkKey: 'calc_hhi_index',
+    domain: 'AR',
   },
   {
     id: 'cogs',
@@ -157,7 +159,9 @@ const cards = ref([
     subtitleEn: 'Bills to Pay',
     subtitleAr: 'الفواتير للدفع',
     descEn: 'Track bills and payments to suppliers and vendors. Manage payment schedules and optimize cash flow timing.',
-    descAr: 'تتبع الفواتير والمدفوعات للموردين والبائعين. إدارة جداول الدفع وتحسين توقيت التدفق النقدي.'
+    descAr: 'تتبع الفواتير والمدفوعات للموردين والبائعين. إدارة جداول الدفع وتحسين توقيت التدفق النقدي.',
+    dataLinkKey: 'calc_vendor_concentration',
+    domain: 'AP',
   },
   {
     id: 'cost_center',
@@ -180,4 +184,18 @@ const cards = ref([
     descAr: 'احصل على إجابات للأسئلة المتعلقة بالضرائب حول الامتثال والخصومات والمواعيد النهائية والتخطيط. الوصول إلى إرشادات الخبراء حول المسائل الضريبية المعقدة.'
   }
 ])
+
+const { createChat, sendMessage } = useAkeel()
+
+// Only cards with a real backing data-link (AR/AP today) guarantee a live tool call — the rest
+// stay plain navigation until their own data-links get built.
+async function openCard(card) {
+  if (!card.dataLinkKey) {
+    navigateTo('/chat-with-akeel')
+    return
+  }
+  await createChat()
+  await sendMessage('', [card.domain], card.dataLinkKey)
+  navigateTo('/chat-with-akeel')
+}
 </script>
