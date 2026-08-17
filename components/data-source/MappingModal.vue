@@ -200,7 +200,7 @@ const buildRows = () => {
         ledger: r.ledger,
         value: '',
         valueInBudget: r.valueInBudget ?? '',
-        months: Object.fromEntries(months.map(m => [m, ''])),
+        months: r.months ? { ...r.months } : Object.fromEntries(months.map(m => [m, ''])),
     }))
 }
 
