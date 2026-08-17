@@ -52,33 +52,36 @@
         </div>
       </div>
 
-      <!-- Alert-driven modals — only rendered when the matching condition is active -->
+      <!-- Only one active alert modal renders at a time -->
       <DashboardApVarianceReconciliationModal
-        v-if="dashboardAlerts.ap_variance && !isMobile"
+        v-if="activeModalKey === 'ap_variance' && !isMobile"
         :data="dashboardAlerts.ap_variance"
-        @close="dashboardAlerts.ap_variance = null"
+        @close="dismissModal('ap_variance')"
         @resolved="onModalResolved" />
       <DashboardArVarianceReconciliationModal
-        v-if="dashboardAlerts.ar_variance && !isMobile"
+        v-if="activeModalKey === 'ar_variance' && !isMobile"
         :data="dashboardAlerts.ar_variance"
-        @close="dashboardAlerts.ar_variance = null"
+        @close="dismissModal('ar_variance')"
         @resolved="onModalResolved" />
       <DashboardNewLedgerDetectedModal
-        v-if="dashboardAlerts.missing_ledgers && !isMobile"
+        v-if="activeModalKey === 'missing_ledgers' && !isMobile"
         :data="dashboardAlerts.missing_ledgers"
-        @close="dashboardAlerts.missing_ledgers = null"
+        @close="dismissModal('missing_ledgers')"
         @resolved="onModalResolved" />
       <DashboardSalesForecastVarianceModal
-        v-if="dashboardAlerts.sales_forecast_variance && !isMobile"
+        v-if="activeModalKey === 'sales_forecast_variance' && !isMobile"
         :data="dashboardAlerts.sales_forecast_variance"
-        @close="dashboardAlerts.sales_forecast_variance = null"
+        :date="new Date().toISOString().slice(0, 10)"
+        @close="dismissModal('sales_forecast_variance')"
         @resolved="onModalResolved" />
     </div>
   </NuxtLayout>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+
+const ALERT_KEYS = ['ap_variance', 'ar_variance', 'missing_ledgers', 'sales_forecast_variance']
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
@@ -101,9 +104,19 @@ const fetchDashboardAlerts = async () => {
   if (res?.status === 'success') dashboardAlerts.value = res.data
 }
 
-// A modal action (resolve/ignore/map/adjust) may clear the underlying
-// condition — refetch so the modal closes itself once it's actually resolved.
-const onModalResolved = () => fetchDashboardAlerts()
+const dismissedKeys = ref(new Set())
+const activeModalKey = computed(() =>
+  ALERT_KEYS.find((key) => dashboardAlerts.value[key] && !dismissedKeys.value.has(key)) ?? null
+)
+
+const dismissModal = (key) => {
+  dismissedKeys.value = new Set(dismissedKeys.value).add(key)
+}
+
+const onModalResolved = async () => {
+  dismissedKeys.value = new Set()
+  await fetchDashboardAlerts()
+}
 
 onMounted(() => {
   isMobile.value = window.innerWidth < 768;

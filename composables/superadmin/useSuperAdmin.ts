@@ -162,8 +162,9 @@ export function useSuperAdmin() {
     await apiFetch(`/admin/partners/${id}/send-reset-email`, { method: 'POST' })
   }
 
-  async function getSocketStatus(): Promise<any> {
-    return apiFetch('/admin/socket-status')
+  async function getVmStatus(source?: string): Promise<any> {
+    const query = source ? `?source=${encodeURIComponent(source)}` : ''
+    return apiFetch(`/admin/vm-status${query}`)
   }
 
   // Organizations oversight (?tab=clients&subtab=organizations) — full registration_requests
@@ -179,7 +180,7 @@ export function useSuperAdmin() {
 
   return {
     getMe,
-    getSocketStatus,
+    getVmStatus,
     getOrganizations,
     getPartners, getPartnerClients, togglePartnerStatus, resetPartnerPassword, unlinkPartnerClient, deletePartner, sendPartnerResetEmail,
     getStats, getSystemCounts,

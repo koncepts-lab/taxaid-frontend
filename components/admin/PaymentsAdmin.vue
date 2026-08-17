@@ -485,12 +485,13 @@
             </div>
             <p v-if="planForm.is_custom" class="text-xs text-gray-400 -mt-2">Created unassigned — link it to an org afterward from the Org-Specific Plans tab.</p>
 
-            <div v-if="!isTrialPlanEdit">
+            <div v-if="!isTrialPlanEdit && !isDemoEdit">
               <label class="block text-sm font-medium text-gray-900 mb-1">Monthly Price</label>
               <input v-model.number="planForm.monthly_price" type="number" step="0.01" class="w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" :class="planForm.monthly_price === null || planForm.monthly_price === '' ? 'border-red-300' : 'border-gray-200'" />
               <p v-if="planForm.monthly_price === null || planForm.monthly_price === ''" class="text-xs text-red-500 mt-1">Monthly price is required.</p>
             </div>
-            <p v-else class="text-xs text-gray-500">Trial plans are always free — no pricing fields.</p>
+            <p v-else-if="isTrialPlanEdit" class="text-xs text-gray-500">Trial plans are always free — no pricing fields.</p>
+            <p v-else class="text-xs text-gray-500">Demo edit — entitlements, description and features only. Price is locked (it's backed by a live Stripe price).</p>
 
             <!-- Entitlements are fully opt-in — pick which keys apply to this plan, not a forced complete list -->
             <div>
@@ -517,7 +518,7 @@
 
           <!-- ── STEP 2: annual ── -->
           <div v-else-if="wizardStep === 2" class="space-y-4">
-            <div v-if="!isTrialPlanEdit" class="grid grid-cols-2 gap-4">
+            <div v-if="!isTrialPlanEdit && !isDemoEdit" class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-1">Annual Price (Base)</label>
                 <input v-model.number="planForm.annual_base" type="number" step="0.01" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" />
@@ -528,11 +529,12 @@
                 <input v-model.number="planForm.annual_discount_percent" type="number" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]" />
               </div>
             </div>
-            <div v-if="!isTrialPlanEdit">
+            <div v-if="!isTrialPlanEdit && !isDemoEdit">
               <label class="block text-sm font-medium text-gray-900 mb-1">Total Annual</label>
               <div class="w-full border border-[#04C18F] bg-[#F0FDFA] rounded-lg px-4 py-2.5 text-sm text-gray-900 font-medium">{{ planForm.annual_price?.toFixed(2) ?? '0.00' }}</div>
               <p class="text-xs text-gray-400 mt-1">Base minus discount — this is the stored, charged annual price.</p>
             </div>
+            <p v-if="isDemoEdit" class="text-xs text-gray-500">Annual price is locked for demo edits too — unaffected by this screen.</p>
 
             <div class="flex justify-end">
               <button type="button" @click="planForm.annual_features = cloneFeatureGroups(planForm.monthly_features)" class="text-xs text-[#007C65] font-medium hover:underline">Copy from Monthly</button>
@@ -843,9 +845,9 @@ watch([() => planForm.value.annual_base, () => planForm.value.annual_discount_pe
 const wizardStepValid = computed(() => {
   if (wizardStep.value === 1) {
     if (!versioningPlan.value && !planForm.value.name.trim()) return false
-    if (!isTrialPlanEdit.value && (planForm.value.monthly_price === null || planForm.value.monthly_price === '')) return false
+    if (!isTrialPlanEdit.value && !isDemoEdit.value && (planForm.value.monthly_price === null || planForm.value.monthly_price === '')) return false
   }
-  if (wizardStep.value === 2 && !isTrialPlanEdit.value) {
+  if (wizardStep.value === 2 && !isTrialPlanEdit.value && !isDemoEdit.value) {
     if (planForm.value.annual_price === null || planForm.value.annual_price === '') return false
   }
   return true
@@ -994,7 +996,10 @@ async function submitPlan(asDraft = false) {
     return
   }
   if (isDemoEdit.value) {
-    await demoEditPlan(versioningPlan.value.id, payload)
+    // demo edit is entitlements/description/features only — price is backed by a live, immutable
+    // Stripe price and must never be touched from here (see backend PaymentAdminController::demoEditPlan)
+    const { monthly_price, annual_price, annual_discount_percent, ...demoPayload } = payload
+    await demoEditPlan(versioningPlan.value.id, demoPayload)
     closePlanModal()
     await Promise.all([loadPlans(), loadOrgPlans(), loadAllPlans()])
     return

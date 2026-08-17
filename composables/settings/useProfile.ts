@@ -152,6 +152,24 @@ export function useProfile() {
     }
   }
 
+  async function sendEmailChangeCode(email: string): Promise<void> {
+    _error.value = null
+    try {
+      await useApi('/profile/email/send-code', { method: 'POST', body: { email } })
+    } catch (err: any) {
+      throw new Error(err?.data?.message ?? 'Failed to send verification code.')
+    }
+  }
+
+  async function verifyEmailChangeCode(email: string, otp: string): Promise<void> {
+    _error.value = null
+    try {
+      await useApi('/profile/email/verify-code', { method: 'POST', body: { email, otp } })
+    } catch (err: any) {
+      throw new Error(err?.data?.message ?? 'Invalid or expired code.')
+    }
+  }
+
   async function uploadPicture(file: File): Promise<void> {
     _error.value = null
     try {
@@ -182,6 +200,8 @@ export function useProfile() {
     error:        _error,
     fetchProfile,
     saveProfile,
+    sendEmailChangeCode,
+    verifyEmailChangeCode,
     uploadPicture,
     getPictureUrl,
     refreshPicture,
