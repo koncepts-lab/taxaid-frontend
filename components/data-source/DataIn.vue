@@ -42,18 +42,27 @@
                     <h3 class="text-lg font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">
                         {{ currentLang === 'ar' ? card.labelAr : card.label }}
                     </h3>
-                    <div v-if="card.isUploaded" class="text-[#03D8B0]">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5">
-                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <select v-if="card.id === 'vat_returns' && vatYears.length > 1"
+                            :value="vatSelectedYear"
+                            @change="vatSelectedYear = Number($event.target.value)"
+                            class="text-[11px] lg:text-xs border rounded-lg px-2 py-1 font-medium focus:outline-none"
+                            :class="isDark ? 'bg-white/5 text-white border-white/10' : 'bg-[#F3F4F6] text-primary-450 border-emerald-100'">
+                            <option v-for="y in vatYears" :key="y" :value="y">{{ y }}</option>
+                        </select>
+                        <div v-if="card.isUploaded" class="text-[#03D8B0]">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <path d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </div>
                     </div>
                 </div>
 
-                <!-- VAT Returns: one certificate per quarter (Qx YYYY) — list them all -->
-                <div v-if="card.isUploaded && card.id === 'vat_returns'" class="mb-6 space-y-2">
-                    <div v-for="ret in (card.returns ?? [])" :key="ret.id"
+                <!-- VAT Returns: one certificate per quarter (Qx YYYY), filtered to the selected year (max 4 rows) -->
+                <div v-if="card.isUploaded && card.id === 'vat_returns'" class="mb-6 space-y-2 min-h-[68px] max-h-[68px] overflow-y-auto pr-1 custom-scrollbar">
+                    <div v-for="ret in vatReturnsForYear(card)" :key="ret.id"
                         class="p-3 rounded-xl border flex items-center gap-3 transition-colors"
                         :class="isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-100'">
                         <div class="p-2 rounded-lg bg-[#E6FDF9] dark:bg-[#00B794]/10 text-[#008864] shrink-0">
@@ -560,7 +569,7 @@
 </style>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 const props = defineProps({
     isDark: Boolean,
@@ -590,6 +599,26 @@ const {
 const nonBudgetItems = computed(() =>
     props.dataInItems?.filter(item => item.id !== 'budget') ?? []
 )
+
+// ── VAT Returns year filter ───────────────────────────────────────────────────
+const vatSelectedYear = ref(new Date().getFullYear())
+
+const vatCard = computed(() => nonBudgetItems.value.find(c => c.id === 'vat_returns'))
+
+const vatYears = computed(() => {
+    const years = [...new Set((vatCard.value?.returns ?? []).map(r => r.year))]
+    return years.sort((a, b) => b - a)
+})
+
+// Once real years load, default to the latest available year if the current
+// calendar year has no returns uploaded yet — keeps the dropdown non-empty.
+watch(vatYears, (years) => {
+    if (years.length && !years.includes(vatSelectedYear.value)) {
+        vatSelectedYear.value = years[0]
+    }
+}, { immediate: true })
+
+const vatReturnsForYear = (card) => (card.returns ?? []).filter(r => r.year === vatSelectedYear.value)
 
 const isVatModalOpen = ref(false)
 const isMappingModalOpen = ref(false)
@@ -623,12 +652,15 @@ const mappingStatusText = (card) =>
 const mappingPillText = (card) =>
     MAPPING_PILL_TEXT[card.id]?.[props.currentLang === 'ar' ? 'ar' : 'en'] ?? (props.currentLang === 'ar' ? 'تم الحفظ' : 'Saved')
 
+const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+
 const toModalRow = (r) => ({
     fsCode: r.fs_code ?? '',
     mainGroup: r.main_group ?? '',
     subGroup: r.subgroup ?? r.sub_group ?? '',
     ledger: r.ledger_name ?? '',
     valueInBudget: r.value_in_budget ?? '',
+    months: Object.fromEntries(MONTH_KEYS.map(m => [m, r[m] ?? ''])),
 })
 
 // Shared paginated fetch for all 3 mapping cards — keeps rows/meta in sync
