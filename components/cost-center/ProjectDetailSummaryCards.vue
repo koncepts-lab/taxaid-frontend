@@ -47,7 +47,7 @@ const cards = computed(() => {
     {
       label: 'Contract Value',
       labelAr: 'قيمة العقد',
-      value: data.contract_value?.toLocaleString() || '0',
+      value: formatInMillions(data.contract_value) || '0',
       icon: '/images/icons/Contract-Value.svg'
     },
     {

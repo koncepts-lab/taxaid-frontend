@@ -99,7 +99,7 @@
               </table>
               <div class="bg-[#65E2C4] px-4 py-3 flex justify-end items-center text-sm font-semibold text-[#013E32]">
                 <span class="mr-4">Total PDC Amount</span>
-                <span>{{ totalPdcAmount.toLocaleString() }} AED</span>
+                <span>{{ formatInMillions(totalPdcAmount) }} AED</span>
               </div>
               
               <!-- Pagination footer -->

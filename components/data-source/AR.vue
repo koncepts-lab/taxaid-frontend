@@ -261,10 +261,7 @@ const formatNumber = (val) => {
     if (val === null || val === undefined) return '—'
     const num = Number(val)
     if (isNaN(num)) return '—'
-    return num.toLocaleString('en-AE', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-    })
+    return formatInMillions(num)
 }
 
 // Pagination

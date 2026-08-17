@@ -81,7 +81,7 @@ async function fetchAll(lang = 'en') {
         apBalance:  ranges.map((r: any) => parseFloat(((r.ap_value ?? 0) / 1_000_000).toFixed(2))),
         categories: ranges.map((r: any) => {
           const d = new Date(r.start)
-          return d.toLocaleString('en-US', { month: 'short' })
+          return formatInMillions(d)
         }),
         percentage: ranges.map(() => 0)
       }

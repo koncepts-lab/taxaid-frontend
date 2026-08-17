@@ -1449,7 +1449,7 @@ const rescheduleLoading = ref(false)
 const calDate = ref(new Date())
 const calYear = computed(() => calDate.value.getFullYear())
 const calMonthIndex = computed(() => calDate.value.getMonth())
-const calMonthName = computed(() => calDate.value.toLocaleString('default', { month: 'long' }))
+const calMonthName = computed(() => formatInMillions(calDate.value))
 const calFirstDay = computed(() => new Date(calYear.value, calMonthIndex.value, 1).getDay())
 const calDaysInMonth = computed(() => new Date(calYear.value, calMonthIndex.value + 1, 0).getDate())
 const calPrevDays = computed(() => {

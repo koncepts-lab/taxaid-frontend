@@ -172,7 +172,7 @@ const formatNumber = (val) => {
     if (val === "" || val === null || val === undefined) return '-';
     const num = parseFloat(val);
     if (isNaN(num)) return '-';
-    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+    return formatInMillions(num);
 };
 
 const triggerExport = (type) => {

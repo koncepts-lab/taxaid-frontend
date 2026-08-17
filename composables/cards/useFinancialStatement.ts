@@ -42,7 +42,7 @@ const scheduleMapBS: Record<string, string> = {
 
 const fmtNum = (num: any) => {
   if (num === null || num === undefined || isNaN(num)) return num
-  return new Intl.NumberFormat('en-US').format(num)
+  return formatInMillions(num)
 }
 
 async function fetchPLData() {

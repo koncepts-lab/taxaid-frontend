@@ -134,7 +134,7 @@ async function fetchAll() {
 
       const categories = ranges.map((r: any) => {
         const d = new Date(r.start)
-        return d.toLocaleString('en-US', { month: 'short' })
+        return formatInMillions(d)
       })
       const arBalance  = ranges.map((r: any) => parseFloat(((r.ar_value ?? 0) / 1_000_000).toFixed(2)))
       const percentage = ranges.map(() => 0)

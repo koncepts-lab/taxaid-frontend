@@ -194,7 +194,7 @@
               </table>
               <div class="bg-[#65E2C4] px-4 py-3 flex justify-end items-center text-sm font-semibold text-[#013E32]">
                 <span class="mr-4">Total Milestone Value</span>
-                <span>{{ totalMilestoneValue.toLocaleString() }} AED</span>
+                <span>{{ formatInMillions(totalMilestoneValue) }} AED</span>
               </div>
               
               <!-- Pagination footer -->
@@ -305,7 +305,7 @@
               </table>
               <div class="bg-[#65E2C4] px-4 py-3 flex justify-end items-center text-sm font-semibold text-[#013E32]">
                 <span class="mr-4">Total Budget Allocation</span>
-                <span>{{ totalBudgetValue.toLocaleString() }} AED</span>
+                <span>{{ formatInMillions(totalBudgetValue) }} AED</span>
               </div>
               
               <!-- Pagination footer -->

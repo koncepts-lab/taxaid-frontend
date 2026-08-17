@@ -123,7 +123,7 @@ const trend            = computed(() => taxQueries.value?.trend ?? 'up')
 const vatReturnDue     = computed(() => currentLang.value === 'ar' ? (taxQueries.value?.vatReturnDueAr ?? '28 يناير 2026') : (taxQueries.value?.vatReturnDue ?? '28 Jan 2026'))
 const ctReturnDue      = computed(() => currentLang.value === 'ar' ? (taxQueries.value?.ctReturnDueAr ?? '30 يونيو 2026') : (taxQueries.value?.ctReturnDue ?? '30 Jun 2026'))
 
-const formatNumber = (n: number) => new Intl.NumberFormat().format(n)
+const formatNumber = (n: number) => formatInMillions(n)
 
 // Parse numeric percentage for the gauge (e.g., "+2.4%" -> 2.4)
 const usagePctValue = computed(() => {

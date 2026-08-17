@@ -202,7 +202,7 @@ const rowState = ref([]);
 const resetRowState = (rows) => rows.map(() => ({ selected: false, adjust: '' }));
 watch(reasonRows, (rows) => { rowState.value = resetRowState(rows); }, { immediate: true });
 
-const formatAmount = (v) => Number(v ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const formatAmount = (v) => formatInMillions(v);
 const toNumber = (v) => {
   const n = parseFloat(String(v ?? '').replace(/,/g, ''));
   return isNaN(n) ? 0 : n;

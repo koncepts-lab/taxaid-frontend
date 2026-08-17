@@ -269,7 +269,7 @@ const formatNumber = (val) => {
   if (val === null || val === undefined) return '0'
   const num = Number(val)
   if (isNaN(num)) return '0'
-  return num.toLocaleString('en-US')
+  return formatInMillions(num)
 }
 
 // Parse "80.56%" or "-38.52%" → number

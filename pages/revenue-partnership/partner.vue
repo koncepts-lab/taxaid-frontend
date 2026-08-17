@@ -234,9 +234,9 @@ const mainStats = computed(() => {
   if (!stats.value) return []
   return [
     { displayTitle: 'Total Customers', displaySubtext: 'Linked clients', icon: '/images/icons/Total-Customers.svg', isCurrency: false, value: stats.value.total_customers },
-    { displayTitle: 'Total Revenue', displaySubtext: 'Expected monthly', icon: '/images/icons/Total-Revenue.svg', isCurrency: true, value: stats.value.total_revenue_aed?.toLocaleString() },
-    { displayTitle: 'Settlement Paid', displaySubtext: 'Commission received', icon: '/images/icons/Collected.svg', isCurrency: true, value: stats.value.total_settlement_paid_aed?.toLocaleString() },
-    { displayTitle: 'Settlement Owed', displaySubtext: 'Commission outstanding', icon: '/images/icons/settlement.svg', isCurrency: true, value: stats.value.total_settlement_owed_aed?.toLocaleString() },
+    { displayTitle: 'Total Revenue', displaySubtext: 'Expected monthly', icon: '/images/icons/Total-Revenue.svg', isCurrency: true, value: formatInMillions(stats.value.total_revenue_aed) },
+    { displayTitle: 'Settlement Paid', displaySubtext: 'Commission received', icon: '/images/icons/Collected.svg', isCurrency: true, value: formatInMillions(stats.value.total_settlement_paid_aed) },
+    { displayTitle: 'Settlement Owed', displaySubtext: 'Commission outstanding', icon: '/images/icons/settlement.svg', isCurrency: true, value: formatInMillions(stats.value.total_settlement_owed_aed) },
   ]
 })
 
@@ -246,10 +246,10 @@ const partnerCards = computed(() => {
   return allClients.map(client => ({
     name: client.company_name,
     displayMetrics: [
-      { displayLabel: 'Revenue', value: client.revenue_aed?.toLocaleString(), isCurrency: true },
-      { displayLabel: 'Collected', value: client.collected_aed?.toLocaleString(), isCurrency: true, label: 'Collected:' },
-      { displayLabel: 'Settlement', value: client.settlement_aed?.toLocaleString(), isCurrency: true, isRate: true },
-      { displayLabel: 'Settlement Paid', value: client.settlement_paid_aed?.toLocaleString(), isCurrency: true },
+      { displayLabel: 'Revenue', value: formatInMillions(client.revenue_aed), isCurrency: true },
+      { displayLabel: 'Collected', value: formatInMillions(client.collected_aed), isCurrency: true, label: 'Collected:' },
+      { displayLabel: 'Settlement', value: formatInMillions(client.settlement_aed), isCurrency: true, isRate: true },
+      { displayLabel: 'Settlement Paid', value: formatInMillions(client.settlement_paid_aed), isCurrency: true },
     ]
   }))
 })
@@ -282,10 +282,10 @@ const paymentTable = computed(() => {
     company:    r.company_name,
     period:     r.contract_period,
     year:       r.year,
-    revenue:    r.revenue_aed?.toLocaleString(),
-    collected:  r.collected_aed?.toLocaleString(),
-    settlement: r.settlement_aed?.toLocaleString(),
-    settlementPaid: r.settlement_paid_aed?.toLocaleString(),
+    revenue:    formatInMillions(r.revenue_aed),
+    collected:  formatInMillions(r.collected_aed),
+    settlement: formatInMillions(r.settlement_aed),
+    settlementPaid: formatInMillions(r.settlement_paid_aed),
     status:     r.payment_status,
   }))
 

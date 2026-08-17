@@ -262,7 +262,7 @@ const props = defineProps({
 const formatNumber = (val) => {
   if (val === null || val === undefined) return '0'
   const num = Number(val)
-  return num.toLocaleString('en-US')
+  return formatInMillions(num)
 }
 
 const parsePercent = (str) => {

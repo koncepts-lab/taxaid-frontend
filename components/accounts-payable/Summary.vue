@@ -376,7 +376,7 @@ const formatValue = (val) => {
   if (val === undefined || val === null) return '0'
   const num = Number(val)
   if (isNaN(num)) return '0'
-  return num.toLocaleString('en-US')
+  return formatInMillions(num)
 }
 
 const toggleGroup = async (idx, customerName) => {

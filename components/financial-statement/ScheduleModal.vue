@@ -273,7 +273,7 @@ const getProgressColor = (progress) => {
 
 const formatNumber = (num) => {
     if (num === null || num === undefined) return '0';
-    return new Intl.NumberFormat('en-US').format(num);
+    return formatInMillions(num);
 };
 const isLedgerReportOpen = ref(false);
 const ledgerReportLoading = ref(false);
