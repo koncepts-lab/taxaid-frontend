@@ -73,6 +73,10 @@ export const useCashFlow = () => {
       incoming:        ms.map(m => fmt(d['Incoming']?.monthly_totals?.[m] ?? 0)),
       outgoing:        ms.map(m => fmt(d['Outgoing']?.monthly_totals?.[m] ?? 0)),
       netMovements:    ms.map(m => fmt(d['Net Cash Flow']?.monthly_totals?.[m] ?? 0)),
+      assetPurchase:   ms.map(m => fmt(d['Overflow for Asset Purchase']?.monthly_totals?.[m] ?? 0)),
+      loanRepayment:   ms.map(m => fmt(d['Overflow for Loan Repayment']?.monthly_totals?.[m] ?? 0)),
+      shareholders:    ms.map(m => fmt(d['Inflow/overflow from Shareholders']?.monthly_totals?.[m] ?? 0)),
+      prepaidAdjustments: ms.map(m => fmt(d['Prepaid Adjustments']?.monthly_totals?.[m] ?? 0)),
       closing:         ms.map(m => fmt(d['Closing Balance']?.monthly_totals?.[m] ?? 0)),
       incomingInvoices: (d['AR File']?.invoices ?? []).map((inv: any) => ({
         number:   inv.invoice_no,

@@ -175,6 +175,40 @@
                 </td>
             </tr>
 
+            <!-- Adjustment Rows -->
+            <tr class="transition-all duration-500" :class="isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100'">
+                <td :class="[cellPad, isDark ? 'text-white' : 'text-black', 'font-medium text-[14px]']">
+                    {{ currentLang === 'ar' ? 'التدفق الخارج لشراء الأصول' : 'Outflow for Asset purchase' }}
+                </td>
+                <td v-for="(value, idx) in assetPurchase" :key="idx" :class="[cellPadX, isDark ? 'text-white/80' : 'text-black', 'text-right rtl:text-left font-medium text-[14px]']">
+                    {{ value }}
+                </td>
+            </tr>
+            <tr class="transition-all duration-500" :class="isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100'">
+                <td :class="[cellPad, isDark ? 'text-white' : 'text-black', 'font-medium text-[14px]']">
+                    {{ currentLang === 'ar' ? 'التدفق الخارج لسداد القرض' : 'Outflow for Loan repayment' }}
+                </td>
+                <td v-for="(value, idx) in loanRepayment" :key="idx" :class="[cellPadX, isDark ? 'text-white/80' : 'text-black', 'text-right rtl:text-left font-medium text-[14px]']">
+                    {{ value }}
+                </td>
+            </tr>
+            <tr class="transition-all duration-500" :class="isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100'">
+                <td :class="[cellPad, isDark ? 'text-white' : 'text-black', 'font-medium text-[14px]']">
+                    {{ currentLang === 'ar' ? 'تدفق/خروج من المساهمين' : 'Inflow/ outflow from shareholders' }}
+                </td>
+                <td v-for="(value, idx) in shareholders" :key="idx" :class="[cellPadX, isDark ? 'text-white/80' : 'text-black', 'text-right rtl:text-left font-medium text-[14px]']">
+                    {{ value }}
+                </td>
+            </tr>
+            <tr class="transition-all duration-500" :class="isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100'">
+                <td :class="[cellPad, isDark ? 'text-white' : 'text-black', 'font-medium text-[14px]']">
+                    {{ currentLang === 'ar' ? 'التسويات المدفوعة مقدماً' : 'Prepaid adjustments' }}
+                </td>
+                <td v-for="(value, idx) in prepaidAdjustments" :key="idx" :class="[cellPadX, isDark ? 'text-white/80' : 'text-black', 'text-right rtl:text-left font-medium text-[14px]']">
+                    {{ value }}
+                </td>
+            </tr>
+
             <!-- Closing -->
             <tr class="transition-all duration-500" :class="isDark ? 'bg-[#1F6F4D] text-white' : 'bg-[#68E4C4] text-black'">
                 <td :class="[cellPad, 'font-medium text-[14px]']">
@@ -211,6 +245,10 @@ const openingBalance  = computed(() => summary.value?.openingBalance  ?? [])
 const incoming        = computed(() => summary.value?.incoming        ?? [])
 const outgoing        = computed(() => summary.value?.outgoing        ?? [])
 const netMovements    = computed(() => summary.value?.netMovements    ?? [])
+const assetPurchase   = computed(() => summary.value?.assetPurchase   ?? [])
+const loanRepayment   = computed(() => summary.value?.loanRepayment   ?? [])
+const shareholders    = computed(() => summary.value?.shareholders    ?? [])
+const prepaidAdjustments = computed(() => summary.value?.prepaidAdjustments ?? [])
 const closing         = computed(() => summary.value?.closing         ?? [])
 
 const expandedRow = ref(null)
