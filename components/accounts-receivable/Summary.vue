@@ -132,7 +132,7 @@
                         </span>
                       </div>
                       <div class="text-right rtl:text-left font-normal text-[16px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
-                        <span class="underline underline-offset-4 cursor-pointer">{{ inv.amount?.toLocaleString() }}</span>
+                        <span class="underline underline-offset-4 cursor-pointer">{{ formatInMillions(inv.amount) }}</span>
                       </div>
                       <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age30?.toLocaleString() }}</div>
                       <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age3060?.toLocaleString() }}</div>
@@ -148,11 +148,11 @@
         <tfoot>
           <tr :class="isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]'" class="transition-all duration-500 text-[14px] font-medium">
             <td class="px-8 py-5" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ summaryTotal.total.toLocaleString() }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ summaryTotal.age30.toLocaleString() }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ summaryTotal.age3060.toLocaleString() }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ summaryTotal.age6090.toLocaleString() }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ summaryTotal.age90plus.toLocaleString() }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.total) }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age30) }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age3060) }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age6090) }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age90plus) }}</td>
           </tr>
         </tfoot>
       </table>
@@ -299,7 +299,7 @@
                                   <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ inv.invoiceNo }}</span>
                                 </div>
                                 <div class="text-right rtl:text-left font-normal text-[16px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
-                                  <span class="underline underline-offset-4 cursor-pointer">{{ inv.amount?.toLocaleString() }}</span>
+                                  <span class="underline underline-offset-4 cursor-pointer">{{ formatInMillions(inv.amount) }}</span>
                                 </div>
                                 <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age30?.toLocaleString() }}</div>
                                 <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age3060?.toLocaleString() }}</div>
@@ -315,11 +315,11 @@
                   <tfoot>
                     <tr :class="isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]'" class="transition-all duration-500 text-[14px] font-medium">
                       <td class="px-8 py-5" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ summaryTotal.total.toLocaleString() }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ summaryTotal.age30.toLocaleString() }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ summaryTotal.age3060.toLocaleString() }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ summaryTotal.age6090.toLocaleString() }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ summaryTotal.age90plus.toLocaleString() }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.total) }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age30) }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age3060) }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age6090) }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age90plus) }}</td>
                     </tr>
                   </tfoot>
                 </table>

@@ -155,7 +155,7 @@ const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const monthLabel = computed(() => {
     const d = new Date(currentYear.value, currentMonth.value, 1)
-    return d.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+    return formatInMillions(d)
 })
 
 const daysInMonth = computed(() => {

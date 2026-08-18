@@ -2177,11 +2177,6 @@
     ],
     "subTabsFinancial": [
       {
-        "id": "settings",
-        "label": "Settings",
-        "labelAr": "الإعدادات"
-      },
-      {
         "id": "data-in",
         "label": "Data In",
         "labelAr": "إدخال البيانات"
@@ -3519,19 +3514,49 @@
       ]
     },
     "operationsSubTabs": [
-      { "name": "All Customers", "count": 21 },
-      { "name": "Partners", "count": 0 },
-      { "name": "Direct Customers", "count": 2 },
-      { "name": "Resource Consumption" },
-      { "name": "Partner Approvals" },
-      { "name": "Uploaded Reports", "count": 2 },
-      { "name": "User Master Info", "count": 2 }
+      {
+        "name": "All Customers",
+        "count": 21
+      },
+      {
+        "name": "Partners",
+        "count": 0
+      },
+      {
+        "name": "Direct Customers",
+        "count": 2
+      },
+      {
+        "name": "Resource Consumption"
+      },
+      {
+        "name": "Partner Approvals"
+      },
+      {
+        "name": "Uploaded Reports",
+        "count": 2
+      },
+      {
+        "name": "User Master Info",
+        "count": 2
+      }
     ],
     "approvalSubTabs": [
-      { "name": "Partner Registration", "count": 2 },
-      { "name": "Payment Requests", "count": 3 }
+      {
+        "name": "Partner Registration",
+        "count": 2
+      },
+      {
+        "name": "Payment Requests",
+        "count": 3
+      }
     ],
-    "statusFilters": ["All Statuses", "Pending", "Approved", "Rejected"]
+    "statusFilters": [
+      "All Statuses",
+      "Pending",
+      "Approved",
+      "Rejected"
+    ]
   },
   "reviewManagerSelectDashboardPage": {
     "_url": "http://localhost:3000/review-manager/select-dashboard",
@@ -3599,45 +3624,208 @@
       "Client review analysis progress"
     ],
     "consultants": [
-      { "id": "C001", "name": "Arjun Mehta", "fixed": 2, "adhoc": 4 },
-      { "id": "C002", "name": "Priya Nair", "fixed": 2, "adhoc": 10 },
-      { "id": "C003", "name": "Rahul Das", "fixed": 1, "adhoc": 3 },
-      { "id": "C004", "name": "Vikram Iyer", "fixed": 3, "adhoc": 20 }
+      {
+        "id": "C001",
+        "name": "Arjun Mehta",
+        "fixed": 2,
+        "adhoc": 4
+      },
+      {
+        "id": "C002",
+        "name": "Priya Nair",
+        "fixed": 2,
+        "adhoc": 10
+      },
+      {
+        "id": "C003",
+        "name": "Rahul Das",
+        "fixed": 1,
+        "adhoc": 3
+      },
+      {
+        "id": "C004",
+        "name": "Vikram Iyer",
+        "fixed": 3,
+        "adhoc": 20
+      }
     ],
     "syncData": [
-      { "id": "C001", "name": "Arjun Enterprises", "date": "19 Oct 2025, 10:45 AM", "status": "Synced", "consultant": "Arjun Mehta" },
-      { "id": "C002", "name": "Bloom Tech Pvt Ltd", "date": "19 Oct 2025, 09:12 AM", "status": "Synced", "consultant": "Priya Nair" },
-      { "id": "C003", "name": "Coastline Exports", "date": "15 Oct 2025, 06:45 AM", "status": "Not Synced", "consultant": "Rahul Das", "daysAgo": 4 },
-      { "id": "C004", "name": "Delta Logistics", "date": "14 Oct 2025, 02:10 PM", "status": "Not Synced", "consultant": "Vikram Iyer", "daysAgo": 4 }
+      {
+        "id": "C001",
+        "name": "Arjun Enterprises",
+        "date": "19 Oct 2025, 10:45 AM",
+        "status": "Synced",
+        "consultant": "Arjun Mehta"
+      },
+      {
+        "id": "C002",
+        "name": "Bloom Tech Pvt Ltd",
+        "date": "19 Oct 2025, 09:12 AM",
+        "status": "Synced",
+        "consultant": "Priya Nair"
+      },
+      {
+        "id": "C003",
+        "name": "Coastline Exports",
+        "date": "15 Oct 2025, 06:45 AM",
+        "status": "Not Synced",
+        "consultant": "Rahul Das",
+        "daysAgo": 4
+      },
+      {
+        "id": "C004",
+        "name": "Delta Logistics",
+        "date": "14 Oct 2025, 02:10 PM",
+        "status": "Not Synced",
+        "consultant": "Vikram Iyer",
+        "daysAgo": 4
+      }
     ],
     "clientFixedProgressData": [
-      { "id": "C001", "consultantName": "Arjun Mehta", "clientName": "Logistics Express Inc.", "progressValue": 10, "progressTotal": 15, "delay": "Final review pending" },
-      { "id": "C002", "consultantName": "Priya Nair", "clientName": "Food Services Group", "progressValue": 8, "progressTotal": 15, "delay": "-" },
-      { "id": "C003", "consultantName": "Rahul Das", "clientName": "Food Services Group", "progressValue": 3, "progressTotal": 15, "delay": "-" },
-      { "id": "C004", "consultantName": "Vikram Iyer", "clientName": "Food Services Group", "progressValue": 8, "progressTotal": 15, "delay": "-" }
+      {
+        "id": "C001",
+        "consultantName": "Arjun Mehta",
+        "clientName": "Logistics Express Inc.",
+        "progressValue": 10,
+        "progressTotal": 15,
+        "delay": "Final review pending"
+      },
+      {
+        "id": "C002",
+        "consultantName": "Priya Nair",
+        "clientName": "Food Services Group",
+        "progressValue": 8,
+        "progressTotal": 15,
+        "delay": "-"
+      },
+      {
+        "id": "C003",
+        "consultantName": "Rahul Das",
+        "clientName": "Food Services Group",
+        "progressValue": 3,
+        "progressTotal": 15,
+        "delay": "-"
+      },
+      {
+        "id": "C004",
+        "consultantName": "Vikram Iyer",
+        "clientName": "Food Services Group",
+        "progressValue": 8,
+        "progressTotal": 15,
+        "delay": "-"
+      }
     ],
     "consultantWorkloadData": [
-      { "id": "C001", "name": "Arjun Mehta", "avgHours": "142 hrs", "clientFixed": "4 hrs 36 min", "clientRequest": "4 hrs 36 min", "clientAnalysis": "4 hrs 36 min" },
-      { "id": "C002", "name": "Priya Nair", "avgHours": "142 hrs", "clientFixed": "4 hrs 36 min", "clientRequest": "4 hrs 36 min", "clientAnalysis": "4 hrs 36 min" },
-      { "id": "C003", "name": "Rahul Das", "avgHours": "142 hrs", "clientFixed": "4 hrs 36 min", "clientRequest": "4 hrs 36 min", "clientAnalysis": "4 hrs 36 min" },
-      { "id": "C004", "name": "Vikram Iyer", "avgHours": "142 hrs", "clientFixed": "4 hrs 36 min", "clientRequest": "4 hrs 36 min", "clientAnalysis": "4 hrs 36 min" }
+      {
+        "id": "C001",
+        "name": "Arjun Mehta",
+        "avgHours": "142 hrs",
+        "clientFixed": "4 hrs 36 min",
+        "clientRequest": "4 hrs 36 min",
+        "clientAnalysis": "4 hrs 36 min"
+      },
+      {
+        "id": "C002",
+        "name": "Priya Nair",
+        "avgHours": "142 hrs",
+        "clientFixed": "4 hrs 36 min",
+        "clientRequest": "4 hrs 36 min",
+        "clientAnalysis": "4 hrs 36 min"
+      },
+      {
+        "id": "C003",
+        "name": "Rahul Das",
+        "avgHours": "142 hrs",
+        "clientFixed": "4 hrs 36 min",
+        "clientRequest": "4 hrs 36 min",
+        "clientAnalysis": "4 hrs 36 min"
+      },
+      {
+        "id": "C004",
+        "name": "Vikram Iyer",
+        "avgHours": "142 hrs",
+        "clientFixed": "4 hrs 36 min",
+        "clientRequest": "4 hrs 36 min",
+        "clientAnalysis": "4 hrs 36 min"
+      }
     ],
     "assignConsultantData": [
-      { "id": "client-7", "clientName": "Logistics Express Inc.", "completedDate": "01/10/2026", "mobile": "+ 123 123 123", "email": "sarahjoseph@gmail.com", "selectedConsultant": "" },
-      { "id": "client-4", "clientName": "Food Services Group", "completedDate": "01/10/2026", "mobile": "+ 123 123 123", "email": "sarahmathew@gmail.com", "selectedConsultant": "" },
-      { "id": "client-4", "clientName": "Food Services Group", "completedDate": "01/10/2026", "mobile": "+ 123 123 123", "email": "sarahjoseph@gmail.com", "selectedConsultant": "" },
-      { "id": "client-4", "clientName": "Food Services Group", "completedDate": "01/10/2026", "mobile": "+ 123 123 123", "email": "sarahjoseph@gmail.com", "selectedConsultant": "" }
+      {
+        "id": "client-7",
+        "clientName": "Logistics Express Inc.",
+        "completedDate": "01/10/2026",
+        "mobile": "+ 123 123 123",
+        "email": "sarahjoseph@gmail.com",
+        "selectedConsultant": ""
+      },
+      {
+        "id": "client-4",
+        "clientName": "Food Services Group",
+        "completedDate": "01/10/2026",
+        "mobile": "+ 123 123 123",
+        "email": "sarahmathew@gmail.com",
+        "selectedConsultant": ""
+      },
+      {
+        "id": "client-4",
+        "clientName": "Food Services Group",
+        "completedDate": "01/10/2026",
+        "mobile": "+ 123 123 123",
+        "email": "sarahjoseph@gmail.com",
+        "selectedConsultant": ""
+      },
+      {
+        "id": "client-4",
+        "clientName": "Food Services Group",
+        "completedDate": "01/10/2026",
+        "mobile": "+ 123 123 123",
+        "email": "sarahjoseph@gmail.com",
+        "selectedConsultant": ""
+      }
     ],
     "clientReviewAnalysisData": [
-      { "id": "C001", "consultantName": "Arjun Mehta", "clientName": "Logistics Express Inc.", "appointmentType": "Client Review", "delay": "Final review pending" },
-      { "id": "C002", "consultantName": "Priya Nair", "clientName": "Food Services Group", "appointmentType": "Client Analysis", "delay": "-" },
-      { "id": "C003", "consultantName": "Rahul Das", "clientName": "Food Services Group", "appointmentType": "Client Review", "delay": "-" },
-      { "id": "C004", "consultantName": "Vikram Iyer", "clientName": "Food Services Group", "appointmentType": "Client Review", "delay": "-" }
+      {
+        "id": "C001",
+        "consultantName": "Arjun Mehta",
+        "clientName": "Logistics Express Inc.",
+        "appointmentType": "Client Review",
+        "delay": "Final review pending"
+      },
+      {
+        "id": "C002",
+        "consultantName": "Priya Nair",
+        "clientName": "Food Services Group",
+        "appointmentType": "Client Analysis",
+        "delay": "-"
+      },
+      {
+        "id": "C003",
+        "consultantName": "Rahul Das",
+        "clientName": "Food Services Group",
+        "appointmentType": "Client Review",
+        "delay": "-"
+      },
+      {
+        "id": "C004",
+        "consultantName": "Vikram Iyer",
+        "clientName": "Food Services Group",
+        "appointmentType": "Client Review",
+        "delay": "-"
+      }
     ],
     "consultantList": [
-      { "name": "Consultant A", "activeCount": 3 },
-      { "name": "Consultant B", "activeCount": 5 },
-      { "name": "Consultant C", "activeCount": 6 }
+      {
+        "name": "Consultant A",
+        "activeCount": 3
+      },
+      {
+        "name": "Consultant B",
+        "activeCount": 5
+      },
+      {
+        "name": "Consultant C",
+        "activeCount": 6
+      }
     ]
   },
   "revenuePartnershipPartnerPage": {
@@ -3649,10 +3837,42 @@
       "textAr": "لديك عملاء {CUST-005, CUST-007} تنتهي صلاحية بطاقاتهم الائتمانية خلال الثلاثين يومًا القادمة. يرجى التواصل معهم والتأكد من تحديث تفاصيل الدفع الخاصة بهم."
     },
     "mainStats": [
-      { "title": "Total Customers", "titleAr": "إجمالي العملاء", "value": "5", "subtext": "Partner-sourced clients", "subtextAr": "العملاء المصدرون من قبل الشركاء", "icon": "/images/icons/Total-Customers.svg", "isCurrency": false },
-      { "title": "Total Revenue", "titleAr": "إجمالي الإيرادات", "value": "808,000", "subtext": "All partner revenue", "subtextAr": "إجمالي إيرادات الشركاء", "icon": "/images/icons/doller-green.svg", "isCurrency": true },
-      { "title": "Amount Collected", "titleAr": "المبلغ المحصل", "value": "714,500", "subtext": "Collection rate: 88.4%", "subtextAr": "معدل التحصيل: 88.4٪", "icon": "/images/icons/amt_collected.svg", "isCurrency": true },
-      { "title": "Settlements", "titleAr": "التسويات", "value": "714,500", "subtext": "Total disbursed", "subtextAr": "إجمالي المبالغ المصروفة", "icon": "/images/icons/settlement.svg", "isCurrency": true }
+      {
+        "title": "Total Customers",
+        "titleAr": "إجمالي العملاء",
+        "value": "5",
+        "subtext": "Partner-sourced clients",
+        "subtextAr": "العملاء المصدرون من قبل الشركاء",
+        "icon": "/images/icons/Total-Customers.svg",
+        "isCurrency": false
+      },
+      {
+        "title": "Total Revenue",
+        "titleAr": "إجمالي الإيرادات",
+        "value": "808,000",
+        "subtext": "All partner revenue",
+        "subtextAr": "إجمالي إيرادات الشركاء",
+        "icon": "/images/icons/doller-green.svg",
+        "isCurrency": true
+      },
+      {
+        "title": "Amount Collected",
+        "titleAr": "المبلغ المحصل",
+        "value": "714,500",
+        "subtext": "Collection rate: 88.4%",
+        "subtextAr": "معدل التحصيل: 88.4٪",
+        "icon": "/images/icons/amt_collected.svg",
+        "isCurrency": true
+      },
+      {
+        "title": "Settlements",
+        "titleAr": "التسويات",
+        "value": "714,500",
+        "subtext": "Total disbursed",
+        "subtextAr": "إجمالي المبالغ المصروفة",
+        "icon": "/images/icons/settlement.svg",
+        "isCurrency": true
+      }
     ],
     "partnerSummary": {
       "title": "Partner Summary",
@@ -3663,19 +3883,57 @@
         {
           "name": "Acme Partners",
           "metrics": [
-            { "label": "Customers:", "labelAr": "العملاء:", "value": "3" },
-            { "label": "Revenue:", "labelAr": "الإيرادات:", "value": "510,000", "isCurrency": true },
-            { "label": "Collected:", "labelAr": "المحصل:", "value": "416,500", "isCurrency": true },
-            { "label": "Collection Rate:", "labelAr": "معدل التحصيل:", "value": "81.7%", "isRate": true }
+            {
+              "label": "Customers:",
+              "labelAr": "العملاء:",
+              "value": "3"
+            },
+            {
+              "label": "Revenue:",
+              "labelAr": "الإيرادات:",
+              "value": "510,000",
+              "isCurrency": true
+            },
+            {
+              "label": "Collected:",
+              "labelAr": "المحصل:",
+              "value": "416,500",
+              "isCurrency": true
+            },
+            {
+              "label": "Collection Rate:",
+              "labelAr": "معدل التحصيل:",
+              "value": "81.7%",
+              "isRate": true
+            }
           ]
         },
         {
           "name": "Beta Consulting",
           "metrics": [
-            { "label": "Customers:", "labelAr": "العملاء:", "value": "2" },
-            { "label": "Revenue:", "labelAr": "الإيرادات:", "value": "298,000", "isCurrency": true },
-            { "label": "Collected:", "labelAr": "المحصل:", "value": "298,000", "isCurrency": true },
-            { "label": "Collection Rate:", "labelAr": "معدل التحصيل:", "value": "100.0%", "isRate": true }
+            {
+              "label": "Customers:",
+              "labelAr": "العملاء:",
+              "value": "2"
+            },
+            {
+              "label": "Revenue:",
+              "labelAr": "الإيرادات:",
+              "value": "298,000",
+              "isCurrency": true
+            },
+            {
+              "label": "Collected:",
+              "labelAr": "المحصل:",
+              "value": "298,000",
+              "isCurrency": true
+            },
+            {
+              "label": "Collection Rate:",
+              "labelAr": "معدل التحصيل:",
+              "value": "100.0%",
+              "isRate": true
+            }
           ]
         }
       ]
@@ -3689,18 +3947,86 @@
       "searchPlaceholderAr": "البحث عن طريق اسم الشركة أو كود العميل أو المصدر...",
       "statusPlaceholder": "All Statuses",
       "statusPlaceholderAr": "كل الحالات",
-      "statuses": ["All Statuses", "Paid", "Failed"],
-      "statusesAr": ["كل الحالات", "مدفوع", "فشل"],
+      "statuses": [
+        "All Statuses",
+        "Paid",
+        "Failed"
+      ],
+      "statusesAr": [
+        "كل الحالات",
+        "مدفوع",
+        "فشل"
+      ],
       "exportBtn": "Export to Excel",
       "exportBtnAr": "تصدير إلى إكسل",
       "table": {
-        "columns": ["Customer Code", "Partner Name", "Company Name", "Contract Period", "Year", "Revenue", "Collected", "Settlement", "Payment Status"],
-        "columnsAr": ["كود العميل", "اسم الشريك", "اسم الشركة", "فترة العقد", "السنة", "الإيرادات", "المحصل", "التسوية", "حالة الدفع"],
+        "columns": [
+          "Customer Code",
+          "Partner Name",
+          "Company Name",
+          "Contract Period",
+          "Year",
+          "Revenue",
+          "Collected",
+          "Settlement",
+          "Payment Status"
+        ],
+        "columnsAr": [
+          "كود العميل",
+          "اسم الشريك",
+          "اسم الشركة",
+          "فترة العقد",
+          "السنة",
+          "الإيرادات",
+          "المحصل",
+          "التسوية",
+          "حالة الدفع"
+        ],
         "rows": [
-          { "code": "CUST-002", "partner": "Acme Partners", "company": "TechCorp Solutions Inc.", "period": "12 months", "year": "1", "revenue": "125,000", "collected": "125,000", "settlement": "15,000", "status": "Paid" },
-          { "code": "CUST-004", "partner": "Beta Consulting", "company": "Innovate Systems Ltd.", "period": "24 months", "year": "2", "revenue": "156,000", "collected": "156,000", "settlement": "26,000", "status": "Paid" },
-          { "code": "CUST-001", "partner": "Acme Partners", "company": "Enterprise Holdings", "period": "36 months", "year": "3+", "revenue": "198,000", "collected": "198,000", "settlement": "38,000", "status": "Paid" },
-          { "code": "CUST-002", "partner": "Beta Consulting", "company": "Healthcare Plus", "period": "24 months", "year": "2", "revenue": "142,000", "collected": "142,000", "settlement": "12,000", "status": "Failed" }
+          {
+            "code": "CUST-002",
+            "partner": "Acme Partners",
+            "company": "TechCorp Solutions Inc.",
+            "period": "12 months",
+            "year": "1",
+            "revenue": "125,000",
+            "collected": "125,000",
+            "settlement": "15,000",
+            "status": "Paid"
+          },
+          {
+            "code": "CUST-004",
+            "partner": "Beta Consulting",
+            "company": "Innovate Systems Ltd.",
+            "period": "24 months",
+            "year": "2",
+            "revenue": "156,000",
+            "collected": "156,000",
+            "settlement": "26,000",
+            "status": "Paid"
+          },
+          {
+            "code": "CUST-001",
+            "partner": "Acme Partners",
+            "company": "Enterprise Holdings",
+            "period": "36 months",
+            "year": "3+",
+            "revenue": "198,000",
+            "collected": "198,000",
+            "settlement": "38,000",
+            "status": "Paid"
+          },
+          {
+            "code": "CUST-002",
+            "partner": "Beta Consulting",
+            "company": "Healthcare Plus",
+            "period": "24 months",
+            "year": "2",
+            "revenue": "142,000",
+            "collected": "142,000",
+            "settlement": "12,000",
+            "status": "Failed"
+          }
         ]
       }
     }

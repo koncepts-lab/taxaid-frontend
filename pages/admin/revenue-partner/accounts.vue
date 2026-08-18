@@ -669,7 +669,7 @@
                 <label class="text-[15px] font-normal text-[#1a1a1a]">Total Partner Payment (AED)</label>
                 <div class="w-full px-4 py-3 border border-[#82FFE0] rounded-xl text-[15px]"
                   :class="totalCommission > 0 ? 'bg-[#F0FDF4] text-[#00835D] font-medium' : 'bg-white text-[#b0b7c1]'">
-                  {{ totalCommission > 0 ? totalCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'Calculated from client amounts' }}
+                  {{ totalCommission > 0 ? formatInMillions(totalCommission) : 'Calculated from client amounts' }}
                 </div>
               </div>
               <!-- Voucher Number -->
@@ -765,7 +765,7 @@
                 :value="clientAmounts[client.tenant_id] ?? ''"
                 @input="clientAmounts[client.tenant_id] = $event.target.value"
                 type="number" step="0.01" min="0"
-                :placeholder="client.calculated_settlement > 0 ? `Calculated settlement: AED ${client.calculated_settlement.toLocaleString()}` : 'Enter commission amount (AED)'"
+                :placeholder="client.calculated_settlement > 0 ? `Calculated settlement: AED ${formatInMillions(client.calculated_settlement)}` : 'Enter commission amount (AED)'"
                 :class="isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/20' : 'bg-[#F9FAFB] border-gray-100 text-[#1a1a1a] placeholder:text-gray-400'"
                 class="w-full px-3 py-2 border rounded-lg text-[13px] focus:outline-none focus:border-[#00835D] transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
             </div>
@@ -777,7 +777,7 @@
         <div class="px-8 py-5 border-t" :class="isDark ? 'border-white/10' : 'border-gray-100'">
           <div v-if="totalCommission > 0" class="flex justify-between items-center mb-3">
             <span class="text-[13px]" :class="isDark ? 'text-white/50' : 'text-gray-500'">Total Commission</span>
-            <span class="text-[15px] font-semibold text-[#00835D]">AED {{ totalCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+            <span class="text-[15px] font-semibold text-[#00835D]">AED {{ formatInMillions(totalCommission) }}</span>
           </div>
           <button @click="showClientPicker = false"
             class="w-full py-3 bg-[#00835D] hover:bg-[#006b4d] text-white rounded-xl font-medium transition-all cursor-pointer">
@@ -980,7 +980,7 @@ const overviewMetrics = computed(() => {
   const m = overview.value?.metrics
   if (!m) return []
   return [
-    { title: 'Total Revenue', isCurrency: true, value: m.total_revenue_aed?.toLocaleString(), subtext: 'All collected payments', icon: '/images/icons/Total-Revenue.svg' },
+    { title: 'Total Revenue', isCurrency: true, value: formatInMillions(m.total_revenue_aed), subtext: 'All collected payments', icon: '/images/icons/Total-Revenue.svg' },
     { title: 'Active Partners', isCurrency: false, value: m.total_partners, subtext: 'Revenue-linked partners', icon: '/images/icons/Partner.svg' },
     { title: 'Total Customers', isCurrency: false, value: m.total_customers, subtext: 'Across all sources', icon: '/images/icons/Total-Customers.svg' },
   ]
@@ -1006,8 +1006,8 @@ const operationsStats = computed(() => {
   const revenueSubtext = activeCustomerSubTab.value === 'Partners' ? 'All partner revenue' : 'All direct revenue'
   return [
     { title: 'Total Customers', isCurrency: false, value: rows.length, subtext, icon: '/images/icons/Total-Customers.svg' },
-    { title: 'Total Revenue', isCurrency: true, value: totalRevenue.toLocaleString(), subtext: revenueSubtext, icon: '/images/icons/Total-Revenue.svg' },
-    { title: 'Amount Collected', isCurrency: true, value: totalCollected.toLocaleString(), subtext: `Collection rate: ${rate}%`, icon: '/images/icons/Amount-Collected.svg' },
+    { title: 'Total Revenue', isCurrency: true, value: formatInMillions(totalRevenue), subtext: revenueSubtext, icon: '/images/icons/Total-Revenue.svg' },
+    { title: 'Amount Collected', isCurrency: true, value: formatInMillions(totalCollected), subtext: `Collection rate: ${rate}%`, icon: '/images/icons/Amount-Collected.svg' },
   ]
 })
 
@@ -1115,9 +1115,9 @@ function normalizeRow(r) {
     code: r.tenant_id, source: r.partner?.name ?? 'Direct',
     company: r.company_name, period: r.contract_period ?? '—', year: r.year ?? '—',
     rawRevenue: r.revenue_aed ?? 0, rawCollected: r.collected_aed ?? 0,
-    revenue: r.revenue_aed?.toLocaleString() ?? '—', collected: r.collected_aed?.toLocaleString() ?? '—',
-    settlement: r.settlement_aed?.toLocaleString() ?? '—',
-    actualPaid: r.actual_paid_aed > 0 ? r.actual_paid_aed?.toLocaleString() ?? '—' : '—',
+    revenue: formatInMillions(r.revenue_aed) ?? '—', collected: formatInMillions(r.collected_aed) ?? '—',
+    settlement: formatInMillions(r.settlement_aed) ?? '—',
+    actualPaid: r.actual_paid_aed > 0 ? formatInMillions(r.actual_paid_aed) ?? '—' : '—',
     date: r.last_payment_date ?? '—',
     status: ({ paid: 'Paid', failed: 'Failed', pending: 'Pending', no_payments: 'No Payments' })[r.payment_status] ?? 'No Payments', reason: '—',
   }

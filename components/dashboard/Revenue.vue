@@ -218,5 +218,5 @@ const tickPoints = computed(() => {
   return pts;
 });
 
-const formatNumber = (n: number) => new Intl.NumberFormat("en-AE").format(n);
+const formatNumber = (n) => formatInMillions(n);
 </script>

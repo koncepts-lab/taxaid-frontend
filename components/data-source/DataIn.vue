@@ -547,7 +547,7 @@
                                             </td>
                                         </template>
                                         <td class="px-6 py-3 border-b border-gray-50 text-right tabular-nums whitespace-nowrap">
-                                            {{ row.total !== null ? row.total.toLocaleString() : '—' }}
+                                            {{ row.total !== null ? formatInMillions(row.total) : '—' }}
                                         </td>
                                     </tr>
                                 </template>

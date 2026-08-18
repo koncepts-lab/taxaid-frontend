@@ -50,7 +50,7 @@
       </div>
       <div class="bg-white border border-[#D1FAE5] rounded-[10px] shadow-sm p-5">
         <p class="text-[13px] text-[#4A5565]">Total Tokens</p>
-        <p class="text-2xl font-semibold text-[#101828] mt-1">{{ loading ? '—' : data.tokens_used_total?.toLocaleString() }}</p>
+        <p class="text-2xl font-semibold text-[#101828] mt-1">{{ loading ? '—' : formatInMillions(data.tokens_used_total) }}</p>
       </div>
       <div class="bg-white border border-[#D1FAE5] rounded-[10px] shadow-sm p-5">
         <p class="text-[13px] text-[#4A5565]">Total Requests</p>

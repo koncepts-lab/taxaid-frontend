@@ -82,7 +82,7 @@ const overdue         = computed(() => accountsPayable.value?.overdue ?? 0)
 const dueInNext30Days = computed(() => accountsPayable.value?.dueInNext30Days ?? 0)
 const agingBars       = computed(() => accountsPayable.value?.agingBars ?? [0, 0, 0, 0])
 
-const formatNumber = (n: number) => new Intl.NumberFormat('en-AE').format(n)
+const formatNumber = (n: number) => formatInMillions(n)
 </script>
 
 <style scoped>

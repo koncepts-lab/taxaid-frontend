@@ -1,5 +1,5 @@
 export const useTheme = () => {
-    const isDark = useState<boolean>('theme-dark', () => false)
+    const isDark = useCookie<boolean>('theme-dark', { default: () => false })
 
     const toggleTheme = () => {
         isDark.value = !isDark.value

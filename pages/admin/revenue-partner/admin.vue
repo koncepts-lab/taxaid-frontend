@@ -361,7 +361,7 @@ const overviewMetrics = computed(() => {
   const m = overview.value?.metrics
   if (!m) return []
   return [
-    { title: 'Total Revenue', isCurrency: true, value: m.total_revenue_aed?.toLocaleString(), subtext: 'All collected payments', icon: '/images/icons/Total-Revenue.svg' },
+    { title: 'Total Revenue', isCurrency: true, value: formatInMillions(m.total_revenue_aed), subtext: 'All collected payments', icon: '/images/icons/Total-Revenue.svg' },
     { title: 'Active Partners', isCurrency: false, value: m.total_partners, subtext: 'Revenue-linked partners', icon: '/images/icons/Partner.svg' },
     { title: 'Total Customers', isCurrency: false, value: m.total_customers, subtext: 'Across all sources', icon: '/images/icons/Total-Customers.svg' },
   ]
@@ -441,17 +441,17 @@ async function loadAllOperationsData() {
 function normalizeCustomerRows(rows) {
   return (rows || []).map(r => ({
     code: r.tenant_id, source: r.partner?.code ?? 'Direct',
-    company: r.company_name, revenue: r.revenue_aed?.toLocaleString() ?? '—',
-    collected: r.collected_aed?.toLocaleString() ?? '—', date: r.last_payment_date ?? '—',
+    company: r.company_name, revenue: formatInMillions(r.revenue_aed) ?? '—',
+    collected: formatInMillions(r.collected_aed) ?? '—', date: r.last_payment_date ?? '—',
     status: capitalize(r.payment_status ?? 'no_payments'), reason: r.failure_reason ?? '—',
     email: r.email ?? '—', plan: r.plan_name ?? '—', contractPeriod: r.contract_period ?? '—',
     billingCycle: r.billing_cycle ?? '—',
     invoiceNumber: r.invoice_number ?? '—',
     invoiceDate: r.invoice_date ?? '—',
     dueDate: r.due_date ?? '—',
-    subtotal: r.subtotal_aed?.toLocaleString() ?? '—',
-    tax: r.tax_aed?.toLocaleString() ?? '—',
-    pending: r.pending_aed?.toLocaleString() ?? '—',
+    subtotal: formatInMillions(r.subtotal_aed) ?? '—',
+    tax: formatInMillions(r.tax_aed) ?? '—',
+    pending: formatInMillions(r.pending_aed) ?? '—',
   }))
 }
 
@@ -459,8 +459,8 @@ function normalizePartnerRows(rows) {
   return (rows || []).map(r => ({
     code: r.tenant_id, source: r.partner?.code ?? '—',
     company: r.company_name, contract: r.contract_period ?? '—', year: r.year ?? '—',
-    revenue: r.revenue_aed?.toLocaleString() ?? '—', collected: r.collected_aed?.toLocaleString() ?? '—',
-    settlement: r.settlement_aed?.toLocaleString() ?? '—', date: r.last_payment_date ?? '—',
+    revenue: formatInMillions(r.revenue_aed) ?? '—', collected: formatInMillions(r.collected_aed) ?? '—',
+    settlement: formatInMillions(r.settlement_aed) ?? '—', date: r.last_payment_date ?? '—',
     status: capitalize(r.payment_status ?? 'no_payments'),
   }))
 }
@@ -468,8 +468,8 @@ function normalizePartnerRows(rows) {
 function normalizeResourceRows(rows) {
   return (rows || []).map(r => ({
     code: r.tenant_id, source: r.partner?.code ?? 'Direct',
-    company: r.company_name, hosting: r.hosting_charge_aed?.toLocaleString() ?? '—',
-    ai: r.ai_token_cost_aed?.toLocaleString() ?? '—',
+    company: r.company_name, hosting: formatInMillions(r.hosting_charge_aed) ?? '—',
+    ai: formatInMillions(r.ai_token_cost_aed) ?? '—',
     total: ((r.hosting_charge_aed ?? 0) + (r.ai_token_cost_aed ?? 0)).toLocaleString(),
     issues: r.flags ?? [],
     hostingRaw: r.hosting_charge_aed ?? null,
@@ -508,7 +508,7 @@ function normalizePaymentRequestRows(rows) {
     id: r.id, date: r.created_at ? new Date(r.created_at).toLocaleString('en-US') : '—',
     dateOnly: r.created_at ? new Date(r.created_at).toLocaleDateString('en-US') : '—',
     name: r.partner?.name ?? '—', partnerId: r.partner?.code ?? '—',
-    amount: r.amount?.toLocaleString() ?? '—', voucher: r.voucher_number ?? '—',
+    amount: formatInMillions(r.amount) ?? '—', voucher: r.voucher_number ?? '—',
     paymentDate: r.payment_date ? new Date(r.payment_date).toLocaleDateString('en-US') : '—', status: capitalize(r.status),
     details: r.details ?? '—', submittedBy: r.submitted_by?.full_name ?? '—',
     approvedAt: r.approved_at ? new Date(r.approved_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : null,

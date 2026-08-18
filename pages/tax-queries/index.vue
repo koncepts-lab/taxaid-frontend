@@ -1,6 +1,6 @@
 <template>
     <NuxtLayout name="dashboard">
-        <div class="lg:h-[calc(100vh-90px)] h-auto bg-[#F0F5F4] lg:px-6 px-0 pb-4 font-sans overflow-hidden">
+        <div class="lg:h-[calc(100vh-90px)] h-auto lg:px-6 px-0 pb-4 font-sans overflow-hidden" :class="isDark ? 'bg-transparent' : 'bg-[#F0F5F4]'">
             <div class="flex justify-between items-center mb-4">
                 <h1 class="lg:hidden font-medium text-2xl lg:mb-0" :class="isDark ? 'text-white' : 'text-[#013E32]'">Tax Queries</h1>
                 <button @click="handleChatOpen">
@@ -9,7 +9,7 @@
             </div>
             <div class="flex gap-6 h-full">
                 <TaxQueriesLeftSideBar v-model:activeTab="activeTabId" :isSideChatOpen="isSideChatOpen"
-                    @close="isSideChatOpen = false" />
+                    @close="isSideChatOpen = false" />  
 
                 <div class="flex-1 flex flex-col gap-5 overflow-hidden">
                     <TaxQueriesTaxTable :isMinimized="isTableMinimized" :title="currentTitle" :data="currentTableData"
@@ -18,7 +18,7 @@
                         @changeYear="changeVatYear"
                         @toggleMinimize="isTableMinimized = !isTableMinimized" class="shrink-0" />
 
-                    <TaxQueriesChatWindow :isMinimized="isTableMinimized" :enableUpload="true" class="flex-1 min-h-0 max-lg:hidden" />
+                    <TaxQueriesChatWindow :isMinimized="isTableMinimized" class="flex-1 min-h-[500px] max-lg:hidden" />
                 </div>
             </div>
         </div>

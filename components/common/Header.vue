@@ -125,22 +125,22 @@
             class="header-trigger-img w-5 h-5 md:w-6 md:h-6" alt="Settings" />
         </button>
         <div
-          class="absolute top-[110%] right-0 mt-2 w-[280px] md:w-[324px] bg-white rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-2 border border-teal-50">
+          :class="['absolute top-[110%] right-0 mt-2 w-[280px] md:w-[324px] rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-2 border', isDark ? 'bg-[#01261f] border-white/5' : 'bg-white border-teal-50']">
           <div class="flex flex-col gap-1">
             <template v-for="(item, index) in settingsItems" :key="index">
               <NuxtLink v-if="item.to" :to="item.to"
-                class="flex items-center gap-4 p-1 rounded-2xl hover:bg-[#E6FFF9] cursor-pointer transition-colors group/item">
+                :class="['flex items-center gap-4 p-1 rounded-2xl cursor-pointer transition-colors group/item', isDark ? 'hover:bg-white/10' : 'hover:bg-[#E6FFF9]']">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center">
-                  <img :src="item.icon" class="w-5 h-5" :alt="item.label" />
+                  <img :src="item.icon" class="w-5 h-5" :class="{'brightness-0 invert': isDark}" :alt="item.label" />
                 </div>
-                <span class="text-[#013E32] font-medium text-[15px]">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
+                <span class="font-medium text-[15px]" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
               </NuxtLink>
               <div v-else
-                class="flex items-center gap-4 p-1 rounded-2xl hover:bg-[#E6FFF9] cursor-pointer transition-colors group/item">
+                :class="['flex items-center gap-4 p-1 rounded-2xl cursor-pointer transition-colors group/item', isDark ? 'hover:bg-white/10' : 'hover:bg-[#E6FFF9]']">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center">
-                  <img :src="item.icon" class="w-5 h-5" :alt="item.label" />
+                  <img :src="item.icon" class="w-5 h-5" :class="{'brightness-0 invert': isDark}" :alt="item.label" />
                 </div>
-                <span class="text-[#013E32] font-medium text-[15px]">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
+                <span class="font-medium text-[15px]" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ currentLang === 'ar' ? item.labelAr : item.label }}</span>
               </div>
             </template>
           </div>
@@ -243,7 +243,7 @@
               {{ currentLang === 'ar' ? 'التبديل إلى لوحة الشركاء' : 'Switch to Partnership' }}
             </NuxtLink>
             -->
-            <button @click="onLogoutClick" class="flex items-center gap-3 text-[#013E32] text-sm font-normal group/btn">
+            <button @click="onLogoutClick" class="flex items-center gap-3 text-sm font-normal group/btn" :class="isDark ? 'text-white' : 'text-[#013E32]'">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 class="group-hover/btn:text-red-500">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-linecap="round"
@@ -430,7 +430,7 @@
               {{ currentLang === 'ar' ? 'تصدير البيانات' : 'Export Data' }}
             </button>
             -->
-            <button @click="onLogoutClick" class="flex items-center gap-3 text-[#013E32] text-sm font-normal group/btn">
+            <button @click="onLogoutClick" class="flex items-center gap-3 text-sm font-normal group/btn" :class="isDark ? 'text-white' : 'text-[#013E32]'">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 class="group-hover/btn:text-red-500">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-linecap="round"
