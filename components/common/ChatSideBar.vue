@@ -70,7 +70,7 @@
                             </div>
                             <div v-if="usage.tokens_total" class="border border-secondary-50 rounded-md flex items-center lg:p-1 p-0.5 gap-1"
                                 :class="isDark ? 'bg-secondary-50/25' : 'bg-secondary-50/40'">
-                                <span class="text-secondary-100 text-xs">{{ usage.tokens_used }}/{{ usage.tokens_total }} {{ currentLang === 'ar' ? 'رمز' :
+                                <span class="text-xs" :class="isDark ? 'text-white' : 'text-secondary-100'">{{ usage.tokens_used }}/{{ usage.tokens_total }} {{ currentLang === 'ar' ? 'رمز' :
                                     'Tokens'
                                     }}</span>
                             </div>
