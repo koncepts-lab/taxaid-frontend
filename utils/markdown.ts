@@ -6,7 +6,4 @@ import { marked } from 'marked'
 
 marked.setOptions({ breaks: true })
 
-export function useMarkdown() {
-  const renderMarkdown = (text: string) => marked.parse(text ?? '', { async: false }) as string
-  return { renderMarkdown }
-}
+export const renderMarkdown = (text: string) => marked.parse(text ?? '', { async: false }) as string

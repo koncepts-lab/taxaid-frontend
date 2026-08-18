@@ -27,14 +27,25 @@ export function useAdminAi() {
 
   const getUsageSnapshot = () => useAdminApi('/admin/ai/usage-snapshot')
 
+  // Array values (domain/category multi-select) serialize as repeated domain[]=A&domain[]=B —
+  // Laravel's Request::array() on the backend reads that shape directly.
   const qs = (params?: Record<string, any>) => {
     if (!params) return ''
-    const clean = Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== ''))
-    const s = new URLSearchParams(clean).toString()
+    const search = new URLSearchParams()
+    for (const [key, value] of Object.entries(params)) {
+      if (value === undefined || value === null || value === '') continue
+      if (Array.isArray(value)) {
+        if (!value.length) continue
+        value.forEach((v) => search.append(`${key}[]`, v))
+      } else {
+        search.append(key, value)
+      }
+    }
+    const s = search.toString()
     return s ? `?${s}` : ''
   }
 
-  const getDataLinks = (params?: { page?: number; per_page?: number; search?: string; domain?: string; category?: string }) => useAdminApi(`/admin/ai/data-links${qs(params)}`)
+  const getDataLinks = (params?: { page?: number; per_page?: number; search?: string; domain?: string[]; category?: string[] }) => useAdminApi(`/admin/ai/data-links${qs(params)}`)
   const updateDataLink = (id: number, body: { label: string; context: string; category?: string | null; is_active: boolean }) =>
     useAdminApi(`/admin/ai/data-links/${id}`, { method: 'PUT', body })
 
@@ -42,7 +53,7 @@ export function useAdminAi() {
   const updateRule = (id: number, body: { label: string; context_template: string | null; category?: string | null; is_active: boolean }) =>
     useAdminApi(`/admin/ai/rules/${id}`, { method: 'PUT', body })
 
-  const getAlertRules = (params?: { page?: number; per_page?: number; search?: string; domain?: string; category?: string; priority?: string }) => useAdminApi(`/admin/ai/alert-rules${qs(params)}`)
+  const getAlertRules = (params?: { page?: number; per_page?: number; search?: string; domain?: string[]; category?: string[]; priority?: string }) => useAdminApi(`/admin/ai/alert-rules${qs(params)}`)
   const updateAlertRule = (id: number, body: { alert_title: string; category: string | null; priority: string; rag_prompt_instruction: string | null; is_active: boolean }) =>
     useAdminApi(`/admin/ai/alert-rules/${id}`, { method: 'PUT', body })
 

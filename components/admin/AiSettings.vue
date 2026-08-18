@@ -142,21 +142,15 @@
             class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm" />
         </div>
         <div class="flex items-center gap-3 w-full md:w-auto">
-          <div class="relative min-w-[160px]">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-            </span>
-            <select v-model="dataLinks.domain" @change="loadDataLinks(1)" class="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
-              <option value="">All Domains</option>
-              <option v-for="d in domainOptions" :key="d" :value="d">{{ d }}</option>
-            </select>
-            <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+          <div class="flex items-center gap-2 min-w-[150px] bg-white border border-gray-200 rounded-md px-3 py-2 shadow-sm text-sm text-gray-700">
+            <span>Domain<span v-if="dataLinks.domain.length"> ({{ dataLinks.domain.length }})</span></span>
+            <DataSourceTbHeaderFilter column="domain" :options="domainOptions" :selected="dataLinks.domain"
+              @apply="(col, values) => { dataLinks.domain = values; loadDataLinks(1) }" class="ml-auto" />
           </div>
-          <div class="relative min-w-[160px]">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-            </span>
-            <input v-model="dataLinks.category" @input="debouncedLoad('dataLinks')" placeholder="Category…" class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm" />
+          <div class="flex items-center gap-2 min-w-[150px] bg-white border border-gray-200 rounded-md px-3 py-2 shadow-sm text-sm text-gray-700">
+            <span>Category<span v-if="dataLinks.category.length"> ({{ dataLinks.category.length }})</span></span>
+            <DataSourceTbHeaderFilter column="category" :options="dataLinks.categoryOptions" :selected="dataLinks.category"
+              @apply="(col, values) => { dataLinks.category = values; loadDataLinks(1) }" class="ml-auto" />
           </div>
         </div>
       </div>
@@ -181,22 +175,24 @@
                 </tr>
               </template>
               <tr v-else-if="!dataLinks.rows.length"><td colspan="6" class="py-10 text-center text-gray-400">No data-links found.</td></tr>
-              <tr v-for="link in dataLinks.rows" :key="link.id" class="border-b border-gray-100 hover:bg-gray-50/50">
-                <td class="py-3.5 px-6"><code class="text-xs text-gray-500">{{ link.key_word }}</code></td>
-                <td class="py-3.5 px-6 font-medium text-gray-800">{{ link.label }}</td>
-                <td class="py-3.5 px-6">
-                  <span class="inline-flex border border-gray-200 bg-white text-gray-600 rounded-full px-2.5 py-1 text-[12px] whitespace-nowrap">{{ link.domain }}</span>
-                </td>
-                <td class="py-3.5 px-6 text-gray-500">{{ link.category ?? '—' }}</td>
-                <td class="py-3.5 px-6">
-                  <span :class="link.is_active ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-gray-100 text-gray-500'" class="rounded-full px-2.5 py-1 text-[12px] font-medium whitespace-nowrap">{{ link.is_active ? 'Active' : 'Inactive' }}</span>
-                </td>
-                <td class="py-3.5 px-6 text-right">
-                  <button @click="openDataLinkModal(link)" class="inline-flex items-center justify-center border border-gray-300 rounded-md p-1.5 hover:bg-gray-50 text-gray-700 transition-colors">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                  </button>
-                </td>
-              </tr>
+              <template v-else>
+                <tr v-for="link in dataLinks.rows" :key="link.id" class="border-b border-gray-100 hover:bg-gray-50/50">
+                  <td class="py-3.5 px-6"><code class="text-xs text-gray-500">{{ link.key_word }}</code></td>
+                  <td class="py-3.5 px-6 font-medium text-gray-800">{{ link.label }}</td>
+                  <td class="py-3.5 px-6">
+                    <span class="inline-flex border border-gray-200 bg-white text-gray-600 rounded-full px-2.5 py-1 text-[12px] whitespace-nowrap">{{ link.domain }}</span>
+                  </td>
+                  <td class="py-3.5 px-6 text-gray-500">{{ link.category ?? '—' }}</td>
+                  <td class="py-3.5 px-6">
+                    <span :class="link.is_active ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-gray-100 text-gray-500'" class="rounded-full px-2.5 py-1 text-[12px] font-medium whitespace-nowrap">{{ link.is_active ? 'Active' : 'Inactive' }}</span>
+                  </td>
+                  <td class="py-3.5 px-6 text-right">
+                    <button @click="openDataLinkModal(link)" class="inline-flex items-center justify-center border border-gray-300 rounded-md p-1.5 hover:bg-gray-50 text-gray-700 transition-colors">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>
@@ -322,15 +318,15 @@
             class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm" />
         </div>
         <div class="flex items-center gap-3 w-full md:w-auto">
-          <div class="relative min-w-[150px]">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-            </span>
-            <select v-model="alertRules.domain" @change="loadAlertRules(1)" class="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
-              <option value="">All Domains</option>
-              <option v-for="d in domainOptions" :key="d" :value="d">{{ d }}</option>
-            </select>
-            <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+          <div class="flex items-center gap-2 min-w-[140px] bg-white border border-gray-200 rounded-md px-3 py-2 shadow-sm text-sm text-gray-700">
+            <span>Domain<span v-if="alertRules.domain.length"> ({{ alertRules.domain.length }})</span></span>
+            <DataSourceTbHeaderFilter column="domain" :options="domainOptions" :selected="alertRules.domain"
+              @apply="(col, values) => { alertRules.domain = values; loadAlertRules(1) }" class="ml-auto" />
+          </div>
+          <div class="flex items-center gap-2 min-w-[140px] bg-white border border-gray-200 rounded-md px-3 py-2 shadow-sm text-sm text-gray-700">
+            <span>Category<span v-if="alertRules.category.length"> ({{ alertRules.category.length }})</span></span>
+            <DataSourceTbHeaderFilter column="category" :options="alertRules.categoryOptions" :selected="alertRules.category"
+              @apply="(col, values) => { alertRules.category = values; loadAlertRules(1) }" class="ml-auto" />
           </div>
           <div class="relative min-w-[140px]">
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -367,24 +363,26 @@
                 </tr>
               </template>
               <tr v-else-if="!alertRules.rows.length"><td colspan="6" class="py-10 text-center text-gray-400">No alert rules yet.</td></tr>
-              <tr v-for="rule in alertRules.rows" :key="rule.id" class="border-b border-gray-100 hover:bg-gray-50/50">
-                <td class="py-3.5 px-6 font-medium text-gray-800">{{ rule.alert_title }}</td>
-                <td class="py-3.5 px-6">
-                  <span class="inline-flex border border-gray-200 bg-white text-gray-600 rounded-full px-2.5 py-1 text-[12px] whitespace-nowrap">{{ rule.domain }}</span>
-                </td>
-                <td class="py-3.5 px-6 text-gray-500">{{ rule.category ?? '—' }}</td>
-                <td class="py-3.5 px-6">
-                  <span :class="{ 'bg-[#FEF2F2] text-[#DC2626]': rule.priority === 'P1', 'bg-[#FFF7ED] text-[#C2410C]': rule.priority === 'P2', 'bg-gray-100 text-gray-600': rule.priority === 'P3' }" class="rounded-full px-2.5 py-1 text-[12px] font-medium whitespace-nowrap">{{ rule.priority }}</span>
-                </td>
-                <td class="py-3.5 px-6">
-                  <span :class="rule.is_active ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-gray-100 text-gray-500'" class="rounded-full px-2.5 py-1 text-[12px] font-medium whitespace-nowrap">{{ rule.is_active ? 'Active' : 'Inactive' }}</span>
-                </td>
-                <td class="py-3.5 px-6 text-right">
-                  <button @click="openAlertRuleModal(rule)" class="inline-flex items-center justify-center border border-gray-300 rounded-md p-1.5 hover:bg-gray-50 text-gray-700 transition-colors">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                  </button>
-                </td>
-              </tr>
+              <template v-else>
+                <tr v-for="rule in alertRules.rows" :key="rule.id" class="border-b border-gray-100 hover:bg-gray-50/50">
+                  <td class="py-3.5 px-6 font-medium text-gray-800">{{ rule.alert_title }}</td>
+                  <td class="py-3.5 px-6">
+                    <span class="inline-flex border border-gray-200 bg-white text-gray-600 rounded-full px-2.5 py-1 text-[12px] whitespace-nowrap">{{ rule.domain }}</span>
+                  </td>
+                  <td class="py-3.5 px-6 text-gray-500">{{ rule.category ?? '—' }}</td>
+                  <td class="py-3.5 px-6">
+                    <span :class="{ 'bg-[#FEF2F2] text-[#DC2626]': rule.priority === 'P1', 'bg-[#FFF7ED] text-[#C2410C]': rule.priority === 'P2', 'bg-gray-100 text-gray-600': rule.priority === 'P3' }" class="rounded-full px-2.5 py-1 text-[12px] font-medium whitespace-nowrap">{{ rule.priority }}</span>
+                  </td>
+                  <td class="py-3.5 px-6">
+                    <span :class="rule.is_active ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-gray-100 text-gray-500'" class="rounded-full px-2.5 py-1 text-[12px] font-medium whitespace-nowrap">{{ rule.is_active ? 'Active' : 'Inactive' }}</span>
+                  </td>
+                  <td class="py-3.5 px-6 text-right">
+                    <button @click="openAlertRuleModal(rule)" class="inline-flex items-center justify-center border border-gray-300 rounded-md p-1.5 hover:bg-gray-50 text-gray-700 transition-colors">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>
@@ -433,19 +431,21 @@
               </tr>
             </template>
             <tr v-else-if="!chatPrompts.rows.length"><td colspan="5" class="py-8 text-center text-gray-400">No pages configured.</td></tr>
-            <tr v-for="p in chatPrompts.rows" :key="p.id" class="border-b border-gray-100 hover:bg-gray-50/50">
-              <td class="py-3 px-4 font-medium">{{ p.page }}</td>
-              <td class="py-3 px-4">{{ p.questions?.length ?? 0 }}</td>
-              <td class="py-3 px-4">{{ p.tips?.length ?? 0 }}</td>
-              <td class="py-3 px-4">
-                <span :class="p.is_active ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-gray-100 text-gray-500'" class="rounded-full px-2.5 py-1 text-[12px] font-medium">{{ p.is_active ? 'Active' : 'Inactive' }}</span>
-              </td>
-              <td class="py-3 px-4 text-center">
-                <button @click="openPromptModal(p)" class="px-3 py-1.5 border border-gray-200 rounded text-xs hover:bg-gray-50 mr-1.5">Edit</button>
-                <button @click="cloneRow(p)" class="px-3 py-1.5 border border-gray-200 rounded text-xs hover:bg-gray-50 mr-1.5">Clone</button>
-                <button @click="deleteRow(p)" class="px-3 py-1.5 border border-red-300 text-red-600 rounded text-xs hover:bg-red-50">Delete</button>
-              </td>
-            </tr>
+            <template v-else>
+              <tr v-for="p in chatPrompts.rows" :key="p.id" class="border-b border-gray-100 hover:bg-gray-50/50">
+                <td class="py-3 px-4 font-medium">{{ p.page }}</td>
+                <td class="py-3 px-4">{{ p.questions?.length ?? 0 }}</td>
+                <td class="py-3 px-4">{{ p.tips?.length ?? 0 }}</td>
+                <td class="py-3 px-4">
+                  <span :class="p.is_active ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-gray-100 text-gray-500'" class="rounded-full px-2.5 py-1 text-[12px] font-medium">{{ p.is_active ? 'Active' : 'Inactive' }}</span>
+                </td>
+                <td class="py-3 px-4 text-center">
+                  <button @click="openPromptModal(p)" class="px-3 py-1.5 border border-gray-200 rounded text-xs hover:bg-gray-50 mr-1.5">Edit</button>
+                  <button @click="cloneRow(p)" class="px-3 py-1.5 border border-gray-200 rounded text-xs hover:bg-gray-50 mr-1.5">Clone</button>
+                  <button @click="deleteRow(p)" class="px-3 py-1.5 border border-red-300 text-red-600 rounded text-xs hover:bg-red-50">Delete</button>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </table>
       </div>
@@ -618,7 +618,8 @@ const pageOptions = [
 ]
 
 const domainOptions = ['AR', 'AP', 'general']
-const subTabs = ['Instructions', 'Data-Links', 'Rules', 'Alert Rules', 'Quick Questions & Tips']
+// 'Rules' (ai_rules) hidden — unused, data-links (ai_data_links) cover this today.
+const subTabs = ['Instructions', 'Data-Links', 'Alert Rules', 'Quick Questions & Tips']
 const subTabSlugs = { 'Instructions': 'instructions', 'Data-Links': 'data-links', 'Rules': 'rules', 'Alert Rules': 'alert-rules', 'Quick Questions & Tips': 'quick-questions' }
 const slugToSubTab = Object.fromEntries(Object.entries(subTabSlugs).map(([k, v]) => [v, k]))
 
@@ -653,7 +654,8 @@ const filteredSettings = computed(() => {
 function makeTableState() {
   return reactive({
     rows: [], meta: { total: 0 }, loading: false, perPage: 10,
-    search: '', domain: '', category: '', priority: '',
+    search: '', domain: [], category: [], priority: '',
+    categoryOptions: [],
     counts: { total: 0, active: 0, inactive: 0 },
   })
 }
@@ -700,6 +702,7 @@ async function loadDataLinks(page = 1) {
     dataLinks.rows = res?.data ?? []
     dataLinks.meta = applyMeta(res)
     if (res?.counts) dataLinks.counts = res.counts
+    if (res?.category_options) dataLinks.categoryOptions = res.category_options
   } finally {
     dataLinks.loading = false
   }
@@ -720,10 +723,11 @@ async function loadRules(page = 1) {
 async function loadAlertRules(page = 1) {
   alertRules.loading = true
   try {
-    const res = await getAlertRules({ page, per_page: alertRules.perPage, search: alertRules.search, domain: alertRules.domain, priority: alertRules.priority })
+    const res = await getAlertRules({ page, per_page: alertRules.perPage, search: alertRules.search, domain: alertRules.domain, category: alertRules.category, priority: alertRules.priority })
     alertRules.rows = res?.data ?? []
     alertRules.meta = applyMeta(res)
     if (res?.counts) alertRules.counts = res.counts
+    if (res?.category_options) alertRules.categoryOptions = res.category_options
   } finally {
     alertRules.loading = false
   }
