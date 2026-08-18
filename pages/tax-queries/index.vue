@@ -9,7 +9,7 @@
             </div>
             <div class="flex gap-6 h-full">
                 <TaxQueriesLeftSideBar v-model:activeTab="activeTabId" :isSideChatOpen="isSideChatOpen"
-                    @close="isSideChatOpen = false" />
+                    @close="isSideChatOpen = false" />  
 
                 <div class="flex-1 flex flex-col gap-5 overflow-hidden">
                     <TaxQueriesTaxTable :isMinimized="isTableMinimized" :title="currentTitle" :data="currentTableData"
