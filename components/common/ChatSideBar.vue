@@ -99,7 +99,7 @@
                     <div class="text-center lg:mb-8 mb-3">
                         <img src="/images/akeel.webp" alt="Akeel"
                             class="lg:w-15 w-10 lg:h-15 h-10 rounded-full object-contain mx-auto lg:mb-4 mb-2" />
-                        <h2 class="lg:text-lg text-base font-medium" :class="isDark ? 'text-white' : 'text-gray-800'">
+                        <h2 class="lg:text-lg text-base font-medium" :class="isDark ? 'text-white' : 'text-black'">
                             {{ currentLang === 'ar' ? 'دعنا نفكر مع عقيل' : "Let's Brainstorm with Akeel" }}
                         </h2>
                         <p class="text-xs font-light" :class="isDark ? 'text-white/60' : ' text-black'">
@@ -156,19 +156,19 @@
                         <div v-else class="md-content" v-html="renderMarkdown(m.content)"></div>
                     </div>
                     <div v-if="sending" class="text-xs opacity-60" :class="isDark ? 'text-white' : 'text-black'">
-                        {{ currentLang === 'ar' ? 'عقيل يكتب...' : 'Akeel is typing...' }}
+                        {{ currentLang === 'ar' ? 'عقيل يكتب...' : sendingStatusText }}
                     </div>
                 </div>
             </div>
 
             <div class="p-4" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
-                <p v-if="error" class="text-xs text-red-500 mb-2">{{ error }}</p>
+                <CommonAiStatusBox :message="error" :variant="errorVariant" :isDark="isDark" />
                 <div class="flex items-center border rounded-[10px] pl-2 pr-1 py-1 gap-2"
                     :class="isDark ? 'border-white/10 bg-white/5' : 'border-primary-100'">
                     <input type="text" v-model="draft" @keyup.enter="send"
                         :placeholder="currentLang === 'ar' ? 'اسأل عن بياناتك المالية...' : 'Ask about your financials....'"
                         class="flex-1 bg-transparent focus:outline-none transition-colors text-sm lg:py-2 py-1"
-                        :class="isDark ? 'text-white placeholder:text-white/30' : 'placeholder:text-black/30'" />
+                        :class="isDark ? 'text-white placeholder:text-white/30' : 'text-black placeholder:text-black/30'" />
                     <button @click="send" :disabled="sending"
                         class="p-2 bg-primary-600 hover:bg-primary-700 text-white rounded-[5px] transition-colors shrink-0 disabled:opacity-50">
                         <img src="/images/icons/chat.svg" alt="Send" class="lg:w-6 lg:h-6 w-4 h-4"
@@ -192,8 +192,7 @@
 const isDark = useTheme().isDark
 const currentLang = useState('currentLang', () => 'en')
 
-const { renderMarkdown } = useMarkdown()
-const { messages, status, usage, sending, error, activeChatId, sendMessage, fetchChats } = useAkeel()
+const { messages, status, usage, sending, sendingStatusText, error, errorVariant, activeChatId, sendMessage, fetchChats } = useAkeel()
 
 // This widget is only ever mounted on report/feature pages, never on the dedicated
 // /chat-with-akeel history page — a conversation here shouldn't survive navigating away

@@ -49,7 +49,7 @@
                                     ? 'bg-primary-250 text-white rounded-2xl'
                                     : (isDark
                                         ? 'bg-white/10 border border-white/10 text-white/90'
-                                        : 'bg-white border border-gray-100 text-gray-800'),
+                                        : 'bg-white border border-gray-100 text-black'),
                                 m.role !== 'user' && (currentLang === 'ar' ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none')
                             ]">
                                 <span v-if="m.role === 'user'" class="whitespace-pre-wrap">{{ m.content }}</span>
@@ -57,14 +57,14 @@
                             </div>
                         </div>
                         <div v-if="sending" class="text-xs" :class="isDark ? 'text-white/50' : 'text-black/50'">
-                            {{ currentLang === 'ar' ? 'عقيل يكتب...' : 'Akeel is typing...' }}
+                            {{ currentLang === 'ar' ? 'عقيل يكتب...' : sendingStatusText }}
                         </div>
                     </div>
 
                     <!-- Footer / Input -->
                     <div class="px-5 pt-5 pb-2 border-t transition-colors duration-300" v-if="error"
                         :class="isDark ? 'bg-[#001a16] border-white/10' : 'bg-white border-gray-100'">
-                        <p class="text-xs text-red-500">{{ error }}</p>
+                        <CommonAiStatusBox :message="error" :variant="errorVariant" :isDark="isDark" />
                     </div>
                     <div class="p-5 flex items-center gap-3 shrink-0 transition-colors duration-300"
                         :class="[isDark ? 'bg-[#001a16] border-white/10' : 'bg-white border-gray-100', !error && 'border-t']">
@@ -115,8 +115,7 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 const chatInput = ref('');
 
-const { renderMarkdown } = useMarkdown()
-const { messages, sending, activeChatId, error, createChat, sendMessage } = useAkeel()
+const { messages, sending, sendingStatusText, activeChatId, error, errorVariant, createChat, sendMessage } = useAkeel()
 
 // A fresh alert-context conversation each time the modal opens for a new alert —
 // not the same shared chat as the sidebar/full-page widgets.

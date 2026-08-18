@@ -35,7 +35,7 @@
                 <span v-if="m.role === 'user'">{{ m.content }}</span>
                 <div v-else class="md-content" v-html="renderMarkdown(m.content)"></div>
             </div>
-            <div v-if="sending" class="text-xs text-black/50">Akeel is typing...</div>
+            <div v-if="sending" class="text-xs text-black/50">{{ sendingStatusText }}</div>
             <div v-if="chatGettingLong" class="text-xs text-amber-600">
                 This conversation is getting long and may affect answer quality — consider starting a new chat.
             </div>
@@ -45,27 +45,40 @@
         </div>
 
         <div class="w-full max-w-3xl mx-auto mt-2">
-            <p v-if="error" class="text-xs text-red-500 mb-2">{{ error }}</p>
-            <div class="relative">
-                <span class="absolute lg:left-4 left-2 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
-                    <img src="/images/icons/pin.svg" class="w-5 h-5" alt="Chat Icon" />
+            <CommonAiStatusBox :message="error" :variant="errorVariant" />
+            <div v-if="pendingUploads.length" class="flex flex-wrap gap-2 mb-2">
+                <span v-for="u in pendingUploads" :key="u.id"
+                    class="inline-flex items-center gap-1.5 bg-primary-100/10 border border-primary-100/30 rounded-lg px-2.5 py-1 text-xs text-black">
+                    {{ u.file_type?.toUpperCase() }} attached
+                    <button @click="removeUpload(u.id)" class="text-gray-400 hover:text-red-500">✕</button>
                 </span>
+            </div>
+            <div class="relative">
+                <button v-if="enableUpload" type="button" @click="uploadModalOpen = true"
+                    class="absolute lg:left-4 left-2 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+                    <img src="/images/icons/pin.svg" class="w-5 h-5" alt="Attach file" />
+                </button>
                 <input type="text" v-model="draft" @keyup.enter="send" placeholder="Ask about your financials...."
-                    class="w-full bg-white border border-primary-100 rounded-xl lg:py-4 py-2 pl-12 pr-10 text-sm text-[#000] placeholder:font-semibold placeholder:text-[#b9b9b9] focus:outline-none focus:ring-1 focus:ring-emerald-400" />
+                    :class="enableUpload ? 'pl-12' : 'pl-4'"
+                    class="w-full bg-white border border-primary-100 rounded-xl lg:py-4 py-2 pr-10 text-sm text-[#000] placeholder:font-semibold placeholder:text-[#b9b9b9] focus:outline-none focus:ring-1 focus:ring-emerald-400" />
                 <button @click="send" :disabled="sending"
                     class="absolute lg:right-2 right-1 top-1/2 -translate-y-1/2 bg-[#00B69B] lg:p-2.5 p-1.5 rounded-xl text-white hover:bg-[#008472] transition-colors disabled:opacity-50">
                     <img src="/images/icons/chat.svg" class="lg:w-6 lg:h-6 w-5 h-5" alt="Send Icon" />
                 </button>
             </div>
         </div>
+
+        <CommonAiUploadModal v-if="enableUpload" v-model:open="uploadModalOpen" />
     </div>
 </template>
 
 <script setup>
-defineProps(['isMinimized']);
+defineProps({
+    isMinimized: { type: Boolean, default: false },
+    enableUpload: { type: Boolean, default: false },
+});
 
-const { renderMarkdown } = useMarkdown()
-const { messages, activeChatId, sending, chatGettingLong, usageWarning, error, sendMessage } = useAkeel()
+const { messages, activeChatId, sending, sendingStatusText, chatGettingLong, usageWarning, error, errorVariant, pendingUploads, sendMessage, removeUpload } = useAkeel()
 const { questions: promptQuestions, tips: promptTips, fetchPrompts } = useAkeelPrompts()
 
 const route = useRoute()
@@ -81,6 +94,7 @@ onBeforeUnmount(() => {
 })
 
 const draft = ref('')
+const uploadModalOpen = ref(false)
 
 async function ask(question) {
     await sendMessage(question)

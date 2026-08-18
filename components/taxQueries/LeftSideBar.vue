@@ -85,10 +85,17 @@
                     <div class="mt-4 flex-1 overflow-hidden flex flex-col">
                         <p class="text-sm font-normal text-black/50 tracking-widest mb-3 shrink-0 uppercase">{{ searchQuery ? 'Results' : 'Recent' }}</p>
                         <div class="overflow-y-auto space-y-3 pr-2 no-scrollbar">
-                            <p v-for="chat in filteredChats" :key="chat.id" @click="selectChat(chat.id)"
-                                class="text-sm text-black/70 truncate cursor-pointer hover:text-primary-500 transition-colors">
-                                {{ chat.title || 'Untitled chat' }}
-                            </p>
+                            <div v-for="chat in filteredChats" :key="chat.id"
+                                class="flex items-center justify-between gap-2 group">
+                                <p @click="selectChat(chat.id)"
+                                    class="text-sm text-black/70 truncate cursor-pointer hover:text-primary-500 transition-colors flex-1">
+                                    {{ chat.title || 'Untitled chat' }}
+                                </p>
+                                <button @click.stop="confirmDelete(chat.id)"
+                                    class="text-gray-400 hover:text-red-500 shrink-0 transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
                             <p v-if="!filteredChats.length" class="text-sm text-black/40 text-center py-4">No chats found.</p>
                         </div>
                     </div>
@@ -113,7 +120,7 @@ const searchQuery = ref('');
 
 const { tabs, deadlines } = useTaxQueriesPage()
 
-const { chats, status, usage, activeChatId, fetchChats, createChat, resumeChat } = useAkeel()
+const { chats, status, usage, activeChatId, fetchChats, createChat, resumeChat, deleteChat } = useAkeel()
 
 const filteredChats = computed(() => {
     if (!searchQuery.value.trim()) return chats.value
@@ -128,6 +135,11 @@ async function startNewChat() {
 async function selectChat(id) {
     activeChatId.value = id
     await resumeChat(id)
+}
+
+async function confirmDelete(id) {
+    if (!confirm('Delete this chat? This cannot be undone.')) return
+    await deleteChat(id)
 }
 
 onMounted(() => {
