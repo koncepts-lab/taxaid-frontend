@@ -57,17 +57,18 @@
             />
           </g>
 
-          <path :d="segLastYearPath" :stroke="colors.lastYear" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
-          <path :d="segCurrentPath" :stroke="colors.currentYear" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
-          <path :d="segBalancePath" :stroke="colors.balance" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
+          <!-- Track (unfilled remainder) -->
+          <path :d="trackPath" :stroke="colors.track" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
+          <!-- Filled margin arc -->
+          <path :d="marginPath" :stroke="colors.fill" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
 
           <circle
-            v-if="currentYearPct > 0"
+            v-if="marginPct > 0"
             :cx="marker.x"
             :cy="marker.y"
             r="9"
             fill="#fff"
-            stroke="#03D9B0"
+            :stroke="colors.fill"
             stroke-width="6"
           />
 
@@ -79,10 +80,10 @@
         <!-- Center Value & Icon -->
         <div class="absolute inset-0 flex flex-col items-center justify-center pt-[40%]">
           <span class="leading-none text-[40px] font-semibold block">
-            {{ Math.round(currentYearPct) }}%
+            {{ Math.round(marginPct) }}%
           </span>
           <span class="text-[11px] font-light opacity-60 mt-1 mb-0 uppercase tracking-widest block">
-            {{ currentLang === 'ar' ? 'تم تحقيق الهدف' : 'Target Achieved' }}
+            {{ currentLang === 'ar' ? 'هامش الربح الإجمالي' : 'Gross Profit Margin' }}
           </span>
           
           <!-- Center Icon moved inside absolute container -->
@@ -134,16 +135,14 @@ const isHovered = computed(() => hoveredMenuItem.value === 'Revenue')
 // ── Pull values from website-data.json ───────────────────────────────────
 const { revenue } = useDashboard()
 
-const totalRevenue        = computed(() => revenue.value?.totalRevenue        ?? 0)
-const netRevenue          = computed(() => revenue.value?.netRevenue          ?? 0)
-const currentYearTarget   = computed(() => revenue.value?.currentYearTarget   ?? 0)
-const currentYearAchieved = computed(() => revenue.value?.currentYearAchieved ?? 0)
+const totalRevenue = computed(() => revenue.value?.totalRevenue      ?? 0)
+const marginPct    = computed(() => revenue.value?.grossProfitMargin ?? 0)
+const netRevenue   = computed(() => revenue.value?.netRevenue        ?? 0)
 
-const colors = computed(() => revenue.value?.gaugeColors ?? { lastYear: "#21E669", currentYear: "#03D8B0", balance: "#0A7C4B" })
+const colors = { track: "#0A7C4B", fill: "#03D8B0" }
 const svgW = 400; const svgH = 240;
 const cx = 200;   const cy = 180;  const r = 170;
 const strokeW = 18; const startDeg = -180; const endDeg = 0;
-const gapDeg = 9; const lastYearSpanDeg = 30;
 
 const animProgress = ref(0);
 
@@ -161,9 +160,6 @@ onMounted(() => {
   requestAnimationFrame(animate);
 });
 
-const currentYearPct = computed(() => currentYearTarget.value > 0 ? Math.min(100, (currentYearAchieved.value / currentYearTarget.value) * 100) : 0);
-const remainingSpan = computed(() => (endDeg - startDeg) - lastYearSpanDeg - (gapDeg * 2));
-
 const polarToCartesian = (angleDeg: number, radius = r) => {
   const a = (angleDeg * Math.PI) / 180;
   return { x: cx + radius * Math.cos(a), y: cy + radius * Math.sin(a) };
@@ -175,36 +171,14 @@ const arcPath = (a0: number, a1: number) => {
   return `M ${p0.x} ${p0.y} A ${r} ${r} 0 0 1 ${p1.x} ${p1.y}`;
 };
 
+// Single arc, 0-100% of the semicircle — filled portion grows on mount.
 const displayLimitDeg = computed(() => startDeg + (animProgress.value / 100) * (endDeg - startDeg));
+const marginEndDeg = computed(() => startDeg + (Math.min(100, marginPct.value) / 100) * (endDeg - startDeg));
 
-const segLastYearPath = computed(() => {
-  const a0 = startDeg;
-  const a1 = startDeg + lastYearSpanDeg;
-  return arcPath(a0, Math.min(a1, displayLimitDeg.value));
-});
+const marginPath = computed(() => arcPath(startDeg, Math.min(marginEndDeg.value, displayLimitDeg.value)));
+const trackPath = computed(() => arcPath(startDeg, endDeg));
 
-const segCurrent = computed(() => {
-  const a0 = startDeg + lastYearSpanDeg + gapDeg;
-  return { a0, a1: a0 + (currentYearPct.value / 100) * remainingSpan.value };
-});
-
-const segCurrentPath = computed(() => {
-  const { a0, a1 } = segCurrent.value;
-  if (displayLimitDeg.value <= a0) return "M 0 0";
-  return arcPath(a0, Math.min(a1, displayLimitDeg.value));
-});
-
-const segBalancePath = computed(() => {
-  const a0 = segCurrent.value.a1 + gapDeg;
-  const a1 = endDeg;
-  if (displayLimitDeg.value <= a0) return "M 0 0";
-  return arcPath(a0, Math.min(a1, displayLimitDeg.value));
-});
-
-const marker = computed(() => {
-  const targetA = segCurrent.value.a1;
-  return polarToCartesian(Math.min(targetA, displayLimitDeg.value));
-});
+const marker = computed(() => polarToCartesian(Math.min(marginEndDeg.value, displayLimitDeg.value)));
 
 const showTicks = true;
 const tickPoints = computed(() => {

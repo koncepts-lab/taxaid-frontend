@@ -531,6 +531,24 @@
                   </div>
                 </div>
 
+                <!-- Bundled entitlement (review_hours + extra_hours), same pattern as 'ai'. -->
+                <div v-else-if="key === 'appointment_hours'" class="border border-gray-200 rounded-lg p-3 mb-2">
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-medium text-gray-900">Appointment Hours</span>
+                    <button type="button" @click="removeEntitlement(key)" class="text-gray-400 hover:text-red-500 shrink-0">✕</button>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1">Review Hours / month</label>
+                      <input type="number" min="0" v-model.number="planForm.entitlements.appointment_hours.review_hours" @change="clampNonNegative(planForm.entitlements.appointment_hours, 'review_hours')" class="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]" />
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1">Extra Hours (overflow)</label>
+                      <input type="number" min="0" v-model.number="planForm.entitlements.appointment_hours.extra_hours" @change="clampNonNegative(planForm.entitlements.appointment_hours, 'extra_hours')" class="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]" />
+                    </div>
+                  </div>
+                </div>
+
                 <div v-else class="flex items-center gap-3 mb-2">
                   <span class="text-xs text-gray-600 w-2/5 truncate" :title="key">{{ definitionLabel(key) }}</span>
                   <select v-if="definitionAllowedValues(key).length" v-model="planForm.entitlements[key]" class="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]">
@@ -1026,6 +1044,11 @@ function addEntitlement() {
   if (!entitlementToAdd.value) return
   if (entitlementToAdd.value === 'ai') {
     planForm.value.entitlements.ai = { enabled: true, model: 'gemini-flash', thinking: 'medium', max_requests: 200, max_tokens: 5000 }
+    entitlementToAdd.value = ''
+    return
+  }
+  if (entitlementToAdd.value === 'appointment_hours') {
+    planForm.value.entitlements.appointment_hours = { review_hours: 20, extra_hours: 3 }
     entitlementToAdd.value = ''
     return
   }

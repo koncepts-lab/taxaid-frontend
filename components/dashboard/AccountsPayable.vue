@@ -32,7 +32,7 @@
         <div class="text-[34px] font-semibold mt-1 flex items-center transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">
           <span class="mr-1"><img :src="isDark ? '/images/icons/AED-dark.svg' : '/images/icons/AED.svg'" alt="AED" class="w-7" /></span>{{ formatNumber(totalPayables) }}
         </div>
-        <div v-if="vsLastMonth" class="flex items-center gap-1 font-medium text-[14px] mt-2" :class="trend === 'down' ? 'text-[#FB7554]' : 'text-[#05B743]'">
+        <div v-if="vsLastMonth" class="flex items-center gap-1 font-medium text-[14px] mt-2" :class="trend === 'up' ? 'text-[#FB7554]' : 'text-[#05B743]'">
            <span><img :src="trend === 'down' ? '/images/icons/down-right.svg' : '/images/icons/up.svg'" alt="trend" class="w-4 h-4" /></span>
            <span>{{ vsLastMonth }} vs last month</span>
         </div>
@@ -77,7 +77,7 @@ const totalPayables   = computed(() => accountsPayable.value?.totalOutstandingPa
 // No real month-over-month comparison is available from the backend for AP —
 // leave empty rather than show a fabricated trend/percentage.
 const vsLastMonth     = computed(() => accountsPayable.value?.vsLastMonth ?? '')
-const trend           = computed(() => accountsPayable.value?.trend ?? 'up')
+const trend           = computed(() => (accountsPayable.value?.delta ?? 0) < 0 ? 'down' : 'up')
 const overdue         = computed(() => accountsPayable.value?.overdue ?? 0)
 const dueInNext30Days = computed(() => accountsPayable.value?.dueInNext30Days ?? 0)
 const agingBars       = computed(() => accountsPayable.value?.agingBars ?? [0, 0, 0, 0])

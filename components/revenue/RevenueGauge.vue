@@ -258,11 +258,8 @@ onMounted(() => {
   requestAnimationFrame(animate);
 });
 
-// TODO:: this maths is broke — when currentYearTarget is 0 (no budget configured
-// for the period), achieved/0 = Infinity, and Math.min(100, Infinity) silently
-// clamps to a false 100% ("target achieved") instead of showing that there's
-// no target at all. Fix later.
-const currentYearPct = computed(() => Math.min(100, (currentYearAchieved.value / currentYearTarget.value) * 100));
+// No budget configured for the period (target=0) shows 0%, not a false 100%.
+const currentYearPct = computed(() => currentYearTarget.value > 0 ? Math.min(100, (currentYearAchieved.value / currentYearTarget.value) * 100) : 0);
 const remainingSpan = computed(() => (endDeg - startDeg) - lastYearSpanDeg - (gapDeg * 2));
 
 const polarToCartesian = (angleDeg: number, radius = r) => {

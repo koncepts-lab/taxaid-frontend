@@ -53,7 +53,7 @@
       </div>
 
       <!-- Only one active alert modal renders at a time -->
-      <DashboardApVarianceReconciliationModal
+      <!-- <DashboardApVarianceReconciliationModal
         v-if="activeModalKey === 'ap_variance' && !isMobile"
         :data="dashboardAlerts.ap_variance"
         @close="dismissModal('ap_variance')"
@@ -73,7 +73,7 @@
         :data="dashboardAlerts.sales_forecast_variance"
         :date="new Date().toISOString().slice(0, 10)"
         @close="dismissModal('sales_forecast_variance')"
-        @resolved="onModalResolved" />
+        @resolved="onModalResolved" /> -->
     </div>
   </NuxtLayout>
 </template>
