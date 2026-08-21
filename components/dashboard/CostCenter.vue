@@ -28,11 +28,11 @@
     <!-- Main Content -->
     <div class="flex justify-between items-end">
       <div class="flex flex-col">
-        <div class="text-[12px] font-medium transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? 'المشاريع النشطة' : 'Active Projects' }}</div>
-         <div class="text-[34px] font-semibold mt-1 flex items-center transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">{{ activeProjects }}</div>
+        <div class="text-[12px] font-medium transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? 'هامش ربح المشروع' : 'Project Profit Margin' }}</div>
+         <div class="text-[34px] font-semibold mt-1 flex items-center transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">{{ profitMargin }}%</div>
         <div v-if="vsLastMonth" class="flex items-center gap-1 font-medium text-[14px] mt-2" :class="trend === 'up' ? 'text-[#05B743]' : 'text-[#FB7554]'">
            <span><img :src="trend === 'up' ? '/images/icons/up.svg' : '/images/icons/down-right.svg'" alt="trend" class="w-4 h-4" /></span>
-           <span>{{ vsLastMonth }} vs last month</span>
+           <span>{{ currentLang === 'ar' ? `${vsLastMonth} عن العام الماضي` : `${vsLastMonth} vs last year` }}</span>
         </div>
       </div>
 
@@ -55,14 +55,17 @@
       </div>
     </div>
 
-    <!-- Footer Text -->
-    <div v-if="footerLine1" class="mt-auto transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">
+    <!-- Footer Text — key-driver line only if we have a real project name; the
+         summary line always shows regardless. -->
+    <div class="mt-auto transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">
       <p class="text-[12px] font-regular">
         <template v-if="currentLang === 'ar'">
-          {{ footerLine1.replace(companyName, '') }}<span :class="isDark ? 'text-white' : 'text-[#000]'">{{ companyName }}</span>{{ '' }} <br/>{{ footerLine2 }}
+          <template v-if="keyDriver">مشروع <span :class="isDark ? 'text-white' : 'text-[#000]'">{{ keyDriver }}</span> هو المحرك الرئيسي.<br/></template>
+          يعزز الربحية الإجمالية لمحفظتنا.
         </template>
         <template v-else>
-          <span :class="isDark ? 'text-white' : 'text-[#000]'">{{ companyName }}</span> {{ footerLine1.replace(companyName + ' ', '') }}<br/>{{ footerLine2 }}
+          <template v-if="keyDriver">Project <span :class="isDark ? 'text-white' : 'text-[#000]'">{{ keyDriver }}</span> is a key driver.<br/></template>
+          Boosting our overall portfolio profitability.
         </template>
       </p>
     </div>
@@ -76,25 +79,20 @@ const { isDark } = useTheme()
 const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Cost Center')
 
-// ── Pull values from website-data.json ────────────────────────────────────
+// ── Pull values from useDashboard() ───────────────────────────────────────
 const { costCenter } = useDashboard()
 
-const activeProjects = computed(() => costCenter.value?.activeProjects ?? 0)
-// No real month-over-month comparison or company-specific summary text is
-// available from the backend for cost center — leave empty rather than show
-// a fabricated trend/percentage or a fake company name.
-const vsLastMonth    = computed(() => costCenter.value?.vsLastMonth ?? '')
-const trend          = computed(() => costCenter.value?.trend ?? 'up')
-const footerLine1    = computed(() => currentLang.value === 'ar'
-  ? (costCenter.value?.footerTextAr?.split('\n')[0] ?? '')
-  : (costCenter.value?.footerText?.split('\n')[0]   ?? ''))
-const footerLine2    = computed(() => currentLang.value === 'ar'
-  ? (costCenter.value?.footerTextAr?.split('\n')[1] ?? '')
-  : (costCenter.value?.footerText?.split('\n')[1]   ?? ''))
-const companyName    = computed(() => costCenter.value?.companyName ?? '')
+const profitMargin = computed(() => costCenter.value?.profitMargin ?? 0)
+const vsLastMonth   = computed(() => {
+  const d = costCenter.value?.delta
+  if (d === undefined || d === null) return ''
+  return `${d >= 0 ? '+' : ''}${d}%`
+})
+const trend      = computed(() => (costCenter.value?.delta ?? 0) < 0 ? 'down' : 'up')
+const keyDriver   = computed(() => costCenter.value?.keyDriver ?? '')
 
-// Smooth wave path from per-project revenues (0-100 normalized). Values map
-// to the 120x60 viewBox: y=55 is 0 revenue, y=8 is the top project.
+// Smooth wave path from the real year-over-year margin trend (0-100 normalized).
+// Values map to the 120x60 viewBox: y=55 is the lowest month, y=8 is the highest.
 const wavePath = computed(() => {
   const values: number[] = costCenter.value?.waveValues ?? []
   if (values.length < 2) return 'M 0 55 L 120 55'

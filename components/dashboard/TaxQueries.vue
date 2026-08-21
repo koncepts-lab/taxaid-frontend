@@ -31,11 +31,25 @@
     <!-- Main Content -->
     <div class="flex justify-between items-center">
       <div class="flex flex-col">
-        <div class="text-[12px] font-medium transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? (taxQueries?.labelsAr?.tokenUsage ?? 'استخدام الرموز') : (taxQueries?.labels?.tokenUsage ?? 'Token Usage') }}</div>
+        <div class="text-[12px] font-medium transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? 'استخدام الرموز' : 'Token Usage' }}</div>
         <div class="text-[34px] font-semibold mt-1 flex items-center transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatNumber(tokenUsed) }} / {{ formatNumber(tokenTotal) }}</div>
-       <div class="flex items-center gap-1 font-medium text-[14px] mt-2" :class="trend === 'up' ? 'text-[#05B743]' : 'text-red-500'">
-           <span><img :src="trend === 'up' ? '/images/icons/up.svg' : '/images/icons/down-right.svg'" alt="Trend" class="w-4 h-4" /></span>
+       <div v-if="trendDelta !== 0" class="flex items-center gap-1 font-medium text-[14px] mt-2" :class="trendDelta > 0 ? 'text-red-500' : 'text-[#05B743]'">
+           <svg v-if="trendDelta > 0" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16" /></svg>
+           <svg v-else class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7L17 17M17 17H8M17 17V8" /></svg>
            <span>{{ tokenUsagePercent }} vs last month</span>
+        </div>
+        <div v-else class="flex items-center gap-1 font-medium text-[14px] mt-2 text-gray-400">
+           <span>{{ tokenUsagePercent }} vs last month</span>
+        </div>
+        <div class="text-[11px] mt-1 transition-colors duration-300" :class="isDark ? 'text-white/40' : 'text-gray-400'">
+          {{ currentLang === 'ar'
+            ? `تم استخدام ${formatNumber(requestsUsed)} من أصل ${formatNumber(requestsTotal)} طلب.`
+            : `${formatNumber(requestsUsed)} of ${formatNumber(requestsTotal)} total requests used.` }}
+        </div>
+        <div class="text-[11px] transition-colors duration-300" :class="isDark ? 'text-white/40' : 'text-gray-400'">
+          {{ currentLang === 'ar'
+            ? `تم استخدام ${reviewHoursUsed} من أصل ${reviewHoursTotal} ساعة مراجعة.`
+            : `${reviewHoursUsed} of ${reviewHoursTotal} hrs review time used.` }}
         </div>
       </div>
 
@@ -43,64 +57,59 @@
       <div class="relative w-24 h-24">
         <svg class="w-full h-full" viewBox="0 0 100 100">
           <!-- Main usage segment (Dynamic) -->
-          <circle 
-            cx="50" 
-            cy="50" 
-            r="40" 
-            fill="none" 
-            stroke="#F1B208" 
-            stroke-width="10" 
-            :stroke-dasharray="`${(animProgress / 100) * usagePctValue * 2.513} 251.3`" 
-            stroke-dashoffset="0" 
-            stroke-linecap="round" 
+          <circle
+            cx="50"
+            cy="50"
+            r="40"
+            fill="none"
+            :stroke="limitReached ? '#E53E3E' : '#F1B208'"
+            stroke-width="10"
+            :stroke-dasharray="`${(animProgress / 100) * usagePctValue * 2.513} 251.3`"
+            stroke-dashoffset="0"
+            stroke-linecap="round"
             transform="rotate(-90 50 50)"
           />
-          
+
           <!-- Remaining capacity segment -->
-          <circle 
-            cx="50" 
-            cy="50" 
-            r="40" 
-            fill="none" 
-            stroke="#C5E1DB" 
-            stroke-width="10" 
-            :stroke-dasharray="`251.3`" 
+          <circle
+            cx="50"
+            cy="50"
+            r="40"
+            fill="none"
+            stroke="#C5E1DB"
+            stroke-width="10"
+            :stroke-dasharray="`251.3`"
             :stroke-dashoffset="`${- (animProgress / 100) * usagePctValue * 2.513}`"
-            stroke-linecap="round" 
+            stroke-linecap="round"
             transform="rotate(-90 50 50)"
             style="transition: stroke-dashoffset 0.3s ease-out;"
           />
-          
+
           <!-- Marker circle at the leading junction -->
-          <circle 
-            v-if="animProgress > 0"
-            :cx="getMarkerPos(animProgress).x" 
-            :cy="getMarkerPos(animProgress).y" 
-            r="6" 
-            fill="#fff" 
-            stroke="#DCAA06" 
-            stroke-width="2.5" 
+          <circle
+            v-if="animProgress > 0 && usagePctValue > 0"
+            :cx="getMarkerPos(animProgress).x"
+            :cy="getMarkerPos(animProgress).y"
+            r="6"
+            fill="#fff"
+            :stroke="limitReached ? '#E53E3E' : '#DCAA06'"
+            stroke-width="2.5"
           />
         </svg>
-        
+
         <div class="absolute inset-0 flex items-center justify-center">
           <div class="flex items-center gap-1 font-semibold text-[14px] transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">
-            <span><img :src="trend === 'up' ? '/images/icons/up.svg' : '/images/icons/down-right.svg'" alt="Trend" class="w-4 h-4" /></span>
-            <span>{{ tokenUsagePercent.replace('+', '').replace('-', '') }}</span>
+            <span>{{ Math.round(usagePctValue) }}%</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Footer Stats -->
+    <!-- Footer Stats — deadlines looped (future types like CT just append to the array) -->
     <div class="flex flex-col gap-1 mt-auto">
-      <div class="text-[12px] flex justify-start">
-        <span  class="text-[12px] font-regular transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? (taxQueries?.labelsAr?.vatDue ?? 'موعد تقديم ضريبة القيمة المضافة:') : (taxQueries?.labels?.vatDue ?? 'VAT Return Due:') }}</span>
-        <span class="font-medium transition-colors duration-300" :class="[currentLang === 'ar' ? 'mr-2' : 'ml-2', isDark ? 'text-white' : 'text-[#000]']">{{ vatReturnDue }}</span>
-      </div>
-      <div class="text-[12px] flex justify-start">
-        <span class="text-[12px] font-regular transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? (taxQueries?.labelsAr?.ctDue ?? 'موعد تقديم ضريبة الشركات:') : (taxQueries?.labels?.ctDue ?? 'CT Return Due:') }}</span>
-        <span class="font-medium transition-colors duration-300" :class="[currentLang === 'ar' ? 'mr-2' : 'ml-2', isDark ? 'text-white' : 'text-[#000]']">{{ ctReturnDue }}</span>
+      <div v-for="item in deadlines" :key="item.id" class="text-[12px] flex justify-start">
+        <span class="text-[12px] font-regular transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ deadlineLabel(item.id) }}:</span>
+        <span class="font-medium transition-colors duration-300" :class="[currentLang === 'ar' ? 'mr-2' : 'ml-2', isDark ? 'text-white' : 'text-[#000]']">{{ item.date ?? '-' }}</span>
       </div>
     </div>
   </div>
@@ -113,22 +122,43 @@ const { isDark } = useTheme()
 const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Tax Queries')
 
-// ── Pull values from website-data.json ────────────────────────────────────
-const { taxQueries } = useMainDashboard()
+// ── Pull values from useDashboard() — live GET /dashboard, same as every other card ──
+const { taxQueries } = useDashboard()
 
-const tokenUsed        = computed(() => taxQueries.value?.tokenUsed ?? 8001)
-const tokenTotal       = computed(() => taxQueries.value?.tokenTotal ?? 10485)
-const tokenUsagePercent = computed(() => taxQueries.value?.tokenUsagePercent ?? '+8.4%')
-const trend            = computed(() => taxQueries.value?.trend ?? 'up')
-const vatReturnDue     = computed(() => currentLang.value === 'ar' ? (taxQueries.value?.vatReturnDueAr ?? '28 يناير 2026') : (taxQueries.value?.vatReturnDue ?? '28 Jan 2026'))
-const ctReturnDue      = computed(() => currentLang.value === 'ar' ? (taxQueries.value?.ctReturnDueAr ?? '30 يونيو 2026') : (taxQueries.value?.ctReturnDue ?? '30 Jun 2026'))
+const tokenUsed        = computed(() => taxQueries.value?.tokenUsed ?? 0)
+const tokenTotal       = computed(() => taxQueries.value?.tokenTotal ?? 0)
+const tokenUsagePercent = computed(() => taxQueries.value?.tokenUsagePercent ?? '+0%')
+const requestsUsed     = computed(() => taxQueries.value?.requestsUsed ?? 0)
+const requestsTotal    = computed(() => taxQueries.value?.requestsTotal ?? 0)
+const deadlines        = computed(() => taxQueries.value?.deadlines ?? [])
+const reviewHoursUsed  = computed(() => taxQueries.value?.reviewHoursUsed ?? 0)
+const reviewHoursTotal = computed(() => taxQueries.value?.reviewHoursTotal ?? 0)
 
-const formatNumber = (n: number) => formatInMillions(n)
+// Deadline labels/translations, keyed by the backend's `id`.
+const deadlineLabels: Record<string, { en: string; ar: string }> = {
+  vat: { en: 'VAT Return Due', ar: 'موعد تقديم ضريبة القيمة المضافة' },
+}
+const deadlineLabel = (id: string) => {
+  const l = deadlineLabels[id]
+  if (!l) return id
+  return currentLang.value === 'ar' ? l.ar : l.en
+}
 
-// Parse numeric percentage for the gauge (e.g., "+2.4%" -> 2.4)
+const formatNumber = (n: number) => new Intl.NumberFormat('en-US').format(n)
+
+// Donut fill = actual quota usage (tokenUsed/tokenTotal), not the trend delta —
+// the trend delta is only for the center arrow/percent overlay.
 const usagePctValue = computed(() => {
-  const match = tokenUsagePercent.value.match(/[\d.]+/);
-  return match ? parseFloat(match[0]) : 75;
+  if (!tokenTotal.value) return 0;
+  return Math.min(100, (tokenUsed.value / tokenTotal.value) * 100);
+});
+
+const limitReached = computed(() => tokenTotal.value > 0 && tokenUsed.value >= tokenTotal.value);
+
+// Parsed trend delta (e.g. "+2.4%" -> 2.4, "-1%" -> -1) — drives the center arrow only.
+const trendDelta = computed(() => {
+  const match = tokenUsagePercent.value.match(/-?[\d.]+/);
+  return match ? parseFloat(match[0]) : 0;
 });
 
 const animProgress = ref(0);

@@ -59,10 +59,10 @@
         <!-- Bars Container -->
         <div class="h-full pb-8 flex items-end justify-around gap-2 transition-opacity duration-700" :style="{ opacity: animProgress / 100 }">
           <div v-for="(month, mIndex) in months" :key="mIndex" class="flex-1 h-full flex items-end justify-center">
-            <div class="relative h-full flex items-end w-[13px] max-w-[13px] md:w-[26px] md:max-w-[26px]">
+            <div class="group/bar relative h-full flex items-end w-[13px] max-w-[13px] md:w-[26px] md:max-w-[26px] cursor-pointer">
               <!-- Stacked Bars -->
-              <div 
-                v-for="(segment, sIndex) in getStackedSegments(mIndex)" 
+              <div
+                v-for="(segment, sIndex) in getStackedSegments(mIndex)"
                 :key="sIndex"
                 class="absolute bottom-0 left-0 right-0 transition-all duration-300"
                 :style="{
@@ -73,14 +73,33 @@
                   zIndex: segment.zIndex
                 }"
               ></div>
+              <!-- Tooltip — below the bar, matches the cash-flow page's bubble style.
+                   Named group (group/bar) so only THIS bar's hover reveals it — a plain
+                   group-hover would also fire off the card's own outer `group` class. -->
+              <div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 pointer-events-none opacity-0 group-hover/bar:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap">
+                <div class="bg-[#013e32] text-white text-[12px] font-medium px-3 py-1.5 rounded-lg shadow-lg">
+                  {{ month }}
+                </div>
+                <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#013e32] rotate-45"></div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- X-Axis Labels -->
-        <div class="absolute bottom-0 h-8 flex items-center justify-around text-[12px] font-Regular transition-colors duration-300" 
+        <div class="absolute bottom-0 h-8 flex items-center justify-around text-[12px] font-Regular transition-colors duration-300"
           :class="[currentLang === 'ar' ? 'right-12 left-4' : 'left-12 right-4', isDark ? 'text-white/60' : 'text-[#00000080]']">
-          <span v-for="(month, idx) in (currentLang === 'ar' ? monthsAr : months)" :key="idx" class="flex-1 text-center">{{ month }}</span>
+          <div v-for="(month, idx) in (currentLang === 'ar' ? monthsAr : months)" :key="idx"
+            class="group/label relative flex-1 min-w-0 cursor-pointer">
+            <span class="block w-full text-center truncate px-0.5">{{ month }}</span>
+            <!-- Tooltip — below the label, same direction as the bar tooltip -->
+            <div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 pointer-events-none opacity-0 group-hover/label:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap">
+              <div class="bg-[#013e32] text-white text-[12px] font-medium px-3 py-1.5 rounded-lg shadow-lg">
+                {{ month }}
+              </div>
+              <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#013e32] rotate-45"></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -97,13 +116,7 @@ const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Account Receivables')
 
 // ── Pull values from useDashboard() ───────────────────────────────────────
-const { accountReceivables, arPeriod, fetchSummary } = useDashboard()
-
-const selectArPeriod = (months: number) => {
-  arPeriod.value = months
-  // Timeline-only slice — the toggle doesn't need the AR report re-parsed
-  fetchSummary(['ar_timeline'])
-}
+const { accountReceivables } = useDashboard()
 
 const isMobile = ref(false);
 const animProgress = ref(0);

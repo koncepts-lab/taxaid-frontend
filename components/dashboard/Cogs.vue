@@ -30,7 +30,7 @@
       <div class="flex flex-col">
         <div class="text-[12px] font-medium transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? 'نسبة تكلفة البضائع المباعة إلى الإيرادات' : 'COGS to Revenue Ratio' }}</div>
         <div class="text-[40px] font-semibold leading-tight transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">{{ cogsRatio }}</div>
-        <div v-if="vsLastMonth" class="flex items-center gap-1 font-medium text-[14px] mt-1" :class="trend === 'up' ? 'text-[#05B743]' : 'text-[#E5484D]'">
+        <div v-if="vsLastMonth" class="flex items-center gap-1 font-medium text-[14px] mt-1" :class="trend === 'up' ? 'text-[#E5484D]' : 'text-[#05B743]'">
           <span><img :src="trend === 'up' ? '/images/icons/up.svg' : '/images/icons/down-right.svg'" alt="trend" class="w-4 h-4 object-contain" /></span>
           <span class="text-[12px] font-Regular transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ vsLastMonth }} {{ currentLang === 'ar' ? 'مقارنة بالشهر الماضي' : 'vs last month' }}</span>
         </div>
@@ -49,24 +49,15 @@
                  <stop offset="100%" stop-color="#00B794" stop-opacity="0"/>
                </linearGradient>
              </defs>
-             
-             <!-- Smooth wave path with fill -->
-             <path 
-               d="M 0 60 Q 20 25, 40 40 Q 60 55, 80 20 Q 100 5, 120 35 Q 130 45, 140 40 L 140 100 L 0 100 Z" 
-               fill="url(#cogsWaveGradient)" 
-             />
-             
+
+             <!-- Smooth wave path with fill — real 6-month COGS-to-revenue ratio trend -->
+             <path :d="wavePath.fill" fill="url(#cogsWaveGradient)" />
+
              <!-- Wave stroke line -->
-             <path 
-               d="M 0 60 Q 20 25, 40 40 Q 60 55, 80 20 Q 100 5, 120 35 Q 130 45, 140 40" 
-               stroke="#00B794" 
-               stroke-width="3" 
-               stroke-linecap="round" 
-               fill="none" 
-             />
-             
-             <!-- Marker circle at the highest peak -->
-             <circle cx="80" cy="20" r="5" fill="white" stroke="#00B794" stroke-width="3" />
+             <path :d="wavePath.line" stroke="#00B794" stroke-width="3" stroke-linecap="round" fill="none" />
+
+             <!-- Marker circle at the highest point in the trend -->
+             <circle v-if="wavePath.peak" :cx="wavePath.peak.x" :cy="wavePath.peak.y" r="5" fill="white" stroke="#00B794" stroke-width="3" />
          </svg>
       </div>
     </div>
@@ -85,16 +76,50 @@ const { isDark } = useTheme()
 const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'COGS')
 
-// ── Pull values from website-data.json ────────────────────────────────────
-const { cogs } = useDashboard()
+// ── Pull values from useDashboard() ───────────────────────────────────────
+const { cogs, cogsTrend } = useDashboard()
 
 const cogsRatio   = computed(() => cogs.value?.cogsToRevenueRatio ?? '0%')
 const vsLastMonth = computed(() => cogs.value?.vsLastMonth ?? '')
-const trend       = computed(() => cogs.value?.trend ?? 'up')
+const trend       = computed(() => (cogs.value?.delta ?? 0) < 0 ? 'down' : 'up')
 const footerText  = computed(() => currentLang.value === 'ar'
   ? (cogs.value?.footerTextAr ?? 'تم تحقيق كفاءة تشغيلية أكبر.\nوالآن يتم فتح هوامش ربح أعلى.')
   : (cogs.value?.footerText   ?? 'Achieved greater operational efficiency.\nNow unlocking higher profit margins.')
 )
+
+// Real 6-month COGS-to-revenue ratio trend, drawn as a smooth wave (quadratic
+// curve through each pair's midpoint — simple, no charting library needed).
+const wavePath = computed(() => {
+  const values = cogsTrend.value
+  if (!values || values.length < 2) return { line: '', fill: '', peak: null }
+
+  const width = 140, height = 100, topPad = 15, bottomPad = 25
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const range = max - min
+
+  const points = values.map((v: number, i: number) => ({
+    x: (i / (values.length - 1)) * width,
+    // Flat series (range 0) renders as a flat mid-height line, not a divide-by-zero.
+    y: range > 0
+      ? height - bottomPad - ((v - min) / range) * (height - topPad - bottomPad)
+      : height / 2,
+  }))
+
+  let line = `M ${points[0].x},${points[0].y}`
+  for (let i = 1; i < points.length; i++) {
+    const xc = (points[i - 1].x + points[i].x) / 2
+    const yc = (points[i - 1].y + points[i].y) / 2
+    line += ` Q ${points[i - 1].x},${points[i - 1].y} ${xc},${yc}`
+  }
+  const last = points[points.length - 1]
+  line += ` L ${last.x},${last.y}`
+
+  const fill = `${line} L ${last.x},${height} L ${points[0].x},${height} Z`
+
+  const peakIdx = values.indexOf(max)
+  return { line, fill, peak: points[peakIdx] }
+})
 </script>
 
 <style scoped>
