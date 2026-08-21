@@ -82,20 +82,6 @@
                 Project name should exactly match with the ERP
               </p>
             </div>
-            <div>
-              <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Possibility</label>
-              <div class="relative">
-                <select v-model="form.possibility" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182] appearance-none bg-white">
-                  <option value="" disabled hidden>Select possibility</option>
-                  <option v-for="p in ['90%','80%','75%','60%','50%']" :key="p" :value="p">{{ p }}</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
           </div>
 
           <!-- Section 2: Lead Milestones -->
@@ -343,8 +329,7 @@ const form = ref({
   lead_value: '',
   expected_sign_date: '',
   client_name: '',
-  project_name: '',
-  possibility: ''
+  project_name: ''
 })
 
 const milestones = ref([
@@ -371,7 +356,6 @@ const saveLeadData = async () => {
     expected_sign_date: toApiDate(form.value.expected_sign_date),
     client_name: form.value.client_name,
     project_name: form.value.project_name,
-    possibility: form.value.possibility,
     milestones: milestones.value
       .filter(m => m.date || m.milestone_details || m.amount)
       .map(m => ({
