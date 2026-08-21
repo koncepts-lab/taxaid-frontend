@@ -86,12 +86,14 @@ export function useArAgingSummary() {
 
   const logs = ref<any[]>([])
   const logsLoading = ref(false)
+  const logsMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
 
-  const fetchLogs = async () => {
+  const fetchLogs = async (page = 1, perPage = 10) => {
     logsLoading.value = true
     try {
-      const result = await useApi('data-source/upload-logs?module=ar') as any
+      const result = await useApi(`data-source/upload-logs?module=ar&page=${page}&per_page=${perPage}`) as any
       logs.value = result?.data ?? []
+      logsMeta.value = result?.meta ?? logsMeta.value
     } catch { logs.value = [] }
     finally { logsLoading.value = false }
   }
@@ -100,5 +102,5 @@ export function useArAgingSummary() {
   fetchSummary()
   fetchLogs()
 
-  return { rows, totals, loading, error, refresh: fetchSummary, logs, logsLoading, fetchLogs }
+  return { rows, totals, loading, error, refresh: fetchSummary, logs, logsLoading, logsMeta, fetchLogs }
 }

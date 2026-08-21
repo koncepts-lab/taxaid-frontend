@@ -263,12 +263,14 @@ export function useTrialBalance() {
 
   const tbLogs = ref([])
   const tbLogsLoading = ref(false)
+  const tbLogsMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
 
-  const fetchLogs = async () => {
+  const fetchLogs = async (page = 1, perPage = 10) => {
     tbLogsLoading.value = true
     try {
-      const result = await useApi('data-source/upload-logs?module=trial_balance') as any
+      const result = await useApi(`data-source/upload-logs?module=trial_balance&page=${page}&per_page=${perPage}`) as any
       tbLogs.value = result?.data ?? []
+      tbLogsMeta.value = result?.meta ?? tbLogsMeta.value
     } catch { tbLogs.value = [] }
     finally { tbLogsLoading.value = false }
   }
@@ -301,6 +303,7 @@ export function useTrialBalance() {
     runIntegrityCheck,
     tbLogs,
     tbLogsLoading,
+    tbLogsMeta,
     fetchLogs,
   }
 }

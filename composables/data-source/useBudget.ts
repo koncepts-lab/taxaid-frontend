@@ -128,12 +128,14 @@ export const useBudget = () => {
 
   const logs = ref<any[]>([])
   const logsLoading = ref(false)
+  const logsMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
 
-  const fetchLogs = async () => {
+  const fetchLogs = async (page = 1, perPage = 10) => {
     logsLoading.value = true
     try {
-      const result = await useApi('data-source/upload-logs?module=budget') as any
+      const result = await useApi(`data-source/upload-logs?module=budget&page=${page}&per_page=${perPage}`) as any
       logs.value = result?.data ?? []
+      logsMeta.value = result?.meta ?? logsMeta.value
     } catch { logs.value = [] }
     finally { logsLoading.value = false }
   }
@@ -144,6 +146,6 @@ export const useBudget = () => {
     year, loading, error,
     plData, bsData, salaryData, monthHeaders,
     openDetailedReport, loadAll,
-    logs, logsLoading, fetchLogs,
+    logs, logsLoading, logsMeta, fetchLogs,
   }
 }

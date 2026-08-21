@@ -1,52 +1,132 @@
 <template>
   <NuxtLayout name="dashboard">
     <div class="flex-1 p-0 md:p-8 space-y-6">
-    <!-- Loading -->
-    <div v-if="loading" class="flex items-center justify-center py-24 text-gray-400 text-sm">Loading profile...</div>
-
-    <!-- Error -->
-    <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{{ error }}</div>
-
-    <template v-if="!loading && profile">
-
-   
-
-    <!-- Page Header -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0 mb-6">
+    <!-- Page Header — static copy, never depends on fetched data, so it renders
+         immediately instead of sitting behind the loading skeleton. -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0">
       <div>
         <h1 class="text-[26px] font-semibold mb-1" :class="isDark ? 'text-white' : 'text-[#004D40]'">Company Profile</h1>
         <p class="text-[15px] text-gray-500">Manage Company Information and details</p>
       </div>
-      <div v-if="!isEditing">
-        <button 
-          @click="isEditing = true"
-          class="flex items-center gap-2 px-5 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-          Edit Profile
-        </button>
+      <!-- Edit/Save controls depend on the loaded profile — only these wait, not the title -->
+      <template v-if="!loading && profile">
+        <div v-if="!isEditing">
+          <button
+            @click="isEditing = true"
+            class="flex items-center gap-2 px-5 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Edit Profile
+          </button>
+        </div>
+        <div v-else class="flex gap-3">
+          <button
+            @click="handleCancel"
+            class="px-5 py-2 border border-gray-200 text-gray-700 bg-white rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
+          >
+            Cancel
+          </button>
+          <button
+            @click="handleSave"
+            :disabled="saving"
+            class="flex items-center gap-2 px-5 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+            </svg>
+            {{ saving ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </template>
+    </div>
+
+    <!-- Loading skeleton — mirrors the final layout's section heights so there's
+         no layout shift once real data (full, partial, or empty) replaces it. -->
+    <div v-if="loading" class="space-y-6 animate-pulse">
+      <!-- Header card -->
+      <div class="rounded-2xl p-8 flex gap-6 items-center bg-gray-200">
+        <div class="w-20 h-20 rounded-full bg-gray-300 shrink-0"></div>
+        <div class="flex-1 space-y-4">
+          <div class="space-y-2">
+            <div class="h-5 w-56 rounded bg-gray-300"></div>
+            <div class="h-4 w-40 rounded bg-gray-300"></div>
+          </div>
+          <div class="flex gap-12">
+            <div class="h-4 w-20 rounded bg-gray-300"></div>
+            <div class="h-4 w-20 rounded bg-gray-300"></div>
+            <div class="h-4 w-20 rounded bg-gray-300"></div>
+          </div>
+        </div>
       </div>
-      <div v-else class="flex gap-3">
-        <button
-          @click="handleCancel"
-          class="px-5 py-2 border border-gray-200 text-gray-700 bg-white rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
-        >
-          Cancel
-        </button>
-        <button
-          @click="handleSave"
-          :disabled="saving"
-          class="flex items-center gap-2 px-5 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
-          </svg>
-          {{ saving ? 'Saving...' : 'Save Changes' }}
-        </button>
+
+      <!-- Basic Information (6 tiles) -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+        <div class="h-5 w-40 rounded bg-gray-200 mb-6"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div v-for="n in 6" :key="n" class="border border-gray-100 rounded-xl p-4 flex items-center gap-4 h-[68px]">
+            <div class="w-10 h-10 rounded-full bg-gray-200 shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-3 w-20 rounded bg-gray-200"></div>
+              <div class="h-4 w-32 rounded bg-gray-200"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Information (permanent address) -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+        <div class="h-5 w-40 rounded bg-gray-200 mb-6"></div>
+        <div class="h-4 w-32 rounded bg-gray-200 mb-4"></div>
+        <div class="border border-gray-100 rounded-xl p-4 flex items-center gap-4 h-[68px]">
+          <div class="w-10 h-10 rounded-full bg-gray-200 shrink-0"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-4 w-48 rounded bg-gray-200"></div>
+            <div class="h-3 w-36 rounded bg-gray-200"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Related Entities (up to 4) -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+        <div class="h-5 w-40 rounded bg-gray-200 mb-6"></div>
+        <div class="space-y-3">
+          <div v-for="n in 4" :key="n" class="border border-gray-100 rounded-xl p-4 flex items-center gap-4 h-[68px]">
+            <div class="w-10 h-10 rounded-full bg-gray-200 shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-4 w-40 rounded bg-gray-200"></div>
+              <div class="h-3 w-56 rounded bg-gray-200"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Contacts (fixed height = 5 rows, matches the real scroll container) -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+        <div class="h-5 w-32 rounded bg-gray-200 mb-6"></div>
+        <div class="space-y-3 max-h-[440px] overflow-hidden">
+          <div v-for="n in 5" :key="n" class="border border-gray-100 rounded-xl p-4 flex items-center gap-4 h-[76px]">
+            <div class="w-10 h-10 rounded-full bg-gray-200 shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-4 w-36 rounded bg-gray-200"></div>
+              <div class="h-3 w-28 rounded bg-gray-200"></div>
+              <div class="h-3 w-44 rounded bg-gray-200"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- Error -->
+    <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm flex items-center justify-between gap-3">
+      <span>{{ error }}</span>
+      <button @click="error = null" class="text-red-400 hover:text-red-600 shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </div>
+
+    <template v-if="!loading && profile">
 
     <!-- 1. Header Card (Green) -->
     <div class="rounded-2xl p-8 text-white flex gap-6 items-center shadow-sm relative overflow-hidden" style="background: linear-gradient(180deg, #013E32 0%, #007760 100%);">
@@ -318,7 +398,7 @@
         <div v-if="isEditing || profile.communicationAddresses.some(a => a.street || a.city || a.state || a.zip)">
           <div class="flex justify-between items-center mb-4">
             <h4 class="text-sm text-gray-500">Communication Address</h4>
-            <button v-if="isEditing" @click="addCommunicationAddress" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
+            <button v-if="isEditing && profile.communicationAddresses.length < 4" @click="addCommunicationAddress" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
               Add Address
             </button>
@@ -394,7 +474,7 @@
     <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-lg font-medium text-gray-900">Related Entities</h3>
-        <button v-if="isEditing" @click="openEntityModal()" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
+        <button v-if="isEditing && profile.relatedEntities.length < 4" @click="openEntityModal()" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
           Add Entity
         </button>
@@ -426,12 +506,13 @@
     <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-lg font-medium text-gray-900">Key Contacts</h3>
-        <button v-if="isEditing" @click="openContactModal()" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
+        <button v-if="isEditing && profile.keyContacts.length < 10" @click="openContactModal()" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
           Add Contact
         </button>
       </div>
-      <div class="space-y-3">
+      <!-- Fixed height = 5 rows visible; more contacts scroll instead of growing the page -->
+      <div class="space-y-3 max-h-[440px] overflow-y-auto pr-1">
         <div v-for="(contact, index) in profile.keyContacts" :key="index" :class="['border rounded-xl p-4 flex items-center justify-between gap-4 transition-all', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']" style="word-wrap: anywhere;">
           <div class="flex items-center gap-4">
             <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0" style="background: linear-gradient(180deg, #013E32 0%, #007760 100%);">
@@ -695,6 +776,7 @@ function handleCancel() {
   discardPendingPicture()
   if (profile.value && savedEmail.value) profile.value.email = savedEmail.value
   resetEmailVerificationState()
+  error.value = null
   isEditing.value = false
 }
 
@@ -709,10 +791,14 @@ async function handleSave() {
     // backend would silently drop it anyway, but this avoids a confusing
     // round trip and keeps the displayed value from flipping back.
     const payload = { ...profile.value }
-    if (emailChanged.value && (!emailVerified.value || emailVerifiedFor.value !== profile.value.email)) {
+    const unverifiedEmailChange = emailChanged.value && (!emailVerified.value || emailVerifiedFor.value !== profile.value.email)
+    if (unverifiedEmailChange) {
       payload.email = savedEmail.value
     }
     await saveProfile(payload)
+    if (unverifiedEmailChange) {
+      error.value = 'Email change not saved — please verify the new email before saving.'
+    }
     savedEmail.value = profile.value.email
     resetEmailVerificationState()
     isEditing.value = false
