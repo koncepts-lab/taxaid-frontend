@@ -1235,7 +1235,6 @@ async function loadData() {
 // Normalize old snake_case assigned_systems values to full dashboard names
 const dashboardNameMap = {
   'ticketing_dashboard':       'Ticketing Dashboard',
-  'revenue_dashboard':         'Revenue Partnership Dashboard',
   'implementation_dashboard':  'Implementation Dashboard',
   'review_dashboard':          'Review Dashboard',
   'admin_dashboard':           'Admin Dashboard',

@@ -186,7 +186,7 @@
                 :onApplyFilter="(col, values) => applyFilters(col, values)" />
               <DataSourceChangeLog
                 v-if="activeSubTab === 'accounts-receivable' || activeSubTab === 'accounts-payable' || activeSubTab === 'pdc' || activeSubTab === 'cost-center' || activeSubTab === 'budget' || activeSubTab === 'sales-forecast' || activeSubTab === 'trial-balance'"
-                :logs="currentLogs" :isDark="isDark" :currentLang="currentLang" />
+                :logs="currentLogs" :meta="currentLogsMeta" :loading="currentLogsLoading" :onPageChange="handleLogsPageChange" :isDark="isDark" :currentLang="currentLang" />
             </div>
           </div>
           <div v-if="activeMainTab === 'certificate'">
@@ -212,10 +212,10 @@ const route  = useRoute()
 const router = useRouter()
 
 // ── AR Aging Summary (live API) ────────────────────────────────────────────
-const { rows: arRows, totals: arTotals, loading: arLoading, error: arError, logs: arLiveLogs, refresh: refreshArAging } = useArAgingSummary()
+const { rows: arRows, totals: arTotals, loading: arLoading, error: arError, logs: arLiveLogs, logsMeta: arLogsMeta, logsLoading: arLogsLoading, fetchLogs: fetchArLogs, refresh: refreshArAging } = useArAgingSummary()
 
 // ── AP Aging Summary (live API) ────────────────────────────────────────────
-const { rows: apRows, totals: apTotals, loading: apLoading, error: apError, logs: apLiveLogs, refresh: refreshApAging } = useApAgingSummary()
+const { rows: apRows, totals: apTotals, loading: apLoading, error: apError, logs: apLiveLogs, logsMeta: apLogsMeta, logsLoading: apLogsLoading, fetchLogs: fetchApLogs, refresh: refreshApAging } = useApAgingSummary()
 
 // ── Per-module hybrid/direct data modes (drives the sub-tab toggles) ───────
 const { modes: dataModes, fetchModes: fetchDataModes, setMode: setDataMode, toLabel, toMode } = useDataMode()
@@ -232,7 +232,7 @@ const handleModeChange = async (module, label) => {
 }
 
 // ── Trial Balance (live API) ───────────────────────────────────────────────
-const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoading: tbLoadingState, tbMeta, tbFilters, tbFilterOptions, applyFilters, fetchTrialBalance, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, tbLogs: tbLiveLogs } = useTrialBalance()
+const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoading: tbLoadingState, tbMeta, tbFilters, tbFilterOptions, applyFilters, fetchTrialBalance, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, tbLogs: tbLiveLogs, tbLogsMeta, tbLogsLoading, fetchLogs: fetchTbLogs } = useTrialBalance()
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
@@ -383,6 +383,9 @@ const {
   pdcDetailedTotal,
   fetchDetailed: fetchPdcDetailed,
   logs: pdcLiveLogs,
+  logsMeta: pdcLogsMeta,
+  logsLoading: pdcLogsLoading,
+  fetchLogs: fetchPdcLogs,
 } = usePDC()
 
 const pdcSummaryData = computed(() => pdcGroups.value)
@@ -450,6 +453,43 @@ const currentLogs = computed(() => {
   }
   return logMap[activeSubTab.value] || []
 })
+const currentLogsMeta = computed(() => {
+  const metaMap = {
+    'accounts-receivable': arLogsMeta.value,
+    'accounts-payable':    apLogsMeta.value,
+    'pdc':                 pdcLogsMeta.value,
+    'cost-center':         ccLogsMeta.value,
+    'budget':              budgetLogsMeta.value,
+    'sales-forecast':      sfLogsMeta.value,
+    'trial-balance':       tbLogsMeta.value,
+  }
+  return metaMap[activeSubTab.value] || { current_page: 1, per_page: 10, total: 0, last_page: 1 }
+})
+const currentLogsLoading = computed(() => {
+  const loadingMap = {
+    'accounts-receivable': arLogsLoading.value,
+    'accounts-payable':    apLogsLoading.value,
+    'pdc':                 pdcLogsLoading.value,
+    'cost-center':         ccLogsLoading.value,
+    'budget':              budgetLogsLoading.value,
+    'sales-forecast':      sfLogsLoading.value,
+    'trial-balance':       tbLogsLoading.value,
+  }
+  return loadingMap[activeSubTab.value] ?? false
+})
+const handleLogsPageChange = (page, perPage) => {
+  const fetchMap = {
+    'accounts-receivable': fetchArLogs,
+    'accounts-payable':    fetchApLogs,
+    'pdc':                 fetchPdcLogs,
+    'cost-center':         fetchCcLogs,
+    'budget':              fetchBudgetLogs,
+    'sales-forecast':      fetchSfLogs,
+    'trial-balance':       fetchTbLogs,
+  }
+  const fn = fetchMap[activeSubTab.value]
+  if (fn) fn(page, perPage)
+}
 const currentSubTabs = computed(() => {
   return activeMainTab.value === 'financial'
     ? subTabsFinancial.value
@@ -501,6 +541,9 @@ const {
   budgetReportData:    ccBudgetData,
   budgetReportTotal:   ccBudgetTotal,
   logs: ccLiveLogs,
+  logsMeta: ccLogsMeta,
+  logsLoading: ccLogsLoading,
+  fetchLogs: fetchCcLogs,
 } = useCostCenter()
 
 const ccContractColumns = [
@@ -546,16 +589,30 @@ const handleOpenCCReport = (reportId) => {
 // Logs for budget + sales_forecast (lightweight fetch — their full composables live inside child components)
 const budgetLiveLogs = ref([])
 const sfLiveLogs = ref([])
-onMounted(async () => {
+const budgetLogsMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
+const sfLogsMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
+const budgetLogsLoading = ref(false)
+const sfLogsLoading = ref(false)
+
+const fetchBudgetLogs = async (page = 1, perPage = 10) => {
+  budgetLogsLoading.value = true
   try {
-    const [bRes, sfRes] = await Promise.all([
-      useApi('data-source/upload-logs?module=budget'),
-      useApi('data-source/upload-logs?module=sales_forecast'),
-    ])
-    budgetLiveLogs.value = bRes?.data ?? []
-    sfLiveLogs.value     = sfRes?.data ?? []
+    const res = await useApi(`data-source/upload-logs?module=budget&page=${page}&per_page=${perPage}`)
+    budgetLiveLogs.value = res?.data ?? []
+    budgetLogsMeta.value = res?.meta ?? budgetLogsMeta.value
   } catch { /* silently ignore — logs are non-critical */ }
-})
+  finally { budgetLogsLoading.value = false }
+}
+const fetchSfLogs = async (page = 1, perPage = 10) => {
+  sfLogsLoading.value = true
+  try {
+    const res = await useApi(`data-source/upload-logs?module=sales_forecast&page=${page}&per_page=${perPage}`)
+    sfLiveLogs.value = res?.data ?? []
+    sfLogsMeta.value = res?.meta ?? sfLogsMeta.value
+  } catch { /* silently ignore — logs are non-critical */ }
+  finally { sfLogsLoading.value = false }
+}
+onMounted(() => { fetchBudgetLogs(); fetchSfLogs() })
 
 // salesForecastDetailedColumns kept for SalesForecastModal prop
 const salesForecastDetailedColumns = [

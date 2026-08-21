@@ -8,7 +8,7 @@ export const useAccountsDashboard = () => {
   const fetchOverview = async () => {
     loading.value = true
     try {
-      overview.value = await useRpApi('/revenue/admin/overview')
+      overview.value = await useAdminApi('/revenue/admin/overview')
     } catch (e: any) {
       error.value = e?.data?.message ?? 'Failed to load overview.'
     } finally {
@@ -19,7 +19,7 @@ export const useAccountsDashboard = () => {
   const fetchCustomers = async (tab: 'all' | 'partners' | 'direct' | 'resource') => {
     loading.value = true
     try {
-      const result = await useRpApi(`/revenue/admin/customers/${tab}`) as any[]
+      const result = await useAdminApi(`/revenue/admin/customers/${tab}`) as any[]
       customers.value = result
       return result
     } catch (e: any) {
@@ -33,7 +33,7 @@ export const useAccountsDashboard = () => {
 
   const fetchAlerts = async () => {
     try {
-      alerts.value = await useRpApi('/revenue/admin/alerts') as any[]
+      alerts.value = await useAdminApi('/revenue/admin/alerts') as any[]
     } catch {}
   }
 
@@ -46,38 +46,38 @@ export const useAccountsDashboard = () => {
     covered_client_ids: number[]
     client_amounts?: Record<string, number>
   }) => {
-    return await useRpApi('/revenue/accounts/payment-to-partner', { method: 'POST', body: data })
+    return await useAdminApi('/revenue/accounts/payment-to-partner', { method: 'POST', body: data })
   }
 
   const calcPaymentTotal = async (client_amounts: Record<string, number>) => {
-    return await useRpApi('/revenue/accounts/payment-to-partner/total', { method: 'POST', body: { client_amounts } })
+    return await useAdminApi('/revenue/accounts/payment-to-partner/total', { method: 'POST', body: { client_amounts } })
   }
 
   const fetchPartnerClients = async (partnerId: number) => {
-    return await useRpApi(`/revenue/accounts/partners/${partnerId}/clients`)
+    return await useAdminApi(`/revenue/accounts/partners/${partnerId}/clients`)
   }
 
   const addPartner = async (data: Record<string, any>) => {
-    return await useRpApi('/revenue/accounts/partners', { method: 'POST', body: data })
+    return await useAdminApi('/revenue/accounts/partners', { method: 'POST', body: data })
   }
 
   const uploadHosting = async (file: File, month: string) => {
     const form = new FormData()
     form.append('file', file)
     form.append('month', month)
-    return await useRpApi('/revenue/accounts/uploads/hosting', { method: 'POST', body: form })
+    return await useAdminApi('/revenue/accounts/uploads/hosting', { method: 'POST', body: form })
   }
 
   const uploadAiUsage = async (file: File, month: string) => {
     const form = new FormData()
     form.append('file', file)
     form.append('month', month)
-    return await useRpApi('/revenue/accounts/uploads/ai-usage', { method: 'POST', body: form })
+    return await useAdminApi('/revenue/accounts/uploads/ai-usage', { method: 'POST', body: form })
   }
 
   const downloadTemplate = async (type: 'hosting' | 'ai-usage') => {
     const config   = useRuntimeConfig()
-    const token    = useCookie('rp_token')
+    const token    = useCookie('admin_token')
     const fileName = type === 'hosting' ? 'hosting_cost_template.xlsx' : 'ai_usage_template.csv'
 
     const response = await fetch(`${config.public.apiBase}/revenue/accounts/uploads/${type}/template`, {
@@ -98,7 +98,7 @@ export const useAccountsDashboard = () => {
 
   const fetchNotifyCustomers = async () => {
     try {
-      return await useRpApi('/revenue/accounts/notify-customers')
+      return await useAdminApi('/revenue/accounts/notify-customers')
     } catch (e: any) {
       console.error('[fetchNotifyCustomers]', e?.data?.message ?? e?.message ?? e)
       return []
@@ -106,12 +106,12 @@ export const useAccountsDashboard = () => {
   }
 
   const fetchUploadedReports = async () => {
-    return await useRpApi('/revenue/admin/uploaded-reports')
+    return await useAdminApi('/revenue/admin/uploaded-reports')
   }
 
   const fetchUserMasterInfo = async () => {
     try {
-      return await useRpApi('/revenue/admin/user-master-info')
+      return await useAdminApi('/revenue/admin/user-master-info')
     } catch (e: any) {
       console.error('[fetchUserMasterInfo]', e?.data?.message ?? e?.message ?? e)
       return []
@@ -120,7 +120,7 @@ export const useAccountsDashboard = () => {
 
   const sendCardExpiryNotification = async (tenantId: number) => {
     try {
-      return await useRpApi(`/revenue/accounts/notify-customers/${tenantId}/send`, { method: 'POST' })
+      return await useAdminApi(`/revenue/accounts/notify-customers/${tenantId}/send`, { method: 'POST' })
     } catch (e: any) {
       console.error('[sendCardExpiryNotification]', e?.data?.message ?? e?.message ?? e)
       throw e
@@ -129,14 +129,14 @@ export const useAccountsDashboard = () => {
 
   const fetchActivePartners = async () => {
     try {
-      return await useRpApi('/revenue/accounts/partners')
+      return await useAdminApi('/revenue/accounts/partners')
     } catch {
       return []
     }
   }
 
   const fetchPartnerRegistrations = async () => {
-    return await useRpApi('/revenue/admin/partner-approvals/registrations')
+    return await useAdminApi('/revenue/admin/partner-approvals/registrations')
   }
 
   return {
