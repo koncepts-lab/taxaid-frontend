@@ -9,7 +9,7 @@ export const useAdminDashboard = () => {
   const fetchOverview = async () => {
     loading.value = true
     try {
-      overview.value = await useRpApi('/revenue/admin/overview')
+      overview.value = await useAdminApi('/revenue/admin/overview')
     } catch (e: any) {
       error.value = e?.data?.message ?? 'Failed to load overview.'
     } finally {
@@ -20,7 +20,7 @@ export const useAdminDashboard = () => {
   const fetchCustomers = async (tab: 'all' | 'partners' | 'direct' | 'resource') => {
     loading.value = true
     try {
-      customers.value = await useRpApi(`/revenue/admin/customers/${tab}`) as any[]
+      customers.value = await useAdminApi(`/revenue/admin/customers/${tab}`) as any[]
       return customers.value
     } catch (e: any) {
       error.value = e?.data?.message ?? 'Failed to load customers.'
@@ -33,8 +33,8 @@ export const useAdminDashboard = () => {
   const fetchCharts = async () => {
     try {
       const [bySource, licensing] = await Promise.all([
-        useRpApi('/revenue/admin/charts/revenue-by-source'),
-        useRpApi('/revenue/admin/charts/licensing-breakdown'),
+        useAdminApi('/revenue/admin/charts/revenue-by-source'),
+        useAdminApi('/revenue/admin/charts/licensing-breakdown'),
       ])
       charts.value = { revenueBySource: bySource, licensingBreakdown: licensing }
     } catch (e: any) {
@@ -44,24 +44,24 @@ export const useAdminDashboard = () => {
 
   const fetchAlerts = async () => {
     try {
-      alerts.value = await useRpApi('/revenue/admin/alerts') as any[]
+      alerts.value = await useAdminApi('/revenue/admin/alerts') as any[]
     } catch {}
   }
 
   const approvePartner = async (id: number, password: string, referralCode: string) => {
-    return await useRpApi(`/revenue/admin/partner-approvals/${id}/approve`, {
+    return await useAdminApi(`/revenue/admin/partner-approvals/${id}/approve`, {
       method: 'POST',
       body: { password, referral_code: referralCode },
     })
   }
 
   const rejectPartner = async (id: number) => {
-    return await useRpApi(`/revenue/admin/partner-approvals/${id}/reject`, { method: 'POST' })
+    return await useAdminApi(`/revenue/admin/partner-approvals/${id}/reject`, { method: 'POST' })
   }
 
   const fetchPartnerRegistrations = async () => {
     try {
-      return await useRpApi('/revenue/admin/partner-approvals/registrations')
+      return await useAdminApi('/revenue/admin/partner-approvals/registrations')
     } catch (e: any) {
       console.error('[fetchPartnerRegistrations]', e?.data?.message ?? e?.message ?? e)
       return []
@@ -69,16 +69,16 @@ export const useAdminDashboard = () => {
   }
 
   const approvePayment = async (id: number) => {
-    return await useRpApi(`/revenue/admin/payment-requests/${id}/approve`, { method: 'POST' })
+    return await useAdminApi(`/revenue/admin/payment-requests/${id}/approve`, { method: 'POST' })
   }
 
   const rejectPayment = async (id: number) => {
-    return await useRpApi(`/revenue/admin/payment-requests/${id}/reject`, { method: 'POST' })
+    return await useAdminApi(`/revenue/admin/payment-requests/${id}/reject`, { method: 'POST' })
   }
 
   const fetchPaymentRequests = async () => {
     try {
-      return await useRpApi('/revenue/admin/partner-approvals/payment-requests')
+      return await useAdminApi('/revenue/admin/partner-approvals/payment-requests')
     } catch (e: any) {
       console.error('[fetchPaymentRequests]', e?.data?.message ?? e?.message ?? e)
       return []
@@ -86,12 +86,12 @@ export const useAdminDashboard = () => {
   }
 
   const fetchUploadedReports = async () => {
-    return await useRpApi('/revenue/admin/uploaded-reports')
+    return await useAdminApi('/revenue/admin/uploaded-reports')
   }
 
   const downloadReport = async (id: number) => {
     const config = useRuntimeConfig()
-    const token  = useCookie('rp_token')
+    const token  = useCookie('admin_token')
 
     const response = await fetch(`${config.public.apiBase}/revenue/admin/uploaded-reports/${id}/download`, {
       headers: { Authorization: `Bearer ${token.value}` },
@@ -113,7 +113,7 @@ export const useAdminDashboard = () => {
   }
 
   const fetchUserMasterInfo = async () => {
-    return await useRpApi('/revenue/admin/user-master-info')
+    return await useAdminApi('/revenue/admin/user-master-info')
   }
 
   return {

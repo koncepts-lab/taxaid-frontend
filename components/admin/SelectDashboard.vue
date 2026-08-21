@@ -89,13 +89,15 @@ const SYSTEM_CARDS = computed(() => {
       buttonLabel: 'Access Review Dashboard',
       route: role === 'Review Consultant' ? '/admin/review-team/member/dashboard' : '/admin/review-team/manager/dashboard'
     },
-    'Revenue Partnership Dashboard': {
-      icon: '/images/icons/Revenue-Partnership.svg', title: 'Revenue Partnership Dashboard',
-      description: role === 'Partner Account'
-        ? 'Manage partner accounts, uploads, and payment processing.'
-        : 'Review partner approvals, payment requests, and revenue reporting.',
-      buttonLabel: 'Access Revenue Partnership Dashboard',
-      route: role === 'Partner Account' ? '/admin/revenue-partner/accounts' : '/admin/revenue-partner/admin'
+    'Revenue Admin Dashboard': {
+      icon: '/images/icons/Revenue-Partnership.svg', title: 'Revenue Partnership Admin Dashboard',
+      description: 'Review partner approvals, payment requests, and revenue reporting.',
+      buttonLabel: 'Access Revenue Partnership Admin Dashboard', route: '/admin/revenue-partner/admin'
+    },
+    'Revenue Account Dashboard': {
+      icon: '/images/icons/Revenue-Partnership.svg', title: 'Revenue Partnership Account Dashboard',
+      description: 'Manage partner accounts, uploads, and payment processing.',
+      buttonLabel: 'Access Revenue Partnership Account Dashboard', route: '/admin/revenue-partner/accounts'
     },
   }
 })
