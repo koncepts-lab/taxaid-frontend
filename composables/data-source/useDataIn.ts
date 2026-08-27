@@ -83,6 +83,34 @@ const BUDGET_ALL_IDS = [
   'direct-expense', 'general-admin', 'salary',
 ]
 
+// UI tab ids (hyphenated) → backend `statement_type` strings (underscored)
+const BUDGET_STATEMENT_TYPE_MAP: Record<string, string> = {
+  'fixed-asset':           'fixed_asset',
+  'current-asset':         'current_asset',
+  capital:                 'capital',
+  'non-current-liability': 'non_current_liability',
+  'current-liability':     'current_liability',
+  revenue:                 'revenue',
+  'direct-expense':        'direct_expenses',
+  'general-admin':         'general_and_admin',
+  salary:                  'salary',
+}
+const BUDGET_VARIANCE_IDS = Object.keys(BUDGET_STATEMENT_TYPE_MAP)
+
+// Data-in ids → backend `cost_center_type` strings
+const COST_CENTER_TYPE_MAP: Record<string, string> = {
+  cc_master: 'master',
+  cc_budget: 'budget',
+}
+const COST_CENTER_VARIANCE_IDS = Object.keys(COST_CENTER_TYPE_MAP)
+
+// Data-in ids → backend `direction` strings — PDC is additive-only, no changed/removed case
+const PDC_DIRECTION_MAP: Record<string, string> = {
+  pdcin: 'in',
+  pdcout: 'out',
+}
+const PDC_VARIANCE_IDS = Object.keys(PDC_DIRECTION_MAP)
+
 const makeBudgetStatuses = (): Record<string, BudgetItemStatus> =>
   Object.fromEntries(BUDGET_ALL_IDS.map(id => [id, { isUploaded: false, fileName: null, uploadDate: null }]))
 
@@ -173,6 +201,117 @@ export const useDataIn = () => {
       await refreshItem(id)
     } finally {
       uploadingId.value = null
+    }
+  }
+
+  // ── Preview/confirm variance flow — AR/AP + Budget (9 templates + salary) + Cost Center + PDC + Sales Forecast ──
+  // 'forecast' needs no extra sub-param (id === backend `type` directly), so it just falls into
+  // the generic else-branch in previewUpload/confirmUpload below — no new isXVarianceId needed.
+  const VARIANCE_UPLOAD_IDS = ['ar', 'ap', 'forecast', ...BUDGET_VARIANCE_IDS, ...COST_CENTER_VARIANCE_IDS, ...PDC_VARIANCE_IDS]
+  const supportsVariancePreview = (id: string) => VARIANCE_UPLOAD_IDS.includes(id)
+  const isBudgetVarianceId = (id: string) => BUDGET_VARIANCE_IDS.includes(id)
+  const isCostCenterVarianceId = (id: string) => COST_CENTER_VARIANCE_IDS.includes(id)
+  const isPdcVarianceId = (id: string) => PDC_VARIANCE_IDS.includes(id)
+
+  const previewing = ref(false)
+  const previewError = ref<string | null>(null)
+  const confirming = ref(false)
+
+  // Single backend route for the whole flow — dispatches on `mode` (+`type` for preview/confirm).
+  const DATA_IN_UPLOAD_URL = () => `${config.public.apiBase}/data-source/data-in/upload`
+
+  const previewUpload = async (id: string, file: File): Promise<any> => {
+    if (!VARIANCE_UPLOAD_IDS.includes(id)) throw new Error(`Unknown data-in id: ${id}`)
+
+    previewing.value = true
+    previewError.value = null
+    try {
+      const form = new FormData()
+      form.append('mode', 'preview')
+      form.append('file', file)
+      if (isBudgetVarianceId(id)) {
+        form.append('type', 'budget')
+        form.append('statement_type', BUDGET_STATEMENT_TYPE_MAP[id])
+      } else if (isCostCenterVarianceId(id)) {
+        form.append('type', 'cost_center')
+        form.append('cost_center_type', COST_CENTER_TYPE_MAP[id])
+      } else if (isPdcVarianceId(id)) {
+        form.append('type', 'pdc')
+        form.append('direction', PDC_DIRECTION_MAP[id])
+      } else {
+        form.append('type', id)
+      }
+
+      const res = await fetch(DATA_IN_UPLOAD_URL(), {
+        method: 'POST',
+        headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
+        body: form,
+      })
+      const body = await res.json().catch(() => ({})) as any
+      if (!res.ok) throw new Error(body?.message ?? `Preview failed (${res.status})`)
+      return body
+    } catch (err: any) {
+      previewError.value = err?.message ?? 'Preview failed'
+      throw err
+    } finally {
+      previewing.value = false
+    }
+  }
+
+  const confirmUpload = async (id: string, tempPath: string): Promise<void> => {
+    if (!VARIANCE_UPLOAD_IDS.includes(id)) throw new Error(`Unknown data-in id: ${id}`)
+
+    confirming.value = true
+    try {
+      const payload: Record<string, string> = { mode: 'confirm', temp_path: tempPath }
+      if (isBudgetVarianceId(id)) {
+        payload.type = 'budget'
+        payload.statement_type = BUDGET_STATEMENT_TYPE_MAP[id]
+      } else if (isCostCenterVarianceId(id)) {
+        payload.type = 'cost_center'
+        payload.cost_center_type = COST_CENTER_TYPE_MAP[id]
+      } else if (isPdcVarianceId(id)) {
+        payload.type = 'pdc'
+        payload.direction = PDC_DIRECTION_MAP[id]
+      } else {
+        payload.type = id
+      }
+
+      const res = await fetch(DATA_IN_UPLOAD_URL(), {
+        method: 'POST',
+        headers: {
+          Authorization: token.value ? `Bearer ${token.value}` : '',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as any
+        throw new Error(body?.message ?? `Confirm failed (${res.status})`)
+      }
+      if (isBudgetVarianceId(id)) {
+        budgetStatuses.value[id] = { isUploaded: true, fileName: null, uploadDate: new Date().toLocaleDateString() }
+      } else {
+        await refreshItem(id)
+      }
+    } finally {
+      confirming.value = false
+    }
+  }
+
+  // Best-effort — an abandoned preview also gets reaped later by a cleanup cron either way.
+  const cancelPreview = async (tempPath: string): Promise<void> => {
+    try {
+      await fetch(DATA_IN_UPLOAD_URL(), {
+        method: 'POST',
+        headers: {
+          Authorization: token.value ? `Bearer ${token.value}` : '',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ mode: 'cancel', temp_path: tempPath }),
+      })
+    } catch {
+      // ignore — non-fatal
     }
   }
 
@@ -447,6 +586,9 @@ export const useDataIn = () => {
     // data-in
     items, loading, error, uploadingId,
     fetchConfig, uploadFile, downloadSample, removeItem,
+    // preview/confirm variance flow (AR/AP + Budget + Cost Center + PDC)
+    supportsVariancePreview, isBudgetVarianceId, isCostCenterVarianceId, isPdcVarianceId, previewing, previewError, confirming,
+    previewUpload, confirmUpload, cancelPreview,
     // budget
     budgetStatuses, budgetUploadingId, budgetFetchingId, budgetError,
     budgetViewLoading, budgetViewData,
