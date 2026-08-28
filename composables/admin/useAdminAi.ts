@@ -4,8 +4,8 @@
 // screens consume it. All calls go through useAdminApi (admin_token).
 export function useAdminAi() {
   // ── Per-tenant (client management "AI" subtab) ──────────────────────────
-  const getClientAi = (tenantId: number) =>
-    useAdminApi(`/admin/ai/clients/${tenantId}`)
+  const getClientAi = (tenantId: number, range: '6m' | '1y' | 'full' = '6m') =>
+    useAdminApi(`/admin/ai/clients/${tenantId}?range=${range}`)
 
   const toggleClientAi = (tenantId: number, password?: string) =>
     useAdminApi(`/admin/ai/clients/${tenantId}/toggle`, { method: 'PATCH', body: password ? { password } : {} })
