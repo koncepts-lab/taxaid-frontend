@@ -15,7 +15,7 @@
        table's overflow-x container can never clip it -->
   <Teleport to="body">
     <div v-if="isOpen" class="fixed inset-0 z-[9998]" @click="close" />
-    <div v-if="isOpen" :style="panelStyle"
+    <div v-if="isOpen" ref="panelRef" :style="panelStyle"
       class="fixed z-[9999] w-64 rounded-xl border shadow-2xl overflow-hidden text-sm"
       :class="isDark ? 'bg-[#1a1a1a] border-white/10 text-white/90' : 'bg-white border-gray-200 text-gray-800'"
       :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
@@ -48,7 +48,7 @@
           <input type="checkbox" :checked="checked.has(opt)" @change="toggleOne(opt)"
             class="accent-[#00B794] w-4 h-4 flex-shrink-0" />
           <span class="truncate" :class="opt === '(blank)' ? 'italic opacity-60' : ''">
-            {{ opt === '(blank)' ? (currentLang === 'ar' ? '(فارغ)' : '(Blanks)') : opt }}
+            {{ opt === '(blank)' ? (currentLang === 'ar' ? '(فارغ)' : '(Blanks)') : format(opt) }}
           </span>
         </label>
         <p v-if="!visibleOptions.length" class="px-3 py-3 text-center text-xs opacity-50">
@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 
 const props = defineProps({
   column:      { type: String, required: true },   // fs_code | main_group | sub_group | ledger_name
@@ -83,12 +83,14 @@ const props = defineProps({
   selected:    { type: Array,  default: () => [] }, // current applied filter ([] = all)
   isDark:      { type: Boolean, default: false },
   currentLang: { type: String, default: 'en' },
+  format:      { type: Function, default: (v) => v }, // display-only transform, raw value still used for filtering
 })
 const emit = defineEmits(['apply'])
 
 const isOpen     = ref(false)
 const search     = ref('')
 const triggerRef = ref(null)
+const panelRef   = ref(null)
 const panelStyle = ref({})
 // Working copy — applied only on Apply, like Excel
 const checked = ref(new Set())
@@ -121,6 +123,16 @@ const toggle = () => {
   isOpen.value = true
 }
 const close = () => { isOpen.value = false }
+
+// Panel position is computed once at open time and doesn't track the trigger on scroll — close
+// instead of drifting out of place. Ignore scrolls inside the panel itself (its own option list
+// scrolls internally) so opening the list doesn't immediately close it.
+const onScroll = (e) => { if (!panelRef.value?.contains(e.target)) close() }
+watch(isOpen, (open) => {
+  if (open) window.addEventListener('scroll', onScroll, true)
+  else window.removeEventListener('scroll', onScroll, true)
+})
+onBeforeUnmount(() => window.removeEventListener('scroll', onScroll, true))
 
 const toggleOne = (opt) => {
   const next = new Set(checked.value)

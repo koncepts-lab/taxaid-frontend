@@ -144,7 +144,7 @@
         <div class="flex items-center gap-3 w-full md:w-auto">
           <div class="flex items-center gap-2 min-w-[150px] bg-white border border-gray-200 rounded-md px-3 py-2 shadow-sm text-sm text-gray-700">
             <span>Domain<span v-if="dataLinks.domain.length"> ({{ dataLinks.domain.length }})</span></span>
-            <DataSourceTbHeaderFilter column="domain" :options="dataLinks.domainOptions" :selected="dataLinks.domain"
+            <DataSourceTbHeaderFilter column="domain" :options="dataLinks.domainOptions" :selected="dataLinks.domain" :format="formatDomain"
               @apply="(col, values) => { dataLinks.domain = values; loadDataLinks(1) }" class="ml-auto" />
           </div>
           <div class="flex items-center gap-2 min-w-[150px] bg-white border border-gray-200 rounded-md px-3 py-2 shadow-sm text-sm text-gray-700">
@@ -191,7 +191,7 @@
                   <td class="py-3.5 px-6 text-gray-500">{{ link.id }}</td>
                   <td class="py-3.5 px-6 font-medium text-gray-800">{{ link.label }}</td>
                   <td class="py-3.5 px-6">
-                    <span class="inline-flex border border-gray-200 bg-white text-gray-600 rounded-full px-2.5 py-1 text-[12px] whitespace-nowrap">{{ link.domain }}</span>
+                    <span class="inline-flex border border-gray-200 bg-white text-gray-600 rounded-full px-2.5 py-1 text-[12px] whitespace-nowrap">{{ formatDomain(link.domain) }}</span>
                   </td>
                   <td class="py-3.5 px-6 text-gray-500">{{ link.category ?? '—' }}</td>
                   <td class="py-3.5 px-6">
@@ -246,7 +246,7 @@
             </span>
             <select v-model="rules.domain" @change="loadRules(1)" class="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
               <option value="">All Domains</option>
-              <option v-for="d in domainOptions" :key="d" :value="d">{{ d }}</option>
+              <option v-for="d in domainOptions" :key="d" :value="d">{{ formatDomain(d) }}</option>
             </select>
             <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
           </div>
@@ -281,7 +281,7 @@
               <tr v-for="rule in rules.rows" :key="rule.id" class="border-b border-gray-100 hover:bg-gray-50/50">
                 <td class="py-3.5 px-6 font-medium text-gray-800">{{ rule.label }}</td>
                 <td class="py-3.5 px-6">
-                  <span class="inline-flex border border-gray-200 bg-white text-gray-600 rounded-full px-2.5 py-1 text-[12px] whitespace-nowrap">{{ rule.domain }}</span>
+                  <span class="inline-flex border border-gray-200 bg-white text-gray-600 rounded-full px-2.5 py-1 text-[12px] whitespace-nowrap">{{ formatDomain(rule.domain) }}</span>
                 </td>
                 <td class="py-3.5 px-6 text-gray-500">{{ rule.category ?? '—' }}</td>
                 <td class="py-3.5 px-6">
@@ -331,7 +331,7 @@
         <div class="flex items-center gap-3 w-full md:w-auto">
           <div class="flex items-center gap-2 min-w-[140px] bg-white border border-gray-200 rounded-md px-3 py-2 shadow-sm text-sm text-gray-700">
             <span>Domain<span v-if="alertRules.domain.length"> ({{ alertRules.domain.length }})</span></span>
-            <DataSourceTbHeaderFilter column="domain" :options="domainOptions" :selected="alertRules.domain"
+            <DataSourceTbHeaderFilter column="domain" :options="domainOptions" :selected="alertRules.domain" :format="formatDomain"
               @apply="(col, values) => { alertRules.domain = values; loadAlertRules(1) }" class="ml-auto" />
           </div>
           <div class="flex items-center gap-2 min-w-[140px] bg-white border border-gray-200 rounded-md px-3 py-2 shadow-sm text-sm text-gray-700">
@@ -378,7 +378,7 @@
                 <tr v-for="rule in alertRules.rows" :key="rule.id" class="border-b border-gray-100 hover:bg-gray-50/50">
                   <td class="py-3.5 px-6 font-medium text-gray-800">{{ rule.alert_title }}</td>
                   <td class="py-3.5 px-6">
-                    <span class="inline-flex border border-gray-200 bg-white text-gray-600 rounded-full px-2.5 py-1 text-[12px] whitespace-nowrap">{{ rule.domain }}</span>
+                    <span class="inline-flex border border-gray-200 bg-white text-gray-600 rounded-full px-2.5 py-1 text-[12px] whitespace-nowrap">{{ formatDomain(rule.domain) }}</span>
                   </td>
                   <td class="py-3.5 px-6 text-gray-500">{{ rule.category ?? '—' }}</td>
                   <td class="py-3.5 px-6">
@@ -473,7 +473,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
         <h3 class="text-[16px] font-semibold text-gray-900 mb-1 pr-6">Edit Data-Link</h3>
-        <code class="text-xs text-gray-400 block mb-4">{{ editingDataLink.key_word }} · {{ editingDataLink.domain }}</code>
+        <code class="text-xs text-gray-400 block mb-4">{{ editingDataLink.key_word }} · {{ formatDomain(editingDataLink.domain) }}</code>
         <label class="block text-[13px] text-gray-600 mb-1.5">Label</label>
         <input v-model="editingDataLink.label" class="w-full mb-4 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
         <label class="block text-[13px] text-gray-600 mb-1.5">Category</label>
@@ -481,6 +481,8 @@
           <option value="AI">AI</option>
           <option value="General">General</option>
           <option value="System">System</option>
+          <option value="On Click">On Click</option>
+          <option value="Other">Other</option>
         </select>
         <label class="block text-[13px] text-gray-600 mb-1.5">Context / description</label>
         <textarea v-model="editingDataLink.context" rows="8" class="w-full mb-4 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]"></textarea>
@@ -505,7 +507,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
         <h3 class="text-[16px] font-semibold text-gray-900 mb-1 pr-6">Edit Rule</h3>
-        <code class="text-xs text-gray-400 block mb-4">{{ editingRule.domain }}</code>
+        <code class="text-xs text-gray-400 block mb-4">{{ formatDomain(editingRule.domain) }}</code>
         <label class="block text-[13px] text-gray-600 mb-1.5">Label</label>
         <input v-model="editingRule.label" class="w-full mb-4 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
         <label class="block text-[13px] text-gray-600 mb-1.5">Category</label>
@@ -529,7 +531,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
         <h3 class="text-[16px] font-semibold text-gray-900 mb-1 pr-6">Edit Alert Rule</h3>
-        <code class="text-xs text-gray-400 block mb-4">{{ editingAlertRule.domain }}</code>
+        <code class="text-xs text-gray-400 block mb-4">{{ formatDomain(editingAlertRule.domain) }}</code>
         <label class="block text-[13px] text-gray-600 mb-1.5">Alert title</label>
         <input v-model="editingAlertRule.alert_title" class="w-full mb-4 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
         <div class="grid grid-cols-2 gap-3 mb-4">
@@ -638,6 +640,13 @@ const pageOptions = [
 // backend-supplied dataLinks.domainOptions instead (this hardcoded list was missing
 // COGS/TAX/COST_CENTER, same gap that would exist here too if left in sync manually).
 const domainOptions = ['AR', 'AP', 'general']
+// Display-only — short acronym domains (AR/AP/COGS/TAX) stay as-is, everything else
+// (underscore-separated or lowercase) becomes Title Case with spaces.
+function formatDomain(d) {
+  if (!d) return d
+  if (!d.includes('_') && d === d.toUpperCase() && d.length <= 4) return d
+  return d.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
+}
 // 'Rules' (ai_rules) hidden — unused, data-links (ai_data_links) cover this today.
 const subTabs = ['Instructions', 'Data-Links', 'Alert Rules', 'Quick Questions & Tips']
 const subTabSlugs = { 'Instructions': 'instructions', 'Data-Links': 'data-links', 'Rules': 'rules', 'Alert Rules': 'alert-rules', 'Quick Questions & Tips': 'quick-questions' }
@@ -687,8 +696,8 @@ const chatPrompts = makeTableState()
 
 const dataLinkModalOpen = ref(false)
 const editingDataLink = reactive({ id: null, key_word: '', domain: '', label: '', category: '', context: '', is_active: true, available_params: {} })
-// Category is stored as `{domain}-{suffix}` (e.g. AR-ai) — the dropdown only ever edits the
-// suffix, the domain prefix always comes from the row's own (read-only here) domain field.
+// Category is one of AI/General/System/On Click/Other — domain is its own separate field/column,
+// never folded into this value.
 const editingDataLinkCategorySuffix = ref('AI')
 
 const ruleModalOpen = ref(false)
@@ -817,19 +826,11 @@ async function loadUsageSnapshot() {
 
 function openDataLinkModal(link) {
   Object.assign(editingDataLink, link)
-  // Derive the dropdown's initial value from the stored `{domain}-{suffix}` category —
-  // falls back to 'ai' if unparseable/null (matches this seeder's current default for every
-  // existing row except the single 'general'-domain one).
-  const parts = (link.category ?? '').split('-')
-  editingDataLinkCategorySuffix.value = parts.length > 1 ? parts[parts.length - 1] : (link.category || 'AI')
+  editingDataLinkCategorySuffix.value = link.category || 'AI'
   dataLinkModalOpen.value = true
 }
 async function submitDataLink() {
-  // The 'general' DOMAIN is its own catch-all — don't double-prefix it (e.g. avoid
-  // "general-general"); every other domain composes normally as `{domain}-{suffix}`.
-  editingDataLink.category = editingDataLink.domain === 'general'
-    ? editingDataLinkCategorySuffix.value
-    : `${editingDataLink.domain}-${editingDataLinkCategorySuffix.value}`
+  editingDataLink.category = editingDataLinkCategorySuffix.value
   await updateDataLink(editingDataLink.id, {
     label: editingDataLink.label, context: editingDataLink.context,
     category: editingDataLink.category, is_active: editingDataLink.is_active,
