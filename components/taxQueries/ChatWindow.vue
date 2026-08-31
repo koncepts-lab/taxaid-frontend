@@ -1,7 +1,14 @@
 <template>
     <div :class="['rounded-2xl border flex flex-col p-4 relative min-h-[500px]', isDark ? 'bg-[#002e26] border-white/10 shadow-none' : 'bg-white border-emerald-50 shadow-sm']">
 
-        <div v-if="!messages.length" class="flex-1 flex flex-col items-center justify-center">
+        <div v-if="!messages.length && sending" class="flex-1 flex flex-col items-center justify-center">
+            <div class="w-full max-w-3xl text-center flex flex-col items-center">
+                <img src="/images/akeel.webp" class="lg:w-20 lg:h-20 w-15 h-15 mb-4 object-contain rounded-full animate-pulse" />
+                <p class="lg:text-lg text-base font-light" :class="isDark ? 'text-white/80' : 'text-black'">{{ sendingStatusText }}</p>
+            </div>
+        </div>
+
+        <div v-else-if="!messages.length" class="flex-1 flex flex-col items-center justify-center">
             <div class="w-full max-w-3xl text-center flex flex-col items-center">
                 <img src="/images/akeel.webp" class="lg:w-20 lg:h-20 w-15 h-15  mb-4 object-contain rounded-full" />
                 <h2 class="lg:text-xl text-lg font-medium mb-1" :class="isDark ? 'text-white' : 'text-black'">Let's Brainstorm with Akeel</h2>
@@ -84,7 +91,11 @@ const { messages, activeChatId, sending, sendingStatusText, chatGettingLong, usa
 const { questions: promptQuestions, tips: promptTips, fetchPrompts } = useAkeelPrompts()
 
 const route = useRoute()
-onMounted(() => fetchPrompts(route.name?.toString() ?? 'default'))
+onMounted(() => {
+    const page = route.name?.toString() ?? 'default'
+    if (page === 'tax-queries') fetchPrompts(['tax-queries', 'vat-queries'], 'tax-queries')
+    else fetchPrompts(page)
+})
 
 // Only /chat-with-akeel offers resumable history (via its session-list sidebar) — everywhere
 // else this component is mounted (e.g. /tax-queries), the conversation shouldn't survive

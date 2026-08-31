@@ -26,6 +26,7 @@
                         @selected-date="handleDateSelected"
                         @export-excel="handleExport('excel')"
                         @export-pdf="handleExport('pdf')"
+                        @one-click-summary="handleOneClickSummary"
                     />
 
                     <template v-if="loadingBreakdown">
@@ -128,7 +129,7 @@
                     : 'bottom-24 w-[80px]',
                 isChatOpen ? 'lg:2xl:w-120 lg:w-100' : 'lg:w-[80px]'
             ]">
-                <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = true" />
+                <CommonChatSideBar v-model:isChatOpen="isChatOpen" domain="REVENUE_SALES" @expand="isFullScreenChat = true" />
             </aside>
         </div>
         
@@ -190,6 +191,9 @@ const handleDateSelected = (periodData) => {
 }
 
 const handleExport = (type) => {}
+
+const { openOneClickSummary } = useAkeel()
+const handleOneClickSummary = () => openOneClickSummary('REVENUE_SALES', 'onclick_revenue_sales')
 
 onMounted(() => {
   fetchAll()

@@ -23,6 +23,7 @@
             @reload="handleReload"
             @export-excel="handleExport('excel')"
             @export-pdf="handleExport('pdf')"
+            @one-click-summary="handleOneClickSummary"
           />
 
           <div class="mb-4 lg:mb-8">
@@ -59,7 +60,7 @@
             : 'bottom-24 w-[80px]',
         isChatOpen ? 'lg:2xl:w-120 lg:w-100' : 'lg:w-[80px]'
       ]">
-        <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = true" />
+        <CommonChatSideBar v-model:isChatOpen="isChatOpen" domain="INDIRECT_EXPENSE" @expand="isFullScreenChat = true" />
       </aside>
     </div>
     
@@ -128,6 +129,9 @@ const handleReload = () => fetchAll(currentLang.value)
 const handleExport = (type) => {
   console.log('Export:', type)
 }
+
+const { openOneClickSummary } = useAkeel()
+const handleOneClickSummary = () => openOneClickSummary('INDIRECT_EXPENSE', 'onclick_indirect_expense')
 
 watch(currentLang, () => fetchAll(currentLang.value))
 

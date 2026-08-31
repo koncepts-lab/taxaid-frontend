@@ -57,7 +57,7 @@
           : 'bottom-24 w-[80px]',
         isChatOpen ? 'lg:2xl:w-120 lg:w-100' : 'lg:w-[80px]'
       ]">
-        <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = true" />
+        <CommonChatSideBar v-model:isChatOpen="isChatOpen" domain="COGS" @expand="isFullScreenChat = true" />
       </aside>
     </div>
 
@@ -123,9 +123,8 @@ const handleDateChange = (periodData) => {
 
 const handleReload = () => fetchAll(currentLang.value)
 
-const handleOneClickSummary = () => {
-  console.log('One Click Summary clicked')
-}
+const { openOneClickSummary } = useAkeel()
+const handleOneClickSummary = () => openOneClickSummary('COGS', 'onclick_cogs')
 
 watch(currentLang, () => fetchAll(currentLang.value))
 

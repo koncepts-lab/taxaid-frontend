@@ -157,6 +157,11 @@
                 :uploadFile="dataInUploadFile"
                 :downloadSample="dataInDownloadSample"
                 :uploadingId="dataInUploadingId"
+                :supportsVariancePreview="dataInSupportsVariancePreview"
+                :previewUpload="dataInPreviewUpload"
+                :confirmUpload="dataInConfirmUpload"
+                :cancelPreview="dataInCancelPreview"
+                :confirming="dataInConfirming"
                 :isDark="isDark"
                 :currentLang="currentLang"
                 @remove="handleRemove"
@@ -410,7 +415,12 @@ const currencyColumns = computed(() => settingsData.value?.currencyColumns ?? []
 // AR / AP — live from useArAgingSummary / useApAgingSummary (arRows, arTotals, apRows, apTotals)
 
 // Data-In items — live from backend via useDataIn composable
-const { items: dataInItems, loading: dataInLoading, error: dataInError, fetchConfig: fetchDataInConfig, uploadFile: dataInUploadFile, downloadSample: dataInDownloadSample, uploadingId: dataInUploadingId } = useDataIn()
+const {
+  items: dataInItems, loading: dataInLoading, error: dataInError, fetchConfig: fetchDataInConfig,
+  uploadFile: dataInUploadFile, downloadSample: dataInDownloadSample, uploadingId: dataInUploadingId,
+  supportsVariancePreview: dataInSupportsVariancePreview, previewUpload: dataInPreviewUpload,
+  confirmUpload: dataInConfirmUpload, cancelPreview: dataInCancelPreview, confirming: dataInConfirming,
+} = useDataIn()
 onMounted(() => fetchDataInConfig())
 
 // Inter-company from composable (kept as ref so add/delete can mutate)

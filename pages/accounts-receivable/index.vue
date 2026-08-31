@@ -14,7 +14,7 @@
 <!-- TODO: -->
           <CommonDashboardHeader :title="{ en: 'Accounts Receivable', ar: 'حسابات القبض' }"
             :subtitle="{ en: 'Accounts Receivable Dashboard', ar: 'لوحة معلومات حسابات القبض' }"
-            :periods="customPeriods" class="mb-8" :minDate="new Date(2026, 5, 15)" @selected-date="handleDateChange" @reload="handleReload" />
+            :periods="customPeriods" class="mb-8" :minDate="new Date(2026, 5, 15)" @selected-date="handleDateChange" @reload="handleReload" @one-click-summary="handleOneClickSummary" />
 
           <!-- Gap-day snapshot notice: shown when the selected date has no
                uploaded AR snapshot and the latest earlier upload is displayed -->
@@ -64,7 +64,7 @@
           : 'bottom-24 w-[80px]',
         isChatOpen ? 'lg:2xl:w-120 lg:w-100' : 'lg:w-[80px]'
       ]">
-        <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = false" />
+        <CommonChatSideBar v-model:isChatOpen="isChatOpen" domain="AR" @expand="isFullScreenChat = false" />
       </aside>
     </div>
 
@@ -116,6 +116,9 @@ const handleDateChange = (period) => {
 }
 
 const handleReload = () => fetchAll()
+
+const { openOneClickSummary } = useAkeel()
+const handleOneClickSummary = () => openOneClickSummary('AR', 'onclick_ar')
 
 onMounted(() => {
   fetchAll()

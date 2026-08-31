@@ -15,7 +15,8 @@
                         :periods="customPeriods"
                         @selected-date="handleDateUpdate"
                         @reload="fetchTabData(activeTab)"
-                        @export-pdf="handleExportPDF" />
+                        @export-pdf="handleExportPDF"
+                        @one-click-summary="handleOneClickSummary" />
 
                     <!-- Gap-day snapshot notice: shown when the Balance Sheet
                          "as of" date has no exact ledger snapshot and the
@@ -71,7 +72,7 @@
                 // 4. Desktop Widths
                 isChatOpen ? 'lg:2xl:w-120 lg:w-100' : 'lg:w-[80px]'
             ]">
-                <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = true" />
+                <CommonChatSideBar v-model:isChatOpen="isChatOpen" domain="FINANCIAL_STATEMENTS" @expand="isFullScreenChat = true" />
             </aside>
         </div>
 
@@ -168,6 +169,9 @@ watch([activeTab, filters], () => {
 const handleExportPDF = async () => {
     console.warn("PDF export is currently disabled.");
 }
+
+const { openOneClickSummary } = useAkeel()
+const handleOneClickSummary = () => openOneClickSummary('FINANCIAL_STATEMENTS', 'onclick_financial_statements')
 
 const tabs = [
     {

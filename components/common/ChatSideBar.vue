@@ -194,10 +194,15 @@ const currentLang = useState('currentLang', () => 'en')
 
 const { messages, status, usage, sending, sendingStatusText, error, errorVariant, activeChatId, sendMessage, fetchChats } = useAkeel()
 
-// This widget is only ever mounted on report/feature pages, never on the dedicated
-// /chat-with-akeel history page — a conversation here shouldn't survive navigating away
-// (only /chat-with-akeel offers resumable history via its session list).
+const props = defineProps({
+    domain: { type: String, default: null },
+})
+
+const route = useRoute()
+
+// Skip the reset when navigating to /chat-with-akeel itself (e.g. a One-Click Summary card).
 onBeforeUnmount(() => {
+    if (route.path.includes('chat-with-akeel')) return
     activeChatId.value = null
     messages.value = []
 })
@@ -212,19 +217,24 @@ const { questions: promptQuestions, tips: promptTips, fetchPrompts } = useAkeelP
 const isChatOpen = defineModel('isChatOpen')
 defineEmits(['update:activeTab', 'expand'])
 
-const route = useRoute()
-const openChat = () => { isChatOpen.value = true; fetchChats(); fetchPrompts(route.name?.toString() ?? 'default') }
+const openChat = () => {
+    isChatOpen.value = true
+    fetchChats()
+    const page = route.name?.toString() ?? 'default'
+    if (page === 'tax-queries') fetchPrompts(['tax-queries', 'vat-queries'], 'tax-queries')
+    else fetchPrompts(page)
+}
 const closeChat = () => { isChatOpen.value = false }
 
 const draft = ref('')
 async function ask(question) {
-    await sendMessage(question)
+    await sendMessage(question, props.domain ? [props.domain] : [])
 }
 async function send() {
     if (!draft.value.trim() || sending.value) return
     const message = draft.value
     draft.value = ''
-    await sendMessage(message)
+    await sendMessage(message, props.domain ? [props.domain] : [])
 }
 </script>
 <style scoped>

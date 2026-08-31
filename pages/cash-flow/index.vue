@@ -29,6 +29,7 @@
                         @period-change="handlePeriodChange"
                         @export-excel="handleExport('excel')"
                         @export-pdf="handleExport('pdf')"
+                        @one-click-summary="handleOneClickSummary"
                     />
 
                     <CashFlowMetrics :is-compressed="isChatOpen" />
@@ -63,7 +64,7 @@
                     : 'bottom-24 w-[80px]',
                 isChatOpen ? 'lg:2xl:w-120 lg:w-100' : 'lg:w-[80px]'
             ]">
-                <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = true" />
+                <CommonChatSideBar v-model:isChatOpen="isChatOpen" domain="CASH_FLOW_BANK" @expand="isFullScreenChat = true" />
             </aside>
         </div>
         
@@ -117,6 +118,9 @@ const handlePeriodChange = (months) => {
 }
 
 const handleExport = (type) => {}
+
+const { openOneClickSummary } = useAkeel()
+const handleOneClickSummary = () => openOneClickSummary('CASH_FLOW_BANK', 'onclick_cash_flow_bank')
 
 onMounted(() => {
   fetchProjection()

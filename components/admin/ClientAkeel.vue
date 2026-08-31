@@ -66,10 +66,33 @@
 
     <!-- Usage graph -->
     <div class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6">
-      <h2 class="text-[16px] font-medium text-[#101828] mb-4">Token Usage by Period</h2>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-[16px] font-medium text-[#101828]">Token Usage by Month</h2>
+        <div class="relative">
+          <div @click="isRangeOpen = !isRangeOpen"
+            class="h-[38px] px-3 border border-[#00896F] rounded-[10px] flex items-center gap-2 cursor-pointer text-[13px] font-medium text-[#101828]">
+            {{ rangeLabels[selectedRange] }}
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform" :class="{ 'rotate-180': isRangeOpen }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          <div v-if="isRangeOpen" class="absolute top-[calc(100%+6px)] right-0 w-[140px] bg-white border border-gray-100 rounded-[12px] shadow-xl py-2 px-2 flex flex-col gap-1 z-20">
+            <button v-for="(label, key) in rangeLabels" :key="key"
+              @click="selectedRange = key; isRangeOpen = false"
+              class="w-full text-left px-3 py-2 rounded-[8px] text-[13px]"
+              :class="selectedRange === key ? 'bg-[#E4FFF6] text-[#00896F] font-medium' : 'text-[#101828] hover:bg-gray-50'">
+              {{ label }}
+            </button>
+          </div>
+        </div>
+      </div>
       <div v-if="!data.graph?.length" class="text-sm text-gray-400 py-10 text-center">No usage data yet.</div>
       <client-only v-else>
         <apexchart type="line" height="280" :options="chartOptions" :series="chartSeries"></apexchart>
+        <p class="text-[12px] text-gray-400 mt-2 flex items-center gap-3">
+          <span class="flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-[#04C18F]"></span> Normal month</span>
+          <span class="flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-red-500"></span> Month had flagged chats</span>
+        </p>
       </client-only>
     </div>
 
@@ -98,7 +121,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 const props = defineProps({
   tenantId: { type: Number, required: true },
@@ -119,30 +142,62 @@ const toggleError = ref('')
 
 const enabled = computed(() => !!data.value.ai_calling_enabled)
 
+const isRangeOpen = ref(false)
+const selectedRange = ref('6m')
+const rangeLabels = { '3m': '3 Months', '6m': '6 Months', '1y': '1 Year', full: 'Full' }
+
+// Flagged-month dots ride on the same "Tokens Used" line series (value at that point when
+// flagged_count > 0, else null so ApexCharts skips drawing a marker there) rather than a second
+// scatter series — keeps a single continuous line with red markers only where real flags exist.
 const chartSeries = computed(() => [
   { name: 'Tokens Used', data: (data.value.graph ?? []).map((r) => r.tokens_used) },
 ])
 
+const flaggedPointIndexes = computed(() =>
+  (data.value.graph ?? []).reduce((idxs, r, i) => (r.flagged_count > 0 ? [...idxs, i] : idxs), [])
+)
+
 const chartOptions = computed(() => ({
-  chart: { type: 'line', toolbar: { show: false }, dropShadow: { enabled: false } },
+  chart: { type: 'line', toolbar: { show: false }, zoom: { enabled: false }, dropShadow: { enabled: false } },
   colors: ['#04C18F'],
   stroke: { width: 2, curve: 'smooth' },
-  markers: { size: (data.value.graph ?? []).length === 1 ? 6 : 4, colors: ['#fff'], strokeColors: ['#04C18F'], strokeWidth: 2, hover: { size: 7 } },
+  markers: {
+    size: (data.value.graph ?? []).length === 1 ? 6 : 4,
+    colors: ['#04C18F'],
+    strokeColors: ['#04C18F'],
+    strokeWidth: 2,
+    hover: { size: 7 },
+    discrete: flaggedPointIndexes.value.map((i) => ({ seriesIndex: 0, dataPointIndex: i, fillColor: '#EF4444', strokeColor: '#EF4444', size: 6 })),
+  },
   xaxis: {
     categories: (data.value.graph ?? []).map((r) => r.period),
     axisBorder: { show: true, color: '#9CA3AF' },
     axisTicks: { show: false },
     labels: { style: { colors: '#1a1a1a', fontSize: '12px' } },
-    title: { text: 'Plan Cycle / Month', style: { color: '#9CA3AF', fontWeight: 'normal', fontSize: '10px' } },
+    title: { text: 'Month', style: { color: '#9CA3AF', fontWeight: 'normal', fontSize: '10px' } },
   },
   yaxis: {
+    min: 0,
     title: { text: 'Tokens', style: { color: '#9CA3AF', fontWeight: 'normal', fontSize: '10px' } },
     labels: { style: { colors: '#1a1a1a', fontSize: '12px' } },
   },
   grid: { strokeDashArray: 4, padding: { left: 20 }, xaxis: { lines: { show: true } }, borderColor: '#E5E7EB' },
   legend: { show: false },
-  tooltip: { theme: 'light' },
+  tooltip: {
+    theme: 'light',
+    custom: ({ dataPointIndex }) => {
+      const r = data.value.graph?.[dataPointIndex] ?? {}
+      const flagLine = r.flagged_count > 0 ? `<div class="text-red-500 text-[13px] mt-1">${r.flagged_count} flagged chat${r.flagged_count === 1 ? '' : 's'}</div>` : ''
+      return `<div class="bg-white rounded-[10px] p-3 shadow-lg border border-gray-100">
+        <div class="text-[13px] text-gray-500">${r.period ?? ''}</div>
+        <div class="text-[14px] font-medium text-[#04C18F] mt-1">${(r.tokens_used ?? 0).toLocaleString()} tokens</div>
+        ${flagLine}
+      </div>`
+    },
+  },
 }))
+
+watch(selectedRange, reloadGraph)
 
 function settingLabel(name) {
   const labels = {
@@ -157,7 +212,7 @@ function settingLabel(name) {
 async function load() {
   loading.value = true
   try {
-    const res = await getClientAi(props.tenantId)
+    const res = await getClientAi(props.tenantId, selectedRange.value)
     data.value = res?.data ?? {}
   } catch {
     data.value = {}
@@ -169,6 +224,19 @@ async function load() {
     settings.value = res?.data ?? []
   } catch {
     settings.value = []
+  }
+}
+
+/** Range switch only needs the graph payload re-fetched, not the settings/kill-switch state. */
+async function reloadGraph() {
+  loading.value = true
+  try {
+    const res = await getClientAi(props.tenantId, selectedRange.value)
+    data.value = res?.data ?? {}
+  } catch {
+    data.value = {}
+  } finally {
+    loading.value = false
   }
 }
 

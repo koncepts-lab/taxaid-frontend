@@ -43,6 +43,8 @@ export function useAkeel() {
   const sendingStatusText = useState<string>('akeel_sending_status', () => 'Akeel is typing...')
 
   const SENDING_PHASES = ['Akeel is thinking...', 'Akeel is checking your data...', 'Akeel is working on it...', 'Akeel is answering...', 'Akeel is typing...']
+  const ONE_CLICK_WORKING_PHASES = ['Akeel is analyzing your data...', 'Akeel is compiling the full report...', 'Akeel is preparing your summary...']
+  const ONE_CLICK_FINAL_PHASE = 'Almost done — finalizing your summary...'
 
   // Attached files stay visible after a send (chat isn't "closed" just because a message went
   // through) — cleared 5 min after the last activity in this chat, or immediately on switching
@@ -62,12 +64,20 @@ export function useAkeel() {
     }
   }
 
-  function startSendingStatusCycle() {
+  function startSendingStatusCycle(isOneClick = false) {
+    const phases = isOneClick ? ONE_CLICK_WORKING_PHASES : SENDING_PHASES
     let i = 0
-    sendingStatusText.value = SENDING_PHASES[0]
+    sendingStatusText.value = phases[0]
     const interval = setInterval(() => {
-      i = (i + 1) % SENDING_PHASES.length
-      sendingStatusText.value = SENDING_PHASES[i]
+      if (isOneClick) {
+        if (i < phases.length - 1) {
+          i++
+          sendingStatusText.value = phases[i]
+        }
+        return
+      }
+      i = (i + 1) % phases.length
+      sendingStatusText.value = phases[i]
     }, 1600)
     return () => clearInterval(interval)
   }
@@ -175,15 +185,24 @@ export function useAkeel() {
     useApi(`/ai/uploads/${id}`, { method: 'DELETE' }).catch(() => {})
   }
 
+  /** Navigates to chat-with-akeel instantly; sendMessage runs in the background. */
+  function openOneClickSummary(domain: string, dataLinkKey: string) {
+    navigateTo('/chat-with-akeel')
+    sendMessage('', [domain], dataLinkKey)
+  }
+
   /** Sends a message on the active chat, auto-creating one first if none is active.
    *  dataLinkKey: guarantees that specific data-link's real result reaches the model as extra
    *  context (e.g. a One-Click Summary card) — additive only, never replaces normal domain-scoped
    *  tool-choice. message can be omitted when dataLinkKey is set (backend synthesizes it). */
-  async function sendMessage(message: string, domains?: string[], dataLinkKey?: string) {
+  async function sendMessage(message: string, domains?: string[], dataLinkKey?: string, hideUserMessage = false) {
     if (!message?.trim() && !dataLinkKey) return
+    if (sending.value) return
 
     sending.value = true
     error.value = null
+    const isOneClick = !!dataLinkKey?.startsWith('onclick_')
+    sendingStatusText.value = isOneClick ? ONE_CLICK_WORKING_PHASES[0] : SENDING_PHASES[0]
 
     let chatId = activeChatId.value
     if (!chatId) {
@@ -194,9 +213,9 @@ export function useAkeel() {
       }
     }
 
-    if (message?.trim()) messages.value.push({ role: 'user', content: message })
+    if (message?.trim() && !hideUserMessage) messages.value.push({ role: 'user', content: message })
     const uploadIds = pendingUploads.value.map((u) => u.id)
-    const stopStatusCycle = startSendingStatusCycle()
+    const stopStatusCycle = startSendingStatusCycle(isOneClick)
 
     try {
       const res: any = await useApi(`/ai/chats/${chatId}/messages`, {
@@ -208,6 +227,11 @@ export function useAkeel() {
           ...(dataLinkKey ? { data_link_key: dataLinkKey } : {}),
         },
       })
+
+      if (dataLinkKey?.startsWith('onclick_')) {
+        sendingStatusText.value = ONE_CLICK_FINAL_PHASE
+        await new Promise((resolve) => setTimeout(resolve, 300))
+      }
 
       messages.value.push({ role: 'assistant', content: res?.message ?? '' })
       if (res?.status) status.value = res.status
@@ -250,5 +274,6 @@ export function useAkeel() {
     sendMessage,
     uploadFile,
     removeUpload,
+    openOneClickSummary,
   }
 }

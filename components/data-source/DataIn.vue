@@ -177,7 +177,15 @@
                                 class="flex-1 py-3 bg-[#68E4C44D] text-black rounded-xl text-sm font-medium transition-all cursor-default border-[#04C18F80] border">
                                 {{ currentLang === 'ar' ? 'تم تحميل المستند' : 'Document Uploaded' }}
                             </button>
-                            <button @click="removeFile(card)"
+                            <!-- Sync-tracked types (AR/AP/Budget/Cost Center/PDC) re-upload to sync, they
+                                 don't have a "remove the document" concept — same local view-toggle as
+                                 Remove below (reveals Download Sample + Add) so the uploader sees the
+                                 template before re-uploading, just relabeled since nothing is deleted. -->
+                            <button v-if="props.supportsVariancePreview?.(card.id)" @click="removeFile(card)"
+                                class="px-6 py-3 border border-[#008169]/30 text-[#008169] hover:bg-[#00B794]/10 rounded-xl text-sm font-medium transition-all active:scale-95 cursor-pointer">
+                                {{ currentLang === 'ar' ? 'تحديث' : 'Update' }}
+                            </button>
+                            <button v-else @click="removeFile(card)"
                                 class="px-6 py-3 border bg-[#FEF2F230] border-[#FFA6A6] text-[#FF6B50] hover:bg-[#FF6B50] hover:text-white rounded-xl text-sm font-medium  transition-all active:scale-95">
                                 {{ currentLang === 'ar' ? 'حذف' : 'Remove' }}
                             </button>
@@ -382,6 +390,19 @@
         @upload="handleModalUpload"
     />
 
+    <DataSourceVarianceModal
+        :is-open="isVarianceModalOpen"
+        :is-dark="isDark"
+        :current-lang="currentLang"
+        :title="varianceModalTitle"
+        :summary="variancePreview?.summary ?? { added: 0, changed: 0, removed: 0 }"
+        :changes="variancePreview?.changes ?? []"
+        :warnings="variancePreview?.warnings ?? []"
+        :confirming="props.confirming"
+        @close="handleVarianceClose"
+        @confirm="handleVarianceConfirm"
+    />
+
     <DataSourceDataInVatUploadModal
         :is-open="isVatModalOpen"
         :current-lang="currentLang"
@@ -561,6 +582,15 @@
             </div>
         </Transition>
     </Teleport>
+
+    <CommonErrorPopupModal
+        :is-open="errorPopup.isOpen"
+        :is-dark="isDark"
+        :title="errorPopup.title"
+        :message="errorPopup.message"
+        :auto-close-ms="15000"
+        @close="errorPopup.isOpen = false"
+    />
 </template>
 
 <style scoped>
@@ -580,6 +610,11 @@ const props = defineProps({
     uploadFile: Function,
     downloadSample: Function,
     uploadingId: String,
+    supportsVariancePreview: Function,
+    previewUpload: Function,
+    confirmUpload: Function,
+    cancelPreview: Function,
+    confirming: Boolean,
 })
 
 const emit = defineEmits(['view', 'remove', 'uploaded'])
@@ -821,13 +856,55 @@ const handleVatUpload = async ({ file, ...fields }) => {
     } catch (err) {
         console.error('VAT upload failed:', err)
         vatUploadError.value = err?.message ?? 'VAT upload failed'
-        alert(vatUploadError.value)
+        showErrorPopup(file?.name, vatUploadError.value)
     }
 }
+
+// ── Preview/confirm variance flow (AR/AP + Budget) ─────────────────────────
+const isVarianceModalOpen = ref(false)
+const varianceTargetId = ref(null)
+const variancePreview = ref(null) // { temp_path, date, summary, changes }
+const varianceError = ref('')
+
+const isBudgetTabId = (id) => budgetTabs.some(t => t.id === id && !t.isViewOnly)
+
+// ── Error popup (replaces raw alert() for upload/preview/confirm failures) ──
+const errorPopup = ref({ isOpen: false, title: '', message: '' })
+const showErrorPopup = (title, message) => {
+    errorPopup.value = { isOpen: true, title: title || 'Upload Failed', message: message || 'Something went wrong.' }
+}
+
+const varianceModalTitle = computed(() => {
+    if (varianceTargetId.value === 'ar') return 'Account Receivable Variance'
+    if (varianceTargetId.value === 'ap') return 'Account Payable Variance'
+    if (varianceTargetId.value === 'cc_master') return 'Cost Center Master Variance'
+    if (varianceTargetId.value === 'cc_budget') return 'Cost Center Budget Variance'
+    if (varianceTargetId.value === 'pdcin') return 'PDC In Variance'
+    if (varianceTargetId.value === 'pdcout') return 'PDC Out Variance'
+    if (varianceTargetId.value === 'forecast') return 'Sales Forecast Variance'
+    const tab = budgetTabs.find(t => t.id === varianceTargetId.value)
+    return tab ? `${tab.label} Budget Variance` : 'Variance'
+})
 
 const handleModalUpload = async (file) => {
     if (!activeUploadTarget.value) return
     const { type, id } = activeUploadTarget.value
+
+    if ((type === 'datain' || type === 'budget') && props.supportsVariancePreview?.(id)) {
+        varianceError.value = ''
+        try {
+            const result = await props.previewUpload(id, file)
+            varianceTargetId.value = id
+            variancePreview.value = result
+            isModalOpen.value = false
+            isVarianceModalOpen.value = true
+        } catch (err) {
+            console.error(`Preview failed for ${id}:`, err)
+            varianceError.value = err?.message ?? 'Preview failed'
+            showErrorPopup(file?.name, varianceError.value)
+        }
+        return
+    }
 
     if (type === 'datain') {
         try {
@@ -843,6 +920,37 @@ const handleModalUpload = async (file) => {
             console.error(`Budget upload failed for ${id}:`, err)
         }
     }
+}
+
+const handleVarianceConfirm = async () => {
+    if (!variancePreview.value || !varianceTargetId.value) return
+    try {
+        await props.confirmUpload(varianceTargetId.value, variancePreview.value.temp_path)
+        if (isBudgetTabId(varianceTargetId.value)) {
+            budgetStatuses.value[varianceTargetId.value] = {
+                isUploaded: true,
+                fileName: variancePreview.value.file_name ?? null,
+                uploadDate: new Date().toLocaleDateString(),
+            }
+        } else {
+            emit('uploaded', varianceTargetId.value)
+        }
+        isVarianceModalOpen.value = false
+        variancePreview.value = null
+    } catch (err) {
+        console.error('Confirm failed:', err)
+        showErrorPopup(variancePreview.value?.file_name, err?.message ?? 'Confirm failed')
+    }
+}
+
+// Cancel also deletes the pending temp file — don't leave it stranded in GCS.
+const handleVarianceClose = () => {
+    if (variancePreview.value?.temp_path) {
+        props.cancelPreview?.(variancePreview.value.temp_path)
+    }
+    isVarianceModalOpen.value = false
+    variancePreview.value = null
+    varianceTargetId.value = null
 }
 
 const getFileNameFromUrl = (url) => {
