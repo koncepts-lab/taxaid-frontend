@@ -23,6 +23,7 @@
             @reload="handleReload"
             @export-excel="handleExport('excel')"
             @export-pdf="handleExport('pdf')"
+            @one-click-summary="handleOneClickSummary"
           />
 
           <div class="mb-4 lg:mb-8">
@@ -128,6 +129,9 @@ const handleReload = () => fetchAll(currentLang.value)
 const handleExport = (type) => {
   console.log('Export:', type)
 }
+
+const { openOneClickSummary } = useAkeel()
+const handleOneClickSummary = () => openOneClickSummary('INDIRECT_EXPENSE', 'onclick_indirect_expense')
 
 watch(currentLang, () => fetchAll(currentLang.value))
 

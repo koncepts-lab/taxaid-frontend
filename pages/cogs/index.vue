@@ -123,9 +123,8 @@ const handleDateChange = (periodData) => {
 
 const handleReload = () => fetchAll(currentLang.value)
 
-const handleOneClickSummary = () => {
-  console.log('One Click Summary clicked')
-}
+const { openOneClickSummary } = useAkeel()
+const handleOneClickSummary = () => openOneClickSummary('COGS', 'onclick_cogs')
 
 watch(currentLang, () => fetchAll(currentLang.value))
 

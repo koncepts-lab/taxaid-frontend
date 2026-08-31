@@ -15,7 +15,8 @@
                         :periods="customPeriods"
                         @selected-date="handleDateUpdate"
                         @reload="fetchTabData(activeTab)"
-                        @export-pdf="handleExportPDF" />
+                        @export-pdf="handleExportPDF"
+                        @one-click-summary="handleOneClickSummary" />
 
                     <!-- Gap-day snapshot notice: shown when the Balance Sheet
                          "as of" date has no exact ledger snapshot and the
@@ -168,6 +169,9 @@ watch([activeTab, filters], () => {
 const handleExportPDF = async () => {
     console.warn("PDF export is currently disabled.");
 }
+
+const { openOneClickSummary } = useAkeel()
+const handleOneClickSummary = () => openOneClickSummary('FINANCIAL_STATEMENTS', 'onclick_financial_statements')
 
 const tabs = [
     {

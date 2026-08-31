@@ -20,6 +20,7 @@
             :minDate="new Date(2026, 5, 15)"
             @selected-date="handleDateChange"
             @reload="handleReload"
+            @one-click-summary="handleOneClickSummary"
           />
 
           <!-- Gap-day snapshot notice: shown when the selected date has no
@@ -117,6 +118,9 @@ const handleDateChange = (period) => {
 }
 
 const handleReload = () => fetchAll(currentLang.value)
+
+const { openOneClickSummary } = useAkeel()
+const handleOneClickSummary = () => openOneClickSummary('AP', 'onclick_ap')
 
 watch(currentLang, () => fetchAll(currentLang.value))
 

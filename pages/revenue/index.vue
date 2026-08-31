@@ -26,6 +26,7 @@
                         @selected-date="handleDateSelected"
                         @export-excel="handleExport('excel')"
                         @export-pdf="handleExport('pdf')"
+                        @one-click-summary="handleOneClickSummary"
                     />
 
                     <template v-if="loadingBreakdown">
@@ -190,6 +191,9 @@ const handleDateSelected = (periodData) => {
 }
 
 const handleExport = (type) => {}
+
+const { openOneClickSummary } = useAkeel()
+const handleOneClickSummary = () => openOneClickSummary('REVENUE_SALES', 'onclick_revenue_sales')
 
 onMounted(() => {
   fetchAll()

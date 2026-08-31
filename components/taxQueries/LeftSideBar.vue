@@ -107,6 +107,16 @@
 
         </div>
     </div>
+
+    <CommonErrorPopupModal
+        :isOpen="!!pendingDeleteId"
+        :isDark="isDark"
+        mode="confirm"
+        title="Delete this chat?"
+        message="This cannot be undone."
+        confirmText="Delete"
+        @close="pendingDeleteId = null"
+        @confirm="performDelete" />
 </template>
 
 <script setup>
@@ -142,9 +152,15 @@ async function selectChat(id) {
     await resumeChat(id)
 }
 
-async function confirmDelete(id) {
-    if (!confirm('Delete this chat? This cannot be undone.')) return
-    await deleteChat(id)
+const pendingDeleteId = ref(null)
+
+function confirmDelete(id) {
+    pendingDeleteId.value = id
+}
+
+async function performDelete() {
+    if (pendingDeleteId.value) await deleteChat(pendingDeleteId.value)
+    pendingDeleteId.value = null
 }
 
 onMounted(() => {

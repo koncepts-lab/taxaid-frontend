@@ -97,7 +97,9 @@ const cards = ref([
     subtitleEn: 'Income Analysis',
     subtitleAr: 'تحليل الدخل',
     descEn: 'Understand income sources, sales performance, and revenue streams. Analyze trends, identify top-performing products or services, and uncover growth opportunities.',
-    descAr: 'فهم مصادر الدخل، وأداء المبيعات، ومسارات الإيرادات. تحليل الاتجاهات، وتحديد المنتجات أو الخدمات الأفضل أداءً، واكتشاف فرص النمو.'
+    descAr: 'فهم مصادر الدخل، وأداء المبيعات، ومسارات الإيرادات. تحليل الاتجاهات، وتحديد المنتجات أو الخدمات الأفضل أداءً، واكتشاف فرص النمو.',
+    dataLinkKey: 'onclick_revenue_sales',
+    domain: 'REVENUE_SALES',
   },
   {
     id: 'cashflow',
@@ -107,7 +109,9 @@ const cards = ref([
     subtitleEn: 'Cash Movement',
     subtitleAr: 'حركة النقد',
     descEn: 'Track money moving in and out of your business. Monitor cash inflows from customers and outflows for operations and expenses.',
-    descAr: 'تتبع حركة الأموال داخل وخارج عملك. مراقبة التدفقات النقدية الواردة من العملاء والتدفقات الخارجة للعمليات والمصروفات.'
+    descAr: 'تتبع حركة الأموال داخل وخارج عملك. مراقبة التدفقات النقدية الواردة من العملاء والتدفقات الخارجة للعمليات والمصروفات.',
+    dataLinkKey: 'onclick_cash_flow_bank',
+    domain: 'CASH_FLOW_BANK',
   },
   {
     id: 'statements',
@@ -117,7 +121,9 @@ const cards = ref([
     subtitleEn: 'P&L & Balance Sheet',
     subtitleAr: 'بيان الأرباح والخسائر والميزانية العمومية',
     descEn: 'Access comprehensive profit & loss statements, balance sheets, and income statements. Get a complete picture of your business financial health and performance.',
-    descAr: 'الوصول إلى بيانات شاملة للأرباح والخسائر والميزانيات العمومية. احصل على صورة كاملة للصحة المالية والأداء لعملك.'
+    descAr: 'الوصول إلى بيانات شاملة للأرباح والخسائر والميزانيات العمومية. احصل على صورة كاملة للصحة المالية والأداء لعملك.',
+    dataLinkKey: 'onclick_financial_statements',
+    domain: 'FINANCIAL_STATEMENTS',
   },
   {
     id: 'indirect',
@@ -127,7 +133,9 @@ const cards = ref([
     subtitleEn: 'Overhead Costs',
     subtitleAr: 'التكاليف العامة',
     descEn: 'Review overhead costs like rent, utilities, insurance, office supplies, and administrative expenses. Identify areas for cost optimization and efficiency improvements.',
-    descAr: 'مراجعة التكاليف العامة مثل الإيجار والمرافق والتأمين واللوازم المكتبية والمصروفات الإدارية. تحديد مجالات تحسين التكلفة وتحسين الكفاءة.'
+    descAr: 'مراجعة التكاليف العامة مثل الإيجار والمرافق والتأمين واللوازم المكتبية والمصروفات الإدارية. تحديد مجالات تحسين التكلفة وتحسين الكفاءة.',
+    dataLinkKey: 'onclick_indirect_expense',
+    domain: 'INDIRECT_EXPENSE',
   },
   {
     id: 'ar',
@@ -138,7 +146,7 @@ const cards = ref([
     subtitleAr: 'الفواتير المستحقة',
     descEn: 'Monitor outstanding invoices and payments owed to your business. Track aging receivables, improve collection processes, and manage customer payment terms.',
     descAr: 'مراقبة الفواتير المستحقة والمدفوعات المستحقة لعملك. تتبع الذمم المدينة القديمة وتحسين عمليات التحصيل وإدارة شروط الدفع للعملاء.',
-    dataLinkKey: 'calc_hhi_index',
+    dataLinkKey: 'onclick_ar',
     domain: 'AR',
   },
   {
@@ -149,7 +157,9 @@ const cards = ref([
     subtitleEn: 'Production Costs',
     subtitleAr: 'تكاليف الإنتاج',
     descEn: 'Analyze the direct costs of producing your goods or services including materials, labor, and manufacturing expenses. Understand your gross profit margins.',
-    descAr: 'تحليل التكاليف المباشرة لإنتاج البضائع أو الخدمات بما في ذلك المواد والعمالة ومصاريف التصنيع. فهم هوامش الربح الإجمالية.'
+    descAr: 'تحليل التكاليف المباشرة لإنتاج البضائع أو الخدمات بما في ذلك المواد والعمالة ومصاريف التصنيع. فهم هوامش الربح الإجمالية.',
+    dataLinkKey: 'onclick_cogs',
+    domain: 'COGS',
   },
   {
     id: 'ap',
@@ -160,7 +170,7 @@ const cards = ref([
     subtitleAr: 'الفواتير للدفع',
     descEn: 'Track bills and payments to suppliers and vendors. Manage payment schedules and optimize cash flow timing.',
     descAr: 'تتبع الفواتير والمدفوعات للموردين والبائعين. إدارة جداول الدفع وتحسين توقيت التدفق النقدي.',
-    dataLinkKey: 'calc_vendor_concentration',
+    dataLinkKey: 'onclick_ap',
     domain: 'AP',
   },
   {
@@ -171,7 +181,9 @@ const cards = ref([
     subtitleEn: 'Project Profitability',
     subtitleAr: 'ربحية المشروع',
     descEn: 'Evaluate profitability by department, project, or business unit. Track costs and revenues for specific initiatives to understand which areas drive the most value.',
-    descAr: 'تقييم الربحية حسب القسم أو المشروع أو وحدة العمل. تتبع التكاليف والإيرادات للمبادرات المحددة لفهم أي المجالات تحقق أكبر قيمة.'
+    descAr: 'تقييم الربحية حسب القسم أو المشروع أو وحدة العمل. تتبع التكاليف والإيرادات للمبادرات المحددة لفهم أي المجالات تحقق أكبر قيمة.',
+    dataLinkKey: 'onclick_cost_center',
+    domain: 'COST_CENTER',
   },
   {
     id: 'tax',
@@ -181,21 +193,19 @@ const cards = ref([
     subtitleEn: 'Tax Support',
     subtitleAr: 'الدعم الضريبي',
     descEn: 'Get answers to tax-related questions on compliance, deductions, deadlines, and planning. Access expert guidance on complex tax matters.',
-    descAr: 'احصل على إجابات للأسئلة المتعلقة بالضرائب حول الامتثال والخصومات والمواعيد النهائية والتخطيط. الوصول إلى إرشادات الخبراء حول المسائل الضريبية المعقدة.'
+    descAr: 'احصل على إجابات للأسئلة المتعلقة بالضرائب حول الامتثال والخصومات والمواعيد النهائية والتخطيط. الوصول إلى إرشادات الخبراء حول المسائل الضريبية المعقدة.',
+    dataLinkKey: 'onclick_tax',
+    domain: 'TAX',
   }
 ])
 
-const { createChat, sendMessage } = useAkeel()
+const { openOneClickSummary } = useAkeel()
 
-// Only cards with a real backing data-link (AR/AP today) guarantee a live tool call — the rest
-// stay plain navigation until their own data-links get built.
-async function openCard(card) {
+function openCard(card) {
   if (!card.dataLinkKey) {
     navigateTo('/chat-with-akeel')
     return
   }
-  await createChat()
-  await sendMessage('', [card.domain], card.dataLinkKey)
-  navigateTo('/chat-with-akeel')
+  openOneClickSummary(card.domain, card.dataLinkKey)
 }
 </script>

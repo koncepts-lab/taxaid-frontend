@@ -29,6 +29,7 @@
                         @period-change="handlePeriodChange"
                         @export-excel="handleExport('excel')"
                         @export-pdf="handleExport('pdf')"
+                        @one-click-summary="handleOneClickSummary"
                     />
 
                     <CashFlowMetrics :is-compressed="isChatOpen" />
@@ -117,6 +118,9 @@ const handlePeriodChange = (months) => {
 }
 
 const handleExport = (type) => {}
+
+const { openOneClickSummary } = useAkeel()
+const handleOneClickSummary = () => openOneClickSummary('CASH_FLOW_BANK', 'onclick_cash_flow_bank')
 
 onMounted(() => {
   fetchProjection()

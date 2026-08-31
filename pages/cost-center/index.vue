@@ -17,7 +17,7 @@
             :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
             :periods="costCenterPeriods"
             @export-pdf="handleExportPDF"
-            @selected-date="handleDateChange" @reload="fetchData" />
+            @selected-date="handleDateChange" @reload="fetchData" @one-click-summary="handleOneClickSummary" />
           <div class="my-8">
             <CostCenterSummary ref="summaryRef" />
           </div>
@@ -117,6 +117,9 @@ const handleDateChange = (period) => {
 const handleExportPDF = async () => {
   console.warn("PDF export is currently disabled.");
 };
+
+const { openOneClickSummary } = useAkeel()
+const handleOneClickSummary = () => openOneClickSummary('COST_CENTER', 'onclick_cost_center')
 </script>
 
 <style scoped>

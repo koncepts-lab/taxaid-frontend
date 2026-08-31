@@ -194,10 +194,11 @@ const currentLang = useState('currentLang', () => 'en')
 
 const { messages, status, usage, sending, sendingStatusText, error, errorVariant, activeChatId, sendMessage, fetchChats } = useAkeel()
 
-// This widget is only ever mounted on report/feature pages, never on the dedicated
-// /chat-with-akeel history page — a conversation here shouldn't survive navigating away
-// (only /chat-with-akeel offers resumable history via its session list).
+const route = useRoute()
+
+// Skip the reset when navigating to /chat-with-akeel itself (e.g. a One-Click Summary card).
 onBeforeUnmount(() => {
+    if (route.path.includes('chat-with-akeel')) return
     activeChatId.value = null
     messages.value = []
 })
@@ -212,7 +213,6 @@ const { questions: promptQuestions, tips: promptTips, fetchPrompts } = useAkeelP
 const isChatOpen = defineModel('isChatOpen')
 defineEmits(['update:activeTab', 'expand'])
 
-const route = useRoute()
 const openChat = () => { isChatOpen.value = true; fetchChats(); fetchPrompts(route.name?.toString() ?? 'default') }
 const closeChat = () => { isChatOpen.value = false }
 
