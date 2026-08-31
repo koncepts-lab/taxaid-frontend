@@ -195,7 +195,7 @@ export function useAkeel() {
    *  dataLinkKey: guarantees that specific data-link's real result reaches the model as extra
    *  context (e.g. a One-Click Summary card) — additive only, never replaces normal domain-scoped
    *  tool-choice. message can be omitted when dataLinkKey is set (backend synthesizes it). */
-  async function sendMessage(message: string, domains?: string[], dataLinkKey?: string) {
+  async function sendMessage(message: string, domains?: string[], dataLinkKey?: string, hideUserMessage = false) {
     if (!message?.trim() && !dataLinkKey) return
     if (sending.value) return
 
@@ -213,7 +213,7 @@ export function useAkeel() {
       }
     }
 
-    if (message?.trim()) messages.value.push({ role: 'user', content: message })
+    if (message?.trim() && !hideUserMessage) messages.value.push({ role: 'user', content: message })
     const uploadIds = pendingUploads.value.map((u) => u.id)
     const stopStatusCycle = startSendingStatusCycle(isOneClick)
 

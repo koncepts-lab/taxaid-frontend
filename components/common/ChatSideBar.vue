@@ -194,6 +194,10 @@ const currentLang = useState('currentLang', () => 'en')
 
 const { messages, status, usage, sending, sendingStatusText, error, errorVariant, activeChatId, sendMessage, fetchChats } = useAkeel()
 
+const props = defineProps({
+    domain: { type: String, default: null },
+})
+
 const route = useRoute()
 
 // Skip the reset when navigating to /chat-with-akeel itself (e.g. a One-Click Summary card).
@@ -213,18 +217,24 @@ const { questions: promptQuestions, tips: promptTips, fetchPrompts } = useAkeelP
 const isChatOpen = defineModel('isChatOpen')
 defineEmits(['update:activeTab', 'expand'])
 
-const openChat = () => { isChatOpen.value = true; fetchChats(); fetchPrompts(route.name?.toString() ?? 'default') }
+const openChat = () => {
+    isChatOpen.value = true
+    fetchChats()
+    const page = route.name?.toString() ?? 'default'
+    if (page === 'tax-queries') fetchPrompts(['tax-queries', 'vat-queries'], 'tax-queries')
+    else fetchPrompts(page)
+}
 const closeChat = () => { isChatOpen.value = false }
 
 const draft = ref('')
 async function ask(question) {
-    await sendMessage(question)
+    await sendMessage(question, props.domain ? [props.domain] : [])
 }
 async function send() {
     if (!draft.value.trim() || sending.value) return
     const message = draft.value
     draft.value = ''
-    await sendMessage(message)
+    await sendMessage(message, props.domain ? [props.domain] : [])
 }
 </script>
 <style scoped>

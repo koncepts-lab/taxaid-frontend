@@ -71,7 +71,7 @@
           : 'bottom-24 w-[80px]',
         isChatOpen ? 'lg:2xl:w-120 lg:w-100' : 'lg:w-[80px]'
       ]">
-        <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = false" />
+        <CommonChatSideBar v-model:isChatOpen="isChatOpen" domain="AP" @expand="isFullScreenChat = false" />
       </aside>
     </div>
 

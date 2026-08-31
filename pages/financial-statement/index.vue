@@ -72,7 +72,7 @@
                 // 4. Desktop Widths
                 isChatOpen ? 'lg:2xl:w-120 lg:w-100' : 'lg:w-[80px]'
             ]">
-                <CommonChatSideBar v-model:isChatOpen="isChatOpen" @expand="isFullScreenChat = true" />
+                <CommonChatSideBar v-model:isChatOpen="isChatOpen" domain="FINANCIAL_STATEMENTS" @expand="isFullScreenChat = true" />
             </aside>
         </div>
 

@@ -91,7 +91,11 @@ const { messages, activeChatId, sending, sendingStatusText, chatGettingLong, usa
 const { questions: promptQuestions, tips: promptTips, fetchPrompts } = useAkeelPrompts()
 
 const route = useRoute()
-onMounted(() => fetchPrompts(route.name?.toString() ?? 'default'))
+onMounted(() => {
+    const page = route.name?.toString() ?? 'default'
+    if (page === 'tax-queries') fetchPrompts(['tax-queries', 'vat-queries'], 'tax-queries')
+    else fetchPrompts(page)
+})
 
 // Only /chat-with-akeel offers resumable history (via its session-list sidebar) — everywhere
 // else this component is mounted (e.g. /tax-queries), the conversation shouldn't survive

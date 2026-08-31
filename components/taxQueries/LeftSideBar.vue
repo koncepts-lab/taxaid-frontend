@@ -63,7 +63,7 @@
 
                     <div class="space-y-1">
                         <p class="text-sm font-normal text-gray-400 tracking-widest mb-2 px-2">Ask About</p>
-                        <button v-for="tab in tabs" :key="tab.id" @click="$emit('update:activeTab', tab.id)" :class="[
+                        <button v-for="tab in tabs" :key="tab.id" @click="selectTab(tab)" :class="[
                             'w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all border',
                             activeTab === tab.id 
                                 ? (isDark ? 'bg-white/10 text-white border-white/20' : 'bg-primary-350 text-[#008472] border-primary-100') 
@@ -136,6 +136,15 @@ const searchQuery = ref('');
 const { tabs, deadlines } = useTaxQueriesPage()
 
 const { chats, status, usage, activeChatId, fetchChats, createChat, resumeChat, deleteChat } = useAkeel()
+const { setActivePromptPage } = useAkeelPrompts()
+
+const TAB_PROMPT_PAGES = { vat: 'vat-queries' }
+
+function selectTab(tab) {
+    emit('update:activeTab', tab.id)
+    const promptPage = TAB_PROMPT_PAGES[tab.id]
+    if (promptPage) setActivePromptPage(promptPage)
+}
 
 const filteredChats = computed(() => {
     if (!searchQuery.value.trim()) return chats.value
