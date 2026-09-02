@@ -351,8 +351,8 @@ const initOnboarding = async () => {
       isFinished.value = true
       return
     }
-    if (tenantStatus === 'live') {
-      // Shouldn't normally land here (middleware routes live tenants to /dashboard directly),
+    if (tenantStatus === 'live' || tenantStatus === 'demo') {
+      // Shouldn't normally land here (middleware routes live/demo tenants to /dashboard directly),
       // but don't strand them on the onboarding form if they do.
       return navigateTo('/dashboard')
     }

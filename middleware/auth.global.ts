@@ -89,7 +89,7 @@ export default defineNuxtRouteMiddleware((to) => {
   if (accountType.value === 'taxaid') return
 
   const tenantStatus = useCookie('tenant_status')
-  if (to.path !== '/onboarding' && tenantStatus.value && tenantStatus.value !== 'live') {
+  if (to.path !== '/onboarding' && tenantStatus.value && tenantStatus.value !== 'live' && tenantStatus.value !== 'demo') {
     return navigateTo('/onboarding')
   }
 })

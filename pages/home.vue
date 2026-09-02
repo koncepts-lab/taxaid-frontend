@@ -478,7 +478,7 @@ async function onSubmit() {
       // TaxAid staff on a temp credential need the real dashboard even while the tenant
       // they're working on isn't 'live' yet — only the tenant's own users go through
       // onboarding/waiting. 'live' is the only status that reaches the real app for those.
-      if (accountType === 'taxaid' || status === 'live') {
+      if (accountType === 'taxaid' || status === 'live' || status === 'demo') {
         router.push('/dashboard')
         return
       }
@@ -539,7 +539,7 @@ function onEmailVerified(res) {
   // (e.g. restored from a backup with its answers already imported) should go straight to the
   // dashboard, not be forced through the wizard again just because they "just verified".
   const status = res?.data?.tenant?.status
-  router.push(status === 'live' ? '/dashboard' : '/onboarding')
+  router.push(status === 'live' || status === 'demo' ? '/dashboard' : '/onboarding')
 }
 
 const forgotError = ref('')
