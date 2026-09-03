@@ -64,9 +64,9 @@ export function useImplementation() {
     return res.data ?? []
   }
 
-  async function getClientSteps(clientId: string): Promise<any[]> {
+  async function getClientSteps(clientId: string): Promise<{ steps: any[], tenantStatus: string | null }> {
     const res: any = await apiFetch(`/admin/implementation-pool/client-steps/${clientId}`)
-    return res.data ?? []
+    return { steps: res.data ?? [], tenantStatus: res.tenant_status ?? null }
   }
 
   async function getDeliverablesThisWeek(): Promise<number> {

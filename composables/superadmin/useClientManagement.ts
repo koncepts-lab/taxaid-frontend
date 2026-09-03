@@ -40,7 +40,7 @@ export function useClientManagement() {
   const getSchedule = (tenantId: number) =>
     useAdminApi(`/connector/schedule?tenant_id=${tenantId}`)
 
-  const setSchedule = (tenantId: number, data: { sync_time: string; years: string[]; enabled: boolean }) =>
+  const setSchedule = (tenantId: number, data: { years: string[]; enabled: boolean }) =>
     useAdminApi('/connector/schedule', { method: 'POST', body: { tenant_id: tenantId, ...data } })
 
   const syncNow = (tenantId: number) =>

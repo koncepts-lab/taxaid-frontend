@@ -239,7 +239,10 @@
 
                                         <button :disabled="!steps[4]?.status || demoLoading || demoEnabled"
                                             @click="enableDemoAccess"
-                                            class="bg-[#FB2C36] hover:bg-[#E63939] text-white px-15 py-1.5 rounded-lg text-base font-normal flex items-center gap-2 transition-all shadow-lg shadow-red-200  disabled:opacity-50  disabled:cursor-not-allowed disabled:shadow-none">
+                                            class="text-white px-15 py-1.5 rounded-lg text-base font-normal flex items-center gap-2 transition-all"
+                                            :class="demoEnabled
+                                                ? 'bg-[#00A656] shadow-lg shadow-green-200'
+                                                : 'bg-[#FB2C36] hover:bg-[#E63939] shadow-lg shadow-red-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none'">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                                 stroke="currentColor" stroke-width="2.5">
                                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -476,8 +479,11 @@ async function confirmGoLive() {
 }
 
 // --- Enable demo dashboard access (first 5 steps) ---
+// tenantStatus flips implementation -> demo server-side when enabled (ImplementationPoolService::
+// updateAssignment) — seeding from it here is what makes the button survive a refresh instead of
+// always starting locked-looking again.
 const demoLoading = ref(false)
-const demoEnabled = ref(false)
+const demoEnabled = ref(props.project.tenantStatus === 'demo')
 
 async function enableDemoAccess() {
     demoLoading.value = true

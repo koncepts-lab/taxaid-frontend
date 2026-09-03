@@ -26,16 +26,16 @@
       <h2 class="text-[16px] font-medium text-[#101828] mb-4">Sync Schedule</h2>
       <p class="text-[13px] text-[#4A5565] -mt-2 mb-4">Daily sync runs the current year only — use Force Sync below for previous years.</p>
       <div class="flex flex-wrap items-end gap-6">
-        <div>
-          <label class="block text-[14px] font-medium text-[#101828] mb-2">Daily Sync Time</label>
-          <input v-model="form.sync_time" type="time" step="60" required
-            class="px-4 py-2 rounded-lg border border-[#04C18F80] focus:border-[#00896F] outline-none text-gray-700 text-sm bg-white cursor-pointer"
-            @click="$event.target.showPicker && $event.target.showPicker()" />
+        <div v-if="schedule?.is_grouped">
+          <label class="block text-[14px] font-medium text-[#101828] mb-2">Scheduled Sync Time (group-managed)</label>
+          <p class="text-sm text-gray-700">
+            Cycle 1: {{ schedule.group_sync_time }} • Cycle 2 (catch-up): {{ schedule.group_cycle_2_time }}
+          </p>
         </div>
         <label class="flex items-center gap-2 text-sm text-gray-700 pb-2">
           <input type="checkbox" v-model="form.enabled" class="accent-[#00896F]" /> Auto-sync enabled
         </label>
-        <button @click="saveSchedule" :disabled="busy || !form.sync_time"
+        <button @click="saveSchedule" :disabled="busy"
           class="px-5 py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors disabled:opacity-60">
           Save Schedule
         </button>
@@ -107,7 +107,7 @@
       <div class="flex flex-wrap items-center gap-4">
         <button @click="handleBackup('csv')" :disabled="backupBusy"
           class="px-4 py-2.5 border border-[#6FDBBF] rounded-lg text-sm font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60">
-          Export Backup (CSV)
+          Export Backup (Excel)
         </button>
         <button @click="handleBackup('json')" :disabled="backupBusy"
           class="px-4 py-2.5 border border-[#6FDBBF] rounded-lg text-sm font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60">
@@ -147,7 +147,7 @@ const history = ref([])
 const historyMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
 const historyPerPage = ref(10)
 const historyLoading = ref(false)
-const form = ref({ sync_time: '10:00', enabled: true })
+const form = ref({ enabled: true })
 const forceYears = ref(['Current Year'])
 const logType = ref('all')
 const logRequestId = ref(null)
@@ -188,10 +188,7 @@ async function run(fn, okMsg) {
 async function load() {
   try {
     schedule.value = await getSchedule(props.tenantId)
-    form.value = {
-      sync_time: schedule.value.sync_time ?? '10:00',
-      enabled: !!schedule.value.enabled,
-    }
+    form.value = { enabled: !!schedule.value.enabled }
   } catch {
     schedule.value = null
   }
@@ -241,8 +238,13 @@ async function handleDownloadLogs() {
   try {
     await downloadLogs(props.tenantId, logRequestId.value)
     logRequestId.value = null
-  } catch {
-    note('Logs not uploaded yet — try again in a moment.', false)
+  } catch (e) {
+    if (e?.data?.status === 'expired') {
+      logRequestId.value = null
+      note('Log request expired — click Request Logs again.', false)
+    } else {
+      note('Logs not uploaded yet — try again in a moment.', false)
+    }
   }
 }
 
