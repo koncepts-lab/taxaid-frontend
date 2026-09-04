@@ -36,9 +36,9 @@
             </div>
         </div>
 
-        <!-- Temporary Login Credentials (3/4) + TaxAid Connect (1/4) -->
+        <!-- Temporary Login Credentials (2/4) + Download Connector (1/4) + TaxAid Connect (1/4) -->
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div class="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
             <div class="flex items-start justify-between gap-6 flex-wrap">
                 <div>
                     <h3 class="text-xl font-normal mb-1 text-black">Temporary Login Credentials</h3>
@@ -105,6 +105,44 @@
                     These credentials have expired (client is live).
                 </div>
             </div>
+        </div>
+
+        <!-- Download Connector Card (1/4) -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 flex flex-col">
+            <h3 class="text-xl font-normal mb-1 text-black">Download Connector</h3>
+            <p class="text-base text-[#717182] mb-6">Shareable installer link for the client's IT team</p>
+
+            <div v-if="dlLink" class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <div class="flex-1 bg-[#F3F4F6] rounded-xl px-3 py-2.5 text-xs text-black font-mono truncate">
+                        {{ dlLink.url }}
+                    </div>
+                    <a :href="dlLink.url" target="_blank" title="Download"
+                        class="shrink-0 w-9 h-9 flex items-center justify-center bg-white border border-[#00896F] text-[#00896F] hover:bg-[#E6FDF9] rounded-lg transition-colors">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </a>
+                    <button @click="copyCred(dlLink.url, 'dl')" title="Copy link"
+                        class="shrink-0 w-9 h-9 flex items-center justify-center bg-white border border-[#00896F] rounded-lg transition-colors"
+                        :class="copied === 'dl' ? 'text-[#15803D]' : 'text-[#00896F] hover:bg-[#E6FDF9]'">
+                        <svg v-if="copied !== 'dl'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </button>
+                </div>
+                <p class="text-xs text-[#717182]">Valid until {{ formatDate(dlLink.expires_at) }}.</p>
+
+                <div class="pt-3 border-t border-gray-100">
+                    <button @click="generateDownloadLink" :disabled="dlLoading" class="text-xs text-[#00896F] hover:underline disabled:opacity-50">
+                        {{ dlLoading ? 'Generating…' : 'Regenerate' }}
+                    </button>
+                </div>
+            </div>
+
+            <button v-else @click="generateDownloadLink" :disabled="dlLoading"
+                class="bg-[#00896F] hover:bg-[#006B56] text-white px-6 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 disabled:opacity-50 self-start">
+                {{ dlLoading ? 'Generating…' : 'Generate Link' }}
+            </button>
+
+            <p v-if="dlError" class="text-xs text-[#B91C1C] mt-2">{{ dlError }}</p>
         </div>
 
         <!-- TaxAid Connector Card (1/4) -->
@@ -199,14 +237,18 @@
                                             </div>
                                         </div>
 
-                                        <button :disabled="!steps[4]?.status"
-                                            class="bg-[#FB2C36] hover:bg-[#E63939] text-white px-15 py-1.5 rounded-lg text-base font-normal flex items-center gap-2 transition-all shadow-lg shadow-red-200  disabled:opacity-50  disabled:cursor-not-allowed disabled:shadow-none">
+                                        <button :disabled="!steps[4]?.status || demoLoading || demoEnabled"
+                                            @click="enableDemoAccess"
+                                            class="text-white px-15 py-1.5 rounded-lg text-base font-normal flex items-center gap-2 transition-all"
+                                            :class="demoEnabled
+                                                ? 'bg-[#00A656] shadow-lg shadow-green-200'
+                                                : 'bg-[#FB2C36] hover:bg-[#E63939] shadow-lg shadow-red-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none'">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                                 stroke="currentColor" stroke-width="2.5">
                                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                                                 <circle cx="12" cy="12" r="3" />
                                             </svg>
-                                            Display Dashboard
+                                            {{ demoEnabled ? 'Dashboard Enabled' : demoLoading ? 'Enabling...' : 'Display Dashboard' }}
                                         </button>
                                     </div>
                                 </td>
@@ -324,7 +366,7 @@ import { ref, computed, reactive, onMounted } from 'vue'
 const props = defineProps({ project: Object })
 const emit = defineEmits(['back'])
 
-const { updateStepProgress, requestCredentials, getMyCredentialRequest, goLive, getConnectorCode, generateConnectorCode } = useImplementation()
+const { updateStepProgress, requestCredentials, getMyCredentialRequest, goLive, getConnectorCode, generateConnectorCode, getConnectorDownloadLink, generateConnectorDownloadLink, updateAssignment } = useImplementation()
 
 // --- TaxAid Connect activation code ---
 const connCode    = ref(null)
@@ -346,6 +388,27 @@ async function generateCode() {
         await loadConnectorCode()
     } finally {
         connLoading.value = false
+    }
+}
+
+// --- Connector installer download link (12h, reusable, shared separately from the activation code) ---
+const dlLink     = ref(null)
+const dlLoading  = ref(false)
+const dlError    = ref('')
+
+async function loadDownloadLink() {
+    try { dlLink.value = await getConnectorDownloadLink(props.project.clientId) } catch {}
+}
+
+async function generateDownloadLink() {
+    dlLoading.value = true
+    dlError.value = ''
+    try {
+        dlLink.value = await generateConnectorDownloadLink(props.project.clientId)
+    } catch (e) {
+        dlError.value = e?.data?.message || 'Failed to generate download link.'
+    } finally {
+        dlLoading.value = false
     }
 }
 
@@ -415,9 +478,28 @@ async function confirmGoLive() {
     }
 }
 
+// --- Enable demo dashboard access (first 5 steps) ---
+// tenantStatus flips implementation -> demo server-side when enabled (ImplementationPoolService::
+// updateAssignment) — seeding from it here is what makes the button survive a refresh instead of
+// always starting locked-looking again.
+const demoLoading = ref(false)
+const demoEnabled = ref(props.project.tenantStatus === 'demo')
+
+async function enableDemoAccess() {
+    demoLoading.value = true
+    try {
+        await updateAssignment({ client_id: props.project.clientId, enable_demo: true })
+        demoEnabled.value = true
+    } catch {
+    } finally {
+        demoLoading.value = false
+    }
+}
+
 onMounted(() => {
     loadCredRequest()
     loadConnectorCode()
+    loadDownloadLink()
 })
 
 const activeStepId = ref(null)

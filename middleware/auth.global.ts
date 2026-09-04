@@ -3,7 +3,7 @@ export default defineNuxtRouteMiddleware((to) => {
   const adminToken = useCookie('admin_token')
   const rpToken    = useCookie('rp_token')
 
-  const publicPages   = ['/', '/home', '/revenue-partnership-login', '/verify-email', '/ad-aqnz-pro-auth-78z46', '/admin-reset-password', '/reset-password','/ticketing/ticketing-dashboard']
+  const publicPages   = ['/', '/home', '/revenue-partnership-login', '/verify-email', '/ad-aqnz-pro-auth-78z46', '/admin-reset-password', '/reset-password','/ticketing/ticketing-dashboard', '/connector']
   const adminPrefixes = ['/admin']
   const rpPrefixes    = ['/revenue-partnership/admin', '/revenue-partnership/accounts', '/revenue-partnership/partner', '/revenue-partnership/notifications', '/revenue-partnership/select-dashboard']
 
@@ -89,7 +89,7 @@ export default defineNuxtRouteMiddleware((to) => {
   if (accountType.value === 'taxaid') return
 
   const tenantStatus = useCookie('tenant_status')
-  if (to.path !== '/onboarding' && tenantStatus.value && tenantStatus.value !== 'live') {
+  if (to.path !== '/onboarding' && tenantStatus.value && tenantStatus.value !== 'live' && tenantStatus.value !== 'demo') {
     return navigateTo('/onboarding')
   }
 })

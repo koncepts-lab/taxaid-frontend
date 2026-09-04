@@ -48,13 +48,13 @@ onMounted(async () => {
     }
 
     try {
-        const rawSteps = await getClientSteps(clientId)
+        const { steps: rawSteps, tenantStatus } = await getClientSteps(clientId)
         const steps = rawSteps.map(s => ({
             id:          s.id,
             label:       s.step_name,
             status:      !!s.completed,
             clientDelay: !!s.client_delay,
-            timestamp:   s.completed_at ?? '',
+            timestamp:   formatTimestamp(s.completed_at),
             delayReason: s.client_delay_reason ?? '',
             isSaved:     !!s.client_delay_reason,
         }))
@@ -66,6 +66,7 @@ onMounted(async () => {
             erp:      client?.erp ?? '-',
             date:     client?.date ?? '-',
             close:    client?.close ?? '-',
+            tenantStatus,
             steps,
         }
     } catch {
@@ -80,6 +81,16 @@ onMounted(async () => {
         }
     }
 })
+
+// Matches toggleStep()'s optimistic format in ProjectImplementation.vue, so a loaded timestamp
+// looks the same as one just set client-side after a checkbox click.
+function formatTimestamp(value) {
+    if (!value) return ''
+    return new Date(value).toLocaleString('en-US', {
+        year: 'numeric', month: 'numeric', day: 'numeric',
+        hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true
+    })
+}
 
 const handleBack = () => {
     router.push('/admin/implementation/member')

@@ -99,6 +99,11 @@ const SYSTEM_CARDS = computed(() => {
       description: 'Manage partner accounts, uploads, and payment processing.',
       buttonLabel: 'Access Revenue Partnership Account Dashboard', route: '/admin/revenue-partner/accounts'
     },
+    'Connector Dashboard': {
+      icon: '/images/icons/Revenue-Partnership.svg', title: 'Connector Dashboard',
+      description: 'Manage connector groups, monitor tenant sync status, and roll out connector updates.',
+      buttonLabel: 'Access Connector Dashboard', route: '/admin/connector/dashboard'
+    },
   }
 })
 

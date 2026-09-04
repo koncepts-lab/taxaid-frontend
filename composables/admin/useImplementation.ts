@@ -35,6 +35,7 @@ export function useImplementation() {
     implementation_consultant_id?: number | null
     connector_status?: string
     implementation_status?: string
+    enable_demo?: boolean
   }): Promise<any> {
     const res: any = await apiFetch('/admin/implementation-pool/update', { method: 'PATCH', body: data })
     return res.data ?? res
@@ -63,9 +64,9 @@ export function useImplementation() {
     return res.data ?? []
   }
 
-  async function getClientSteps(clientId: string): Promise<any[]> {
+  async function getClientSteps(clientId: string): Promise<{ steps: any[], tenantStatus: string | null }> {
     const res: any = await apiFetch(`/admin/implementation-pool/client-steps/${clientId}`)
-    return res.data ?? []
+    return { steps: res.data ?? [], tenantStatus: res.tenant_status ?? null }
   }
 
   async function getDeliverablesThisWeek(): Promise<number> {
@@ -126,6 +127,17 @@ export function useImplementation() {
 
   async function generateConnectorCode(clientId: string): Promise<any> {
     const res: any = await apiFetch(`/admin/implementation/clients/${clientId}/connector-code`, { method: 'POST' })
+    return res.data
+  }
+
+  // Shareable, 12h connector-installer download link (not a permanent public URL)
+  async function getConnectorDownloadLink(clientId: string): Promise<any> {
+    const res: any = await apiFetch(`/admin/implementation/clients/${clientId}/connector-download-link`)
+    return res.data ?? null
+  }
+
+  async function generateConnectorDownloadLink(clientId: string): Promise<any> {
+    const res: any = await apiFetch(`/admin/implementation/clients/${clientId}/connector-download-link`, { method: 'POST' })
     return res.data
   }
 
@@ -277,6 +289,8 @@ export function useImplementation() {
     goLive,
     getConnectorCode,
     generateConnectorCode,
+    getConnectorDownloadLink,
+    generateConnectorDownloadLink,
     getCredentialRequests,
     approveCredentialRequest,
     rejectCredentialRequest,

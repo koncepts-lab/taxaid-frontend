@@ -6,7 +6,7 @@
                 <!-- Header -->
                 <div class="flex items-center justify-between p-6 pb-2">
                     <h3 class="text-xl font-semibold text-gray-900">
-                        {{ currentLang === 'ar' ? 'إضافة (IC)' : 'Add IC' }}
+                        {{ title ?? (currentLang === 'ar' ? 'إضافة (IC)' : 'Add IC') }}
                     </h3>
                     <button @click="closeModal" class="text-gray-400 hover:text-gray-600 transition-colors">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -29,7 +29,7 @@
                             <span class="text-sm font-medium">{{ errorMessage }}</span>
                         </div>
                     </Transition>
-                    <input type="file" ref="fileInput" class="hidden" accept=".xlsx, .xls" @change="handleFileSelect" />
+                    <input type="file" ref="fileInput" class="hidden" :accept="accept" @change="handleFileSelect" />
 
                     <!-- Drop Zone -->
                     <div class="border-2 border-dashed rounded-2xl p-12 flex flex-col items-center justify-center transition-all cursor-pointer"
@@ -64,8 +64,7 @@
                             </p>
                             <p class="text-xs text-gray-400 mb-6">
                                 <template v-if="!selectedFile">
-                                    {{ currentLang === 'ar' ? 'ملفات Excel فقط (.xlsx, .xls)' :
-                                        'Excel files only (.xlsx, .xls)' }}
+                                    {{ hint ?? (currentLang === 'ar' ? 'ملفات Excel فقط (.xlsx, .xls)' : 'Excel files only (.xlsx, .xls)') }}
                                 </template>
                                 <template v-else>
                                     {{ (selectedFile.size / 1024).toFixed(2) }} KB
@@ -105,7 +104,11 @@ import { ref } from 'vue'
 
 const props = defineProps({
     isOpen: Boolean,
-    currentLang: String
+    currentLang: String,
+    title: { type: String, default: null },
+    hint: { type: String, default: null },
+    // Comma-separated extensions, matching the native <input accept> attribute (e.g. ".xlsx, .xls" or ".exe").
+    accept: { type: String, default: '.xlsx, .xls' },
 })
 
 const emit = defineEmits(['close', 'upload'])
@@ -133,18 +136,19 @@ const handleDrop = (e) => {
     validateAndAssignFile(file)
 }
 
-// 4. Validation (Excel only)
+// 4. Validation against the accept prop's extension list.
 const validateAndAssignFile = (file) => {
     if (!file) return
 
+    const allowedExts = props.accept.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
     const fileName = file.name.toLowerCase()
-    if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+    if (allowedExts.some(ext => fileName.endsWith(ext))) {
         selectedFile.value = file
         errorMessage.value = ''
     } else {
         errorMessage.value = props.currentLang === 'ar'
-            ? 'يرجى اختيار ملف Excel فقط (.xlsx, .xls)'
-            : 'Please select an Excel file only (.xlsx, .xls)'
+            ? `يرجى اختيار ملف بامتداد ${allowedExts.join(', ')} فقط`
+            : `Please select a file with extension: ${allowedExts.join(', ')}`
         selectedFile.value = null
         setTimeout(() => { errorMessage.value = '' }, 5000)
 

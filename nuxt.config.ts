@@ -13,7 +13,7 @@ export default defineNuxtConfig({
     primary: "teal",
     gray: "cool",
   },
-  css: ["~/assets/main.css"],
+  css: ["~/assets/main.css", "v-calendar/dist/style.css"],
 
   // Register revenue-partnership components by filename only (no path prefix)
   // so <DashboardFooter> etc continue to work everywhere unprefixed
