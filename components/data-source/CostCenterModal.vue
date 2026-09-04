@@ -5,7 +5,7 @@
                 class="fixed inset-0 z-[1100] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-black/60 backdrop-blur-sm"
                 :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="$emit('close')">
 
-                <div class="w-full max-w-full lg:max-w-[75vw] bg-white transition-all duration-300 transform scale-100 shadow-2xl overflow-hidden rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar flex flex-col md:max-h-[78vh]"
+                <div class="w-full max-w-full lg:max-w-[75vw] transition-all duration-300 transform scale-100 shadow-2xl overflow-hidden rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar flex flex-col md:max-h-[78vh]"
                     :class="isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white'">
 
                     <!-- Header -->
@@ -48,7 +48,7 @@
 
                                 <!-- FOOTER INTEGRATED INTO TABLE -->
                                 <tfoot v-if="hasFooter" class="sticky bottom-0 z-20">
-                                    <tr class="bg-[#61FFD6] text-[#013E32] font-bold">
+                                    <tr :class="['font-bold', isDark ? 'bg-[#013E32] text-white' : 'bg-[#61FFD6] text-[#013E32]']">
                                         <td class="px-6 py-4"></td>
                                         <td v-for="(col, index) in columns" :key="'foot-' + col.key"
                                             class="px-4 py-4 text-[14px]">

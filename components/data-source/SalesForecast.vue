@@ -72,7 +72,7 @@
                     </tr>
                     <!-- Quarter & Month Rows Skeleton -->
                     <template v-for="q in 4" :key="'skeleton-q-'+q">
-                        <tr class="bg-[#C2F9E9] text-[#013E32] font-medium border-b border-[#84D7C5]/30">
+                        <tr :class="['font-medium border-b border-[#84D7C5]/30', isDark ? 'bg-[#013e32] text-white' : 'bg-[#C2F9E9] text-[#013E32]']">
                             <td class="px-6 py-3 border-[#84D7C5]"><div class="h-4 bg-[#013E32]/20 rounded w-20 animate-pulse"></div></td>
                             <td class="px-4 py-3 text-center text-sm">AED</td>
                             <td class="px-4 py-3 text-center text-sm">AED</td>
@@ -112,7 +112,7 @@
                     </tr>
 
                     <template v-for="quarter in year.quarters" :key="quarter.id">
-                        <tr class="bg-[#C2F9E9] text-[#013E32] font-medium border-b border-[#84D7C5]/30">
+                        <tr :class="['font-medium border-b border-[#84D7C5]/30', isDark ? 'bg-[#013e32] text-white' : 'bg-[#C2F9E9] text-[#013E32]']">
                             <td class="px-6 py-3 border-[#84D7C5]">{{ quarter.label }}</td>
                             <td class="px-4 py-3 text-center text-sm">AED</td>
                             <td class="px-4 py-3 text-center text-sm">AED</td>

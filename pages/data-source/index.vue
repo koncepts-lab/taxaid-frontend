@@ -30,11 +30,11 @@
               class="flex-1 flex items-center justify-center gap-2 px-6 py-3 transition-all duration-300 rounded-[50px] text-[15px]"
               :class="[
                 activeMainTab === tab.id
-                  ? (isDark ? 'bg-white text-[#013E32] shadow-lg' : 'bg-white text-black')
+                  ? (isDark ? 'bg-[#00B794] text-white shadow-lg' : 'bg-white text-black')
                   : (isDark ? 'text-white/70 hover:text-white' : 'text-[#0A0A0A]')
               ]">
               <img :src="tab.icon" class="w-5 h-5 transition-all"
-                :class="{ 'invert brightness-200': isDark && activeMainTab !== tab.id }" :alt="tab.label" />
+                :class="{ 'invert brightness-200': isDark }" :alt="tab.label" />
               <span class="font-normal">{{ currentLang === 'ar' ? tab.labelAr : tab.label }}</span>
             </button>
           </div>
@@ -72,7 +72,7 @@
                   class="px-6 py-2.5 flex-1 transition-all duration-300 whitespace-nowrap text-[15px] font-normal text-center" :class="[
                     activeMainTab === 'contacts' ? 'rounded-full' : 'rounded-[40px]',
                     activeSubTab === tab.id
-                      ? (isDark ? 'bg-white text-[#013E32] shadow-md' : 'bg-white text-black shadow-sm')
+                      ? (isDark ? 'bg-[#00B794] text-white shadow-md' : 'bg-white text-black shadow-sm')
                       : (isDark ? 'text-white/70 hover:text-white' : 'text-[#013E32] hover:bg-white/10')
                   ]">
                   {{ currentLang === 'ar' ? tab.labelAr : tab.label }}
