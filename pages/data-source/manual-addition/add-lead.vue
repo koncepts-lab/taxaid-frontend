@@ -68,7 +68,7 @@
             </div>
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Lead ID</label>
-              <input type="text" value="Auto-generated on save" disabled class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] outline-none text-gray-400 text-sm bg-gray-50" />
+              <input type="text" value="Auto-generated on save" disabled :class="['w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] outline-none text-gray-400 text-sm', isDark ? 'bg-[#042520]' : 'bg-gray-50']" />
             </div>
 
             <!-- Row 3 -->

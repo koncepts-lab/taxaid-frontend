@@ -80,7 +80,7 @@
           <!-- Summary Boxes -->
           <div class="grid grid-cols-1 xl:grid-cols-1 gap-6 mb-4">
             <!-- Card 1: Sales -->
-            <div class="bg-[#E0F9F3] border border-[#6FDBBF] rounded-lg p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div :class="['border rounded-lg p-6 grid grid-cols-1 md:grid-cols-3 gap-6', isDark ? 'bg-[#00201a] border-[#143e36]' : 'bg-[#E0F9F3] border-[#6FDBBF]']">
               <div>
                 <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Lead Sales Value</label>
                 <input type="text" :value="formatAmount(form.lead_sales_value)" readonly class="w-full px-4 py-2.5 rounded-lg bg-white border-none outline-none text-gray-700 text-sm" />
@@ -96,7 +96,7 @@
             </div>
 
             <!-- Card 2: Budget -->
-            <div class="bg-[#E0F9F3] border border-[#6FDBBF] rounded-lg p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div :class="['border rounded-lg p-6 grid grid-cols-1 md:grid-cols-3 gap-6', isDark ? 'bg-[#00201a] border-[#143e36]' : 'bg-[#E0F9F3] border-[#6FDBBF]']">
               <div>
                 <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Planned Lead Budget</label>
                 <input type="text" :value="formatAmount(form.planned_lead_budget)" readonly class="w-full px-4 py-2.5 rounded-lg bg-white border-none outline-none text-gray-700 text-sm" />

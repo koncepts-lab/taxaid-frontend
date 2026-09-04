@@ -6,14 +6,14 @@
                     <h2 class="text-lg font-normal text-black">
                         {{ currentLang === 'ar' ? 'تخطيط ميزان المراجعة' : 'Trial Balance Mapping' }}
                     </h2>
-                    <p class="text-base text-[#717182] mt-1">
+                    <p class="text-base mt-1" :class="isDark ? 'text-[#c2c2c2]' : 'text-[#717182]'">
                         {{ currentLang === 'ar' ? 'أكواد القوائم المالية وتخطيطات حسابات الأستاذ' :
                             'Financial statement codes and ledger account mappings' }}
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
                     <button v-if="userType === 'admin'" @click="handleUpdate" :disabled="tbSaving"
-                        class="px-8 py-2 bg-[#FFF085] hover:bg-[#FACC15] text-black rounded-xl font-normal transition-all active:scale-95 shadow-sm disabled:opacity-50">
+                        class="px-8 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-xl font-normal transition-all active:scale-95 shadow-sm disabled:opacity-50">
                         {{ tbSaving ? '...' : (currentLang === 'ar' ? 'تحديث' : 'Update') }}
                     </button>
                     <button @click="isReportModalOpen = true"
@@ -113,7 +113,7 @@
                         </template>
                         <template v-else><!--tb color red-->
                             <tr v-for="item in mappingData" :key="item.id"
-                                :class="item.fsCode && item.mainGroup && item.subGroup ? 'bg-[#d6ffe2]' : 'bg-[#ffdbe0]'">
+                                :class="item.fsCode && item.mainGroup && item.subGroup ? (isDark ? 'bg-[#00372d]' : 'bg-[#d6ffe2]') : 'bg-[#ffdbe0]'">
                                 <td class="p-2">
                                     <CommonSelectDropdown v-if="userType === 'admin'" v-model="item.fsCode"
                                         :options="fsCodes" :highlights="HIGHLIGHT_FS_CODES" />
@@ -242,7 +242,7 @@
                                 <td class="p-3">
                                     <div v-if="userType === 'admin' && !configLocked && !row.noFrom" class="relative">
                                         <button :ref="el => setButtonRef(el, `${idx}-from`)" @click.stop="toggleCalendar(`${idx}-from`)"
-                                            class="w-full flex items-center justify-between gap-2 px-2 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 hover:bg-gray-100 transition-all">
+                                            :class="['w-full flex items-center justify-between gap-2 px-2 py-1.5 border border-gray-200 rounded-lg text-sm transition-all', isDark ? 'bg-[#032e23]' : 'bg-gray-50 hover:bg-gray-100']">
                                             <span :class="row.from ? 'text-black' : 'text-gray-400'">
                                                 {{ row.from ? displayDate(row.from) : 'Select date' }}
                                             </span>
@@ -261,7 +261,7 @@
                                         class="w-full px-2 py-1 border border-gray-200 rounded-lg text-sm text-black focus:ring-1 focus:ring-[#00896F] outline-none bg-gray-50 placeholder-gray-400" />
                                     <div v-else-if="userType === 'admin' && !configLocked" class="relative">
                                         <button :ref="el => setButtonRef(el, `${idx}-to`)" @click.stop="toggleCalendar(`${idx}-to`)"
-                                            class="w-full flex items-center justify-between gap-2 px-2 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 hover:bg-gray-100 transition-all">
+                                            :class="['w-full flex items-center justify-between gap-2 px-2 py-1.5 border border-gray-200 rounded-lg text-sm transition-all', isDark ? 'bg-[#032e23]' : 'bg-gray-50 hover:bg-gray-100']">
                                             <span :class="row.to ? 'text-black' : 'text-gray-400'">
                                                 {{ row.to ? displayDate(row.to) : 'Select date' }}
                                             </span>
