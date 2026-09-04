@@ -1,6 +1,6 @@
 <template>
     <!-- Existing Documents Upload Grid (budget excluded) -->
-    <div class="space-y-6 bg-white p-6 rounded-xl border transition-all duration-300">
+    <div class="space-y-6 bg-white p-6 rounded-xl transition-all duration-300">
         <h2 class="text-lg text-black">{{ userType === 'client' ? 'Uploaded Documents' :
             'Upload Documents' }}</h2>
         <div v-if="userType === 'admin'"

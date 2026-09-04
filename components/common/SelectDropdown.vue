@@ -2,8 +2,8 @@
   <div ref="rootRef" class="relative">
     <!-- Field -->
     <button ref="fieldRef" type="button" :disabled="disabled" @click="toggle"
-      :class="open ? 'border-[#00896F] ring-1 ring-[#00896F]' : 'border-gray-100'"
-      class="w-full p-2.5 bg-gray-50 border rounded-lg text-sm outline-none cursor-pointer text-[#717182] flex items-center gap-1.5 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+      :class="[open ? 'border-[#00896F] ring-1 ring-[#00896F]' : 'border-gray-100', isDark ? 'bg-[#032e23]' : 'bg-[#69e4c4]']"
+      class="w-full p-2.5 border rounded-lg text-sm outline-none cursor-pointer text-[#717182] flex items-center gap-1.5 text-left disabled:opacity-50 disabled:cursor-not-allowed">
       <span v-if="isHighlighted(modelValue)" class="w-2.5 h-2.5 rounded-full bg-[#04C18F] shrink-0"></span>
       <span class="flex-1 truncate" :class="modelValue ? '' : 'text-gray-400'">{{ modelValue || placeholder }}</span>
       <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,6 +50,8 @@
 //   clearable            -> empty option at the top (default true)
 //   placeholder / clear-label / disabled
 import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
+
+const { isDark } = useTheme()
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
