@@ -46,6 +46,7 @@ export function useConnectorDashboard() {
     reconciliation_interval_minutes?: number
     sync_time?: string
     cycle_2_time?: string
+    cycle_2_enabled?: boolean
     full_sync_frequency?: 'weekly' | 'biweekly' | 'monthly'
     full_sync_day?: number
     notes?: string

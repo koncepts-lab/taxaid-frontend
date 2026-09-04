@@ -133,11 +133,17 @@
                   <span class="relative inline-block group/tip">
                     <span class="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[10px] flex items-center justify-center cursor-help">i</span>
                     <span class="pointer-events-none absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-56 rounded-lg bg-[#003d35] text-white text-[12px] leading-snug px-3 py-2 opacity-0 group-hover/tip:opacity-100 transition-opacity">
-                      Only runs if cycle 1 was missed today — a same-day partial-sync catch-up, never a full sync itself.
+                      Only runs if cycle 1 was missed today — a same-day catch-up attempt. Uncheck "Enabled" for groups that never need a catch-up.
                     </span>
                   </span>
                 </label>
-                <AdminConnectorTimeWheelPicker v-model="draftFor(g).cycle_2_time" :is24-hour="is24Hour" />
+                <div class="flex items-center gap-3">
+                  <AdminConnectorTimeWheelPicker v-model="draftFor(g).cycle_2_time" :is24-hour="is24Hour" />
+                  <label class="flex items-center gap-1.5 text-[12px] text-gray-600 whitespace-nowrap cursor-pointer">
+                    <input type="checkbox" v-model="draftFor(g).cycle_2_enabled" class="w-4 h-4 accent-[#00896F] cursor-pointer" />
+                    Enabled
+                  </label>
+                </div>
               </div>
               <div>
                 <label class="flex items-center gap-1.5 text-[13px] font-medium mb-1">
@@ -357,6 +363,7 @@ function draftFor(g) {
       name: g.name,
       sync_time: g.sync_time ?? '10:00',
       cycle_2_time: g.cycle_2_time ?? '16:00',
+      cycle_2_enabled: g.cycle_2_enabled ?? true,
       reconciliation_interval_minutes: g.reconciliation_interval_minutes,
       full_sync_frequency: g.full_sync_frequency ?? 'monthly',
       full_sync_day: g.full_sync_day ?? 1,
