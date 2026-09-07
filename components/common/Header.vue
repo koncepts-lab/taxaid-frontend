@@ -448,7 +448,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import LanguageToggle from './LanguageToggle.vue'
 import { useProfile } from '~/composables/settings/useProfile'
 
@@ -464,17 +464,26 @@ watch(() => route.fullPath, () => {
   refreshPicture()
 })
 
-const { logout } = useAuth()//logout Logic
+const { logout, user } = useAuth()//logout Logic
 const onLogoutClick = () => {
   logout()
 }
-const settingsItems = [
+// TODO: temporary — once real role management ships, org-settings access is purely role-based
+// and the is_primary cookie/check won't be needed at all. Matches the temporary backend gate on
+// OrganizationSettingsController::authorizeAccess(). Reads the is_primary cookie (set at login)
+// instead of user.value so this doesn't depend on user.value ever being populated.
+const isPrimaryCookie = useCookie('is_primary')
+const canSeeOrganizationSettings = computed(() =>
+  isPrimaryCookie.value === '1' || ['master_user', 'client_user'].includes(user.value?.role)
+)
+const settingsItems = computed(() => [
   { label: 'Subscription Management', labelAr: 'إدارة الاشتراك', icon: '/images/icons/Subscription-Management.svg', to: '/settings/subscription' },
   { label: 'Support', labelAr: 'الدعم', icon: '/images/icons/Support.svg', to: '/settings/support' },
   { label: 'Notification Preferences', labelAr: 'تفضيلات الإشعارات', icon: '/images/icons/Notification-Preferences.svg', to: '/settings/notifications' },
+  ...(canSeeOrganizationSettings.value ? [{ label: 'Company Settings', labelAr: 'إعدادات الشركة', icon: '/images/icons/Organization-Settings.svg', to: '/settings/organization-settings' }] : []),
   { label: 'Security & Privacy', labelAr: 'الأمن والخصوصية', icon: '/images/icons/Security-Privacy.svg', to: '/settings/security' },
   { label: 'Sync & Data Management', labelAr: 'المزامنة وإدارة البيانات', icon: '/images/icons/Sync-Data-Management.svg', to: '/settings/sync-and-data-management' },
-]
+])
 const companies = ref([
   { id: 1, name: 'MasterLine Mechanical LLC', logo: '/images/avatar-company.png', selected: true },
   { id: 2, name: 'NovaTech Industries Pvt Ltd', logo: '/images/icons/novatech.svg', selected: false },

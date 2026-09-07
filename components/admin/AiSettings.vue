@@ -404,6 +404,182 @@
       </div>
     </div>
 
+    <!-- Alert Groups sub-tab -->
+    <div v-if="activeSubTab === 'Alert Groups'" class="space-y-4">
+      <div class="bg-[#61FFD62E] border border-[#00BE8CBD] rounded-[10px] p-4 flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div class="relative w-full md:w-[40%]">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </span>
+          <input v-model="alertGroups.search" @input="debouncedLoad('alertGroups')" type="text" placeholder="Search group name…" autocomplete="off"
+            class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm" />
+        </div>
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <div class="flex items-center gap-2 min-w-[140px] bg-white border border-gray-200 rounded-md px-3 py-2 shadow-sm text-sm text-gray-700">
+            <span>Domain<span v-if="alertGroups.domain.length"> ({{ alertGroups.domain.length }})</span></span>
+            <DataSourceTbHeaderFilter column="domain" :options="alertGroups.domainOptions" :selected="alertGroups.domain" :format="formatDomain"
+              @apply="(col, values) => { alertGroups.domain = values; loadAlertGroups(1) }" class="ml-auto" />
+          </div>
+          <div class="relative min-w-[160px]">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+            </span>
+            <select v-model="alertGroups.notificationFrequency" @change="loadAlertGroups(1)" class="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
+              <option value="">All Digest Cadences</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="biweekly">Biweekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+            <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+          </div>
+          <button @click="openGroupCreateModal" class="px-4 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] shrink-0 whitespace-nowrap">+ Add Group</button>
+        </div>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-[10px] overflow-hidden shadow-sm">
+        <div class="w-full overflow-x-auto min-h-[300px]">
+          <table class="w-full text-left border-collapse min-w-[820px]">
+            <thead>
+              <tr class="bg-[#008865] text-white text-sm">
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Group</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Domain</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Evaluation Cadence</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Digest Cadence</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Order</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="text-sm text-gray-700">
+              <template v-if="alertGroups.loading">
+                <tr v-for="n in 10" :key="'sk'+n" class="border-b border-gray-100">
+                  <td v-for="c in 6" :key="c" class="py-3.5 px-6"><div class="h-4 bg-gray-100 rounded animate-pulse" :style="{ width: skeletonWidth(c) }"></div></td>
+                </tr>
+              </template>
+              <tr v-else-if="!alertGroups.rows.length"><td colspan="6" class="py-10 text-center text-gray-400">No groups yet.</td></tr>
+              <template v-else>
+                <tr v-for="group in alertGroups.rows" :key="group.id" class="border-b border-gray-100 hover:bg-gray-50/50">
+                  <td class="py-3.5 px-6 font-medium text-gray-800">{{ group.name }}</td>
+                  <td class="py-3.5 px-6"><span class="inline-flex border border-gray-200 bg-white text-gray-600 rounded-full px-2.5 py-1 text-[12px] whitespace-nowrap">{{ formatDomain(group.domain) }}</span></td>
+                  <td class="py-3.5 px-6 text-gray-500">{{ cadenceSummary(group) }}</td>
+                  <td class="py-3.5 px-6 text-gray-500">{{ group.default_notification_frequency }}<span v-if="group.default_notification_day"> · Day {{ group.default_notification_day }}</span></td>
+                  <td class="py-3.5 px-6 text-gray-500">{{ group.display_order }}</td>
+                  <td class="py-3.5 px-6 text-right">
+                    <button @click="openGroupModal(group)" class="inline-flex items-center justify-center border border-gray-300 rounded-md p-1.5 hover:bg-gray-50 text-gray-700 transition-colors">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+        <div class="px-6 pb-4">
+          <CommonPaginationBar v-if="alertGroups.meta.total > 0" :meta="alertGroups.meta" :loading="alertGroups.loading"
+            @page-change="(p) => loadAlertGroups(p)" @per-page-change="(pp) => { alertGroups.perPage = pp; loadAlertGroups(1) }" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Create alert group modal -->
+    <div v-if="groupCreateModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-xl shadow-lg w-[420px] max-w-full p-6 relative">
+        <button @click="groupCreateModalOpen = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <h3 class="text-[16px] font-semibold text-gray-900 mb-4 pr-6">New Alert Group</h3>
+        <label class="block text-[13px] text-gray-600 mb-1.5">Domain</label>
+        <select v-model="newGroup.domain" class="w-full mb-3 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]">
+          <option v-for="d in alertGroups.domainOptions" :key="d" :value="d">{{ formatDomain(d) }}</option>
+        </select>
+        <label class="block text-[13px] text-gray-600 mb-1.5">Name</label>
+        <input v-model="newGroup.name" class="w-full mb-4 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
+        <div class="flex justify-end gap-3">
+          <button @click="groupCreateModalOpen = false" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+          <button @click="submitNewGroup" :disabled="!newGroup.domain || !newGroup.name" class="px-4 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">Create</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit alert group modal -->
+    <div v-if="groupModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto py-8">
+      <div class="bg-white rounded-xl shadow-lg w-[560px] max-w-full p-6 relative my-auto">
+        <button @click="groupModalOpen = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <h3 class="text-[16px] font-semibold text-gray-900 mb-1 pr-6">{{ editingGroup.name }}</h3>
+        <code class="text-xs text-gray-400 block mb-4">{{ formatDomain(editingGroup.domain) }}</code>
+
+        <label class="block text-[13px] text-gray-600 mb-1.5">Evaluation cadence — when the rule's condition is checked</label>
+        <select v-model="editingGroup.default_interval" class="w-full mb-3 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]">
+          <option value="hourly">Hourly</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="biweekly">Biweekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+
+        <div v-if="editingGroup.default_interval === 'hourly'" class="mb-4">
+          <label class="block text-[13px] text-gray-600 mb-1.5">Check every N hours</label>
+          <input type="number" min="1" v-model.number="editingGroup.default_interval_hours" class="w-32 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
+        </div>
+        <div v-else-if="editingGroup.default_interval === 'daily'" class="mb-4">
+          <label class="block text-[13px] text-gray-600 mb-1.5">Time of day</label>
+          <input type="time" v-model="editingGroup.default_interval_time" class="w-40 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
+        </div>
+        <div v-else-if="editingGroup.default_interval === 'weekly' || editingGroup.default_interval === 'biweekly'" class="mb-4">
+          <label class="block text-[13px] text-gray-600 mb-1.5">Weekday</label>
+          <div class="flex gap-1.5">
+            <button v-for="(name, idx) in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']" :key="idx" @click="editingGroup.default_interval_day = idx" type="button"
+              class="w-10 h-10 rounded-[8px] border text-[12px] font-medium transition-colors"
+              :class="editingGroup.default_interval_day === idx ? 'bg-[#00896F] text-white border-[#00896F]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'">{{ name }}</button>
+          </div>
+        </div>
+        <div v-else-if="editingGroup.default_interval === 'monthly'" class="mb-4">
+          <label class="block text-[13px] text-gray-600 mb-1.5">Day of month (capped at 28)</label>
+          <input type="number" min="1" max="28" v-model.number="editingGroup.default_interval_day" class="w-32 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
+        </div>
+
+        <label class="block text-[13px] text-gray-600 mb-1.5">Digest cadence — how often already-fired alerts get emailed</label>
+        <AdminConnectorFullSyncDayPicker v-model:frequency="editingGroup.default_notification_frequency" v-model:day="editingGroup.default_notification_day" class="mb-4" />
+
+        <label class="block text-[13px] text-gray-600 mb-1.5">Display order</label>
+        <input type="number" v-model.number="editingGroup.display_order" class="w-32 mb-4 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
+
+        <div class="flex justify-end gap-3 mb-6">
+          <button @click="groupModalOpen = false" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+          <button @click="submitGroup" class="px-4 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-lg text-sm font-medium transition-colors">Save</button>
+        </div>
+
+        <!-- Rules in this group -->
+        <div class="border-t border-gray-100 pt-4">
+          <h4 class="text-[14px] font-medium text-gray-800 mb-2">Rules in this group</h4>
+          <div class="max-h-[180px] overflow-y-auto divide-y divide-gray-100 border border-gray-100 rounded-lg mb-3">
+            <div v-if="!groupRules.length" class="p-3 text-[13px] text-gray-400">No rules assigned yet.</div>
+            <div v-for="r in groupRules" :key="r.id" class="flex items-center justify-between px-3 py-2">
+              <span class="text-[13px] text-gray-700">{{ r.alert_title }}</span>
+              <button @click="removeRuleFromGroup(r)" class="text-[12px] text-red-500 hover:text-red-700">Remove</button>
+            </div>
+          </div>
+
+          <h4 class="text-[14px] font-medium text-gray-800 mb-2">Add rules — only ungrouped rules in {{ formatDomain(editingGroup.domain) }} show up here</h4>
+          <input v-model="unassignedSearch" @input="loadUnassignedRules" type="text" placeholder="Search ungrouped rules…"
+            class="w-full mb-2 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
+          <div class="max-h-[180px] overflow-y-auto divide-y divide-gray-100 border border-gray-100 rounded-lg mb-3">
+            <div v-if="!unassignedRules.length" class="p-3 text-[13px] text-gray-400">No ungrouped rules match.</div>
+            <label v-for="r in unassignedRules" :key="r.id" class="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50">
+              <input type="checkbox" :value="r.id" v-model="selectedUnassignedIds" class="w-4 h-4 accent-[#00896F]" />
+              <span class="text-[13px] text-gray-700">{{ r.alert_title }}</span>
+            </label>
+          </div>
+          <button @click="addSelectedRulesToGroup" :disabled="!selectedUnassignedIds.length"
+            class="px-4 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
+            Add {{ selectedUnassignedIds.length || '' }} rule(s) to group
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Chat Quick Questions & Tips sub-tab -->
     <div v-if="activeSubTab === 'Quick Questions & Tips'" class="bg-white border border-gray-100 rounded-[10px] overflow-hidden shadow-sm">
       <div class="p-6 pb-4 flex items-center justify-between gap-4">
@@ -627,6 +803,7 @@ const {
   getRules, updateRule,
   getAlertRules, updateAlertRule,
   getChatPrompts, createChatPrompt, updateChatPrompt, deleteChatPrompt, cloneChatPrompt,
+  getAlertRuleGroups, createAlertRuleGroup, updateAlertRuleGroup, assignRulesToGroup, unassignRuleFromGroup, getUnassignedAlertRules,
 } = useAdminAi()
 
 // The 9 main report pages + support pages + the reserved 'default' fallback.
@@ -648,8 +825,8 @@ function formatDomain(d) {
   return d.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
 }
 // 'Rules' (ai_rules) hidden — unused, data-links (ai_data_links) cover this today.
-const subTabs = ['Instructions', 'Data-Links', 'Alert Rules', 'Quick Questions & Tips']
-const subTabSlugs = { 'Instructions': 'instructions', 'Data-Links': 'data-links', 'Rules': 'rules', 'Alert Rules': 'alert-rules', 'Quick Questions & Tips': 'quick-questions' }
+const subTabs = ['Instructions', 'Data-Links', 'Alert Rules', 'Alert Groups', 'Quick Questions & Tips']
+const subTabSlugs = { 'Instructions': 'instructions', 'Data-Links': 'data-links', 'Rules': 'rules', 'Alert Rules': 'alert-rules', 'Alert Groups': 'alert-groups', 'Quick Questions & Tips': 'quick-questions' }
 const slugToSubTab = Object.fromEntries(Object.entries(subTabSlugs).map(([k, v]) => [v, k]))
 
 const route = useRoute()
@@ -706,6 +883,35 @@ const editingRule = reactive({ id: null, domain: '', label: '', category: '', co
 const alertRuleModalOpen = ref(false)
 const editingAlertRule = reactive({ id: null, domain: '', alert_title: '', category: '', priority: 'P2', rag_prompt_instruction: '', is_active: true })
 
+const alertGroups = makeTableState()
+alertGroups.notificationFrequency = ''
+const groupModalOpen = ref(false)
+const editingGroup = reactive({
+  id: null, domain: '', name: '', display_order: 0,
+  default_interval: 'hourly', default_interval_hours: 1, default_interval_day: 1, default_interval_time: '09:00',
+  default_notification_frequency: 'daily', default_notification_day: 1,
+})
+
+const groupCreateModalOpen = ref(false)
+const newGroup = reactive({ domain: '', name: '' })
+
+const groupRules = ref([])
+const unassignedRules = ref([])
+const unassignedSearch = ref('')
+const selectedUnassignedIds = ref([])
+
+function cadenceSummary(group) {
+  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  switch (group.default_interval) {
+    case 'hourly': return `Every ${group.default_interval_hours ?? 1}h`
+    case 'daily': return `Daily · ${group.default_interval_time ?? '—'}`
+    case 'weekly': case 'biweekly':
+      return `${group.default_interval === 'weekly' ? 'Weekly' : 'Biweekly'} · ${weekdays[group.default_interval_day] ?? '—'}`
+    case 'monthly': return `Monthly · Day ${group.default_interval_day ?? '—'}`
+    default: return group.default_interval
+  }
+}
+
 function skeletonWidth(col) {
   const widths = ['85%', '70%', '55%', '60%', '50%', '40%']
   return widths[(col - 1) % widths.length]
@@ -724,6 +930,7 @@ function debouncedLoad(key) {
     if (key === 'rules') loadRules(1)
     if (key === 'alertRules') loadAlertRules(1)
     if (key === 'chatPrompts') loadChatPrompts(1)
+    if (key === 'alertGroups') loadAlertGroups(1)
   }, 400)
 }
 
@@ -764,6 +971,78 @@ async function loadAlertRules(page = 1) {
   } finally {
     alertRules.loading = false
   }
+}
+
+async function loadAlertGroups(page = 1) {
+  alertGroups.loading = true
+  try {
+    const res = await getAlertRuleGroups({ page, per_page: alertGroups.perPage, search: alertGroups.search, domain: alertGroups.domain, default_notification_frequency: alertGroups.notificationFrequency })
+    alertGroups.rows = res?.data ?? []
+    alertGroups.meta = applyMeta(res)
+    if (res?.domain_options) alertGroups.domainOptions = res.domain_options
+  } finally {
+    alertGroups.loading = false
+  }
+}
+
+function openGroupCreateModal() {
+  newGroup.domain = alertGroups.domainOptions[0] ?? ''
+  newGroup.name = ''
+  groupCreateModalOpen.value = true
+}
+async function submitNewGroup() {
+  await createAlertRuleGroup({
+    domain: newGroup.domain, name: newGroup.name,
+    default_interval: 'hourly', default_notification_frequency: 'daily',
+  })
+  groupCreateModalOpen.value = false
+  await loadAlertGroups(alertGroups.meta.current_page)
+}
+
+async function openGroupModal(group) {
+  Object.assign(editingGroup, group)
+  groupModalOpen.value = true
+  unassignedSearch.value = ''
+  selectedUnassignedIds.value = []
+  await Promise.all([loadGroupRules(), loadUnassignedRules()])
+}
+
+async function loadGroupRules() {
+  const res = await getAlertRules({ per_page: 100, group_id: editingGroup.id })
+  groupRules.value = res?.data ?? []
+}
+
+async function loadUnassignedRules() {
+  const res = await getUnassignedAlertRules({ per_page: 50, search: unassignedSearch.value, domain: [editingGroup.domain] })
+  unassignedRules.value = res?.data ?? []
+}
+
+async function addSelectedRulesToGroup() {
+  await assignRulesToGroup(editingGroup.id, selectedUnassignedIds.value)
+  selectedUnassignedIds.value = []
+  await Promise.all([loadGroupRules(), loadUnassignedRules()])
+  await loadAlertGroups(alertGroups.meta.current_page)
+}
+
+async function removeRuleFromGroup(rule) {
+  await unassignRuleFromGroup(editingGroup.id, rule.id)
+  await Promise.all([loadGroupRules(), loadUnassignedRules()])
+  await loadAlertGroups(alertGroups.meta.current_page)
+}
+async function submitGroup() {
+  await updateAlertRuleGroup(editingGroup.id, {
+    default_interval: editingGroup.default_interval,
+    default_interval_hours: editingGroup.default_interval === 'hourly' ? editingGroup.default_interval_hours : null,
+    default_interval_day: ['weekly', 'biweekly', 'monthly'].includes(editingGroup.default_interval) ? editingGroup.default_interval_day : null,
+    default_interval_time: editingGroup.default_interval === 'daily' ? editingGroup.default_interval_time : null,
+    default_notification_frequency: editingGroup.default_notification_frequency,
+    default_notification_day: editingGroup.default_notification_frequency === 'monthly'
+      ? editingGroup.default_notification_day
+      : (editingGroup.default_notification_frequency === 'daily' ? null : editingGroup.default_notification_day),
+    display_order: editingGroup.display_order,
+  })
+  groupModalOpen.value = false
+  await loadAlertGroups()
 }
 
 async function loadChatPrompts(page = 1) {
@@ -915,6 +1194,6 @@ async function deleteRow(prompt) {
 onMounted(async () => {
   try { await loadSettings() } catch {}
   try { await loadUsageSnapshot() } catch {}
-  await Promise.all([loadDataLinks(), loadRules(), loadAlertRules(), loadChatPrompts()])
+  await Promise.all([loadDataLinks(), loadRules(), loadAlertRules(), loadAlertGroups(), loadChatPrompts()])
 })
 </script>
