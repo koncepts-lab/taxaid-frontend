@@ -17,6 +17,9 @@ interface AkeelMessage {
   role: 'user' | 'assistant'
   content: string
   created_at?: string
+  // Real ledger/customer names this reply's data touched (System-category tools only) — lets the
+  // UI offer a "View Ledger" action that opens the real ledger modal instead of only prose.
+  ledgerRefs?: string[]
 }
 
 interface AkeelUpload {
@@ -233,7 +236,7 @@ export function useAkeel() {
         await new Promise((resolve) => setTimeout(resolve, 300))
       }
 
-      messages.value.push({ role: 'assistant', content: res?.message ?? '' })
+      messages.value.push({ role: 'assistant', content: res?.message ?? '', ledgerRefs: res?.ledger_refs ?? [] })
       if (res?.status) status.value = res.status
       chatGettingLong.value = !!res?.chat_getting_long
       usageWarning.value = !!res?.usage_warning
