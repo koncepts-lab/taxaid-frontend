@@ -131,6 +131,21 @@
                 </button>
               </div>
 
+              <div class="flex items-center justify-between group border-b border-[#F3F4F6] pb-6 last:border-0 last:pb-0">
+                <div class="flex items-start gap-4">
+                  <div class="mt-0.5 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" /></svg>
+                  </div>
+                  <div>
+                    <h3 class="text-[14px] font-medium leading-tight" style="color: #101828;">AI Email Alerts</h3>
+                    <p class="text-[14px] mt-0.5" style="color: #4A5565;">Turn this off and you'll get no AI alert emails at all, regardless of the categories in AI Alerts below</p>
+                  </div>
+                </div>
+                <button @click="emailSettings.aiAlerts = !emailSettings.aiAlerts" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none shrink-0 ml-4" :class="emailSettings.aiAlerts ? 'bg-[#00835D]' : 'bg-gray-200'">
+                  <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform" :class="emailSettings.aiAlerts ? 'translate-x-6' : 'translate-x-1'"></span>
+                </button>
+              </div>
+
             </div>
           </div>
         </div>
@@ -230,6 +245,9 @@
           </div>
         </div>
 
+        <!-- Same component as /settings/organization-settings, reused in personal mode -->
+        <SettingsOrganizationAiAlert personal :show-roles="false" />
+
         <!-- SMS Notifications(hidden for now) -->
         <div v-if="false" class="bg-white border border-gray-100 rounded-[16px] shadow-sm overflow-hidden">
           <div class="p-6 pb-2">
@@ -299,6 +317,7 @@ const keyMap = {
   weeklySummary: 'weekly_summary',
   monthlyReport: 'monthly_report',
   systemUpdates: 'system_updates',
+  aiAlerts: 'ai_alerts',
 }
 
 const emailSettings = ref({
@@ -308,7 +327,8 @@ const emailSettings = ref({
   securityAlerts: true,
   weeklySummary: true,
   monthlyReport: false,
-  systemUpdates: false
+  systemUpdates: false,
+  aiAlerts: true
 })
 
 const pushSettings = ref({

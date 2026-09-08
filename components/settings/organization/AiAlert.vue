@@ -20,8 +20,11 @@
       </div>
 
       <p class="text-[13px] mt-2 mb-6" style="color: #4A5565;">
-        Control which AI alert groups reach this org, and which roles receive them. Your own personal email toggle
-        stays on <NuxtLink to="/settings/notifications" class="text-[#00835D] underline">Notification Settings</NuxtLink>.
+        <template v-if="personal">Pick, per category, whether you get it in-app, by email, both, or neither.</template>
+        <template v-else>
+          Control which AI alert groups reach this org, and which roles receive them. Your own personal preferences
+          stay on <NuxtLink to="/settings/notifications" class="text-[#00835D] underline">Notification Settings</NuxtLink>.
+        </template>
       </p>
 
       <!-- Fixed height (~5-6 rows) regardless of state, so loading/empty/loaded never shift the page around it -->
@@ -43,10 +46,18 @@
               <div class="min-w-0">
                 <h3 class="text-[14px] font-medium leading-tight" style="color: #101828;">{{ group.name }}</h3>
                 <p class="text-[13px] mt-0.5" style="color: #4A5565;">
-                  {{ group.is_enabled ? (group.email_enabled ? 'Shown in-app + emailed' : 'Shown in-app, email off') : 'Off — hidden from everyone' }}
+                  {{ personal
+                    ? (!group.available ? 'Not available for your role'
+                        : group.is_enabled && group.email_enabled ? 'In-app + email'
+                        : group.is_enabled ? 'In-app only'
+                        : group.email_enabled ? 'Email only'
+                        : 'Off — nothing for this category')
+                    : (group.is_enabled ? (group.email_enabled ? 'Shown in-app + emailed' : 'Shown in-app, email off') : 'Off — hidden from everyone') }}
                 </p>
               </div>
-              <div class="flex items-center gap-4 shrink-0">
+
+              <!-- Admin mode: one group on/off toggle + an email sub-toggle. -->
+              <div v-if="!personal" class="flex items-center gap-4 shrink-0">
                 <label class="flex items-center gap-1.5 text-[12px] text-gray-500">
                   Email
                   <button :disabled="!group.is_enabled" @click="toggleGroup(group, 'email_enabled')"
@@ -61,21 +72,43 @@
                   <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform" :class="group.is_enabled ? 'translate-x-6' : 'translate-x-1'"></span>
                 </button>
               </div>
+
+              <!-- Personal mode: two independent toggles — neither implies the other. -->
+              <div v-else class="flex items-center gap-4 shrink-0">
+                <label class="flex items-center gap-1.5 text-[12px] text-gray-500">
+                  Alert
+                  <button :disabled="!group.available" @click="toggleGroup(group, 'is_enabled')"
+                    class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none disabled:opacity-40"
+                    :class="group.is_enabled ? 'bg-[#00835D]' : 'bg-gray-200'">
+                    <span class="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform" :class="group.is_enabled ? 'translate-x-4' : 'translate-x-1'"></span>
+                  </button>
+                </label>
+                <label class="flex items-center gap-1.5 text-[12px] text-gray-500">
+                  Email
+                  <button :disabled="!group.available" @click="toggleGroup(group, 'email_enabled')"
+                    class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none disabled:opacity-40"
+                    :class="group.email_enabled ? 'bg-[#00835D]' : 'bg-gray-200'">
+                    <span class="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform" :class="group.email_enabled ? 'translate-x-4' : 'translate-x-1'"></span>
+                  </button>
+                </label>
+              </div>
             </div>
 
-            <button @click="group._expanded = !group._expanded" class="mt-3 text-[12px] text-[#00835D] font-medium">
-              {{ group._expanded ? 'Hide roles' : 'Which roles get this?' }}
-            </button>
+            <template v-if="showRoles && !personal">
+              <button @click="group._expanded = !group._expanded" class="mt-3 text-[12px] text-[#00835D] font-medium">
+                {{ group._expanded ? 'Hide roles' : 'Which roles get this?' }}
+              </button>
 
-            <div v-if="group._expanded" class="mt-3 flex flex-wrap gap-2">
-              <label v-for="role in assignableRoles" :key="role"
-                class="flex items-center gap-1.5 border border-gray-200 rounded-full px-3 py-1.5 text-[12px] cursor-pointer"
-                :class="group.roles[role] ? 'bg-[#E8FCF2] border-[#00835D] text-[#00835D]' : 'text-gray-500'">
-                <input type="checkbox" :checked="group.roles[role]"
-                  @change="toggleRole(group, role, $event.target.checked)" class="w-3.5 h-3.5 accent-[#00835D]" />
-                {{ roleLabel(role) }}
-              </label>
-            </div>
+              <div v-if="group._expanded" class="mt-3 flex flex-wrap gap-2">
+                <label v-for="role in assignableRoles" :key="role"
+                  class="flex items-center gap-1.5 border border-gray-200 rounded-full px-3 py-1.5 text-[12px] cursor-pointer"
+                  :class="group.roles[role] ? 'bg-[#E8FCF2] border-[#00835D] text-[#00835D]' : 'text-gray-500'">
+                  <input type="checkbox" :checked="group.roles[role]"
+                    @change="toggleRole(group, role, $event.target.checked)" class="w-3.5 h-3.5 accent-[#00835D]" />
+                  {{ roleLabel(role) }}
+                </label>
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -86,7 +119,15 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
-const { getAiAlertGroups, updateGroup, updateRole } = useOrganizationSettings()
+// personal=true: /settings/notifications' own independent {is_enabled, email_enabled} toggles, no role-assignment editor.
+const props = defineProps({
+  personal: { type: Boolean, default: false },
+  showRoles: { type: Boolean, default: true },
+})
+
+const { getAiAlertGroups: getAdminGroups, updateGroup, updateRole } = useOrganizationSettings()
+const { getAiAlertGroups: getUserGroups, updatePersonalAiAlertGroup } = useNotificationSettings()
+const getAiAlertGroups = props.personal ? getUserGroups : getAdminGroups
 
 const selectedDomain = ref('')
 const domainOptions = ref([])
@@ -139,10 +180,12 @@ async function load() {
 onMounted(load)
 
 async function toggleGroup(group, field) {
+  if (props.personal && !group.available) return
   const next = !group[field]
   group[field] = next
   try {
-    await updateGroup(group.group_id, { [field]: next })
+    if (props.personal) await updatePersonalAiAlertGroup(group.group_id, { [field]: next })
+    else await updateGroup(group.group_id, { [field]: next })
   } catch {
     group[field] = !next
   }
