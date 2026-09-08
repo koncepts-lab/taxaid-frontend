@@ -98,8 +98,14 @@ tbody tr:hover td {
 .dark-mode-bg .text-black,
 .dark-mode-bg .text-\[\#000\],
 .dark-mode-bg .text-gray-800,
-.dark-mode-bg .text-gray-900 {
+.dark-mode-bg .text-gray-900,
+.dark-mode-bg .text-\[\#013E32\],
+.dark-mode-bg .text-\[\#101828\] {
   color: #ffffff !important;
+}
+
+.dark-mode-bg .text-\[\#4A5565\] {
+  color: #cccccc !important;
 }
 
 .dark-mode-bg .border-gray-100,
@@ -110,7 +116,8 @@ tbody tr:hover td {
 .dark-mode-bg .border-\[\#FDBA74\],
 .dark-mode-bg .border-\[\#FCA5A5\],
 .dark-mode-bg .border-\[\#BFDBFE\],
-.dark-mode-bg .border-\[\#86EFAC\] {
+.dark-mode-bg .border-\[\#86EFAC\],
+.dark-mode-bg .border-\[\#6FDBBF\] {
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
@@ -119,7 +126,8 @@ tbody tr:hover td {
   color: #fbcf7a !important; 
 }
 
-.dark-mode-bg .bg-\[\#FEFCE8\] {
+.dark-mode-bg .bg-\[\#FEFCE8\],
+.dark-mode-bg .bg-\[\#FFFBEB\] {
   background-color: #00141080 !important;
   border-color: rgba(255, 187, 13, 0.3) !important;
 }
@@ -127,13 +135,30 @@ tbody tr:hover td {
 .dark-mode-bg .text-\[\#00000080\],
 .dark-mode-bg .text-\[\#999\],
 .dark-mode-bg .text-gray-400,
-.dark-mode-bg .text-gray-500,
-.dark-mode-bg .text-gray-600,
+.dark-mode-bg .text-gray-500:not(.bg-gray-100),
+.dark-mode-bg .text-gray-600:not(.bg-gray-100),
 .dark-mode-bg .text-gray-700 {
   color: rgba(255, 255, 255, 0.6) !important;
 }
 
+.dark-mode-bg .bg-gray-100.text-gray-600 {
+  color: #4b5563 !important;
+}
+
+.dark-mode-bg .bg-gray-100.text-gray-500 {
+  color: #6b7280 !important;
+}
+
+.dark-mode-bg .bg-gray-50 .text-gray-800 {
+  color: #1f2937 !important;
+}
+
+.dark-mode-bg .bg-gray-50 .text-gray-400 {
+  color: #9ca3af !important;
+}
+
 .dark-mode-bg .bg-\[\#E7FBF3\],
+.dark-mode-bg .bg-\[\#E0F9F3\],
 .dark-mode-bg .bg-\[\#E4FFF6B0\],
 .dark-mode-bg .bg-\[\#F0FDF4\],
 .dark-mode-bg .bg-\[\#FEF2F2\],
@@ -181,19 +206,28 @@ tbody tr:hover td {
 
 /* Fix inputs in dark mode */
 .dark-mode-bg input.bg-white,
-.dark-mode-bg textarea.bg-white {
+.dark-mode-bg textarea.bg-white,
+.dark-mode-bg select {
   background-color: rgba(0, 0, 0, 0.2) !important;
   color: white !important;
 }
 .dark-mode-bg input.bg-white::placeholder,
-.dark-mode-bg textarea.bg-white::placeholder {
+.dark-mode-bg textarea.bg-white::placeholder,
+.dark-mode-bg select::placeholder {
   color: rgba(255, 255, 255, 0.5) !important;
+}
+.dark-mode-bg select option {
+  background-color: #001410 !important;
+  color: white !important;
 }
 
 /* Overriding SVG icons without breaking normal variants */
 .dark-mode-bg img[src*="dirham-black"],
 .dark-mode-bg img[src*="Total-Customers"],
-.dark-mode-bg img[src*="Amount-Collected"] {
+.dark-mode-bg img[src*="Amount-Collected"],
+.dark-mode-bg img[src*="Active-Roles"],
+.dark-mode-bg img[src*="Connected-Systems"],
+.dark-mode-bg img[src*="Access-Permissions"] {
   filter: brightness(0) invert(1) !important;
 }
 
@@ -230,4 +264,26 @@ input[type="checkbox"]:checked {
   background-size: 80% !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
+}
+
+/* ApexCharts Dark Mode Fixes */
+.dark-mode-bg .apexcharts-text tspan,
+.dark-mode-bg .apexcharts-text {
+  fill: #ffffff !important;
+}
+
+.dark-mode-bg .apexcharts-tooltip {
+  background: #001410 !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark-mode-bg .apexcharts-tooltip-title {
+  background: #002b23 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-mode-bg .apexcharts-legend-text {
+  color: #ffffff !important;
 }

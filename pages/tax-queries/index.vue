@@ -18,7 +18,7 @@
                         @changeYear="changeVatYear"
                         @toggleMinimize="isTableMinimized = !isTableMinimized" class="shrink-0" />
 
-                    <TaxQueriesChatWindow :isMinimized="isTableMinimized" class="flex-1 min-h-[500px] max-lg:hidden" />
+                    <TaxQueriesChatWindow @shrink="isFullScreenChat = false" :isMinimized="isTableMinimized" class="flex-1 min-h-[500px] max-lg:hidden" />
                 </div>
             </div>
         </div>

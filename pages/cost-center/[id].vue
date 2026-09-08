@@ -61,7 +61,7 @@
       <TaxQueriesLeftSideBar @close="isFullScreenChat = false" />
 
       <main class="flex-1">
-        <TaxQueriesChatWindow :isMinimized="false" class="flex-1 min-h-0 h-[calc(100vh-90px)] ml-12" />
+        <TaxQueriesChatWindow @shrink="isFullScreenChat = false" :isMinimized="false" class="flex-1 min-h-0 h-[calc(100vh-90px)] ml-12" />
       </main>
     </div>
   </NuxtLayout>
