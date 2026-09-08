@@ -64,7 +64,7 @@
           : 'bottom-24 w-[80px]',
         isChatOpen ? 'lg:2xl:w-120 lg:w-100' : 'lg:w-[80px]'
       ]">
-        <CommonChatSideBar v-model:isChatOpen="isChatOpen" domain="AR" @expand="isFullScreenChat = false" />
+        <CommonChatSideBar v-model:isChatOpen="isChatOpen" domain="AR" @expand="isFullScreenChat = true" />
       </aside>
     </div>
 
@@ -76,7 +76,7 @@
 
       <!-- Main Chat Window -->
       <main class="flex-1">
-        <TaxQueriesChatWindow :isMinimized="false" class="flex-1 min-h-0 h-[calc(100vh-90px)] ml-12" />
+        <TaxQueriesChatWindow @shrink="isFullScreenChat = false" :isMinimized="false" class="flex-1 min-h-0 h-[calc(100vh-90px)] ml-12" />
       </main>
     </div>
   </NuxtLayout>
