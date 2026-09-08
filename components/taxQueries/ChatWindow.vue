@@ -1,5 +1,10 @@
 <template>
     <div :class="['rounded-2xl border flex flex-col p-4 relative min-h-[500px]', isDark ? 'bg-[#002e26] border-white/10 shadow-none' : 'bg-white border-emerald-50 shadow-sm']">
+        <button v-if="!isMinimized" @click="$emit('shrink')" class="absolute top-4 right-4 p-2 rounded-full transition-colors z-10" :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-black/5 text-black'" title="Shrink Chat">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7" />
+            </svg>
+        </button>
 
         <div v-if="!messages.length && sending" class="flex-1 flex flex-col items-center justify-center">
             <div class="w-full max-w-3xl text-center flex flex-col items-center">
@@ -81,6 +86,8 @@ defineProps({
     isMinimized: { type: Boolean, default: false },
     enableUpload: { type: Boolean, default: false },
 });
+
+defineEmits(['shrink']);
 
 const { messages, activeChatId, sending, sendingStatusText, chatGettingLong, usageWarning, error, errorVariant, pendingUploads, sendMessage, removeUpload } = useAkeel()
 const { questions: promptQuestions, tips: promptTips, fetchPrompts } = useAkeelPrompts()
