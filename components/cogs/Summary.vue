@@ -8,7 +8,7 @@
       </p>
       <div class="flex gap-4 items-center">
         <p class="text-[12px] font-normal" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED' }}
         </p>
         <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info Icon"
           class="w-5 h-5 cursor-pointer opacity-80 hover:opacity-100 max-lg:hidden" />
@@ -160,7 +160,7 @@
                 {{ currentLang === 'ar' ? 'ملخص تكلفة المبيعات' : 'COGS Summary' }}
               </p>
               <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED' }}
               </p>
             </div>
             <button @click="isModalOpen = false"
@@ -331,7 +331,7 @@ const formatNumber = (val) => {
   if (val === null || val === undefined) return '0'
   const num = Number(val)
   if (isNaN(num)) return '0'
-  return formatInMillions(num)
+  return formatStandardNumber(num)
 }
 
 // Parse "80.56%" or "-38.52%" → number

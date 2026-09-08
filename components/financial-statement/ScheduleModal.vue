@@ -273,7 +273,7 @@ const getProgressColor = (progress) => {
 
 const formatNumber = (num) => {
     if (num === null || num === undefined) return '0';
-    return formatInMillions(num);
+    return formatStandardNumber(num);
 };
 const isLedgerReportOpen = ref(false);
 const ledgerReportLoading = ref(false);
