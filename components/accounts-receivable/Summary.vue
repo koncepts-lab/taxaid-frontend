@@ -7,7 +7,7 @@
       </p>
       <div class="flex items-center gap-4">
         <p class="text-[12px] font-normal" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED' }}
         </p>
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon" class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100" @click="isModalOpen = true" />
       </div>
@@ -63,11 +63,11 @@
                   </button>
                 </div>
               </td>
-              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-[#00FFBC]' : 'text-[#00b484]'">{{ group.total }}</td>
-              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ group.age30 }}</td>
-              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ group.age3060 }}</td>
-              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ group.age6090 }}</td>
-              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ group.age90plus }}</td>
+              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-[#00FFBC]' : 'text-[#00b484]'">{{ formatStandardNumber(group.total) }}</td>
+              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age30) }}</td>
+              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age3060) }}</td>
+              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age6090) }}</td>
+              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age90plus) }}</td>
             </tr>
 
             <!-- Expandable Invoice Section -->
@@ -132,7 +132,7 @@
                         </span>
                       </div>
                       <div class="text-right rtl:text-left font-normal text-[16px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
-                        <span class="underline underline-offset-4 cursor-pointer">{{ formatInMillions(inv.amount) }}</span>
+                        <span class="underline underline-offset-4 cursor-pointer">{{ formatStandardNumber(inv.amount) }}</span>
                       </div>
                       <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age30?.toLocaleString() }}</div>
                       <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age3060?.toLocaleString() }}</div>
@@ -148,11 +148,11 @@
         <tfoot>
           <tr :class="isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]'" class="transition-all duration-500 text-[14px] font-medium">
             <td class="px-8 py-5" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.total) }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age30) }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age3060) }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age6090) }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age90plus) }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.total) }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age30) }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age3060) }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age6090) }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age90plus) }}</td>
           </tr>
         </tfoot>
       </table>
@@ -198,7 +198,7 @@
                 {{ currentLang === 'ar' ? 'ملخص حسابات القبض' : 'Accounts Receivable Summary' }}
               </p>
               <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED' }}
               </p>
             </div>
             <button @click="isModalOpen = false" class="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
@@ -272,11 +272,11 @@
                             </button>
                           </div>
                         </td>
-                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-[#00FFBC]' : 'text-[#00b484]'">{{ group.total }}</td>
-                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ group.age30 }}</td>
-                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ group.age3060 }}</td>
-                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ group.age6090 }}</td>
-                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ group.age90plus }}</td>
+                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-[#00FFBC]' : 'text-[#00b484]'">{{ formatStandardNumber(group.total) }}</td>
+                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age30) }}</td>
+                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age3060) }}</td>
+                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age6090) }}</td>
+                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age90plus) }}</td>
                       </tr>
     
                       <!-- Expandable Invoice Section (modal version) -->
@@ -299,7 +299,7 @@
                                   <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ inv.invoiceNo }}</span>
                                 </div>
                                 <div class="text-right rtl:text-left font-normal text-[16px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
-                                  <span class="underline underline-offset-4 cursor-pointer">{{ formatInMillions(inv.amount) }}</span>
+                                  <span class="underline underline-offset-4 cursor-pointer">{{ formatStandardNumber(inv.amount) }}</span>
                                 </div>
                                 <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age30?.toLocaleString() }}</div>
                                 <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age3060?.toLocaleString() }}</div>
@@ -315,11 +315,11 @@
                   <tfoot>
                     <tr :class="isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]'" class="transition-all duration-500 text-[14px] font-medium">
                       <td class="px-8 py-5" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.total) }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age30) }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age3060) }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age6090) }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatInMillions(summaryTotal.age90plus) }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.total) }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age30) }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age3060) }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age6090) }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age90plus) }}</td>
                     </tr>
                   </tfoot>
                 </table>

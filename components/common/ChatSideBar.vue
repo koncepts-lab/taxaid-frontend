@@ -94,7 +94,7 @@
                 </div>
             </div>
 
-            <div class="flex-1 lg:p-6 p-3 overflow-y-auto no-scrollbar">
+            <div class="flex-1 lg:p-6 p-3 overflow-y-auto no-scrollbar flex flex-col" ref="chatScrollContainer">
                 <template v-if="!messages.length">
                     <div class="text-center lg:mb-8 mb-3">
                         <img src="/images/akeel.webp" alt="Akeel"
@@ -146,7 +146,7 @@
                     </div>
                 </template>
 
-                <div v-else class="space-y-3">
+                <div v-else class="space-y-3 mt-auto">
                     <AkeelMessageList />
                     <div v-if="sending" class="text-xs opacity-60" :class="isDark ? 'text-white' : 'text-black'">
                         {{ currentLang === 'ar' ? 'عقيل يكتب...' : sendingStatusText }}
@@ -163,7 +163,7 @@
                         class="flex-1 bg-transparent focus:outline-none transition-colors text-sm lg:py-2 py-1"
                         :class="isDark ? 'text-white placeholder:text-white/30' : 'text-black placeholder:text-black/30'" />
                     <button @click="send" :disabled="sending"
-                        class="p-2 bg-primary-600 hover:bg-primary-700 text-white rounded-[5px] transition-colors shrink-0 disabled:opacity-50">
+                        class="p-2 bg-primary-600 hover:bg-[#008864] text-white rounded-[5px] transition-colors shrink-0 disabled:opacity-50">
                         <img src="/images/icons/chat.svg" alt="Send" class="lg:w-6 lg:h-6 w-4 h-4"
                             :class="currentLang === 'ar' ? 'transform scale-x-[-1]' : ''" />
                     </button>
@@ -191,12 +191,18 @@ const props = defineProps({
 
 const route = useRoute()
 
-// Skip the reset when navigating to /chat-with-akeel itself (e.g. a One-Click Summary card).
-onBeforeUnmount(() => {
-    if (route.path.includes('chat-with-akeel')) return
-    activeChatId.value = null
-    messages.value = []
-})
+
+
+const chatScrollContainer = ref(null)
+const scrollToBottom = async () => {
+    await nextTick()
+    if (chatScrollContainer.value) {
+        chatScrollContainer.value.scrollTop = chatScrollContainer.value.scrollHeight
+    }
+}
+watch([() => messages.value.length, sending], scrollToBottom)
+onMounted(scrollToBottom)
+
 
 const statusLabel = computed(() => {
     if (currentLang.value === 'ar') return status.value === 1 ? 'متصل' : 'غير متصل'

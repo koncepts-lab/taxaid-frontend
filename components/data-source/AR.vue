@@ -261,7 +261,7 @@ const formatNumber = (val) => {
     if (val === null || val === undefined) return '—'
     const num = Number(val)
     if (isNaN(num)) return '—'
-    return formatInMillions(num)
+    return formatStandardNumber(num)
 }
 
 // Pagination
