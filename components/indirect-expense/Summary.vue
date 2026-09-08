@@ -262,7 +262,7 @@ const props = defineProps({
 const formatNumber = (val) => {
   if (val === null || val === undefined) return '0'
   const num = Number(val)
-  return formatInMillions(num)
+  return formatStandardNumber(num)
 }
 
 const parsePercent = (str) => {

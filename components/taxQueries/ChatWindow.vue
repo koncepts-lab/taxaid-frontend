@@ -2,7 +2,7 @@
     <div :class="['rounded-2xl border flex flex-col p-4 relative min-h-[500px]', isDark ? 'bg-[#002e26] border-white/10 shadow-none' : 'bg-white border-emerald-50 shadow-sm']">
         <button v-if="!isMinimized" @click="$emit('shrink')" class="absolute top-4 right-4 p-2 rounded-full transition-colors z-10" :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-black/5 text-black'" title="Shrink Chat">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7" />
             </svg>
         </button>
 
@@ -39,7 +39,7 @@
             </div>
         </div>
 
-        <div v-else class="flex-1 overflow-y-auto space-y-3 py-2">
+        <div ref="chatContainer" v-else class="flex-1 overflow-y-auto space-y-3 pb-2 pt-10">
             <AkeelMessageList />
             <div v-if="sending" class="text-xs" :class="isDark ? 'text-white/50' : 'text-black/50'">{{ sendingStatusText }}</div>
             <div v-if="chatGettingLong" class="text-xs text-amber-600">
@@ -99,14 +99,7 @@ onMounted(() => {
     else fetchPrompts(page)
 })
 
-// Only /chat-with-akeel offers resumable history (via its session-list sidebar) — everywhere
-// else this component is mounted (e.g. /tax-queries), the conversation shouldn't survive
-// navigating away, same as ChatSideBar.vue's widget instance.
-onBeforeUnmount(() => {
-    if (route.path.includes('chat-with-akeel')) return
-    activeChatId.value = null
-    messages.value = []
-})
+
 
 const draft = ref('')
 const uploadModalOpen = ref(false)
@@ -121,5 +114,13 @@ async function send() {
     draft.value = ''
     await sendMessage(message)
 }
+const chatContainer = ref(null)
+const scrollToBottom = async () => {
+    await nextTick()
+    if (chatContainer.value) {
+        chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+    }
+}
+watch([() => messages.value.length, sending], scrollToBottom)
+onMounted(scrollToBottom)
 </script>
-

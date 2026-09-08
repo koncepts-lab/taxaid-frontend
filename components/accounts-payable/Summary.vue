@@ -8,7 +8,7 @@
       </p>
       <div class="flex gap-4 items-center">
         <p class="text-[12px] font-normal" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED' }}
         </p>
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon"
           class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 max-lg:hidden" @click="isModalOpen = true" />
@@ -157,7 +157,7 @@
                 {{ currentLang === 'ar' ? 'ملخص حسابات الدفع' : 'Accounts Payable Summary' }}
               </p>
               <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED' }}
               </p>
             </div>
             <button @click="isModalOpen = false"
@@ -376,7 +376,7 @@ const formatValue = (val) => {
   if (val === undefined || val === null) return '0'
   const num = Number(val)
   if (isNaN(num)) return '0'
-  return formatInMillions(num)
+  return formatStandardNumber(num)
 }
 
 const toggleGroup = async (idx, customerName) => {
