@@ -147,14 +147,7 @@
                 </template>
 
                 <div v-else class="space-y-3">
-                    <div v-for="(m, idx) in messages" :key="idx"
-                        class="max-w-[85%] rounded-xl px-3 py-2 text-sm"
-                        :class="m.role === 'user'
-                            ? (isDark ? 'ml-auto bg-primary-600 text-white' : 'ml-auto bg-primary-600 text-white')
-                            : (isDark ? 'bg-white/10 text-white' : 'bg-primary-100/10 text-black')">
-                        <span v-if="m.role === 'user'" class="whitespace-pre-wrap">{{ m.content }}</span>
-                        <div v-else class="md-content" v-html="renderMarkdown(m.content)"></div>
-                    </div>
+                    <AkeelMessageList />
                     <div v-if="sending" class="text-xs opacity-60" :class="isDark ? 'text-white' : 'text-black'">
                         {{ currentLang === 'ar' ? 'عقيل يكتب...' : sendingStatusText }}
                     </div>
@@ -182,8 +175,6 @@
             style="box-shadow: 0px 0px 10px 0px #04C18F;">
             <img src="/images/akeel.webp" alt="" class="h-full w-auto object-contain" />
         </button>
-
-
 
     </div>
 </template>
@@ -275,10 +266,4 @@ async function send() {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
-
-.md-content :deep(p) { margin: 0 0 0.5em; }
-.md-content :deep(p:last-child) { margin-bottom: 0; }
-.md-content :deep(ul), .md-content :deep(ol) { margin: 0 0 0.5em 1.25em; }
-.md-content :deep(strong) { font-weight: 600; }
-.md-content :deep(code) { background: rgba(0,0,0,0.06); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
 </style>

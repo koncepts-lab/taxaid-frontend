@@ -25,7 +25,7 @@
           </div>
 
           <!-- Weekly / Biweekly: a week-strip, like a mini calendar row -->
-          <div v-if="frequency !== 'monthly'" class="flex gap-1.5">
+          <div v-if="frequency === 'weekly' || frequency === 'biweekly'" class="flex gap-1.5">
             <button v-for="(name, idx) in weekdayShort" :key="idx" @click="pickDay(idx)"
                     class="w-11 h-11 rounded-[10px] border text-[13px] font-medium transition-colors"
                     :class="day === idx ? 'bg-[#00896F] text-white border-[#00896F]' : 'border-[#04C18F33] text-gray-600 hover:bg-gray-50'">
@@ -34,13 +34,15 @@
           </div>
 
           <!-- Monthly: a calendar-grid of days, capped at 28 so it's valid every month -->
-          <div v-else class="grid grid-cols-7 gap-1.5 max-w-[280px]">
+          <div v-else-if="frequency === 'monthly'" class="grid grid-cols-7 gap-1.5 max-w-[280px]">
             <button v-for="d in 28" :key="d" @click="pickDay(d)"
                     class="w-9 h-9 rounded-[8px] border text-[13px] font-medium transition-colors"
                     :class="day === d ? 'bg-[#00896F] text-white border-[#00896F]' : 'border-[#04C18F33] text-gray-600 hover:bg-gray-50'">
               {{ d }}
             </button>
           </div>
+          <!-- Daily: no day value needed, no picker shown -->
+          <p v-else class="text-[13px] text-gray-400">Runs every day — no day to pick.</p>
 
           <div class="flex justify-end">
             <button @click="open = false" class="text-[13px] text-white bg-[#00896F] hover:bg-[#00705a] rounded-md px-4 py-1.5">Done</button>
@@ -65,6 +67,7 @@ const open = ref(false)
 function pickDay(d) { emit('update:day', d) }
 
 const frequencies = [
+  { value: 'daily', label: 'Daily' },
   { value: 'weekly', label: 'Weekly' },
   { value: 'biweekly', label: 'Biweekly' },
   { value: 'monthly', label: 'Monthly' },
@@ -74,6 +77,7 @@ const weekdayFull = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Fr
 
 const summary = computed(() => {
   const freqLabel = frequencies.find(f => f.value === props.frequency)?.label ?? 'Monthly'
+  if (props.frequency === 'daily') return freqLabel
   if (props.frequency === 'monthly') return `${freqLabel} · Day ${props.day}`
   return `${freqLabel} · ${weekdayFull[props.day] ?? 'Sunday'}`
 })

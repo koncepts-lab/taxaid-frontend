@@ -40,12 +40,7 @@
         </div>
 
         <div v-else class="flex-1 overflow-y-auto space-y-3 py-2">
-            <div v-for="(m, idx) in messages" :key="idx"
-                class="max-w-[80%] rounded-xl px-4 py-2.5 text-sm"
-                :class="m.role === 'user' ? 'ml-auto bg-[#00B69B] text-white whitespace-pre-wrap' : (isDark ? 'bg-white/10 text-white' : 'bg-primary-100/10 text-black')">
-                <span v-if="m.role === 'user'">{{ m.content }}</span>
-                <div v-else class="md-content" v-html="renderMarkdown(m.content)"></div>
-            </div>
+            <AkeelMessageList />
             <div v-if="sending" class="text-xs" :class="isDark ? 'text-white/50' : 'text-black/50'">{{ sendingStatusText }}</div>
             <div v-if="chatGettingLong" class="text-xs text-amber-600">
                 This conversation is getting long and may affect answer quality — consider starting a new chat.
@@ -128,10 +123,3 @@ async function send() {
 }
 </script>
 
-<style scoped>
-.md-content :deep(p) { margin: 0 0 0.5em; }
-.md-content :deep(p:last-child) { margin-bottom: 0; }
-.md-content :deep(ul), .md-content :deep(ol) { margin: 0 0 0.5em 1.25em; }
-.md-content :deep(strong) { font-weight: 600; }
-.md-content :deep(code) { background: rgba(0,0,0,0.06); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
-</style>

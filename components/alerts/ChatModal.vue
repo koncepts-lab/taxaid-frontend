@@ -42,20 +42,7 @@
                     <div class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar"
                         :class="isDark ? 'bg-[#001410]' : 'bg-gray-50'">
 
-                        <div v-for="(m, idx) in messages" :key="idx" class="flex flex-col max-w-[85%]"
-                            :class="m.role === 'user' ? 'items-end ml-auto' : 'items-start'">
-                            <div class="p-4 shadow-sm text-[15px] leading-relaxed transition-all duration-300" :class="[
-                                m.role === 'user'
-                                    ? 'bg-primary-250 text-white rounded-2xl'
-                                    : (isDark
-                                        ? 'bg-white/10 border border-white/10 text-white/90'
-                                        : 'bg-white border border-gray-100 text-black'),
-                                m.role !== 'user' && (currentLang === 'ar' ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none')
-                            ]">
-                                <span v-if="m.role === 'user'" class="whitespace-pre-wrap">{{ m.content }}</span>
-                                <div v-else class="md-content" v-html="renderMarkdown(m.content)"></div>
-                            </div>
-                        </div>
+                        <AkeelMessageList />
                         <div v-if="sending" class="text-xs" :class="isDark ? 'text-white/50' : 'text-black/50'">
                             {{ currentLang === 'ar' ? 'عقيل يكتب...' : sendingStatusText }}
                         </div>
@@ -150,10 +137,4 @@ const handleSend = async () => {
 .no-scrollbar::-webkit-scrollbar {
     display: none;
 }
-/* TODO: add more scopes  */
-.md-content :deep(p) { margin: 0 0 0.5em; }
-.md-content :deep(p:last-child) { margin-bottom: 0; }
-.md-content :deep(ul), .md-content :deep(ol) { margin: 0 0 0.5em 1.25em; }
-.md-content :deep(strong) { font-weight: 600; }
-.md-content :deep(code) { background: rgba(0,0,0,0.06); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
 </style>

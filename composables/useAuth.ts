@@ -50,6 +50,14 @@ export const useAuth = () => {
         const accountType = useCookie('account_type', cookieOptions)
         accountType.value = response.data.user?.account_type ?? null
 
+        // TODO: temporary — once real role management ships, org-settings access is purely
+        // role-based and this owner-flag cookie won't be needed at all.
+        const isPrimary = useCookie('is_primary', cookieOptions)
+        isPrimary.value = response.data.user?.is_primary ? '1' : null
+
+        const currency = useCookie('currency', cookieOptions)
+        currency.value = response.data.tenant?.currency ?? null
+
         resetProfile()
 
         user.value = response.data.user   // Saved to global state
@@ -93,6 +101,8 @@ export const useAuth = () => {
     user.value = null
     useCookie('tenant_status').value = null
     useCookie('account_type').value = null
+    useCookie('is_primary').value = null
+    useCookie('currency').value = null
     resetProfile()
     try {
       localStorage.removeItem('auth_user_id')
@@ -102,11 +112,11 @@ export const useAuth = () => {
     await navigateTo('/home')
   }
 
-  return { 
-    user, 
-    token, 
-    login, 
+  return {
+    user,
+    token,
+    login,
     logout,
-    isAuthenticated: computed(() => !!token.value) 
+    isAuthenticated: computed(() => !!token.value)
   }
 }

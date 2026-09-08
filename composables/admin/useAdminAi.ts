@@ -63,6 +63,30 @@ export function useAdminAi() {
   const deleteChatPrompt = (id: number) => useAdminApi(`/admin/ai/chat-prompts/${id}`, { method: 'DELETE' })
   const cloneChatPrompt = (id: number, page: string) => useAdminApi(`/admin/ai/chat-prompts/${id}/clone`, { method: 'POST', body: { page } })
 
+  const getAlertRuleGroups = (params?: { page?: number; per_page?: number; search?: string; domain?: string[]; default_notification_frequency?: string }) => useAdminApi(`/admin/ai/alert-rule-groups${qs(params)}`)
+  const createAlertRuleGroup = (body: any) => useAdminApi('/admin/ai/alert-rule-groups', { method: 'POST', body })
+  const updateAlertRuleGroup = (id: number, body: any) => useAdminApi(`/admin/ai/alert-rule-groups/${id}`, { method: 'PUT', body })
+  const assignRulesToGroup = (groupId: number, ruleIds: number[]) =>
+    useAdminApi(`/admin/ai/alert-rule-groups/${groupId}/rules`, { method: 'PUT', body: { rule_ids: ruleIds } })
+  const unassignRuleFromGroup = (groupId: number, ruleId: number) =>
+    useAdminApi(`/admin/ai/alert-rule-groups/${groupId}/rules/${ruleId}`, { method: 'DELETE' })
+  const getUnassignedAlertRules = (params?: { page?: number; per_page?: number; search?: string; domain?: string[] }) =>
+    useAdminApi(`/admin/ai/alert-rules/unassigned${qs(params)}`)
+
+  const getClientAlertRuleOverrides = (tenantId: number, params?: { page?: number; per_page?: number; search?: string; domain?: string[]; category?: string[]; priority?: string }) =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/alert-rule-overrides${qs(params)}`)
+  const updateClientAlertRuleOverride = (tenantId: number, ruleId: number, body: any) =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/alert-rule-overrides/${ruleId}`, { method: 'PUT', body })
+  const resetClientAlertRuleOverride = (tenantId: number, ruleId: number) =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/alert-rule-overrides/${ruleId}`, { method: 'DELETE' })
+
+  const getClientDataLinkOverrides = (tenantId: number, params?: { page?: number; per_page?: number; search?: string; domain?: string[] }) =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/data-link-overrides${qs(params)}`)
+  const updateClientDataLinkOverride = (tenantId: number, linkId: number, body: any) =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/data-link-overrides/${linkId}`, { method: 'PUT', body })
+  const resetClientDataLinkOverride = (tenantId: number, linkId: number) =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/data-link-overrides/${linkId}`, { method: 'DELETE' })
+
   return {
     getClientAi, toggleClientAi, getClientAiSettings, updateClientAiSettings,
     getSettings, addSetting, deleteSetting, getUsageSnapshot,
@@ -70,5 +94,8 @@ export function useAdminAi() {
     getRules, updateRule,
     getAlertRules, updateAlertRule,
     getChatPrompts, createChatPrompt, updateChatPrompt, deleteChatPrompt, cloneChatPrompt,
+    getAlertRuleGroups, createAlertRuleGroup, updateAlertRuleGroup, assignRulesToGroup, unassignRuleFromGroup, getUnassignedAlertRules,
+    getClientAlertRuleOverrides, updateClientAlertRuleOverride, resetClientAlertRuleOverride,
+    getClientDataLinkOverrides, updateClientDataLinkOverride, resetClientDataLinkOverride,
   }
 }
