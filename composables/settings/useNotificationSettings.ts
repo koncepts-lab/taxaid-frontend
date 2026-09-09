@@ -18,6 +18,16 @@ export function useNotificationSettings() {
   const saveSettings = (matrix: { email?: Record<string, boolean>; push?: Record<string, boolean> }) =>
     useApi('/notification-settings', { method: 'PUT', body: matrix })
 
+  // Personal AI alert group preferences — is_enabled/email_enabled are this user's own independent toggles.
+  const getAiAlertGroups = (domain?: string) =>
+    useApi(`/notification-settings/ai-alert-groups${domain ? `?domain=${encodeURIComponent(domain)}` : ''}`) as Promise<{
+      data: { group_id: number; domain: string; name: string; available: boolean; is_enabled: boolean; email_enabled: boolean }[]
+      domain_options: string[]
+    }>
+
+  const updatePersonalAiAlertGroup = (groupId: number, body: { is_enabled?: boolean; email_enabled?: boolean }) =>
+    useApi(`/notification-settings/ai-alert-groups/${groupId}`, { method: 'PUT', body })
+
   const registerDeviceToken = (token: string, platform: 'web' | 'android' | 'ios' = 'web') =>
     useApi('/device-tokens', { method: 'POST', body: { token, platform } })
 
@@ -123,7 +133,7 @@ export function useNotificationSettings() {
     }, 5000)
   }
 
-  return { getSettings, saveSettings, registerDeviceToken, removeDeviceToken, enableWebPush, syncWebPush }
+  return { getSettings, saveSettings, getAiAlertGroups, updatePersonalAiAlertGroup, registerDeviceToken, removeDeviceToken, enableWebPush, syncWebPush }
 }
 
 const ASKED_AT_KEY = 'push_permission_asked_at' // ISO timestamp of last permission ask

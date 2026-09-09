@@ -247,6 +247,12 @@
             Choose File & Upload
           </button>
         </div>
+        <div v-if="uploading" class="max-w-sm space-y-1">
+          <div class="h-2 rounded-full bg-[#04C18F1A] overflow-hidden">
+            <div class="h-full bg-[#00896F] transition-all" :style="{ width: cd.uploadProgress.value + '%' }" />
+          </div>
+          <p class="text-[12px] text-[#00000080]">Uploading… {{ cd.uploadProgress.value }}%</p>
+        </div>
         <p v-if="uploadMessage" class="text-[13px]" :class="uploadOk ? 'text-[#00896F]' : 'text-red-500'">{{ uploadMessage }}</p>
 
         <div class="overflow-x-auto rounded-[8px]">
@@ -256,12 +262,13 @@
                 <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Version</th>
                 <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Uploaded</th>
                 <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Scheduled At</th>
-                <th class="py-4 px-8 font-normal text-[15px]">Status</th>
+                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Status</th>
+                <th class="py-4 px-8 font-normal text-[15px]">File</th>
               </tr>
             </thead>
             <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
               <tr v-if="!updateRows.length">
-                <td colspan="4" class="py-8 text-center text-gray-400 text-sm">No packages uploaded yet.</td>
+                <td colspan="5" class="py-8 text-center text-gray-400 text-sm">No packages uploaded yet.</td>
               </tr>
               <tr v-for="pkg in updateRows" :key="pkg.id" class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
                 <td class="py-6 px-8 text-[14px]">{{ pkg.version }}</td>
@@ -270,6 +277,13 @@
                 <td class="py-6 px-8 text-[14px]">
                   <span v-if="pkg.is_latest" class="px-3 py-1 rounded-full text-[12px] font-medium border bg-[#ECFDF5] text-[#059669] border-[#D1FAE5]">Latest</span>
                   <span v-else class="px-3 py-1 rounded-full text-[12px] font-medium border bg-gray-100 text-gray-500 border-gray-200">Retired</span>
+                </td>
+                <td class="py-6 px-8 text-[14px]">
+                  <button v-if="pkg.file_exists" @click="handleDownload(pkg)"
+                          class="text-[#00896F] hover:text-[#00705a] font-medium text-[13px] cursor-pointer">
+                    Download
+                  </button>
+                  <span v-else class="text-gray-400 text-[13px]">Missing on bucket</span>
                 </td>
               </tr>
             </tbody>
@@ -412,6 +426,7 @@ const showScheduleCalendar = ref(false)
 const upload = reactive({ version: '', scheduledAt: null, scheduledTime: '09:00' })
 const uploadMessage = ref('')
 const uploadOk = ref(true)
+const uploading = ref(false)
 
 const formatScheduleLabel = (date) => {
   const dateLabel = new Date(date).toLocaleDateString([], { dateStyle: 'medium' })
@@ -428,6 +443,7 @@ function combinedScheduledAtIso() {
 
 async function handleUpload(file) {
   uploadMessage.value = ''
+  uploading.value = true
   try {
     await cd.uploadUpdatePackage(file, upload.version, true, combinedScheduledAtIso())
     uploadOk.value = true
@@ -439,6 +455,17 @@ async function handleUpload(file) {
   } catch (e) {
     uploadOk.value = false
     uploadMessage.value = e?.data?.message ?? e?.data?.error ?? 'Upload failed.'
+  } finally {
+    uploading.value = false
+  }
+}
+
+async function handleDownload(pkg) {
+  try {
+    await cd.downloadUpdatePackage(pkg.id, pkg.version)
+  } catch {
+    uploadOk.value = false
+    uploadMessage.value = `Could not download ${pkg.version} — file missing on the bucket.`
   }
 }
 

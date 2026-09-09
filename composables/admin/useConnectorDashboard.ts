@@ -4,6 +4,7 @@ const _updates    = ref<any[]>([])
 const _groupsMeta  = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
 const _tenantsMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
 const _updatesMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
+const _uploadProgress = ref(0)
 
 export function useConnectorDashboard() {
   const config = useRuntimeConfig()
@@ -75,14 +76,62 @@ export function useConnectorDashboard() {
     return _updates.value
   }
 
-  async function uploadUpdatePackage(file: File, version: string, isLatest = true, scheduledAt: string | null = null): Promise<any> {
-    const body = new FormData()
-    body.append('file', file)
-    body.append('version', version)
-    body.append('is_latest', isLatest ? '1' : '0')
-    if (scheduledAt) body.append('scheduled_at', scheduledAt)
+  async function sha256Hex(file: File): Promise<string> {
+    const buffer = await file.arrayBuffer()
+    const digest = await crypto.subtle.digest('SHA-256', buffer)
+    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('')
+  }
 
-    return apiFetch('/admin/connector/updates', { method: 'POST', body })
+  function putWithProgress(url: string, file: File): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open('PUT', url)
+      xhr.setRequestHeader('Content-Type', 'application/octet-stream')
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) _uploadProgress.value = Math.round((e.loaded / e.total) * 100)
+      }
+      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error(`Upload failed (${xhr.status})`))
+      xhr.onerror = () => reject(new Error('Upload failed'))
+      xhr.send(file)
+    })
+  }
+
+  async function uploadUpdatePackage(file: File, version: string, isLatest = true, scheduledAt: string | null = null): Promise<any> {
+    _uploadProgress.value = 0
+
+    const { upload_url, file_path }: any = await apiFetch('/admin/connector/updates/request-upload-url', {
+      method: 'POST',
+      body: { version, content_type: 'application/octet-stream' },
+    })
+
+    const checksum = await sha256Hex(file)
+    await putWithProgress(upload_url, file)
+
+    const result = await apiFetch('/connector/tally/updates', {
+      method: 'POST',
+      body: {
+        version,
+        file_path,
+        checksum,
+        is_latest: isLatest,
+        ...(scheduledAt ? { scheduled_at: scheduledAt } : {}),
+      },
+    })
+
+    _uploadProgress.value = 100
+    return result
+  }
+
+  async function downloadUpdatePackage(id: number, version: string): Promise<void> {
+    const blob: Blob = await apiFetch(`/connector/tally/updates/download/${id}`, { responseType: 'blob' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `TaxAidConnector-${version}.exe`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
   }
 
   return {
@@ -92,6 +141,7 @@ export function useConnectorDashboard() {
     groupsMeta: _groupsMeta,
     tenantsMeta: _tenantsMeta,
     updatesMeta: _updatesMeta,
+    uploadProgress: _uploadProgress,
     getStats,
     getGroups,
     updateGroup,
@@ -99,5 +149,6 @@ export function useConnectorDashboard() {
     reassignGroup,
     getUpdatePackages,
     uploadUpdatePackage,
+    downloadUpdatePackage,
   }
 }
