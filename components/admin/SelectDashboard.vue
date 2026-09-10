@@ -12,17 +12,43 @@
       </p>
     </div>
 
-    <!-- First cards: Ticketing (if assigned), then the primary own-dashboard (if assigned) -->
-    <div class="w-full flex flex-col md:flex-row items-center justify-center gap-6 px-4">
-      <SelectDashboardCard v-for="card in primaryCards" :key="card.title" :icon="card.icon" :title="card.title"
-        :description="card.description" :buttonLabel="card.buttonLabel" @click="navigateTo(card.route)" />
+    <!-- Dedicated Root Admin Card Section (When unlocked by Super Admin) -->
+    <div v-if="isRootUnlocked && isSuperAdmin" class="w-full flex justify-center px-4 mb-8">
+      <SelectDashboardCard
+        variant="red"
+        icon="root"
+        title="Root Admin"
+        description="Super root admin commands, server maintenance & diagnostics"
+        buttonLabel="Access Root Dashboard"
+        @click="navigateTo('/admin/root')"
+      />
     </div>
 
-    <!-- Any other assigned systems beyond the first 2, appended below, same screen -->
+    <!-- Assigned Systems: 2-Card Grid -->
+    <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-6 px-4 max-w-[1080px] justify-items-center">
+      <SelectDashboardCard
+        v-for="card in primaryCards"
+        :key="card.title"
+        :icon="card.icon"
+        :title="card.title"
+        :description="card.description"
+        :buttonLabel="card.buttonLabel"
+        @click="navigateTo(card.route)"
+      />
+    </div>
+
+    <!-- Any other assigned systems beyond the first 2, appended below -->
     <div v-if="showMore && remainingCards.length"
       class="w-full grid grid-cols-1 md:grid-cols-2 gap-6 px-4 max-w-[1080px] justify-items-center mt-6">
-      <SelectDashboardCard v-for="card in remainingCards" :key="card.title" :icon="card.icon" :title="card.title"
-        :description="card.description" :buttonLabel="card.buttonLabel" @click="navigateTo(card.route)" />
+      <SelectDashboardCard
+        v-for="card in remainingCards"
+        :key="card.title"
+        :icon="card.icon"
+        :title="card.title"
+        :description="card.description"
+        :buttonLabel="card.buttonLabel"
+        @click="navigateTo(card.route)"
+      />
     </div>
 
     <button v-if="remainingCards.length" @click="showMore = !showMore"
@@ -41,10 +67,12 @@ defineProps({
 })
 
 const { admin } = useAdminAuth()
+const { isRootUnlocked } = useRootAdmin()
 const { toTicketRole } = useTicketRoleMap()
 const { ownDashboardRoute } = useDashboardRoute()
 
 const roleName = computed(() => admin.value?.role?.name ?? null)
+const isSuperAdmin = computed(() => roleName.value === 'Super Admin')
 const assignedSystems = computed(() => admin.value?.assigned_systems ?? [])
 // Super Admin's ticket_tier is null in the DB (bypasses the tier check via role name on the
 // backend) — resolve it to 'admin' here so they don't lose ticketing UI access on the frontend.
