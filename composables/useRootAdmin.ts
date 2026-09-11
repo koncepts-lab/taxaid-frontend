@@ -1,6 +1,4 @@
 export function useRootAdmin() {
-  const config = useRuntimeConfig()
-  const tokenCookie = useCookie<string | null>('admin_token')
   const rootCookie = useCookie<string | null>('taxaid_root_token', { maxAge: 60 * 60 * 24 })
   const { admin } = useAdminAuth()
 
@@ -11,26 +9,20 @@ export function useRootAdmin() {
   async function unlock(password: string) {
     rootLoading.value = true
     try {
-      const res: any = await $fetch('/admin/root/unlock', {
-        baseURL: config.public.apiBase,
+      const res: any = await useAdminApi('/admin/root/unlock', {
         method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${tokenCookie.value}`,
-        },
         body: { password },
       })
 
       if (res?.success && res?.root_token) {
         rootCookie.value = res.root_token
-        return { success: true, message: res.message || 'Root access unlocked' }
+        return { success: true, message: res.message || 'Authenticated successfully' }
       }
-      return { success: false, message: res?.message || 'Invalid root password' }
+      return { success: false, message: res?.message || 'Invalid credentials' }
     } catch (err: any) {
       return {
         success: false,
-        message: err?.data?.message || err?.message || 'Failed to authenticate root password',
+        message: err?.data?.message || err?.message || 'Authentication failed',
       }
     } finally {
       rootLoading.value = false
@@ -41,50 +33,48 @@ export function useRootAdmin() {
     rootCookie.value = null
   }
 
-  async function runArtisan(command: string, confirmPassword?: string) {
-    return await $fetch('/admin/root/artisan', {
-      baseURL: config.public.apiBase,
+  async function runArtisan(command: string, confirmPassword?: string, runAsJob?: boolean) {
+    return await useAdminApi('/admin/root/artisan', {
       method: 'POST',
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${tokenCookie.value}`,
         'X-Root-Token': rootToken.value || '',
         ...(confirmPassword ? { 'X-Root-Confirm-Password': confirmPassword } : {}),
       },
       body: {
         command,
+        run_as_job: !!runAsJob,
         confirm_password: confirmPassword,
       },
     })
   }
 
-  async function runTinker(code: string, confirmPassword?: string) {
-    return await $fetch('/admin/root/tinker', {
-      baseURL: config.public.apiBase,
+  async function runTinker(code: string, confirmPassword?: string, runAsJob?: boolean) {
+    return await useAdminApi('/admin/root/tinker', {
       method: 'POST',
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${tokenCookie.value}`,
         'X-Root-Token': rootToken.value || '',
         ...(confirmPassword ? { 'X-Root-Confirm-Password': confirmPassword } : {}),
       },
       body: {
         code,
+        run_as_job: !!runAsJob,
         confirm_password: confirmPassword,
       },
     })
   }
 
+  async function getJobStatus(jobId: string) {
+    return await useAdminApi(`/admin/root/jobs/${jobId}`, {
+      headers: {
+        'X-Root-Token': rootToken.value || '',
+      },
+    })
+  }
+
   async function runDbQuery(query: string, schema?: string, confirmPassword?: string) {
-    return await $fetch('/admin/root/db-query', {
-      baseURL: config.public.apiBase,
+    return await useAdminApi('/admin/root/db-query', {
       method: 'POST',
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${tokenCookie.value}`,
         'X-Root-Token': rootToken.value || '',
         ...(confirmPassword ? { 'X-Root-Confirm-Password': confirmPassword } : {}),
       },
@@ -97,24 +87,17 @@ export function useRootAdmin() {
   }
 
   async function getTenants() {
-    return await $fetch('/admin/root/tenants', {
-      baseURL: config.public.apiBase,
+    return await useAdminApi('/admin/root/tenants', {
       headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${tokenCookie.value}`,
         'X-Root-Token': rootToken.value || '',
       },
     })
   }
 
   async function testFirebase(payload: any) {
-    return await $fetch('/admin/root/test-firebase', {
-      baseURL: config.public.apiBase,
+    return await useAdminApi('/admin/root/test-firebase', {
       method: 'POST',
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${tokenCookie.value}`,
         'X-Root-Token': rootToken.value || '',
       },
       body: payload,
@@ -122,13 +105,9 @@ export function useRootAdmin() {
   }
 
   async function testMail(payload: any) {
-    return await $fetch('/admin/root/test-mail', {
-      baseURL: config.public.apiBase,
+    return await useAdminApi('/admin/root/test-mail', {
       method: 'POST',
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${tokenCookie.value}`,
         'X-Root-Token': rootToken.value || '',
       },
       body: payload,
@@ -136,22 +115,16 @@ export function useRootAdmin() {
   }
 
   async function getSystemInfo() {
-    return await $fetch('/admin/root/system-info', {
-      baseURL: config.public.apiBase,
+    return await useAdminApi('/admin/root/system-info', {
       headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${tokenCookie.value}`,
         'X-Root-Token': rootToken.value || '',
       },
     })
   }
 
   async function getCommands() {
-    return await $fetch('/admin/root/commands', {
-      baseURL: config.public.apiBase,
+    return await useAdminApi('/admin/root/commands', {
       headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${tokenCookie.value}`,
         'X-Root-Token': rootToken.value || '',
       },
     })
@@ -165,6 +138,7 @@ export function useRootAdmin() {
     lock,
     runArtisan,
     runTinker,
+    getJobStatus,
     runDbQuery,
     getCommands,
     getTenants,

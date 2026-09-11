@@ -276,7 +276,10 @@
                 <td class="py-6 px-8 text-[14px]">{{ pkg.scheduled_at ? formatDate(pkg.scheduled_at) : '—' }}</td>
                 <td class="py-6 px-8 text-[14px]">
                   <span v-if="pkg.is_latest" class="px-3 py-1 rounded-full text-[12px] font-medium border bg-[#ECFDF5] text-[#059669] border-[#D1FAE5]">Latest</span>
-                  <span v-else class="px-3 py-1 rounded-full text-[12px] font-medium border bg-gray-100 text-gray-500 border-gray-200">Retired</span>
+                  <button v-else @click="handleSetLatest(pkg)"
+                          class="px-3 py-1 rounded-full text-[12px] font-medium border bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200 cursor-pointer">
+                    Set Latest
+                  </button>
                 </td>
                 <td class="py-6 px-8 text-[14px]">
                   <button v-if="pkg.file_exists" @click="handleDownload(pkg)"
@@ -298,6 +301,24 @@
     <DataSourceUploadModal :isOpen="showUploadModal" title="Upload Connector Version"
       hint="TaxAidConnector .exe file" accept=".exe"
       @close="showUploadModal = false" @upload="handleUpload" />
+
+    <div v-if="setLatestTarget" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl shadow-md w-[400px] max-w-full p-8">
+        <h2 class="text-[17px] font-semibold text-gray-900 mb-2">Set as Latest?</h2>
+        <p v-if="setLatestIsOlder" class="text-sm text-amber-600 mb-4">
+          {{ setLatestTarget.version }} is older than the current latest ({{ currentLatestVersion }}).
+          The connector doesn't compare version numbers — it just checks whether the server's latest differs
+          from its own, so every connector would be prompted to "update" to this older build.
+        </p>
+        <p v-else class="text-sm text-gray-500 mb-4">
+          This makes {{ setLatestTarget.version }} the version every connector is offered on its next check.
+        </p>
+        <div class="flex gap-3 justify-end">
+          <button @click="setLatestTarget = null" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cancel</button>
+          <button @click="confirmSetLatest" class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-[#00896F] hover:bg-[#00705a]">Set Latest</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -466,6 +487,41 @@ async function handleDownload(pkg) {
   } catch {
     uploadOk.value = false
     uploadMessage.value = `Could not download ${pkg.version} — file missing on the bucket.`
+  }
+}
+
+function compareVersions(a, b) {
+  const pa = a.split('.').map(Number)
+  const pb = b.split('.').map(Number)
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const diff = (pa[i] ?? 0) - (pb[i] ?? 0)
+    if (diff !== 0) return diff
+  }
+  return 0
+}
+
+const setLatestTarget = ref(null)
+const currentLatestVersion = computed(() => updateRows.value.find(p => p.is_latest)?.version ?? null)
+const setLatestIsOlder = computed(() =>
+  setLatestTarget.value && currentLatestVersion.value
+    ? compareVersions(setLatestTarget.value.version, currentLatestVersion.value) < 0
+    : false
+)
+
+function handleSetLatest(pkg) {
+  setLatestTarget.value = pkg
+}
+
+async function confirmSetLatest() {
+  const pkg = setLatestTarget.value
+  setLatestTarget.value = null
+  try {
+    await cd.setLatestPackage(pkg.id)
+    uploadOk.value = true
+    uploadMessage.value = `${pkg.version} is now the latest version.`
+  } catch (e) {
+    uploadOk.value = false
+    uploadMessage.value = e?.data?.message ?? e?.data?.error ?? 'Could not set latest.'
   }
 }
 

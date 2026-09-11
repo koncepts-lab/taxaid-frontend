@@ -57,21 +57,13 @@ async function download() {
   state.value = 'downloading'
   try {
     const res = await fetch(`${config.public.apiBase}/connector/tally/updates/download-by-token/${route.query.token}`)
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}))
+    const body = await res.json().catch(() => ({}))
+    if (!res.ok || !body.download_url) {
       errorMessage.value = body.error || 'This download link is invalid or has expired.'
       state.value = 'error'
       return
     }
-    const blob = await res.blob()
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'TaxAidConnector.exe'
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    window.URL.revokeObjectURL(url)
+    window.location.href = body.download_url
     state.value = 'idle'
   } catch {
     errorMessage.value = 'Could not reach the server. Please try again.'
