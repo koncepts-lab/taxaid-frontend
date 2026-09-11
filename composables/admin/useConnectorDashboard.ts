@@ -122,16 +122,18 @@ export function useConnectorDashboard() {
     return result
   }
 
+  async function setLatestPackage(id: number): Promise<any> {
+    const result = await apiFetch(`/admin/connector/updates/${id}/set-latest`, { method: 'PATCH' })
+    const idx = _updates.value.findIndex((p: any) => p.id === id)
+    if (idx !== -1) {
+      _updates.value = _updates.value.map((p: any) => ({ ...p, is_latest: p.id === id }))
+    }
+    return result
+  }
+
   async function downloadUpdatePackage(id: number, version: string): Promise<void> {
-    const blob: Blob = await apiFetch(`/connector/tally/updates/download/${id}`, { responseType: 'blob' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `TaxAidConnector-${version}.exe`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    URL.revokeObjectURL(url)
+    const { download_url }: any = await apiFetch(`/connector/tally/updates/download/${id}`)
+    window.location.href = download_url
   }
 
   return {
@@ -150,5 +152,6 @@ export function useConnectorDashboard() {
     getUpdatePackages,
     uploadUpdatePackage,
     downloadUpdatePackage,
+    setLatestPackage,
   }
 }

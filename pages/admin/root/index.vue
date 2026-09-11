@@ -26,10 +26,6 @@
               </svg>
               <span>Back to Hub</span>
             </button>
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/10 text-red-500 border border-red-500/30">
-              <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
-              Super Root Console
-            </span>
           </div>
           <h1 class="text-[24px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">
             Root Admin Console
@@ -160,7 +156,42 @@
 
         <!-- Command Input Form -->
         <form @submit.prevent="executeArtisan(customCommand)" class="space-y-2">
-          <label class="block text-[13px] font-medium opacity-80">Custom Artisan Command</label>
+          <div class="flex items-center justify-between flex-wrap gap-3 pb-1">
+            <label class="block text-[13px] font-medium opacity-80">Custom Artisan Command</label>
+            <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+              <div class="relative inline-flex items-center">
+                <input
+                  type="checkbox"
+                  v-model="runAsCloudJob"
+                  class="sr-only"
+                />
+                <div
+                  class="w-10 h-5 rounded-full transition-colors duration-200 ease-in-out border flex items-center px-0.5"
+                  :class="runAsCloudJob
+                    ? (isDark ? 'bg-[#10FFD4] border-[#10FFD4]' : 'bg-[#007C65] border-[#007C65]')
+                    : (isDark ? 'bg-black/70 border-white/40' : 'bg-gray-200 border-gray-400')"
+                >
+                  <div
+                    class="w-3.5 h-3.5 rounded-full transition-transform duration-200 ease-in-out shadow-sm"
+                    :class="[
+                      runAsCloudJob ? 'translate-x-5' : 'translate-x-0',
+                      runAsCloudJob
+                        ? (isDark ? 'bg-[#004D40]' : 'bg-white')
+                        : (isDark ? 'bg-white' : 'bg-gray-500')
+                    ]"
+                  ></div>
+                </div>
+              </div>
+              <span
+                class="text-xs transition-colors"
+                :class="runAsCloudJob
+                  ? (isDark ? 'text-[#10FFD4] font-semibold' : 'text-[#007C65] font-semibold')
+                  : (isDark ? 'text-white/80 font-medium' : 'text-gray-700 font-medium')"
+              >
+                Run as Cloud Run Job (Async / On-demand worker)
+              </span>
+            </label>
+          </div>
           <div class="flex flex-col sm:flex-row gap-3">
             <div class="relative flex-1">
               <span class="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-[13px] font-bold text-[#007C65]" :class="isDark ? 'text-[#10FFD4]' : ''">
@@ -177,12 +208,12 @@
             <button
               type="submit"
               :disabled="executingCommand || !customCommand.trim()"
-              class="h-[44px] px-6 rounded-[10px] bg-[#007C65] hover:bg-[#006552] disabled:opacity-50 text-white font-medium text-[14px] transition flex items-center justify-center gap-2 cursor-pointer shadow-sm flex-shrink-0"
+              class="h-[44px] w-[175px] min-w-[175px] rounded-[10px] bg-[#007C65] hover:bg-[#006552] disabled:opacity-50 text-white font-medium text-[14px] transition flex items-center justify-center gap-2 cursor-pointer shadow-sm flex-shrink-0"
             >
               <svg v-if="executingCommand" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              <span>Execute</span>
+              <span>{{ runAsCloudJob ? 'Launch Cloud Job' : 'Execute' }}</span>
             </button>
           </div>
         </form>
@@ -341,13 +372,43 @@
 
         <!-- Code Input Area -->
         <div class="space-y-2">
-          <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center justify-between flex-wrap gap-3">
             <label class="text-[13px] font-medium opacity-80">
               {{ tinkerMode === 'tinker' ? 'PHP Tinker Code (e.g. Eloquent / DB facade)' : 'PostgreSQL Query (SELECT, UPDATE, INSERT, ALTER)' }}
             </label>
-            <span class="text-[11px] font-mono opacity-50">
-              {{ tinkerMode === 'tinker' ? 'Evaluated with connecting DB owner privileges' : 'Executed with connecting DB owner privileges' }}
-            </span>
+            <label v-if="tinkerMode === 'tinker'" class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+              <div class="relative inline-flex items-center">
+                <input
+                  type="checkbox"
+                  v-model="runAsCloudJob"
+                  class="sr-only"
+                />
+                <div
+                  class="w-10 h-5 rounded-full transition-colors duration-200 ease-in-out border flex items-center px-0.5"
+                  :class="runAsCloudJob
+                    ? (isDark ? 'bg-[#10FFD4] border-[#10FFD4]' : 'bg-[#007C65] border-[#007C65]')
+                    : (isDark ? 'bg-black/70 border-white/40' : 'bg-gray-200 border-gray-400')"
+                >
+                  <div
+                    class="w-3.5 h-3.5 rounded-full transition-transform duration-200 ease-in-out shadow-sm"
+                    :class="[
+                      runAsCloudJob ? 'translate-x-5' : 'translate-x-0',
+                      runAsCloudJob
+                        ? (isDark ? 'bg-[#004D40]' : 'bg-white')
+                        : (isDark ? 'bg-white' : 'bg-gray-500')
+                    ]"
+                  ></div>
+                </div>
+              </div>
+              <span
+                class="text-xs transition-colors"
+                :class="runAsCloudJob
+                  ? (isDark ? 'text-[#10FFD4] font-semibold' : 'text-[#007C65] font-semibold')
+                  : (isDark ? 'text-white/80 font-medium' : 'text-gray-700 font-medium')"
+              >
+                Run as Cloud Run Job (Async)
+              </span>
+            </label>
           </div>
 
           <textarea
@@ -358,25 +419,17 @@
             :class="isDark ? 'bg-black/50 border-white/10 text-emerald-300 focus:border-[#10FFD4]' : 'bg-gray-900 border-gray-700 text-emerald-300 focus:border-[#00896F]'"
           ></textarea>
 
-          <div class="flex justify-between items-center pt-1 flex-wrap gap-3">
-            <div class="text-xs text-amber-500 flex items-center gap-1.5" v-if="isMutatingInput(tinkerInput, tinkerMode)">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <span>Mutating statement detected: Will require Database confirmation password.</span>
-            </div>
-            <div v-else></div>
-
+          <div class="flex justify-end items-center pt-1 flex-wrap gap-3">
             <button
               type="button"
               @click="handleRunTinkerOrSql"
               :disabled="executingTinker || !tinkerInput.trim()"
-              class="h-[42px] px-6 rounded-[10px] bg-[#007C65] hover:bg-[#006552] disabled:opacity-50 text-white font-medium text-[14px] transition flex items-center gap-2 cursor-pointer shadow-sm"
+              class="h-[42px] w-[215px] min-w-[215px] rounded-[10px] bg-[#007C65] hover:bg-[#006552] disabled:opacity-50 text-white font-medium text-[14px] transition flex items-center justify-center gap-2 cursor-pointer shadow-sm flex-shrink-0"
             >
               <svg v-if="executingTinker" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              <span>Execute {{ tinkerMode === 'tinker' ? 'Tinker Code' : 'SQL Query' }}</span>
+              <span>{{ tinkerMode === 'tinker' && runAsCloudJob ? 'Launch Tinker Cloud Job' : ('Execute ' + (tinkerMode === 'tinker' ? 'Tinker Code' : 'SQL Query')) }}</span>
             </button>
           </div>
         </div>
@@ -829,105 +882,12 @@
       </div>
 
     </main>
-
-    <!-- DATABASE MUTATION CONFIRMATION MODAL -->
-    <div
-      v-if="confirmModalOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs"
-    >
-      <div
-        class="w-full max-w-lg rounded-[20px] p-6 sm:p-8 space-y-6 shadow-2xl border"
-        :class="isDark ? 'bg-[#001410] border-red-500/40 text-white' : 'bg-white border-red-200 text-[#1a1a1a]'"
-      >
-        <div class="flex items-start gap-4">
-          <div class="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center flex-shrink-0 text-red-500">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <div class="space-y-1 flex-1">
-            <h3 class="text-[18px] font-bold text-red-500">
-              Database Alteration & Mutation Confirmation
-            </h3>
-            <p class="text-xs opacity-70">
-              This action directly executes database migrations, schema alterations, or record modifications.
-            </p>
-          </div>
-        </div>
-
-        <!-- Target Summary Box -->
-        <div class="p-3.5 rounded-[12px] border font-mono text-xs space-y-1.5" :class="isDark ? 'bg-black/50 border-white/10' : 'bg-gray-50 border-gray-200'">
-          <div class="flex justify-between opacity-70">
-            <span>Action Type:</span>
-            <span class="font-bold text-amber-400">{{ pendingAction?.typeLabel }}</span>
-          </div>
-          <div class="break-all whitespace-pre-wrap font-semibold" :class="isDark ? 'text-[#10FFD4]' : 'text-[#007C65]'">
-            {{ pendingAction?.displayCommand }}
-          </div>
-        </div>
-
-        <!-- Password input & Checkbox -->
-        <div class="space-y-4">
-          <div class="space-y-1.5">
-            <label class="block text-xs font-semibold uppercase tracking-wider text-red-400">
-              Enter Database / Root Secret Password to Confirm:
-            </label>
-            <input
-              v-model="dbPasswordInput"
-              type="password"
-              placeholder="Enter password..."
-              class="w-full px-4 h-[44px] rounded-[10px] border outline-none font-mono text-xs transition"
-              :class="isDark ? 'bg-black/50 border-red-500/40 text-white focus:border-red-400' : 'bg-white border-red-300 text-black focus:border-red-500'"
-              @keyup.enter="handleConfirmAction"
-            />
-          </div>
-
-          <label class="flex items-start gap-3 cursor-pointer select-none">
-            <input
-              v-model="acknowledgedCheckbox"
-              type="checkbox"
-              class="w-4 h-4 mt-0.5 rounded border-gray-300 text-red-600 focus:ring-red-500 cursor-pointer"
-            />
-            <span class="text-xs opacity-80 leading-tight">
-              I understand and confirm this alters live database schemas or records. No shortcuts.
-            </span>
-          </label>
-
-          <div v-if="confirmErrorMessage" class="p-3 rounded-[8px] bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium">
-            {{ confirmErrorMessage }}
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex items-center justify-end gap-3 pt-2">
-          <button
-            type="button"
-            @click="closeConfirmModal"
-            class="h-[40px] px-5 rounded-[10px] border text-xs font-medium transition cursor-pointer"
-            :class="isDark ? 'border-white/10 hover:bg-white/10 text-white/80' : 'border-gray-300 hover:bg-gray-100 text-gray-700'"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            @click="handleConfirmAction"
-            :disabled="!acknowledgedCheckbox || !dbPasswordInput.trim() || confirmingExecuting"
-            class="h-[40px] px-6 rounded-[10px] bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-md"
-          >
-            <svg v-if="confirmingExecuting" class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>Confirm & Execute Mutation</span>
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 const { isDark } = useTheme()
-const { isRootUnlocked, runArtisan, runTinker, runDbQuery, getTenants, testFirebase, testMail, getSystemInfo, getCommands, lock } = useRootAdmin()
+const { isRootUnlocked, runArtisan, runTinker, getJobStatus, runDbQuery, getTenants, testFirebase, testMail, getSystemInfo, getCommands, lock } = useRootAdmin()
 const { admin } = useAdminAuth()
 
 onMounted(() => {
@@ -948,75 +908,21 @@ const tabs = [
   { id: 'diagnostics', label: 'CORS & Environment' },
 ]
 
-// MUTATION CONFIRMATION MODAL STATE
-const confirmModalOpen = ref(false)
-const pendingAction = ref(null)
-const dbPasswordInput = ref('')
-const acknowledgedCheckbox = ref(false)
-const confirmErrorMessage = ref('')
-const confirmingExecuting = ref(false)
+// CLOUD RUN JOB TOGGLE STATE
+const runAsCloudJob = ref(false)
+let jobPollTimer = null
+
+onUnmounted(() => {
+  if (jobPollTimer) {
+    clearInterval(jobPollTimer)
+  }
+})
 
 // Command Classification Tiers:
-// 1. BLACKLIST: Complete wipe commands (migrate:fresh, db:wipe, schema:drop, central:fresh without --fix) -> Completely locked
-// 2. GRAYLIST: Drift reconciliation, bootstraps, seeders, or SQL data mutations -> Require confirmation password modal
-// 3. WHITELIST: Standard migrations (migrate, migrate --force, org:migrate), status, demo runs, caches, about -> Run directly
-
 function isBlacklistedArtisan(cmd) {
   const lower = cmd.trim().toLowerCase()
   const blacklist = ['migrate:fresh', 'migrate:reset', 'db:wipe', 'schema:drop']
   return blacklist.some(b => lower.includes(b)) || (lower.startsWith('central:fresh') && !lower.includes('--fix'))
-}
-
-function isGraylistArtisan(cmd) {
-  const lower = cmd.trim().toLowerCase()
-  // Whitelist: Demo runs, status, route/cache clears, about, inspection
-  if (lower.includes('--demo') || lower.includes('--pretend') || lower.includes(':status') || lower.includes(':list') || lower === 'about') {
-    return false
-  }
-  // Whitelist: Standard core & org migrations run directly
-  if (lower === 'migrate' || lower.startsWith('migrate --force') || lower.startsWith('org:migrate')) {
-    return false
-  }
-  // Graylist: Manual drift fixes without demo, bootstraps, seeders, central fresh with fix
-  const graylistKeywords = ['org:fix', 'central:fresh', 'db:bootstrap', 'db:seed']
-  return graylistKeywords.some(kw => lower.startsWith(kw) || lower.includes(' ' + kw))
-}
-
-function isMutatingInput(text, mode) {
-  if (!text) return false
-  if (mode === 'sql') {
-    return /\b(insert|update|delete|drop|alter|create|truncate|grant|revoke)\b/i.test(text)
-  }
-  return /\b(insert|update|delete|drop|alter|create|truncate|save|push|destroy)\b/i.test(text)
-}
-
-function closeConfirmModal() {
-  confirmModalOpen.value = false
-  pendingAction.value = null
-  dbPasswordInput.value = ''
-  acknowledgedCheckbox.value = false
-  confirmErrorMessage.value = ''
-}
-
-async function handleConfirmAction() {
-  if (!dbPasswordInput.value.trim() || !acknowledgedCheckbox.value || !pendingAction.value) return
-
-  confirmingExecuting.value = true
-  confirmErrorMessage.value = ''
-
-  try {
-    const password = dbPasswordInput.value.trim()
-    if (pendingAction.value.type === 'artisan') {
-      await executeArtisanInternal(pendingAction.value.command, password)
-    } else if (pendingAction.value.type === 'tinker_sql') {
-      await executeTinkerOrSqlInternal(password)
-    }
-    closeConfirmModal()
-  } catch (err) {
-    confirmErrorMessage.value = err?.data?.message || err?.message || 'Database password confirmation failed.'
-  } finally {
-    confirmingExecuting.value = false
-  }
 }
 
 // 1. ARTISAN STATE
@@ -1055,32 +961,66 @@ async function executeArtisan(cmd) {
     return
   }
 
-  if (isGraylistArtisan(cmd)) {
-    pendingAction.value = {
-      type: 'artisan',
-      command: cmd,
-      typeLabel: 'Graylist Database Command',
-      displayCommand: `php artisan ${cmd}`,
-    }
-    dbPasswordInput.value = ''
-    acknowledgedCheckbox.value = false
-    confirmErrorMessage.value = ''
-    confirmModalOpen.value = true
-    return
-  }
-
   await executeArtisanInternal(cmd)
 }
 
-async function executeArtisanInternal(cmd, password) {
+async function executeArtisanInternal(cmd) {
   executingCommand.value = true
   lastCommand.value = cmd
+  exitCode.value = null
+
+  if (jobPollTimer) {
+    clearInterval(jobPollTimer)
+    jobPollTimer = null
+  }
 
   try {
-    const res = await runArtisan(cmd, password)
-    terminalOutput.value = res.output || '(No output returned)'
-    exitCode.value = res.exit_code
-    durationMs.value = res.duration_ms
+    if (runAsCloudJob.value) {
+      const res = await runArtisan(cmd, undefined, true)
+      const jobId = res.job_id
+      const modeLabel = res.mode === 'cloud_run_job' ? 'Google Cloud Run Job (On-Demand Instance)' : 'Local Background Async Runner'
+
+      terminalOutput.value = `[ASYNC JOB DISPATCHED]\n` +
+        `Job ID:       ${jobId}\n` +
+        `Runner Mode:  ${modeLabel}\n` +
+        `Status:       RUNNING (Instance Active)\n` +
+        `Started At:   ${res.started_at || new Date().toISOString()}\n` +
+        (res.logs_url ? `GCP Logs:     ${res.logs_url}\n` : '') +
+        `\n------------------------------------------------------------\n` +
+        `Execution running in background. No 5-minute HTTP timeout.\n` +
+        `Instance will terminate automatically upon completion.\n` +
+        `Polling status...\n`
+
+      // Poll status every 2 seconds
+      jobPollTimer = setInterval(async () => {
+        try {
+          const pollRes = await getJobStatus(jobId)
+          if (pollRes?.status === 'completed' || pollRes?.status === 'failed') {
+            clearInterval(jobPollTimer)
+            jobPollTimer = null
+            executingCommand.value = false
+            exitCode.value = pollRes.exit_code
+            durationMs.value = pollRes.duration_ms || 0
+            terminalOutput.value = `[ASYNC JOB COMPLETED: ${pollRes.status.toUpperCase()}]\n` +
+              `Job ID:       ${jobId}\n` +
+              `Exit Code:    ${pollRes.exit_code}\n` +
+              `Duration:     ${pollRes.duration_ms || 0}ms\n` +
+              `Finished:     ${pollRes.finished_at || new Date().toISOString()}\n` +
+              `\n------------------- [OUTPUT] -------------------\n` +
+              (pollRes.output || '(No output returned)')
+          }
+        } catch (pollErr) {
+          console.error('Job polling error', pollErr)
+        }
+      }, 2000)
+    } else {
+      const res = await runArtisan(cmd)
+      terminalOutput.value = res.output || '(No output returned)'
+      exitCode.value = res.exit_code
+      durationMs.value = res.duration_ms
+      executingCommand.value = false
+    }
+
     nextTick(() => {
       if (terminalBodyRef.value) {
         terminalBodyRef.value.scrollTop = 0
@@ -1089,9 +1029,8 @@ async function executeArtisanInternal(cmd, password) {
   } catch (err) {
     terminalOutput.value = err?.data?.output || err?.data?.message || err?.message || 'Execution error'
     exitCode.value = 1
-    throw err
-  } finally {
     executingCommand.value = false
+    throw err
   }
 }
 
@@ -1126,41 +1065,48 @@ const sqlSnippets = [
 
 async function handleRunTinkerOrSql() {
   if (!tinkerInput.value.trim() || executingTinker.value) return
-
-  if (isMutatingInput(tinkerInput.value, tinkerMode.value)) {
-    pendingAction.value = {
-      type: 'tinker_sql',
-      typeLabel: tinkerMode.value === 'tinker' ? 'Tinker Data Mutation' : 'SQL DDL / Record Modification',
-      displayCommand: tinkerInput.value.trim(),
-    }
-    dbPasswordInput.value = ''
-    acknowledgedCheckbox.value = false
-    confirmErrorMessage.value = ''
-    confirmModalOpen.value = true
-    return
-  }
-
   await executeTinkerOrSqlInternal()
 }
 
-async function executeTinkerOrSqlInternal(password) {
+async function executeTinkerOrSqlInternal() {
   executingTinker.value = true
 
   try {
     if (tinkerMode.value === 'tinker') {
-      const res = await runTinker(tinkerInput.value.trim(), password)
-      tinkerResult.value = res.output || '(Execution completed with no return value)'
-      tinkerDurationMs.value = res.duration_ms
+      if (runAsCloudJob.value) {
+        const res = await runTinker(tinkerInput.value.trim(), undefined, true)
+        const jobId = res.job_id
+        tinkerResult.value = `[TINKER CLOUD JOB DISPATCHED]\nJob ID: ${jobId}\nStatus: Running on on-demand worker...\n\nPolling background output...`
+
+        const pollTimer = setInterval(async () => {
+          try {
+            const pollRes = await getJobStatus(jobId)
+            if (pollRes?.status === 'completed' || pollRes?.status === 'failed') {
+              clearInterval(pollTimer)
+              executingTinker.value = false
+              tinkerDurationMs.value = pollRes.duration_ms || 0
+              tinkerResult.value = pollRes.output || '(Execution finished with no output)'
+            }
+          } catch (pe) {
+            console.error('Tinker poll error', pe)
+          }
+        }, 2000)
+      } else {
+        const res = await runTinker(tinkerInput.value.trim())
+        tinkerResult.value = res.output || '(Execution completed with no return value)'
+        tinkerDurationMs.value = res.duration_ms
+        executingTinker.value = false
+      }
     } else {
-      const res = await runDbQuery(tinkerInput.value.trim(), targetSchema.value, password)
+      const res = await runDbQuery(tinkerInput.value.trim(), targetSchema.value)
       tinkerResult.value = res.output || JSON.stringify(res.results || res, null, 2)
       tinkerDurationMs.value = res.duration_ms
+      executingTinker.value = false
     }
   } catch (err) {
     tinkerResult.value = err?.data?.output || err?.data?.message || err?.message || 'Execution error'
-    throw err
-  } finally {
     executingTinker.value = false
+    throw err
   }
 }
 
