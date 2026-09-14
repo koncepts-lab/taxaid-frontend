@@ -10,19 +10,19 @@
                         <path d="m21 21-4.3-4.3" />
                     </svg>
                 </span>
-                <input type="text" placeholder="Search by consultant name or consultant Id..."
+                <input type="text" v-model="search" placeholder="Search by client name or client ID..."
                     class="w-full pl-12 pr-4 py-3 bg-white/50 border border-[#04C18F] rounded-xl text-sm focus:ring-1 focus:ring-[#00896F] outline-none shadow-sm transition-all placeholder:text-[#717182] text-black" />
             </div>
-            <button
+            <button @click="fetchClients()"
                 class="p-3 bg-white/50 hover:bg-[#86E4CB] border border-[#04C18F] rounded-xl hover:bg-gray-50 transition-all shadow-sm text-[#00896F]">
                 <img src="/images/icons/reload.svg" alt="Refresh" class="w-5 h-5">
             </button>
         </div>
 
         <div class="bg-white rounded-[24px] border border-gray-100 shadow-xl overflow-hidden">
-            <div class="overflow-x-auto custom-scrollbar">
+            <div class="overflow-auto custom-scrollbar" style="height: 836px">
                 <table class="w-full text-left border-separate border-spacing-0 min-w-[1800px] table-auto">
-                    <thead>
+                    <thead class="sticky top-0 z-10">
                         <tr class="bg-[#00896F] text-white">
                             <th class="px-6 py-5 text-[13px] font-semibold rounded-tl-lg w-[250px]">Client ID</th>
                             <th class="px-6 py-5 text-[13px] font-semibold w-[250px]">Client Name</th>
@@ -31,94 +31,111 @@
                             <th class="px-6 py-5 text-[13px] font-semibold w-[150px]">Industry</th>
                             <th class="px-6 py-5 text-[13px] font-semibold w-[250px]">Expected Close</th>
                             <th class="px-6 py-5 text-[13px] font-semibold w-[200px]">Progress Indicator</th>
-                            <th class="px-6 py-5 text-[13px] font-semibold min-w-[340px]">Client Delay</th>
                             <th class="px-6 py-5 text-[13px] font-semibold rounded-tr-lg w-[150px] text-right pe-10">
                                 View Status</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        <tr v-for="item in tableData" :key="item.id"
-                            class="group hover:bg-gray-50/50 transition-colors">
-                            <td class="px-6 py-5 text-sm text-black font-normal whitespace-nowrap">{{ item.clientId
-                            }}</td>
-                            <td class="px-6 py-5 text-sm font-normal text-gray-900 whitespace-nowrap">{{ item.name
-                            }}</td>
-                            <td class="px-6 py-5 text-sm text-black whitespace-nowrap">{{ item.date }}</td>
-                            <td class="px-6 py-5 text-sm text-black whitespace-nowrap">{{ item.erp }}</td>
-                            <td class="px-6 py-5 text-sm text-black whitespace-nowrap">{{ item.industry }}</td>
-                            <td class="px-6 py-5 text-sm text-black whitespace-nowrap">{{ item.close }}</td>
-
-                            <td class="px-6 py-5">
-                                <div class="flex items-center gap-3 whitespace-nowrap">
-                                    <div class="w-24 bg-gray-200 rounded-full h-2 overflow-hidden shadow-inner">
-                                        <div class="h-full rounded-full transition-all duration-700"
-                                            :style="{ width: (item.progress / 15 * 100) + '%' }"
-                                            :class="getProgressColor(item.progress)"></div>
+                        <template v-if="loading">
+                            <tr v-for="n in perPage" :key="'sk'+n" class="h-[76px]">
+                                <td class="px-6 py-5"><div class="h-4 rounded animate-pulse" :class="skelClass" style="width: 90px"></div></td>
+                                <td class="px-6 py-5"><div class="h-4 rounded animate-pulse" :class="skelClass" style="width: 150px"></div></td>
+                                <td class="px-6 py-5"><div class="h-4 rounded animate-pulse" :class="skelClass" style="width: 80px"></div></td>
+                                <td class="px-6 py-5"><div class="h-4 rounded animate-pulse" :class="skelClass" style="width: 50px"></div></td>
+                                <td class="px-6 py-5"><div class="h-4 rounded animate-pulse" :class="skelClass" style="width: 90px"></div></td>
+                                <td class="px-6 py-5"><div class="h-4 rounded animate-pulse" :class="skelClass" style="width: 80px"></div></td>
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-24 h-2 rounded-full animate-pulse" :class="skelClass"></div>
+                                        <div class="h-3.5 w-7 rounded animate-pulse" :class="skelClass"></div>
                                     </div>
-                                    <span class="text-xs font-bold text-gray-700 tabular-nums">{{ item.progress
-                                    }}/15</span>
-                                </div>
-                            </td>
+                                </td>
+                                <td class="px-6 py-5 pe-8">
+                                    <div class="h-9 w-28 rounded-md animate-pulse ml-auto" :class="skelClass"></div>
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-else-if="tableData.length === 0">
+                            <tr class="h-[76px]">
+                                <td colspan="8" class="px-6 py-5 text-sm text-gray-400 text-center">No clients found.</td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <tr v-for="item in tableData" :key="item.id"
+                                class="group hover:bg-gray-50/50 transition-colors h-[76px]">
+                                <td class="px-6 py-5 text-sm text-black font-normal whitespace-nowrap">{{ item.clientId
+                                }}</td>
+                                <td class="px-6 py-5 text-sm font-normal text-gray-900 whitespace-nowrap">{{ item.name
+                                }}</td>
+                                <td class="px-6 py-5 text-sm text-black whitespace-nowrap">{{ item.date }}</td>
+                                <td class="px-6 py-5 text-sm text-black whitespace-nowrap">{{ item.erp }}</td>
+                                <td class="px-6 py-5 text-sm text-black whitespace-nowrap">{{ item.industry }}</td>
+                                <td class="px-6 py-5 text-sm text-black whitespace-nowrap">{{ item.close }}</td>
 
-                            <td class="px-6 py-5">
-                                <div class="flex items-center gap-2 h-10">
-                                    <input type="text" v-model="item.delayReason"
-                                        :ref="el => { if (el) delayInputs[item.id] = el }"
-                                        placeholder="Click to add delay reason..." @focus="activeRowId = item.id"
-                                        @keyup.enter="saveDelay(item)"
-                                        class="flex-1 bg-[#F3F4F6] border border-transparent rounded-xl px-4 py-2.5 text-xs text-black outline-none focus:bg-white focus:border-[#00896F] transition-all placeholder:text-gray-400" />
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3 whitespace-nowrap">
+                                        <div class="w-24 bg-gray-200 rounded-full h-2 overflow-hidden shadow-inner">
+                                            <div class="h-full rounded-full transition-all duration-700"
+                                                :style="{ width: (item.progress / 15 * 100) + '%' }"
+                                                :class="getProgressColor(item.progress)"></div>
+                                        </div>
+                                        <span class="text-xs font-bold text-gray-700 tabular-nums">{{ item.progress
+                                        }}/15</span>
+                                    </div>
+                                </td>
 
-                                    <Transition name="fade">
-                                        <button v-if="activeRowId === item.id" @mousedown.prevent="saveDelay(item)"
-                                            class="bg-[#FFF085] hover:bg-[#FACC15] text-gray-800 px-4 py-1 rounded-md text-sm font-normal transition-all active:scale-95 shadow-sm whitespace-nowrap">
-                                            {{ item.isSaved ? 'Update' : 'Save' }}
-                                        </button>
-                                    </Transition>
-                                </div>
-                            </td>
-
-                            <td class="px-6 py-5 pe-8 ">
-                                <button @click="$emit('go-to-project', item)"
-                                    class="bg-[#00AD5FCC] hover:bg-[#00896F] hover:text-white text-white px-5 py-2 rounded-md text-xs font-bold shadow-sm active:scale-95 transition-all whitespace-nowrap">
-                                    Go to Project
-                                </button>
-                            </td>
-                        </tr>
+                                <td class="px-6 py-5 pe-8 ">
+                                    <button @click="$emit('go-to-project', item)"
+                                        class="bg-[#00AD5FCC] hover:bg-[#00896F] hover:text-white text-white px-5 py-2 rounded-md text-xs font-bold shadow-sm active:scale-95 transition-all whitespace-nowrap">
+                                        Go to Project
+                                    </button>
+                                </td>
+                            </tr>
+                        </template>
                     </tbody>
                 </table>
+            </div>
+
+            <div class="px-2 pb-2">
+                <CommonPaginationBar :meta="meta" :loading="loading" :per-page-options="[20, 30, 50]"
+                    @page-change="p => fetchClients(p)" @per-page-change="p => fetchClients(1, p)" />
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 const emit = defineEmits(['go-to-project'])
-const headers = [
-    'Client ID', 'Client Name', 'Date Assigned', 'ERP', 'Industry',
-    'Expected Close', 'Progress Indicator', 'Client Delay', 'View Status'
-]
 
 const { getMyClients } = useImplementation()
+const { isDark } = useTheme()
 
-const activeRowId = ref(null)
-const delayInputs = reactive({})
 const loading = ref(false)
+const search = ref('')
+const page = ref(1)
+const perPage = ref(20)
+const total = ref(0)
 
-// --- MOCK DATA (commented out — replaced by API) ---
-// const tableData = ref([
-//     { id: 1, clientId: 'client-7', name: 'Logistics Express Inc.', date: '01/10/2026', erp: 'SAP', industry: 'Technology', close: '01/10/2026', progress: 8, delayReason: '', savedDate: null },
-//     { id: 2, clientId: 'client-4', name: 'Food Services Group', date: '01/10/2026', erp: 'Oracle', industry: 'Retail', close: '01/10/2026', progress: 10, delayReason: 'Wait for documentation', savedDate: '24/03/2026' },
-//     { id: 3, clientId: 'client-4', name: 'Maritime Logistics', date: '01/10/2026', erp: 'Oracle', industry: 'Maritime', close: '01/10/2026', progress: 3, delayReason: '', savedDate: null },
-// ])
+const meta = computed(() => ({
+    current_page: page.value,
+    per_page: perPage.value,
+    total: total.value,
+    last_page: Math.max(1, Math.ceil(total.value / perPage.value)),
+}))
+
+const skelClass = computed(() => (isDark.value ? 'bg-gray-300' : 'bg-gray-100'))
 
 const tableData = ref([])
 
-onMounted(async () => {
+async function fetchClients(newPage = page.value, newPerPage = perPage.value) {
     loading.value = true
+    page.value = newPage
+    perPage.value = newPerPage
     try {
-        const data = await getMyClients()
-        tableData.value = data.map(item => ({
+        const res = await getMyClients({ page: newPage, perPage: newPerPage, search: search.value.trim() })
+        total.value = res.total
+        tableData.value = res.data.map(item => ({
             id:          item.client_id,
             clientId:    item.client_id,
             name:        item.client_name,
@@ -127,30 +144,19 @@ onMounted(async () => {
             industry:    item.industry ?? '-',
             close:       item.expected_date_to_close ?? '-',
             progress:    item.progress_indicator ?? 0,
-            delayReason: '',
-            savedDate:   null,
         }))
     } finally {
         loading.value = false
     }
+}
+
+let searchTimer = null
+watch(search, () => {
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout(() => fetchClients(1), 350)
 })
 
-const saveDelay = (item) => {
-    if (!item.delayReason.trim()) {
-        item.savedDate = null
-        activeRowId.value = null
-        return
-    }
-
-    const now = new Date()
-    item.savedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`
-
-    activeRowId.value = null
-
-    if (delayInputs[item.id]) {
-        delayInputs[item.id].blur()
-    }
-}
+onMounted(() => fetchClients())
 
 const getProgressColor = (val) => {
     if (val >= 10) return 'bg-[#00896F]'
@@ -162,16 +168,6 @@ const getProgressColor = (val) => {
 <style scoped>
 table {
     border-collapse: separate;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
 }
 
 .overflow-x-auto::-webkit-scrollbar {

@@ -59,9 +59,11 @@ export function useImplementation() {
   }
 
   // Member routes — role: Super Admin, Implementation Consultant
-  async function getMyClients(): Promise<any[]> {
-    const res: any = await apiFetch('/admin/implementation-pool/my-clients')
-    return res.data ?? []
+  async function getMyClients(opts: { page?: number; perPage?: number; search?: string } = {}): Promise<{ data: any[]; total: number; page: number; per_page: number }> {
+    const res: any = await apiFetch('/admin/implementation-pool/my-clients', {
+      query: { page: opts.page ?? 1, per_page: opts.perPage ?? 20, search: opts.search || undefined },
+    })
+    return { data: res.data ?? [], total: res.total ?? 0, page: res.page ?? 1, per_page: res.per_page ?? 20 }
   }
 
   async function getClientSteps(clientId: string): Promise<{ steps: any[], tenantStatus: string | null }> {
@@ -128,6 +130,10 @@ export function useImplementation() {
   async function generateConnectorCode(clientId: string): Promise<any> {
     const res: any = await apiFetch(`/admin/implementation/clients/${clientId}/connector-code`, { method: 'POST' })
     return res.data
+  }
+
+  async function resetConnector(clientId: string): Promise<void> {
+    await apiFetch(`/admin/implementation/clients/${clientId}/connector-reset`, { method: 'POST' })
   }
 
   // Shareable, 12h connector-installer download link (not a permanent public URL)
@@ -289,6 +295,7 @@ export function useImplementation() {
     goLive,
     getConnectorCode,
     generateConnectorCode,
+    resetConnector,
     getConnectorDownloadLink,
     generateConnectorDownloadLink,
     getCredentialRequests,

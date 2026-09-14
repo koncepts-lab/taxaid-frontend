@@ -156,10 +156,14 @@
             </div>
             <p v-else class="text-base text-[#717182] mb-6">One-time activation code for the client's connector</p>
 
-            <!-- Connected: no more generation -->
             <div v-if="connCode?.connected" class="space-y-2">
                 <p class="text-sm text-black capitalize"><span class="text-[#717182]">ERP:</span> {{ connCode.erp_type || '-' }}</p>
                 <p class="text-xs text-[#717182]">Connector is linked. Last sync: {{ formatDate(connCode.last_sync_at) }}.</p>
+                <button @click="showReactivateConfirm = true" :disabled="connLoading"
+                    class="bg-white border border-[#00896F] text-[#00896F] hover:bg-[#E6FDF9] px-6 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 disabled:opacity-50">
+                    {{ connLoading ? 'Re-activating…' : 'Re-activate' }}
+                </button>
+                <p class="text-xs text-[#717182]">Disconnects the current device and issues a new activation code.</p>
             </div>
 
             <!-- Code exists, not connected -->
@@ -194,6 +198,23 @@
             <p v-if="connError" class="text-xs text-[#B91C1C] mt-2">{{ connError }}</p>
         </div>
         </div>
+
+        <Teleport to="body">
+            <div v-if="showReactivateConfirm" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+                <div class="bg-white rounded-2xl shadow-md w-[400px] max-w-full p-8">
+                    <h2 class="text-[17px] font-semibold text-gray-900 mb-2">Re-activate connector?</h2>
+                    <p class="text-sm text-gray-500 mb-4">
+                        This disconnects the client's current device and issues a new activation code. The old code stops working immediately.
+                    </p>
+                    <div class="flex gap-3 justify-end">
+                        <button @click="showReactivateConfirm = false" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 cursor-pointer">Cancel</button>
+                        <button @click="reactivateConnector" :disabled="connLoading" class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-[#00896F] hover:bg-[#006B56] disabled:opacity-60 cursor-pointer">
+                            {{ connLoading ? 'Re-activating…' : 'Re-activate' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
 
         <!-- Implementation Table -->
         <div class="bg-white rounded-2xl border shadow-sm p-8 overflow-hidden">
@@ -366,7 +387,7 @@ import { ref, computed, reactive, onMounted } from 'vue'
 const props = defineProps({ project: Object })
 const emit = defineEmits(['back'])
 
-const { updateStepProgress, requestCredentials, getMyCredentialRequest, goLive, getConnectorCode, generateConnectorCode, getConnectorDownloadLink, generateConnectorDownloadLink, updateAssignment } = useImplementation()
+const { updateStepProgress, requestCredentials, getMyCredentialRequest, goLive, getConnectorCode, generateConnectorCode, resetConnector, getConnectorDownloadLink, generateConnectorDownloadLink, updateAssignment } = useImplementation()
 
 // --- TaxAid Connect activation code ---
 const connCode    = ref(null)
@@ -385,6 +406,24 @@ async function generateCode() {
         await loadConnectorCode()
     } catch (e) {
         connError.value = e?.data?.message || 'Failed to generate code.'
+        await loadConnectorCode()
+    } finally {
+        connLoading.value = false
+    }
+}
+
+const showReactivateConfirm = ref(false)
+
+async function reactivateConnector() {
+    showReactivateConfirm.value = false
+    connLoading.value = true
+    connError.value = ''
+    try {
+        await resetConnector(props.project.clientId)
+        await generateConnectorCode(props.project.clientId)
+        await loadConnectorCode()
+    } catch (e) {
+        connError.value = e?.data?.message || 'Failed to re-activate.'
         await loadConnectorCode()
     } finally {
         connLoading.value = false
