@@ -20,12 +20,12 @@ export default defineNuxtPlugin(() => {
 
     if (result.success) {
       console.log(
-        '%c[ROOT ADMIN UNLOCKED] Red Root Admin Card is now active on the dashboard selector!',
+        '%c[ROOT ADMIN UNLOCKED] Root Admin is now active on the dashboard selector',
         'background: #7F1D1D; color: #FCA5A5; font-weight: bold; padding: 4px 8px; border-radius: 4px; font-size: 13px;'
       )
-      return 'SUCCESS: Root Admin Console unlocked.'
+      return 'SUCCESS: Root Console unlocked.'
     } else {
-      console.warn(`[ROOT AUTH FAILED] ${result.message}`)
+      console.warn(`[FAILED] ${result.message}`)
       return `FAILED: ${result.message}`
     }
   }

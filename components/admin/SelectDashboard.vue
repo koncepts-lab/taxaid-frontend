@@ -92,17 +92,17 @@ const SYSTEM_CARDS = computed(() => {
       buttonLabel: 'Access Ticketing Dashboard', route: '/admin/ticketing'
     },
     'Admin Dashboard': {
-      icon: '/images/icons/Revenue-Partnership.svg', title: 'Admin Dashboard',
+      icon: '/images/icons/adminz/settings.svg', title: 'Admin Dashboard',
       description: 'Manage system roles, access control, and client oversight within your assigned systems.',
       buttonLabel: 'Access Admin Dashboard', route: '/admin/management'
     },
     'Payments Dashboard': {
-      icon: '/images/icons/Revenue-Partnership.svg', title: 'Payments Dashboard',
+      icon: '/images/icons/adminz/credit-card.svg', title: 'Payments Dashboard',
       description: 'Manage subscription plans, monitor payments, and configure billing.',
       buttonLabel: 'Access Payments Dashboard', route: '/admin/payments'
     },
     'Implementation Dashboard': {
-      icon: '/images/icons/Revenue-Partnership.svg', title: 'Implementation Dashboard',
+      icon: '/images/icons/adminz/rocket.svg', title: 'Implementation Dashboard',
       description: role === 'Implementation Consultant'
         ? 'Track your assigned clients, onboarding steps, and deliverables.'
         : 'Manage client onboarding, GL codes, consultant assignments, and project tracking.',
@@ -110,7 +110,7 @@ const SYSTEM_CARDS = computed(() => {
       route: role === 'Implementation Consultant' ? '/admin/implementation/member' : '/admin/implementation/manager'
     },
     'Review Dashboard': {
-      icon: '/images/icons/Revenue-Partnership.svg', title: 'Review Dashboard',
+      icon: '/images/icons/adminz/review.svg', title: 'Review Dashboard',
       description: role === 'Review Consultant'
         ? 'Log daily activity, manage client appointments, and track review progress.'
         : 'Manage team workload, client sync status, and assignment across consultants.',
@@ -128,7 +128,7 @@ const SYSTEM_CARDS = computed(() => {
       buttonLabel: 'Access Revenue Partnership Account Dashboard', route: '/admin/revenue-partner/accounts'
     },
     'Connector Dashboard': {
-      icon: '/images/icons/Revenue-Partnership.svg', title: 'Connector Dashboard',
+      icon: '/images/icons/adminz/network-nodes.svg', title: 'Connector Dashboard',
       description: 'Manage connector groups, monitor tenant sync status, and roll out connector updates.',
       buttonLabel: 'Access Connector Dashboard', route: '/admin/connector/dashboard'
     },

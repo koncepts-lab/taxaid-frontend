@@ -130,6 +130,24 @@ export function useRootAdmin() {
     })
   }
 
+  async function getConnectorInfraSettings() {
+    return await useAdminApi('/admin/root/connector-infra-settings', {
+      headers: {
+        'X-Root-Token': rootToken.value || '',
+      },
+    })
+  }
+
+  async function updateConnectorInfraSettings(payload: any) {
+    return await useAdminApi('/admin/root/connector-infra-settings', {
+      method: 'PUT',
+      headers: {
+        'X-Root-Token': rootToken.value || '',
+      },
+      body: payload,
+    })
+  }
+
   return {
     isRootUnlocked,
     rootToken,
@@ -145,5 +163,7 @@ export function useRootAdmin() {
     testFirebase,
     testMail,
     getSystemInfo,
+    getConnectorInfraSettings,
+    updateConnectorInfraSettings,
   }
 }
