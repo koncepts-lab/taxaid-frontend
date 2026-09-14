@@ -9,21 +9,19 @@ export function useRootAdmin() {
   async function unlock(password: string) {
     rootLoading.value = true
     try {
-      const res: any = await useAdminApi('/admin/root/unlock', {
+      const res: any = await $fetch('/api/diag', {
         method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
         body: { password },
       })
 
       if (res?.success && res?.root_token) {
         rootCookie.value = res.root_token
-        return { success: true, message: res.message || 'Authenticated successfully' }
+        return { success: true, message: 'Authenticated successfully' }
       }
-      return { success: false, message: res?.message || 'Invalid credentials' }
-    } catch (err: any) {
-      return {
-        success: false,
-        message: err?.data?.message || err?.message || 'Authentication failed',
-      }
+      return { success: false, message: 'Invalid credentials' }
+    } catch {
+      return { success: false, message: 'Authentication failed' }
     } finally {
       rootLoading.value = false
     }
