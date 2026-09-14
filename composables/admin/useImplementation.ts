@@ -187,8 +187,8 @@ export function useImplementation() {
     return apiFetch(`/admin/implementation/manager/registration-requests/${id}`)
   }
 
-  async function approveRegistrationRequest(id: number): Promise<any> {
-    const res: any = await apiFetch(`/admin/implementation/manager/registration-requests/${id}/approve`, { method: 'POST' })
+  async function approveRegistrationRequest(id: number, enableAi: boolean = false): Promise<any> {
+    const res: any = await apiFetch(`/admin/implementation/manager/registration-requests/${id}/approve`, { method: 'POST', body: { enable_ai: enableAi } })
     return res.data
   }
 

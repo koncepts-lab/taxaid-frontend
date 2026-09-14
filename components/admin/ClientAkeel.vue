@@ -23,6 +23,32 @@
       </div>
     </div>
 
+    <div class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6" :class="{ 'opacity-50': !enabled }">
+      <h2 class="text-[16px] font-medium text-[#101828]">AI Chat / AI Alerts Access</h2>
+      <p class="text-[13px] text-[#4A5565] mt-0.5 mb-4">Independently force chat or alerts on/off for this org, or leave them following the plan's own entitlement.</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex items-center justify-between gap-3 border border-gray-100 rounded-lg px-4 py-3">
+          <span class="text-sm text-gray-700">AI Chat</span>
+          <select :value="triStateValue(data.ai_chat_enabled)" @change="updateEntitlement('ai_chat_enabled', $event.target.value)"
+            :disabled="entitlementBusy || !enabled" class="px-3 py-1.5 border border-gray-200 rounded-md text-[13px] outline-none focus:border-[#008169] disabled:opacity-60">
+            <option value="null">Follow plan</option>
+            <option value="true">Force on</option>
+            <option value="false">Force off</option>
+          </select>
+        </div>
+        <div class="flex items-center justify-between gap-3 border border-gray-100 rounded-lg px-4 py-3">
+          <span class="text-sm text-gray-700">AI Alerts</span>
+          <select :value="triStateValue(data.ai_alerts_enabled)" @change="updateEntitlement('ai_alerts_enabled', $event.target.value)"
+            :disabled="entitlementBusy || !enabled" class="px-3 py-1.5 border border-gray-200 rounded-md text-[13px] outline-none focus:border-[#008169] disabled:opacity-60">
+            <option value="null">Follow plan</option>
+            <option value="true">Force on</option>
+            <option value="false">Force off</option>
+          </select>
+        </div>
+      </div>
+      <p v-if="entitlementMessage" class="text-[13px] mt-3" :class="entitlementOk ? 'text-[#00896F]' : 'text-red-500'">{{ entitlementMessage }}</p>
+    </div>
+
     <!-- Disable confirmation (password required) -->
     <div v-if="confirmDisable" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div class="bg-white rounded-xl shadow-lg w-[400px] max-w-full p-6">
@@ -276,7 +302,7 @@ const props = defineProps({
 })
 
 const {
-  getClientAi, toggleClientAi, getClientAiSettings, updateClientAiSettings,
+  getClientAi, toggleClientAi, updateClientAiEntitlements, getClientAiSettings, updateClientAiSettings,
   getClientAlertRuleOverrides, updateClientAlertRuleOverride, resetClientAlertRuleOverride,
   getClientDataLinkOverrides, updateClientDataLinkOverride, resetClientDataLinkOverride,
 } = useAdminAi()
@@ -324,6 +350,31 @@ function applyMeta(res) {
 }
 
 const enabled = computed(() => !!data.value.ai_calling_enabled)
+
+const entitlementBusy = ref(false)
+const entitlementMessage = ref('')
+const entitlementOk = ref(true)
+
+function triStateValue(v) {
+  return v === true ? 'true' : v === false ? 'false' : 'null'
+}
+
+async function updateEntitlement(field, selected) {
+  const value = selected === 'true' ? true : selected === 'false' ? false : null
+  entitlementBusy.value = true
+  entitlementMessage.value = ''
+  try {
+    const res = await updateClientAiEntitlements(props.tenantId, { [field]: value })
+    data.value[field] = res?.data?.[field] ?? value
+    entitlementOk.value = true
+    entitlementMessage.value = 'Updated.'
+  } catch (e) {
+    entitlementOk.value = false
+    entitlementMessage.value = e?.data?.message ?? 'Failed to update.'
+  } finally {
+    entitlementBusy.value = false
+  }
+}
 
 const isRangeOpen = ref(false)
 const selectedRange = ref('6m')

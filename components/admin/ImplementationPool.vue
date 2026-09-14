@@ -283,6 +283,13 @@
                                 <div v-if="registrationDetail.reviewed_by_name" class="flex justify-between"><span class="text-gray-400">Reviewed by</span><span class="font-medium text-gray-800">{{ registrationDetail.reviewed_by_name }}</span></div>
                             </div>
                         </div>
+                        <div v-if="registrationDetail?.status === 'email_verified'" class="px-6 pt-2">
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" v-model="registrationEnableAi" class="w-4 h-4 accent-[#00896F]" />
+                                <span class="text-sm text-gray-700">Enable full AI access</span>
+                            </label>
+                            <p class="text-xs text-gray-400 mt-1 ml-6">Off by default (trial/demo restriction) — AI chat and alerts stay off for this org until re-enabled from its AI settings or it subscribes to a paid plan.</p>
+                        </div>
                         <div v-if="registrationDetail?.status === 'email_verified'" class="px-6 py-4 border-t border-gray-100 flex gap-3 justify-end">
                             <button @click="rejectRegistration(registrationDetail)" :disabled="registrationActing"
                                 class="px-5 py-2 border border-red-200 text-red-600 rounded-md text-sm font-medium hover:bg-red-50 disabled:opacity-60 transition-colors">
@@ -510,6 +517,7 @@ const registrationSearch   = ref('')
 const registrationDetail   = ref(null)
 const showRegistrationDetail = ref(false)
 const registrationActing   = ref(false)
+const registrationEnableAi = ref(false)
 
 async function loadRegistrations(page = 1) {
     registrationLoading.value = true
@@ -526,13 +534,14 @@ async function loadRegistrations(page = 1) {
 async function openRegistrationDetail(row) {
     showRegistrationDetail.value = true
     registrationDetail.value = null
+    registrationEnableAi.value = false
     registrationDetail.value = await getRegistrationRequestDetail(row.id)
 }
 
 async function approveRegistration(row) {
     registrationActing.value = true
     try {
-        await approveRegistrationRequest(row.id)
+        await approveRegistrationRequest(row.id, registrationEnableAi.value)
         showRegistrationDetail.value = false
         await loadRegistrations(registrationMeta.value.current_page)
     } finally {
