@@ -33,6 +33,19 @@
         </span>
         <input v-model="tenantSearch" @input="debouncedLoad" type="text" placeholder="Search by name or license ID..." autocomplete="off" class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm" />
       </div>
+      <div class="relative min-w-[160px] w-full md:w-auto">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+        </span>
+        <select v-model="statusFilter" @change="load(1)" class="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
+          <option value="">All Statuses</option>
+          <option value="implementation">Implementation</option>
+          <option value="demo">Demo</option>
+          <option value="live">Live</option>
+          <option value="suspended">Suspended</option>
+        </select>
+        <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+      </div>
     </div>
 
     <!-- Tenants Table -->
@@ -118,6 +131,7 @@ function closeDetail() {
 const tenants = ref([])
 const loading = ref(false)
 const tenantSearch = ref('')
+const statusFilter = ref('')
 const perPage = ref(10)
 const meta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
 let searchTimer = null
@@ -125,7 +139,7 @@ let searchTimer = null
 async function load(page = 1) {
   loading.value = true
   try {
-    const res = await getTenants({ search: tenantSearch.value, page, per_page: perPage.value })
+    const res = await getTenants({ search: tenantSearch.value, status: statusFilter.value, page, per_page: perPage.value })
     tenants.value = res.data ?? []
     meta.value = {
       current_page: res.current_page ?? 1,
