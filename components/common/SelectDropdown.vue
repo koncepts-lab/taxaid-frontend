@@ -2,10 +2,10 @@
   <div ref="rootRef" class="relative">
     <!-- Field -->
     <button ref="fieldRef" type="button" :disabled="disabled" @click="toggle"
-      :class="[open ? 'border-[#00896F] ring-1 ring-[#00896F]' : 'border-gray-100', isDark ? 'bg-[#032e23]' : 'bg-[#69e4c4]']"
-      class="w-full p-2.5 border rounded-lg text-sm outline-none cursor-pointer text-[#717182] flex items-center gap-1.5 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+      :class="[open ? 'border-[#00896F] ring-1 ring-[#00896F]' : fieldBorderClass, fieldBgClass]"
+      class="w-full p-2.5 border rounded-lg text-sm outline-none cursor-pointer flex items-center gap-1.5 text-left disabled:opacity-50 disabled:cursor-not-allowed">
       <span v-if="isHighlighted(modelValue)" class="w-2.5 h-2.5 rounded-full bg-[#04C18F] shrink-0"></span>
-      <span class="flex-1 truncate" :class="modelValue ? '' : 'text-gray-400'">{{ modelValue || placeholder }}</span>
+      <span class="flex-1 truncate" :class="modelValue ? '' : placeholderClass">{{ modelValue || placeholder }}</span>
       <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
       </svg>
@@ -62,8 +62,16 @@ const props = defineProps({
   placeholder: { type: String, default: '—' },
   clearLabel: { type: String, default: '—' },
   disabled: { type: Boolean, default: false },
+  plain: { type: Boolean, default: false },
 })
 const emit = defineEmits(['update:modelValue'])
+
+const fieldBgClass = computed(() => {
+  if (props.plain) return 'bg-white text-gray-700'
+  return (isDark.value ? 'bg-[#032e23]' : 'bg-[#69e4c4]') + ' text-[#717182]'
+})
+const fieldBorderClass = computed(() => (props.plain ? 'border-gray-200' : 'border-gray-100'))
+const placeholderClass = computed(() => (props.plain ? 'text-gray-700' : 'text-gray-400'))
 
 const open = ref(false)
 const search = ref('')

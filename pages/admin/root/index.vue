@@ -881,13 +881,122 @@
         </div>
       </div>
 
+      <!-- TAB 6: CONNECTOR INFRA SETTINGS -->
+      <div
+        v-else-if="activeTab === 'connector-infra'"
+        :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-[#E5E5E5]'"
+        class="rounded-[20px] border shadow-sm p-6 sm:p-8 space-y-6 w-full max-w-full min-w-0 overflow-hidden"
+      >
+        <div class="space-y-1">
+          <h2 class="text-[20px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">
+            Connector Infra Settings
+          </h2>
+          <p class="text-[14px] text-[#00000080]" :class="isDark ? 'text-white/60' : ''">
+            Cycle-window timing for connector group syncs.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div v-for="field in connectorInfraFields" :key="field.key">
+              <label class="flex items-center gap-1.5 text-[13px] font-medium opacity-80 mb-1.5">
+                {{ field.label }}
+                <span class="relative inline-block group/tip">
+                  <span class="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[10px] flex items-center justify-center cursor-help">i</span>
+                  <span class="pointer-events-none absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-56 rounded-lg bg-[#003d35] text-white text-[12px] leading-snug px-3 py-2 opacity-0 group-hover/tip:opacity-100 transition-opacity">
+                    {{ field.hint }}
+                  </span>
+                </span>
+              </label>
+              <input
+                v-model.number="connectorInfraForm[field.key]"
+                type="number" :min="field.min"
+                class="w-full h-[42px] px-3.5 rounded-[10px] border outline-none text-[13px]"
+                :class="isDark ? 'bg-black/40 border-white/10 text-white' : 'bg-white border-[#04C18F33] text-[#1a1a1a]'"
+              />
+            </div>
+
+            <button
+              @click="saveConnectorInfraSettings"
+              :disabled="connectorInfraSaving"
+              class="h-[44px] px-6 rounded-[10px] bg-[#007C65] hover:bg-[#006552] disabled:opacity-50 text-white font-medium text-[14px] transition flex items-center justify-center gap-2 cursor-pointer shadow-sm sm:col-span-2 w-fit"
+            >
+              <svg v-if="connectorInfraSaving" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>Save</span>
+            </button>
+          </div>
+
+          <div
+            class="rounded-[16px] p-6 border space-y-4 min-w-0"
+            :class="isDark ? 'bg-black/30 border-white/10' : 'bg-gray-50 border-gray-200'"
+          >
+            <div v-if="connectorInfraCloudTasks" class="space-y-2 pb-2 border-b border-black/5 dark:border-white/5">
+              <div class="flex items-center justify-between">
+                <h4 class="text-[14px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">Cloud Tasks Dispatcher</h4>
+                <span
+                  class="px-2.5 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wider"
+                  :class="connectorInfraCloudTasks.status === 'ready'
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                    : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'"
+                >
+                  {{ connectorInfraCloudTasks.status === 'ready' ? 'Active' : 'Fallback' }}
+                </span>
+              </div>
+              <p class="text-[11px] opacity-70">{{ connectorInfraCloudTasks.message }}</p>
+              <div class="space-y-1 text-xs font-mono pt-1">
+                <div class="flex justify-between py-0.5">
+                  <span class="opacity-70">Location:</span>
+                  <span class="font-bold">{{ connectorInfraCloudTasks.location || '—' }}</span>
+                </div>
+                <div class="flex justify-between py-0.5">
+                  <span class="opacity-70">Auth Mode:</span>
+                  <span class="font-bold text-emerald-600 dark:text-emerald-400">Bearer Secret</span>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="connectorInfraAnalytics" class="space-y-2">
+              <h4 class="text-[14px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">Analytics</h4>
+              <div class="space-y-2 text-xs font-mono">
+                <div class="flex justify-between py-1 border-b border-black/5 dark:border-white/5">
+                  <span class="opacity-70">Avg Sync Duration:</span>
+                  <span class="font-bold">{{ connectorInfraAnalytics.sync_duration?.avg_seconds ?? '—' }}s</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-black/5 dark:border-white/5">
+                  <span class="opacity-70">Max Sync Duration:</span>
+                  <span class="font-bold">{{ connectorInfraAnalytics.sync_duration?.max_seconds ?? '—' }}s</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-black/5 dark:border-white/5">
+                  <span class="opacity-70">Avg Upload Gap:</span>
+                  <span class="font-bold">{{ connectorInfraAnalytics.upload_gap?.avg_minutes ?? '—' }} min</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-black/5 dark:border-white/5">
+                  <span class="opacity-70">Max Upload Gap:</span>
+                  <span class="font-bold">{{ connectorInfraAnalytics.upload_gap?.max_minutes ?? '—' }} min</span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              v-if="connectorInfraReport"
+              class="p-4 rounded-[10px] text-xs"
+              :class="connectorInfraReport.success ? 'bg-green-100 text-green-900 border border-green-300' : 'bg-red-100 text-red-900 border border-red-300'"
+            >
+              {{ connectorInfraReport.message }}
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 </template>
 
 <script setup>
 const { isDark } = useTheme()
-const { isRootUnlocked, runArtisan, runTinker, getJobStatus, runDbQuery, getTenants, testFirebase, testMail, getSystemInfo, getCommands, lock } = useRootAdmin()
+const { isRootUnlocked, runArtisan, runTinker, getJobStatus, runDbQuery, getTenants, testFirebase, testMail, getSystemInfo, getCommands, lock, getConnectorInfraSettings, updateConnectorInfraSettings } = useRootAdmin()
 const { admin } = useAdminAuth()
 
 onMounted(() => {
@@ -897,16 +1006,25 @@ onMounted(() => {
   refreshSystemInfo()
   loadTenantsList()
   loadCommandsCatalog()
+  loadConnectorInfraSettings()
 })
 
-const activeTab = ref('artisan')
 const tabs = [
   { id: 'artisan', label: 'Artisan Commands' },
   { id: 'tinker', label: 'Tinker & Database Editor' },
   { id: 'firebase', label: 'Firebase Push Tester' },
   { id: 'mail', label: 'Mailer / SMTP Tester' },
   { id: 'diagnostics', label: 'CORS & Environment' },
+  { id: 'connector-infra', label: 'Connector Infra Settings' },
 ]
+
+const route = useRoute()
+const router = useRouter()
+const activeTab = ref(tabs.some(t => t.id === route.query.tab) ? route.query.tab : 'artisan')
+
+watch(activeTab, (val) => {
+  router.replace({ query: { ...route.query, tab: val } })
+})
 
 // CLOUD RUN JOB TOGGLE STATE
 const runAsCloudJob = ref(false)
@@ -1243,6 +1361,53 @@ async function refreshSystemInfo() {
     console.error('Failed to fetch system info', err)
   } finally {
     loadingInfo.value = false
+  }
+}
+
+// 5. CONNECTOR INFRA SETTINGS
+const connectorInfraFields = [
+  { key: 'job_start_delay_minutes', label: 'Job Start Delay (min)', min: 0, hint: 'Minutes after a group\'s cycle time before the backend starts checking for completed uploads.' },
+  { key: 'recheck_interval_minutes', label: 'Recheck Interval (min)', min: 1, hint: 'How often the group task rechecks for newly-completed tenant batches while its window is active.' },
+  { key: 'max_window_minutes', label: 'Max Window (min)', min: 5, hint: 'How long a cycle window stays active before an unfinished tenant is marked missed for that cycle.' },
+  { key: 'max_concurrent_tenant_syncs', label: 'Max Concurrent Syncs Per Group', min: 1, hint: 'How many tenants inside the same group can sync at once. Applies to every group — pushed live to each group\'s Cloud Tasks queue on save.' },
+]
+
+const connectorInfraForm = ref({
+  job_start_delay_minutes: 10,
+  recheck_interval_minutes: 5,
+  max_window_minutes: 60,
+  max_concurrent_tenant_syncs: 3,
+})
+const connectorInfraSaving = ref(false)
+const connectorInfraReport = ref(null)
+const connectorInfraAnalytics = ref(null)
+const connectorInfraCloudTasks = ref(null)
+
+async function loadConnectorInfraSettings() {
+  try {
+    const res = await getConnectorInfraSettings()
+    if (res?.settings) connectorInfraForm.value = { ...connectorInfraForm.value, ...res.settings }
+    connectorInfraAnalytics.value = res?.analytics || null
+    connectorInfraCloudTasks.value = res?.cloud_tasks || null
+  } catch (err) {
+    console.error('Failed to load connector infra settings', err)
+  }
+}
+
+async function saveConnectorInfraSettings() {
+  connectorInfraSaving.value = true
+  connectorInfraReport.value = null
+  try {
+    const res = await updateConnectorInfraSettings(connectorInfraForm.value)
+    connectorInfraForm.value = { ...connectorInfraForm.value, ...res }
+    connectorInfraReport.value = { success: true, message: 'Saved.' }
+  } catch (err) {
+    connectorInfraReport.value = {
+      success: false,
+      message: err?.data?.message || err?.data?.error || err?.message || 'Save failed.',
+    }
+  } finally {
+    connectorInfraSaving.value = false
   }
 }
 

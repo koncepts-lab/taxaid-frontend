@@ -50,9 +50,22 @@
 
     <!-- Users table -->
     <div class="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
-      <div class="px-6 py-4 border-b border-gray-100">
-        <h2 class="text-[16px] font-medium text-[#101828]">Users</h2>
-        <p class="text-[13px] text-[#4A5565] mt-0.5">All logins under this tenant.</p>
+      <div class="px-6 py-4 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-[16px] font-medium text-[#101828]">Users</h2>
+          <p class="text-[13px] text-[#4A5565] mt-0.5">All logins under this tenant.</p>
+        </div>
+        <div class="relative min-w-[160px] shrink-0">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+          </span>
+          <select v-model="userTypeFilter" class="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
+            <option value="org">Tenant Users</option>
+            <option value="taxaid">TaxAid Staff</option>
+            <option value="all">All Users</option>
+          </select>
+          <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        </div>
       </div>
       <div class="w-full overflow-x-auto">
         <table class="w-full text-left border-collapse min-w-[900px]">
@@ -70,8 +83,8 @@
           </thead>
           <tbody class="text-sm text-gray-700">
             <tr v-if="loading"><td colspan="8" class="py-10 text-center text-gray-400">Loading...</td></tr>
-            <tr v-else-if="!users.length"><td colspan="8" class="py-10 text-center text-gray-400">No users found.</td></tr>
-            <tr v-for="u in users" :key="u.id" class="border-b border-gray-100 hover:bg-gray-50/50">
+            <tr v-else-if="!filteredUsers.length"><td colspan="8" class="py-10 text-center text-gray-400">No users found.</td></tr>
+            <tr v-for="u in filteredUsers" :key="u.id" class="border-b border-gray-100 hover:bg-gray-50/50">
               <td class="py-4 px-6 font-medium text-gray-800">{{ u.name ?? '—' }}</td>
               <td class="py-4 px-6">{{ u.email }}</td>
               <td class="py-4 px-6"><span class="bg-gray-100 text-gray-600 rounded-full px-2.5 py-1 text-[12px] font-medium">{{ u.role }}</span></td>
@@ -139,7 +152,7 @@
 <script setup>
 // Status & Users tab of the client configure view — make live / suspend
 // plus the tenant's user list with login/session info.
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const props = defineProps({
   tenantId: { type: Number, required: true },
@@ -149,6 +162,12 @@ const { setTenantStatus, getTenantUsers, getTenants, setTenantUserStatus } = use
 
 const status = ref(null)
 const users = ref([])
+const userTypeFilter = ref('org')
+const filteredUsers = computed(() => {
+  if (userTypeFilter.value === 'all') return users.value
+  const isTaxaid = (u) => (u.email ?? '').endsWith('@taxaid.temp')
+  return users.value.filter((u) => userTypeFilter.value === 'taxaid' ? isTaxaid(u) : !isTaxaid(u))
+})
 const loading = ref(false)
 const busy = ref(false)
 const confirmStatus = ref(null)

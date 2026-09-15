@@ -529,6 +529,14 @@
                       <input type="number" min="0" v-model.number="planForm.entitlements.ai.max_tokens" @change="clampNonNegative(planForm.entitlements.ai, 'max_tokens')" class="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]" />
                     </div>
                   </div>
+                  <div class="flex items-center gap-5 mt-3 pt-3 border-t border-gray-100">
+                    <label class="flex items-center gap-2 text-sm text-gray-700">
+                      <input type="checkbox" v-model="planForm.entitlements.ai.chat_enabled" class="h-4 w-4" /> AI Chat included
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-700">
+                      <input type="checkbox" v-model="planForm.entitlements.ai.alerts_enabled" class="h-4 w-4" /> AI Alerts included
+                    </label>
+                  </div>
                 </div>
 
                 <!-- Bundled entitlement (review_hours + extra_hours), same pattern as 'ai'. -->
@@ -957,7 +965,7 @@ async function openTrialPlanModal() {
       planForm.value.monthly_price = Number(plan.current_version.monthly_price)
       planForm.value.annual_price = Number(plan.current_version.annual_price)
       planForm.value.annual_discount_percent = Number(plan.current_version.annual_discount_percent)
-      planForm.value.entitlements = { ...(plan.current_version.entitlements || {}) }
+      planForm.value.entitlements = normalizeAiEntitlement({ ...(plan.current_version.entitlements || {}) })
       planForm.value.monthly_features = cloneFeatureGroups(plan.current_version.monthly_features || [])
       planForm.value.annual_features = cloneFeatureGroups(plan.current_version.annual_features || [])
       planForm.value.discounts = (plan.current_version.discounts || []).map(d => ({ ...d }))
@@ -991,7 +999,7 @@ async function openVersionModal(plan) {
     planForm.value.annual_discount_percent = discount
     const storedAnnual = Number(plan.current_version.annual_price)
     planForm.value.annual_base = discount > 0 ? Math.round((storedAnnual / (1 - discount / 100)) * 100) / 100 : storedAnnual
-    planForm.value.entitlements = { ...(plan.current_version.entitlements || {}) }
+    planForm.value.entitlements = normalizeAiEntitlement({ ...(plan.current_version.entitlements || {}) })
     planForm.value.monthly_features = cloneFeatureGroups(plan.current_version.monthly_features || [])
     planForm.value.annual_features = cloneFeatureGroups(plan.current_version.annual_features || [])
     planForm.value.discounts = (plan.current_version.discounts || []).map(d => ({ ...d }))
@@ -1040,10 +1048,17 @@ async function loadAiModelOptions() {
 function clampNonNegative(obj, key) {
   if ((obj[key] ?? 0) < 0) obj[key] = 0
 }
+function normalizeAiEntitlement(entitlements) {
+  if (entitlements.ai) {
+    if (entitlements.ai.chat_enabled === undefined) entitlements.ai.chat_enabled = true
+    if (entitlements.ai.alerts_enabled === undefined) entitlements.ai.alerts_enabled = true
+  }
+  return entitlements
+}
 function addEntitlement() {
   if (!entitlementToAdd.value) return
   if (entitlementToAdd.value === 'ai') {
-    planForm.value.entitlements.ai = { enabled: true, model: 'gemini-flash', thinking: 'medium', max_requests: 200, max_tokens: 5000 }
+    planForm.value.entitlements.ai = { enabled: true, model: 'gemini-flash', thinking: 'medium', max_requests: 200, max_tokens: 5000, chat_enabled: true, alerts_enabled: true }
     entitlementToAdd.value = ''
     return
   }

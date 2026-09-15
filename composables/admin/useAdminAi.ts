@@ -10,6 +10,9 @@ export function useAdminAi() {
   const toggleClientAi = (tenantId: number, password?: string) =>
     useAdminApi(`/admin/ai/clients/${tenantId}/toggle`, { method: 'PATCH', body: password ? { password } : {} })
 
+  const updateClientAiEntitlements = (tenantId: number, body: { ai_chat_enabled?: boolean | null; ai_alerts_enabled?: boolean | null }) =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/entitlements`, { method: 'PATCH', body })
+
   const getClientAiSettings = (tenantId: number) =>
     useAdminApi(`/admin/ai/clients/${tenantId}/settings`)
 
@@ -88,7 +91,7 @@ export function useAdminAi() {
     useAdminApi(`/admin/ai/clients/${tenantId}/data-link-overrides/${linkId}`, { method: 'DELETE' })
 
   return {
-    getClientAi, toggleClientAi, getClientAiSettings, updateClientAiSettings,
+    getClientAi, toggleClientAi, updateClientAiEntitlements, getClientAiSettings, updateClientAiSettings,
     getSettings, addSetting, deleteSetting, getUsageSnapshot,
     getDataLinks, updateDataLink,
     getRules, updateRule,
