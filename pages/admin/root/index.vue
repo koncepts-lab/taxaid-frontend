@@ -932,6 +932,31 @@
             class="rounded-[16px] p-6 border space-y-4 min-w-0"
             :class="isDark ? 'bg-black/30 border-white/10' : 'bg-gray-50 border-gray-200'"
           >
+            <div v-if="connectorInfraCloudTasks" class="space-y-2 pb-2 border-b border-black/5 dark:border-white/5">
+              <div class="flex items-center justify-between">
+                <h4 class="text-[14px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">Cloud Tasks Dispatcher</h4>
+                <span
+                  class="px-2.5 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wider"
+                  :class="connectorInfraCloudTasks.status === 'ready'
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                    : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'"
+                >
+                  {{ connectorInfraCloudTasks.status === 'ready' ? 'Active' : 'Fallback' }}
+                </span>
+              </div>
+              <p class="text-[11px] opacity-70">{{ connectorInfraCloudTasks.message }}</p>
+              <div class="space-y-1 text-xs font-mono pt-1">
+                <div class="flex justify-between py-0.5">
+                  <span class="opacity-70">Location:</span>
+                  <span class="font-bold">{{ connectorInfraCloudTasks.location || '—' }}</span>
+                </div>
+                <div class="flex justify-between py-0.5">
+                  <span class="opacity-70">Auth Mode:</span>
+                  <span class="font-bold text-emerald-600 dark:text-emerald-400">Bearer Secret</span>
+                </div>
+              </div>
+            </div>
+
             <div v-if="connectorInfraAnalytics" class="space-y-2">
               <h4 class="text-[14px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">Analytics</h4>
               <div class="space-y-2 text-xs font-mono">
@@ -1356,12 +1381,14 @@ const connectorInfraForm = ref({
 const connectorInfraSaving = ref(false)
 const connectorInfraReport = ref(null)
 const connectorInfraAnalytics = ref(null)
+const connectorInfraCloudTasks = ref(null)
 
 async function loadConnectorInfraSettings() {
   try {
     const res = await getConnectorInfraSettings()
     if (res?.settings) connectorInfraForm.value = { ...connectorInfraForm.value, ...res.settings }
     connectorInfraAnalytics.value = res?.analytics || null
+    connectorInfraCloudTasks.value = res?.cloud_tasks || null
   } catch (err) {
     console.error('Failed to load connector infra settings', err)
   }
