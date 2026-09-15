@@ -8,7 +8,7 @@ const _tenantsMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1
 const _updatesMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
 const _uploadProgress = ref(0)
 const _shardingSettings = ref({ max_groups: 10 })
-const _liveStatus = ref({ running_tasks: [], active_tenants_count: 0, queued_tenants_count: 0, total_groups: 0 })
+const _liveStatus = ref({ processing_batches: [], active_tenants_count: 0, queued_tenants_count: 0, total_groups: 0 })
 const _liveStatusMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
 const _importMetrics = ref({ summary: [], recent: [] })
 const _importMetricsMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
@@ -121,12 +121,12 @@ export function useConnectorDashboard() {
   async function getLiveStatus(page = 1, perPage = 10): Promise<any> {
     const res: any = await apiFetch(`/admin/connector/live-status?page=${page}&per_page=${perPage}`)
     _liveStatus.value = {
-      running_tasks: res.running_tasks?.data ?? [],
+      processing_batches: res.processing_batches?.data ?? [],
       active_tenants_count: res.active_tenants_count,
       queued_tenants_count: res.queued_tenants_count,
       total_groups: res.total_groups,
     }
-    applyMeta(_liveStatusMeta, res.running_tasks ?? {}, page, perPage)
+    applyMeta(_liveStatusMeta, res.processing_batches ?? {}, page, perPage)
     return _liveStatus.value
   }
 

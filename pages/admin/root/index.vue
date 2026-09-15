@@ -892,7 +892,7 @@
             Connector Infra Settings
           </h2>
           <p class="text-[14px] text-[#00000080]" :class="isDark ? 'text-white/60' : ''">
-            Cloud Run resource limits and cycle-window timing for the connector group-consumer job. Changes to Task Timeout / RAM push live to Cloud Run immediately — no redeploy needed.
+            Cycle-window timing for connector group syncs.
           </p>
         </div>
 
@@ -932,13 +932,25 @@
             class="rounded-[16px] p-6 border space-y-4 min-w-0"
             :class="isDark ? 'bg-black/30 border-white/10' : 'bg-gray-50 border-gray-200'"
           >
-            <h4 class="text-[14px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">
-              Current Values
-            </h4>
-            <div class="space-y-2 text-xs font-mono">
-              <div v-for="field in connectorInfraFields" :key="field.key" class="flex justify-between py-1 border-b border-black/5 dark:border-white/5">
-                <span class="opacity-70">{{ field.label }}:</span>
-                <span class="font-bold">{{ connectorInfraForm[field.key] }}</span>
+            <div v-if="connectorInfraAnalytics" class="space-y-2">
+              <h4 class="text-[14px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">Analytics</h4>
+              <div class="space-y-2 text-xs font-mono">
+                <div class="flex justify-between py-1 border-b border-black/5 dark:border-white/5">
+                  <span class="opacity-70">Avg Sync Duration:</span>
+                  <span class="font-bold">{{ connectorInfraAnalytics.sync_duration?.avg_seconds ?? '—' }}s</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-black/5 dark:border-white/5">
+                  <span class="opacity-70">Max Sync Duration:</span>
+                  <span class="font-bold">{{ connectorInfraAnalytics.sync_duration?.max_seconds ?? '—' }}s</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-black/5 dark:border-white/5">
+                  <span class="opacity-70">Avg Upload Gap:</span>
+                  <span class="font-bold">{{ connectorInfraAnalytics.upload_gap?.avg_minutes ?? '—' }} min</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-black/5 dark:border-white/5">
+                  <span class="opacity-70">Max Upload Gap:</span>
+                  <span class="font-bold">{{ connectorInfraAnalytics.upload_gap?.max_minutes ?? '—' }} min</span>
+                </div>
               </div>
             </div>
 
@@ -972,7 +984,6 @@ onMounted(() => {
   loadConnectorInfraSettings()
 })
 
-const activeTab = ref('artisan')
 const tabs = [
   { id: 'artisan', label: 'Artisan Commands' },
   { id: 'tinker', label: 'Tinker & Database Editor' },
@@ -981,6 +992,14 @@ const tabs = [
   { id: 'diagnostics', label: 'CORS & Environment' },
   { id: 'connector-infra', label: 'Connector Infra Settings' },
 ]
+
+const route = useRoute()
+const router = useRouter()
+const activeTab = ref(tabs.some(t => t.id === route.query.tab) ? route.query.tab : 'artisan')
+
+watch(activeTab, (val) => {
+  router.replace({ query: { ...route.query, tab: val } })
+})
 
 // CLOUD RUN JOB TOGGLE STATE
 const runAsCloudJob = ref(false)
@@ -1325,28 +1344,24 @@ const connectorInfraFields = [
   { key: 'job_start_delay_minutes', label: 'Job Start Delay (min)', min: 0, hint: 'Minutes after a group\'s cycle time before the backend starts checking for completed uploads.' },
   { key: 'recheck_interval_minutes', label: 'Recheck Interval (min)', min: 1, hint: 'How often the group task rechecks for newly-completed tenant batches while its window is active.' },
   { key: 'max_window_minutes', label: 'Max Window (min)', min: 5, hint: 'How long a cycle window stays active before an unfinished tenant is marked missed for that cycle.' },
-  { key: 'task_timeout_minutes', label: 'Task Timeout (min)', min: 5, hint: 'Cloud Run task-level timeout. Pushed live to the Cloud Run Job on save.' },
-  { key: 'container_memory_mi', label: 'Container Memory (Mi)', min: 128, hint: 'Cloud Run Job container memory limit. Pushed live to the Cloud Run Job on save.' },
-  { key: 'avg_tenant_import_seconds', label: 'Avg Import Time (sec)', min: 1, hint: 'Estimated time to import one tenant\'s batch, used to decide whether to start the next one before the task timeout.' },
-  { key: 'safety_margin_minutes', label: 'Safety Margin (min)', min: 0, hint: 'Extra buffer added on top of the average import time before a group task decides to pause and hand off to the next execution.' },
+  { key: 'max_concurrent_tenant_syncs', label: 'Max Concurrent Syncs Per Group', min: 1, hint: 'How many tenants inside the same group can sync at once. Applies to every group — pushed live to each group\'s Cloud Tasks queue on save.' },
 ]
 
 const connectorInfraForm = ref({
   job_start_delay_minutes: 10,
   recheck_interval_minutes: 5,
   max_window_minutes: 60,
-  task_timeout_minutes: 60,
-  container_memory_mi: 512,
-  avg_tenant_import_seconds: 90,
-  safety_margin_minutes: 2,
+  max_concurrent_tenant_syncs: 3,
 })
 const connectorInfraSaving = ref(false)
 const connectorInfraReport = ref(null)
+const connectorInfraAnalytics = ref(null)
 
 async function loadConnectorInfraSettings() {
   try {
     const res = await getConnectorInfraSettings()
-    if (res) connectorInfraForm.value = { ...connectorInfraForm.value, ...res }
+    if (res?.settings) connectorInfraForm.value = { ...connectorInfraForm.value, ...res.settings }
+    connectorInfraAnalytics.value = res?.analytics || null
   } catch (err) {
     console.error('Failed to load connector infra settings', err)
   }

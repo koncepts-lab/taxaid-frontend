@@ -416,7 +416,7 @@
           </div>
           <div :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-gray-100'" class="rounded-[16px] p-6 border shadow-sm">
             <h5 class="text-[14px] font-medium opacity-70 mb-4">Tasks Running Now</h5>
-            <span class="text-[32px] font-semibold leading-tight text-[#004D40]" :class="isDark ? 'text-white' : ''">{{ liveStatusRows.running_tasks.length }}</span>
+            <span class="text-[32px] font-semibold leading-tight text-[#004D40]" :class="isDark ? 'text-white' : ''">{{ liveStatusRows.processing_batches.length }}</span>
           </div>
         </div>
 
@@ -424,9 +424,9 @@
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-[#00896F] text-white">
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Group</th>
+                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Company</th>
                 <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Started</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Tenants Processed</th>
+                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Batch ID</th>
                 <th class="py-4 px-8 font-normal text-[15px]">Status</th>
               </tr>
             </thead>
@@ -436,15 +436,15 @@
                   <td v-for="c in 4" :key="c" class="py-6 px-8"><div class="h-4 bg-gray-100 rounded animate-pulse" :style="{ width: skeletonWidth(c) }"></div></td>
                 </tr>
               </template>
-              <tr v-else-if="!liveStatusRows.running_tasks.length">
-                <td colspan="4" class="py-8 text-center text-gray-400 text-sm">No group tasks currently running.</td>
+              <tr v-else-if="!liveStatusRows.processing_batches.length">
+                <td colspan="4" class="py-8 text-center text-gray-400 text-sm">No batches currently processing.</td>
               </tr>
-              <tr v-for="run in liveStatusRows.running_tasks" :key="run.id" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
-                <td class="py-6 px-8 text-[14px]">Group {{ run.group_id }}</td>
-                <td class="py-6 px-8 text-[14px]">{{ formatDate(run.started_at) }}</td>
-                <td class="py-6 px-8 text-[14px]">{{ run.tenants_processed }}</td>
+              <tr v-for="batch in liveStatusRows.processing_batches" :key="batch.batch_id" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
+                <td class="py-6 px-8 text-[14px]">{{ batch.company_name }}</td>
+                <td class="py-6 px-8 text-[14px]">{{ formatDate(batch.started_at) }}</td>
+                <td class="py-6 px-8 text-[14px] font-mono text-[12px]">{{ batch.batch_id }}</td>
                 <td class="py-6 px-8 text-[14px]">
-                  <span class="px-3 py-1 rounded-full text-[12px] font-medium border bg-[#ECFDF5] text-[#059669] border-[#D1FAE5]">Running</span>
+                  <span class="px-3 py-1 rounded-full text-[12px] font-medium border bg-[#ECFDF5] text-[#059669] border-[#D1FAE5]">Processing</span>
                 </td>
               </tr>
             </tbody>
