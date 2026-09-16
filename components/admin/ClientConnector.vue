@@ -85,8 +85,14 @@
 
     <!-- Sync history -->
     <div class="bg-white border border-gray-200 rounded-[16px] shadow-sm p-6">
-      <h2 class="text-[16px] font-medium text-[#101828] mb-4">Sync History</h2>
-      <div class="space-y-3">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-[16px] font-medium text-[#101828]">Sync History</h2>
+        <button @click="loadHistory(historyMeta.current_page || 1)" :disabled="historyLoading"
+          class="px-3 py-1.5 border border-[#6FDBBF] rounded-lg text-xs font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60">
+          Refresh
+        </button>
+      </div>
+      <div class="space-y-3 h-[320px] overflow-y-auto pr-1">
         <div v-if="!history.length" class="py-6 text-center text-gray-400 text-sm">No syncs yet.</div>
         <div v-for="h in history" :key="h.id" class="flex items-center justify-between p-3 border border-[#6FDBBF] rounded-lg text-sm">
           <div>
@@ -98,6 +104,57 @@
       </div>
       <CommonPaginationBar v-if="historyMeta.total > 0" :meta="historyMeta" :loading="historyLoading"
         @page-change="(p) => loadHistory(p)" @per-page-change="(pp) => { historyPerPage = pp; loadHistory(1) }" />
+    </div>
+
+    <!-- Company period -->
+    <div class="bg-white border border-gray-200 rounded-[16px] shadow-sm p-6">
+      <div class="flex items-center justify-between mb-1">
+        <h2 class="text-[16px] font-medium text-[#101828]">Company Period</h2>
+        <button v-if="!periodUnlocked" @click="periodUnlocked = true"
+          class="px-3 py-1.5 border border-[#6FDBBF] rounded-lg text-xs font-medium text-[#013E32] hover:bg-gray-50 transition-colors">
+          Unlock to Edit
+        </button>
+      </div>
+      <p class="text-[13px] text-[#4A5565] mb-4">Set once from the initial sync — correct it here if the consultant got it wrong. Never changed automatically after that.</p>
+      <div class="flex flex-wrap items-end gap-4">
+        <div>
+          <label class="block text-[13px] text-[#4A5565] mb-1">From</label>
+          <input type="date" v-model="periodForm.from_date" :disabled="!periodUnlocked"
+            class="px-3 py-2 rounded-lg border border-[#04C18F80] text-sm disabled:bg-gray-50 disabled:text-gray-500" />
+        </div>
+        <div>
+          <label class="block text-[13px] text-[#4A5565] mb-1">To</label>
+          <input type="date" v-model="periodForm.to_date" :disabled="!periodUnlocked"
+            class="px-3 py-2 rounded-lg border border-[#04C18F80] text-sm disabled:bg-gray-50 disabled:text-gray-500" />
+        </div>
+        <button v-if="periodUnlocked" @click="handleSavePeriod" :disabled="busy"
+          class="px-5 py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors disabled:opacity-60">
+          Save Period
+        </button>
+        <button v-if="periodUnlocked" @click="periodUnlocked = false"
+          class="px-5 py-2.5 border border-gray-300 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+          Cancel
+        </button>
+      </div>
+
+      <div class="mt-4 pt-4 border-t border-gray-100">
+        <p class="text-[13px] text-[#4A5565] mb-3">
+          Report Schedules — captured for later; Force Sync and admin Sync Now always run a full sync regardless of this. Only the daily auto-sync will respect it once the connector supports it.
+        </p>
+        <div class="space-y-3">
+          <div v-for="report in reportScheduleList" :key="report.key" class="flex items-center justify-between max-w-sm">
+            <span class="text-[14px] font-medium text-[#00896F]">{{ report.label }}</span>
+            <AdminConnectorFullSyncDayPicker
+              v-if="periodUnlocked"
+              :frequency="periodForm.report_schedules[report.key]?.frequency ?? 'daily'"
+              :day="periodForm.report_schedules[report.key]?.day ?? 1"
+              @update:frequency="v => setReportSchedule(report.key, v, periodForm.report_schedules[report.key]?.day)"
+              @update:day="v => setReportSchedule(report.key, periodForm.report_schedules[report.key]?.frequency ?? 'daily', v)"
+            />
+            <span v-else class="text-[13px] text-gray-500 capitalize">{{ periodForm.report_schedules[report.key]?.frequency ?? 'daily' }}</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Backup -->
@@ -137,6 +194,7 @@ const props = defineProps({
 const {
   getSchedule, setSchedule, syncNow, adminSyncNow, stopSync,
   openSettings, requestLogs, downloadLogs, getSyncHistory,
+  getCompanyPeriod, updateCompanyPeriod,
   requestBackup, getLatestBackup, downloadBackup,
 } = useClientManagement()
 
@@ -152,6 +210,27 @@ const forceYears = ref(['Current Year'])
 const logType = ref('all')
 const logRequestId = ref(null)
 const latestBackup = ref(null)
+const periodUnlocked = ref(false)
+const periodForm = ref({ from_date: '', to_date: '', report_schedules: {} })
+
+// TODO(connector): not read by the connector yet.
+const reportScheduleList = [
+  { key: 'tb_365', label: 'TB 365' },
+  { key: 'pl_from_erp', label: 'PL from ERP' },
+  { key: 'bs_from_erp', label: 'BS from ERP' },
+  { key: 'ar_report', label: 'AR report' },
+  { key: 'ap_report', label: 'AP report' },
+  { key: 'cost_center', label: 'Cost center' },
+  { key: 'general_ledger', label: 'General ledger' },
+  { key: 'daybook', label: 'Daybook' },
+]
+
+function setReportSchedule(key, frequency, day) {
+  periodForm.value.report_schedules = {
+    ...periodForm.value.report_schedules,
+    [key]: frequency === 'daily' ? { frequency } : { frequency, day },
+  }
+}
 
 const busy = ref(false)
 const backupBusy = ref(false)
@@ -199,6 +278,30 @@ async function load() {
   } catch {
     latestBackup.value = null
   }
+  await loadPeriod()
+}
+
+async function loadPeriod() {
+  try {
+    const res = await getCompanyPeriod(props.tenantId)
+    periodForm.value = {
+      from_date: res.from_date ?? '',
+      to_date: res.to_date ?? '',
+      report_schedules: res.report_schedules ?? {},
+    }
+  } catch {
+    periodForm.value = { from_date: '', to_date: '', report_schedules: {} }
+  }
+}
+
+async function handleSavePeriod() {
+  await run(() => updateCompanyPeriod(props.tenantId, {
+    from_date: periodForm.value.from_date || undefined,
+    to_date: periodForm.value.to_date || undefined,
+    report_schedules: periodForm.value.report_schedules,
+  }), 'Period saved.')
+  periodUnlocked.value = false
+  await loadPeriod()
 }
 
 // Scheduled daily sync is current-year only; PYs go through Force Sync

@@ -61,6 +61,12 @@ export function useClientManagement() {
   const getSyncHistory = (tenantId: number, page = 1, perPage = 10) =>
     useAdminApi(`/connector/sync-history?tenant_id=${tenantId}&page=${page}&per_page=${perPage}`)
 
+  const getCompanyPeriod = (tenantId: number) =>
+    useAdminApi(`/connector/company-period?tenant_id=${tenantId}`)
+
+  const updateCompanyPeriod = (tenantId: number, data: { from_date?: string; to_date?: string; report_schedules?: any }) =>
+    useAdminApi('/connector/company-period', { method: 'POST', body: { tenant_id: tenantId, ...data } })
+
   // ── Backup ──────────────────────────────────────────────────────────────
   const requestBackup = (tenantId: number, format: 'csv' | 'json') =>
     useAdminApi('/connector/backup', { method: 'POST', body: { tenant_id: tenantId, format } })
@@ -92,6 +98,7 @@ export function useClientManagement() {
     getSchedule, setSchedule, syncNow, adminSyncNow, stopSync,
     openSettings, requestLogs, downloadLogs,
     getSyncHistory,
+    getCompanyPeriod, updateCompanyPeriod,
     requestBackup, getLatestBackup, downloadBackup,
   }
 }
