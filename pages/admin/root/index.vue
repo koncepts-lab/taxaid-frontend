@@ -762,7 +762,7 @@
             <div
               v-if="mailReport"
               class="p-4 rounded-[10px] text-xs"
-              :class="mailReport.success ? 'bg-green-100 text-green-900 border border-green-300' : 'bg-red-100 text-red-900 border border-red-300'"
+              :class="reportBoxClasses(mailReport.success)"
             >
               <div class="font-bold">{{ mailReport.message || (mailReport.success ? 'Sent Successfully' : 'Failed') }}</div>
               <div v-if="mailReport.error" class="font-mono text-[11px] mt-1 whitespace-pre-wrap break-all">
@@ -862,21 +862,6 @@
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- CORS Origin list -->
-        <div class="space-y-2">
-          <label class="block text-[13px] font-medium opacity-80">Active CORS Allowed Origins</label>
-          <div class="flex flex-wrap gap-2 max-w-full">
-            <span
-              v-for="origin in (systemInfo?.cors?.allowed_origins || [])"
-              :key="origin"
-              class="px-3.5 py-1.5 rounded-[8px] border font-mono text-xs text-emerald-700 dark:text-emerald-300 break-all max-w-full"
-              :class="isDark ? 'bg-black/30 border-white/10' : 'bg-gray-50 border-gray-200'"
-            >
-              {{ origin }}
-            </span>
           </div>
         </div>
       </div>
@@ -990,13 +975,169 @@
         </div>
       </div>
 
+      <!-- CORS Origins — standalone cards, shown alongside the CORS & Environment tab -->
+      <div v-if="activeTab === 'diagnostics'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div
+          :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-[#E5E5E5]'"
+          class="rounded-[20px] border shadow-sm p-6 space-y-3 min-w-0 max-h-[420px] flex flex-col"
+        >
+          <h4 class="text-[14px] font-semibold text-[#004D40] shrink-0" :class="isDark ? 'text-[#10FFD4]' : ''">Active CORS Origins (Live)</h4>
+          <p class="text-[11px] opacity-70 shrink-0">What the server is actually enforcing right now, read from config on this request.</p>
+          <div class="space-y-2 overflow-y-auto pr-1 min-h-0">
+            <div
+              v-for="origin in (systemInfo?.cors?.allowed_origins || [])"
+              :key="origin"
+              class="px-3.5 py-2 rounded-[8px] border font-mono text-xs break-all"
+              :class="isDark ? 'bg-black/30 border-white/10 text-emerald-300' : 'bg-gray-50 border-gray-200 text-emerald-700'"
+            >
+              {{ origin }}
+            </div>
+            <p v-if="!systemInfo?.cors?.allowed_origins?.length" class="text-xs opacity-60">No origins reported.</p>
+          </div>
+        </div>
+
+        <div
+          :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-[#E5E5E5]'"
+          class="rounded-[20px] border shadow-sm p-6 space-y-3 min-w-0 max-h-[420px] flex flex-col"
+        >
+          <h4 class="text-[14px] font-semibold text-[#004D40] shrink-0" :class="isDark ? 'text-[#10FFD4]' : ''">Manage CORS Origins</h4>
+          <p class="text-[11px] opacity-70 shrink-0">Exactly one origin is main — editable but not deletable (reassign main first to delete it). The main origin also becomes the app's Frontend URL, used for mail links, password resets, and push notification targets.</p>
+
+          <div class="flex flex-wrap gap-2 items-center shrink-0">
+            <input
+              v-model="corsNewOrigin"
+              type="text"
+              placeholder="https://example.com"
+              class="flex-1 min-w-[180px] h-[42px] px-3.5 rounded-[10px] border outline-none text-[13px] font-mono"
+              :class="isDark ? 'bg-black/40 border-white/10 text-white placeholder:text-white/40' : 'bg-white border-[#04C18F33] text-[#1a1a1a]'"
+              @keyup.enter="submitAddCorsOrigin"
+            />
+            <button
+              @click="submitAddCorsOrigin"
+              :disabled="corsSaving || !corsNewOrigin.trim()"
+              class="h-[42px] px-5 rounded-[10px] bg-[#007C65] hover:bg-[#006552] disabled:opacity-50 text-white font-semibold text-[13px] transition cursor-pointer shadow-sm shrink-0"
+            >
+              Add Origin
+            </button>
+          </div>
+
+          <div
+            v-if="corsReport"
+            class="p-3 rounded-[10px] text-xs shrink-0"
+            :class="reportBoxClasses(corsReport.success)"
+          >
+            {{ corsReport.message }}
+          </div>
+
+          <div class="space-y-2 overflow-y-auto pr-1 min-h-0">
+            <div
+              v-for="row in corsOrigins"
+              :key="row.id"
+              class="rounded-[12px] p-3 border flex flex-wrap items-center gap-2"
+              :class="isDark ? 'bg-black/40 border-white/10' : 'bg-gray-50 border-gray-200'"
+            >
+              <span
+                v-if="row.is_main"
+                class="px-2.5 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wider"
+                :class="isDark ? 'bg-emerald-950/60 text-emerald-300' : 'bg-emerald-100 text-emerald-800'"
+              >
+                Main
+              </span>
+
+              <span class="flex-1 min-w-[160px] font-mono text-xs break-all">{{ row.origin }}</span>
+              <button v-if="!row.is_main" @click="markMainCorsOrigin(row.id)" class="text-[12px] px-3 py-1.5 rounded-[8px] border font-medium cursor-pointer transition" :class="isDark ? 'border-white/20 text-white hover:bg-white/10' : 'border-gray-300 text-gray-700 hover:bg-gray-100'">Set Main</button>
+              <button v-if="!row.is_main" @click="removeCorsOrigin(row.id)" :disabled="corsSaving" class="text-[12px] px-3 py-1.5 rounded-[8px] bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-medium cursor-pointer transition">Delete</button>
+            </div>
+            <p v-if="!corsOrigins.length" class="text-xs opacity-60 py-2">No origins yet.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mail Provider Settings — standalone card, shown alongside the Mailer / SMTP Tester tab -->
+      <div
+        v-if="activeTab === 'mail'"
+        :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-[#E5E5E5]'"
+        class="rounded-[20px] border shadow-sm p-6 sm:p-8 space-y-4 w-full max-w-full min-w-0 overflow-hidden"
+      >
+        <div class="space-y-1">
+          <h3 class="text-[15px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">Mail Provider Settings</h3>
+          <p class="text-[12px] opacity-70">
+            Enable Sandbox + Main together for dual-send, either alone for single SMTP, or Brevo API (takes priority over SMTP when enabled).
+            Active mailer: <span class="font-mono font-semibold">{{ mailSettingsActiveMailer || 'env default' }}</span>.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div
+            v-for="slot in mailSettingsSlots"
+            :key="slot.slot"
+            class="rounded-[16px] p-5 border space-y-3"
+            :class="isDark ? 'bg-black/30 border-white/10' : 'bg-gray-50 border-gray-200'"
+          >
+            <div class="flex items-center justify-between">
+              <h4 class="text-[14px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">{{ mailSlotLabels[slot.slot]?.title }}</h4>
+              <label class="flex items-center gap-1.5 text-[12px] cursor-pointer">
+                <input v-model="slot.enabled" type="checkbox" class="cursor-pointer" />
+                Enabled
+              </label>
+            </div>
+            <p class="text-[11px] opacity-70">{{ mailSlotLabels[slot.slot]?.desc }}</p>
+
+            <div v-if="slot.slot !== 'brevo'" class="space-y-2">
+              <input v-model="slot.host" type="text" placeholder="Host" class="w-full h-[38px] px-3 rounded-[8px] border outline-none text-[12px] font-mono" :class="isDark ? 'bg-black/40 border-white/10 text-white placeholder:text-white/40' : 'bg-white border-[#04C18F33] text-[#1a1a1a]'" />
+              <input v-model.number="slot.port" type="number" placeholder="Port" class="w-full h-[38px] px-3 rounded-[8px] border outline-none text-[12px] font-mono" :class="isDark ? 'bg-black/40 border-white/10 text-white placeholder:text-white/40' : 'bg-white border-[#04C18F33] text-[#1a1a1a]'" />
+              <input v-model="slot.username" type="text" placeholder="Username" class="w-full h-[38px] px-3 rounded-[8px] border outline-none text-[12px] font-mono" :class="isDark ? 'bg-black/40 border-white/10 text-white placeholder:text-white/40' : 'bg-white border-[#04C18F33] text-[#1a1a1a]'" />
+              <input v-model="slot.password" type="password" :placeholder="slot.has_password ? 'Password (saved — leave blank to keep)' : 'Password'" class="w-full h-[38px] px-3 rounded-[8px] border outline-none text-[12px] font-mono" :class="isDark ? 'bg-black/40 border-white/10 text-white placeholder:text-white/40' : 'bg-white border-[#04C18F33] text-[#1a1a1a]'" />
+              <select v-model="slot.scheme" class="w-full h-[38px] px-3 rounded-[8px] border outline-none text-[12px]" :class="isDark ? 'bg-black/40 border-white/10 text-white' : 'bg-white border-[#04C18F33] text-[#1a1a1a]'">
+                <option :value="null">No encryption</option>
+                <option value="tls">TLS</option>
+                <option value="ssl">SSL</option>
+              </select>
+            </div>
+            <div v-else class="space-y-2">
+              <input v-model="slot.api_key" type="password" :placeholder="slot.has_api_key ? 'API Key (saved — leave blank to keep)' : 'API Key'" class="w-full h-[38px] px-3 rounded-[8px] border outline-none text-[12px] font-mono" :class="isDark ? 'bg-black/40 border-white/10 text-white placeholder:text-white/40' : 'bg-white border-[#04C18F33] text-[#1a1a1a]'" />
+            </div>
+
+            <button
+              @click="saveMailSlot(slot)"
+              :disabled="mailSettingsSaving[slot.slot]"
+              class="w-full h-[38px] rounded-[8px] bg-[#007C65] hover:bg-[#006552] disabled:opacity-50 text-white font-semibold text-[12px] transition cursor-pointer"
+            >
+              Save
+            </button>
+
+            <div
+              v-if="mailSettingsReport[slot.slot]"
+              class="p-2.5 rounded-[8px] text-[11px]"
+              :class="reportBoxClasses(mailSettingsReport[slot.slot].success)"
+            >
+              {{ mailSettingsReport[slot.slot].message }}
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 </template>
 
 <script setup>
 const { isDark } = useTheme()
-const { isRootUnlocked, runArtisan, runTinker, getJobStatus, runDbQuery, getTenants, testFirebase, testMail, getSystemInfo, getCommands, lock, getConnectorInfraSettings, updateConnectorInfraSettings } = useRootAdmin()
+
+// Tailwind's dark: variant follows OS preference here, not the isDark toggle — never use it.
+function reportBoxClasses(success) {
+  if (success) {
+    return isDark.value ? 'bg-green-950/40 text-green-300 border border-green-800' : 'bg-green-100 text-green-900 border border-green-300'
+  }
+  return isDark.value ? 'bg-red-950/40 text-red-300 border border-red-800' : 'bg-red-100 text-red-900 border border-red-300'
+}
+
+const {
+  isRootUnlocked, runArtisan, runTinker, getJobStatus, runDbQuery, getTenants, testFirebase, testMail,
+  getSystemInfo, getCommands, lock, getConnectorInfraSettings, updateConnectorInfraSettings,
+  getCorsSettings, addCorsOrigin, deleteCorsOrigin, setMainCorsOrigin,
+  getMailSettings, updateMailSettings,
+} = useRootAdmin()
 const { admin } = useAdminAuth()
 
 onMounted(() => {
@@ -1007,6 +1148,9 @@ onMounted(() => {
   loadTenantsList()
   loadCommandsCatalog()
   loadConnectorInfraSettings()
+  loadCorsSettings()
+  loadMailSettings()
+  resumeActiveJobIfAny()
 })
 
 const tabs = [
@@ -1029,12 +1173,82 @@ watch(activeTab, (val) => {
 // CLOUD RUN JOB TOGGLE STATE
 const runAsCloudJob = ref(false)
 let jobPollTimer = null
+let tinkerJobPollTimer = null
 
 onUnmounted(() => {
-  if (jobPollTimer) {
-    clearInterval(jobPollTimer)
-  }
+  if (jobPollTimer) clearInterval(jobPollTimer)
+  if (tinkerJobPollTimer) clearInterval(tinkerJobPollTimer)
 })
+
+// Lets the UI resume polling an in-flight job after a page refresh instead of losing track of it.
+const ACTIVE_JOB_KEY = 'taxaid_root_active_job'
+
+function saveActiveJob(jobId, kind) {
+  if (!process.client) return
+  try {
+    localStorage.setItem(ACTIVE_JOB_KEY, JSON.stringify({ jobId, kind, savedAt: Date.now() }))
+  } catch {}
+}
+
+function clearActiveJob() {
+  if (!process.client) return
+  try {
+    localStorage.removeItem(ACTIVE_JOB_KEY)
+  } catch {}
+}
+
+function loadActiveJob() {
+  if (!process.client) return null
+  try {
+    const raw = localStorage.getItem(ACTIVE_JOB_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+async function resumeActiveJobIfAny() {
+  const active = loadActiveJob()
+  if (!active?.jobId) return
+
+  try {
+    const pollRes = await getJobStatus(active.jobId)
+    if (pollRes?.status === 'completed' || pollRes?.status === 'failed') {
+      clearActiveJob()
+      if (active.kind === 'tinker') {
+        executingTinker.value = false
+        tinkerDurationMs.value = pollRes.duration_ms || 0
+        tinkerResult.value = pollRes.output || '(Execution finished with no output)'
+      } else {
+        executingCommand.value = false
+        exitCode.value = pollRes.exit_code
+        durationMs.value = pollRes.duration_ms || 0
+        terminalOutput.value = `[ASYNC JOB COMPLETED: ${pollRes.status.toUpperCase()}]\n` +
+          `Job ID:       ${active.jobId}\n` +
+          `Exit Code:    ${pollRes.exit_code}\n` +
+          `Duration:     ${pollRes.duration_ms || 0}ms\n` +
+          `Finished:     ${pollRes.finished_at || new Date().toISOString()}\n` +
+          `\n------------------- [OUTPUT] -------------------\n` +
+          (pollRes.output || '(No output returned)')
+      }
+      return
+    }
+
+    // Still running — rehydrate the UI and resume polling right where it left off.
+    if (active.kind === 'tinker') {
+      executingTinker.value = true
+      tinkerResult.value = `[TINKER CLOUD JOB DISPATCHED]\nJob ID: ${active.jobId}\nStatus: Resumed after page refresh — still running...\n\nPolling background output...`
+      tinkerJobPollTimer = setInterval(() => pollTinkerJob(active.jobId), 2000)
+    } else {
+      executingCommand.value = true
+      terminalOutput.value = `[ASYNC JOB DISPATCHED]\nJob ID: ${active.jobId}\nStatus: Resumed after page refresh — still running...\n\nPolling status...`
+      jobPollTimer = setInterval(() => pollArtisanJob(active.jobId), 2000)
+    }
+  } catch (err) {
+    console.error('Failed to resume active job', err)
+    clearActiveJob()
+  }
+}
 
 // Command Classification Tiers:
 function isBlacklistedArtisan(cmd) {
@@ -1109,28 +1323,8 @@ async function executeArtisanInternal(cmd) {
         `Instance will terminate automatically upon completion.\n` +
         `Polling status...\n`
 
-      // Poll status every 2 seconds
-      jobPollTimer = setInterval(async () => {
-        try {
-          const pollRes = await getJobStatus(jobId)
-          if (pollRes?.status === 'completed' || pollRes?.status === 'failed') {
-            clearInterval(jobPollTimer)
-            jobPollTimer = null
-            executingCommand.value = false
-            exitCode.value = pollRes.exit_code
-            durationMs.value = pollRes.duration_ms || 0
-            terminalOutput.value = `[ASYNC JOB COMPLETED: ${pollRes.status.toUpperCase()}]\n` +
-              `Job ID:       ${jobId}\n` +
-              `Exit Code:    ${pollRes.exit_code}\n` +
-              `Duration:     ${pollRes.duration_ms || 0}ms\n` +
-              `Finished:     ${pollRes.finished_at || new Date().toISOString()}\n` +
-              `\n------------------- [OUTPUT] -------------------\n` +
-              (pollRes.output || '(No output returned)')
-          }
-        } catch (pollErr) {
-          console.error('Job polling error', pollErr)
-        }
-      }, 2000)
+      saveActiveJob(jobId, 'artisan')
+      jobPollTimer = setInterval(() => pollArtisanJob(jobId), 2000)
     } else {
       const res = await runArtisan(cmd)
       terminalOutput.value = res.output || '(No output returned)'
@@ -1149,6 +1343,29 @@ async function executeArtisanInternal(cmd) {
     exitCode.value = 1
     executingCommand.value = false
     throw err
+  }
+}
+
+async function pollArtisanJob(jobId) {
+  try {
+    const pollRes = await getJobStatus(jobId)
+    if (pollRes?.status === 'completed' || pollRes?.status === 'failed') {
+      clearInterval(jobPollTimer)
+      jobPollTimer = null
+      clearActiveJob()
+      executingCommand.value = false
+      exitCode.value = pollRes.exit_code
+      durationMs.value = pollRes.duration_ms || 0
+      terminalOutput.value = `[ASYNC JOB COMPLETED: ${pollRes.status.toUpperCase()}]\n` +
+        `Job ID:       ${jobId}\n` +
+        `Exit Code:    ${pollRes.exit_code}\n` +
+        `Duration:     ${pollRes.duration_ms || 0}ms\n` +
+        `Finished:     ${pollRes.finished_at || new Date().toISOString()}\n` +
+        `\n------------------- [OUTPUT] -------------------\n` +
+        (pollRes.output || '(No output returned)')
+    }
+  } catch (pollErr) {
+    console.error('Job polling error', pollErr)
   }
 }
 
@@ -1196,19 +1413,8 @@ async function executeTinkerOrSqlInternal() {
         const jobId = res.job_id
         tinkerResult.value = `[TINKER CLOUD JOB DISPATCHED]\nJob ID: ${jobId}\nStatus: Running on on-demand worker...\n\nPolling background output...`
 
-        const pollTimer = setInterval(async () => {
-          try {
-            const pollRes = await getJobStatus(jobId)
-            if (pollRes?.status === 'completed' || pollRes?.status === 'failed') {
-              clearInterval(pollTimer)
-              executingTinker.value = false
-              tinkerDurationMs.value = pollRes.duration_ms || 0
-              tinkerResult.value = pollRes.output || '(Execution finished with no output)'
-            }
-          } catch (pe) {
-            console.error('Tinker poll error', pe)
-          }
-        }, 2000)
+        saveActiveJob(jobId, 'tinker')
+        tinkerJobPollTimer = setInterval(() => pollTinkerJob(jobId), 2000)
       } else {
         const res = await runTinker(tinkerInput.value.trim())
         tinkerResult.value = res.output || '(Execution completed with no return value)'
@@ -1232,6 +1438,22 @@ function copyTinkerOutput() {
   if (tinkerResult.value && process.client) {
     navigator.clipboard.writeText(tinkerResult.value)
     alert('Result copied to clipboard!')
+  }
+}
+
+async function pollTinkerJob(jobId) {
+  try {
+    const pollRes = await getJobStatus(jobId)
+    if (pollRes?.status === 'completed' || pollRes?.status === 'failed') {
+      clearInterval(tinkerJobPollTimer)
+      tinkerJobPollTimer = null
+      clearActiveJob()
+      executingTinker.value = false
+      tinkerDurationMs.value = pollRes.duration_ms || 0
+      tinkerResult.value = pollRes.output || '(Execution finished with no output)'
+    }
+  } catch (pe) {
+    console.error('Tinker poll error', pe)
   }
 }
 
@@ -1408,6 +1630,114 @@ async function saveConnectorInfraSettings() {
     }
   } finally {
     connectorInfraSaving.value = false
+  }
+}
+
+// 6. CORS SETTINGS
+const corsOrigins = ref([])
+const corsNewOrigin = ref('')
+const corsSaving = ref(false)
+const corsReport = ref(null)
+
+async function loadCorsSettings() {
+  try {
+    const res = await getCorsSettings()
+    corsOrigins.value = res?.origins || []
+  } catch (err) {
+    console.error('Failed to load CORS settings', err)
+  }
+}
+
+async function submitAddCorsOrigin() {
+  if (!corsNewOrigin.value.trim()) return
+  corsSaving.value = true
+  corsReport.value = null
+  try {
+    await addCorsOrigin(corsNewOrigin.value.trim())
+    corsNewOrigin.value = ''
+    corsReport.value = { success: true, message: 'Origin added.' }
+    await loadCorsSettings()
+  } catch (err) {
+    corsReport.value = { success: false, message: err?.data?.error || err?.data?.message || 'Failed to add origin.' }
+  } finally {
+    corsSaving.value = false
+  }
+}
+
+async function removeCorsOrigin(id) {
+  corsSaving.value = true
+  corsReport.value = null
+  try {
+    await deleteCorsOrigin(id)
+    corsReport.value = { success: true, message: 'Origin deleted.' }
+    await loadCorsSettings()
+  } catch (err) {
+    corsReport.value = { success: false, message: err?.data?.error || err?.data?.message || 'Failed to delete origin.' }
+  } finally {
+    corsSaving.value = false
+  }
+}
+
+async function markMainCorsOrigin(id) {
+  corsSaving.value = true
+  corsReport.value = null
+  try {
+    await setMainCorsOrigin(id)
+    corsReport.value = { success: true, message: 'Main origin updated.' }
+    await loadCorsSettings()
+  } catch (err) {
+    corsReport.value = { success: false, message: err?.data?.error || err?.data?.message || 'Failed to set main origin.' }
+  } finally {
+    corsSaving.value = false
+  }
+}
+
+// 7. MAIL SETTINGS
+const mailSlotLabels = {
+  sandbox: { title: 'Sandbox SMTP', desc: 'Test-catcher SMTP mailer. Enable alongside Main SMTP for dual-send.' },
+  main: { title: 'Main SMTP', desc: 'Production SMTP relay. Enable alongside Sandbox for dual-send, or alone for single SMTP mode.' },
+  brevo: { title: 'Brevo API', desc: 'Brevo transactional API. Takes priority over SMTP when enabled.' },
+}
+const mailSettingsSlots = ref([])
+const mailSettingsActiveMailer = ref(null)
+const mailSettingsSaving = ref({})
+const mailSettingsReport = ref({})
+
+async function loadMailSettings() {
+  try {
+    const res = await getMailSettings()
+    mailSettingsSlots.value = (res?.slots || []).map(s => ({ ...s, password: '', api_key: '' }))
+    mailSettingsActiveMailer.value = res?.active_mailer || null
+  } catch (err) {
+    console.error('Failed to load mail settings', err)
+  }
+}
+
+async function saveMailSlot(slot) {
+  mailSettingsSaving.value = { ...mailSettingsSaving.value, [slot.slot]: true }
+  mailSettingsReport.value = { ...mailSettingsReport.value, [slot.slot]: null }
+  try {
+    const payload = {
+      name: slot.name,
+      enabled: slot.enabled,
+      host: slot.host,
+      port: slot.port,
+      username: slot.username,
+      scheme: slot.scheme || null,
+    }
+    if (slot.password) payload.password = slot.password
+    if (slot.api_key) payload.api_key = slot.api_key
+
+    await updateMailSettings(slot.slot, payload)
+    mailSettingsReport.value = { ...mailSettingsReport.value, [slot.slot]: { success: true, message: 'Saved.' } }
+    await loadMailSettings()
+  } catch (err) {
+    mailSettingsReport.value = {
+      ...mailSettingsReport.value,
+      [slot.slot]: { success: false, message: err?.data?.message || err?.data?.error || 'Save failed.' },
+    }
+  } finally {
+    mailSettingsSaving.value = { ...mailSettingsSaving.value, [slot.slot]: false }
   }
 }
 

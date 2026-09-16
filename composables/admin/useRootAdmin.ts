@@ -146,6 +146,48 @@ export function useRootAdmin() {
     })
   }
 
+  async function getCorsSettings() {
+    return await useAdminApi('/admin/root/cors-settings', {
+      headers: { 'X-Root-Token': rootToken.value || '' },
+    })
+  }
+
+  async function addCorsOrigin(origin: string) {
+    return await useAdminApi('/admin/root/cors-settings', {
+      method: 'POST',
+      headers: { 'X-Root-Token': rootToken.value || '' },
+      body: { origin },
+    })
+  }
+
+  async function deleteCorsOrigin(id: number) {
+    return await useAdminApi(`/admin/root/cors-settings/${id}`, {
+      method: 'DELETE',
+      headers: { 'X-Root-Token': rootToken.value || '' },
+    })
+  }
+
+  async function setMainCorsOrigin(id: number) {
+    return await useAdminApi(`/admin/root/cors-settings/${id}/set-main`, {
+      method: 'PATCH',
+      headers: { 'X-Root-Token': rootToken.value || '' },
+    })
+  }
+
+  async function getMailSettings() {
+    return await useAdminApi('/admin/root/mail-settings', {
+      headers: { 'X-Root-Token': rootToken.value || '' },
+    })
+  }
+
+  async function updateMailSettings(slot: string, payload: any) {
+    return await useAdminApi(`/admin/root/mail-settings/${slot}`, {
+      method: 'PUT',
+      headers: { 'X-Root-Token': rootToken.value || '' },
+      body: payload,
+    })
+  }
+
   return {
     isRootUnlocked,
     rootToken,
@@ -163,5 +205,11 @@ export function useRootAdmin() {
     getSystemInfo,
     getConnectorInfraSettings,
     updateConnectorInfraSettings,
+    getCorsSettings,
+    addCorsOrigin,
+    deleteCorsOrigin,
+    setMainCorsOrigin,
+    getMailSettings,
+    updateMailSettings,
   }
 }
