@@ -32,16 +32,16 @@
                             <td class="px-4 py-4 text-sm">{{ log.details }}</td>
                         </tr>
 
-                        <!-- Filler rows on a partial last page — keeps table height fixed, no CLS -->
-                        <tr v-if="logs && logs.length > 0" v-for="n in fillerRowCount" :key="'filler-' + n"
-                            class="border-b last:border-none h-[52px]" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                            <td class="px-6 py-4" colspan="4">&nbsp;</td>
-                        </tr>
-
-                        <tr v-if="!logs || logs.length === 0">
+                        <tr v-if="!logs || logs.length === 0" class="border-b last:border-none"
+                            :class="isDark ? 'bg-[#00141080] border-white/5' : 'bg-white border-gray-100'">
                             <td colspan="4" class="px-6 py-8 text-center text-sm" :class="isDark ? 'text-white/50' : 'text-gray-400'">
                                 {{ currentLang === 'ar' ? 'لا توجد سجلات' : 'No logs available' }}
                             </td>
+                        </tr>
+
+                        <tr v-for="n in fillerRowCount" :key="'filler-' + n"
+                            class="border-b last:border-none h-[52px]" :class="isDark ? 'bg-[#00141080] border-white/5' : 'bg-white border-gray-100'">
+                            <td class="px-6 py-4" colspan="4">&nbsp;</td>
                         </tr>
                     </template>
                 </tbody>
@@ -67,14 +67,11 @@ const props = defineProps({
     currentLang: String
 });
 
-// Pads a partial last page (e.g. 8 of 10 rows) up to per_page rows so the
-// table height stays fixed across page changes. Only applies when pagination
-// is actually showing (total > 10) — under that, a short table is correct.
 const fillerRowCount = computed(() => {
-    if (!props.meta || props.meta.total <= 10) return 0
-    const perPage = props.meta?.per_page || 10
+    const minRows = Math.max(props.meta?.per_page || 10, 10)
     const rowCount = props.logs?.length || 0
-    return rowCount > 0 && rowCount < perPage ? perPage - rowCount : 0
+    const occupied = rowCount === 0 ? 1 : rowCount
+    return occupied < minRows ? minRows - occupied : 0
 })
 </script>
 

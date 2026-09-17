@@ -21,11 +21,21 @@
       :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
       <!-- Search -->
-      <div class="p-2 border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+      <div class="p-2 border-b flex items-center gap-2" :class="isDark ? 'border-white/10' : 'border-gray-100'">
         <input v-model="search" type="text"
           :placeholder="currentLang === 'ar' ? 'بحث...' : 'Search...'"
-          class="w-full px-3 py-1.5 rounded-lg border text-sm outline-none focus:ring-1 focus:ring-[#00B794]"
+          class="flex-1 px-3 py-1.5 rounded-lg border text-sm outline-none focus:ring-1 focus:ring-[#00B794]"
           :class="isDark ? 'bg-[#0d0d0d] border-white/10 placeholder-white/30' : 'bg-white border-gray-200'" />
+        <button @click="handleRefresh" :disabled="refreshing"
+          :title="currentLang === 'ar' ? 'تحديث القائمة' : 'Refresh list'"
+          class="w-8 h-8 flex items-center justify-center rounded-lg border flex-shrink-0 disabled:opacity-40"
+          :class="isDark ? 'border-white/15 text-white/70 hover:bg-white/5' : 'border-gray-200 text-gray-600 hover:bg-gray-50'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            :class="refreshing ? 'animate-spin' : ''">
+            <path d="M23 4v6h-6M1 20v-6h6" />
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+          </svg>
+        </button>
       </div>
 
       <!-- Select all -->
@@ -84,8 +94,15 @@ const props = defineProps({
   isDark:      { type: Boolean, default: false },
   currentLang: { type: String, default: 'en' },
   format:      { type: Function, default: (v) => v }, // display-only transform, raw value still used for filtering
+  onRefresh:   { type: Function, default: null },
 })
 const emit = defineEmits(['apply'])
+const refreshing = ref(false)
+const handleRefresh = async () => {
+  if (!props.onRefresh || refreshing.value) return
+  refreshing.value = true
+  try { await props.onRefresh() } finally { refreshing.value = false }
+}
 
 const isOpen     = ref(false)
 const search     = ref('')
