@@ -27,7 +27,7 @@
       <!-- Navigation Tabs -->
       <div :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-gray-100'" class="flex items-center justify-between overflow-x-auto no-scrollbar rounded-[35px] p-[10px] border shadow-sm">
         <button v-for="tab in tabs" :key="tab"
-                @click="activeTab = tab"
+                @click="setTab(tab)"
                 class="px-8 py-2.5 rounded-full text-[14px] transition-all cursor-pointer whitespace-nowrap"
                 :class="activeTab === tab 
                   ? (isDark ? 'bg-[#1b5e50] text-[#fff] shadow-sm' : 'bg-[#82FFE0] text-[#0A0A0A] font-normal') 
@@ -345,8 +345,17 @@
         <!-- Section Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div class="space-y-1">
-            <h2 class="text-[24px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">New Clients</h2>
-            <p class="text-[14px] text-[#00000080]" :class="isDark ? 'text-white/60' : ''">Assign consultants to new review projects</p>
+            <h2 class="text-[24px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">{{ assignFilter === 'Assigned' ? 'Assigned Clients' : 'New Clients' }}</h2>
+            <p class="text-[14px] text-[#00000080]" :class="isDark ? 'text-white/60' : ''">{{ assignFilter === 'Assigned' ? 'Reassign clients to a different consultant' : 'Assign consultants to new review projects' }}</p>
+          </div>
+          <div class="flex items-center rounded-full p-1 border" :class="isDark ? 'bg-black/20 border-white/10' : 'bg-[#F3F4F6] border-transparent'">
+            <button v-for="f in ['Unassigned', 'Assigned']" :key="f" @click="setAssignFilter(f)"
+                    class="px-5 py-2 rounded-full text-[13px] transition-colors cursor-pointer"
+                    :class="assignFilter === f
+                      ? (isDark ? 'bg-[#1b5e50] text-white' : 'bg-white text-[#0A0A0A] shadow-sm')
+                      : (isDark ? 'text-white/60' : 'text-[#6B7280]')">
+              {{ f }}
+            </button>
           </div>
         </div>
 
@@ -357,12 +366,12 @@
               <img src="/images/icons/search.svg" class="w-5 h-5" :class="isDark ? 'invert brightness-0' : ''" alt="search" />
             </span>
             <input type="text" v-model="unassignedSearch"
-                   @input="debounceSearch('unassigned', () => { unassignedPage = 1; loadUnassigned() })"
+                   @input="debounceSearch('unassigned', () => { unassignedPage = 1; loadAssignTab() })"
                    placeholder="Search by client name or email..."
                    class="w-full h-[48px] pl-12 pr-4 rounded-[10px] border border-[#04C18F33] outline-none focus:border-[#00896F] transition-colors text-[14px] font-regular"
                    :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a] placeholder-[#0000004D]'" />
           </div>
-          <button @click="loadUnassigned" class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
+          <button @click="loadAssignTab" class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
                   :class="isDark ? 'bg-black/20 border-white/10' : 'bg-white'">
             <img src="/images/icons/reload.svg" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', reloading ? 'animate-spin' : '']" alt="refresh" />
           </button>
@@ -378,7 +387,7 @@
                 <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Implementation Completed Date</th>
                 <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Mobile Number</th>
                 <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Email</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">List of Consultant</th>
+                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">{{ assignFilter === 'Assigned' ? 'Consultant' : 'List of Consultant' }}</th>
                 <th class="py-4 px-8 font-normal text-[15px] rounded-tr-[8px]">Action</th>
               </tr>
             </thead>
@@ -397,7 +406,6 @@
                        :class="isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-[#F3F4F6] text-[#6B7280]'">
                     <div class="flex flex-col overflow-hidden">
                       <span v-if="item.selectedConsultant" class="text-[13px] font-medium leading-tight" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ item.selectedConsultant }}</span>
-                      <span v-if="item.selectedConsultantRole" class="text-[11px] opacity-50 leading-tight">{{ item.selectedConsultantRole }}</span>
                       <span v-if="!item.selectedConsultant" class="text-[13px]">Select Consultant</span>
                     </div>
                     <img src="/images/icons/down-select.svg" class="w-3.5 h-3.5 opacity-40 flex-shrink-0" :class="isDark ? 'invert' : ''" alt="arrow" />
@@ -412,14 +420,13 @@
                             class="text-left px-4 py-3 rounded-[10px] text-[14px] transition-colors cursor-pointer group"
                             :class="item.selectedConsultant === c.name ? 'bg-[#E6FFF3] text-[#1a1a1a]' : 'text-[#1a1a1a] hover:bg-[#E6FFF3]'">
                       <span class="font-medium">{{ c.name }}</span>
-                      <span class="text-[12px] opacity-50 ml-1">{{ c.role }}</span>
                     </button>
                   </div>
                 </td>
                 <td class="py-6 px-8">
-                  <button @click="doAssign(item)" :disabled="assigning || !item.selectedConsultantId"
+                  <button @click="doAssign(item)" :disabled="assigning || !item.selectedConsultantId || item.selectedConsultantId === item.originalConsultantId"
                           class="px-6 py-2 rounded-[8px] bg-[#04C18F] text-white text-[13px] font-medium hover:bg-[#03a87c] transition-colors cursor-pointer shadow-sm disabled:opacity-50">
-                    Assign
+                    {{ assignFilter === 'Assigned' ? 'Reassign' : 'Assign' }}
                   </button>
                 </td>
               </tr>
@@ -427,9 +434,9 @@
           </table>
         </div>
         <div v-if="unassignedLast > 1" class="flex items-center justify-end gap-2 pt-2">
-          <button @click="unassignedPage--; loadUnassigned()" :disabled="unassignedPage <= 1" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">← Prev</button>
+          <button @click="unassignedPage--; loadAssignTab()" :disabled="unassignedPage <= 1" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">← Prev</button>
           <span class="text-[13px] opacity-60">{{ unassignedPage }} / {{ unassignedLast }}</span>
-          <button @click="unassignedPage++; loadUnassigned()" :disabled="unassignedPage >= unassignedLast" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">Next →</button>
+          <button @click="unassignedPage++; loadAssignTab()" :disabled="unassignedPage >= unassignedLast" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">Next →</button>
         </div>
       </div>
 
@@ -535,10 +542,16 @@ import { useReviewManager } from '@/composables/admin/review/useReviewManager'
 const { isDark } = useTheme()
 const { admin } = useAdminAuth()
 const route = useRoute()
+const router = useRouter()
 const rm = useReviewManager()
 
 const tabs = ['Productivity tracker', 'Data Sync Status', 'Client fixed progress', 'Consultant workload', 'Assign Consultant', 'Client review analysis progress', 'Consultant Requests']
-const activeTab = ref(route.query.tab || 'Productivity tracker')
+const activeTab = ref(tabs.includes(route.query.tab) ? route.query.tab : 'Productivity tracker')
+
+function setTab(tab) {
+  activeTab.value = tab
+  router.replace({ query: { ...route.query, tab } })
+}
 
 // -- data refs --
 const consultantsList        = ref([])
@@ -546,6 +559,7 @@ const syncData               = ref([])
 const clientFixedProgressData = ref([])
 const consultantWorkloadData  = ref([])
 const assignConsultantData    = ref([])
+const unassignedTotal         = ref(0)
 const consultantList          = ref([])
 const clientReviewAnalysisData = ref([])
 
@@ -553,7 +567,7 @@ const productivityMetrics = computed(() => [
   { title: 'Total Consultants', value: consultantsList.value.length, bgClass: 'bg-white', borderClass: 'border-gray-100', textClass: 'text-[#004D40]', icon: '/images/icons/team.svg' },
   { title: 'Open Fixed', value: consultantsList.value.reduce((s, c) => s + (c.open_fixed || 0), 0), bgClass: 'bg-white', borderClass: 'border-gray-100', textClass: 'text-[#004D40]', icon: '/images/icons/calendar-black.svg' },
   { title: 'Open Adhoc', value: consultantsList.value.reduce((s, c) => s + (c.open_adhoc || 0), 0), bgClass: 'bg-white', borderClass: 'border-gray-100', textClass: 'text-[#004D40]', icon: '/images/icons/calendar-black.svg' },
-  { title: 'Unassigned Clients', value: assignConsultantData.value.length, bgClass: 'bg-white', borderClass: 'border-gray-100', textClass: 'text-[#C10007]', icon: '/images/icons/team.svg' },
+  { title: 'Unassigned Clients', value: unassignedTotal.value, bgClass: 'bg-white', borderClass: 'border-gray-100', textClass: 'text-[#C10007]', icon: '/images/icons/team.svg' },
 ])
 
 const reloading = ref(false)
@@ -576,9 +590,13 @@ async function loadConsultants() {
   reloading.value = true
   const res = await rm.getConsultants(consultantsPage.value, consultantsSearch.value).catch(() => ({ data: [], meta: {} }))
   consultantsList.value = (res.data ?? []).map((c) => ({ ...c, fixed: c.open_fixed, adhoc: c.open_adhoc }))
-  consultantList.value  = (res.data ?? []).map((c) => ({ ...c, activeCount: c.open_fixed + c.open_adhoc }))
   consultantsLast.value = res.meta?.last_page ?? 1
   reloading.value = false
+}
+
+async function loadConsultantOptions() {
+  const list = await rm.getConsultantList().catch(() => [])
+  consultantList.value = list.map((c) => ({ ...c, activeCount: c.open_fixed + c.open_adhoc }))
 }
 
 async function loadSync() {
@@ -608,9 +626,36 @@ async function loadWorkload() {
 async function loadUnassigned() {
   reloading.value = true
   const res = await rm.getUnassignedClients(unassignedPage.value, unassignedSearch.value).catch(() => ({ data: [], meta: {} }))
-  assignConsultantData.value = (res.data ?? []).map((c) => ({ ...c, clientName: c.client_name, completedDate: '—', mobile: c.phone ?? '—', selectedConsultant: null, selectedConsultantId: null, selectedConsultantRole: null }))
+  assignConsultantData.value = (res.data ?? []).map((c) => ({ ...c, clientName: c.client_name, completedDate: '—', mobile: c.phone ?? '—', selectedConsultant: null, selectedConsultantId: null, originalConsultantId: null }))
+  unassignedLast.value = res.meta?.last_page ?? 1
+  unassignedTotal.value = res.meta?.total ?? 0
+  reloading.value = false
+}
+
+async function refreshUnassignedTotal() {
+  const res = await rm.getUnassignedClients(1, '').catch(() => ({ meta: {} }))
+  unassignedTotal.value = res.meta?.total ?? 0
+}
+
+async function loadAssigned() {
+  reloading.value = true
+  const res = await rm.getAssignedClients(unassignedPage.value, unassignedSearch.value).catch(() => ({ data: [], meta: {} }))
+  assignConsultantData.value = (res.data ?? []).map((c) => ({ ...c, clientName: c.client_name, completedDate: '—', mobile: c.phone ?? '—', selectedConsultant: c.consultant_name, selectedConsultantId: c.consultant_id, originalConsultantId: c.consultant_id }))
   unassignedLast.value = res.meta?.last_page ?? 1
   reloading.value = false
+}
+
+const assignFilter = ref('Unassigned')
+
+function loadAssignTab() {
+  return assignFilter.value === 'Assigned' ? loadAssigned() : loadUnassigned()
+}
+
+function setAssignFilter(f) {
+  assignFilter.value = f
+  unassignedPage.value = 1
+  unassignedSearch.value = ''
+  loadAssignTab()
 }
 
 async function loadAnalysis() {
@@ -622,7 +667,7 @@ async function loadAnalysis() {
 }
 
 async function loadData() {
-  await Promise.all([loadConsultants(), loadSync(), loadProgress(), loadWorkload(), loadUnassigned(), loadAnalysis()])
+  await Promise.all([loadConsultants(), loadConsultantOptions(), loadSync(), loadProgress(), loadWorkload(), loadUnassigned(), loadAnalysis()])
 }
 
 onMounted(() => { loadData() })
@@ -637,9 +682,8 @@ function toggleConsultantDropdown(idx) {
 
 function selectConsultant(idx, consultant) {
   if (assignConsultantData.value[idx]) {
-    assignConsultantData.value[idx].selectedConsultant     = consultant.name
-    assignConsultantData.value[idx].selectedConsultantId   = consultant.id
-    assignConsultantData.value[idx].selectedConsultantRole = consultant.role
+    assignConsultantData.value[idx].selectedConsultant   = consultant.name
+    assignConsultantData.value[idx].selectedConsultantId = consultant.id
   }
   activeConsultantDropdown.value = null
 }
@@ -651,7 +695,7 @@ async function doAssign(item) {
     const dept = consultantList.value.find(c => c.id === item.selectedConsultantId)
     await rm.assignConsultant(item.tenant_id, item.selectedConsultantId, dept?.department_id ?? 1)
     unassignedPage.value = 1
-    await loadUnassigned()
+    await Promise.all([loadAssignTab(), refreshUnassignedTotal()])
   } finally {
     assigning.value = false
   }

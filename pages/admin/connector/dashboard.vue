@@ -1,9 +1,8 @@
 <template>
+  <NuxtLayout name="admin">
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300 pb-10" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
 
-    <AdminDashboardHeader :userName="admin?.role?.name ?? 'Connector Dashboard'" :userId="'Welcome, ' + (admin?.full_name ?? '')" :showChangeProfile="false" notificationsTo="/admin/notifications" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
-
-    <main class="flex-1 px-8 py-8 space-y-8 overflow-y-auto overflow-x-hidden" style="margin-top: -18px;">
+    <main class="flex-1 px-8 py-8 space-y-8 overflow-y-auto overflow-x-hidden">
 
       <!-- Page title -->
       <div class="space-y-1">
@@ -565,6 +564,7 @@
       </div>
     </div>
   </div>
+  </NuxtLayout>
 </template>
 
 <script setup>

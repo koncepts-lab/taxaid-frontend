@@ -1,5 +1,5 @@
 export function useRootAdmin() {
-  const rootCookie = useCookie<string | null>('taxaid_root_token', { maxAge: 60 * 60 * 24 })
+  const rootCookie = useCookie<string | null>('taxaid_root_token', { maxAge: 60 * 55 })
   const { admin } = useAdminAuth()
 
   const isRootUnlocked = computed(() => !!rootCookie.value)

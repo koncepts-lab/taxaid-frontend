@@ -21,8 +21,8 @@ export function useReviewManager() {
     })
   }
 
-  async function getConsultants(page = 1, search = ''): Promise<any> {
-    const res: any = await apiFetch(`/admin/review/team/consultants?page=${page}&search=${encodeURIComponent(search)}`)
+  async function getConsultants(page = 1, search = '', perPage = 10): Promise<any> {
+    const res: any = await apiFetch(`/admin/review/team/consultants?page=${page}&search=${encodeURIComponent(search)}&per_page=${perPage}`)
     _consultants.value = res.data ?? []
     return res
   }
@@ -51,6 +51,10 @@ export function useReviewManager() {
     return res
   }
 
+  async function getAssignedClients(page = 1, search = ''): Promise<any> {
+    return await apiFetch(`/admin/review/clients/assigned?page=${page}&search=${encodeURIComponent(search)}`)
+  }
+
   async function assignConsultant(tenantId: number, adminId: number, departmentId: number): Promise<void> {
     await apiFetch('/admin/review/clients/assign', {
       method: 'POST',
@@ -69,7 +73,7 @@ export function useReviewManager() {
   }
 
   async function getConsultantList(): Promise<any[]> {
-    const res: any = await apiFetch('/admin/review/team/consultants')
+    const res: any = await apiFetch('/admin/review/team/consultants?per_page=100')
     return res.data ?? []
   }
 
@@ -85,6 +89,7 @@ export function useReviewManager() {
     getFixedProgress,
     getTeamWorkload,
     getUnassignedClients,
+    getAssignedClients,
     assignConsultant,
     getConsultantDailyLog,
     getConsultantWorkload,

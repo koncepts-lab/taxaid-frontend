@@ -1,11 +1,9 @@
 <template>
+  <NuxtLayout name="admin">
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
-    
-    <!-- HEADER -->
-    <AdminDashboardHeader :userName="admin?.role?.name ?? 'Admin'" :userId="'Welcome, ' + (admin?.full_name ?? '')" showChangeProfile changeProfileLink="/admin/revenue-partner/admin" />
 
-    <!-- CONTENT --> 
-    <main class="flex-1 px-8 pb-[0px] pt-8 space-y-6 overflow-y-auto" style="margin-top: -18px;">
+    <!-- CONTENT -->
+    <main class="flex-1 px-8 pb-[0px] pt-8 space-y-6 overflow-y-auto">
       
       <!-- Alert Banner -->
       <div v-if="showAlertBanner && dynamicAdminAlert.text" :class="isDark ? 'bg-[#00141080] border-[#F9AF4D80]' : 'bg-[#FEFCE8] border-[#FFF085]'" class="rounded-[16px] p-4 flex items-center justify-between shadow-sm relative pr-12 border">
@@ -283,16 +281,12 @@
         </div>
       </div>
     </div>
-
-    <!-- FOOTER -->
-    <DashboardFooter />
   </div>
+  </NuxtLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-
-definePageMeta({ layout: false })
 
 const { isDark } = useTheme()
 const { admin } = useAdminAuth()

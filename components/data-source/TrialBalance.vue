@@ -26,6 +26,10 @@
                         class="px-8 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-xl font-normal transition-all active:scale-95 shadow-sm disabled:opacity-50">
                         {{ tbSaving ? '...' : (currentLang === 'ar' ? 'تحديث' : 'Update') }}
                     </button>
+                    <button v-if="userType === 'admin'" @click="onOpenImport && onOpenImport()"
+                        class="px-8 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-xl font-normal transition-all active:scale-95 shadow-sm">
+                        {{ currentLang === 'ar' ? 'استيراد ملف Excel' : 'Upload Mapping' }}
+                    </button>
                     <button @click="isReportModalOpen = true"
                         class="flex items-center gap-2 px-6 py-2 bg-[#68E4C4] hover:bg-[#34D399] text-[#064E3B] rounded-xl font-normal text-base transition-all active:scale-95 shadow-sm">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -578,6 +582,7 @@ const props = defineProps({
     onApplyFilter:    { type: Function, default: null },
     onRefreshOptions: { type: Function, default: null },
     onRefreshFilterOptions: { type: Function, default: null },
+    onOpenImport:     { type: Function, default: null },
 })
 
 const refreshingOptions = ref(false)

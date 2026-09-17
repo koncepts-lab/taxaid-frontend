@@ -15,6 +15,10 @@ const VALID_ADMIN_PATHS = new Set([
   '/admin/notifications',
   '/admin/ticketing',
   '/admin/ticketing/ticketing-dashboard',
+  '/admin/connector/dashboard',
+  '/admin/revenue-partner/accounts',
+  '/admin/revenue-partner/admin',
+  '/admin/root',
 ])
 
 export default defineEventHandler((event) => {
