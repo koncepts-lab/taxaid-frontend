@@ -854,8 +854,25 @@
             </div>
             <div>
               <label class="block text-[14px] font-semibold text-gray-900 mb-2">Initial Password *</label>
-              <input v-model="newUserForm.password" type="password" placeholder="Min. 6 characters" autocomplete="new-password" class="w-full border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] placeholder-gray-400 shadow-sm" />
+              <div class="relative">
+                <input v-model="newUserForm.password" :type="showNewUserPassword ? 'text' : 'password'" placeholder="Min. 6 characters" autocomplete="new-password" class="w-full border border-[#A7F3D0] rounded-md px-3 py-2.5 pr-11 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] placeholder-gray-400 shadow-sm" />
+                <button type="button" @click="showNewUserPassword = !showNewUserPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-[#007C65] transition-colors">
+                  <svg v-if="!showNewUserPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                  <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
+                </button>
+              </div>
               <p class="text-[13px] text-gray-500 mt-2">User must change password on first login</p>
+            </div>
+            <div>
+              <label class="block text-[14px] font-semibold text-gray-900 mb-2">Confirm Password *</label>
+              <div class="relative">
+                <input v-model="newUserConfirmPassword" :type="showNewUserConfirmPassword ? 'text' : 'password'" placeholder="Re-enter password" autocomplete="new-password" class="w-full border rounded-md px-3 py-2.5 pr-11 text-[14px] text-gray-900 focus:outline-none focus:ring-1 placeholder-gray-400 shadow-sm" :class="newUserConfirmPassword && newUserConfirmPassword !== newUserForm.password ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-[#A7F3D0] focus:border-[#007C65] focus:ring-[#007C65]'" />
+                <button type="button" @click="showNewUserConfirmPassword = !showNewUserConfirmPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-[#007C65] transition-colors">
+                  <svg v-if="!showNewUserConfirmPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                  <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
+                </button>
+              </div>
+              <p v-if="newUserConfirmPassword && newUserConfirmPassword !== newUserForm.password" class="text-[13px] text-red-500 mt-2">Passwords do not match</p>
             </div>
             <div>
               <label class="block text-[14px] font-semibold text-gray-900 mb-2">Title (Optional)</label>
@@ -946,7 +963,7 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             Back
           </button>
-          <button v-if="addUserStep < 3" @click="addUserStep++" :class="addUserStep === 1 ? 'w-full' : 'w-1/2'" class="bg-[#007C65] text-white py-2.5 rounded-md font-medium text-[15px] flex items-center justify-center gap-2 hover:bg-[#006A56] transition-colors shadow-sm">
+          <button v-if="addUserStep < 3" @click="goToNextAddUserStep" :disabled="addUserStep === 1 && newUserConfirmPassword !== newUserForm.password" :class="addUserStep === 1 ? 'w-full' : 'w-1/2'" class="bg-[#007C65] text-white py-2.5 rounded-md font-medium text-[15px] flex items-center justify-center gap-2 hover:bg-[#006A56] transition-colors shadow-sm disabled:opacity-50">
             Next
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </button>
@@ -1188,6 +1205,9 @@ async function handleDeletePartner() {
 
 // ── Forms ─────────────────────────────────────────────────────────────────────
 const newUserForm = ref({ full_name: '', email: '', phone_number: '', admin_role_id: null, department_id: null, password: '', title: '', description: '', notes: '' })
+const newUserConfirmPassword = ref('')
+const showNewUserPassword = ref(false)
+const showNewUserConfirmPassword = ref(false)
 const editUserForm = ref({ full_name: '', email: '', phone_number: '', admin_role_id: null, department_id: null, title: '', description: '', notes: '' })
 
 // ── Computed ──────────────────────────────────────────────────────────────────
@@ -1342,10 +1362,16 @@ async function handleToggleStatus(user) {
   await loadData()
 }
 
+function goToNextAddUserStep() {
+  if (addUserStep.value === 1 && newUserConfirmPassword.value !== newUserForm.value.password) return
+  addUserStep.value++
+}
+
 function closeAddUserModal() {
   showAddUserModal.value = false
   setTimeout(() => { addUserStep.value = 1 }, 300)
   newUserForm.value      = { full_name: '', email: '', phone_number: '', admin_role_id: null, department_id: null, password: '', title: '', description: '', notes: '' }
+  newUserConfirmPassword.value = ''
   selectedDashboards.value = []
 }
 
@@ -1354,6 +1380,10 @@ const creatingUser = ref(false)
 const createUserMailSent = ref(true)
 async function handleCreateUser() {
   createUserError.value = ''
+  if (newUserConfirmPassword.value !== newUserForm.value.password) {
+    createUserError.value = 'Passwords do not match.'
+    return
+  }
   creatingUser.value = true
   try {
     const res = await createUser({ ...newUserForm.value, assigned_systems: selectedDashboards.value })

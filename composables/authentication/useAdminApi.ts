@@ -16,8 +16,14 @@ export const useAdminApi = async (url: string, options: any = {}) => {
     },
     onResponseError({ response }) {
       if (response.status === 401) {
+        if (options.headers && 'X-Root-Token' in options.headers) {
+          const rootToken = useCookie('taxaid_root_token')
+          rootToken.value = null
+          navigateTo('/admin')
+          return
+        }
         token.value = null
-        navigateTo('/superadmin/login')
+        navigateTo('/ad-aqnz-pro-auth-78z46')
       }
     },
   })

@@ -429,7 +429,7 @@ const { getPool, getConsultants, updateAssignment, getRegistrationRequests, getR
 const route  = useRoute()
 const router = useRouter()
 const validSubTabs = ['new', 'ongoing', 'completed', 'all', 'registrations']
-const activeSubTab = ref(validSubTabs.includes(route.query.subtab) ? route.query.subtab : 'new')
+const activeSubTab = ref(validSubTabs.includes(route.query.subtab) ? route.query.subtab : 'registrations')
 
 function setSubTab(id) {
     activeSubTab.value = id
@@ -543,7 +543,7 @@ async function approveRegistration(row) {
     try {
         await approveRegistrationRequest(row.id, registrationEnableAi.value)
         showRegistrationDetail.value = false
-        await loadRegistrations(registrationMeta.value.current_page)
+        await Promise.all([loadRegistrations(registrationMeta.value.current_page), loadPool()])
     } finally {
         registrationActing.value = false
     }

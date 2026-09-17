@@ -1,16 +1,8 @@
 <template>
+  <NuxtLayout name="admin">
   <div class="min-h-screen w-full max-w-[100vw] relative flex flex-col font-sans transition-colors duration-300 pb-10 overflow-x-hidden" :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
 
-    <AdminDashboardHeader
-      :userName="admin?.role?.name ?? 'Super Admin'"
-      :userId="'Welcome, ' + (admin?.full_name ?? 'Super Admin')"
-      :showChangeProfile="false"
-      notificationsTo="/admin/notifications"
-      :adminLogout="true"
-      logoutTo="/ad-aqnz-pro-auth-78z46"
-    />
-
-    <main class="flex-1 w-full max-w-full px-4 sm:px-8 py-8 space-y-8 overflow-x-hidden min-w-0" style="margin-top: -18px;">
+    <main class="flex-1 w-full max-w-full px-4 sm:px-8 py-8 space-y-8 overflow-x-hidden min-w-0">
 
       <!-- Page title & Actions -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0 w-full">
@@ -1119,6 +1111,7 @@
 
     </main>
   </div>
+  </NuxtLayout>
 </template>
 
 <script setup>

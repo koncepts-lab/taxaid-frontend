@@ -1,12 +1,10 @@
 <template>
+  <NuxtLayout name="admin">
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300"
     :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
 
-    <!-- HEADER -->
-    <AdminDashboardHeader :userName="admin?.role?.name ?? 'Accounts'" :userId="'Welcome, ' + (admin?.full_name ?? '')" showChangeProfile changeProfileLink="/admin/revenue-partner/accounts" />
-
     <!-- CONTENT -->
-    <main class="flex-1 px-8 pb-[0px] pt-8 space-y-6 overflow-y-auto" style="margin-top: -18px;">
+    <main class="flex-1 px-8 pb-[0px] pt-8 space-y-6 overflow-y-auto">
 
       <!-- Alert Banner -->
       <div v-if="showAlertBanner && hasAlert"
@@ -540,9 +538,6 @@
 
     </main>
 
-    <!-- FOOTER -->
-    <DashboardFooter />
-
     <!-- UPLOAD STATUS MODAL -->
     <div v-if="uploadStatus.show"
       class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[999] flex items-center justify-center p-4"
@@ -879,6 +874,7 @@
       </div>
     </div>
   </div>
+  </NuxtLayout>
 </template>
 
 <script setup>
@@ -886,8 +882,6 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { DatePicker as VDatePicker } from 'v-calendar'
 import 'v-calendar/dist/style.css'
 import { format } from 'date-fns'
-
-definePageMeta({ layout: false })
 
 const { isDark } = useTheme()
 const { admin } = useAdminAuth()
