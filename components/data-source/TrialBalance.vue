@@ -12,6 +12,16 @@
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
+                    <button v-if="userType === 'admin'" @click="handleRefreshOptions" :disabled="refreshingOptions"
+                        :title="currentLang === 'ar' ? 'تحديث قوائم الكود/المجموعة' : 'Refresh code/group option lists'"
+                        class="p-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all active:scale-95 disabled:opacity-50"
+                        :class="isDark ? 'border-white/15 text-white/70 hover:bg-white/5' : ''">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            :class="refreshingOptions ? 'animate-spin' : ''">
+                            <path d="M23 4v6h-6M1 20v-6h6" />
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                        </svg>
+                    </button>
                     <button v-if="userType === 'admin'" @click="handleUpdate" :disabled="tbSaving"
                         class="px-8 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-xl font-normal transition-all active:scale-95 shadow-sm disabled:opacity-50">
                         {{ tbSaving ? '...' : (currentLang === 'ar' ? 'تحديث' : 'Update') }}
@@ -66,7 +76,7 @@
                                     {{ currentLang === 'ar' ? 'كود FS' : 'FS Code' }}
                                     <DataSourceTbHeaderFilter column="fs_code" :options="tbFilterOptions.fs_code"
                                         :selected="tbFilters.fs_code" :isDark="isDark" :currentLang="currentLang"
-                                        @apply="handleFilterApply" />
+                                        @apply="handleFilterApply" :onRefresh="handleRefreshFilterOptions" />
                                 </span>
                             </th>
                             <th class="px-4 py-3 text-sm font-medium">
@@ -74,7 +84,7 @@
                                     {{ currentLang === 'ar' ? 'المجموعة الرئيسية' : 'Main Group' }}
                                     <DataSourceTbHeaderFilter column="main_group" :options="tbFilterOptions.main_group"
                                         :selected="tbFilters.main_group" :isDark="isDark" :currentLang="currentLang"
-                                        @apply="handleFilterApply" />
+                                        @apply="handleFilterApply" :onRefresh="handleRefreshFilterOptions" />
                                 </span>
                             </th>
                             <th class="px-4 py-3 font-medium">
@@ -82,7 +92,7 @@
                                     {{ currentLang === 'ar' ? 'المجموعة الفرعية' : 'Sub group' }}
                                     <DataSourceTbHeaderFilter column="sub_group" :options="tbFilterOptions.sub_group"
                                         :selected="tbFilters.sub_group" :isDark="isDark" :currentLang="currentLang"
-                                        @apply="handleFilterApply" />
+                                        @apply="handleFilterApply" :onRefresh="handleRefreshFilterOptions" />
                                 </span>
                             </th>
                             <th class="px-4 py-3 rounded-tr-xl font-medium">
@@ -90,7 +100,7 @@
                                     {{ currentLang === 'ar' ? 'حساب الأستاذ' : 'Ledger' }}
                                     <DataSourceTbHeaderFilter column="ledger_name" :options="tbFilterOptions.ledger_name"
                                         :selected="tbFilters.ledger_name" :isDark="isDark" :currentLang="currentLang"
-                                        @apply="handleFilterApply" />
+                                        @apply="handleFilterApply" :onRefresh="handleRefreshFilterOptions" />
                                 </span>
                             </th>
                         </tr>
@@ -427,28 +437,28 @@
                                         <span class="inline-flex items-center gap-1.5">FS Code
                                             <DataSourceTbHeaderFilter column="fs_code" :options="tbFilterOptions.fs_code"
                                                 :selected="tbFilters.fs_code" :isDark="isDark" :currentLang="currentLang"
-                                                @apply="handleFilterApply" />
+                                                @apply="handleFilterApply" :onRefresh="handleRefreshFilterOptions" />
                                         </span>
                                     </th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold">
                                         <span class="inline-flex items-center gap-1.5">Main Group
                                             <DataSourceTbHeaderFilter column="main_group" :options="tbFilterOptions.main_group"
                                                 :selected="tbFilters.main_group" :isDark="isDark" :currentLang="currentLang"
-                                                @apply="handleFilterApply" />
+                                                @apply="handleFilterApply" :onRefresh="handleRefreshFilterOptions" />
                                         </span>
                                     </th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold">
                                         <span class="inline-flex items-center gap-1.5">Sub group
                                             <DataSourceTbHeaderFilter column="sub_group" :options="tbFilterOptions.sub_group"
                                                 :selected="tbFilters.sub_group" :isDark="isDark" :currentLang="currentLang"
-                                                @apply="handleFilterApply" />
+                                                @apply="handleFilterApply" :onRefresh="handleRefreshFilterOptions" />
                                         </span>
                                     </th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold rounded-tr-xl">
                                         <span class="inline-flex items-center gap-1.5">Ledger Account
                                             <DataSourceTbHeaderFilter column="ledger_name" :options="tbFilterOptions.ledger_name"
                                                 :selected="tbFilters.ledger_name" :isDark="isDark" :currentLang="currentLang"
-                                                @apply="handleFilterApply" />
+                                                @apply="handleFilterApply" :onRefresh="handleRefreshFilterOptions" />
                                         </span>
                                     </th>
                                 </tr>
@@ -566,7 +576,20 @@ const props = defineProps({
     tbFilters:        { type: Object,   default: () => ({ fs_code: [], main_group: [], sub_group: [], ledger_name: [] }) },
     tbFilterOptions:  { type: Object,   default: () => ({ fs_code: [], main_group: [], sub_group: [], ledger_name: [] }) },
     onApplyFilter:    { type: Function, default: null },
+    onRefreshOptions: { type: Function, default: null },
+    onRefreshFilterOptions: { type: Function, default: null },
 })
+
+const refreshingOptions = ref(false)
+const handleRefreshOptions = async () => {
+    if (!props.onRefreshOptions || refreshingOptions.value) return
+    refreshingOptions.value = true
+    try { await props.onRefreshOptions() } finally { refreshingOptions.value = false }
+}
+
+const handleRefreshFilterOptions = () => {
+    if (props.onRefreshFilterOptions) return props.onRefreshFilterOptions()
+}
 
 const handleFilterApply = (column, values) => {
     if (props.onApplyFilter) props.onApplyFilter(column, values)

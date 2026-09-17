@@ -188,7 +188,9 @@
                 :onPerPageChange="(pp) => fetchTrialBalance(1, pp)"
                 :tbFilters="tbFilters"
                 :tbFilterOptions="tbFilterOptions"
-                :onApplyFilter="(col, values) => applyFilters(col, values)" />
+                :onApplyFilter="(col, values) => applyFilters(col, values)"
+                :onRefreshOptions="() => fetchMappingOptions()"
+                :onRefreshFilterOptions="() => fetchFilterOptions()" />
               <DataSourceChangeLog
                 v-if="activeSubTab === 'accounts-receivable' || activeSubTab === 'accounts-payable' || activeSubTab === 'pdc' || activeSubTab === 'cost-center' || activeSubTab === 'budget' || activeSubTab === 'sales-forecast' || activeSubTab === 'trial-balance'"
                 :logs="currentLogs" :meta="currentLogsMeta" :loading="currentLogsLoading" :onPageChange="handleLogsPageChange" :isDark="isDark" :currentLang="currentLang" />
@@ -237,7 +239,7 @@ const handleModeChange = async (module, label) => {
 }
 
 // ── Trial Balance (live API) ───────────────────────────────────────────────
-const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoading: tbLoadingState, tbMeta, tbFilters, tbFilterOptions, applyFilters, fetchTrialBalance, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, tbLogs: tbLiveLogs, tbLogsMeta, tbLogsLoading, fetchLogs: fetchTbLogs } = useTrialBalance()
+const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoading: tbLoadingState, tbMeta, tbFilters, tbFilterOptions, applyFilters, fetchTrialBalance, fetchMappingOptions, fetchFilterOptions, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, tbLogs: tbLiveLogs, tbLogsMeta, tbLogsLoading, fetchLogs: fetchTbLogs } = useTrialBalance()
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()

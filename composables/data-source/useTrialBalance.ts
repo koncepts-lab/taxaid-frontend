@@ -1,4 +1,27 @@
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
+
+const storageKey = (name: string) => {
+  let userId: string | null = null
+  try {
+    userId = (useAuth().user.value as any)?.id ?? localStorage.getItem('auth_user_id')
+  } catch {}
+  return `${name}:${userId ?? 'anon'}`
+}
+
+const readSession = (name: string) => {
+  try {
+    const raw = sessionStorage.getItem(storageKey(name))
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
+
+const writeSession = (name: string, value: any) => {
+  try { sessionStorage.setItem(storageKey(name), JSON.stringify(value)) } catch {}
+}
+
+const clearSession = (name: string) => {
+  try { sessionStorage.removeItem(storageKey(name)) } catch {}
+}
 
 export function useTrialBalance() {
   const tbMappingData    = ref([])
@@ -32,11 +55,17 @@ export function useTrialBalance() {
   const fetchFilterOptions = async () => {
     try {
       const res = await useApi('/data-source/opening-balance/filter-options') as any
-      if (res?.success && res.data) tbFilterOptions.value = {
-        fs_code:     res.data.fs_code     ?? [],
-        main_group:  res.data.main_group  ?? [],
-        sub_group:   res.data.sub_group   ?? [],
-        ledger_name: res.data.ledger_name ?? [],
+      if (res?.success && res.data) {
+        tbFilterOptions.value = {
+          fs_code:     res.data.fs_code     ?? [],
+          main_group:  res.data.main_group  ?? [],
+          sub_group:   res.data.sub_group   ?? [],
+          ledger_name: res.data.ledger_name ?? [],
+        }
+        for (const col of Object.keys(tbFilters.value)) {
+          const valid = new Set(tbFilterOptions.value[col] ?? [])
+          tbFilters.value[col] = tbFilters.value[col].filter(v => valid.has(v))
+        }
       }
     } catch (e) { console.error('useTrialBalance: filter-options failed', e) }
   }
@@ -61,7 +90,7 @@ export function useTrialBalance() {
   }
 
   // Persists edits across page navigations, keyed by ledger_name
-  const pendingChanges = ref({})
+  const pendingChanges = ref(readSession('tb_pending_changes') ?? {})
 
   const saveCurrentPageEdits = () => {
     tbMappingData.value.forEach((row: any) => {
@@ -71,6 +100,26 @@ export function useTrialBalance() {
         subGroup:  row.subGroup,
       }
     })
+    writeSession('tb_pending_changes', pendingChanges.value)
+  }
+
+  watch(tbMappingData, () => saveCurrentPageEdits(), { deep: true })
+
+  const fetchMappingOptions = async () => {
+    try {
+      const res = await useApi('/ledgers/mapping-options') as any
+      if (res?.status === 'success' && res.data) {
+        const merge = (master: any[], harvested: any[]) =>
+          [...new Set([...(master ?? []), ...(harvested ?? [])])]
+        const harvest = (key: string) =>
+          [...new Set(tbMappingData.value.map((r: any) => r[key]).filter(Boolean))]
+        tbMappingOptions.value = {
+          fsCodes:    merge(res.data.fs_codes,    harvest('fsCode')),
+          mainGroups: merge(res.data.main_groups, harvest('mainGroup')),
+          subGroups:  merge(res.data.sub_groups,  harvest('subGroup')),
+        }
+      }
+    } catch (e) { console.error('useTrialBalance: mapping-options refresh failed', e) }
   }
 
   const fetchTrialBalance = async (page?: number, perPage?: number) => {
@@ -79,6 +128,10 @@ export function useTrialBalance() {
 
     if (page    !== undefined) tbPage.value    = page
     if (perPage !== undefined) tbPerPage.value = perPage
+
+    writeSession('tb_mapping_state', {
+      page: tbPage.value, perPage: tbPerPage.value, filters: tbFilters.value,
+    })
 
     tbLoading.value = true
     tbError.value   = null
@@ -177,6 +230,7 @@ export function useTrialBalance() {
       await useApi('/ledgers/update-mapping', { method: 'POST', body: { mappings } })
       // Clear pending after successful save
       pendingChanges.value = {}
+      clearSession('tb_pending_changes')
       // Refetch current page to update mapped/unmapped counts; refresh the
       // filter option lists too — a save can introduce new group values
       // (stale lists would orphan the new values from the filters).
@@ -275,7 +329,15 @@ export function useTrialBalance() {
     finally { tbLogsLoading.value = false }
   }
 
-  onMounted(() => { fetchTrialBalance(); fetchLogs(); fetchFilterOptions() })
+  onMounted(() => {
+    const cached = readSession('tb_mapping_state')
+    if (cached) {
+      if (cached.page)    tbPage.value    = cached.page
+      if (cached.perPage) tbPerPage.value = cached.perPage
+      if (cached.filters) tbFilters.value = { ...tbFilters.value, ...cached.filters }
+    }
+    fetchTrialBalance(); fetchLogs(); fetchFilterOptions()
+  })
 
   return {
     tbMappingData,
@@ -292,6 +354,7 @@ export function useTrialBalance() {
     applyFilters,
     fetchFilterOptions,
     fetchTrialBalance,
+    fetchMappingOptions,
     updateTrialBalance,
     updateConfigSettings,
     configLocked,
