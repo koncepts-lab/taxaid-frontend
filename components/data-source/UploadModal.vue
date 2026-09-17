@@ -83,7 +83,9 @@
                 </div>
 
                 <!-- Footer Buttons -->
-                <div class="flex items-center justify-end gap-3 p-6 pt-2">
+                <div class="flex items-center justify-between gap-3 p-6 pt-2">
+                    <slot name="footer-extra" />
+                    <div class="flex items-center gap-3 ms-auto">
                     <button @click="closeModal"
                         class="px-8 py-2.5 border border-gray-200 text-gray-600 rounded-xl font-medium hover:bg-gray-50 transition-all">
                         {{ currentLang === 'ar' ? 'إلغاء' : 'Cancel' }}
@@ -92,6 +94,7 @@
                         class="px-10 py-2.5 bg-[#008169] text-white rounded-xl font-medium hover:bg-[#006b56] transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                         {{ currentLang === 'ar' ? 'رفع' : 'Upload' }}
                     </button>
+                    </div>
                 </div>
             </div>
         </div>

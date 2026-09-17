@@ -190,7 +190,28 @@
                 :tbFilterOptions="tbFilterOptions"
                 :onApplyFilter="(col, values) => applyFilters(col, values)"
                 :onRefreshOptions="() => fetchMappingOptions()"
-                :onRefreshFilterOptions="() => fetchFilterOptions()" />
+                :onRefreshFilterOptions="() => fetchFilterOptions()"
+                :onOpenImport="() => (importOpen = true)" />
+              <DataSourceUploadModal
+                :is-open="importOpen && !importHasFile"
+                :current-lang="currentLang"
+                title="Upload Trial Balance Mapping"
+                accept=".xlsx"
+                @close="() => { if (!importUploading && !importHasFile) importOpen = false }"
+                @upload="(file) => uploadMappingFile(file)">
+                <template #footer-extra>
+                  <button @click="downloadMappingTemplate()"
+                    class="px-6 py-2.5 bg-[#00896F] hover:bg-[#00705a] text-white rounded-xl text-sm font-medium transition-all active:scale-95 shadow-sm">
+                    {{ currentLang === 'ar' ? 'تنزيل نموذج' : 'Download template' }}
+                  </button>
+                </template>
+              </DataSourceUploadModal>
+              <DataSourceTbMappingImportModal v-if="importOpen && importHasFile"
+                :isDark="isDark" :currentLang="currentLang"
+                :loading="importLoading" :error="importError" :variance="importVariance" :rows="importRows"
+                :onConfirm="() => confirmMappingImport()"
+                :onCancel="() => cancelMappingImport()"
+                :onReverify="() => previewMappingImport()" />
               <DataSourceChangeLog
                 v-if="activeSubTab === 'accounts-receivable' || activeSubTab === 'accounts-payable' || activeSubTab === 'pdc' || activeSubTab === 'cost-center' || activeSubTab === 'budget' || activeSubTab === 'sales-forecast' || activeSubTab === 'trial-balance'"
                 :logs="currentLogs" :meta="currentLogsMeta" :loading="currentLogsLoading" :onPageChange="handleLogsPageChange" :isDark="isDark" :currentLang="currentLang" />
@@ -239,7 +260,7 @@ const handleModeChange = async (module, label) => {
 }
 
 // ── Trial Balance (live API) ───────────────────────────────────────────────
-const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoading: tbLoadingState, tbMeta, tbFilters, tbFilterOptions, applyFilters, fetchTrialBalance, fetchMappingOptions, fetchFilterOptions, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, tbLogs: tbLiveLogs, tbLogsMeta, tbLogsLoading, fetchLogs: fetchTbLogs } = useTrialBalance()
+const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoading: tbLoadingState, tbMeta, tbFilters, tbFilterOptions, applyFilters, fetchTrialBalance, fetchMappingOptions, fetchFilterOptions, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, tbLogs: tbLiveLogs, tbLogsMeta, tbLogsLoading, fetchLogs: fetchTbLogs, importOpen, importHasFile, importUploading, importLoading, importError, importVariance, importRows, uploadMappingFile, previewMappingImport, confirmMappingImport, cancelMappingImport, downloadMappingTemplate } = useTrialBalance()
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()

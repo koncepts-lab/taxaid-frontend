@@ -89,15 +89,26 @@ export function useTrialBalance() {
     await fetchTrialBalance(1, tbPerPage.value)
   }
 
-  // Persists edits across page navigations, keyed by ledger_name
+  // Persists edits across page navigations, keyed by ledger_name — only rows that actually changed.
   const pendingChanges = ref(readSession('tb_pending_changes') ?? {})
+  const originalValues = ref<Record<string, { fsCode: string; mainGroup: string; subGroup: string }>>({})
 
   const saveCurrentPageEdits = () => {
     tbMappingData.value.forEach((row: any) => {
-      pendingChanges.value[row.ledger] = {
-        fsCode:    row.fsCode,
-        mainGroup: row.mainGroup,
-        subGroup:  row.subGroup,
+      const original = originalValues.value[row.ledger]
+      const isDirty = !original
+        || original.fsCode !== row.fsCode
+        || original.mainGroup !== row.mainGroup
+        || original.subGroup !== row.subGroup
+
+      if (isDirty) {
+        pendingChanges.value[row.ledger] = {
+          fsCode:    row.fsCode,
+          mainGroup: row.mainGroup,
+          subGroup:  row.subGroup,
+        }
+      } else {
+        delete pendingChanges.value[row.ledger]
       }
     })
     writeSession('tb_pending_changes', pendingChanges.value)
@@ -145,6 +156,14 @@ export function useTrialBalance() {
     if (mappingResult.status === 'fulfilled') {
       const res: any = mappingResult.value
       if (res?.success && Array.isArray(res.data)) {
+        res.data.forEach((r: any) => {
+          originalValues.value[r.ledger_name] = {
+            fsCode:    r.fs_code    ?? '',
+            mainGroup: r.main_group ?? '',
+            subGroup:  r.subgroup   ?? '',
+          }
+        })
+
         tbMappingData.value = res.data.map((r: any) => {
           // Merge with any pending (unsaved) edits for this ledger
           const pending = (pendingChanges.value as any)[r.ledger_name]
@@ -221,16 +240,26 @@ export function useTrialBalance() {
     tbSaving.value = true
     tbError.value  = null
     try {
-      const mappings = Object.entries(pendingChanges.value).map(([ledger_name, data]: [string, any]) => ({
-        ledger_name,
-        fs_code:    data.fsCode,
-        main_group: data.mainGroup,
-        sub_group:  data.subGroup,
-      }))
-      await useApi('/ledgers/update-mapping', { method: 'POST', body: { mappings } })
-      // Clear pending after successful save
-      pendingChanges.value = {}
-      clearSession('tb_pending_changes')
+      const mappings = Object.entries(pendingChanges.value)
+        .filter(([, data]: [string, any]) => data.fsCode && data.mainGroup && data.subGroup)
+        .map(([ledger_name, data]: [string, any]) => ({
+          ledger_name,
+          fs_code:    data.fsCode,
+          main_group: data.mainGroup,
+          sub_group:  data.subGroup,
+        }))
+      const res: any = await useApi('/ledgers/update-mapping', { method: 'POST', body: { mappings } })
+
+      // Only clear rows the backend actually saved — rejected ones stay pending.
+      const saved: string[] = res?.saved ?? mappings.map(m => m.ledger_name)
+      saved.forEach(name => delete pendingChanges.value[name])
+      writeSession('tb_pending_changes', pendingChanges.value)
+
+      if (Array.isArray(res?.rejected) && res.rejected.length) {
+        tbError.value = `${res.rejected.length} row(s) not saved — unrecognized value(s): `
+          + res.rejected.map((r: any) => `${r.ledger_name} (${r.reasons.join(', ')})`).join('; ')
+      }
+
       // Refetch current page to update mapped/unmapped counts; refresh the
       // filter option lists too — a save can introduce new group values
       // (stale lists would orphan the new values from the filters).
@@ -239,11 +268,7 @@ export function useTrialBalance() {
         fetchFilterOptions(),
       ])
     } catch (e: any) {
-      // 422 from the backend lists mapping values missing from the GL master
-      // list (ask a manager to add them) — show the exact values.
-      const unknown = e?.data?.unknown_values
-      tbError.value = (e?.data?.message ?? e?.message ?? 'Failed to save mapping')
-        + (Array.isArray(unknown) && unknown.length ? ` (${unknown.join(', ')})` : '')
+      tbError.value = e?.data?.message ?? e?.message ?? 'Failed to save mapping'
       throw e
     } finally {
       tbSaving.value = false
@@ -266,6 +291,119 @@ export function useTrialBalance() {
   const unlockConfigSettings = async () => {
     await useApi('/configuration-settings/unlock', { method: 'POST' })
     await fetchTrialBalance(tbPage.value, tbPerPage.value)
+  }
+
+  const IMPORT_MAX_BYTES = 10 * 1024 * 1024
+  const IMPORT_CONTENT_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+  const importOpen     = ref(false)
+  const importUploading = ref(false)
+  const importLoading   = ref(false)
+  const importError     = ref<string | null>(null)
+  const importVariance  = ref({ fs_code: [] as string[], main_group: [] as string[], sub_group: [] as string[] })
+  const importRows      = ref<any[]>([])
+  const importHasFile   = ref(false)
+
+  const putWithProgress = (url: string, file: File) => new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('PUT', url)
+    xhr.setRequestHeader('Content-Type', IMPORT_CONTENT_TYPE)
+    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error(`Upload failed (${xhr.status})`))
+    xhr.onerror = () => reject(new Error('Upload failed'))
+    xhr.send(file)
+  })
+
+  const validateImportFile = (file: File): string | null => {
+    if (!file.name.toLowerCase().endsWith('.xlsx')) return 'Only .xlsx files are supported.'
+    if (file.size > IMPORT_MAX_BYTES) return 'File exceeds the 10MB size limit.'
+    return null
+  }
+
+  const uploadMappingFile = async (file: File) => {
+    importUploading.value = true
+    importError.value = null
+
+    const clientError = validateImportFile(file)
+    if (clientError) { importError.value = clientError; importUploading.value = false; return }
+
+    // Switch to the preview modal immediately — no gap during upload.
+    importHasFile.value = true
+    importLoading.value = true
+
+    try {
+      const { upload_url }: any = await useApi('/ledgers/mapping-import', { method: 'POST', body: { action: 'upload_url' } })
+      await putWithProgress(upload_url, file)
+      await previewMappingImport()
+    } catch (e: any) {
+      importError.value = e?.data?.message ?? e?.message ?? 'Upload failed'
+      // Couldn't even get a file onto the bucket — fall back to the upload picker.
+      importHasFile.value = false
+      importLoading.value = false
+    } finally {
+      importUploading.value = false
+    }
+  }
+
+  const previewMappingImport = async () => {
+    importLoading.value = true
+    importError.value = null
+    try {
+      const res: any = await useApi('/ledgers/mapping-import', { method: 'POST', body: { action: 'preview' } })
+      importVariance.value = res.variance
+      importRows.value = res.rows
+    } catch (e: any) {
+      importError.value = e?.data?.message ?? e?.message ?? 'Preview failed'
+    } finally {
+      importLoading.value = false
+    }
+  }
+
+  const confirmMappingImport = async () => {
+    importLoading.value = true
+    importError.value = null
+    try {
+      await useApi('/ledgers/mapping-import', { method: 'POST', body: { action: 'confirm' } })
+      importOpen.value = false
+      importHasFile.value = false
+      importRows.value = []
+      await Promise.all([
+        fetchTrialBalance(tbPage.value, tbPerPage.value),
+        fetchFilterOptions(),
+        fetchMappingOptions(),
+      ])
+    } catch (e: any) {
+      importError.value = e?.data?.message ?? e?.message ?? 'Import failed'
+      throw e
+    } finally {
+      importLoading.value = false
+    }
+  }
+
+  const cancelMappingImport = () => {
+    useApi('/ledgers/mapping-import', { method: 'POST', body: { action: 'cancel' } }).catch(() => {})
+    importOpen.value = false
+    importHasFile.value = false
+    importRows.value = []
+    importVariance.value = { fs_code: [], main_group: [], sub_group: [] }
+    importError.value = null
+  }
+
+  const downloadMappingTemplate = async () => {
+    const config = useRuntimeConfig()
+    const token  = useCookie('auth_token')
+    const res = await fetch(`${config.public.apiBase}/ledgers/mapping-import/template`, {
+      headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
+    })
+    if (!res.ok) throw new Error('Failed to download template')
+    const blob      = await res.blob()
+    const objectUrl = URL.createObjectURL(blob)
+    const anchor    = document.createElement('a')
+    anchor.href     = objectUrl
+    anchor.download = 'Trial_Balance_Mapping_Template.xlsx'
+    document.body.appendChild(anchor)
+    anchor.click()
+    document.body.removeChild(anchor)
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
   }
 
   // Integrity Check — POST /data-source/trial-balance/verify (DB-based checks)
@@ -368,5 +506,17 @@ export function useTrialBalance() {
     tbLogsLoading,
     tbLogsMeta,
     fetchLogs,
+    importOpen,
+    importUploading,
+    importLoading,
+    importError,
+    importVariance,
+    importRows,
+    importHasFile,
+    uploadMappingFile,
+    previewMappingImport,
+    confirmMappingImport,
+    cancelMappingImport,
+    downloadMappingTemplate,
   }
 }
