@@ -225,7 +225,7 @@ import { ref, reactive, watch, onMounted } from 'vue'
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { getMailSettings, saveMailSettings: saveMailSettingsApi, testMailSettings } = useOrganizationSettings()
+const { getMailSettings, saveMailSettings: saveMailSettingsApi, testMailSettings } = useCompanySettings()
 
 const mailSettings = ref(null)
 const availableDepartments = ref([])

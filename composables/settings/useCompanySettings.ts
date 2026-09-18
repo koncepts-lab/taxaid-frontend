@@ -12,19 +12,19 @@ export interface TenantMailSettings {
   verified_at?: string | null
 }
 
-export function useOrganizationSettings() {
+export function useCompanySettings() {
   const getAiAlertGroups = (domain?: string) =>
-    useApi(`/user/organization-settings/ai-alerts${domain ? `?domain=${encodeURIComponent(domain)}` : ''}`)
+    useApi(`/user/company-settings/ai-alerts${domain ? `?domain=${encodeURIComponent(domain)}` : ''}`)
 
   const updateGroup = (groupId: number, body: {
     is_enabled?: boolean
     email_enabled?: boolean
     notification_frequency?: string
     notification_day?: number | null
-  }) => useApi(`/user/organization-settings/ai-alerts/${groupId}`, { method: 'PUT', body })
+  }) => useApi(`/user/company-settings/ai-alerts/${groupId}`, { method: 'PUT', body })
 
   const updateRole = (groupId: number, role: string, isEnabled: boolean) =>
-    useApi(`/user/organization-settings/ai-alerts/${groupId}/roles/${role}`, { method: 'PUT', body: { is_enabled: isEnabled } })
+    useApi(`/user/company-settings/ai-alerts/${groupId}/roles/${role}`, { method: 'PUT', body: { is_enabled: isEnabled } })
 
   const getMailSettings = () => useApi('/configuration-settings/mail')
 

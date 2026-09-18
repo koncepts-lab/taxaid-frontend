@@ -19,8 +19,11 @@ export const useApi = async (url: string, options: any = {}) => {
       },
       onResponseError({ response }) {
         if (response.status === 401) {
-          // Token expired or invalid
-          token.value = null // Clear the bad token
+          token.value = null
+          useCookie('tenant_status').value = null
+          useCookie('account_type').value = null
+          useCookie('is_primary').value = null
+          useCookie('currency').value = null
           navigateTo('/home') // Send them back to login
         }
       }

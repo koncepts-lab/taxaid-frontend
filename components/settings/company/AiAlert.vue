@@ -125,7 +125,7 @@ const props = defineProps({
   showRoles: { type: Boolean, default: true },
 })
 
-const { getAiAlertGroups: getAdminGroups, updateGroup, updateRole } = useOrganizationSettings()
+const { getAiAlertGroups: getAdminGroups, updateGroup, updateRole } = useCompanySettings()
 const { getAiAlertGroups: getUserGroups, updatePersonalAiAlertGroup } = useNotificationSettings()
 const getAiAlertGroups = props.personal ? getUserGroups : getAdminGroups
 

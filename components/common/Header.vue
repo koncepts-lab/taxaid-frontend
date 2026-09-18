@@ -468,19 +468,19 @@ const { logout, user } = useAuth()//logout Logic
 const onLogoutClick = () => {
   logout()
 }
-// TODO: temporary — once real role management ships, org-settings access is purely role-based
+// TODO: temporary — once real role management ships, company-settings access is purely role-based
 // and the is_primary cookie/check won't be needed at all. Matches the temporary backend gate on
-// OrganizationSettingsController::authorizeAccess(). Reads the is_primary cookie (set at login)
+// TenantSettingController::authorizeAccess(). Reads the is_primary cookie (set at login)
 // instead of user.value so this doesn't depend on user.value ever being populated.
 const isPrimaryCookie = useCookie('is_primary')
-const canSeeOrganizationSettings = computed(() =>
+const canSeeCompanySettings = computed(() =>
   isPrimaryCookie.value === '1' || ['master_user', 'client_user'].includes(user.value?.role)
 )
 const settingsItems = computed(() => [
   { label: 'Subscription Management', labelAr: 'إدارة الاشتراك', icon: '/images/icons/Subscription-Management.svg', to: '/settings/subscription' },
   { label: 'Support', labelAr: 'الدعم', icon: '/images/icons/Support.svg', to: '/settings/support' },
   { label: 'Notification Preferences', labelAr: 'تفضيلات الإشعارات', icon: '/images/icons/Notification-Preferences.svg', to: '/settings/notifications' },
-  ...(canSeeOrganizationSettings.value ? [{ label: 'Company Settings', labelAr: 'إعدادات الشركة', icon: '/images/icons/Organization-Settings.svg', to: '/settings/organization-settings' }] : []),
+  ...(canSeeCompanySettings.value ? [{ label: 'Company Settings', labelAr: 'إعدادات الشركة', icon: '/images/icons/Organization-Settings.svg', to: '/settings/company-settings' }] : []),
   { label: 'Security & Privacy', labelAr: 'الأمن والخصوصية', icon: '/images/icons/Security-Privacy.svg', to: '/settings/security' },
   { label: 'Sync & Data Management', labelAr: 'المزامنة وإدارة البيانات', icon: '/images/icons/Sync-Data-Management.svg', to: '/settings/sync-and-data-management' },
 ])
