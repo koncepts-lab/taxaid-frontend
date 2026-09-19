@@ -1,4 +1,4 @@
-export default defineNuxtRouteMiddleware((to) => {
+export default defineNuxtRouteMiddleware(async (to) => {
   const authToken  = useCookie('auth_token')
   const adminToken = useCookie('admin_token')
   const rpToken    = useCookie('rp_token')
@@ -92,4 +92,40 @@ export default defineNuxtRouteMiddleware((to) => {
   if (to.path !== '/onboarding' && tenantStatus.value && tenantStatus.value !== 'live' && tenantStatus.value !== 'demo') {
     return navigateTo('/onboarding')
   }
+
+  const permissionsCookie = useCookie('permissions')
+  if (!permissionsCookie.value) {
+    try {
+      const me: any = await useApi('/me')
+      if (me?.data?.permissions) permissionsCookie.value = JSON.stringify(me.data.permissions)
+    } catch {}
+  }
+
+  const { permissions, hasPermissions } = usePermissions()
+  if (!hasPermissions.value) return
+
+  const routeKeys: [string, string][] = [
+    ['/data-source/manual-addition', 'data_source.manual_addition'],
+    ['/data-source', 'data_source.access'],
+    ['/accounts-receivable', 'cards.accounts_receivable'],
+    ['/accounts-payable', 'cards.accounts_payable'],
+    ['/cogs', 'cards.cogs'],
+    ['/revenue', 'cards.revenue'],
+    ['/indirect-expense', 'cards.indirect_expense'],
+    ['/cost-center', 'cards.cost_center'],
+    ['/financial-statement', 'cards.financials'],
+    ['/cash-flow', 'cards.cash_flow'],
+    ['/tax-queries', 'cards.tax_queries'],
+    ['/one-click-summary', 'cards.one_click_summary'],
+    ['/alerts', 'alerts.access'],
+    ['/chat-with-akeel', 'alerts.access'],
+    ['/appointment', 'appointments.view'],
+    ['/settings/company-settings', 'company_settings.access'],
+    ['/settings/subscription', 'settings.subscription'],
+    ['/settings/checkout', 'settings.subscription'],
+    ['/settings/sync-and-data-management', 'settings.sync_data_management'],
+    ['/settings/notifications', 'settings.notifications'],
+  ]
+  const match = routeKeys.find(([prefix]) => to.path === prefix || to.path.startsWith(prefix + '/'))
+  if (match && permissions.value[match[1]] !== true) return navigateTo('/dashboard')
 })

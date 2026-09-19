@@ -1,6 +1,7 @@
 <template>
+    <DataSourceInternalEmailDirectory v-if="type === 'internal-email'" :isDark="isDark" :currentLang="currentLang" />
     <!-- Main Container: Logic for RTL and Dark Mode -->
-    <div :dir="currentLang === 'ar' ? 'rtl' : 'ltr'"
+    <div v-else :dir="currentLang === 'ar' ? 'rtl' : 'ltr'"
         class="p-6 space-y-6 rounded-2xl transition-all duration-300 min-h-screen"
         :class="isDark ? 'bg-[#015F4D]/20 border border-[#00B794]/30 text-white' : 'bg-white text-black'">
 

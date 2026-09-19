@@ -60,52 +60,27 @@
       </div>
 
       <!-- Status banner -->
-      <Transition name="fade">
+      <div class="min-h-[48px]"><Transition name="fade">
         <div v-if="mailStatus.message" class="p-3.5 rounded-xl text-sm border font-medium flex items-center gap-2"
           :class="mailStatus.type === 'success'
-            ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-300'
-            : 'bg-red-50 dark:bg-red-950/20 border-red-100 dark:border-red-900/50 text-red-800 dark:text-red-300'">
+            ? (isDark ? 'bg-emerald-950/60 border-emerald-800/60 text-emerald-200' : 'bg-emerald-50 border-emerald-200 text-emerald-800')
+            : (isDark ? 'bg-red-950/60 border-red-800/60 text-red-200' : 'bg-red-50 border-red-200 text-red-800')">
           <span>{{ mailStatus.message }}</span>
         </div>
-      </Transition>
+      </Transition></div>
 
-      <!-- Internal mail recipients (departments from the Internal Email Directory) -->
-      <div class="flex flex-col gap-1.5 pt-2 border-t" :class="isDark ? 'border-teal-950/60' : 'border-[#EAF7F3]'">
-        <label class="block text-[14px] mb-1" :class="isDark ? 'text-white/80' : 'text-[#013E32]/80'">
-          {{ currentLang === 'ar' ? 'إرسال البريد الداخلي إلى الأقسام' : 'Send internal mails to departments' }}
-        </label>
-        <p class="text-[12px] mb-2" :class="isDark ? 'text-white/50' : 'text-black/40'">
-          {{ currentLang === 'ar'
-            ? 'بدون تحديد = يُرسل إلى جميع عناوين البريد الداخلي'
-            : 'Nothing ticked = sent to ALL internal email directory entries' }}
-        </p>
-        <div v-if="mailLoading" class="flex flex-wrap gap-3">
-          <span v-for="i in 3" :key="i" class="h-[38px] w-24 rounded-lg animate-pulse"
-            :class="isDark ? 'bg-teal-950/60' : 'bg-gray-100'"></span>
+      <!-- Internal mailing card -->
+      <div class="rounded-xl border p-5 flex flex-col gap-4 min-h-[380px]" :class="isDark ? 'border-teal-900 bg-teal-950/20' : 'border-[#D6F3EA] bg-[#FBFFFD]'">
+        <SettingsCompanyMailRecipientsPicker v-model:mode="recipientMode" v-model:roles="selRoles" v-model:depts="selDepts"
+          :lang="currentLang" :dark="isDark" :loading="mailLoading" />
+        <div class="mt-auto flex justify-end">
+          <button type="button" @click="handleSaveDepartments" :disabled="mailSaving || !mailSettings"
+            class="transition-all transform active:scale-95 font-normal disabled:opacity-50 disabled:cursor-not-allowed px-5"
+            :style="{ backgroundColor: '#009276', fontSize: '14px', height: '40px', borderRadius: '8px', color: '#FFFFFF' }">
+            {{ mailSaving ? '...' : (currentLang === 'ar' ? 'حفظ المستلمين' : 'Save Recipients') }}
+          </button>
         </div>
-        <div v-else-if="availableDepartments.length" class="flex flex-wrap gap-3">
-          <label v-for="d in availableDepartments" :key="d"
-            class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-all"
-            :class="mailForm.internal_departments.includes(d)
-              ? (isDark ? 'border-[#00B68D] bg-teal-950/60 text-white' : 'border-[#00896F] bg-[#E6FFF9] text-[#013E32]')
-              : (isDark ? 'border-teal-900 text-white/70' : 'border-[#A2E8D6] text-gray-600')">
-            <input type="checkbox" :value="d" v-model="mailForm.internal_departments" class="accent-[#009276]" />
-            {{ d }}
-          </label>
-        </div>
-        <p v-else class="text-[13px]" :class="isDark ? 'text-white/50' : 'text-black/40'">
-          {{ currentLang === 'ar'
-            ? 'لا توجد أقسام بعد — أضف موظفين في دليل البريد الداخلي (مصادر البيانات)'
-            : 'No departments yet — add employees in the Internal Email Directory (Data Source page)' }}
-        </p>
       </div>
-
-      <!-- Save departments (only when mailer is configured) -->
-      <button v-if="mailSettings" type="button" @click="handleSaveDepartments" :disabled="mailSaving"
-        class="mt-3 transition-all transform active:scale-95 font-normal disabled:opacity-50 px-5"
-        :style="{ backgroundColor: '#009276', fontSize: '14px', height: '40px', borderRadius: '8px', color: '#FFFFFF' }">
-        {{ mailSaving ? '...' : (currentLang === 'ar' ? 'حفظ الأقسام' : 'Save Departments') }}
-      </button>
     </div>
   </div>
 
@@ -165,6 +140,9 @@
                 <input type="text" v-model="mailForm.from_name" :placeholder="currentLang === 'ar' ? 'اسم شركتك' : 'Your Company Name'"
                   class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]" />
               </div>
+            </div>
+            <div class="pt-2 border-t border-gray-100">
+              <SettingsCompanyMailRecipientsPicker v-model:mode="recipientMode" v-model:roles="selRoles" v-model:depts="selDepts" :lang="currentLang" :dark="false" />
             </div>
             <p v-if="modalError" class="text-sm text-red-500">{{ modalError }}</p>
             <div class="flex gap-3 pt-2">
@@ -228,7 +206,9 @@ const currentLang = useState('currentLang', () => 'en')
 const { getMailSettings, saveMailSettings: saveMailSettingsApi, testMailSettings } = useCompanySettings()
 
 const mailSettings = ref(null)
-const availableDepartments = ref([])
+const recipientMode = ref('roles')
+const selRoles = ref([])
+const selDepts = ref([])
 const mailLoading = ref(true)
 const mailSaving = ref(false)
 const mailTesting = ref(false)
@@ -254,7 +234,10 @@ const syncMailForm = () => {
   mailForm.password = '' // never echoed back
   mailForm.from_address = s.from_address ?? ''
   mailForm.from_name = s.from_name ?? ''
-  mailForm.internal_departments = [...(s.internal_departments ?? [])]
+  const tokens = s.internal_departments ?? []
+  selRoles.value = tokens.filter((t) => t.startsWith('role:')).map((t) => t.slice(5))
+  selDepts.value = tokens.filter((t) => !t.startsWith('role:')).map((t) => (t.startsWith('dept:') ? t.slice(5) : t)).filter((t) => DEPARTMENTS.some((d) => d.key === t))
+  recipientMode.value = selRoles.value.length || !selDepts.value.length ? 'roles' : 'departments'
 }
 watch(mailSettings, syncMailForm)
 
@@ -263,10 +246,8 @@ const fetchMailSettings = async () => {
   try {
     const res = await getMailSettings()
     mailSettings.value = res?.data ?? null
-    availableDepartments.value = res?.available_departments ?? []
   } catch {
     mailSettings.value = null
-    availableDepartments.value = []
   } finally {
     mailLoading.value = false
   }
@@ -289,6 +270,7 @@ const flashMailStatus = (type, message) => {
 
 const buildMailPayload = () => {
   const p = { ...mailForm, port: Number(mailForm.port) }
+  p.internal_departments = recipientMode.value === 'roles' ? selRoles.value.map((r) => `role:${r}`) : selDepts.value.map((d) => `dept:${d}`)
   if (!p.password) delete p.password // blank = keep existing (backend allows on update)
   return p
 }

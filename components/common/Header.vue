@@ -60,7 +60,7 @@
       </NuxtLink>
     </div>
 
-    <div class="hidden lg:flex items-center p-1.5 rounded-full transition-all duration-300"
+    <div v-if="!singleTab" class="hidden lg:flex items-center p-1.5 rounded-full transition-all duration-300"
       :class="isDark ? 'bg-[#015F4D] text-white' : ''"
       :style="isDark ? {} : { background: 'linear-gradient(271.49deg, rgba(164, 227, 214, 0.485) 30.96%, rgba(109, 216, 193, 0.5) 109.26%)', boxShadow: '0px 4px 4px 0px #D0F7EF80' }">
       <NuxtLink to="/dashboard" class="header-nav-link px-8 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/dashboard')
@@ -68,17 +68,17 @@
         : (isDark ? 'text-white hover:text-white/80' : 'text-black hover:text-black')">
         {{ currentLang === 'ar' ? 'لوحة القيادة' : 'Dashboard' }}
       </NuxtLink>
-      <NuxtLink to="/data-source" class="header-nav-link px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/data-source')
+      <NuxtLink v-if="hasDataSourceEntry" to="/data-source" class="header-nav-link px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/data-source')
         ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
         : (isDark ? 'text-white hover:text-white/80' : 'text-black hover:text-black')">
         {{ currentLang === 'ar' ? 'مصدر البيانات' : 'Data Source' }}
       </NuxtLink>
-      <NuxtLink to="/alerts" class="header-nav-link px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/alerts')
+      <NuxtLink v-if="can('alerts.access')" to="/alerts" class="header-nav-link px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/alerts')
         ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
         : (isDark ? 'text-white hover:text-white/80' : 'text-black hover:text-black')">
         {{ currentLang === 'ar' ? 'التنبيهات' : 'Alerts' }}
       </NuxtLink>
-      <NuxtLink to="/appointment" class="header-nav-link px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/appointment')
+      <NuxtLink v-if="can('appointments.view')" to="/appointment" class="header-nav-link px-7 py-2.5 rounded-full font-regular transition-all text-[16px]" :class="$route.path.startsWith('/appointment')
         ? (isDark ? 'bg-white text-black shadow-none' : 'bg-white text-black shadow-sm')
         : (isDark ? 'text-white hover:text-white/80' : 'text-black hover:text-black')">
         {{ currentLang === 'ar' ? 'المواعيد' : 'Appointment' }}
@@ -86,13 +86,20 @@
     </div>
 
     <div class="flex items-center gap-2 md:gap-7">
+      <div v-if="singleTab" class="hidden lg:flex items-center p-1 rounded-full transition-all duration-300"
+        :class="isDark ? 'bg-[#015F4D] text-white' : ''"
+        :style="isDark ? {} : { background: 'linear-gradient(271.49deg, rgba(164, 227, 214, 0.485) 30.96%, rgba(109, 216, 193, 0.5) 109.26%)', boxShadow: '0px 4px 4px 0px #D0F7EF80' }">
+        <NuxtLink to="/dashboard" class="header-nav-link px-6 py-2 rounded-full font-regular text-[15px] bg-white text-black" :class="isDark ? 'shadow-none' : 'shadow-sm'">
+          {{ currentLang === 'ar' ? 'لوحة القيادة' : 'Dashboard' }}
+        </NuxtLink>
+      </div>
       <div class="hidden md:block">
         <CommonTooltip :text="currentLang === 'ar' ? 'تبديل اللغة' : 'Switch Language'">
           <LanguageToggle v-model="currentLang" />
         </CommonTooltip>
       </div>
 
-      <div class="group relative block">
+      <div v-if="can('cards.one_click_summary')" class="group relative block">
         <CommonTooltip :text="currentLang === 'ar' ? 'ملخص بنقرة واحدة' : 'One Click Summary'">
           <button @click="navigateTo('/one-click-summary')"
             class="header-trigger-btn action-btn flash-btn w-9 h-9 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all duration-300"
@@ -468,14 +475,15 @@ const { logout, user } = useAuth()//logout Logic
 const onLogoutClick = () => {
   logout()
 }
-// TODO: temporary — once real role management ships, company-settings access is purely role-based
-// and the is_primary cookie/check won't be needed at all. Matches the temporary backend gate on
-// TenantSettingController::authorizeAccess(). Reads the is_primary cookie (set at login)
-// instead of user.value so this doesn't depend on user.value ever being populated.
-const isPrimaryCookie = useCookie('is_primary')
-const canSeeCompanySettings = computed(() =>
-  isPrimaryCookie.value === '1' || ['master_user', 'client_user'].includes(user.value?.role)
-)
+const { can, hasDataSourceEntry } = usePermissions()
+const singleTab = computed(() => !hasDataSourceEntry.value && !can('alerts.access') && !can('appointments.view'))
+const canSeeCompanySettings = computed(() => can('company_settings.access'))
+const settingsPermissions = {
+  '/settings/subscription': 'settings.subscription',
+  '/settings/notifications': 'settings.notifications',
+  '/settings/company-settings': 'company_settings.access',
+  '/settings/sync-and-data-management': 'settings.sync_data_management',
+}
 const settingsItems = computed(() => [
   { label: 'Subscription Management', labelAr: 'إدارة الاشتراك', icon: '/images/icons/Subscription-Management.svg', to: '/settings/subscription' },
   { label: 'Support', labelAr: 'الدعم', icon: '/images/icons/Support.svg', to: '/settings/support' },
@@ -483,7 +491,7 @@ const settingsItems = computed(() => [
   ...(canSeeCompanySettings.value ? [{ label: 'Company Settings', labelAr: 'إعدادات الشركة', icon: '/images/icons/Organization-Settings.svg', to: '/settings/company-settings' }] : []),
   { label: 'Security & Privacy', labelAr: 'الأمن والخصوصية', icon: '/images/icons/Security-Privacy.svg', to: '/settings/security' },
   { label: 'Sync & Data Management', labelAr: 'المزامنة وإدارة البيانات', icon: '/images/icons/Sync-Data-Management.svg', to: '/settings/sync-and-data-management' },
-])
+].filter(item => !settingsPermissions[item.to] || can(settingsPermissions[item.to])))
 const companies = ref([
   { id: 1, name: 'MasterLine Mechanical LLC', logo: '/images/avatar-company.png', selected: true },
   { id: 2, name: 'NovaTech Industries Pvt Ltd', logo: '/images/icons/novatech.svg', selected: false },
@@ -493,7 +501,7 @@ const toggleCompany = (id) => {
   const company = companies.value.find(c => c.id === id)
   if (company) company.selected = !company.selected
 }
-const navItems = [
+const allNavItems = [
   {
     label: 'One Click Summary',
     labelAr: 'ملخص بنقرة واحدة',
@@ -587,6 +595,21 @@ const navItems = [
     activeIcon: '/images/icons/settings-dark.svg'
   },
 ]
+const navPermissions = {
+  '/one-click-summary': 'cards.one_click_summary',
+  '/revenue': 'cards.revenue',
+  '/cash-flow': 'cards.cash_flow',
+  '/financial-statement': 'cards.financials',
+  '/indirect-expense': 'cards.indirect_expense',
+  '/accounts-receivable': 'cards.accounts_receivable',
+  '/cogs': 'cards.cogs',
+  '/accounts-payable': 'cards.accounts_payable',
+  '/cost-center': 'cards.cost_center',
+  '/tax-queries': 'cards.tax_queries',
+  '/alerts': 'alerts.access',
+  '/appointment': 'appointments.view',
+}
+const navItems = computed(() => allNavItems.filter(item => !item.to || !navPermissions[item.to] || can(navPermissions[item.to])))
 
 const toggleAllCompanies = () => {
   companies.value.forEach(c => c.selected = true)

@@ -12,8 +12,13 @@
       <div class="space-y-6">
         <SettingsCompanyAiAlert />
         <SettingsCompanyMailSettings />
+        <SettingsOrganizationSettingsRolesManagementTeamManagement v-if="can('team.manage')" />
       </div>
 
     </div>
   </NuxtLayout>
 </template>
+
+<script setup>
+const { can } = usePermissions()
+</script>

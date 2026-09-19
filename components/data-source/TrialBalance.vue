@@ -12,7 +12,7 @@
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button v-if="userType === 'admin'" @click="handleRefreshOptions" :disabled="refreshingOptions"
+                    <button v-if="isAdminMode" @click="handleRefreshOptions" :disabled="refreshingOptions"
                         :title="currentLang === 'ar' ? 'تحديث قوائم الكود/المجموعة' : 'Refresh code/group option lists'"
                         class="p-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all active:scale-95 disabled:opacity-50"
                         :class="isDark ? 'border-white/15 text-white/70 hover:bg-white/5' : ''">
@@ -22,11 +22,11 @@
                             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
                         </svg>
                     </button>
-                    <button v-if="userType === 'admin'" @click="handleUpdate" :disabled="tbSaving"
+                    <button v-if="isAdminMode" @click="handleUpdate" :disabled="tbSaving"
                         class="px-8 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-xl font-normal transition-all active:scale-95 shadow-sm disabled:opacity-50">
                         {{ tbSaving ? '...' : (currentLang === 'ar' ? 'تحديث' : 'Update') }}
                     </button>
-                    <button v-if="userType === 'admin'" @click="onOpenImport && onOpenImport()"
+                    <button v-if="isAdminMode" @click="onOpenImport && onOpenImport()"
                         class="px-8 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-xl font-normal transition-all active:scale-95 shadow-sm">
                         {{ currentLang === 'ar' ? 'استيراد ملف Excel' : 'Upload Mapping' }}
                     </button>
@@ -48,7 +48,7 @@
                 <p class="text-xs text-red-600">{{ tbError }}</p>
             </div>
 
-            <div v-if="userType === 'admin'"
+            <div v-if="isAdminMode"
                 class="mx-6 mb-4 p-4 bg-[#FFFBEB] border border-[#FEF3C7] rounded-xl flex items-center gap-3">
                 <div class="w-4 h-4 rounded-full border border-[#B45309] flex items-center justify-center shrink-0">
                     <span class="text-[#B45309] text-[10px] font-bold">!</span>
@@ -129,7 +129,7 @@
                             <tr v-for="item in mappingData" :key="item.id"
                                 :class="item.fsCode && item.mainGroup && item.subGroup ? (isDark ? 'bg-[#00372d]' : 'bg-[#d6ffe2]') : 'bg-[#ffdbe0]'">
                                 <td class="p-2">
-                                    <CommonSelectDropdown v-if="userType === 'admin'" v-model="item.fsCode"
+                                    <CommonSelectDropdown v-if="isAdminMode" v-model="item.fsCode"
                                         :options="fsCodes" :highlights="HIGHLIGHT_FS_CODES" />
                                     <span v-else class="px-4 text-sm text-black flex items-center gap-1.5">
                                         <span v-if="isHighlighted('fs', item.fsCode)" class="w-2.5 h-2.5 rounded-full bg-[#04C18F] inline-block shrink-0"></span>
@@ -137,7 +137,7 @@
                                     </span>
                                 </td>
                                 <td class="p-2">
-                                    <CommonSelectDropdown v-if="userType === 'admin'" v-model="item.mainGroup" searchable
+                                    <CommonSelectDropdown v-if="isAdminMode" v-model="item.mainGroup" searchable
                                         :options="mainGroups" :highlights="HIGHLIGHT_MAIN_GROUPS" />
                                     <span v-else class="px-4 text-sm text-black flex items-center gap-1.5">
                                         <span v-if="isHighlighted('main', item.mainGroup)" class="w-2.5 h-2.5 rounded-full bg-[#04C18F] inline-block shrink-0"></span>
@@ -145,7 +145,7 @@
                                     </span>
                                 </td>
                                 <td class="p-2">
-                                    <CommonSelectDropdown v-if="userType === 'admin'" v-model="item.subGroup" searchable
+                                    <CommonSelectDropdown v-if="isAdminMode" v-model="item.subGroup" searchable
                                         :options="subGroups" :highlights="HIGHLIGHT_SUB_GROUPS" />
                                     <span v-else class="px-4 text-sm text-black flex items-center gap-1.5">
                                         <span v-if="isHighlighted('sub', item.subGroup)" class="w-2.5 h-2.5 rounded-full bg-[#04C18F] inline-block shrink-0"></span>
@@ -212,7 +212,7 @@
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-normal text-gray-800">Configuration Details</h3>
-                    <div v-if="userType === 'admin'" class="flex items-center gap-2">
+                    <div v-if="isAdminMode" class="flex items-center gap-2">
                         <!-- Saving locks the table backend-side; Lock Table = save & lock.
                              When locked, the same slot becomes Unlock (POST /configuration-settings/unlock). -->
                         <button v-if="!configLocked" @click="handleSaveConfig" :disabled="configSaving"
@@ -254,7 +254,7 @@
                             <tr v-for="(row, idx) in localConfigData" :key="idx">
                                 <td class="p-3 text-black text-sm">{{ row.label }}</td>
                                 <td class="p-3">
-                                    <div v-if="userType === 'admin' && !configLocked && !row.noFrom" class="relative">
+                                    <div v-if="isAdminMode && !configLocked && !row.noFrom" class="relative">
                                         <button :ref="el => setButtonRef(el, `${idx}-from`)" @click.stop="toggleCalendar(`${idx}-from`)"
                                             :class="['w-full flex items-center justify-between gap-2 px-2 py-1.5 border border-gray-200 rounded-lg text-sm transition-all', isDark ? 'bg-[#032e23]' : 'bg-gray-50 hover:bg-gray-100']">
                                             <span :class="row.from ? 'text-black' : 'text-gray-400'">
@@ -268,12 +268,12 @@
                                     <span v-else class="text-black text-sm">{{ displayDate(row.from) || '' }}</span>
                                 </td>
                                 <td class="p-3">
-                                    <input v-if="userType === 'admin' && !configLocked && row.isYear"
+                                    <input v-if="isAdminMode && !configLocked && row.isYear"
                                         :value="row.to"
                                         @input="row.to = String($event.target.value)"
                                         type="number" min="2000" max="2099" placeholder="e.g. 2022"
                                         class="w-full px-2 py-1 border border-gray-200 rounded-lg text-sm text-black focus:ring-1 focus:ring-[#00896F] outline-none bg-gray-50 placeholder-gray-400" />
-                                    <div v-else-if="userType === 'admin' && !configLocked" class="relative">
+                                    <div v-else-if="isAdminMode && !configLocked" class="relative">
                                         <button :ref="el => setButtonRef(el, `${idx}-to`)" @click.stop="toggleCalendar(`${idx}-to`)"
                                             :class="['w-full flex items-center justify-between gap-2 px-2 py-1.5 border border-gray-200 rounded-lg text-sm transition-all', isDark ? 'bg-[#032e23]' : 'bg-gray-50 hover:bg-gray-100']">
                                             <span :class="row.to ? 'text-black' : 'text-gray-400'">
@@ -290,7 +290,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div v-if="userType === 'admin'"
+                <div v-if="isAdminMode"
                     class="mt-4 p-3 bg-[#FFFBEB] rounded-xl flex items-center gap-2 border border-[#FEF3C7]">
                     <span class="text-[#894B00] mt-0.5">ⓘ</span>
                     <p class="text-[11px] text-[#894B00]">
@@ -304,7 +304,7 @@
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-normal text-black">Integrity Check</h3>
-                    <button v-if="userType === 'admin'" @click="handleRunCheck" :disabled="integrityLoading"
+                    <button v-if="isAdminMode" @click="handleRunCheck" :disabled="integrityLoading"
                         class="px-6 py-1.5 border border-[#00B793CC] text-[#00896F] bg-[#86E4CB1A] rounded-lg text-sm font-medium hover:bg-[#F0FDFA] transition-all disabled:opacity-50">
                         {{ integrityLoading ? 'Checking...' : 'Run Check' }}
                     </button>
@@ -584,6 +584,8 @@ const props = defineProps({
     onRefreshFilterOptions: { type: Function, default: null },
     onOpenImport:     { type: Function, default: null },
 })
+const { isTaxaid } = usePermissions()
+const isAdminMode = computed(() => props.userType === 'admin' && isTaxaid.value)
 
 const refreshingOptions = ref(false)
 const handleRefreshOptions = async () => {

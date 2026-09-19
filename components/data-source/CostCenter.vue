@@ -9,7 +9,7 @@
                     'Cost Center Details / Project-wise Reports' }}
             </h2>
 
-            <div class="flex bg-[#61FFD61A] p-1 rounded-xl border border-[#84D7C5]/30">
+            <div v-if="isTaxaid" class="flex bg-[#61FFD61A] p-1 rounded-xl border border-[#84D7C5]/30">
                 <button v-for="mode in ['Hybrid', 'Direct']" :key="mode" @click="$emit('change-mode', mode)"
                     class="px-4 py-1.5 rounded-lg text-sm transition-all duration-300"
                     :class="activeMode === mode ? 'bg-[#00B794] text-white shadow-sm' : 'text-black/80 '">
@@ -45,6 +45,7 @@
 </template>
 
 <script setup>
+const { isTaxaid } = usePermissions()
 import { ref, computed } from 'vue'
 
 const props = defineProps({

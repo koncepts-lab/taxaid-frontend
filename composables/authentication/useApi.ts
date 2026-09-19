@@ -1,4 +1,4 @@
-// composables/useApi.ts
+// composables/authentication/useApi.ts
 export const useApi = async (url: string, options: any = {}) => {
   const config = useRuntimeConfig()
   const token = useCookie('auth_token')
@@ -22,7 +22,7 @@ export const useApi = async (url: string, options: any = {}) => {
           token.value = null
           useCookie('tenant_status').value = null
           useCookie('account_type').value = null
-          useCookie('is_primary').value = null
+          useCookie('permissions').value = null
           useCookie('currency').value = null
           navigateTo('/home') // Send them back to login
         }

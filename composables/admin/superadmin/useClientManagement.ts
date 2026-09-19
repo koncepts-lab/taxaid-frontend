@@ -29,12 +29,38 @@ export function useClientManagement() {
   const setTenantStatus = (tenantId: number, status: 'live' | 'suspended') =>
     useAdminApi(`/admin/tenants/${tenantId}/status`, { method: 'PATCH', body: { status } })
 
-  const getTenantUsers = (tenantId: number) =>
-    useAdminApi(`/admin/tenants/${tenantId}/users`)
+  const getTenantUsers = (tenantId: number, params: { status?: string; role?: string; search?: string } = {}) => {
+    const query = Object.fromEntries(Object.entries(params).filter(([, v]) => v))
+    return useAdminApi(`/admin/tenants/${tenantId}/users`, { query })
+  }
 
   // Suspend requires the acting admin's own password; making live does not.
   const setTenantUserStatus = (tenantId: number, userId: number, status: 'live' | 'suspended', password?: string) =>
     useAdminApi(`/admin/tenants/${tenantId}/users/${userId}/status`, { method: 'PATCH', body: { status, ...(password ? { password } : {}) } })
+
+  const updateTenantUser = (tenantId: number, userId: number, payload: { role?: string; is_primary?: boolean }) =>
+    useAdminApi(`/admin/tenants/${tenantId}/users/${userId}`, { method: 'PATCH', body: payload })
+
+  const addTenantUser = (tenantId: number, payload: Record<string, any>) =>
+    useAdminApi(`/admin/tenants/${tenantId}/users`, { method: 'POST', body: payload })
+
+  const getRolesSettings = (tenantId: number, params: { page?: number; per_page?: number; search?: string } = {}) => {
+    const query = new URLSearchParams()
+    if (params.page) query.set('page', String(params.page))
+    if (params.per_page) query.set('per_page', String(params.per_page))
+    if (params.search) query.set('search', params.search)
+    const qs = query.toString()
+    return useAdminApi(`/admin/tenants/${tenantId}/roles-settings${qs ? `?${qs}` : ''}`)
+  }
+
+  const setRolesToggles = (tenantId: number, payload: { use_custom_settings?: boolean; master_can_edit?: boolean }) =>
+    useAdminApi(`/admin/tenants/${tenantId}/roles-settings/toggles`, { method: 'PUT', body: payload })
+
+  const setRolesGroup = (tenantId: number, group: string, payload: Record<string, any>) =>
+    useAdminApi(`/admin/tenants/${tenantId}/roles-settings/groups/${group}`, { method: 'PUT', body: payload })
+
+  const resetRolesGroup = (tenantId: number, group: string) =>
+    useAdminApi(`/admin/tenants/${tenantId}/roles-settings/groups/${group}`, { method: 'DELETE' })
 
   // ── Connector controls (admin passes tenant_id) ─────────────────────────
   const getSchedule = (tenantId: number) =>
@@ -95,6 +121,7 @@ export function useClientManagement() {
 
   return {
     getTenants, setTenantStatus, getTenantUsers, setTenantUserStatus,
+    updateTenantUser, addTenantUser, getRolesSettings, setRolesToggles, setRolesGroup, resetRolesGroup,
     getSchedule, setSchedule, syncNow, adminSyncNow, stopSync,
     openSettings, requestLogs, downloadLogs,
     getSyncHistory,

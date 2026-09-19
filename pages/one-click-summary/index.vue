@@ -18,7 +18,7 @@
         </div>  
 
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20 mx-4 lg:mx-0">
-          <div v-for="(card, index) in cards" :key="index" @click="openCard(card)"
+          <div v-for="(card, index) in visibleCards" :key="index" @click="openCard(card)"
             class="group rounded-2xl p-6 border transition-all duration-300 hover:shadow-lg cursor-pointer flex flex-col h-full"
             :class="isDark ? 'bg-[#01261f]/50 border-white/5 hover:border-[#008169]/50' : 'bg-white border-gray-100 hover:border-[#008169]/30'">
             
@@ -200,6 +200,13 @@ const cards = ref([
 ])
 
 const { openOneClickSummary } = useAkeel()
+const { can } = usePermissions()
+const domainPermissions = {
+  AP: 'cards.accounts_payable', AR: 'cards.accounts_receivable', REVENUE_SALES: 'cards.revenue', COGS: 'cards.cogs',
+  COST_CENTER: 'cards.cost_center', TAX: 'cards.tax_queries', CASH_FLOW_BANK: 'cards.cash_flow',
+  FINANCIAL_STATEMENTS: 'cards.financials', INDIRECT_EXPENSE: 'cards.indirect_expense', BUDGET_FORECAST: 'data_source.financial_all',
+}
+const visibleCards = computed(() => cards.value.filter(card => !card.domain || !domainPermissions[card.domain] || can(domainPermissions[card.domain])))
 
 function openCard(card) {
   if (!card.dataLinkKey) {

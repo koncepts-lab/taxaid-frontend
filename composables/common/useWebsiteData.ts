@@ -181,7 +181,7 @@ export function useTeamMemberTicketing() {
 // }
 
 // useRevenuePartnership — MOCK (static data.json) — accounts page
-// Replaced by composables/revenue-partner/useAccountsDashboard.ts (live API)
+// Replaced by composables/taxaid-partner/useAccountsDashboard.ts (live API)
 // export function useRevenuePartnership() {
 //   const { data, loading, error } = useWebsiteData()
 //   const rp = computed(() => data.value?.revenuePartnership ?? {})
@@ -289,7 +289,7 @@ export function useRevenuePartnershipLogin() {
 }
 
 // useRevenuePartnershipPartnerPage — MOCK (static data.json) — partner page
-// Replaced by composables/revenue-partner/usePartnerDashboard.ts (live API)
+// Replaced by composables/taxaid-partner/usePartnerDashboard.ts (live API)
 // export function useRevenuePartnershipPartnerPage() {
 //   const { data, loading, error } = useWebsiteData()
 //   const pageData = computed(() => data.value?.revenuePartnershipPartnerPage ?? {})
@@ -320,7 +320,7 @@ export function useRevenuePartnershipSelectDashboardPage() {
 }
 
 // useRevenuePartnershipAdminPage — MOCK (static data.json) — admin page
-// Replaced by composables/revenue-partner/useAdminDashboard.ts (live API)
+// Replaced by composables/taxaid-partner/useAdminDashboard.ts (live API)
 // export function useRevenuePartnershipAdminPage() {
 //   const { data, loading, error } = useWebsiteData()
 //   const pageData = computed(() => data.value?.revenuePartnershipAdminPage ?? {})

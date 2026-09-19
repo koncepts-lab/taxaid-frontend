@@ -55,6 +55,7 @@
         <button @click="setTab('Tenants Management')" :class="activeTab === 'Tenants Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Organization Management</button>
         <button @click="setTab('AI Settings')" :class="activeTab === 'AI Settings' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">AI Settings</button>
         <button @click="setTab('Organizations'); if (!organizationsLoaded) loadOrganizations()" :class="activeTab === 'Organizations' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">New User Requests</button>
+        <button @click="setTab('Roles & Settings')" :class="activeTab === 'Roles & Settings' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Roles & Settings</button>
       </div>
 
       <!-- VM status badge → click opens detail modal -->
@@ -476,6 +477,10 @@
     </div>
 
     <!-- AI Settings — global instructions, kill switch, catalog, chat prompts -->
+    <div v-else-if="activeTab === 'Roles & Settings'">
+      <AdminRolesAndSettingsGroupsTable mode="global" title="Roles & Settings" subtitle="Global defaults every organization uses unless it has its own override." class="mt-4" />
+    </div>
+
     <div v-else-if="activeTab === 'AI Settings'">
       <AdminAiSettings />
     </div>
@@ -1032,8 +1037,8 @@ function managerName(managerId) {
 // ── Tabs & filters ────────────────────────────────────────────────────────────
 const route  = useRoute()
 const router = useRouter()
-const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management', clients: 'Tenants Management', 'organization-management': 'Tenants Management', organizations: 'Organizations', 'new-user-requests': 'Organizations', 'ai-settings': 'AI Settings' }
-const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners', 'Tenants Management': 'organization-management', 'Organizations': 'new-user-requests', 'AI Settings': 'ai-settings' }
+const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management', clients: 'Tenants Management', 'organization-management': 'Tenants Management', organizations: 'Organizations', 'new-user-requests': 'Organizations', 'ai-settings': 'AI Settings', 'roles-and-settings': 'Roles & Settings' }
+const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners', 'Tenants Management': 'organization-management', 'Organizations': 'new-user-requests', 'AI Settings': 'ai-settings', 'Roles & Settings': 'roles-and-settings' }
 const activeTab = ref(tabMap[route.query.tab] ?? 'User Management')
 
 // A client config is open (?tab=clients&id=N) → hide header/cards/tabs (SPA takeover)

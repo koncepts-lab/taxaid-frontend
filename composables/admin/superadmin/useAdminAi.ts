@@ -1,4 +1,4 @@
-// composables/admin/useAdminAi.ts
+// composables/admin/superadmin/useAdminAi.ts
 // All admin-side AI calls: per-tenant monitoring/controls (client management "AI" subtab) +
 // global settings/catalog/chat-prompts (top-level "AI Settings" tab). One composable, both
 // screens consume it. All calls go through useAdminApi (admin_token).

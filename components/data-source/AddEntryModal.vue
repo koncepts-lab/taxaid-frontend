@@ -1,13 +1,13 @@
 <template>
     <Teleport to="body">
     <Transition name="fade">
-        <div v-if="open" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+        <div v-if="open" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4"
             :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="close">
-            <div class="bg-white rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar w-full max-w-lg shadow-2xl relative max-h-[78vh] overflow-y-auto">
+            <div class="bg-white rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 w-full max-w-lg shadow-2xl relative max-h-[92vh] overflow-y-auto no-scrollbar">
                 <div class="p-8 space-y-4">
                     <div class="flex items-center justify-between">
                         <h2 class="text-lg font-semibold text-gray-900">
-                            {{ currentLang === 'ar' ? 'إضافة إدخال جديد' : 'Add New Entry' }}
+                            {{ entry ? (currentLang === 'ar' ? 'تعديل الإدخال' : 'Edit Entry') : (currentLang === 'ar' ? 'إضافة إدخال جديد' : 'Add New Entry') }}
                         </h2>
                         <button @click="close" class="text-gray-400 hover:text-gray-600 transition-colors">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -27,17 +27,9 @@
                             class="w-full h-11 border border-[#04C18F80] rounded-xl px-4 text-sm outline-none focus:border-[#00896F] bg-white text-gray-900 placeholder:text-gray-400" />
                     </div>
 
-                    <!-- Department (internal only): plain manual input; fixed roles appear as
-                         selectable suggestions only while typing — no dropdown button -->
-                    <div v-if="isInternal" class="relative" ref="deptRef">
-                        <input type="text" v-model="form.department" :placeholder="currentLang === 'ar' ? 'القسم' : 'Department'"
-                            @input="deptOpen = true"
-                            class="w-full h-11 border border-[#04C18F80] rounded-xl px-4 text-sm outline-none focus:border-[#00896F] bg-white text-gray-900 placeholder:text-gray-400" />
-                        <div v-if="deptOpen && form.department.trim() && filteredDepartments.length"
-                            class="absolute z-30 mt-1 w-full bg-white border border-gray-100 rounded-xl shadow-xl p-1 max-h-48 overflow-auto">
-                            <button v-for="d in filteredDepartments" :key="d" type="button" @mousedown.prevent="form.department = d; deptOpen = false"
-                                class="w-full text-left rtl:text-right px-4 py-2 text-sm rounded-lg hover:bg-[#E6FDF9] text-gray-900">{{ d }}</button>
-                        </div>
+                    <!-- Department (internal only) -->
+                    <div v-if="isInternal">
+                        <CommonDepartmentSelect v-model="form.department" :lang="currentLang" :placeholder="currentLang === 'ar' ? 'القسم' : 'Department'" />
                     </div>
 
                     <!-- Name combobox (customer/vendor): search existing AR/AP names, already-added filtered out -->
@@ -115,6 +107,7 @@ const props = defineProps({
     open:        Boolean,
     type:        { type: String, default: 'customers' }, // customers | vendor | internal-email
     currentLang: { type: String, default: 'en' },
+    entry:       { type: Object, default: null },
 })
 const emit = defineEmits(['update:open', 'saved'])
 
@@ -145,17 +138,7 @@ const candidatesLoading = ref(false)
 const nameOpen = ref(false)
 const nameRef = ref(null)
 
-// department suggestions — static UI hints only (stored value is free text;
-// sending always reads the department saved on internal_emails rows)
-const departments = ref(['Sales', 'Procurement', 'Admin', 'Management', 'Accountant'])
-const deptOpen = ref(false)
-const deptRef = ref(null)
-
-const filteredDepartments = computed(() => {
-    const q = (form.value.department ?? '').trim().toLowerCase()
-    if (!q) return departments.value
-    return departments.value.filter(d => d.toLowerCase().includes(q))
-})
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 const filteredCandidates = computed(() => {
     const q = form.value.name.trim().toLowerCase()
@@ -166,9 +149,14 @@ const filteredCandidates = computed(() => {
 watch(() => props.open, async (isOpen) => {
     if (!isOpen) return
     form.value = blankForm()
+    if (props.entry) {
+        form.value.employee_name = props.entry.employee_name ?? ''
+        form.value.department = props.entry.department ?? ''
+        form.value.email = props.entry.email ?? ''
+        form.value.phone_number = props.entry.phone_number ?? ''
+    }
     errorMsg.value = null
     nameOpen.value = false
-    deptOpen.value = false
     if (!isInternal.value) {
         const contactType = props.type === 'customers' ? 'customer' : 'vendor'
         try { form.value.identity = await contactsApi.generateIdentity(contactType) } catch {}
@@ -184,7 +172,7 @@ const confirm = async () => {
     errorMsg.value = null
     // client-side required checks (mirrors backend)
     if (isInternal.value) {
-        if (!form.value.employee_name.trim() || !form.value.department.trim() || !form.value.email.trim()) {
+        if (!form.value.employee_name.trim() || !form.value.department || !form.value.email.trim()) {
             errorMsg.value = props.currentLang === 'ar' ? 'الموظف والقسم والبريد مطلوبة' : 'Employee, Department and Email are required.'
             return
         }
@@ -192,17 +180,22 @@ const confirm = async () => {
         errorMsg.value = props.currentLang === 'ar' ? 'الاسم والبريد مطلوبان' : 'Name and Email are required.'
         return
     }
+    if (!EMAIL_RE.test(form.value.email.trim())) {
+        errorMsg.value = props.currentLang === 'ar' ? 'أدخل بريداً إلكترونياً صالحاً' : 'Enter a valid email address.'
+        return
+    }
 
     saving.value = true
     try {
         let saved
         if (isInternal.value) {
-            saved = await emailsApi.createEmail({
+            const body = {
                 employee_name: form.value.employee_name.trim(),
-                department:    form.value.department.trim(),
+                department:    form.value.department,
                 email:         form.value.email.trim(),
                 phone_number:  form.value.phone_number || undefined,
-            })
+            }
+            saved = props.entry ? await emailsApi.updateEmail(props.entry.id, body) : await emailsApi.createEmail(body)
         } else {
             saved = await contactsApi.createContact({
                 type:           props.type === 'customers' ? 'customer' : 'vendor',
@@ -228,7 +221,6 @@ const confirm = async () => {
 // close popovers on outside click
 const onClickOutside = (ev) => {
     if (nameRef.value && !nameRef.value.contains(ev.target)) nameOpen.value = false
-    if (deptRef.value && !deptRef.value.contains(ev.target)) deptOpen.value = false
 }
 onMounted(() => document.addEventListener('mousedown', onClickOutside))
 onUnmounted(() => document.removeEventListener('mousedown', onClickOutside))

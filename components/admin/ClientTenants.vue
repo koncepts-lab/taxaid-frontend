@@ -7,7 +7,7 @@
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         </button>
         <div>
-          <h2 class="text-[18px] text-[#013E32]">Client Settings</h2>
+          <h2 class="text-[18px] text-[#013E32]">Organization Settings</h2>
           <p class="text-[13px] text-[#00000080]">Tenant #{{ selectedId }}</p>
         </div>
       </div>

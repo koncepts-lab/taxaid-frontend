@@ -17,7 +17,7 @@
                   'Manage your financial data sources, contacts, and API certificates for GST/VAT/ERP integrations' }}
               </p>
             </div>
-            <button @click="navigateTo('/data-source/manual-addition')" class="flex items-center gap-2 px-5 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm mt-1">
+            <button v-if="can('data_source.manual_addition')" @click="navigateTo('/data-source/manual-addition')" class="flex items-center gap-2 px-5 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm mt-1">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
               {{ currentLang === 'ar' ? 'إضافة يدوية' : 'Manual Addition' }}
             </button>
@@ -299,9 +299,21 @@ watch(activeMainTab, (val) => { syncUrl() })
 watch(activeSubTab,  (val) => { syncUrl() })
 
 // Computed aliases so template/logic reads identically to before
-const mainTabs = computed(() => mainTabsData.value)
-const subTabsFinancial = computed(() => subTabsFinancialData.value)
-const subTabsContacts = computed(() => subTabsContactsData.value)
+const { can, financialSubTabs } = usePermissions()
+const financialTabAllowed = (id) => {
+  const tabs = financialSubTabs.value
+  if (id === 'accounts-receivable') return tabs.accounts_receivable
+  if (id === 'accounts-payable') return tabs.accounts_payable
+  if (id === 'sales-forecast') return tabs.sales_forecast
+  if (id === 'cost-center') return tabs.cost_center
+  if (id === 'pdc') return tabs.accounts_receivable || tabs.accounts_payable
+  return tabs.other
+}
+const subTabsFinancial = computed(() => (subTabsFinancialData.value ?? []).filter(tab => financialTabAllowed(tab.id)))
+const subTabsContacts = computed(() => (can('data_source.contacts_certificate') ? subTabsContactsData.value : []))
+const mainTabs = computed(() => (mainTabsData.value ?? []).filter(tab =>
+  tab.id === 'financial' ? subTabsFinancial.value.length > 0 : can('data_source.contacts_certificate')
+))
 const searchQuery = ref('')
 const subTabsContainer = ref(null)
 const canScrollLeft = ref(false)
@@ -528,6 +540,13 @@ const currentSubTabs = computed(() => {
     ? subTabsFinancial.value
     : subTabsContacts.value
 })
+
+watch([mainTabs, currentSubTabs], () => {
+  const tabs = mainTabs.value
+  if (tabs.length && !tabs.some(tab => tab.id === activeMainTab.value)) activeMainTab.value = tabs[0].id
+  const subs = currentSubTabs.value
+  if (activeMainTab.value !== 'certificate' && subs?.length && !subs.some(tab => tab.id === activeSubTab.value)) activeSubTab.value = subs[0].id
+}, { immediate: true })
 
 watch(activeMainTab, (newTab) => {
   const newArray = newTab === 'financial' ? subTabsFinancial.value : subTabsContacts.value

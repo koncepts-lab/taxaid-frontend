@@ -317,7 +317,7 @@
                 </div>
 
                 <!-- Upload tabs: Download Sample + Add (IC) -->
-                <div v-else class="space-y-3">
+                <div v-else-if="isTaxaid" class="space-y-3">
                     <button @click="handleBudgetDownloadSample(activeBudgetTab)"
                         class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-sm font-medium hover:bg-[#00B794]/5 transition-all">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -618,7 +618,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['view', 'remove', 'uploaded'])
-const userType = ref('admin')
+const { isTaxaid } = usePermissions()
+const userType = computed(() => (isTaxaid.value ? 'admin' : 'client'))
 const isModalOpen = ref(false)
 const activeUploadTarget = ref(null)
 

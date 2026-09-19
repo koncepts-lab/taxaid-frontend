@@ -347,7 +347,7 @@
 
 <script setup>
 import { ref, computed, reactive, watch } from 'vue'
-import { useTicketing } from '~/composables/admin/useTicketing'
+import { useTicketing } from '~/composables/admin/ticketing/useTicketing'
 
 const { downloadTicketAttachment, previewTicketAttachmentUrl } = useTicketing()
 

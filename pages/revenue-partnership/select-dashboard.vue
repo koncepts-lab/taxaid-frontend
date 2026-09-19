@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import { useRevenuePartnershipSelectDashboardPage } from '@/composables/useWebsiteData'
+import { useRevenuePartnershipSelectDashboardPage } from '@/composables/common/useWebsiteData'
 
 const { isDark } = useTheme()
 const { title, subtitle, cards } = useRevenuePartnershipSelectDashboardPage()

@@ -55,19 +55,43 @@
           <h2 class="text-[16px] font-medium text-[#101828]">Users</h2>
           <p class="text-[13px] text-[#4A5565] mt-0.5">All logins under this tenant.</p>
         </div>
-        <div class="relative min-w-[160px] shrink-0">
-          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-          </span>
-          <select v-model="userTypeFilter" class="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
+        <div class="flex flex-wrap items-center gap-3 md:justify-end">
+          <input v-model="searchText" type="text" placeholder="Search name or email"
+            class="min-w-[200px] px-3 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm" />
+        <div class="relative min-w-[150px] shrink-0">
+          <select v-model="statusFilter" class="w-full pl-3 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
+            <option value="">All statuses</option>
+            <option value="live">Live</option>
+            <option value="suspended">Suspended</option>
+          </select>
+          <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        </div>
+        <div class="relative min-w-[150px] shrink-0">
+          <select v-model="roleFilter" class="w-full pl-3 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
+            <option value="">All roles</option>
+            <option value="owner">Owner</option>
+            <option value="master_user">Master</option>
+            <option value="account_user">Accounts</option>
+            <option value="sales_user">Sales</option>
+            <option value="procurement_user">Procurement</option>
+            <option value="project_manager_user">Project Manager</option>
+            <option value="partner_user">Partner</option>
+            <option value="guest_user">Guest</option>
+          </select>
+          <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        </div>
+        <div class="relative min-w-[150px] shrink-0">
+          <select v-model="userTypeFilter" class="w-full pl-3 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
             <option value="org">Tenant Users</option>
             <option value="taxaid">TaxAid Staff</option>
             <option value="all">All Users</option>
           </select>
           <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
         </div>
+          <button @click="userModal = { user: null }" class="px-4 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] shrink-0">+ Add user</button>
+        </div>
       </div>
-      <div class="w-full overflow-x-auto">
+      <div class="w-full overflow-x-auto min-h-[540px]">
         <table class="w-full text-left border-collapse min-w-[900px]">
           <thead>
             <tr class="bg-[#008865] text-white text-sm">
@@ -82,12 +106,16 @@
             </tr>
           </thead>
           <tbody class="text-sm text-gray-700">
-            <tr v-if="loading"><td colspan="8" class="py-10 text-center text-gray-400">Loading...</td></tr>
+            <template v-if="loading">
+              <tr v-for="n in 8" :key="'sk' + n" class="border-b border-gray-100 h-[60px]">
+                <td v-for="c in 8" :key="c" class="px-6"><div class="user-skeleton h-4 w-full max-w-[120px] rounded"></div></td>
+              </tr>
+            </template>
             <tr v-else-if="!filteredUsers.length"><td colspan="8" class="py-10 text-center text-gray-400">No users found.</td></tr>
-            <tr v-for="u in filteredUsers" :key="u.id" class="border-b border-gray-100 hover:bg-gray-50/50">
-              <td class="py-4 px-6 font-medium text-gray-800">{{ u.name ?? '—' }}</td>
+            <tr v-for="u in filteredUsers" :key="u.id" :class="isOwner(u) ? 'bg-[#ECFDF5]/60 hover:bg-[#ECFDF5]' : 'hover:bg-gray-50/50'" class="border-b border-gray-100">
+              <td class="py-4 px-6 font-medium" :class="isOwner(u) ? 'text-[#065F46]' : 'text-gray-800'">{{ u.name ?? '—' }}</td>
               <td class="py-4 px-6">{{ u.email }}</td>
-              <td class="py-4 px-6"><span class="bg-gray-100 text-gray-600 rounded-full px-2.5 py-1 text-[12px] font-medium">{{ u.role }}</span></td>
+              <td class="py-4 px-6"><span :class="roleBadgeClass(u)" class="rounded-full px-2.5 py-1 text-[12px] font-medium">{{ userRoleLabel(u) }}</span></td>
               <td class="py-4 px-6">{{ u.last_login_at ? new Date(u.last_login_at).toLocaleString() : 'Never' }}</td>
               <td class="py-4 px-6">{{ u.last_location ?? '—' }}</td>
               <td class="py-4 px-6 text-center">
@@ -101,7 +129,11 @@
                   {{ u.status ?? '—' }}
                 </span>
               </td>
-              <td class="py-4 px-6 text-center">
+              <td class="py-4 px-6 text-center whitespace-nowrap">
+                <button v-if="u.account_type !== 'taxaid'" @click="userModal = { user: u }" title="Edit role / primary"
+                  class="inline-flex items-center justify-center w-8 h-8 mr-2 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 align-middle">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </button>
                 <button v-if="u.status === 'live'" @click="openUserStatusModal(u, 'suspended')"
                   class="px-3 py-1.5 border border-red-300 text-red-600 rounded-md text-[13px] font-medium hover:bg-red-50 transition-colors">
                   Suspend
@@ -116,6 +148,9 @@
         </table>
       </div>
     </div>
+    <AdminRolesAndSettingsOrgRolesPanel :key="'roles-' + tenantId + '-' + rolesReload" :tenant-id="tenantId" :active-users="activeUsers" :users-loading="loading" />
+    <AdminRolesAndSettingsUserEditModal v-if="userModal" :tenant-id="tenantId" :user="userModal.user"
+      @close="userModal = null" @saved="onUserSaved" />
     <!-- User suspend / make-live modal -->
     <div v-if="userStatusTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div class="bg-white rounded-xl shadow-lg w-[420px] max-w-full p-6">
@@ -152,23 +187,30 @@
 <script setup>
 // Status & Users tab of the client configure view — make live / suspend
 // plus the tenant's user list with login/session info.
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 const props = defineProps({
   tenantId: { type: Number, required: true },
 })
 
 const { setTenantStatus, getTenantUsers, getTenants, setTenantUserStatus } = useClientManagement()
+const { userRoleLabel, roleBadgeClass, isOwner } = useRoleLabel()
 
 const status = ref(null)
 const users = ref([])
+const userModal = ref(null)
+const rolesReload = ref(0)
 const userTypeFilter = ref('org')
+const statusFilter = ref('')
+const roleFilter = ref('')
+const searchText = ref('')
 const filteredUsers = computed(() => {
   if (userTypeFilter.value === 'all') return users.value
-  const isTaxaid = (u) => (u.email ?? '').endsWith('@taxaid.temp')
+  const isTaxaid = (u) => u.account_type === 'taxaid' || (u.email ?? '').endsWith('@taxaid.temp')
   return users.value.filter((u) => userTypeFilter.value === 'taxaid' ? isTaxaid(u) : !isTaxaid(u))
 })
-const loading = ref(false)
+const activeUsers = ref(0)
+const loading = ref(true)
 const busy = ref(false)
 const confirmStatus = ref(null)
 const message = ref('')
@@ -177,8 +219,10 @@ const messageOk = ref(true)
 async function load() {
   loading.value = true
   try {
-    const res = await getTenantUsers(props.tenantId)
+    const res = await getTenantUsers(props.tenantId, { status: statusFilter.value, role: roleFilter.value, search: searchText.value })
     users.value = res.data ?? []
+    const all = statusFilter.value || roleFilter.value || searchText.value ? (await getTenantUsers(props.tenantId)).data ?? [] : users.value
+    activeUsers.value = all.filter((u) => u.status === 'live' && u.account_type !== 'taxaid' && !(u.email ?? '').endsWith('@taxaid.temp')).length
   } catch {
     users.value = []
   } finally {
@@ -189,6 +233,24 @@ async function load() {
     const res = await getTenants({ per_page: 100 })
     status.value = (res.data ?? []).find(t => t.id === props.tenantId)?.status ?? null
   } catch {}
+}
+
+async function loadUsers() {
+  loading.value = true
+  try {
+    const res = await getTenantUsers(props.tenantId, { status: statusFilter.value, role: roleFilter.value, search: searchText.value })
+    users.value = res.data ?? []
+  } catch {
+    users.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+async function onUserSaved() {
+  userModal.value = null
+  rolesReload.value++
+  await load()
 }
 
 async function applyStatus() {
@@ -245,5 +307,21 @@ async function applyUserStatus() {
   }
 }
 
+let searchTimer
+watch([statusFilter, roleFilter], loadUsers)
+watch(searchText, () => { clearTimeout(searchTimer); searchTimer = setTimeout(loadUsers, 300) })
+
 onMounted(load)
 </script>
+
+<style scoped>
+.user-skeleton {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
+  background-size: 400% 100%;
+  animation: user-shimmer 1.4s ease infinite;
+}
+@keyframes user-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+</style>

@@ -1,4 +1,4 @@
-// composables/useLocation.ts
+// composables/common/useLocation.ts
 //
 // Resolves a human-readable "City, Region, Country" for the current device and
 // lazily syncs it to the current session (PUT /sessions/location). Called from

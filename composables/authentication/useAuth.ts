@@ -1,4 +1,4 @@
-// composables/useAuth.ts
+// composables/authentication/useAuth.ts
 import { resetProfile } from '~/composables/settings/useProfile'
 
 export const useAuth = () => {
@@ -50,10 +50,8 @@ export const useAuth = () => {
         const accountType = useCookie('account_type', cookieOptions)
         accountType.value = response.data.user?.account_type ?? null
 
-        // TODO: temporary — once real role management ships, org-settings access is purely
-        // role-based and this owner-flag cookie won't be needed at all.
-        const isPrimary = useCookie('is_primary', cookieOptions)
-        isPrimary.value = response.data.user?.is_primary ? '1' : null
+        const permissions = useCookie('permissions', cookieOptions)
+        permissions.value = response.data.permissions ? JSON.stringify(response.data.permissions) : null
 
         const currency = useCookie('currency', cookieOptions)
         currency.value = response.data.tenant?.currency ?? null
@@ -101,7 +99,7 @@ export const useAuth = () => {
     user.value = null
     useCookie('tenant_status').value = null
     useCookie('account_type').value = null
-    useCookie('is_primary').value = null
+    useCookie('permissions').value = null
     useCookie('currency').value = null
     resetProfile()
     try {

@@ -39,15 +39,47 @@ export function useAkeel() {
   const sending = useState<boolean>('akeel_sending', () => false)
   const error = useState<string | null>('akeel_error', () => null)
   const errorVariant = useState<'error' | 'restricted'>('akeel_error_variant', () => 'error')
+  const locked = useState<boolean>('akeel_locked', () => false)
+  const dots = useState<number>('akeel_status_dots', () => 3)
+  const currentScope = useState<string>('akeel_scope', () => 'general')
+  const scopeChats = useState<Record<string, number>>('akeel_scope_chats', () => ({}))
+  const SCOPE_STORAGE_KEY = 'akeel_scope_chats'
+
+  function persistScopes() {
+    if (!import.meta.client) return
+    try { localStorage.setItem(SCOPE_STORAGE_KEY, JSON.stringify(scopeChats.value)) } catch { /* storage unavailable */ }
+  }
+
+  function loadScopes() {
+    if (!import.meta.client || Object.keys(scopeChats.value).length) return
+    try {
+      const raw = localStorage.getItem(SCOPE_STORAGE_KEY)
+      if (raw) scopeChats.value = JSON.parse(raw)
+    } catch { /* ignore */ }
+  }
   const chatGettingLong = useState<boolean>('akeel_chat_getting_long', () => false)
   const usageWarning = useState<boolean>('akeel_usage_warning', () => false)
   const pendingUploads = useState<AkeelUpload[]>('akeel_pending_uploads', () => [])
   const uploading = useState<boolean>('akeel_uploading', () => false)
-  const sendingStatusText = useState<string>('akeel_sending_status', () => 'Akeel is typing...')
+  const sendingStatusText = useState<string>('akeel_sending_status', () => 'Akeel is thinking...')
+  const sendingStatusDisplay = computed(() => sendingStatusText.value.replace(/\.+$/, '') + '.'.repeat(dots.value))
 
-  const SENDING_PHASES = ['Akeel is thinking...', 'Akeel is checking your data...', 'Akeel is working on it...', 'Akeel is answering...', 'Akeel is typing...']
-  const ONE_CLICK_WORKING_PHASES = ['Akeel is analyzing your data...', 'Akeel is compiling the full report...', 'Akeel is preparing your summary...']
-  const ONE_CLICK_FINAL_PHASE = 'Almost done — finalizing your summary...'
+  const PHASES = {
+    en: {
+      chat: ['Akeel is thinking...', 'Akeel is checking your data...', 'Akeel is working on it...', 'Akeel is still working on it, hang tight...'],
+      typing: 'Akeel is typing...',
+      oneClick: ['Akeel is analyzing your data...', 'Akeel is compiling the full report...', 'Akeel is preparing your summary...'],
+      oneClickFinal: 'Almost done — finalizing your summary...',
+    },
+    ar: {
+      chat: ['عقيل يفكر...', 'عقيل يفحص بياناتك...', 'عقيل يعمل على ذلك...', 'عقيل ما زال يعمل على ذلك، يرجى الانتظار...'],
+      typing: 'عقيل يكتب...',
+      oneClick: ['عقيل يحلل بياناتك...', 'عقيل يجمع التقرير الكامل...', 'عقيل يجهز ملخصك...'],
+      oneClickFinal: 'على وشك الانتهاء — يتم إنهاء ملخصك...',
+    },
+  }
+  const langState = useState<string>('currentLang', () => 'en')
+  const phaseSet = () => (langState.value === 'ar' ? PHASES.ar : PHASES.en)
 
   // Attached files stay visible after a send (chat isn't "closed" just because a message went
   // through) — cleared 5 min after the last activity in this chat, or immediately on switching
@@ -68,31 +100,35 @@ export function useAkeel() {
   }
 
   function startSendingStatusCycle(isOneClick = false) {
-    const phases = isOneClick ? ONE_CLICK_WORKING_PHASES : SENDING_PHASES
+    const phases = isOneClick ? phaseSet().oneClick : phaseSet().chat
     let i = 0
+    let tick = 0
     sendingStatusText.value = phases[0]
+    dots.value = 1
     const interval = setInterval(() => {
-      if (isOneClick) {
-        if (i < phases.length - 1) {
-          i++
-          sendingStatusText.value = phases[i]
-        }
-        return
+      tick++
+      dots.value = (tick % 3) + 1
+      if (tick % 4 === 0 && i < phases.length - 1) {
+        i++
+        sendingStatusText.value = phases[i]
       }
-      i = (i + 1) % phases.length
-      sendingStatusText.value = phases[i]
-    }, 1600)
-    return () => clearInterval(interval)
+    }, 400)
+    return () => {
+      clearInterval(interval)
+      dots.value = 3
+    }
   }
 
   function setError(message: string, code?: string) {
     error.value = message
-    errorVariant.value = code === 'plan_restricted' ? 'restricted' : 'error'
+    errorVariant.value = code && ['plan_restricted', 'permission_denied', 'ai_org_disabled', 'ai_chat_disabled', 'ai_support_login', 'quota_reached'].includes(code) ? 'restricted' : 'error'
+    if (errorVariant.value === 'restricted') locked.value = true
   }
 
   async function fetchChats() {
     loading.value = true
     error.value = null
+    locked.value = false
     try {
       const res: any = await useApi('/ai/chats?include=status,usage')
       chats.value = res?.sessions ?? []
@@ -114,6 +150,10 @@ export function useAkeel() {
       messages.value = []
       cancelUploadsClear()
       pendingUploads.value = []
+      if (res?.id) {
+        scopeChats.value = { ...scopeChats.value, [currentScope.value]: res.id }
+        persistScopes()
+      }
       await fetchChats()
       return res?.id ?? null
     } catch (err: any) {
@@ -143,6 +183,8 @@ export function useAkeel() {
   async function deleteChat(id: number) {
     try {
       await useApi(`/ai/chats/${id}`, { method: 'DELETE' })
+      scopeChats.value = Object.fromEntries(Object.entries(scopeChats.value).filter(([, chatId]) => chatId !== id))
+      persistScopes()
       if (activeChatId.value === id) {
         activeChatId.value = null
         messages.value = []
@@ -154,6 +196,45 @@ export function useAkeel() {
       setError(err?.data?.message ?? 'Failed to delete chat', err?.data?.code)
       console.error('[useAkeel] deleteChat failed:', err)
     }
+  }
+
+  /** Each card/page keeps its own chat: switching scope resumes that scope's chat (by id) or starts empty. */
+  async function setScope(scope: string) {
+    loadScopes()
+    if (currentScope.value === scope && activeChatId.value && scopeChats.value[scope] === activeChatId.value) return
+    currentScope.value = scope
+    error.value = null
+    const id = scopeChats.value[scope]
+    if (!id) {
+      activeChatId.value = null
+      messages.value = []
+      cancelUploadsClear()
+      pendingUploads.value = []
+      return
+    }
+    await resumeChat(id)
+    if (error.value) {
+      error.value = null
+      const next = { ...scopeChats.value }
+      delete next[scope]
+      scopeChats.value = next
+      persistScopes()
+      activeChatId.value = null
+      messages.value = []
+    }
+  }
+
+  /** Forgets this scope's chat and starts a fresh one on the next message (the old chat stays in history). */
+  function newChat() {
+    const next = { ...scopeChats.value }
+    delete next[currentScope.value]
+    scopeChats.value = next
+    persistScopes()
+    activeChatId.value = null
+    messages.value = []
+    error.value = null
+    cancelUploadsClear()
+    pendingUploads.value = []
   }
 
   /** Uploads a file for AI use (image/PDF/Excel) — only extracted text ever reaches the model,
@@ -205,7 +286,7 @@ export function useAkeel() {
     sending.value = true
     error.value = null
     const isOneClick = !!dataLinkKey?.startsWith('onclick_')
-    sendingStatusText.value = isOneClick ? ONE_CLICK_WORKING_PHASES[0] : SENDING_PHASES[0]
+    sendingStatusText.value = isOneClick ? phaseSet().oneClick[0] : phaseSet().chat[0]
 
     let chatId = activeChatId.value
     if (!chatId) {
@@ -231,10 +312,8 @@ export function useAkeel() {
         },
       })
 
-      if (dataLinkKey?.startsWith('onclick_')) {
-        sendingStatusText.value = ONE_CLICK_FINAL_PHASE
-        await new Promise((resolve) => setTimeout(resolve, 300))
-      }
+      sendingStatusText.value = isOneClick ? phaseSet().oneClickFinal : phaseSet().typing
+      await new Promise((resolve) => setTimeout(resolve, isOneClick ? 300 : 700))
 
       messages.value.push({ role: 'assistant', content: res?.message ?? '', ledgerRefs: res?.ledger_refs ?? [] })
       if (res?.status) status.value = res.status
@@ -264,8 +343,13 @@ export function useAkeel() {
     loading,
     sending,
     sendingStatusText,
+    sendingStatusDisplay,
+    setScope,
+    newChat,
+    currentScope,
     error,
     errorVariant,
+    locked,
     chatGettingLong,
     usageWarning,
     pendingUploads,

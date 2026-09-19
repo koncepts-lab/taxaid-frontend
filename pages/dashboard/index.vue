@@ -6,9 +6,10 @@
         
         <!-- LEFT SIDEBAR -->
         <div class="col-span-12 lg:col-span-3 flex flex-col gap-3">
-          <NuxtLink to="/revenue">
+          <NuxtLink v-if="can('cards.revenue')" to="/revenue">
             <DashboardRevenue />
-          </NuxtLink> 
+          </NuxtLink>
+          <DashboardLockedTile v-else title="Revenue" /> 
         </div>
 
         <!-- MAIN CONTENT -->
@@ -16,39 +17,47 @@
           
           <!-- ROW 1 -->
           <div class="grid grid-cols-12 gap-3">
-            <NuxtLink to="/cash-flow" class="col-span-12 lg:col-span-7">
+            <NuxtLink v-if="can('cards.cash_flow')" to="/cash-flow" class="col-span-12 lg:col-span-7">
               <DashboardCashflow />
             </NuxtLink>
-            <NuxtLink to="/financial-statement" class="col-span-12 lg:col-span-5">
+            <DashboardLockedTile v-else class="col-span-12 lg:col-span-7" title="Cashflow" />
+            <NuxtLink v-if="can('cards.financials')" to="/financial-statement" class="col-span-12 lg:col-span-5">
               <DashboardFinancials />
             </NuxtLink>
+            <DashboardLockedTile v-else class="col-span-12 lg:col-span-5" title="Financial Statement" />
           </div>
 
           <!-- ROW 2 -->
           <div class="grid grid-cols-12 gap-3">
-            <NuxtLink to="/indirect-expense" class="col-span-12 lg:col-span-5">
+            <NuxtLink v-if="can('cards.indirect_expense')" to="/indirect-expense" class="col-span-12 lg:col-span-5">
               <DashboardIndirectExpense />
             </NuxtLink>
-            <NuxtLink to="/accounts-receivable" class="col-span-12 lg:col-span-7">
+            <DashboardLockedTile v-else class="col-span-12 lg:col-span-5" title="Indirect Expense" />
+            <NuxtLink v-if="can('cards.accounts_receivable')" to="/accounts-receivable" class="col-span-12 lg:col-span-7">
               <DashboardAccountReceivables />
             </NuxtLink>
+            <DashboardLockedTile v-else class="col-span-12 lg:col-span-7" title="Account Receivables" />
           </div>
         </div>
 
         <!-- ROW 3 (Full Width Bottom Row) -->
         <div class="col-span-12 grid grid-cols-12 gap-3 pb-0 lg:pb-4">
-          <NuxtLink to="/cogs" class="col-span-12 md:col-span-6 lg:col-span-3">
+          <NuxtLink v-if="can('cards.cogs')" to="/cogs" class="col-span-12 md:col-span-6 lg:col-span-3">
             <DashboardCogs />
           </NuxtLink>
-          <NuxtLink to="/accounts-payable" class="col-span-12 md:col-span-6 lg:col-span-3">
+          <DashboardLockedTile v-else class="col-span-12 md:col-span-6 lg:col-span-3" title="COGS" />
+          <NuxtLink v-if="can('cards.accounts_payable')" to="/accounts-payable" class="col-span-12 md:col-span-6 lg:col-span-3">
             <DashboardAccountsPayable />
           </NuxtLink>
-          <NuxtLink to="/cost-center" class="col-span-12 md:col-span-6 lg:col-span-3">
+          <DashboardLockedTile v-else class="col-span-12 md:col-span-6 lg:col-span-3" title="Accounts Payable" />
+          <NuxtLink v-if="can('cards.cost_center')" to="/cost-center" class="col-span-12 md:col-span-6 lg:col-span-3">
             <DashboardCostCenter />
           </NuxtLink>
-          <NuxtLink to="/tax-queries" class="col-span-12 md:col-span-6 lg:col-span-3">
+          <DashboardLockedTile v-else class="col-span-12 md:col-span-6 lg:col-span-3" title="Cost Center" />
+          <NuxtLink v-if="can('cards.tax_queries')" to="/tax-queries" class="col-span-12 md:col-span-6 lg:col-span-3">
             <DashboardTaxQueries />
           </NuxtLink>
+          <DashboardLockedTile v-else class="col-span-12 md:col-span-6 lg:col-span-3" title="Tax Queries" />
         </div>
       </div>
 
@@ -83,6 +92,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const ALERT_KEYS = ['ap_variance', 'ar_variance', 'missing_ledgers', 'sales_forecast_variance']
 
+const { can } = usePermissions()
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
@@ -100,6 +110,7 @@ const dashboardAlerts = ref({
 const { fetchSummary } = useDashboard()
 
 const fetchDashboardAlerts = async () => {
+  if (!can('alerts.access')) return
   const res = await useApi('/dashboard/alerts')
   if (res?.status === 'success') dashboardAlerts.value = res.data
 }

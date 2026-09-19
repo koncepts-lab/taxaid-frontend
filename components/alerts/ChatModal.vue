@@ -44,7 +44,7 @@
 
                         <AkeelMessageList />
                         <div v-if="sending" class="text-xs" :class="isDark ? 'text-white/50' : 'text-black/50'">
-                            {{ currentLang === 'ar' ? 'عقيل يكتب...' : sendingStatusText }}
+                            {{ sendingStatusDisplay }}
                         </div>
                     </div>
 
@@ -66,7 +66,7 @@
                         </button>
 
                         <div class="flex-1 relative">
-                            <input v-model="chatInput" type="text" :disabled="sending"
+                            <input v-model="chatInput" type="text" :disabled="sending || locked"
                                 :placeholder="currentLang === 'ar' ? 'اكتب رسالتك...' : 'Type your message...'"
                                 class="w-full border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-[#00B68D] outline-none transition-all disabled:opacity-50"
                                 :class="isDark
@@ -74,7 +74,7 @@
                                     : 'bg-gray-100 text-black placeholder:text-black/40'" @keyup.enter="handleSend" />
                         </div>
 
-                        <button @click="handleSend" :disabled="sending"
+                        <button @click="handleSend" :disabled="sending || locked"
                             class="p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center"
                             :class="isDark ? 'bg-[#03D8B0] text-[#01261f]' : 'bg-primary-250 text-white hover:bg-[#03D8B0]'">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -102,7 +102,7 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 const chatInput = ref('');
 
-const { messages, sending, sendingStatusText, activeChatId, error, errorVariant, createChat, sendMessage } = useAkeel()
+const { messages, sending, sendingStatusText, sendingStatusDisplay, activeChatId, error, errorVariant, locked, createChat, sendMessage } = useAkeel()
 
 // A fresh alert-context conversation each time the modal opens for a new alert —
 // not the same shared chat as the sidebar/full-page widgets.
