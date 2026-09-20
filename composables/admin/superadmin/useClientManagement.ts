@@ -16,10 +16,13 @@ export interface TenantRow {
 
 export function useClientManagement() {
   // ── Tenant list ─────────────────────────────────────────────────────────
-  async function getTenants(params: { search?: string; status?: string; page?: number; per_page?: number } = {}): Promise<any> {
+  async function getTenants(params: { search?: string; status?: string; tenant_id?: number; organization_id?: number; view?: string; page?: number; per_page?: number } = {}): Promise<any> {
     const q = new URLSearchParams()
     if (params.search) q.set('search', params.search)
     if (params.status) q.set('status', params.status)
+    if (params.tenant_id) q.set('tenant_id', String(params.tenant_id))
+    if (params.view) q.set('view', params.view)
+    if (params.organization_id) q.set('organization_id', String(params.organization_id))
     if (params.page) q.set('page', String(params.page))
     if (params.per_page) q.set('per_page', String(params.per_page))
     return useAdminApi(`/admin/tenants?${q.toString()}`)
@@ -29,7 +32,7 @@ export function useClientManagement() {
   const setTenantStatus = (tenantId: number, status: 'live' | 'suspended') =>
     useAdminApi(`/admin/tenants/${tenantId}/status`, { method: 'PATCH', body: { status } })
 
-  const getTenantUsers = (tenantId: number, params: { status?: string; role?: string; search?: string } = {}) => {
+  const getTenantUsers = (tenantId: number, params: { status?: string; role?: string; search?: string; scope?: string; tenant_id?: number } = {}) => {
     const query = Object.fromEntries(Object.entries(params).filter(([, v]) => v))
     return useAdminApi(`/admin/tenants/${tenantId}/users`, { query })
   }

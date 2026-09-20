@@ -15,7 +15,7 @@
       </div>
       <h2 class="text-[18px] font-semibold text-gray-900 mb-2">Link Invalid or Expired</h2>
       <p class="text-sm text-gray-500 mb-6">{{ invalidMessage }}</p>
-      <NuxtLink to="/revenue-partnership-login" class="text-[#007C65] text-sm font-medium hover:underline">Back to Login</NuxtLink>
+      <NuxtLink to="/taxaid-partnership-login" class="text-[#007C65] text-sm font-medium hover:underline">Back to Login</NuxtLink>
     </div>
 
     <!-- Reset form -->
@@ -71,7 +71,7 @@
       </div>
       <h2 class="text-[20px] font-semibold text-gray-900 mb-2">Password Reset!</h2>
       <p class="text-sm text-gray-500 mb-6">Your password has been updated successfully. You can now log in with your new password.</p>
-      <NuxtLink to="/revenue-partnership-login" class="inline-block bg-[#007C65] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#006A56] transition-colors">Go to Login</NuxtLink>
+      <NuxtLink to="/taxaid-partnership-login" class="inline-block bg-[#007C65] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#006A56] transition-colors">Go to Login</NuxtLink>
     </div>
   </div>
 </template>

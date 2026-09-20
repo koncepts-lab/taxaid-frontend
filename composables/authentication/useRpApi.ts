@@ -17,7 +17,7 @@ export const useRpApi = async (url: string, options: any = {}) => {
     onResponseError({ response }) {
       if (response.status === 401) {
         token.value = null
-        navigateTo('/revenue-partnership-login')
+        navigateTo('/taxaid-partnership-login')
       }
     },
   })

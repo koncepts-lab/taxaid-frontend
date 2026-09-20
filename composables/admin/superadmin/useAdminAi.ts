@@ -4,20 +4,37 @@
 // screens consume it. All calls go through useAdminApi (admin_token).
 export function useAdminAi() {
   // ── Per-tenant (client management "AI" subtab) ──────────────────────────
-  const getClientAi = (tenantId: number, range: '6m' | '1y' | 'full' = '6m') =>
-    useAdminApi(`/admin/ai/clients/${tenantId}?range=${range}`)
+  const getClientAi = (tenantId: number, range: '3m' | '6m' | '1y' | 'full' = '6m', scope: 'tenant' | 'organization' = 'tenant') =>
+    useAdminApi(`/admin/ai/clients/${tenantId}?range=${range}${scope === 'organization' ? '&scope=organization' : ''}`)
 
-  const toggleClientAi = (tenantId: number, password?: string) =>
-    useAdminApi(`/admin/ai/clients/${tenantId}/toggle`, { method: 'PATCH', body: password ? { password } : {} })
+  const toggleClientAi = (tenantId: number, password?: string, scope: 'tenant' | 'organization' = 'tenant') =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/toggle`, {
+      method: 'PATCH',
+      body: { ...(password ? { password } : {}), ...(scope === 'organization' ? { scope } : {}) },
+    })
 
-  const updateClientAiEntitlements = (tenantId: number, body: { ai_chat_enabled?: boolean | null; ai_alerts_enabled?: boolean | null }) =>
-    useAdminApi(`/admin/ai/clients/${tenantId}/entitlements`, { method: 'PATCH', body })
+  const updateClientAiEntitlements = (
+    tenantId: number,
+    body: { ai_chat_enabled?: boolean | null; ai_alerts_enabled?: boolean | null; ai_chat_mode?: string; ai_alerts_mode?: string },
+    scope: 'tenant' | 'organization' = 'tenant',
+  ) => useAdminApi(`/admin/ai/clients/${tenantId}/entitlements`, { method: 'PATCH', body: scope === 'organization' ? { ...body, scope } : body })
 
-  const getClientAiSettings = (tenantId: number) =>
-    useAdminApi(`/admin/ai/clients/${tenantId}/settings`)
+  type Scope = 'tenant' | 'organization'
+  const scopeQs = (scope: Scope, first = true) => (scope === 'organization' ? `${first ? '?' : '&'}scope=organization` : '')
 
-  const updateClientAiSettings = (tenantId: number, settings: Array<{ name: string; value: string }>) =>
-    useAdminApi(`/admin/ai/clients/${tenantId}/settings`, { method: 'PUT', body: { settings } })
+  const exportClientAiConfig = (tenantId: number, scope: Scope = 'tenant') =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/settings?format=export${scopeQs(scope, false)}`)
+
+  const runClientAiConfigAction = (
+    tenantId: number,
+    body: { action: 'mode' | 'sync' | 'reset' | 'copy' | 'promote' | 'import'; mode?: 'global' | 'organization' | 'custom'; area?: 'chat' | 'alerts' | 'both'; scope?: 'tenant' | 'organization'; source_tenant_id?: number; config?: any },
+  ) => useAdminApi(`/admin/ai/clients/${tenantId}/settings`, { method: 'PUT', body })
+
+  const getClientAiSettings = (tenantId: number, scope: Scope = 'tenant') =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/settings${scopeQs(scope)}`)
+
+  const updateClientAiSettings = (tenantId: number, settings: Array<{ name: string; value: string }>, scope: Scope = 'tenant') =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/settings`, { method: 'PUT', body: scope === 'organization' ? { settings, scope } : { settings } })
 
   // ── Global (top-level "AI Settings" tab) ────────────────────────────────
   // ai_global_settings is now row-per-instruction: seeded/default rows (is_default=true) can't
@@ -76,22 +93,23 @@ export function useAdminAi() {
   const getUnassignedAlertRules = (params?: { page?: number; per_page?: number; search?: string; domain?: string[] }) =>
     useAdminApi(`/admin/ai/alert-rules/unassigned${qs(params)}`)
 
-  const getClientAlertRuleOverrides = (tenantId: number, params?: { page?: number; per_page?: number; search?: string; domain?: string[]; category?: string[]; priority?: string }) =>
-    useAdminApi(`/admin/ai/clients/${tenantId}/alert-rule-overrides${qs(params)}`)
-  const updateClientAlertRuleOverride = (tenantId: number, ruleId: number, body: any) =>
-    useAdminApi(`/admin/ai/clients/${tenantId}/alert-rule-overrides/${ruleId}`, { method: 'PUT', body })
-  const resetClientAlertRuleOverride = (tenantId: number, ruleId: number) =>
-    useAdminApi(`/admin/ai/clients/${tenantId}/alert-rule-overrides/${ruleId}`, { method: 'DELETE' })
+  const getClientAlertRuleOverrides = (tenantId: number, params?: { page?: number; per_page?: number; search?: string; domain?: string[]; category?: string[]; priority?: string }, scope: Scope = 'tenant') =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/alert-rule-overrides${qs({ ...params, ...(scope === 'organization' ? { scope } : {}) })}`)
+  const updateClientAlertRuleOverride = (tenantId: number, ruleId: number, body: any, scope: Scope = 'tenant') =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/alert-rule-overrides/${ruleId}`, { method: 'PUT', body: scope === 'organization' ? { ...body, scope } : body })
+  const resetClientAlertRuleOverride = (tenantId: number, ruleId: number, scope: Scope = 'tenant') =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/alert-rule-overrides/${ruleId}${scopeQs(scope)}`, { method: 'DELETE' })
 
-  const getClientDataLinkOverrides = (tenantId: number, params?: { page?: number; per_page?: number; search?: string; domain?: string[] }) =>
-    useAdminApi(`/admin/ai/clients/${tenantId}/data-link-overrides${qs(params)}`)
-  const updateClientDataLinkOverride = (tenantId: number, linkId: number, body: any) =>
-    useAdminApi(`/admin/ai/clients/${tenantId}/data-link-overrides/${linkId}`, { method: 'PUT', body })
-  const resetClientDataLinkOverride = (tenantId: number, linkId: number) =>
-    useAdminApi(`/admin/ai/clients/${tenantId}/data-link-overrides/${linkId}`, { method: 'DELETE' })
+  const getClientDataLinkOverrides = (tenantId: number, params?: { page?: number; per_page?: number; search?: string; domain?: string[] }, scope: Scope = 'tenant') =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/data-link-overrides${qs({ ...params, ...(scope === 'organization' ? { scope } : {}) })}`)
+  const updateClientDataLinkOverride = (tenantId: number, linkId: number, body: any, scope: Scope = 'tenant') =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/data-link-overrides/${linkId}`, { method: 'PUT', body: scope === 'organization' ? { ...body, scope } : body })
+  const resetClientDataLinkOverride = (tenantId: number, linkId: number, scope: Scope = 'tenant') =>
+    useAdminApi(`/admin/ai/clients/${tenantId}/data-link-overrides/${linkId}${scopeQs(scope)}`, { method: 'DELETE' })
 
   return {
     getClientAi, toggleClientAi, updateClientAiEntitlements, getClientAiSettings, updateClientAiSettings,
+    exportClientAiConfig, runClientAiConfigAction,
     getSettings, addSetting, deleteSetting, getUsageSnapshot,
     getDataLinks, updateDataLink,
     getRules, updateRule,

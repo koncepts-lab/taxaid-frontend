@@ -5,9 +5,9 @@
     <div class="w-full max-w-[600px] bg-white rounded-[24px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8 md:p-12 flex flex-col items-center">
       
       <!-- Logo -->
-      <div class="mb-6">
+      <NuxtLink to="/home" class="mb-6">
         <img src="/images/logo.svg" alt="Taxaid.AI" class="text-center text-[32px] font-semibold text-[#000] mb-3" />
-      </div>
+      </NuxtLink>
 
       <!-- Header Content -->
       <h1 class="text-[24px] font-semibold text-[#1a1a1a] mb-1.5 text-center">
@@ -65,7 +65,7 @@
         </div>
 
         <!-- Error Message -->
-        <p v-if="loginError" class="text-[13px] text-red-500 text-center -mb-2">{{ loginError }}</p>
+        <div v-if="loginError" class="p-3 rounded-xl text-sm text-center font-medium bg-red-50 text-red-600">{{ loginError }}</div>
 
         <!-- Submit Button -->
         <button
@@ -97,11 +97,45 @@ definePageMeta({
   layout: false
 })
 
-const {
-  title, titleAr,
-  subtitle, subtitleAr,
-  labels, placeholders, footer
-} = useRevenuePartnershipLogin()
+const pageContent = {
+  "title": "Partner Login",
+  "titleAr": "تسجيل دخول الشريك",
+  "subtitle": "Track your referred clients, earnings and payments",
+  "subtitleAr": "تتبع عملائك المُحالين وأرباحك ومدفوعاتك",
+  "roles": [
+    "Partner",
+    "Accounts",
+    "Admin"
+  ],
+  "rolesAr": [
+    "شريك",
+    "حسابات",
+    "مسؤول"
+  ],
+  "labels": {
+    "loginAs": "Login as",
+    "loginAsAr": "تسجيل الدخول كـ",
+    "email": "Email Address *",
+    "emailAr": "عنوان البريد الإلكتروني *",
+    "password": "Password *",
+    "passwordAr": "كلمة المرور *",
+    "submit": "Login to Dashboard",
+    "submitAr": "تسجيل الدخول إلى لوحة التحكم"
+  },
+  "placeholders": {
+    "email": "your.email@company.com",
+    "password": "Min. 6 characters",
+    "passwordAr": "6 أحرف كحد أدنى"
+  },
+  "footer": {
+    "copyright": "Copyright Reserved @2025",
+    "copyrightAr": "جميع الحقوق محفوظة @2025",
+    "lastSync": "Last Sync: 19 Oct 2025, 10:45 AM IST",
+    "lastSyncAr": "آخر تزامن: 19 أكتوبر 2025، 10:45 صباحًا بتوقيت IST"
+  }
+}
+
+const { title, titleAr, subtitle, subtitleAr, labels, placeholders, footer } = pageContent
 
 const { login } = useRevenueAuth()
 

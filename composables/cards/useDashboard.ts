@@ -1,7 +1,7 @@
 /**
  * useDashboard
  * Single composable backing the 9 main-dashboard cards (`components/dashboard/*.vue`).
- * Fetches GET /dashboard once and exposes the same key names useMainDashboard()
+ * Fetches GET /dashboard once and exposes the same key names the old static dashboard data
  * used to expose from mock data, now computed from the real payload — so each
  * card's template/script needs only a one-line data-source swap.
  */

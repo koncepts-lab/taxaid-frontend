@@ -26,7 +26,7 @@ export const useRevenueAuth = () => {
     rpToken.value = res.token
     rpUser.value  = JSON.stringify(res.user)
 
-    return navigateTo('/revenue-partnership/partner')
+    return navigateTo('/taxaid-partner/dashboard')
   }
 
   const logout = async () => {
@@ -35,7 +35,7 @@ export const useRevenueAuth = () => {
     } catch {}
     rpToken.value = null
     rpUser.value  = null
-    return navigateTo('/revenue-partnership-login')
+    return navigateTo('/taxaid-partnership-login')
   }
 
   return { login, logout, isAuthenticated, user, rpToken, rpUser }

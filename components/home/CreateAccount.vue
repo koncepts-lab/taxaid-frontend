@@ -29,7 +29,7 @@
     </div>
 
     <!-- WELCOME OVERLAY -->
-    <WelcomeOverlay v-model="overlay" :start="triggerStart">
+    <HomeWelcomeOverlay v-model="overlay" :start="triggerStart">
       <div class="relative z-10 text-center flex flex-col items-center px-8 sm:px-12">
         <img src="/images/welcome-logo.png" alt="Taxaid" class="mx-auto w-full max-w-[220px] mb-8" />
         <h3 class="text-[48px] font-semibold text-[#31E0C8] leading-tight">Welcome to</h3>
@@ -48,7 +48,7 @@
           Get Started <span class="font-bold">→</span>
         </button>
       </div>
-    </WelcomeOverlay>
+    </HomeWelcomeOverlay>
   </div>
 </template>
 

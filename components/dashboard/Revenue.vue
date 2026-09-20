@@ -132,7 +132,7 @@ const currentLang = useState('currentLang')
 const hoveredMenuItem = useState('hoveredMenuItem')
 const isHovered = computed(() => hoveredMenuItem.value === 'Revenue')
 
-// ── Pull values from website-data.json ───────────────────────────────────
+// ── Live values from the dashboard API
 const { revenue } = useDashboard()
 
 const totalRevenue = computed(() => revenue.value?.totalRevenue      ?? 0)

@@ -15,12 +15,12 @@ export default defineNuxtConfig({
   },
   css: ["~/assets/main.css", "v-calendar/dist/style.css"],
 
-  // Register revenue-partnership components by filename only (no path prefix)
+  // Register taxaid-partner components by filename only (no path prefix)
   // so <DashboardFooter> etc continue to work everywhere unprefixed
   components: [
     { path: "~/components", pathPrefix: true },
     // { path: "~/components/common", pathPrefix: false },
-    { path: "~/components/revenue-partnership", pathPrefix: false },
+    { path: "~/components/taxaid-partner", pathPrefix: false },
   ],
 
   vite: {

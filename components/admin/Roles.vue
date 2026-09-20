@@ -1041,9 +1041,9 @@ const tabMap = { users: 'User Management', systems: 'System Access Control', par
 const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners', 'Tenants Management': 'organization-management', 'Organizations': 'new-user-requests', 'AI Settings': 'ai-settings', 'Roles & Settings': 'roles-and-settings' }
 const activeTab = ref(tabMap[route.query.tab] ?? 'User Management')
 
-// A client config is open (?tab=clients&id=N) → hide header/cards/tabs (SPA takeover)
+// An organization page is open (?tab=organization-management&organization_id=N) → hide header/cards/tabs (SPA takeover)
 const clientDetailOpen = computed(() =>
-  activeTab.value === 'Tenants Management' && Number(route.query.id) > 0
+  activeTab.value === 'Tenants Management' && Number(route.query.organization_id) > 0
 )
 
 function setTab(name) {

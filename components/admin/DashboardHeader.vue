@@ -92,7 +92,7 @@ const props = defineProps({
   },
   logoutTo: {
     type: String,
-    default: '/revenue-partnership-login'
+    default: '/taxaid-partnership-login'
   },
   adminLogout: {
     type: Boolean,
@@ -100,7 +100,7 @@ const props = defineProps({
   },
   notificationsTo: {
     type: String,
-    default: '/revenue-partnership/notifications'
+    default: '/taxaid-partner/notifications'
   }
 })
 

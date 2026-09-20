@@ -270,22 +270,111 @@ const isAddModalOpen = ref(false)
 const isDeleteModalOpen = ref(false);
 const itemPendingDeletion = ref(null);
 
-// ── Data from data.json (MOCK — only what has no backend yet) ─────────────
-const {
-  mainTabs: mainTabsData,              // UI config — tab labels/icons
-  subTabsFinancial: subTabsFinancialData, // UI config — sub-tab list
-  subTabsContacts: subTabsContactsData,   // UI config — sub-tab list
-  settings: settingsData,              // MOCK — settings page, no backend yet
-  interCompanyData: interCompanyDataFromJson, // MOCK — no backend yet
-  // ── replaced by live composables ──────────────────────────────────────
-  // arData        → useArAgingSummary() arRows/arTotals
-  // apData        → useApAgingSummary() apRows/apTotals
-  // logs          → per-composable fetchLogs() on all 7 tabs
-  // dataInItems   → useDataIn()
-  // budget        → useBudget() inside Budget.vue
-  // salesForecast → useSalesForecast() inside SalesForecast.vue
-  // costCenterReports → useCostCenter() contractData/budgetReportData (live API)
-} = useDataSourcePage()
+const dataSourceMainTabs = [
+  {
+    "id": "financial",
+    "label": "Financial Data Sources",
+    "labelAr": "مصادر البيانات المالية",
+    "icon": "/images/icons/Financial-Data-Sources.svg"
+  },
+  {
+    "id": "contacts",
+    "label": "Contacts & Customers",
+    "labelAr": "جهات الاتصال والعملاء",
+    "icon": "/images/icons/Contacts-Customers.svg"
+  },
+  {
+    "id": "certificate",
+    "label": "Upload Certificate",
+    "labelAr": "تحميل الشهادة",
+    "icon": "/images/icons/Upload-Certificate.svg"
+  }
+]
+
+const dataSourceSubTabsFinancial = [
+  {
+    "id": "data-in",
+    "label": "Data In",
+    "labelAr": "إدخال البيانات"
+  },
+  {
+    "id": "trial-balance",
+    "label": "Trial balance",
+    "labelAr": "ميزان المراجعة"
+  },
+  {
+    "id": "accounts-receivable",
+    "label": "Accounts Receivable",
+    "labelAr": "حسابات القبض"
+  },
+  {
+    "id": "accounts-payable",
+    "label": "Accounts Payable",
+    "labelAr": "حسابات الدفع"
+  },
+  {
+    "id": "inter-company",
+    "label": "Inter Company",
+    "labelAr": "بين الشركات"
+  },
+  {
+    "id": "sales-forecast",
+    "label": "Sales Forecast",
+    "labelAr": "توقعات المبيعات"
+  },
+  {
+    "id": "pdc",
+    "label": "PDC",
+    "labelAr": "الشيكات المؤجلة"
+  },
+  {
+    "id": "cost-center",
+    "label": "Cost Center",
+    "labelAr": "مركز التكلفة"
+  },
+  {
+    "id": "budget",
+    "label": "Budget",
+    "labelAr": "الميزانية"
+  },
+  {
+    "id": "settings",
+    "label": "Settings",
+    "labelAr": "الإعدادات"
+  },
+  {
+    "id": "inter-company",
+    "label": "Inter Company",
+    "labelAr": "بين الشركات"
+  }
+]
+
+const dataSourceSubTabsContacts = [
+  {
+    "id": "customers",
+    "label": "Customers",
+    "labelAr": "العملاء"
+  },
+  {
+    "id": "vendor",
+    "label": "Vendor",
+    "labelAr": "جهات الاتصال"
+  },
+  {
+    "id": "internal-email",
+    "label": "Internal Email",
+    "labelAr": "البريد الإلكتروني الداخلي"
+  }
+]
+
+// TODO: filled when the Settings tab is built (no backend yet, tab is hidden)
+
+// TODO: Settings and Inter-Company tabs are hidden (no backend yet); fill these when the features are built
+const settingsData = ref({})
+const interCompanyDataFromJson = ref([])
+const mainTabsData = ref(dataSourceMainTabs)
+const subTabsFinancialData = ref(dataSourceSubTabsFinancial)
+const subTabsContactsData = ref(dataSourceSubTabsContacts)
 
 const activeMainTab = ref((route.query.tab || 'financial'))
 // TODO: was 'settings' — that tab is hidden (no backend yet), default to first visible tab instead

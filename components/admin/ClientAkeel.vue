@@ -1,73 +1,86 @@
 <template>
   <div class="space-y-6 mt-4">
 
-    <!-- Kill switch -->
+    <div class="flex items-center gap-2 text-sm bg-white p-1.5 rounded-full border border-gray-100 shadow-sm w-fit overflow-x-auto">
+      <button v-for="t in ['General', 'Chat', 'AI Alerts']" :key="t" @click="activeAkeelSubTab = t"
+        :class="activeAkeelSubTab === t ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-6 shadow-sm' : 'text-gray-700 font-medium px-5 hover:bg-gray-50 hover:text-gray-900'"
+        class="py-2 rounded-full transition-colors whitespace-nowrap">{{ t }}</button>
+    </div>
+    <p class="text-[12px] text-gray-500 -mt-3">{{ isOrg ? 'Applies to all tenants of this organization.' : 'Applies to this tenant only.' }}</p>
+
+    <div v-if="activeAkeelSubTab === 'General'" class="space-y-6">
+    <!-- Tenant page: org override notice -->
+    <div v-if="!isOrg && orgOverrideNotice" class="bg-[#FEFCE8] border border-[#FDE047] rounded-[10px] px-4 py-3 text-[13px] text-[#854D0E]">
+      {{ orgOverrideNotice }}
+    </div>
+
+    <!-- Master / per-tenant AI access -->
     <div class="bg-white border border-[#D1FAE5] rounded-[10px] shadow-sm p-6">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 class="text-[16px] font-medium text-[#101828]">AI / Akeel Access</h2>
-          <p class="text-[13px] text-[#4A5565] mt-0.5">Instantly stop or resume AI chat for this tenant (testing/support control, separate from the plan entitlement).</p>
+          <h2 class="text-[16px] font-medium text-[#101828]">{{ isOrg ? 'AI / Akeel Access (organization)' : 'AI / Akeel Access (this tenant)' }}</h2>
+          <p class="text-[13px] text-[#4A5565] mt-0.5">
+            {{ isOrg
+              ? 'Master switch for every tenant of this organization. When it is off, no tenant can use AI, whatever the tenant switches say.'
+              : 'Kill switch for this tenant only. The organization switch and the plan quota still apply.' }}
+          </p>
         </div>
         <div class="flex items-center gap-3">
-          <span :class="enabled ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-red-100 text-red-700'"
+          <span :class="accessEnabled ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-red-100 text-red-700'"
             class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-medium">
             <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
-            {{ enabled ? 'Enabled' : 'Disabled' }}
+            {{ loading ? '—' : (accessEnabled ? 'Enabled' : 'Disabled') }}
           </span>
-          <button @click="onToggleClick" :disabled="busy"
-            :class="enabled ? 'border border-red-300 text-red-600 hover:bg-red-50' : 'bg-[#00896F] text-white hover:bg-[#00705a]'"
-            class="px-5 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-60">
-            {{ enabled ? 'Disable AI' : 'Enable AI' }}
+          <button @click="onToggleClick" :disabled="busy || loading"
+            :class="accessEnabled ? 'border border-red-300 text-red-600 hover:bg-red-50' : 'bg-[#00896F] text-white hover:bg-[#00705a]'"
+            class="px-5 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-60 min-w-[130px]">
+            {{ accessEnabled ? 'Disable AI' : 'Enable AI' }}
           </button>
         </div>
       </div>
     </div>
 
-    <div class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6" :class="{ 'opacity-50': !enabled }">
-      <h2 class="text-[16px] font-medium text-[#101828]">AI Chat / AI Alerts Access</h2>
-      <p class="text-[13px] text-[#4A5565] mt-0.5 mb-4">Independently force chat or alerts on/off for this org, or leave them following the plan's own entitlement.</p>
+    <!-- Chat / Alerts -->
+    <div class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6" :class="{ 'opacity-50': !accessEnabled }">
+      <h2 class="text-[16px] font-medium text-[#101828]">AI Chat / AI Alerts</h2>
+      <p class="text-[13px] text-[#4A5565] mt-0.5 mb-4">
+        {{ isOrg
+          ? 'Follow plan: allowed only if the plan includes it. Off: blocked for every tenant. The plan quota always applies.'
+          : 'Plain on/off for this tenant. It starts from the organization setting and can never exceed it.' }}
+      </p>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="flex items-center justify-between gap-3 border border-gray-100 rounded-lg px-4 py-3">
-          <span class="text-sm text-gray-700">AI Chat</span>
-          <select :value="triStateValue(data.ai_chat_enabled)" @change="updateEntitlement('ai_chat_enabled', $event.target.value)"
-            :disabled="entitlementBusy || !enabled" class="px-3 py-1.5 border border-gray-200 rounded-md text-[13px] outline-none focus:border-[#008169] disabled:opacity-60">
-            <option value="null">Follow plan</option>
-            <option value="true">Force on</option>
-            <option value="false">Force off</option>
+        <div v-for="f in switchFields" :key="f.key" class="flex items-center justify-between gap-3 border border-gray-100 rounded-lg px-4 py-3 min-h-[60px]">
+          <span class="text-sm text-gray-700">{{ f.label }}</span>
+          <select v-if="isOrg" :value="org[f.orgKey]" @change="setOrgMode(f.orgKey, $event.target.value)"
+            :disabled="entitlementBusy || !accessEnabled" class="px-3 py-1.5 border border-gray-200 rounded-md text-[13px] outline-none focus:border-[#008169] disabled:opacity-60">
+            <option value="global">Follow plan</option>
+            <option value="off">Off</option>
           </select>
-        </div>
-        <div class="flex items-center justify-between gap-3 border border-gray-100 rounded-lg px-4 py-3">
-          <span class="text-sm text-gray-700">AI Alerts</span>
-          <select :value="triStateValue(data.ai_alerts_enabled)" @change="updateEntitlement('ai_alerts_enabled', $event.target.value)"
-            :disabled="entitlementBusy || !enabled" class="px-3 py-1.5 border border-gray-200 rounded-md text-[13px] outline-none focus:border-[#008169] disabled:opacity-60">
-            <option value="null">Follow plan</option>
-            <option value="true">Force on</option>
-            <option value="false">Force off</option>
-          </select>
+          <div v-else class="flex items-center gap-3">
+            <span v-if="data[f.key] === null || data[f.key] === undefined" class="text-[11px] text-gray-400">Same as organization</span>
+            <button v-else @click="setTenantSwitch(f.key, null)" :disabled="entitlementBusy" class="text-[11px] text-[#00896F] hover:underline">Use organization value</button>
+            <button type="button" role="switch" :aria-checked="tenantSwitchOn(f)" @click="setTenantSwitch(f.key, !tenantSwitchOn(f))"
+              :disabled="entitlementBusy || !accessEnabled"
+              :class="tenantSwitchOn(f) ? 'bg-[#00896F]' : 'bg-gray-300'"
+              class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50">
+              <span :class="tenantSwitchOn(f) ? 'translate-x-6' : 'translate-x-1'" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"></span>
+            </button>
+          </div>
         </div>
       </div>
       <p v-if="entitlementMessage" class="text-[13px] mt-3" :class="entitlementOk ? 'text-[#00896F]' : 'text-red-500'">{{ entitlementMessage }}</p>
     </div>
 
-    <!-- Disable confirmation (password required) -->
-    <div v-if="confirmDisable" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div class="bg-white rounded-xl shadow-lg w-[400px] max-w-full p-6">
-        <h3 class="text-[16px] font-semibold text-gray-900 mb-2">Disable AI for this tenant?</h3>
-        <p class="text-sm text-gray-500 mb-4">Users on this tenant will immediately lose AI chat access.</p>
-        <label class="block text-[13px] text-gray-600 mb-1.5">Confirm with your admin password</label>
-        <input v-model="togglePassword" type="password" placeholder="Your password" autocomplete="current-password"
-          class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
-        <p v-if="toggleError" class="text-[13px] text-red-500 mt-2">{{ toggleError }}</p>
-        <div class="flex justify-end gap-3 mt-6">
-          <button @click="confirmDisable = false" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
-          <button @click="toggle" :disabled="busy || !togglePassword"
-            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-60">
-            {{ busy ? 'Disabling…' : 'Disable AI' }}
-          </button>
-        </div>
+    <!-- Configuration button -->
+    <div class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-[16px] font-medium text-[#101828]">Configuration</h2>
+        <p class="text-[13px] text-[#4A5565] mt-0.5">Copy, sync, reset, promote, export or import the AI chat and alert configuration.</p>
       </div>
+      <button @click="showConfig = true" class="px-5 py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors min-w-[130px]">Configuration</button>
     </div>
 
+    <template v-if="isOrg">
     <!-- 4 stat cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="bg-white border border-[#D1FAE5] rounded-[10px] shadow-sm p-5">
@@ -76,7 +89,7 @@
       </div>
       <div class="bg-white border border-[#D1FAE5] rounded-[10px] shadow-sm p-5">
         <p class="text-[13px] text-[#4A5565]">Total Tokens</p>
-        <p class="text-2xl font-semibold text-[#101828] mt-1">{{ loading ? '—' : formatInMillions(data.tokens_used_total) }}</p>
+        <p class="text-2xl font-semibold text-[#101828] mt-1">{{ loading ? '—' : formatTokens(data.tokens_used_total) }}</p>
       </div>
       <div class="bg-white border border-[#D1FAE5] rounded-[10px] shadow-sm p-5">
         <p class="text-[13px] text-[#4A5565]">Total Requests</p>
@@ -122,15 +135,9 @@
       </client-only>
     </div>
 
-    <!-- Sub-tab switcher: General / Chat / AI Alerts -->
-    <div class="flex items-center gap-2 text-sm bg-white p-1.5 rounded-full border border-gray-100 shadow-sm w-fit overflow-x-auto">
-      <button v-for="t in ['General', 'Chat', 'AI Alerts']" :key="t" @click="activeAkeelSubTab = t"
-        :class="activeAkeelSubTab === t ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-6 shadow-sm' : 'text-gray-700 font-medium px-5 hover:bg-gray-50 hover:text-gray-900'"
-        class="py-2 rounded-full transition-colors whitespace-nowrap">{{ t }}</button>
-    </div>
-
+    </template>
     <!-- Org settings editor -->
-    <div v-if="activeAkeelSubTab === 'General'" class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6">
+    <div v-if="isOrg" class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6">
       <h2 class="text-[16px] font-medium text-[#101828] mb-1">AI Chat Settings</h2>
       <p class="text-[13px] text-[#4A5565] mb-4">0 = unlimited, unless noted otherwise.</p>
       <div class="space-y-4" v-if="generalSettings.length">
@@ -150,20 +157,31 @@
       </button>
     </div>
 
+    </div>
+
     <!-- Chat Settings sub-tab: system-instruction override + per-org data-link overrides -->
     <div v-if="activeAkeelSubTab === 'Chat'" class="space-y-6">
+      <div v-if="!isOrg" class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6">
+        <h2 class="text-[16px] font-medium text-[#101828]">Configuration Source</h2>
+        <p class="text-[13px] text-[#4A5565] mt-0.5 mb-4">Which AI chat configuration this tenant uses.</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <button v-for="m in modeOptions" :key="m.key" @click="setMode(m.key, 'chat')" :disabled="modeBusy"
+            :class="areaMode('chat') === m.key ? 'border-[#00896F] bg-[#F0FDF9]' : 'border-gray-100 hover:bg-gray-50'"
+            class="text-left border rounded-lg px-4 py-3 transition-colors disabled:opacity-60">
+            <span class="block text-sm font-medium text-gray-800">{{ m.label }}</span>
+            <span class="block text-[12px] text-gray-500 mt-0.5">{{ m.help }}</span>
+          </button>
+        </div>
+        <p v-if="areaMode('chat') !== 'custom'" class="text-[12px] text-gray-500 mt-3">Edits below are saved for this tenant but only take effect in Custom Tenant mode.</p>
+        <p v-if="modeMessage" class="text-[13px] mt-3" :class="modeOk ? 'text-[#00896F]' : 'text-red-500'">{{ modeMessage }}</p>
+      </div>
       <div class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6">
         <h2 class="text-[16px] font-medium text-[#101828] mb-1">Chat Customization</h2>
-        <p class="text-[13px] text-[#4A5565] mb-4">Off = pure global behavior, even if custom values are saved below.</p>
-        <label class="flex items-center gap-2 mb-4">
-          <input type="checkbox" :checked="settingByName('chat_use_custom_settings')?.value === '1'"
-            @change="setSettingValue('chat_use_custom_settings', $event.target.checked)" class="w-5 h-5 accent-[#00896F]" />
-          <span class="text-sm text-gray-700">Use custom system instruction for this org</span>
-        </label>
+        <p class="text-[13px] text-[#4A5565] mb-4">{{ isOrg ? 'Applies to every tenant that uses Custom Organization.' : 'Saved for this tenant only.' }} Empty = inherit the AI global default.</p>
         <label class="block text-[13px] text-gray-600 mb-1.5">System instruction override</label>
         <textarea :value="settingByName('system_instructions_override')?.value" rows="4"
           @input="setSettingValue('system_instructions_override', $event.target.value, false)"
-          placeholder="Empty = inherit the global instruction"
+          placeholder="Empty = inherit the AI global default"
           class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]"></textarea>
         <button @click="saveSettings" :disabled="savingSettings"
           class="mt-4 px-5 py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors disabled:opacity-60">
@@ -174,13 +192,8 @@
       <div class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6">
         <div class="flex items-center justify-between gap-4 mb-1">
           <h2 class="text-[16px] font-medium text-[#101828]">Chat Data-Links</h2>
-          <label class="flex items-center gap-2 shrink-0">
-            <input type="checkbox" :checked="settingByName('chat_data_links_use_custom_settings')?.value === '1'"
-              @change="setSettingValue('chat_data_links_use_custom_settings', $event.target.checked); saveSettings()" class="w-5 h-5 accent-[#00896F]" />
-            <span class="text-sm text-gray-700">Use custom data-link settings</span>
-          </label>
         </div>
-        <p class="text-[13px] text-[#4A5565] mb-4">Disable a tool for this org's chat, or customize how it's described to Akeel. The underlying computation never changes.</p>
+        <p class="text-[13px] text-[#4A5565] mb-4">Disable a tool for chat, or customize how it's described to Akeel. The underlying computation never changes.</p>
         <div class="flex flex-col md:flex-row gap-3 mb-3">
           <input v-model="dataLinkOverrides.search" @input="debouncedLoadOverrides('dataLinks')" type="text" placeholder="Search tool…"
             class="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
@@ -223,16 +236,26 @@
     </div>
 
     <!-- AI Alerts sub-tab: per-org alert-rule overrides -->
-    <div v-if="activeAkeelSubTab === 'AI Alerts'" class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6">
+    <div v-if="activeAkeelSubTab === 'AI Alerts'" class="space-y-6">
+      <div v-if="!isOrg" class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6">
+        <h2 class="text-[16px] font-medium text-[#101828]">Configuration Source</h2>
+        <p class="text-[13px] text-[#4A5565] mt-0.5 mb-4">Which AI alerts configuration this tenant uses.</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <button v-for="m in modeOptions" :key="m.key" @click="setMode(m.key, 'alerts')" :disabled="modeBusy"
+            :class="areaMode('alerts') === m.key ? 'border-[#00896F] bg-[#F0FDF9]' : 'border-gray-100 hover:bg-gray-50'"
+            class="text-left border rounded-lg px-4 py-3 transition-colors disabled:opacity-60">
+            <span class="block text-sm font-medium text-gray-800">{{ m.label }}</span>
+            <span class="block text-[12px] text-gray-500 mt-0.5">{{ m.help }}</span>
+          </button>
+        </div>
+        <p v-if="areaMode('alerts') !== 'custom'" class="text-[12px] text-gray-500 mt-3">Edits below are saved for this tenant but only take effect in Custom Tenant mode.</p>
+        <p v-if="modeMessage" class="text-[13px] mt-3" :class="modeOk ? 'text-[#00896F]' : 'text-red-500'">{{ modeMessage }}</p>
+      </div>
+    <div class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6">
       <div class="flex items-center justify-between gap-4 mb-1">
         <h2 class="text-[16px] font-medium text-[#101828]">Alert Rule Customization</h2>
-        <label class="flex items-center gap-2 shrink-0">
-          <input type="checkbox" :checked="settingByName('alerts_use_custom_settings')?.value === '1'"
-            @change="setSettingValue('alerts_use_custom_settings', $event.target.checked); saveSettings()" class="w-5 h-5 accent-[#00896F]" />
-          <span class="text-sm text-gray-700">Use custom alert settings</span>
-        </label>
       </div>
-      <p class="text-[13px] text-[#4A5565] mb-4">Off = pure global behavior for every rule, even if overrides already exist below. Title/category/priority stay global-only, never overridable.</p>
+      <p class="text-[13px] text-[#4A5565] mb-4">{{ isOrg ? 'Applies to every tenant that uses Custom Organization.' : 'Saved for this tenant only.' }} Title/category/priority stay AI-global-only, never overridable.</p>
       <div class="flex flex-col md:flex-row gap-3 mb-3">
         <input v-model="alertRuleOverrides.search" @input="debouncedLoadOverrides('alertRules')" type="text" placeholder="Search alert title…"
           class="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
@@ -290,7 +313,93 @@
       <CommonPaginationBar v-if="alertRuleOverrides.meta.total > 0" :meta="alertRuleOverrides.meta" :loading="alertRuleOverrides.loading"
         @page-change="(p) => loadAlertRuleOverrides(p)" @per-page-change="(pp) => { alertRuleOverrides.perPage = pp; loadAlertRuleOverrides(1) }" />
     </div>
+    </div>
 
+    <Teleport to="body">
+    <!-- Disable confirmation (password required) -->
+    <div v-if="confirmDisable" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-xl shadow-lg w-[400px] max-w-full p-6">
+        <h3 class="text-[16px] font-semibold text-gray-900 mb-2">{{ isOrg ? 'Disable AI for this organization?' : 'Disable AI for this tenant?' }}</h3>
+        <p class="text-sm text-gray-500 mb-4">{{ isOrg ? 'Users of every tenant in this organization' : 'Users on this tenant' }} will immediately lose AI access.</p>
+        <label class="block text-[13px] text-gray-600 mb-1.5">Confirm with your admin password</label>
+        <input v-model="togglePassword" type="password" placeholder="Your password" autocomplete="current-password"
+          class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
+        <p v-if="toggleError" class="text-[13px] text-red-500 mt-2">{{ toggleError }}</p>
+        <div class="flex justify-end gap-3 mt-6">
+          <button @click="confirmDisable = false" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+          <button @click="toggle" :disabled="busy || !togglePassword"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-60">
+            {{ busy ? 'Disabling…' : 'Disable AI' }}
+          </button>
+        </div>
+      </div>
+    </div>
+    </Teleport>
+
+    <Teleport to="body">
+      <div v-if="showConfig" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" @click.self="showConfig = false">
+        <div class="bg-white rounded-xl shadow-lg w-[720px] max-w-full max-h-[90vh] overflow-y-auto p-6">
+          <div class="flex items-start justify-between gap-4 mb-4">
+            <h3 class="text-[16px] font-semibold text-gray-900">{{ isOrg ? 'Configure organization' : 'Configure tenant' }}{{ label ? ` (${label})` : '' }}</h3>
+            <button @click="showConfig = false" class="text-gray-400 hover:text-gray-600" title="Close">✕</button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div v-if="!isOrg" class="border border-gray-100 rounded-lg p-4 flex flex-col gap-3">
+            <div><p class="text-sm font-medium text-gray-800">Copy from another tenant</p><p class="text-[12px] text-gray-500 mt-0.5">Copies the configuration of another tenant of this organization onto this tenant, which then becomes Custom Tenant.</p></div>
+            <div class="flex flex-wrap items-center gap-2">
+              <select v-model="copySource" :disabled="!otherTenants.length || actionBusy" class="px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169] disabled:opacity-60 min-w-[180px]">
+                <option value="">{{ otherTenants.length ? 'Select tenant…' : 'No other tenant' }}</option>
+                <option v-for="t in otherTenants" :key="t.id" :value="String(t.id)">{{ t.name || 'Tenant' }} (#{{ t.id }})</option>
+              </select>
+              <button @click="openAction('copy')" :disabled="!copySource || actionBusy" class="self-start px-4 py-2 border border-[#007C65] text-[#007C65] rounded-lg text-sm font-medium hover:bg-[#F0FDF4] disabled:opacity-50">Copy</button>
+            </div>
+          </div>
+          <div class="border border-gray-100 rounded-lg p-4 flex flex-col gap-3">
+            <div><p class="text-sm font-medium text-gray-800">{{ isOrg ? 'Apply Custom Organization to all tenants' : 'Sync from AI Global Default' }}</p><p class="text-[12px] text-gray-500 mt-0.5">{{ isOrg ? 'Every tenant of this organization uses the organization configuration you set here. Nothing is copied from a tenant.' : 'This tenant uses the AI global default only. Its custom data is kept but ignored.' }}</p></div>
+            <button @click="openAction('sync')" :disabled="actionBusy" class="self-start px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50">{{ isOrg ? 'Apply to all tenants' : 'Sync from AI Global Default' }}</button>
+          </div>
+          <div class="border border-gray-100 rounded-lg p-4 flex flex-col gap-3">
+            <div><p class="text-sm font-medium text-gray-800">Reset</p><p class="text-[12px] text-gray-500 mt-0.5">{{ isOrg ? 'Deletes the organization-wide configuration.' : 'Deletes this tenant\'s custom data and points it back at Custom Organization.' }}</p></div>
+            <button @click="openAction('reset')" :disabled="actionBusy" class="self-start px-4 py-2 border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 disabled:opacity-50">Reset</button>
+          </div>
+          <div v-if="!isOrg" class="border border-gray-100 rounded-lg p-4 flex flex-col gap-3">
+            <div><p class="text-sm font-medium text-gray-800">Promote to Custom Organization</p><p class="text-[12px] text-gray-500 mt-0.5">Copies this tenant's configuration up as the Custom Organization configuration, replacing it.</p></div>
+            <button @click="openAction('promote')" :disabled="actionBusy" class="self-start px-4 py-2 border border-[#007C65] text-[#007C65] rounded-lg text-sm font-medium hover:bg-[#F0FDF4] disabled:opacity-50">Promote</button>
+          </div>
+          <div class="border border-gray-100 rounded-lg p-4 flex flex-col gap-3">
+            <div><p class="text-sm font-medium text-gray-800">Export JSON</p><p class="text-[12px] text-gray-500 mt-0.5">{{ isOrg ? 'Downloads the organization-wide configuration.' : 'Downloads this tenant\'s configuration.' }}</p></div>
+            <button @click="exportConfig" :disabled="actionBusy" class="self-start px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50">Export JSON</button>
+          </div>
+          <div class="border border-gray-100 rounded-lg p-4 flex flex-col gap-3">
+            <div><p class="text-sm font-medium text-gray-800">Import JSON</p><p class="text-[12px] text-gray-500 mt-0.5">{{ isOrg ? 'Replaces the organization-wide configuration from a file.' : 'Replaces this tenant\'s configuration from a file.' }}</p></div>
+            <button @click="importInput?.click()" :disabled="actionBusy" class="self-start px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50">Import JSON</button>
+          </div>
+          </div>
+          <input ref="importInput" type="file" accept="application/json,.json" class="hidden" @change="onImportFile" />
+          <p v-if="actionMessage" class="text-[13px] mt-4" :class="actionOk ? 'text-[#00896F]' : 'text-red-500'">{{ actionMessage }}</p>
+          <ul v-if="actionSkipped.length" class="text-[12px] text-amber-700 mt-2 list-disc pl-5 max-h-24 overflow-y-auto">
+            <li v-for="(item, i) in actionSkipped" :key="i">Skipped: {{ item }}</li>
+          </ul>
+        </div>
+      </div>
+    </Teleport>
+
+    <Teleport to="body">
+      <div v-if="pendingAction" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-xl shadow-lg w-[440px] max-w-full p-6">
+          <h3 class="text-[16px] font-semibold text-gray-900 mb-2">{{ actionText.title }}</h3>
+          <p class="text-sm text-gray-500 mb-6">{{ actionText.body }}</p>
+          <div class="flex justify-end gap-3">
+            <button @click="pendingAction = null" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+            <button @click="confirmAction" :disabled="actionBusy"
+              :class="pendingAction.type === 'reset' ? 'bg-red-600 hover:bg-red-700' : 'bg-[#00896F] hover:bg-[#00705a]'"
+              class="px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-60">
+              {{ actionBusy ? 'Working…' : actionText.confirm }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -299,12 +408,19 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 
 const props = defineProps({
   tenantId: { type: Number, required: true },
+  scope: { type: String, default: 'tenant' },
+  tenants: { type: Array, default: () => [] },
+  label: { type: String, default: '' },
 })
+
+const isOrg = computed(() => props.scope === 'organization')
+const targetScope = computed(() => (isOrg.value ? 'organization' : 'tenant'))
 
 const {
   getClientAi, toggleClientAi, updateClientAiEntitlements, getClientAiSettings, updateClientAiSettings,
   getClientAlertRuleOverrides, updateClientAlertRuleOverride, resetClientAlertRuleOverride,
   getClientDataLinkOverrides, updateClientDataLinkOverride, resetClientDataLinkOverride,
+  exportClientAiConfig, runClientAiConfigAction,
 } = useAdminAi()
 
 const data = ref({})
@@ -318,9 +434,17 @@ const confirmDisable = ref(false)
 const togglePassword = ref('')
 const toggleError = ref('')
 
-const activeAkeelSubTab = ref('General')
+const route = useRoute()
+const router = useRouter()
+const AI_TABS = { general: 'General', chat: 'Chat', alerts: 'AI Alerts' }
+const activeAkeelSubTab = ref(AI_TABS[route.query.aitab] ?? 'General')
+watch(activeAkeelSubTab, (tab) => {
+  const key = Object.keys(AI_TABS).find((k) => AI_TABS[k] === tab)
+  router.replace({ query: { ...route.query, aitab: key } })
+})
 
-const AKEEL_TAB_SETTING_NAMES = ['alerts_use_custom_settings', 'chat_use_custom_settings', 'system_instructions_override', 'chat_data_links_use_custom_settings']
+const MODE_FLAG_NAMES = ['alerts_use_custom_settings', 'chat_use_custom_settings', 'chat_data_links_use_custom_settings']
+const AKEEL_TAB_SETTING_NAMES = [...MODE_FLAG_NAMES, 'system_instructions_override']
 const generalSettings = computed(() => settings.value.filter((s) => !AKEEL_TAB_SETTING_NAMES.includes(s.name)))
 function settingByName(name) {
   return settings.value.find((s) => s.name === name)
@@ -349,18 +473,77 @@ function applyMeta(res) {
   return { current_page: res.current_page ?? 1, per_page: res.per_page ?? 10, total: res.total ?? 0, last_page: res.last_page ?? 1 }
 }
 
-const enabled = computed(() => !!data.value.ai_calling_enabled)
+const org = computed(() => ({ access: true, chat_mode: 'global', alerts_mode: 'global', ...(data.value.organization ?? {}) }))
+const accessEnabled = computed(() => (isOrg.value ? !!org.value.access : !!data.value.ai_calling_enabled))
+const switchFields = [
+  { key: 'ai_chat_enabled', orgKey: 'chat_mode', label: 'AI Chat' },
+  { key: 'ai_alerts_enabled', orgKey: 'alerts_mode', label: 'AI Alerts' },
+]
+const modeOptions = [
+  { key: 'global', label: 'AI Global Default', help: 'Platform defaults only.' },
+  { key: 'organization', label: 'Custom Organization', help: 'Organization-wide settings, falling back to the AI global default.' },
+  { key: 'custom', label: 'Custom Tenant', help: "This tenant's own settings over the organization's." },
+]
+const modeState = ref(null)
+const areaMode = (area) => modeState.value?.[area] ?? 'global'
+const modeBusy = ref(false)
+const modeMessage = ref('')
+const modeOk = ref(true)
+
+async function setMode(mode, area) {
+  modeBusy.value = true
+  modeMessage.value = ''
+  try {
+    await runClientAiConfigAction(props.tenantId, { action: 'mode', mode, area })
+    modeState.value = { ...(modeState.value ?? {}), [area]: mode, ...(area === 'chat' ? { links: mode } : {}) }
+    modeOk.value = true
+    modeMessage.value = 'Updated.'
+  } catch (e) {
+    modeOk.value = false
+    modeMessage.value = e?.data?.message ?? 'Failed to update.'
+  } finally {
+    modeBusy.value = false
+  }
+}
+
+const showConfig = ref(false)
+const otherTenants = computed(() => props.tenants.filter((t) => t.id !== props.tenantId))
+const orgOverrideNotice = computed(() => {
+  const o = org.value
+  if (!o.access) return 'The organization AI access is off. It overrides this tenant, so AI stays off here even if the switches below are on.'
+  const parts = []
+  if (o.chat_mode === 'off') parts.push('chat')
+  if (o.alerts_mode === 'off') parts.push('alerts')
+  return parts.length ? `The organization has ${parts.join(' and ')} turned off. That overrides this tenant.` : ''
+})
 
 const entitlementBusy = ref(false)
 const entitlementMessage = ref('')
 const entitlementOk = ref(true)
 
-function triStateValue(v) {
-  return v === true ? 'true' : v === false ? 'false' : 'null'
+function tenantSwitchOn(f) {
+  const value = data.value[f.key]
+  return value === null || value === undefined ? org.value[f.orgKey] !== 'off' : value
 }
 
-async function updateEntitlement(field, selected) {
-  const value = selected === 'true' ? true : selected === 'false' ? false : null
+async function setOrgMode(orgKey, mode) {
+  entitlementBusy.value = true
+  entitlementMessage.value = ''
+  try {
+    const field = orgKey === 'chat_mode' ? 'ai_chat_mode' : 'ai_alerts_mode'
+    const res = await updateClientAiEntitlements(props.tenantId, { [field]: mode }, 'organization')
+    data.value.organization = { ...org.value, ...(res?.data ?? {}), [orgKey]: res?.data?.[orgKey] ?? mode }
+    entitlementOk.value = true
+    entitlementMessage.value = 'Updated.'
+  } catch (e) {
+    entitlementOk.value = false
+    entitlementMessage.value = e?.data?.message ?? 'Failed to update.'
+  } finally {
+    entitlementBusy.value = false
+  }
+}
+
+async function setTenantSwitch(field, value) {
   entitlementBusy.value = true
   entitlementMessage.value = ''
   try {
@@ -433,6 +616,11 @@ const chartOptions = computed(() => ({
 
 watch(selectedRange, reloadGraph)
 
+function formatTokens(value) {
+  const n = Number(value ?? 0)
+  return n >= 1000000 ? `${(n / 1000000).toFixed(2)}M` : n.toLocaleString('en-US')
+}
+
 function settingLabel(name) {
   const labels = {
     keep_history_per_chat: 'Keep chat history',
@@ -446,7 +634,7 @@ function settingLabel(name) {
 async function load() {
   loading.value = true
   try {
-    const res = await getClientAi(props.tenantId, selectedRange.value)
+    const res = await getClientAi(props.tenantId, selectedRange.value, targetScope.value)
     data.value = res?.data ?? {}
   } catch {
     data.value = {}
@@ -454,8 +642,9 @@ async function load() {
     loading.value = false
   }
   try {
-    const res = await getClientAiSettings(props.tenantId)
+    const res = await getClientAiSettings(props.tenantId, targetScope.value)
     settings.value = res?.data ?? []
+    modeState.value = res?.mode ?? null
   } catch {
     settings.value = []
   }
@@ -465,7 +654,7 @@ async function load() {
 async function reloadGraph() {
   loading.value = true
   try {
-    const res = await getClientAi(props.tenantId, selectedRange.value)
+    const res = await getClientAi(props.tenantId, selectedRange.value, targetScope.value)
     data.value = res?.data ?? {}
   } catch {
     data.value = {}
@@ -475,7 +664,7 @@ async function reloadGraph() {
 }
 
 function onToggleClick() {
-  if (enabled.value) {
+  if (accessEnabled.value) {
     toggleError.value = ''
     togglePassword.value = ''
     confirmDisable.value = true
@@ -488,8 +677,12 @@ async function toggle() {
   busy.value = true
   toggleError.value = ''
   try {
-    const res = await toggleClientAi(props.tenantId, enabled.value ? togglePassword.value : undefined)
-    data.value.ai_calling_enabled = res?.data?.ai_calling_enabled ?? !enabled.value
+    const res = await toggleClientAi(props.tenantId, accessEnabled.value ? togglePassword.value : undefined, targetScope.value)
+    if (isOrg.value) {
+      data.value.organization = { ...org.value, access: res?.data?.ai_access ?? !org.value.access }
+    } else {
+      data.value.ai_calling_enabled = res?.data?.ai_calling_enabled ?? !accessEnabled.value
+    }
     confirmDisable.value = false
   } catch (e) {
     toggleError.value = e?.data?.message ?? 'Failed to update AI access.'
@@ -501,7 +694,7 @@ async function toggle() {
 async function loadAlertRuleOverrides(page = 1) {
   alertRuleOverrides.loading = true
   try {
-    const res = await getClientAlertRuleOverrides(props.tenantId, { page, per_page: alertRuleOverrides.perPage, search: alertRuleOverrides.search, domain: alertRuleOverrides.domain })
+    const res = await getClientAlertRuleOverrides(props.tenantId, { page, per_page: alertRuleOverrides.perPage, search: alertRuleOverrides.search, domain: alertRuleOverrides.domain }, targetScope.value)
     alertRuleOverrides.rows = res?.data ?? []
     alertRuleOverrides.meta = applyMeta(res)
     if (res?.category_options) alertRuleOverrides.categoryOptions = res.category_options
@@ -516,7 +709,7 @@ async function loadAlertRuleOverrides(page = 1) {
 async function loadDataLinkOverrides(page = 1) {
   dataLinkOverrides.loading = true
   try {
-    const res = await getClientDataLinkOverrides(props.tenantId, { page, per_page: dataLinkOverrides.perPage, search: dataLinkOverrides.search, domain: dataLinkOverrides.domain })
+    const res = await getClientDataLinkOverrides(props.tenantId, { page, per_page: dataLinkOverrides.perPage, search: dataLinkOverrides.search, domain: dataLinkOverrides.domain }, targetScope.value)
     dataLinkOverrides.rows = res?.data ?? []
     dataLinkOverrides.meta = applyMeta(res)
     if (res?.domain_options) dataLinkOverrides.domainOptions = res.domain_options
@@ -529,27 +722,28 @@ async function loadDataLinkOverrides(page = 1) {
 
 async function saveAlertRuleOverride(row) {
   const r = row.resolved
-  await updateClientAlertRuleOverride(props.tenantId, row.id, {
+  const body = {
     rag_prompt_instruction: r.rag_prompt_instruction,
     is_active: r.is_active,
     check_interval: r.check_interval,
     check_interval_hours: r.check_interval === 'hourly' ? r.check_interval_hours : null,
     check_interval_day: ['weekly', 'biweekly', 'monthly'].includes(r.check_interval) ? r.check_interval_day : null,
     check_interval_time: r.check_interval === 'daily' ? r.check_interval_time : null,
-  })
+  }
+  await updateClientAlertRuleOverride(props.tenantId, row.id, body, targetScope.value)
   await loadAlertRuleOverrides(alertRuleOverrides.meta.current_page)
 }
 async function resetAlertRuleOverride(row) {
-  await resetClientAlertRuleOverride(props.tenantId, row.id)
+  await resetClientAlertRuleOverride(props.tenantId, row.id, targetScope.value)
   await loadAlertRuleOverrides(alertRuleOverrides.meta.current_page)
 }
 
 async function saveDataLinkOverride(row) {
-  await updateClientDataLinkOverride(props.tenantId, row.id, row.resolved)
+  await updateClientDataLinkOverride(props.tenantId, row.id, row.resolved, targetScope.value)
   await loadDataLinkOverrides(dataLinkOverrides.meta.current_page)
 }
 async function resetDataLinkOverride(row) {
-  await resetClientDataLinkOverride(props.tenantId, row.id)
+  await resetClientDataLinkOverride(props.tenantId, row.id, targetScope.value)
   await loadDataLinkOverrides(dataLinkOverrides.meta.current_page)
 }
 
@@ -557,7 +751,8 @@ async function saveSettings() {
   savingSettings.value = true
   settingsMessage.value = ''
   try {
-    await updateClientAiSettings(props.tenantId, settings.value.map((s) => ({ name: s.name, value: s.value })))
+    const payload = settings.value.filter((s) => !MODE_FLAG_NAMES.includes(s.name)).map((s) => ({ name: s.name, value: s.value }))
+    await updateClientAiSettings(props.tenantId, payload, targetScope.value)
     settingsOk.value = true
     settingsMessage.value = 'Settings updated.'
   } catch (e) {
@@ -565,6 +760,104 @@ async function saveSettings() {
     settingsMessage.value = e?.data?.message ?? 'Failed to update settings.'
   } finally {
     savingSettings.value = false
+  }
+}
+
+const copySource = ref('')
+const importInput = ref(null)
+const pendingAction = ref(null)
+const actionBusy = ref(false)
+const actionMessage = ref('')
+const actionOk = ref(true)
+const actionSkipped = ref([])
+
+const actionText = computed(() => {
+  const p = pendingAction.value
+  const where = isOrg.value ? 'every tenant of this organization' : 'this tenant'
+  if (!p) return { title: '', body: '', confirm: '' }
+  if (p.type === 'sync') return isOrg.value
+    ? { title: 'Apply Custom Organization to all tenants?', body: 'Every tenant of this organization switches to Custom Organization. Their own custom data is kept but ignored.', confirm: 'Apply' }
+    : { title: 'Sync from AI Global Default?', body: 'This tenant uses the AI global default only. Its custom data is kept but ignored.', confirm: 'Sync' }
+  if (p.type === 'reset') return isOrg.value
+    ? { title: 'Reset organization configuration?', body: 'The organization-wide chat and alert configuration is deleted. This cannot be undone.', confirm: 'Reset' }
+    : { title: 'Reset this tenant?', body: 'The custom chat and alert data of this tenant is deleted and the tenant uses Custom Organization again. This cannot be undone.', confirm: 'Reset' }
+  if (p.type === 'promote') return { title: 'Promote to Custom Organization?', body: "This tenant's configuration replaces the Custom Organization configuration used by every tenant on Custom Organization, and by Custom Tenant tenants for anything they haven't changed.", confirm: 'Promote' }
+  if (p.type === 'copy') {
+    const source = props.tenants.find((t) => String(t.id) === copySource.value)
+    return { title: 'Copy configuration?', body: `Copies the chat and alert configuration of ${source?.name ?? 'the selected tenant'} (#${copySource.value}) onto this tenant, replacing its current custom data.`, confirm: 'Copy' }
+  }
+  return { title: 'Import configuration?', body: `Imports "${p.fileName}" into ${where}, replacing its current configuration. Unknown rules are skipped and listed.`, confirm: 'Import' }
+})
+
+function openAction(type) {
+  pendingAction.value = { type }
+}
+
+async function confirmAction() {
+  const p = pendingAction.value
+  actionBusy.value = true
+  actionMessage.value = ''
+  actionSkipped.value = []
+  try {
+    const body = { action: p.type, scope: targetScope.value }
+    if (p.type === 'copy') body.source_tenant_id = Number(copySource.value)
+    if (p.type === 'import') body.config = p.config
+    const res = await runClientAiConfigAction(props.tenantId, body)
+    const reports = Object.values(res?.report ?? {})
+    actionSkipped.value = [...new Set(reports.flatMap((r) => r?.skipped ?? []))]
+    actionOk.value = true
+    actionMessage.value = p.type === 'import' || p.type === 'copy' ? 'Configuration applied.' : 'Done.'
+    pendingAction.value = null
+    if (p.type === 'copy') copySource.value = ''
+    if (!isOrg.value && ['copy', 'sync', 'reset'].includes(p.type)) modeState.value = null
+    await load()
+    await Promise.all([loadAlertRuleOverrides(), loadDataLinkOverrides()])
+  } catch (e) {
+    actionOk.value = false
+    actionMessage.value = e?.data?.message ?? e?.data?.errors?.config?.[0] ?? 'The action failed.'
+    pendingAction.value = null
+  } finally {
+    actionBusy.value = false
+  }
+}
+
+async function exportConfig() {
+  actionMessage.value = ''
+  actionSkipped.value = []
+  try {
+    const res = await exportClientAiConfig(props.tenantId, targetScope.value)
+    const blob = new Blob([JSON.stringify(res, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'taxaid-ai-config.json'
+    a.click()
+    URL.revokeObjectURL(url)
+    actionOk.value = true
+    actionMessage.value = 'Exported taxaid-ai-config.json.'
+  } catch (e) {
+    actionOk.value = false
+    actionMessage.value = e?.data?.message ?? 'Export failed.'
+  }
+}
+
+async function onImportFile(event) {
+  const file = event.target.files?.[0]
+  event.target.value = ''
+  if (!file) return
+  actionMessage.value = ''
+  actionSkipped.value = []
+  try {
+    const config = JSON.parse(await file.text())
+    if (config?.format !== 'taxaid.ai-config' || Number(config?.version) !== 1) {
+      actionOk.value = false
+      actionMessage.value = 'This is not a TaxAid AI configuration file (format taxaid.ai-config, version 1).'
+      return
+    }
+    pendingAction.value = { type: 'import', config, fileName: file.name }
+  } catch {
+    actionOk.value = false
+    actionMessage.value = 'The file is not valid JSON.'
   }
 }
 

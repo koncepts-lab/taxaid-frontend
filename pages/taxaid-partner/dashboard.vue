@@ -1,10 +1,5 @@
 <template>
-  <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300"
-    :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'"
-    :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-
-    <!-- HEADER -->
-    <AdminDashboardHeader />
+  <div class="w-full flex-1 flex flex-col font-sans" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
     <!-- CONTENT -->
     <main class="flex-1 px-8 pb-[0px] pt-8 space-y-6 overflow-y-auto" style="margin-top: -18px;">
@@ -205,16 +200,13 @@
       </div>
     </main>
 
-    <!-- FOOTER -->
-    <DashboardFooter />
-
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'partner' })
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
