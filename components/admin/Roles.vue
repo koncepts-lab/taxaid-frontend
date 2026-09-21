@@ -458,6 +458,7 @@
                 </tr>
               </template>
               <tr v-else-if="!organizationRows.length"><td colspan="6" class="py-10 text-center text-gray-400">No registrations found.</td></tr>
+              <template v-else>
               <tr v-for="row in organizationRows" :key="row.id" class="border-b border-gray-100 hover:bg-gray-50/50">
                 <td class="py-4 px-6 font-medium text-gray-800">{{ row.company_name }}</td>
                 <td class="py-4 px-6">{{ row.org_name || '—' }}</td>
@@ -468,6 +469,7 @@
                 <td class="py-4 px-6">{{ row.reviewed_by_name || '—' }}</td>
                 <td class="py-4 px-6 text-gray-500">{{ row.created_at ? new Date(row.created_at).toLocaleDateString() : '-' }}</td>
               </tr>
+              </template>
             </tbody>
           </table>
         </div>

@@ -23,8 +23,9 @@
                     </div>
 
                     <div class="p-6 flex-1 overflow-hidden flex flex-col">
-                        <div v-if="loading" class="flex justify-center items-center py-16">
-                            <div class="w-8 h-8 border-2 border-[#008169] border-t-transparent rounded-full animate-spin"></div>
+                        <div v-if="loading" class="space-y-3 py-2">
+                            <div class="skeleton h-10 w-full rounded-lg"></div>
+                            <div v-for="n in 9" :key="n" class="skeleton h-8 w-full rounded"></div>
                         </div>
                         <div v-else class="overflow-auto rounded-[20px] border budget-scroll flex-1 relative shadow-inner"
                             :class="isDark ? 'border-white/10 bg-[#001a16]' : 'border-gray-200 bg-gray-50/30'">
@@ -99,6 +100,16 @@ defineEmits(['close'])
 </script>
 
 <style scoped>
+.skeleton {
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
+    background-size: 400% 100%;
+    animation: ds-shimmer 1.4s ease infinite;
+}
+@keyframes ds-shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+}
+
 .fade-enter-active,
 .fade-leave-active {
     transition: opacity 0.4s ease, transform 0.4s ease;

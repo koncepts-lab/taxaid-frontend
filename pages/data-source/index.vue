@@ -23,7 +23,7 @@
             </button>
           </div>
 
-          <div class="main-tabs mb-6 flex gap-2 p-1.5 transition-all duration-500"
+          <div v-if="mainTabs.length > 1" class="main-tabs mb-6 flex gap-2 p-1.5 transition-all duration-500"
             :class="isDark ? 'bg-[#014235] border border-white/5' : 'bg-[#84D8C5]'" style="border-radius: 50px;">
 
             <button v-for="(tab, index) in mainTabs" :key="index" @click="activeMainTab = tab.id"
@@ -39,7 +39,7 @@
             </button>
           </div>
 
-          <div v-if="activeMainTab === 'financial' || activeMainTab === 'contacts'"
+          <div v-if="(activeMainTab === 'financial' || activeMainTab === 'contacts') && visibleSubTabs.length > 1"
             class="sub-tabs-wrapper relative mb-6 flex items-center group overflow-hidden">
 
             <!-- Left Scroll Arrow -->
@@ -133,7 +133,7 @@
                 v-if="activeMainTab !== 'certificate' && ['inter-company', 'vendor', 'internal-email', 'customers'].includes(activeSubTab)"
                 :key="activeSubTab" :type="activeSubTab" :data="interCompanyData" :isDark="isDark"
                 :currentLang="currentLang" @add="handleAddRow" @delete="handleDeleteRows" />
-              <DataSourcePDC v-if="activeSubTab === 'pdc'" :pdcGroups="pdcSummaryData" :isDark="isDark"
+              <DataSourcePDC v-if="activeSubTab === 'pdc'" :pdcGroups="pdcSummaryData" :loading="pdcSummaryLoading" :isDark="isDark"
                 :currentLang="currentLang" @open-report="openPDCReport" />
               <DataSourceCostCenter v-if="activeSubTab === 'cost-center'" :isDark="isDark" :currentLang="currentLang"
                 :activeCount="ccActiveCount"
@@ -240,10 +240,10 @@ const route  = useRoute()
 const router = useRouter()
 
 // ── AR Aging Summary (live API) ────────────────────────────────────────────
-const { rows: arRows, totals: arTotals, loading: arLoading, error: arError, logs: arLiveLogs, logsMeta: arLogsMeta, logsLoading: arLogsLoading, fetchLogs: fetchArLogs, refresh: refreshArAging } = useArAgingSummary()
+const { rows: arRows, totals: arTotals, loading: arLoading, error: arError, logs: arLiveLogs, logsMeta: arLogsMeta, logsLoading: arLogsLoading, fetchLogs: fetchArLogs, refresh: refreshArAging, load: loadAr } = useArAgingSummary()
 
 // ── AP Aging Summary (live API) ────────────────────────────────────────────
-const { rows: apRows, totals: apTotals, loading: apLoading, error: apError, logs: apLiveLogs, logsMeta: apLogsMeta, logsLoading: apLogsLoading, fetchLogs: fetchApLogs, refresh: refreshApAging } = useApAgingSummary()
+const { rows: apRows, totals: apTotals, loading: apLoading, error: apError, logs: apLiveLogs, logsMeta: apLogsMeta, logsLoading: apLogsLoading, fetchLogs: fetchApLogs, refresh: refreshApAging, load: loadAp } = useApAgingSummary()
 
 // ── Per-module hybrid/direct data modes (drives the sub-tab toggles) ───────
 const { modes: dataModes, fetchModes: fetchDataModes, setMode: setDataMode, toLabel, toMode } = useDataMode()
@@ -260,7 +260,7 @@ const handleModeChange = async (module, label) => {
 }
 
 // ── Trial Balance (live API) ───────────────────────────────────────────────
-const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoading: tbLoadingState, tbMeta, tbFilters, tbFilterOptions, applyFilters, fetchTrialBalance, fetchMappingOptions, fetchFilterOptions, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, tbLogs: tbLiveLogs, tbLogsMeta, tbLogsLoading, fetchLogs: fetchTbLogs, importOpen, importHasFile, importUploading, importLoading, importError, importVariance, importRows, uploadMappingFile, previewMappingImport, confirmMappingImport, cancelMappingImport, downloadMappingTemplate } = useTrialBalance()
+const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoading: tbLoadingState, tbMeta, tbFilters, tbFilterOptions, applyFilters, fetchTrialBalance, fetchMappingOptions, fetchFilterOptions, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, loadInitial: loadTb, tbLogs: tbLiveLogs, tbLogsMeta, tbLogsLoading, fetchLogs: fetchTbLogs, importOpen, importHasFile, importUploading, importLoading, importError, importVariance, importRows, uploadMappingFile, previewMappingImport, confirmMappingImport, cancelMappingImport, downloadMappingTemplate } = useTrialBalance()
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
@@ -388,7 +388,7 @@ watch(activeMainTab, (val) => { syncUrl() })
 watch(activeSubTab,  (val) => { syncUrl() })
 
 // Computed aliases so template/logic reads identically to before
-const { can, financialSubTabs } = usePermissions()
+const { can, financialSubTabs, contactSubTabs } = usePermissions()
 const financialTabAllowed = (id) => {
   const tabs = financialSubTabs.value
   if (id === 'accounts-receivable') return tabs.accounts_receivable
@@ -399,11 +399,14 @@ const financialTabAllowed = (id) => {
   return tabs.other
 }
 const subTabsFinancial = computed(() => (subTabsFinancialData.value ?? []).filter(tab => financialTabAllowed(tab.id)))
-const subTabsContacts = computed(() => (can('data_source.contacts_certificate') ? subTabsContactsData.value : []))
+const subTabsContacts = computed(() => (subTabsContactsData.value ?? []).filter(tab => contactSubTabs.value[tab.id]))
 const mainTabs = computed(() => (mainTabsData.value ?? []).filter(tab =>
-  tab.id === 'financial' ? subTabsFinancial.value.length > 0 : can('data_source.contacts_certificate')
+  tab.id === 'financial' ? subTabsFinancial.value.length > 0
+    : tab.id === 'contacts' ? subTabsContacts.value.length > 0
+    : can('data_source.contacts_certificate')
 ))
 const searchQuery = ref('')
+const visibleSubTabs = computed(() => (currentSubTabs.value ?? []).filter(tab => tab.id !== 'settings' && tab.id !== 'inter-company'))
 const subTabsContainer = ref(null)
 const canScrollLeft = ref(false)
 const canScrollRight = ref(false)
@@ -515,6 +518,8 @@ const {
   logsMeta: pdcLogsMeta,
   logsLoading: pdcLogsLoading,
   fetchLogs: fetchPdcLogs,
+  load: loadPdc,
+  summaryLoading: pdcSummaryLoading,
 } = usePDC()
 
 const pdcSummaryData = computed(() => pdcGroups.value)
@@ -545,7 +550,6 @@ const {
   supportsVariancePreview: dataInSupportsVariancePreview, previewUpload: dataInPreviewUpload,
   confirmUpload: dataInConfirmUpload, cancelPreview: dataInCancelPreview, confirming: dataInConfirming,
 } = useDataIn()
-onMounted(() => fetchDataInConfig())
 
 // Inter-company from composable (kept as ref so add/delete can mutate)
 const interCompanyData = ref([])
@@ -685,6 +689,7 @@ const {
   logsMeta: ccLogsMeta,
   logsLoading: ccLogsLoading,
   fetchLogs: fetchCcLogs,
+  load: loadCc,
 } = useCostCenter()
 
 const ccContractColumns = [
@@ -753,7 +758,51 @@ const fetchSfLogs = async (page = 1, perPage = 10) => {
   } catch { /* silently ignore — logs are non-critical */ }
   finally { sfLogsLoading.value = false }
 }
-onMounted(() => { fetchBudgetLogs(); fetchSfLogs() })
+
+// Each sub-tab loads its data the first time it is opened. Once the open tab has loaded, the nearest
+// tabs (then the other main tab's) are warmed one at a time, so switching is instant without a burst of requests.
+const tabLoaders = {
+  'data-in': () => fetchDataInConfig(),
+  'trial-balance': () => loadTb(),
+  'accounts-receivable': () => loadAr(),
+  'accounts-payable': () => loadAp(),
+  'pdc': () => loadPdc(),
+  'cost-center': () => loadCc(),
+  'budget': () => fetchBudgetLogs(),
+  'sales-forecast': () => fetchSfLogs(),
+}
+const loadedTabs = new Set()
+const ensureTabLoaded = async (id) => {
+  const loader = tabLoaders[id]
+  if (!loader || loadedTabs.has(id)) return
+  loadedTabs.add(id)
+  try { await loader() } catch { /* each loader reports its own error state */ }
+}
+
+let prefetchRun = 0
+const prefetchNearest = async () => {
+  const run = ++prefetchRun
+  const own = (currentSubTabs.value ?? []).map(t => t.id)
+  const others = (activeMainTab.value === 'financial' ? subTabsContacts.value : subTabsFinancial.value) ?? []
+  const from = own.indexOf(activeSubTab.value)
+  const nearest = own
+    .map((id, i) => ({ id, distance: Math.abs(i - from) + (i < from ? 0.5 : 0) }))
+    .sort((a, b) => a.distance - b.distance)
+    .map(t => t.id)
+  for (const id of [...nearest, ...others.map(t => t.id)]) {
+    if (run !== prefetchRun) return
+    await ensureTabLoaded(id)
+    await new Promise(resolve => setTimeout(resolve, 200))
+  }
+}
+
+watch(activeSubTab, async () => {
+  if (!import.meta.client) return
+  await ensureTabLoaded(activeSubTab.value)
+  prefetchNearest()
+}, { immediate: true })
+
+onUnmounted(() => { prefetchRun++ })
 
 // salesForecastDetailedColumns kept for SalesForecastModal prop
 const salesForecastDetailedColumns = [

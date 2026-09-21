@@ -113,20 +113,27 @@
       @close="modal.open = false"
       @submit="submit"
       @reset-password="onModalReset"
-      @toggle-status="onModalStatus"
-      @remove="onModalRemove" />
+      @toggle-status="onModalStatus" />
 
     <Teleport to="body">
-      <div v-if="confirmRemove" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40" @click.self="confirmRemove = null">
+      <div v-if="confirmSuspend" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40" @click.self="closeSuspend">
         <div class="w-full max-w-md rounded-2xl p-6 space-y-4" :class="isDark ? 'bg-[#002E26] text-white' : 'bg-white text-[#013E32]'">
-          <h3 class="text-[20px]">{{ currentLang === 'ar' ? 'حذف المستخدم' : 'Remove user' }}</h3>
-          <p class="text-sm">{{ confirmRemove.first_name }} {{ confirmRemove.last_name }} ({{ confirmRemove.email }})</p>
+          <h3 class="text-[20px]">{{ currentLang === 'ar' ? 'تعليق المستخدم' : 'Suspend user' }}</h3>
+          <p class="text-sm">{{ confirmSuspend.first_name }} {{ confirmSuspend.last_name }} ({{ confirmSuspend.email }})</p>
+          <p class="text-sm" :class="muted">{{ currentLang === 'ar' ? 'سيتم تسجيل خروج هذا المستخدم ولن يتمكن من الدخول حتى إلغاء التعليق.' : 'This user is signed out and cannot log in until you unsuspend them.' }}</p>
+          <div>
+            <label class="block text-[13px] mb-1.5" :class="muted">{{ currentLang === 'ar' ? 'اكتب' : 'Type' }} <b class="font-semibold" :class="isDark ? 'text-white' : 'text-black'">"suspend"</b> {{ currentLang === 'ar' ? 'للتأكيد' : 'to confirm' }}</label>
+            <input v-model="suspendWord" type="text" autocomplete="off" placeholder="suspend"
+              class="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-[#008169]"
+              :class="isDark ? 'bg-white/5 border-white/20 text-white' : 'bg-white border-gray-200 text-black'" />
+          </div>
           <div class="flex gap-3 justify-end">
-            <button @click="confirmRemove = null" class="px-5 py-2 rounded-xl border text-sm" :class="isDark ? 'border-white/20' : 'border-gray-200'">
+            <button @click="closeSuspend" class="px-5 py-2 rounded-xl border text-sm" :class="isDark ? 'border-white/20' : 'border-gray-200'">
               {{ currentLang === 'ar' ? 'إلغاء' : 'Cancel' }}
             </button>
-            <button @click="removeConfirmed" class="px-5 py-2 rounded-xl bg-[#FF6B50] text-white text-sm">
-              {{ currentLang === 'ar' ? 'حذف' : 'Remove' }}
+            <button @click="suspendConfirmed" :disabled="suspendWord.trim().toLowerCase() !== 'suspend'"
+              class="px-5 py-2 rounded-xl bg-[#FF6B50] text-white text-sm disabled:opacity-50">
+              {{ currentLang === 'ar' ? 'تعليق' : 'Suspend' }}
             </button>
           </div>
         </div>
@@ -151,7 +158,8 @@ const memberPage = ref(1)
 const loading = ref(true)
 const pageError = ref('')
 const notice = ref('')
-const confirmRemove = ref(null)
+const confirmSuspend = ref(null)
+const suspendWord = ref('')
 
 const modal = reactive({ open: false, id: null, saving: false, error: '' })
 const editingMember = ref(null)
@@ -178,7 +186,7 @@ const modalFields = computed(() => ({
   primary: false,
   meta: true,
 }))
-const modalActions = computed(() => (modal.id && !editingMember.value?.is_primary && !editingMember.value?.is_self ? ['reset', 'status', 'remove'] : []))
+const modalActions = computed(() => (modal.id && !editingMember.value?.is_primary && !editingMember.value?.is_self ? ['reset', 'status'] : []))
 
 const roleLabel = (role) => roleLabelFor(role, currentLang.value)
 
@@ -263,16 +271,21 @@ const onModalReset = async () => {
 const onModalStatus = async () => {
   const member = editingMember.value
   modal.open = false
+  if (member.status === 'live') {
+    suspendWord.value = ''
+    confirmSuspend.value = member
+    return
+  }
   await toggleStatus(member)
 }
-const onModalRemove = () => {
-  confirmRemove.value = editingMember.value
-  modal.open = false
+const closeSuspend = () => {
+  confirmSuspend.value = null
+  suspendWord.value = ''
 }
-const removeConfirmed = async () => {
-  const member = confirmRemove.value
-  confirmRemove.value = null
-  await run(() => team.removeMember(member.id))
+const suspendConfirmed = async () => {
+  const member = confirmSuspend.value
+  closeSuspend()
+  await run(() => team.setStatus(member.id, 'suspended', 'suspend'))
 }
 
 const onVisible = () => {

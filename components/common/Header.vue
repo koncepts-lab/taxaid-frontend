@@ -99,7 +99,7 @@
         </CommonTooltip>
       </div>
 
-      <div v-if="can('cards.one_click_summary')" class="group relative block">
+      <div v-if="can('features.one_click_summary')" class="group relative block">
         <CommonTooltip :text="currentLang === 'ar' ? 'ملخص بنقرة واحدة' : 'One Click Summary'">
           <button @click="navigateTo('/one-click-summary')"
             class="header-trigger-btn action-btn flash-btn w-9 h-9 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all duration-300"
@@ -159,11 +159,11 @@
         <div class="header-profile-text-container text-right hidden lg:block" :class="currentLang === 'ar' ? 'text-left' : 'text-right'">
           <div class="font-medium text-[15px] leading-tight transition-colors duration-300"
             :class="isDark ? 'text-white' : 'text-[#013E32]'">
-            {{ profile?.companyNickname || profile?.companyName || '...' }}
+            {{ identity?.name || '...' }}
           </div>
           <div class="text-[12px] font-light transition-colors duration-300"
             :class="isDark ? 'text-white/80' : 'text-[#013E32]'">
-            {{ profile?.email || '' }}
+            {{ identity?.email || '' }}
           </div>
         </div>
         <div class="relative header-profile-img-container">
@@ -181,8 +181,8 @@
               class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
             <div v-else class="w-14 h-14 rounded-full border-2 border-white shadow-sm bg-white"></div>
             <div class="flex-1">
-              <h4 class="font-medium text-[#013E32] text-sm leading-tight break-all">{{ profile?.companyNickname || profile?.companyName || '' }}</h4>
-              <p class="text-sm text-[#013E32]/70 font-medium break-all">{{ profile?.email || '' }}</p>
+              <h4 class="font-medium text-[#013E32] text-sm leading-tight break-all">{{ identity?.name || '' }}</h4>
+              <p class="text-sm text-[#013E32]/70 font-medium break-all">{{ identity?.email || '' }}</p>
               <NuxtLink to="/profile" class="text-[#00B68D] text-sm font-medium  mt-1 inline-block">View
                 Profile</NuxtLink>
             </div>
@@ -369,8 +369,8 @@
               class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
             <div v-else class="w-14 h-14 rounded-full border-2 border-white shadow-sm bg-white"></div>
             <div class="flex-1">
-              <h4 class="font-medium text-[#013E32] text-sm leading-tight break-all">{{ profile?.companyNickname || profile?.companyName || '' }}</h4>
-              <p class="text-sm text-[#013E32]/70 font-medium break-all">{{ profile?.email || '' }}</p>
+              <h4 class="font-medium text-[#013E32] text-sm leading-tight break-all">{{ identity?.name || '' }}</h4>
+              <p class="text-sm text-[#013E32]/70 font-medium break-all">{{ identity?.email || '' }}</p>
               <NuxtLink to="/profile" class="text-[#00B68D] text-sm font-medium  mt-1 inline-block">View
                 Profile</NuxtLink>
             </div>
@@ -463,13 +463,10 @@ const currentLang = useState('currentLang', () => 'en')
 const { isDark, toggleTheme } = useTheme()
 const isMenuOpen = ref(false)
 
-const { profile, pictureUrl, fetchProfile, refreshPicture } = useProfile()
+const { pictureUrl, refreshPicture } = useProfile()
+const { identity, ensureIdentity } = useIdentity()
 
 const route = useRoute()
-watch(() => route.fullPath, () => {
-  fetchProfile()
-  refreshPicture()
-})
 
 const { logout, user } = useAuth()//logout Logic
 const onLogoutClick = () => {
@@ -596,7 +593,7 @@ const allNavItems = [
   },
 ]
 const navPermissions = {
-  '/one-click-summary': 'cards.one_click_summary',
+  '/one-click-summary': 'features.one_click_summary',
   '/revenue': 'cards.revenue',
   '/cash-flow': 'cards.cash_flow',
   '/financial-statement': 'cards.financials',
@@ -622,7 +619,8 @@ onMounted(() => {
   const checkScreen = () => isDesktop.value = window.innerWidth >= 1024
   checkScreen()
   window.addEventListener('resize', checkScreen)
-  fetchProfile()
+  ensureIdentity()
+  if (!pictureUrl.value) refreshPicture()
 })
 </script>
 

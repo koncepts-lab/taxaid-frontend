@@ -56,6 +56,9 @@ export const useAuth = () => {
         const currency = useCookie('currency', cookieOptions)
         currency.value = response.data.tenant?.currency ?? null
 
+        const identity = useCookie('identity', cookieOptions)
+        identity.value = { name: response.data.user?.company_name ?? '', email: response.data.user?.email ?? '' } as any
+
         resetProfile()
 
         user.value = response.data.user   // Saved to global state
@@ -101,6 +104,7 @@ export const useAuth = () => {
     useCookie('account_type').value = null
     useCookie('permissions').value = null
     useCookie('currency').value = null
+    useCookie('identity').value = null
     resetProfile()
     try {
       localStorage.removeItem('auth_user_id')

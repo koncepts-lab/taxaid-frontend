@@ -34,22 +34,8 @@
             </div>
         </div>
 
-        <!-- Loading State -->
-        <div v-if="loading" class="flex items-center justify-center py-16">
-            <div class="flex flex-col items-center gap-3">
-                <svg class="animate-spin w-8 h-8 text-[#00B794]" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                    <path class="opacity-75" fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                <span class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-500'">
-                    {{ currentLang === 'ar' ? 'جارٍ التحميل...' : 'Loading aging data...' }}
-                </span>
-            </div>
-        </div>
-
         <!-- Error State -->
-        <div v-else-if="error"
+        <div v-if="error"
             class="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10" />
@@ -75,21 +61,27 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- Loading: skeleton rows -->
+                    <template v-if="loading">
+                        <tr v-for="n in perPage" :key="'sk-' + n" class="border-b h-[53px]" :class="isDark ? 'border-white/5' : 'border-gray-100'">
+                            <td class="px-6 py-4"><div class="skeleton h-4 w-6 rounded"></div></td>
+                            <td class="px-4 py-4"><div class="skeleton h-4 w-40 rounded"></div></td>
+                            <td v-for="c in 6" :key="c" class="px-4 py-4"><div class="skeleton h-4 w-20 rounded"></div></td>
+                        </tr>
+                    </template>
+
+                    <template v-else>
                     <!-- Empty state -->
-                    <tr v-if="!arRows.length">
-                        <td colspan="8" class="px-6 py-12 text-center text-sm"
+                    <tr v-if="!dataRows.length" :style="{ height: `${perPage * 53}px` }">
+                        <td colspan="8" class="px-6 text-center text-sm"
                             :class="isDark ? 'text-white/50' : 'text-gray-400'">
                             {{ currentLang === 'ar' ? 'لا توجد بيانات متاحة' : 'No data available' }}
                         </td>
                     </tr>
 
-                    <tr v-for="(row, index) in paginatedRows" :key="index" class="border-b transition-all duration-300"
-                        :class="[
-                          row.is_total
-                            ? (isDark ? 'bg-[#00B794]/20 border-[#00B794]/30 font-semibold' : 'bg-[#e8fdf7] border-[#84D7C5] font-semibold')
-                            : (isDark ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50/50')
-                        ]">
-                        <td class="px-6 py-4 text-sm" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ row.is_total ? '—' : (currentPage - 1) * perPage + index + 1 }}</td>
+                    <tr v-for="(row, index) in paginatedRows" :key="index" class="border-b transition-all duration-300 h-[53px]"
+                        :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50/50'">
+                        <td class="px-6 py-4 text-sm" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ (currentPage - 1) * perPage + index + 1 }}</td>
                         <td class="px-4 py-4 text-sm font-medium" :class="isDark ? 'text-white' : 'text-[#0A0A0A]'">{{ row.customer }}</td>
                         <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.amount) }}</td>
                         <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.not_due) }}</td>
@@ -98,50 +90,27 @@
                         <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.age_91_180) }}</td>
                         <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.age_gt_180) }}</td>
                     </tr>
+                    <tr v-for="n in padRows" :key="'pad-' + n" class="h-[53px]"><td colspan="8"></td></tr>
+                    </template>
                 </tbody>
                 <tfoot>
                     <tr class="bg-[#68E4C4] font-medium text-[#013E32]">
                         <td class="px-6 py-4 rounded-bl-[15px]" colspan="2">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-                        <td class="px-4 py-4">{{ formatNumber(arTotals.amount) }}</td>
-                        <td class="px-4 py-4">{{ formatNumber(arTotals.not_due) }}</td>
-                        <td class="px-4 py-4">{{ formatNumber(arTotals.age_0_30) }}</td>
-                        <td class="px-4 py-4">{{ formatNumber(arTotals.age_31_90) }}</td>
-                        <td class="px-4 py-4">{{ formatNumber(arTotals.age_91_180) }}</td>
-                        <td class="px-4 py-4 rounded-br-[15px]">{{ formatNumber(arTotals.age_gt_180) }}</td>
+                        <td class="px-4 py-4"><div v-if="loading" class="skeleton h-4 w-20 rounded"></div><template v-else>{{ formatNumber(arTotals.amount) }}</template></td>
+                        <td class="px-4 py-4"><div v-if="loading" class="skeleton h-4 w-20 rounded"></div><template v-else>{{ formatNumber(arTotals.not_due) }}</template></td>
+                        <td class="px-4 py-4"><div v-if="loading" class="skeleton h-4 w-20 rounded"></div><template v-else>{{ formatNumber(arTotals.age_0_30) }}</template></td>
+                        <td class="px-4 py-4"><div v-if="loading" class="skeleton h-4 w-20 rounded"></div><template v-else>{{ formatNumber(arTotals.age_31_90) }}</template></td>
+                        <td class="px-4 py-4"><div v-if="loading" class="skeleton h-4 w-20 rounded"></div><template v-else>{{ formatNumber(arTotals.age_91_180) }}</template></td>
+                        <td class="px-4 py-4 rounded-br-[15px]"><div v-if="loading" class="skeleton h-4 w-20 rounded"></div><template v-else>{{ formatNumber(arTotals.age_gt_180) }}</template></td>
                     </tr>
                 </tfoot>
             </table>
         </div>
 
         <!-- Pagination -->
-        <div v-if="arRows.length > 0" class="lg:py-6 py-4 px-4 lg:px-0 flex flex-wrap items-center justify-between gap-3">
-            <span class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-500'">
-                {{ currentLang === 'ar' ? 'عرض' : 'Showing' }} {{ pageStart }}–{{ pageEnd }} {{ currentLang === 'ar' ? 'من' : 'of' }} {{ totalItems }} {{ currentLang === 'ar' ? 'النتائج' : 'results' }}
-            </span>
-            <div class="flex items-center gap-1.5">
-                <button @click="goToPage(currentPage - 1)"
-                    :disabled="currentPage <= 1"
-                    class="px-3 py-1.5 rounded-lg border text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                    :class="isDark ? 'border-white/10 text-white/80 bg-[#1a1a1a] hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
-                    {{ currentLang === 'ar' ? 'السابق' : 'Previous' }}
-                </button>
-                <button v-for="p in visiblePages" :key="p"
-                    @click="goToPage(p)"
-                    :class="[
-                        p === currentPage
-                            ? (isDark ? 'bg-[#00896F] text-white border-[#00896F]' : 'bg-[#00896F] text-white border-[#00896F]')
-                            : (isDark ? 'bg-[#1a1a1a] text-white/80 border-white/10 hover:bg-white/10' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'),
-                        'w-8 h-8 flex items-center justify-center rounded-lg border text-sm font-medium transition-all'
-                    ]">
-                    {{ p }}
-                </button>
-                <button @click="goToPage(currentPage + 1)"
-                    :disabled="currentPage >= totalPages"
-                    class="px-3 py-1.5 rounded-lg border text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                    :class="isDark ? 'border-white/10 text-white/80 bg-[#1a1a1a] hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
-                    {{ currentLang === 'ar' ? 'التالي' : 'Next' }}
-                </button>
-            </div>
+        <div class="min-h-[64px]">
+            <CommonPaginationBar v-if="dataRows.length > 10" :meta="pageMeta" :loading="loading"
+                @page-change="(p) => goToPage(p)" @per-page-change="(pp) => { perPage = pp; currentPage = 1 }" />
         </div>
 
         <Teleport to="body">
@@ -268,14 +237,17 @@ const formatNumber = (val) => {
 // Pagination
 const currentPage = ref(1);
 const perPage = ref(10);
-const totalItems = computed(() => props.arRows.length);
+const dataRows = computed(() => props.arRows.filter(r => !r.is_total));
+const totalItems = computed(() => dataRows.value.length);
+const pageMeta = computed(() => ({ current_page: currentPage.value, per_page: perPage.value, total: totalItems.value, last_page: totalPages.value }));
 const totalPages = computed(() => Math.ceil(totalItems.value / perPage.value) || 1);
 
 const paginatedRows = computed(() => {
     const start = (currentPage.value - 1) * perPage.value;
-    return props.arRows.slice(start, start + perPage.value);
+    return dataRows.value.slice(start, start + perPage.value);
 });
 
+const padRows = computed(() => (dataRows.value.length ? Math.max(perPage.value - paginatedRows.value.length, 0) : 0));
 const pageStart = computed(() => totalItems.value === 0 ? 0 : (currentPage.value - 1) * perPage.value + 1);
 const pageEnd = computed(() => Math.min(currentPage.value * perPage.value, totalItems.value));
 
@@ -307,6 +279,15 @@ watch(() => props.arRows, () => {
 </script>
 
 <style scoped>
+.skeleton {
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
+    background-size: 400% 100%;
+    animation: ar-shimmer 1.4s ease infinite;
+}
+@keyframes ar-shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+}
 .fade-enter-active,
 .fade-leave-active {
     transition: opacity 0.3s ease;

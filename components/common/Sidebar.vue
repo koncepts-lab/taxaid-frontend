@@ -112,7 +112,7 @@ const allNavItems = [
   },
 ]
 const navPermissions = {
-  '/one-click-summary': 'cards.one_click_summary',
+  '/one-click-summary': 'features.one_click_summary',
   '/revenue': 'cards.revenue',
   '/cash-flow': 'cards.cash_flow',
   '/financial-statement': 'cards.financials',

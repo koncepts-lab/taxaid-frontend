@@ -45,7 +45,9 @@ export interface Profile {
   entityType: string | null
   founded: string | null
   industry: string | null
+  country: string | null
   fiscalYearEnd: string | null
+  allowedCountries?: string[]
   profilePic: string | null
   permanentAddress: PermanentAddress
   communicationAddresses: CommunicationAddress[]
@@ -60,10 +62,6 @@ const _error      = ref<string | null>(null)
 const _pictureUrl = ref<string | null>(null)
 
 async function _loadPictureBlobUrl(): Promise<void> {
-  if (!_profile.value?.profilePic) {
-    _pictureUrl.value = null
-    return
-  }
   const config = useRuntimeConfig()
   const token  = useCookie('auth_token')
   const get = (cache: RequestCache) =>
@@ -77,6 +75,11 @@ async function _loadPictureBlobUrl(): Promise<void> {
     let res = await get('no-cache')
 
     if (res.status === 304 && _pictureUrl.value) return
+
+    if (res.status === 404) {
+      _pictureUrl.value = null
+      return
+    }
 
     let blob = res.ok ? await res.blob() : null
 
@@ -103,12 +106,12 @@ export function resetProfile(): void {
 }
 
 export function useProfile() {
-  async function fetchProfile(force = false): Promise<void> {
-    if (_profile.value && !force) return
+  async function fetchProfile(force = false, includeCountries = false): Promise<void> {
+    if (_profile.value && !force && !(includeCountries && !_profile.value.allowedCountries)) return
     _loading.value = true
     _error.value   = null
     try {
-      const res: any = await useApi('/profile')
+      const res: any = await useApi(includeCountries ? '/profile?include=countries' : '/profile')
       _profile.value = res.data ?? null
       await _loadPictureBlobUrl()
     } catch (err: any) {
@@ -134,6 +137,7 @@ export function useProfile() {
         entity_type:              data.entityType,
         founded_year:             data.founded,
         industry:                 data.industry,
+        country:                  data.country,
         fiscal_year_end:          data.fiscalYearEnd,
         email:                    data.email,
         phone:                    data.phone,
@@ -143,7 +147,8 @@ export function useProfile() {
         key_contacts:             data.keyContacts,
       }
       const res: any = await useApi('/profile', { method: 'PUT', body: payload })
-      _profile.value = res.data ?? null
+      _profile.value = res.data ? { ...res.data, allowedCountries: _profile.value?.allowedCountries } : null
+      if (_profile.value) useIdentity().setIdentity(_profile.value.companyNickname || _profile.value.companyName, _profile.value.email)
     } catch (err: any) {
       _error.value = err?.data?.message ?? 'Failed to save profile.'
       throw err
@@ -176,7 +181,7 @@ export function useProfile() {
       const form = new FormData()
       form.append('picture', file)
       const res: any = await useApi('/profile/picture', { method: 'POST', body: form })
-      _profile.value = res.data ?? null
+      _profile.value = res.data ? { ...res.data, allowedCountries: _profile.value?.allowedCountries } : null
       await _loadPictureBlobUrl()
     } catch (err: any) {
       _error.value = err?.data?.message ?? 'Failed to upload picture.'

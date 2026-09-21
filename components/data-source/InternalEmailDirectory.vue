@@ -14,7 +14,7 @@
                 <input v-model="search" type="text" :placeholder="currentLang === 'ar' ? 'بحث...' : 'Search name or email…'"
                     class="w-full sm:w-72 py-2 px-4 border rounded-xl text-sm outline-none shadow-sm transition-all"
                     :class="isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-[#00B794]' : 'bg-[#F3FDFA] border-[#04C18F80] text-black placeholder:text-[#717182] focus:border-[#00896F]'" />
-                <button @click="editingEntry = null; isAddOpen = true" class="px-5 py-2 bg-[#008169] text-white rounded-xl text-sm font-medium hover:bg-[#006b56] transition-all shrink-0">
+                <button v-if="can('data_source.contacts_certificate')" @click="editingEntry = null; isAddOpen = true" class="px-5 py-2 bg-[#008169] text-white rounded-xl text-sm font-medium hover:bg-[#006b56] transition-all shrink-0">
                     {{ currentLang === 'ar' ? '+ إضافة إدخال جديد' : '+ Add New Entry' }}
                 </button>
             </div>
@@ -66,7 +66,7 @@
                                 class="inline-flex items-center justify-center w-8 h-8 border border-[#008169]/40 text-[#00896F] rounded-md hover:bg-[#00B794]/10">
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                             </button>
-                            <button v-if="row.source === 'entry'" @click="remove(row)" :disabled="deletingKey === row.key" :title="currentLang === 'ar' ? 'حذف' : 'Delete'"
+                            <button v-if="row.source === 'entry' && can('data_source.contacts_certificate')" @click="remove(row)" :disabled="deletingKey === row.key" :title="currentLang === 'ar' ? 'حذف' : 'Delete'"
                                 class="inline-flex items-center justify-center w-8 h-8 border border-red-200 text-red-500 rounded-md hover:bg-red-50 disabled:opacity-50">
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
                             </button>
@@ -114,7 +114,7 @@ const userModal = ref(null)
 const userSaving = ref(false)
 const userError = ref('')
 
-const canEdit = (row) => row.source === 'entry' || (can('team.manage') && !row.is_primary)
+const canEdit = (row) => row.source === 'entry' ? can('data_source.contacts_certificate') : (can('team.manage') && !row.is_primary)
 
 const openEdit = async (row) => {
     notice.value = ''

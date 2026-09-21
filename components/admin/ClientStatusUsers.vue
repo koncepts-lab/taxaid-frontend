@@ -44,7 +44,7 @@
           <div v-if="tenants.length > 1" class="relative min-w-[170px] shrink-0">
             <select v-model="tenantFilter" class="w-full pl-3 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
               <option value="">All tenants</option>
-              <option v-for="t in tenants" :key="t.id" :value="String(t.id)">{{ t.name || 'Tenant' }} (#{{ t.id }})</option>
+              <option v-for="t in tenants" :key="t.id" :value="String(t.id)">{{ t.name || 'Tenant' }} · Tenant ID: {{ t.id }}</option>
             </select>
             <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
           </div>

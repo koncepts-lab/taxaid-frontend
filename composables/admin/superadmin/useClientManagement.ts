@@ -16,10 +16,12 @@ export interface TenantRow {
 
 export function useClientManagement() {
   // ── Tenant list ─────────────────────────────────────────────────────────
-  async function getTenants(params: { search?: string; status?: string; tenant_id?: number; organization_id?: number; view?: string; page?: number; per_page?: number } = {}): Promise<any> {
+  async function getTenants(params: { search?: string; status?: string; plan?: string; sort?: string; tenant_id?: number; organization_id?: number; view?: string; page?: number; per_page?: number } = {}): Promise<any> {
     const q = new URLSearchParams()
     if (params.search) q.set('search', params.search)
     if (params.status) q.set('status', params.status)
+    if (params.plan) q.set('plan', params.plan)
+    if (params.sort) q.set('sort', params.sort)
     if (params.tenant_id) q.set('tenant_id', String(params.tenant_id))
     if (params.view) q.set('view', params.view)
     if (params.organization_id) q.set('organization_id', String(params.organization_id))
@@ -43,6 +45,10 @@ export function useClientManagement() {
 
   const updateTenantUser = (tenantId: number, userId: number, payload: { role?: string; is_primary?: boolean }) =>
     useAdminApi(`/admin/tenants/${tenantId}/users/${userId}`, { method: 'PATCH', body: payload })
+
+  // Removing a user requires the acting admin's own password.
+  const deleteTenantUser = (tenantId: number, userId: number, password: string) =>
+    useAdminApi(`/admin/tenants/${tenantId}/users/${userId}`, { method: 'DELETE', body: { password } })
 
   const addTenantUser = (tenantId: number, payload: Record<string, any>) =>
     useAdminApi(`/admin/tenants/${tenantId}/users`, { method: 'POST', body: payload })
@@ -122,9 +128,15 @@ export function useClientManagement() {
     URL.revokeObjectURL(url)
   }
 
+  const renameOrganization = (organizationId: number, name: string) =>
+    useAdminApi(`/admin/organizations/${organizationId}`, { method: 'PATCH', body: { name } })
+
+  const diagnoseOrganization = (organizationId: number, body: Record<string, any> = {}) =>
+    useAdminApi('/admin/organizations/diagnose', { method: 'POST', body: { organization_id: organizationId, ...body } })
+
   return {
-    getTenants, setTenantStatus, getTenantUsers, setTenantUserStatus,
-    updateTenantUser, addTenantUser, getRolesSettings, setRolesToggles, setRolesGroup, resetRolesGroup,
+    renameOrganization, diagnoseOrganization, getTenants, setTenantStatus, getTenantUsers, setTenantUserStatus,
+    updateTenantUser, addTenantUser, deleteTenantUser, getRolesSettings, setRolesToggles, setRolesGroup, resetRolesGroup,
     getSchedule, setSchedule, syncNow, adminSyncNow, stopSync,
     openSettings, requestLogs, downloadLogs,
     getSyncHistory,

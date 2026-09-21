@@ -88,14 +88,16 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   const permissionsCookie = useCookie('permissions')
-  if (!permissionsCookie.value) {
+  const stored: any = permissionsCookie.value
+  const isList = Array.isArray(stored) || (typeof stored === 'string' && stored.startsWith('['))
+  if (!isList) {
     try {
       const me: any = await useApi('/me')
       if (me?.data?.permissions) permissionsCookie.value = JSON.stringify(me.data.permissions)
     } catch {}
   }
 
-  const { permissions, hasPermissions } = usePermissions()
+  const { can, hasPermissions } = usePermissions()
   if (!hasPermissions.value) return
 
   const routeKeys: [string, string][] = [
@@ -110,7 +112,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     ['/financial-statement', 'cards.financials'],
     ['/cash-flow', 'cards.cash_flow'],
     ['/tax-queries', 'cards.tax_queries'],
-    ['/one-click-summary', 'cards.one_click_summary'],
+    ['/one-click-summary', 'features.one_click_summary'],
     ['/alerts', 'alerts.access'],
     ['/chat-with-akeel', 'alerts.access'],
     ['/appointment', 'appointments.view'],
@@ -121,5 +123,5 @@ export default defineNuxtRouteMiddleware(async (to) => {
     ['/settings/notifications', 'settings.notifications'],
   ]
   const match = routeKeys.find(([prefix]) => to.path === prefix || to.path.startsWith(prefix + '/'))
-  if (match && permissions.value[match[1]] !== true) return navigateTo('/dashboard')
+  if (match && !can(match[1])) return navigateTo('/dashboard')
 })

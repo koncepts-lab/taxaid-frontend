@@ -15,8 +15,17 @@ export const useContacts = () => {
   const contacts = ref<Contact[]>([])
   const customers = ref<Contact[]>([])
   const vendors = ref<Contact[]>([])
+  const customersMeta = ref<any>({ current_page: 1, last_page: 1, per_page: 10, total: 0 })
+  const vendorsMeta = ref<any>({ current_page: 1, last_page: 1, per_page: 10, total: 0 })
   const loading = ref(false)
   const error = ref<string | null>(null)
+
+  const pageQuery = (params?: { page?: number; per_page?: number; search?: string }) => {
+    if (!params?.page) return ''
+    const q = new URLSearchParams({ page: String(params.page), per_page: String(params.per_page ?? 10) })
+    if (params.search) q.set('search', params.search)
+    return `?${q.toString()}`
+  }
 
   const fetchContacts = async () => {
     loading.value = true
@@ -31,12 +40,13 @@ export const useContacts = () => {
     }
   }
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = async (params?: { page?: number; per_page?: number; search?: string }) => {
     loading.value = true
     error.value = null
     try {
-      const res = await useApi('/data-source/customers') as any
+      const res = await useApi(`/data-source/customers${pageQuery(params)}`) as any
       customers.value = res.data ?? []
+      if (res.meta) customersMeta.value = res.meta
     } catch (err: any) {
       error.value = err?.data?.message ?? 'Failed to load customers.'
     } finally {
@@ -44,12 +54,13 @@ export const useContacts = () => {
     }
   }
 
-  const fetchVendors = async () => {
+  const fetchVendors = async (params?: { page?: number; per_page?: number; search?: string }) => {
     loading.value = true
     error.value = null
     try {
-      const res = await useApi('/data-source/vendors') as any
+      const res = await useApi(`/data-source/vendors${pageQuery(params)}`) as any
       vendors.value = res.data ?? []
+      if (res.meta) vendorsMeta.value = res.meta
     } catch (err: any) {
       error.value = err?.data?.message ?? 'Failed to load vendors.'
     } finally {
@@ -81,6 +92,8 @@ export const useContacts = () => {
     contacts,
     customers,
     vendors,
+    customersMeta,
+    vendorsMeta,
     loading,
     error,
     fetchContacts,

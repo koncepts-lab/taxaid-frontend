@@ -32,7 +32,11 @@
         <div>
           <h2 class="text-[18px] text-[#013E32]">Organization Settings</h2>
           <div v-if="orgLoading" class="h-[18px] w-48 rounded bg-gray-200 animate-pulse mt-1"></div>
-          <p v-else class="text-[13px] text-[#00000080]">{{ orgLabel }}</p>
+          <p v-else class="text-[13px] text-[#00000080]">{{ orgLabel }}
+            <span v-if="orgTenants[0]" class="ml-1 px-2 py-0.5 rounded-full text-[11px] font-medium" :class="isDark ? 'bg-white/10 text-white/80' : 'bg-gray-100 text-gray-500'">ID: {{ selectedOrgId }}</span></p>
+        </div>
+        <div v-if="isSuperAdmin" class="ml-auto flex items-center gap-2">
+          <button @click="showDiagnose = true" class="inline-flex items-center gap-1.5 bg-[#007C65] text-white px-4 py-2 rounded-md text-[13px] font-medium hover:bg-[#006A56] shadow-sm transition-colors">Diagnose</button>
         </div>
       </div>
 
@@ -43,7 +47,7 @@
       </div>
 
       <div v-if="orgSubtab === 'organization'" class="mt-4">
-        <AdminOrgTenantsCard :key="'org-' + selectedOrgId + '-' + tenantsReload" :organization-id="selectedOrgId" @open-tenant="openTenant" @changed="loadOrg(selectedOrgId)" />
+        <AdminOrgTenantsCard :key="'org-' + selectedOrgId + '-' + tenantsReload" :organization-id="selectedOrgId" :can-rename="isSuperAdmin" @rename="openRename" @open-tenant="openTenant" @changed="loadOrg(selectedOrgId)" />
       </div>
 
       <AdminClientStatusUsers v-else-if="orgSubtab === 'users' && representativeTenantId" :key="selectedOrgId"
@@ -62,6 +66,7 @@
           </span>
           <input v-model="search" @input="debouncedLoad" type="text" placeholder="Search by organization, tenant or license ID..." autocomplete="off" class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm" />
         </div>
+        <div class="flex flex-wrap items-center gap-3 md:justify-end w-full md:w-auto">
         <div class="relative min-w-[160px] w-full md:w-auto">
           <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
@@ -74,6 +79,30 @@
             <option value="suspended">Suspended</option>
           </select>
           <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        </div>
+        <div class="relative min-w-[160px] w-full md:w-auto">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+          </span>
+          <select v-model="planFilter" @change="load(1)" class="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
+            <option value="">All Plans</option>
+            <option value="active">Active plan</option>
+            <option value="expired">Expired plan</option>
+            <option value="trial">Trial</option>
+            <option value="trial_expired">Trial (expired)</option>
+          </select>
+          <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        </div>
+        <div class="relative min-w-[160px] w-full md:w-auto">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+          </span>
+          <select v-model="sortOrder" @change="load(1)" class="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+          <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        </div>
         </div>
       </div>
 
@@ -99,14 +128,15 @@
                 </tr>
               </template>
               <tr v-else-if="!organizations.length"><td colspan="8" class="py-10 text-center text-gray-400">No organizations found.</td></tr>
+              <template v-else>
               <tr v-for="o in organizations" :key="o.id" class="border-b border-gray-100 hover:bg-gray-50/50">
-                <td class="py-4 px-6 font-medium text-gray-800">{{ o.name }} <span class="text-gray-400 text-xs">({{ o.id }})</span></td>
+                <td class="py-4 px-6 font-medium text-gray-800">{{ o.name }} <span class="ml-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[11px] font-medium">ID: {{ o.id }}</span></td>
                 <td class="py-4 px-6">
                   <p v-if="o.contact_name" class="text-gray-800">{{ o.contact_name }}</p>
                   <p class="text-gray-500 text-[12px]">{{ o.contact_email || '—' }}</p>
                   <p v-if="o.contact_phone" class="text-gray-500 text-[12px]">{{ o.contact_phone }}</p>
                 </td>
-                <td class="py-4 px-6">{{ o.country || '—' }}</td>
+                <td class="py-4 px-6 whitespace-nowrap">{{ countryName(o.country) || o.country || '—' }}</td>
                 <td class="py-4 px-6 whitespace-nowrap">{{ o.created_at ? String(o.created_at).slice(0, 10) : '—' }}</td>
                 <td class="py-4 px-6 whitespace-nowrap">{{ o.plan_name || 'No plan' }}</td>
                 <td class="py-4 px-6">{{ o.tenants_count }}</td>
@@ -117,17 +147,35 @@
                   </div>
                 </td>
                 <td class="py-4 px-6 text-right">
-                  <button @click="openOrg(o.id)" class="inline-flex items-center gap-1.5 border border-[#007C65] text-[#007C65] px-3 py-1.5 rounded-md text-[13px] font-medium hover:bg-[#F0FDF4] transition-colors">
+                  <button @click="openOrg(o.id)" class="inline-flex items-center gap-1.5 border px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors"
+                    :class="isDark ? 'border-[#04C18F] text-[#04C18F] hover:bg-[#04C18F]/10' : 'border-[#007C65] text-[#007C65] hover:bg-[#F0FDF4]'">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                     Configure
                   </button>
                 </td>
               </tr>
+              </template>
             </tbody>
           </table>
         </div>
         <CommonPaginationBar v-if="meta.total > 0" :meta="meta" :loading="loading"
           @page-change="(p) => load(p)" @per-page-change="(pp) => { perPage = pp; load(1) }" />
+      </div>
+    </div>
+
+    <AdminOrgDiagnoseModal v-if="showDiagnose && selectedOrgId" :org-id="Number(selectedOrgId)" :org-name="orgTenants[0]?.organization_name ?? ''" @close="showDiagnose = false" />
+
+    <div v-if="renameOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4" @click.self="renameOpen = false">
+      <div class="bg-white rounded-xl shadow-lg w-[420px] max-w-full p-6">
+        <h3 class="text-[16px] font-semibold text-gray-900 mb-1">Rename organization</h3>
+        <p class="text-sm text-gray-500 mb-4">This name appears in the organization list and across the admin screens.</p>
+        <input v-model="renameValue" type="text" maxlength="255" @keyup.enter="saveRename"
+          class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" placeholder="Organization name" />
+        <p v-if="renameError" class="text-[13px] text-red-500 mt-2">{{ renameError }}</p>
+        <div class="flex justify-end gap-2 mt-5">
+          <button @click="renameOpen = false" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+          <button @click="saveRename" :disabled="renameBusy || !renameValue.trim()" class="px-4 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] disabled:opacity-60">{{ renameBusy ? 'Saving…' : 'Save' }}</button>
+        </div>
       </div>
     </div>
   </div>
@@ -141,7 +189,37 @@ import { ref, computed, onMounted, watch } from 'vue'
 const route = useRoute()
 const router = useRouter()
 
-const { getTenants } = useClientManagement()
+const { getTenants, renameOrganization } = useClientManagement()
+const { admin } = useAdminAuth()
+const { isDark } = useTheme()
+const isSuperAdmin = computed(() => admin.value?.role?.name === 'Super Admin')
+const showDiagnose = ref(false)
+const renameOpen = ref(false)
+const renameValue = ref('')
+const renameError = ref('')
+const renameBusy = ref(false)
+
+function openRename() {
+  renameValue.value = orgTenants.value[0]?.organization_name ?? ''
+  renameError.value = ''
+  renameOpen.value = true
+}
+
+async function saveRename() {
+  if (!renameValue.value.trim() || renameBusy.value) return
+  renameBusy.value = true
+  renameError.value = ''
+  try {
+    await renameOrganization(Number(selectedOrgId.value), renameValue.value.trim())
+    renameOpen.value = false
+    await loadOrg(selectedOrgId.value)
+    tenantsReload.value++
+  } catch (e) {
+    renameError.value = e?.data?.message || 'Could not rename the organization.'
+  } finally {
+    renameBusy.value = false
+  }
+}
 
 const orgSubtabs = [
   { key: 'organization', label: 'Organization' },
@@ -188,12 +266,12 @@ const orgTenants = ref([])
 const orgLoading = ref(false)
 const orgLabel = computed(() => {
   const first = orgTenants.value[0]
-  return first ? `${first.organization_name} (${first.organization_id})` : `Organization #${selectedOrgId.value}`
+  return first ? first.organization_name : `Organization #${selectedOrgId.value}`
 })
 const representativeTenantId = computed(() => orgTenants.value[0]?.id ?? null)
 const tenantLabel = computed(() => {
   const t = orgTenants.value.find((x) => x.id === selectedTenantId.value)
-  return t ? `${t.name ?? 'Tenant'} (#${t.id}) · ${t.license_id ?? ''} · ${t.status}` : `Tenant #${selectedTenantId.value}`
+  return t ? `${t.name ?? 'Tenant'} · Tenant ID: ${t.id} · ${t.license_id ?? ''} · ${t.status}` : `Tenant ID: ${selectedTenantId.value}`
 })
 
 async function loadOrg(id) {
@@ -214,6 +292,8 @@ const organizations = ref([])
 const loading = ref(false)
 const search = ref('')
 const statusFilter = ref('')
+const planFilter = ref('')
+const sortOrder = ref('newest')
 const perPage = ref(10)
 const meta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
 let searchTimer = null
@@ -221,7 +301,7 @@ let searchTimer = null
 async function load(page = 1) {
   loading.value = true
   try {
-    const res = await getTenants({ view: 'organizations', search: search.value, status: statusFilter.value, page, per_page: perPage.value })
+    const res = await getTenants({ view: 'organizations', search: search.value, status: statusFilter.value, plan: planFilter.value, sort: sortOrder.value, page, per_page: perPage.value })
     organizations.value = res.data ?? []
     meta.value = {
       current_page: res.current_page ?? 1,

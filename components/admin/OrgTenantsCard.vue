@@ -3,7 +3,11 @@
     <div class="px-6 py-4 border-b border-gray-100">
       <h2 class="text-[16px] font-medium text-[#101828]">
         Organization Management
-        <span v-if="org" class="text-[#4A5565] font-normal">— {{ org.name }} ({{ org.id }})</span>
+        <span v-if="org" class="text-[#4A5565] font-normal">— {{ org.name }}</span>
+        <button v-if="org && canRename" @click="$emit('rename')" title="Rename organization"
+          class="inline-flex items-center justify-center w-8 h-8 ml-2 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 align-middle">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </button>
       </h2>
       <p class="text-[13px] text-[#4A5565] mt-0.5">Every tenant of this organization. Open a tenant's configuration (connector and AI), or suspend a live tenant and unsuspend a suspended one here.</p>
     </div>
@@ -53,14 +57,16 @@
             </div>
             <div class="px-4 flex justify-center gap-2">
               <button @click="$emit('open-tenant', t.id)"
-                class="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 border border-[#007C65] text-[#007C65] rounded-md text-[13px] font-medium hover:bg-[#F0FDF4] transition-colors">
+                class="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 border rounded-md text-[13px] font-medium transition-colors"
+                :class="isDark ? 'border-[#04C18F] text-[#04C18F] hover:bg-[#04C18F]/10' : 'border-[#007C65] text-[#007C65] hover:bg-[#F0FDF4]'">
                 Configuration
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
               <button v-if="t.status === 'suspended'" @click="target = { tenant: t, next: 'live' }" :disabled="busy"
                 class="whitespace-nowrap px-3 py-1.5 bg-[#00896F] text-white rounded-md text-[13px] font-medium hover:bg-[#00705a] disabled:opacity-60">Unsuspend</button>
               <button v-else-if="t.status === 'live'" @click="target = { tenant: t, next: 'suspended' }" :disabled="busy"
-                class="whitespace-nowrap px-3 py-1.5 border border-red-300 text-red-600 rounded-md text-[13px] font-medium hover:bg-red-50 disabled:opacity-60">Suspend</button>
+                class="whitespace-nowrap px-3 py-1.5 border rounded-md text-[13px] font-medium disabled:opacity-60"
+                :class="isDark ? 'border-red-400 text-red-300 hover:bg-red-500/10' : 'border-red-300 text-red-600 hover:bg-red-50'">Suspend</button>
             </div>
           </div>
           <div v-if="!tenants.length" class="py-10 text-center text-sm text-gray-400">No tenants found.</div>
@@ -77,7 +83,7 @@
       <div class="bg-white rounded-xl shadow-lg w-[400px] max-w-full p-6">
         <h3 class="text-[16px] font-semibold text-gray-900 mb-2">{{ target.next === 'live' ? 'Unsuspend tenant?' : 'Suspend tenant?' }}</h3>
         <p class="text-sm text-gray-500 mb-6">
-          <span class="font-medium text-gray-700">{{ target.tenant.name }} (#{{ target.tenant.id }})</span><br>
+          <span class="font-medium text-gray-700">{{ target.tenant.name }} · Tenant ID: {{ target.tenant.id }}</span><br>
           {{ target.next === 'live' ? 'The tenant will be set to live and regain full access.' : 'The tenant\'s users will lose access until unsuspended.' }}
         </p>
         <div class="flex justify-end gap-3">
@@ -106,8 +112,9 @@ import { ref, computed, onMounted } from 'vue'
 
 const props = defineProps({
   organizationId: { type: Number, required: true },
+  canRename: { type: Boolean, default: false },
 })
-const emit = defineEmits(['changed', 'open-tenant', 'loaded'])
+const emit = defineEmits(['changed', 'open-tenant', 'loaded', 'rename'])
 
 const { getTenants, setTenantStatus } = useClientManagement()
 

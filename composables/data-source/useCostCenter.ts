@@ -78,12 +78,16 @@ export const useCostCenter = () => {
     finally { logsLoading.value = false }
   }
 
-  onMounted(() => { fetchMappingData(); fetchContractMaster(); fetchBudgetReport(); fetchLogs() })
+  const load = async () => {
+    await Promise.all([fetchMappingData(), fetchContractMaster(), fetchBudgetReport()])
+    await fetchLogs()
+  }
 
   return {
     mappingColumns, mappingData, loading, error, fetchMappingData,
     contractData, contractTotal, contractActiveCount, contractLoading, fetchContractMaster,
     budgetReportColumns, budgetReportData, budgetReportTotal, budgetReportLoading, fetchBudgetReport,
     logs, logsLoading, logsMeta, fetchLogs,
+    load,
   }
 }

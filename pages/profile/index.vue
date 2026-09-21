@@ -165,6 +165,10 @@
             <p class="text-[#00FFB2] text-xs mb-1">Founded</p>
             <p class="text-sm text-white/90">{{ profile.founded }}</p>
           </div>
+          <div>
+            <p class="text-[#00FFB2] text-xs mb-1">Country</p>
+            <p class="text-sm text-white/90 flex items-center gap-2">{{ countryName(profile.country) || '—' }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -240,11 +244,11 @@
           <label class="block text-xs text-gray-700 mb-1">Last Name</label>
           <input v-model="profile.lastName" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
         </div>
-        <div>
+        <div v-if="canEditCompany">
           <label class="block text-xs text-gray-700 mb-1">Company Name <span class="text-[10px] text-gray-400">(from your accounting system - not editable)</span></label>
           <input :value="profile.companyName" disabled :class="['w-full h-[40px] rounded-lg px-3 py-2 text-sm cursor-not-allowed border', isDark ? 'bg-[#01332a] border-transparent text-white/60' : 'bg-gray-100 border-gray-200 text-gray-500']" />
         </div>
-        <div>
+        <div v-if="canEditCompany">
           <div class="flex justify-between items-end mb-1">
             <label class="block text-xs text-gray-700">Company Nickname</label>
             <span class="text-[10px] text-gray-400">{{ profile.companyNickname?.length || 0 }}/15</span>
@@ -315,23 +319,38 @@
              <input v-model="profile.phone" class="w-full pl-9 bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
           </div>
         </div>
-        <div>
+        <div v-if="canEditCompany">
           <label class="block text-xs text-gray-700 mb-1">EIN</label>
           <input v-model="profile.ein" :disabled="!canEditCompany" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
         </div>
-        <div>
+        <div v-if="canEditCompany">
           <label class="block text-xs text-gray-700 mb-1">Entity Type</label>
           <input v-model="profile.entityType" :disabled="!canEditCompany" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
         </div>
-        <div>
+        <div v-if="canEditCompany">
           <label class="block text-xs text-gray-700 mb-1">Founded Year</label>
           <input v-model="profile.founded" :disabled="!canEditCompany" maxlength="4" placeholder="e.g. 2015" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
         </div>
-        <div>
+        <div v-if="canEditCompany">
           <label class="block text-xs text-gray-700 mb-1">Industry</label>
           <input v-model="profile.industry" :disabled="!canEditCompany" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
         </div>
-        <div>
+        <div v-if="canEditCompany">
+          <label class="block text-xs text-gray-700 mb-1">Country</label>
+          <CommonCountrySelect v-model="profile.country" :disabled="!canEditCompany" :codes="profile.allowedCountries ?? []" />
+        </div>
+        <div v-if="!canEditCompany" class="md:col-span-2">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div v-for="item in companyReadOnly" :key="item.label"
+              :class="['border rounded-xl p-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
+              <p class="text-xs text-gray-500 mb-0.5">{{ item.label }}</p>
+              <p class="text-sm font-medium text-gray-900 flex items-center gap-2">
+                {{ item.value || '—' }}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div v-if="canEditCompany">
           <label class="block text-xs text-gray-700 mb-1">Fiscal Year End</label>
           <input v-model="profile.fiscalYearEnd" :disabled="!canEditCompany" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
         </div>
@@ -344,9 +363,9 @@
       
       <div class="space-y-6">
         <div>
-          <h4 v-if="!isEditing" class="text-sm text-gray-500 mb-4">Permanent Address</h4>
+          <h4 v-if="!isEditing || !canEditCompany" class="text-sm text-gray-500 mb-4">Permanent Address</h4>
           
-          <div v-if="!isEditing" :class="['border rounded-xl p-4 flex items-start gap-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
+          <div v-if="!isEditing || !canEditCompany" :class="['border rounded-xl p-4 flex items-start gap-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
             <div class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0 mt-1">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
             </div>
@@ -406,11 +425,11 @@
           
           <div class="space-y-3">
             <div v-for="(addr, index) in profile.communicationAddresses.filter(a => !isEditing ? (a.street || a.city || a.state || a.zip) : true)" :key="index" :class="['border rounded-xl p-4 flex items-start gap-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
-              <div v-if="!isEditing" class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0 mt-1">
+              <div v-if="!isEditing || !canEditCompany" class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0 mt-1">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
               </div>
               
-              <div v-if="!isEditing" class="flex-1 py-1">
+              <div v-if="!isEditing || !canEditCompany" class="flex-1 py-1">
                 <p class="text-xs text-gray-500 mb-0.5">{{ addr.label }}</p>
                 <p class="text-sm font-medium text-gray-900 mb-1">{{ addr.street }}</p>
                 <p class="text-sm text-gray-600">{{ addr.city }}, {{ addr.state }} {{ addr.zip }}</p>
@@ -701,10 +720,25 @@ let resendTimer: ReturnType<typeof setInterval> | null = null
 
 const emailChanged = computed(() => !!profile.value && profile.value.email !== savedEmail.value)
 
-onMounted(() => fetchProfile())
+onMounted(() => fetchProfile(false, canEditCompany.value))
 
 watch(profile, (p) => {
   if (p && !savedEmail.value) savedEmail.value = p.email
+}, { immediate: true })
+
+const companyReadOnly = computed(() => {
+  const p: any = profile.value
+  if (!p) return []
+  return [
+    { label: 'Company', value: p.companyName },
+    { label: 'Company Nickname', value: p.companyNickname },
+    { label: 'EIN', value: p.ein },
+    { label: 'Entity Type', value: p.entityType },
+    { label: 'Founded Year', value: p.founded },
+    { label: 'Industry', value: p.industry },
+    { label: 'Country', value: countryName(p.country) },
+    { label: 'Fiscal Year End', value: p.fiscalYearEnd },
+  ]
 })
 
 function resetEmailVerificationState() {

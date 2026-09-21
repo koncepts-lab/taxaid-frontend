@@ -349,7 +349,7 @@
             <div class="flex flex-wrap items-center gap-2">
               <select v-model="copySource" :disabled="!otherTenants.length || actionBusy" class="px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169] disabled:opacity-60 min-w-[180px]">
                 <option value="">{{ otherTenants.length ? 'Select tenant…' : 'No other tenant' }}</option>
-                <option v-for="t in otherTenants" :key="t.id" :value="String(t.id)">{{ t.name || 'Tenant' }} (#{{ t.id }})</option>
+                <option v-for="t in otherTenants" :key="t.id" :value="String(t.id)">{{ t.name || 'Tenant' }} · Tenant ID: {{ t.id }}</option>
               </select>
               <button @click="openAction('copy')" :disabled="!copySource || actionBusy" class="self-start px-4 py-2 border border-[#007C65] text-[#007C65] rounded-lg text-sm font-medium hover:bg-[#F0FDF4] disabled:opacity-50">Copy</button>
             </div>
@@ -784,7 +784,7 @@ const actionText = computed(() => {
   if (p.type === 'promote') return { title: 'Promote to Custom Organization?', body: "This tenant's configuration replaces the Custom Organization configuration used by every tenant on Custom Organization, and by Custom Tenant tenants for anything they haven't changed.", confirm: 'Promote' }
   if (p.type === 'copy') {
     const source = props.tenants.find((t) => String(t.id) === copySource.value)
-    return { title: 'Copy configuration?', body: `Copies the chat and alert configuration of ${source?.name ?? 'the selected tenant'} (#${copySource.value}) onto this tenant, replacing its current custom data.`, confirm: 'Copy' }
+    return { title: 'Copy configuration?', body: `Copies the chat and alert configuration of ${source?.name ?? 'the selected tenant'} (Tenant ID: ${copySource.value}) onto this tenant, replacing its current custom data.`, confirm: 'Copy' }
   }
   return { title: 'Import configuration?', body: `Imports "${p.fileName}" into ${where}, replacing its current configuration. Unknown rules are skipped and listed.`, confirm: 'Import' }
 })

@@ -151,6 +151,13 @@
                        <input v-model="dynamicAnswers[currentQuestion.id]" class="image-input max-w-[450px]" placeholder="Type your answer..." />
                     </div>
 
+                    <div v-else-if="currentQuestion.type === 'country_selector'">
+                      <CommonCountrySelect v-model="dynamicAnswers[currentQuestion.id]" variant="onboarding" :codes="allowedCountries"
+                        :locale="currentLanguage === 'ar' ? 'ar' : 'en'"
+                        :placeholder="currentLanguage === 'ar' ? 'اختر الدولة' : 'Select country'"
+                        :search-placeholder="currentLanguage === 'ar' ? 'ابحث عن دولة…' : 'Search country…'" />
+                    </div>
+
                     <div v-else class="space-y-4 max-w-[400px]">
                       <div v-for="opt in currentQuestion.options" :key="opt" class="space-y-3">
                         <button @click="toggleDynamicOption(currentQuestion, opt)" class="option-btn" :class="{ active: isOptionSelected(currentQuestion, opt) }">{{ opt }}</button>
@@ -201,6 +208,7 @@
 import { computed, ref, onMounted, watch } from 'vue'
 import LanguageToggle from '@/components/common/LanguageToggle.vue'
 
+const allowedCountries = ref<string[]>([])
 const pendingApproval = ref(false) // set from /submit's response — no tenant yet, admin hasn't approved
 
 // The one non-live landing page: which "not live yet" state to show. 'onboarding' is the
@@ -365,6 +373,8 @@ const initOnboarding = async () => {
     // registration (served by the same GET) — shown editable so the user
     // can correct a rough/short signup name. Nickname starts empty; the
     // backend falls back to the confirmed company name if it stays empty.
+    allowedCountries.value = response.meta?.countries ?? []
+
     if (response.meta?.company_name && !entityForms.value[0].legalName) {
       entityForms.value[0].legalName = response.meta.company_name
     }
@@ -465,7 +475,7 @@ const syncWithBackend = async () => {
 
     const payload = {
       company_name: entityForms.value[0].legalName,
-      country: 'UAE',
+      country: dynamicAnswers.value[questions.value.find(q => q.maps_to_config_key === 'country')?.id] || 'AE',
       currency: finalCurrency,
       answers,
     }
@@ -580,11 +590,12 @@ const nextDisabled = computed(() => {
   if (!q) return true
   
   if (q.maps_to_config_key === 'company_structure') return !selectedLabel.value
-  if (q.maps_to_config_key === 'company_name') return !entityForms.value[currentEntity.value - 1].legalName
+  if (q.maps_to_config_key === 'company_name') return !(entityForms.value[currentEntity.value - 1].legalName ?? '').trim()
   if (q.maps_to_config_key === 'currency') return selectedBaseCurrency.value === null
   
   if (q.type === 'select') return (dynamicAnswers.value[q.id] || []).length === 0
-  return !dynamicAnswers.value[q.id]
+  const v = dynamicAnswers.value[q.id]
+  return !v || (typeof v === 'string' && !v.trim())
 })
 
 
