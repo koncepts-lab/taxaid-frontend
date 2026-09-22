@@ -262,6 +262,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               <span>Executing Artisan command on environment...</span>
+              <button v-if="activeCommandJobId" @click="resetCommandJob" class="ml-3 not-italic animate-none text-gray-400 hover:text-white text-[11px] border border-gray-600 rounded px-2 py-0.5">Reset</button>
+              <button v-if="activeCommandJobId" @click="cancelCommandJob" class="not-italic animate-none text-red-400 hover:text-red-300 text-[11px] border border-red-800 rounded px-2 py-0.5">Cancel</button>
             </div>
             <div v-else-if="!terminalOutput" class="text-gray-500 italic">
               No command executed yet. Choose a quick action above or type a custom command.
@@ -467,6 +469,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               <span>Executing {{ tinkerMode === 'tinker' ? 'Tinker snippet' : 'PostgreSQL statement' }} on Cloud Run...</span>
+              <button v-if="activeTinkerJobId" @click="resetTinkerJob" class="ml-3 not-italic animate-none text-gray-400 hover:text-white text-[11px] border border-gray-600 rounded px-2 py-0.5">Reset</button>
+              <button v-if="activeTinkerJobId" @click="cancelTinkerJob" class="not-italic animate-none text-red-400 hover:text-red-300 text-[11px] border border-red-800 rounded px-2 py-0.5">Cancel</button>
             </div>
             <div v-else-if="!tinkerResult" class="text-gray-500 italic">
               No results yet. Enter a code snippet or SQL statement above and click Execute.
@@ -1126,7 +1130,7 @@ function reportBoxClasses(success) {
 }
 
 const {
-  isRootUnlocked, runArtisan, runTinker, getJobStatus, runDbQuery, getTenants, testFirebase, testMail,
+  isRootUnlocked, runArtisan, runTinker, getJobStatus, cancelJob: cancelJobApi, runDbQuery, getTenants, testFirebase, testMail,
   getSystemInfo, getCommands, lock, getConnectorInfraSettings, updateConnectorInfraSettings,
   getCorsSettings, addCorsOrigin, deleteCorsOrigin, setMainCorsOrigin,
   getMailSettings, updateMailSettings,
@@ -1167,11 +1171,51 @@ watch(activeTab, (val) => {
 const runAsCloudJob = ref(false)
 let jobPollTimer = null
 let tinkerJobPollTimer = null
+const activeCommandJobId = ref(null)
+const activeTinkerJobId = ref(null)
 
 onUnmounted(() => {
   if (jobPollTimer) clearInterval(jobPollTimer)
   if (tinkerJobPollTimer) clearInterval(tinkerJobPollTimer)
 })
+
+/** Stops watching a job locally — the real job (if any) is left running untouched. */
+function resetCommandJob() {
+  if (jobPollTimer) { clearInterval(jobPollTimer); jobPollTimer = null }
+  clearActiveJob()
+  activeCommandJobId.value = null
+  executingCommand.value = false
+  terminalOutput.value = (terminalOutput.value || '') + '\n[Stopped watching this job locally — it may still be running on the server.]'
+}
+
+function resetTinkerJob() {
+  if (tinkerJobPollTimer) { clearInterval(tinkerJobPollTimer); tinkerJobPollTimer = null }
+  clearActiveJob()
+  activeTinkerJobId.value = null
+  executingTinker.value = false
+  tinkerResult.value = (tinkerResult.value || '') + '\n[Stopped watching this job locally — it may still be running on the server.]'
+}
+
+/** Actually asks the server to stop a cloud_run_job; for a local_async job there's nothing left to stop by now. */
+async function cancelCommandJob() {
+  const jobId = activeCommandJobId.value
+  if (jobId) {
+    try {
+      await cancelJobApi(jobId)
+    } catch { /* best-effort — still unblock the UI below regardless */ }
+  }
+  resetCommandJob()
+}
+
+async function cancelTinkerJob() {
+  const jobId = activeTinkerJobId.value
+  if (jobId) {
+    try {
+      await cancelJobApi(jobId)
+    } catch { /* best-effort */ }
+  }
+  resetTinkerJob()
+}
 
 // Lets the UI resume polling an in-flight job after a page refresh instead of losing track of it.
 const ACTIVE_JOB_KEY = 'taxaid_root_active_job'
@@ -1206,7 +1250,7 @@ async function resumeActiveJobIfAny() {
 
   try {
     const pollRes = await getJobStatus(active.jobId)
-    if (pollRes?.status === 'completed' || pollRes?.status === 'failed') {
+    if (pollRes?.status === 'completed' || pollRes?.status === 'failed' || pollRes?.status === 'unknown') {
       clearActiveJob()
       if (active.kind === 'tinker') {
         executingTinker.value = false
@@ -1230,10 +1274,12 @@ async function resumeActiveJobIfAny() {
     // Still running — rehydrate the UI and resume polling right where it left off.
     if (active.kind === 'tinker') {
       executingTinker.value = true
+      activeTinkerJobId.value = active.jobId
       tinkerResult.value = `[TINKER CLOUD JOB DISPATCHED]\nJob ID: ${active.jobId}\nStatus: Resumed after page refresh — still running...\n\nPolling background output...`
       tinkerJobPollTimer = setInterval(() => pollTinkerJob(active.jobId), 2000)
     } else {
       executingCommand.value = true
+      activeCommandJobId.value = active.jobId
       terminalOutput.value = `[ASYNC JOB DISPATCHED]\nJob ID: ${active.jobId}\nStatus: Resumed after page refresh — still running...\n\nPolling status...`
       jobPollTimer = setInterval(() => pollArtisanJob(active.jobId), 2000)
     }
@@ -1317,6 +1363,7 @@ async function executeArtisanInternal(cmd) {
         `Polling status...\n`
 
       saveActiveJob(jobId, 'artisan')
+      activeCommandJobId.value = jobId
       jobPollTimer = setInterval(() => pollArtisanJob(jobId), 2000)
     } else {
       const res = await runArtisan(cmd)
@@ -1342,10 +1389,11 @@ async function executeArtisanInternal(cmd) {
 async function pollArtisanJob(jobId) {
   try {
     const pollRes = await getJobStatus(jobId)
-    if (pollRes?.status === 'completed' || pollRes?.status === 'failed') {
+    if (pollRes?.status === 'completed' || pollRes?.status === 'failed' || pollRes?.status === 'unknown') {
       clearInterval(jobPollTimer)
       jobPollTimer = null
       clearActiveJob()
+      activeCommandJobId.value = null
       executingCommand.value = false
       exitCode.value = pollRes.exit_code
       durationMs.value = pollRes.duration_ms || 0
@@ -1407,6 +1455,7 @@ async function executeTinkerOrSqlInternal() {
         tinkerResult.value = `[TINKER CLOUD JOB DISPATCHED]\nJob ID: ${jobId}\nStatus: Running on on-demand worker...\n\nPolling background output...`
 
         saveActiveJob(jobId, 'tinker')
+        activeTinkerJobId.value = jobId
         tinkerJobPollTimer = setInterval(() => pollTinkerJob(jobId), 2000)
       } else {
         const res = await runTinker(tinkerInput.value.trim())
@@ -1437,10 +1486,11 @@ function copyTinkerOutput() {
 async function pollTinkerJob(jobId) {
   try {
     const pollRes = await getJobStatus(jobId)
-    if (pollRes?.status === 'completed' || pollRes?.status === 'failed') {
+    if (pollRes?.status === 'completed' || pollRes?.status === 'failed' || pollRes?.status === 'unknown') {
       clearInterval(tinkerJobPollTimer)
       tinkerJobPollTimer = null
       clearActiveJob()
+      activeTinkerJobId.value = null
       executingTinker.value = false
       tinkerDurationMs.value = pollRes.duration_ms || 0
       tinkerResult.value = pollRes.output || '(Execution finished with no output)'

@@ -69,6 +69,15 @@ export function useRootAdmin() {
     })
   }
 
+  async function cancelJob(jobId: string) {
+    return await useAdminApi(`/admin/root/jobs/${jobId}/cancel`, {
+      method: 'POST',
+      headers: {
+        'X-Root-Token': rootToken.value || '',
+      },
+    })
+  }
+
   async function runDbQuery(query: string, schema?: string, confirmPassword?: string) {
     return await useAdminApi('/admin/root/db-query', {
       method: 'POST',
@@ -197,6 +206,7 @@ export function useRootAdmin() {
     runArtisan,
     runTinker,
     getJobStatus,
+    cancelJob,
     runDbQuery,
     getCommands,
     getTenants,
