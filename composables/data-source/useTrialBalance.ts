@@ -467,17 +467,19 @@ export function useTrialBalance() {
     finally { tbLogsLoading.value = false }
   }
 
-  onMounted(() => {
+  const loadInitial = async () => {
     const cached = readSession('tb_mapping_state')
     if (cached) {
       if (cached.page)    tbPage.value    = cached.page
       if (cached.perPage) tbPerPage.value = cached.perPage
       if (cached.filters) tbFilters.value = { ...tbFilters.value, ...cached.filters }
     }
-    fetchTrialBalance(); fetchLogs(); fetchFilterOptions()
-  })
+    await Promise.all([fetchTrialBalance(), fetchFilterOptions()])
+    await fetchLogs()
+  }
 
   return {
+    loadInitial,
     tbMappingData,
     tbConfigData,
     tbMappingOptions,

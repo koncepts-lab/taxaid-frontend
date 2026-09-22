@@ -89,7 +89,7 @@
                             </button>
                         </div>
 
-                        <p v-if="loginError" class="text-[12px] text-red-500 font-medium text-center -mb-1">{{ loginError }}</p>
+                        <div v-if="loginError" class="p-3 rounded-xl text-sm text-center font-medium bg-red-50 text-red-600">{{ loginError }}</div>
 
                         <button type="submit" :disabled="loading"
                             class="w-full py-3 !mt-6 bg-[#008169] hover:bg-[#006b56] text-white rounded-lg font-medium text-sm transition-all active:scale-95 shadow-md disabled:opacity-60 disabled:cursor-not-allowed">

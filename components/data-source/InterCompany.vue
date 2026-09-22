@@ -1,6 +1,7 @@
 <template>
+    <DataSourceInternalEmailDirectory v-if="type === 'internal-email'" :isDark="isDark" :currentLang="currentLang" />
     <!-- Main Container: Logic for RTL and Dark Mode -->
-    <div :dir="currentLang === 'ar' ? 'rtl' : 'ltr'"
+    <div v-else :dir="currentLang === 'ar' ? 'rtl' : 'ltr'"
         class="p-6 space-y-6 rounded-2xl transition-all duration-300 min-h-screen"
         :class="isDark ? 'bg-[#015F4D]/20 border border-[#00B794]/30 text-white' : 'bg-white text-black'">
 
@@ -24,7 +25,7 @@
                         <path d="m21 21-4.3-4.3" />
                     </svg>
                 </span>
-                <input type="text" :placeholder="currentLang === 'ar' ? 'بحث...' : 'Search...'"
+                <input type="text" v-model="search" @input="onSearchInput" :placeholder="currentLang === 'ar' ? 'بحث...' : 'Search...'"
                     class="w-full py-2 border rounded-xl text-sm focus:ring-1 outline-none shadow-sm transition-all"
                     :class="[
                         currentLang === 'ar' ? 'pr-10 pl-4 text-right' : 'pl-10 pr-4 text-left',
@@ -38,7 +39,7 @@
         <!-- 2. Actions Bar -->
         <div class="flex flex-wrap items-center justify-between gap-3 min-h-[44px]">
             <div class="flex items-center gap-4">
-                <div v-if="selectedCount > 0" class="flex items-center gap-4 animate-fade-in">
+                <div v-if="canWrite && selectedCount > 0" class="flex items-center gap-4 animate-fade-in">
                     <span class="text-sm font-medium">{{ selectedCount }} {{ currentLang === 'ar' ? 'محدد' : 'Selected'
                         }}</span>
                     <button @click="deleteSelected"
@@ -76,7 +77,7 @@
                 </button>
 
                 <!-- API tabs: Add New Entry modal -->
-                <button v-if="isApiType" @click="isAddEntryOpen = true"
+                <button v-if="isApiType && canWrite" @click="isAddEntryOpen = true"
                     class="flex items-center gap-2 px-5 py-2 bg-[#008169] text-white rounded-xl text-sm font-medium hover:bg-[#006b56] transition-all">
                     <span>{{ currentLang === 'ar' ? '+ إضافة إدخال جديد' : '+ Add New Entry' }}</span>
                 </button>
@@ -125,10 +126,10 @@
         <!-- 3. Main Table Card -->
         <div class="rounded-2xl border shadow-sm overflow-x-auto custom-scrollbar transition-all duration-300"
             :class="isDark ? 'bg-transparent border-white/10' : 'bg-white border-gray-100'">
-            <div :style="{ minWidth: currentConfig.minWidth }">
+            <div class="flex flex-col" :style="{ minWidth: currentConfig.minWidth, height: `${52 + perPage * 64}px` }">
                 <!-- Teal Header -->
-                <div class="bg-[#00896F] text-white flex items-center px-4 py-4">
-                    <div class="w-10 shrink-0">
+                <div class="bg-[#00896F] text-white flex items-center px-4 h-[52px] shrink-0">
+                    <div v-if="canWrite || !isApiType" class="w-10 shrink-0">
                         <input type="checkbox" @change="toggleAll" v-model="allSelected" class="header-checkbox" />
                     </div>
                     <!-- Fixed Grid using Inline Style for Design Accuracy -->
@@ -139,20 +140,25 @@
                     </div>
                 </div>
 
-                <!-- Loading State -->
-                <div v-if="loading" class="p-16 flex flex-col items-center justify-center gap-3">
-                    <div class="w-8 h-8 border-2 border-[#00896F] border-t-transparent rounded-full animate-spin"></div>
-                    <p class="text-sm" :class="isDark ? 'text-white/50' : 'text-[#717182]'">Loading...</p>
+                <!-- Loading State: skeleton rows -->
+                <div v-if="loading" class="flex-1 overflow-hidden divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-50'">
+                    <div v-for="n in perPage" :key="n" class="flex items-center px-4 h-[64px]">
+                        <div v-if="canWrite || !isApiType" class="w-10 shrink-0"><div class="skeleton h-4 w-4 rounded"></div></div>
+                        <div class="flex-1 grid gap-4 items-center" :style="{ gridTemplateColumns: currentConfig.gridCols }">
+                            <div class="flex justify-center"><div class="skeleton h-3 w-5 rounded"></div></div>
+                            <div v-for="(h, hIdx) in currentConfig.headers" :key="hIdx"><div class="skeleton h-10 w-full rounded-lg"></div></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Error State -->
-                <div v-else-if="apiError" class="p-12 flex flex-col items-center justify-center gap-3 text-center">
+                <div v-else-if="apiError" class="flex-1 flex flex-col items-center justify-center gap-3 text-center">
                     <p class="text-sm text-red-500">{{ apiError }}</p>
-                    <button @click="loadData" class="px-4 py-2 text-sm border border-[#00896F] text-[#00896F] rounded-xl hover:bg-[#E6FDF9] transition-all">Retry</button>
+                    <button @click="loadData()" class="px-4 py-2 text-sm border border-[#00896F] text-[#00896F] rounded-xl hover:bg-[#E6FDF9] transition-all">Retry</button>
                 </div>
 
                 <!-- State 1: Empty UI -->
-                <div v-else-if="!showTable" class="p-24 flex flex-col items-center justify-center text-center space-y-4">
+                <div v-else-if="!showTable" class="flex-1 overflow-hidden py-6 flex flex-col items-center justify-center text-center space-y-4">
                     <div class="w-24 h-24 bg-[#8DF3DF]/91 rounded-full flex items-center justify-center">
                         <img src="/images/icons/file.svg" class="w-12 h-12" alt="Empty" />
                     </div>
@@ -169,7 +175,7 @@
                             automatically and populate all the rows below.
                         </template>
                     </p>
-                    <button @click="isApiType ? (isAddEntryOpen = true) : (isModalOpen = true)"
+                    <button v-if="canWrite || !isApiType" @click="isApiType ? (isAddEntryOpen = true) : (isModalOpen = true)"
                         class="flex items-center gap-2 px-8 py-3 bg-[#63DABCEB] text-[#013E32] rounded-xl font-medium hover:scale-95 transition-all">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -180,20 +186,23 @@
                 </div>
 
                 <!-- State 2: Populated Table -->
-                <div v-else class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-50'">
-                    <div v-for="(row, idx) in rows" :key="row.id"
-                        class="flex items-center px-4 py-3 transition-colors"
+                <div v-else class="flex-1 overflow-hidden divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-50'">
+                    <div v-if="!pagedRows.length" class="h-full flex items-center justify-center text-sm" :class="isDark ? 'text-white/50' : 'text-[#717182]'">
+                        {{ currentLang === 'ar' ? 'لا توجد نتائج' : 'No results found.' }}
+                    </div>
+                    <div v-for="(row, idx) in pagedRows" :key="row.id"
+                        class="flex items-center px-4 h-[64px] transition-colors"
                         :class="row.selected ? (isDark ? 'bg-[#00896F]/10' : 'bg-[#E6FDF9]') : 'hover:bg-gray-50/50'">
-                        <div class="w-10 shrink-0">
+                        <div v-if="canWrite || !isApiType" class="w-10 shrink-0">
                             <input type="checkbox" v-model="row.selected" @change="handleRowSelect(row)"
                                 class="w-4 h-4 rounded cursor-pointer transition-all"
                                 :class="[
                                     isDark ? 'bg-white/10 border-white/20 accent-[#00896F]' : 'bg-white border-gray-300 text-[#00896F] focus:ring-[#00896F] accent-[#00896F]'
                                 ]" />
                         </div>
-                        <div class="flex-1 grid gap-3 items-center"
+                        <div class="flex-1 grid gap-4 items-center"
                             :style="{ gridTemplateColumns: currentConfig.gridCols }">
-                            <div class="text-center text-xs text-gray-400 font-medium">{{ idx + 1 }}</div>
+                            <div class="text-center text-xs text-gray-400 font-medium">{{ (page - 1) * perPage + idx + 1 }}</div>
                             <div v-for="(h, hIdx) in currentConfig.headers" :key="hIdx">
                                 <div v-if="h === 'Status'"
                                     class="px-3 py-1 rounded-full text-[10px] w-fit font-bold uppercase border"
@@ -225,6 +234,11 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="min-h-[64px]">
+            <CommonPaginationBar v-if="isApiType ? serverMeta.total > 10 : rows.length > 10" :meta="pageMeta" :loading="loading"
+                @page-change="(p) => onPageChange(p)" @per-page-change="(pp) => { perPage = pp; onPageChange(1) }" />
         </div>
 
         <!-- 4. Import Modal -->
@@ -355,10 +369,10 @@ const configs = {
     'vendor': {
         title: 'Vendor Directory', titleAr: 'دليل جهات الاتصال',
         sub: 'Manage all business vendors and their details', subAr: 'إدارة جميع جهات الاتصال التجارية وتفاصيلها',
-        headers: ['Vendor ID', 'Name', 'Tax ID', 'Contact Person', 'Email', 'Phone', 'Credit Limit (AED)', 'Status'],
-        headersAr: ['معرف المورد', 'الاسم', 'الرقم الضريبي', 'الشخص المسؤول', 'البريد', 'الهاتف', 'الحد الائتماني', 'الحالة'],
-        gridCols: '50px 120px 200px 140px 170px 220px 150px 150px 100px',
-        minWidth: '1486px'
+        headers: ['Vendor ID', 'Name', 'Tax ID', 'Contact Person', 'Email', 'Phone', 'Credit Limit (AED)', 'Outstanding (AED)', 'Status'],
+        headersAr: ['معرف المورد', 'الاسم', 'الرقم الضريبي', 'الشخص المسؤول', 'البريد', 'الهاتف', 'الحد الائتماني', 'المبالغ المستحقة', 'الحالة'],
+        gridCols: '50px minmax(110px, 0.9fr) minmax(160px, 1.5fr) minmax(120px, 1fr) minmax(140px, 1.2fr) minmax(180px, 1.7fr) minmax(120px, 1fr) minmax(120px, 1fr) minmax(130px, 1fr) 100px',
+        minWidth: '1450px'
     },
     'internal-email': {
         title: 'Internal Email Directory', titleAr: 'دليل البريد الداخلي',
@@ -373,8 +387,8 @@ const configs = {
         sub: 'Manage customer accounts and credit information', subAr: 'إدارة حسابات العملاء ومعلومات الائتمان',
         headers: ['Customer ID', 'Name', 'Tax ID', 'Contact Person', 'Email', 'Phone', 'Credit Limit (AED)', 'Outstanding (AED)', 'Status'],
         headersAr: ['معرف العميل', 'الاسم', 'الرقم الضريبي', 'الشخص المسؤول', 'البريد', 'الهاتف', 'الحد الائتماني', 'المبالغ المستحقة', 'الحالة'],
-        gridCols: '50px 120px 200px 140px 170px 220px 150px 150px 150px 100px',
-        minWidth: '1650px'
+        gridCols: '50px minmax(110px, 0.9fr) minmax(160px, 1.5fr) minmax(120px, 1fr) minmax(140px, 1.2fr) minmax(180px, 1.7fr) minmax(120px, 1fr) minmax(120px, 1fr) minmax(130px, 1fr) 100px',
+        minWidth: '1450px'
     }
 }
 
@@ -383,11 +397,11 @@ const fieldMap = {
     'vendor': {
         'Vendor ID': 'identity', 'Name': 'name', 'Tax ID': 'tax_id', 'Contact Person': 'contact_person',
         'Email': 'email', 'Phone': 'phone_number', 'Credit Limit (AED)': 'credit_limit',
+        'Outstanding (AED)': 'outstanding',
     },
     'customers': {
         'Customer ID': 'identity', 'Name': 'name', 'Tax ID': 'tax_id', 'Contact Person': 'contact_person',
         'Email': 'email', 'Phone': 'phone_number', 'Credit Limit (AED)': 'credit_limit',
-        // computed from unpaid AR entries — wired when the backend appends it
         'Outstanding (AED)': 'outstanding',
     },
     'internal-email': {
@@ -399,7 +413,11 @@ const fieldMap = {
 const getFieldValue = (row, header) => {
     const key = fieldMap[props.type]?.[header]
     if (!key) return ''
-    return row[key] ?? ''
+    const value = row[key] ?? ''
+    if (header.endsWith('(AED)') && !row.isNew && value !== '' && !isNaN(Number(value))) {
+        return Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    }
+    return value
 }
 
 const setFieldValue = (row, header, value) => {
@@ -408,6 +426,8 @@ const setFieldValue = (row, header, value) => {
 }
 
 // --- 2. API COMPOSABLES ---
+const { can } = usePermissions()
+const canWrite = computed(() => can('data_source.contacts_certificate'))
 const contactsApi = useContacts()
 const emailsApi = useInternalEmails()
 
@@ -419,9 +439,40 @@ const saveError = ref(null) // row-save failures (shown as banner; apiError repl
 const isAddEntryOpen = ref(false)
 
 const onEntrySaved = (saved) => {
+    if (isApiType.value) return loadData(page.value)
     rows.value.push({ ...saved, selected: false, isNew: false, _saving: false })
+    page.value = pageMeta.value.last_page
 }
 const rows = ref([])
+const page = ref(1)
+const perPage = ref(10)
+const search = ref('')
+const serverMeta = ref({ current_page: 1, last_page: 1, per_page: 10, total: 0 })
+const pagedRows = computed(() => isApiType.value ? rows.value : rows.value.slice((page.value - 1) * perPage.value, page.value * perPage.value))
+const pageMeta = computed(() => isApiType.value ? serverMeta.value : ({
+    current_page: page.value,
+    per_page: perPage.value,
+    total: rows.value.length,
+    last_page: Math.max(Math.ceil(rows.value.length / perPage.value), 1),
+}))
+watch(() => rows.value.length, () => {
+    if (!isApiType.value && page.value > pageMeta.value.last_page) page.value = pageMeta.value.last_page
+})
+const goToRow = (row) => {
+    if (isApiType.value) return
+    const i = rows.value.indexOf(row)
+    if (i !== -1) page.value = Math.floor(i / perPage.value) + 1
+}
+const onPageChange = (p) => {
+    if (isApiType.value) loadData(p)
+    else page.value = p
+}
+let searchTimer = null
+const onSearchInput = () => {
+    if (!isApiType.value) return
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout(() => loadData(1), 400)
+}
 const loading = ref(false)
 const apiError = ref(null)
 const isModalOpen = ref(false)
@@ -433,7 +484,7 @@ const isDragging = ref(false)
 const addDropdownRef = ref(null)
 
 const showTable = computed(() => {
-    if (isApiType.value) return loading.value || rows.value.length > 0
+    if (isApiType.value) return loading.value || rows.value.length > 0 || !!search.value
     return isImportedLocal.value
 })
 
@@ -443,21 +494,27 @@ const translatedHeaders = computed(() => props.currentLang === 'ar' ? currentCon
 const selectedCount = computed(() => rows.value.filter(r => r.selected).length)
 
 // --- 5. DATA LOADING ---
-const loadData = async () => {
+const loadData = async (targetPage = 1) => {
     if (!isApiType.value) return
     loading.value = true
     apiError.value = null
     rows.value = []
+    page.value = targetPage
+    const query = { page: targetPage, per_page: perPage.value, search: search.value.trim() }
     try {
         if (props.type === 'internal-email') {
             await emailsApi.fetchEmails()
             rows.value = emailsApi.emails.value.map(r => ({ ...r, selected: false, isNew: false, _saving: false }))
         } else if (props.type === 'customers') {
-            await contactsApi.fetchCustomers()
+            await contactsApi.fetchCustomers(query)
+            serverMeta.value = contactsApi.customersMeta.value
+            page.value = serverMeta.value.current_page
             rows.value = contactsApi.customers.value.map(r => ({ ...r, selected: false, isNew: false, _saving: false }))
         } else {
             // vendor tab: vendors only (the old getAll fetch mixed customers in)
-            await contactsApi.fetchVendors()
+            await contactsApi.fetchVendors(query)
+            serverMeta.value = contactsApi.vendorsMeta.value
+            page.value = serverMeta.value.current_page
             rows.value = contactsApi.vendors.value.map(r => ({ ...r, selected: false, isNew: false, _saving: false }))
         }
     } catch (e) {
@@ -470,6 +527,7 @@ const loadData = async () => {
 watch(() => props.type, () => {
     isImportedLocal.value = false
     allSelected.value = false
+    search.value = ''
     loadData()
 })
 
@@ -512,6 +570,7 @@ const handleAddAction = async (actionId) => {
     if (actionId === 'end' || idx === -1) rows.value.push(newRow)
     else if (actionId === 'above') rows.value.splice(idx, 0, newRow)
     else if (actionId === 'below') rows.value.splice(idx + 1, 0, newRow)
+    goToRow(newRow)
     isAddDropdownOpen.value = false
 }
 
@@ -569,6 +628,7 @@ const deleteSelected = async () => {
         } catch {}
     }
     allSelected.value = false
+    if (toDelete.length) await loadData(rows.value.length === 0 && page.value > 1 ? page.value - 1 : page.value)
 }
 
 const simulateImport = () => {
@@ -601,6 +661,15 @@ onUnmounted(() => window.removeEventListener('click', handleClickOutside))
 </script>
 
 <style scoped>
+.skeleton {
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
+    background-size: 400% 100%;
+    animation: ic-shimmer 1.4s ease infinite;
+}
+@keyframes ic-shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+}
 .fade-enter-active,
 .fade-leave-active {
     transition: opacity 0.3s ease;

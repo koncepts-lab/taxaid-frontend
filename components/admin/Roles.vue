@@ -55,6 +55,7 @@
         <button @click="setTab('Tenants Management')" :class="activeTab === 'Tenants Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Organization Management</button>
         <button @click="setTab('AI Settings')" :class="activeTab === 'AI Settings' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">AI Settings</button>
         <button @click="setTab('Organizations'); if (!organizationsLoaded) loadOrganizations()" :class="activeTab === 'Organizations' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">New User Requests</button>
+        <button @click="setTab('Roles & Settings')" :class="activeTab === 'Roles & Settings' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Roles & Settings</button>
       </div>
 
       <!-- VM status badge → click opens detail modal -->
@@ -457,6 +458,7 @@
                 </tr>
               </template>
               <tr v-else-if="!organizationRows.length"><td colspan="6" class="py-10 text-center text-gray-400">No registrations found.</td></tr>
+              <template v-else>
               <tr v-for="row in organizationRows" :key="row.id" class="border-b border-gray-100 hover:bg-gray-50/50">
                 <td class="py-4 px-6 font-medium text-gray-800">{{ row.company_name }}</td>
                 <td class="py-4 px-6">{{ row.org_name || '—' }}</td>
@@ -467,6 +469,7 @@
                 <td class="py-4 px-6">{{ row.reviewed_by_name || '—' }}</td>
                 <td class="py-4 px-6 text-gray-500">{{ row.created_at ? new Date(row.created_at).toLocaleDateString() : '-' }}</td>
               </tr>
+              </template>
             </tbody>
           </table>
         </div>
@@ -476,6 +479,10 @@
     </div>
 
     <!-- AI Settings — global instructions, kill switch, catalog, chat prompts -->
+    <div v-else-if="activeTab === 'Roles & Settings'">
+      <AdminRolesAndSettingsGroupsTable mode="global" title="Roles & Settings" subtitle="Global defaults every organization uses unless it has its own override." class="mt-4" />
+    </div>
+
     <div v-else-if="activeTab === 'AI Settings'">
       <AdminAiSettings />
     </div>
@@ -1032,13 +1039,13 @@ function managerName(managerId) {
 // ── Tabs & filters ────────────────────────────────────────────────────────────
 const route  = useRoute()
 const router = useRouter()
-const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management', clients: 'Tenants Management', 'organization-management': 'Tenants Management', organizations: 'Organizations', 'new-user-requests': 'Organizations', 'ai-settings': 'AI Settings' }
-const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners', 'Tenants Management': 'organization-management', 'Organizations': 'new-user-requests', 'AI Settings': 'ai-settings' }
+const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management', clients: 'Tenants Management', 'organization-management': 'Tenants Management', organizations: 'Organizations', 'new-user-requests': 'Organizations', 'ai-settings': 'AI Settings', 'roles-and-settings': 'Roles & Settings' }
+const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners', 'Tenants Management': 'organization-management', 'Organizations': 'new-user-requests', 'AI Settings': 'ai-settings', 'Roles & Settings': 'roles-and-settings' }
 const activeTab = ref(tabMap[route.query.tab] ?? 'User Management')
 
-// A client config is open (?tab=clients&id=N) → hide header/cards/tabs (SPA takeover)
+// An organization page is open (?tab=organization-management&organization_id=N) → hide header/cards/tabs (SPA takeover)
 const clientDetailOpen = computed(() =>
-  activeTab.value === 'Tenants Management' && Number(route.query.id) > 0
+  activeTab.value === 'Tenants Management' && Number(route.query.organization_id) > 0
 )
 
 function setTab(name) {

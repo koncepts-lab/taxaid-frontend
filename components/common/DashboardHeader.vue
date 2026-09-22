@@ -23,7 +23,7 @@
             <div class="flex lg:flex-row flex-col lg:items-center items-start gap-3">
                 <div class="flex gap-4">
                     <!-- One Click Summary -->
-                    <button v-if="oneclickreview" @click="$emit('one-click-summary')"
+                    <button v-if="oneclickreview && can('features.one_click_summary')" @click="$emit('one-click-summary')"
                         class="flex items-center space-x-2 rtl:space-x-reverse px-4 h-[40px] rounded-lg border transition-all active:scale-95"
                         :class="isDark ? 'bg-[#002E26] border-[#03D8B0] text-white hover:bg-[#003d35]' : 'bg-white border-[#03D8B0] text-black hover:bg-teal-50'">
                         <svg class="w-4 h-4" :class="isDark ? 'text-[#03D8B0]' : 'text-teal-600'" fill="none"
@@ -254,6 +254,7 @@ const props = defineProps({
     minDate: { type: [Date, String], default: null }
 })
 
+const { can } = usePermissions()
 const emit = defineEmits(['selected-date', 'reload', 'export-pdf', 'one-click-summary', 'period-change'])
 
 const router = useRouter()

@@ -188,7 +188,7 @@
             </p>
 
             <p class="pt-2 text-center text-[16px] font-medium">
-              <NuxtLink to="/revenue-partnership-login" class="text-[#00705a] hover:underline cursor-pointer">
+              <NuxtLink to="/taxaid-partnership-login" class="text-[#00705a] hover:underline cursor-pointer">
                 {{ t.partnershipLogin }}
               </NuxtLink>
             </p>

@@ -101,7 +101,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useSuperAdmin } from '~/composables/superadmin/useSuperAdmin'
+import { useSuperAdmin } from '~/composables/admin/superadmin/useSuperAdmin'
 
 const { getVmStatus } = useSuperAdmin()
 

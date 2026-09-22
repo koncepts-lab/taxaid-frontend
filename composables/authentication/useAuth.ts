@@ -1,0 +1,124 @@
+// composables/authentication/useAuth.ts
+import { resetProfile } from '~/composables/settings/useProfile'
+
+export const useAuth = () => {
+  // 1. Shared state for the user object
+  const user = useState('auth_user', () => null)
+  
+  // 2. Cookie for the token
+  const token = useCookie('auth_token')
+  const config = useRuntimeConfig()
+
+  // 3. Login Logic
+  const login = async (credentials: any, remember: boolean = false, location: string | null = null) => {
+    try {
+      // Session tracking extras (optional server-side): browser timezone -> coarse location,
+      // plus a geolocated "City, Region, Country" when the caller resolved one
+      let sessionMeta: Record<string, any> = {}
+      try {
+        sessionMeta = {
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          device_name: navigator?.platform || null,
+        }
+      } catch {}
+      if (location) sessionMeta.location = location
+
+      const response: any = await $fetch('/auth/login', {
+        baseURL: config.public.apiBase,
+        method: 'POST',
+        body: { ...credentials, ...sessionMeta },
+        headers: { 'Accept': 'application/json' }
+      })
+
+      if (response.status === 'success') {
+        const cookieOptions = remember
+          ? { maxAge: 60 * 60 * 24 * 7, path: '/' } // 7 days = backend token expiry; else session-only cookie
+          : { path: '/' }
+
+        const authToken = useCookie('auth_token', cookieOptions)
+        authToken.value = response.data.token
+
+        // Unified lifecycle status (registered/onboarding/pending_review/implementation/live/
+        // suspended) — read by middleware/auth.global.ts on every navigation without re-fetching
+        // from the API each time. Refreshed here and by /me (useProfileStatus) after verify.
+        const tenantStatus = useCookie('tenant_status', cookieOptions)
+        tenantStatus.value = response.data.tenant?.status ?? null
+
+        // 'tenant' | 'taxaid' — lets middleware/auth.global.ts skip the onboarding/waiting
+        // redirect for TaxAid staff on a temp credential, who need the real dashboard even
+        // while the tenant they're working on isn't 'live' yet.
+        const accountType = useCookie('account_type', cookieOptions)
+        accountType.value = response.data.user?.account_type ?? null
+
+        const permissions = useCookie('permissions', cookieOptions)
+        permissions.value = response.data.permissions ? JSON.stringify(response.data.permissions) : null
+
+        const currency = useCookie('currency', cookieOptions)
+        currency.value = response.data.tenant?.currency ?? null
+
+        const identity = useCookie('identity', cookieOptions)
+        identity.value = { name: response.data.user?.company_name ?? '', email: response.data.user?.email ?? '' } as any
+
+        resetProfile()
+
+        user.value = response.data.user   // Saved to global state
+        // Persisted so syncWebPush can bind the device token to this user
+        if (response.data.user?.id) {
+          try { localStorage.setItem('auth_user_id', String(response.data.user.id)) } catch {}
+        }
+        // Force syncWebPush to re-register the device token under THIS new
+        // session — its backend row is tied to the session (token_id) and
+        // would otherwise still point at the previous, now-dead session
+        try { localStorage.removeItem('push_device_token_user_id') } catch {}
+        return response
+      }
+    } catch (error) {
+      throw error
+    }
+  }
+
+  // 4. Logout Logic
+  const logout = async () => {
+    if (token.value) {
+      // This browser's push registration is disposed server-side along with
+      // the auth token — one atomic call; other logged-in devices keep theirs
+      let deviceToken: string | null = null
+      try { deviceToken = localStorage.getItem('push_device_token') } catch {}
+      try {
+        await $fetch('/logout', {
+          baseURL: config.public.apiBase,
+          method: 'POST',
+          body: deviceToken ? { device_token: deviceToken } : {},
+          headers: {
+            'Authorization': `Bearer ${token.value}`,
+            'Accept': 'application/json'
+          }
+        })
+      } catch (error) {
+      }
+    }
+
+    token.value = null
+    user.value = null
+    useCookie('tenant_status').value = null
+    useCookie('account_type').value = null
+    useCookie('permissions').value = null
+    useCookie('currency').value = null
+    useCookie('identity').value = null
+    resetProfile()
+    try {
+      localStorage.removeItem('auth_user_id')
+      localStorage.removeItem('push_device_token')
+      localStorage.removeItem('push_device_token_user_id')
+    } catch {}
+    await navigateTo('/home')
+  }
+
+  return {
+    user,
+    token,
+    login,
+    logout,
+    isAuthenticated: computed(() => !!token.value)
+  }
+}

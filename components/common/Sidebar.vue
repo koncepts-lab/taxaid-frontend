@@ -46,7 +46,7 @@
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
 const hoveredMenuItem = useState('hoveredMenuItem', () => null)
-const navItems = [
+const allNavItems = [
   {
     label: 'Revenue',
     labelAr: 'الإيرادات',
@@ -111,6 +111,22 @@ const navItems = [
     activeIcon: '/images/icons/Tax-Queries-active.svg'
   },
 ]
+const navPermissions = {
+  '/one-click-summary': 'features.one_click_summary',
+  '/revenue': 'cards.revenue',
+  '/cash-flow': 'cards.cash_flow',
+  '/financial-statement': 'cards.financials',
+  '/indirect-expense': 'cards.indirect_expense',
+  '/accounts-receivable': 'cards.accounts_receivable',
+  '/cogs': 'cards.cogs',
+  '/accounts-payable': 'cards.accounts_payable',
+  '/cost-center': 'cards.cost_center',
+  '/tax-queries': 'cards.tax_queries',
+  '/alerts': 'alerts.access',
+  '/appointment': 'appointments.view',
+}
+const { can } = usePermissions()
+const navItems = computed(() => allNavItems.filter(item => !navPermissions[item.to] || can(navPermissions[item.to])))
 </script>
 
 <style scoped>

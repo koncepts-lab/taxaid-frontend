@@ -133,7 +133,15 @@ const emit = defineEmits(['update:activeTab', 'close']);
 
 const searchQuery = ref('');
 
-const { tabs, deadlines } = useTaxQueriesPage()
+const { deadlines } = useTaxQueriesPage()
+
+// TODO: Corporate Tax, IFRS and General Accounting tabs are placeholders until their APIs exist
+const tabs = [
+    { id: 'vat', name: 'VAT Queries', icon: '/images/icons/vat.svg' },
+    // { id: 'corporate', name: 'Corporate Tax', icon: '/images/icons/corporate-tax.svg' },
+    // { id: 'ifrs', name: 'IFRS', icon: '/images/icons/ifrs.svg' },
+    // { id: 'accounting', name: 'General Accounting', icon: '/images/icons/general.svg' },
+]
 
 const { chats, status, usage, activeChatId, fetchChats, createChat, resumeChat, deleteChat } = useAkeel()
 const { setActivePromptPage } = useAkeelPrompts()

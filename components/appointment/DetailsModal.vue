@@ -158,7 +158,7 @@
                 </div>
 
                 <!-- Footer — cancel only for future, non-terminal, non-monthly appointments -->
-                <div v-if="!['completed', 'cancelled'].includes(appointment?.status) && !isPast && appointment?.type !== 'Monthly Review'"
+                <div v-if="can('appointments.create') && !['completed', 'cancelled'].includes(appointment?.status) && !isPast && appointment?.type !== 'Monthly Review'"
                     class="px-8 pb-8 flex justify-end">
                     <button @click="handleCancel"
                         class="px-8 h-[48px] rounded-[12px] border text-[14px] font-medium transition-all cursor-pointer hover:bg-red-50 active:scale-[0.98]"
@@ -175,6 +175,7 @@
 </template>
 
 <script setup>
+const { can } = usePermissions()
 import { format, parseISO } from 'date-fns'
 
 const formatDate = (dateStr) => {

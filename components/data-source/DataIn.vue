@@ -118,29 +118,27 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium truncate" :class="isDark ? 'text-white/90' : 'text-gray-800'">{{
-                            getFileNameFromUrl(card.pdfUrl) }}</p>
+                            card.fileName || (currentLang === 'ar' ? 'مستند تم تحميله' : 'Uploaded document') }}</p>
                         <p class="text-[11px] opacity-60 mt-0.5" :class="isDark ? 'text-white' : 'text-gray-500'">{{
                             card.uploadDate }}</p>
                     </div>
                 </div>
 
-                <div v-else-if="!MAPPING_CARD_LABELS.includes(card.label)" class=" flex items-center justify-center mb-6">
-                    <p class="text-base font-normal text-[#FF6B50]">
+                <div v-else-if="!MAPPING_CARD_LABELS.includes(card.label)"
+                    class="p-4 rounded-xl border border-dashed mb-6 flex items-center gap-3 min-h-[74px]"
+                    :class="isDark ? 'border-white/15 bg-white/5' : 'border-[#04C18F80] bg-white/60'">
+                    <div class="p-2 rounded-lg shrink-0" :class="isDark ? 'bg-white/10 text-white/40' : 'bg-gray-100 text-gray-400'">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                        </svg>
+                    </div>
+                    <p class="text-sm" :class="isDark ? 'text-white/50' : 'text-[#64748B]'">
                         {{ currentLang === 'ar' ? 'لم يتم تحميل أي مستند' : 'No document uploaded' }}
                     </p>
                 </div>
 
-                <div v-if="userType === 'client'">
-                    <button @click="openPdf(card)"
-                        class="w-full flex items-center justify-center gap-3 py-3 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all shadow-sm active:scale-95"
-                        :disabled="!card.isUploaded" :class="!card.isUploaded ? 'hidden' : ''">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-                        </svg>
-                        {{ currentLang === 'ar' ? 'عرض تقرير مفصل' : 'View Detailed Report' }}
-                    </button>
-                </div>
+                <div v-if="userType === 'client'"></div>
 
                 <div v-else class="space-y-3">
                     <div v-if="MAPPING_CARD_LABELS.includes(card.label) && !card.isUploaded" class="mt-4 flex flex-col justify-end h-full">
@@ -317,7 +315,7 @@
                 </div>
 
                 <!-- Upload tabs: Download Sample + Add (IC) -->
-                <div v-else class="space-y-3">
+                <div v-else-if="isTaxaid" class="space-y-3">
                     <button @click="handleBudgetDownloadSample(activeBudgetTab)"
                         class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-sm font-medium hover:bg-[#00B794]/5 transition-all">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -618,7 +616,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['view', 'remove', 'uploaded'])
-const userType = ref('admin')
+const { isTaxaid } = usePermissions()
+const userType = computed(() => (isTaxaid.value ? 'admin' : 'client'))
 const isModalOpen = ref(false)
 const activeUploadTarget = ref(null)
 

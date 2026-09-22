@@ -245,8 +245,8 @@
           </div>
         </div>
 
-        <!-- Same component as /settings/organization-settings, reused in personal mode -->
-        <SettingsOrganizationAiAlert personal :show-roles="false" />
+        <!-- Same component as /settings/company-settings, reused in personal mode -->
+        <SettingsCompanyAiAlert personal :show-roles="false" />
 
         <!-- SMS Notifications(hidden for now) -->
         <div v-if="false" class="bg-white border border-gray-100 rounded-[16px] shadow-sm overflow-hidden">

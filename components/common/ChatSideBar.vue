@@ -78,6 +78,12 @@
                     </div>
                 </div>
                 <div class="flex gap-2 justify-center items-center">
+                    <button @click="newChat" :disabled="sending || !messages.length" :title="currentLang === 'ar' ? 'محادثة جديدة' : 'New chat'"
+                        class="flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        :class="isDark ? 'border-white/20 text-white hover:bg-white/10' : 'border-primary-100 text-black hover:bg-black/5'">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14" /></svg>
+                        {{ currentLang === 'ar' ? 'جديدة' : 'New chat' }}
+                    </button>
                     <button @click="$emit('expand')" class="max-lg:hidden">
                         <img src="/images/icons/expand-dark.svg" alt="Pin Chat"
                             class="w-6 h-6 opacity-70 hover:opacity-100"
@@ -149,7 +155,7 @@
                 <div v-else class="space-y-3 mt-auto">
                     <AkeelMessageList />
                     <div v-if="sending" class="text-xs opacity-60" :class="isDark ? 'text-white' : 'text-black'">
-                        {{ currentLang === 'ar' ? 'عقيل يكتب...' : sendingStatusText }}
+                        {{ sendingStatusDisplay }}
                     </div>
                 </div>
             </div>
@@ -158,12 +164,12 @@
                 <CommonAiStatusBox :message="error" :variant="errorVariant" :isDark="isDark" />
                 <div class="flex items-center border rounded-[10px] pl-2 pr-1 py-1 gap-2"
                     :class="isDark ? 'border-white/10 bg-white/5' : 'border-primary-100'">
-                    <input type="text" v-model="draft" @keyup.enter="send"
+                    <input type="text" v-model="draft" @keyup.enter="send" :disabled="locked"
                         :placeholder="currentLang === 'ar' ? 'اسأل عن بياناتك المالية...' : 'Ask about your financials....'"
-                        class="flex-1 bg-transparent focus:outline-none transition-colors text-sm lg:py-2 py-1"
+                        class="flex-1 bg-transparent focus:outline-none transition-colors text-sm lg:py-2 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
                         :class="isDark ? 'text-white placeholder:text-white/30' : 'text-black placeholder:text-black/30'" />
-                    <button @click="send" :disabled="sending"
-                        class="p-2 bg-primary-600 hover:bg-[#008864] text-white rounded-[5px] transition-colors shrink-0 disabled:opacity-50">
+                    <button @click="send" :disabled="sending || locked"
+                        class="p-2 bg-primary-600 hover:bg-[#008864] text-white rounded-[5px] transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed">
                         <img src="/images/icons/chat.svg" alt="Send" class="lg:w-6 lg:h-6 w-4 h-4"
                             :class="currentLang === 'ar' ? 'transform scale-x-[-1]' : ''" />
                     </button>
@@ -183,7 +189,7 @@
 const isDark = useTheme().isDark
 const currentLang = useState('currentLang', () => 'en')
 
-const { messages, status, usage, sending, sendingStatusText, error, errorVariant, activeChatId, sendMessage, fetchChats } = useAkeel()
+const { messages, status, usage, sending, sendingStatusText, sendingStatusDisplay, error, errorVariant, locked, activeChatId, sendMessage, fetchChats, setScope, newChat } = useAkeel()
 
 const props = defineProps({
     domain: { type: String, default: null },
@@ -214,14 +220,18 @@ const { questions: promptQuestions, tips: promptTips, fetchPrompts } = useAkeelP
 const isChatOpen = defineModel('isChatOpen')
 defineEmits(['update:activeTab', 'expand'])
 
-const openChat = () => {
+const scopeKey = computed(() => props.domain ?? route.name?.toString() ?? 'general')
+
+const openChat = async () => {
     isChatOpen.value = true
     fetchChats()
+    await setScope(scopeKey.value)
     const page = route.name?.toString() ?? 'default'
     if (page === 'tax-queries') fetchPrompts(['tax-queries', 'vat-queries'], 'tax-queries')
     else fetchPrompts(page)
 }
 const closeChat = () => { isChatOpen.value = false }
+onMounted(() => { setScope(scopeKey.value) })
 
 const draft = ref('')
 async function ask(question) {

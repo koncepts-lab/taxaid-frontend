@@ -50,7 +50,7 @@ const handleError = () => {
   if (adminToken.value) {
     redirectUrl = '/ad-aqnz-pro-auth-78z46'
   } else if (rpToken.value) {
-    redirectUrl = '/revenue-partnership/select-dashboard'
+    redirectUrl = '/taxaid-partner/dashboard'
   } else if (authToken.value) {
     redirectUrl = '/dashboard'
   }

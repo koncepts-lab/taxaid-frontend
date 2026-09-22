@@ -1,9 +1,11 @@
 <template>
   <NuxtLayout name="admin">
     <div class="p-4 md:p-8 max-w-[100vw] overflow-x-hidden">
-      <button @click="goBack" class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-4">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        Back
+      <button @click="goBack"
+        class="inline-flex items-center gap-2 pl-4 pr-6 py-2 rounded-full border text-[14px] font-medium transition-all mb-4"
+        :class="isDark ? 'bg-[#057759]/60 border-white/10 text-white hover:bg-[#057759]' : 'bg-[#00896F] border-[#00896F] text-white hover:bg-[#00705a]'">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+        {{ currentLang === 'ar' ? 'رجوع' : 'Back' }}
       </button>
       <CommonNotificationsList
         :groups="notificationGroups"
@@ -19,6 +21,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
+const { isDark } = useTheme()
+const currentLang = useState('currentLang', () => 'en')
 const { fetchNotifications, toGroups } = useNotifications()
 const router = useRouter()
 

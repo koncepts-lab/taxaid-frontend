@@ -13,7 +13,7 @@
 
                 <div class="flex-1 flex flex-col gap-5 overflow-hidden">
                     <TaxQueriesTaxTable :isMinimized="isTableMinimized" :title="currentTitle" :data="currentTableData"
-                        :emptyMessage="vatMessage || 'No data available for this section.'"
+                        :emptyMessage="emptyMessage"
                         :years="vatYears" :selectedYear="selectedVatYear"
                         @changeYear="changeVatYear"
                         @toggleMinimize="isTableMinimized = !isTableMinimized" class="shrink-0" />
@@ -53,6 +53,11 @@ const currentTitle = computed(() => {
 });
 
 const currentTableData = computed(() => tableData.value[activeTabId.value] || []);
+
+const emptyMessage = computed(() => {
+    if (activeTabId.value === 'vat') return vatMessage.value || 'No data available for this section.';
+    return `${currentTitle.value} data is not available yet. Coming soon.`;
+});
 
 const handleChatOpen = () => {
     isSideChatOpen.value = true;

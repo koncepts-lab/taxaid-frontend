@@ -136,7 +136,7 @@
       <div class="relative z-10">
         <img v-if="previewUrl || pictureUrl" :src="previewUrl || pictureUrl" alt="Profile" class="w-20 h-20 rounded-full border-2 border-white/20 object-cover" />
         <div v-else class="w-20 h-20 rounded-full border-2 border-white/20 bg-white/10"></div>
-        <div v-if="isEditing" class="absolute bottom-0 right-0 bg-[#00896F] rounded-full p-1.5 border-2 border-white cursor-pointer hover:bg-[#00705a] transition-colors shadow-sm">
+        <div v-if="isEditing && canEditCompany" class="absolute bottom-0 right-0 bg-[#00896F] rounded-full p-1.5 border-2 border-white cursor-pointer hover:bg-[#00705a] transition-colors shadow-sm">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" />
@@ -164,6 +164,10 @@
           <div>
             <p class="text-[#00FFB2] text-xs mb-1">Founded</p>
             <p class="text-sm text-white/90">{{ profile.founded }}</p>
+          </div>
+          <div>
+            <p class="text-[#00FFB2] text-xs mb-1">Country</p>
+            <p class="text-sm text-white/90 flex items-center gap-2">{{ countryName(profile.country) || '—' }}</p>
           </div>
         </div>
       </div>
@@ -240,16 +244,16 @@
           <label class="block text-xs text-gray-700 mb-1">Last Name</label>
           <input v-model="profile.lastName" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
         </div>
-        <div>
+        <div v-if="canEditCompany">
           <label class="block text-xs text-gray-700 mb-1">Company Name <span class="text-[10px] text-gray-400">(from your accounting system - not editable)</span></label>
           <input :value="profile.companyName" disabled :class="['w-full h-[40px] rounded-lg px-3 py-2 text-sm cursor-not-allowed border', isDark ? 'bg-[#01332a] border-transparent text-white/60' : 'bg-gray-100 border-gray-200 text-gray-500']" />
         </div>
-        <div>
+        <div v-if="canEditCompany">
           <div class="flex justify-between items-end mb-1">
             <label class="block text-xs text-gray-700">Company Nickname</label>
             <span class="text-[10px] text-gray-400">{{ profile.companyNickname?.length || 0 }}/15</span>
           </div>
-          <input v-model="profile.companyNickname" maxlength="15" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+          <input v-model="profile.companyNickname" :disabled="!canEditCompany" maxlength="15" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
         </div>
         <div>
           <label class="block text-xs text-gray-700 mb-1">Email</label>
@@ -315,25 +319,40 @@
              <input v-model="profile.phone" class="w-full pl-9 bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
           </div>
         </div>
-        <div>
+        <div v-if="canEditCompany">
           <label class="block text-xs text-gray-700 mb-1">EIN</label>
-          <input v-model="profile.ein" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+          <input v-model="profile.ein" :disabled="!canEditCompany" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
         </div>
-        <div>
+        <div v-if="canEditCompany">
           <label class="block text-xs text-gray-700 mb-1">Entity Type</label>
-          <input v-model="profile.entityType" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+          <input v-model="profile.entityType" :disabled="!canEditCompany" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
         </div>
-        <div>
+        <div v-if="canEditCompany">
           <label class="block text-xs text-gray-700 mb-1">Founded Year</label>
-          <input v-model="profile.founded" maxlength="4" placeholder="e.g. 2015" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+          <input v-model="profile.founded" :disabled="!canEditCompany" maxlength="4" placeholder="e.g. 2015" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
         </div>
-        <div>
+        <div v-if="canEditCompany">
           <label class="block text-xs text-gray-700 mb-1">Industry</label>
-          <input v-model="profile.industry" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+          <input v-model="profile.industry" :disabled="!canEditCompany" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
         </div>
-        <div>
+        <div v-if="canEditCompany">
+          <label class="block text-xs text-gray-700 mb-1">Country</label>
+          <CommonCountrySelect v-model="profile.country" :disabled="!canEditCompany" :codes="profile.allowedCountries ?? []" />
+        </div>
+        <div v-if="!canEditCompany" class="md:col-span-2">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div v-for="item in companyReadOnly" :key="item.label"
+              :class="['border rounded-xl p-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
+              <p class="text-xs text-gray-500 mb-0.5">{{ item.label }}</p>
+              <p class="text-sm font-medium text-gray-900 flex items-center gap-2">
+                {{ item.value || '—' }}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div v-if="canEditCompany">
           <label class="block text-xs text-gray-700 mb-1">Fiscal Year End</label>
-          <input v-model="profile.fiscalYearEnd" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+          <input v-model="profile.fiscalYearEnd" :disabled="!canEditCompany" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
         </div>
       </div>
     </div>
@@ -344,9 +363,9 @@
       
       <div class="space-y-6">
         <div>
-          <h4 v-if="!isEditing" class="text-sm text-gray-500 mb-4">Permanent Address</h4>
+          <h4 v-if="!isEditing || !canEditCompany" class="text-sm text-gray-500 mb-4">Permanent Address</h4>
           
-          <div v-if="!isEditing" :class="['border rounded-xl p-4 flex items-start gap-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
+          <div v-if="!isEditing || !canEditCompany" :class="['border rounded-xl p-4 flex items-start gap-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
             <div class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0 mt-1">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
             </div>
@@ -365,14 +384,14 @@
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
                 </span>
-                <input v-model="profile.permanentAddress.street" class="w-full pl-9 h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+                <input v-model="profile.permanentAddress.street" :disabled="!canEditCompany" class="w-full pl-9 h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
               </div>
             </div>
             <div class="flex flex-col md:flex-row gap-4">
               <div class="w-full md:flex-1">
                 <label class="block text-xs text-gray-700 mb-1">City</label>
                 <div class="relative">
-                  <input v-model="profile.permanentAddress.city" placeholder="City" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" />
+                  <input v-model="profile.permanentAddress.city" :disabled="!canEditCompany" placeholder="City" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" />
                   <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
                   </span>
@@ -381,7 +400,7 @@
               <div class="w-full md:w-1/3">
                 <label class="block text-xs text-gray-700 mb-1">State</label>
                 <div class="relative">
-                  <input v-model="profile.permanentAddress.state" placeholder="State" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" />
+                  <input v-model="profile.permanentAddress.state" :disabled="!canEditCompany" placeholder="State" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" />
                   <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
                   </span>
@@ -389,7 +408,7 @@
               </div>
               <div class="w-full md:w-1/3">
                 <label class="block text-xs text-gray-700 mb-1">Z!P Code</label>
-                <input v-model="profile.permanentAddress.zip" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+                <input v-model="profile.permanentAddress.zip" :disabled="!canEditCompany" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
               </div>
             </div>
           </div>
@@ -398,7 +417,7 @@
         <div v-if="isEditing || profile.communicationAddresses.some(a => a.street || a.city || a.state || a.zip)">
           <div class="flex justify-between items-center mb-4">
             <h4 class="text-sm text-gray-500">Communication Address</h4>
-            <button v-if="isEditing && profile.communicationAddresses.length < 4" @click="addCommunicationAddress" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
+            <button v-if="isEditing && profile.communicationAddresses.length < 4 && canEditCompany" @click="addCommunicationAddress" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
               Add Address
             </button>
@@ -406,11 +425,11 @@
           
           <div class="space-y-3">
             <div v-for="(addr, index) in profile.communicationAddresses.filter(a => !isEditing ? (a.street || a.city || a.state || a.zip) : true)" :key="index" :class="['border rounded-xl p-4 flex items-start gap-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
-              <div v-if="!isEditing" class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0 mt-1">
+              <div v-if="!isEditing || !canEditCompany" class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0 mt-1">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
               </div>
               
-              <div v-if="!isEditing" class="flex-1 py-1">
+              <div v-if="!isEditing || !canEditCompany" class="flex-1 py-1">
                 <p class="text-xs text-gray-500 mb-0.5">{{ addr.label }}</p>
                 <p class="text-sm font-medium text-gray-900 mb-1">{{ addr.street }}</p>
                 <p class="text-sm text-gray-600">{{ addr.city }}, {{ addr.state }} {{ addr.zip }}</p>
@@ -420,7 +439,7 @@
                 <div class="flex justify-between gap-4">
                   <div class="flex-1">
                     <label class="block text-xs text-gray-700 mb-1">Address Label</label>
-                    <input v-model="addr.label" placeholder="e.g. Address 1" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+                    <input v-model="addr.label" :disabled="!canEditCompany" placeholder="e.g. Address 1" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
                   </div>
                   <button @click="removeCommunicationAddress(index)" class="text-gray-400 hover:text-red-500 self-end mb-2">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
@@ -432,14 +451,14 @@
                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
                     </span>
-                    <input v-model="addr.street" class="w-full pl-9 h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+                    <input v-model="addr.street" :disabled="!canEditCompany" class="w-full pl-9 h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
                   </div>
                 </div>
                 <div class="flex flex-col md:flex-row gap-4">
                   <div class="w-full md:flex-1">
                     <label class="block text-xs text-gray-700 mb-1">City</label>
                     <div class="relative">
-                      <input v-model="addr.city" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" />
+                      <input v-model="addr.city" :disabled="!canEditCompany" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" />
                       <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
                       </span>
@@ -448,7 +467,7 @@
                   <div class="w-full md:w-1/3">
                     <label class="block text-xs text-gray-700 mb-1">State</label>
                     <div class="relative">
-                      <input v-model="addr.state" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" />
+                      <input v-model="addr.state" :disabled="!canEditCompany" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" />
                       <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
                       </span>
@@ -456,7 +475,7 @@
                   </div>
                   <div class="w-full md:w-1/3">
                     <label class="block text-xs text-gray-700 mb-1">ZIP Code</label>
-                    <input v-model="addr.zip" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+                    <input v-model="addr.zip" :disabled="!canEditCompany" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
                   </div>
                 </div>
               </div>
@@ -474,7 +493,7 @@
     <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-lg font-medium text-gray-900">Related Entities</h3>
-        <button v-if="isEditing && profile.relatedEntities.length < 4" @click="openEntityModal()" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
+        <button v-if="isEditing && profile.relatedEntities.length < 4 && canEditCompany" @click="openEntityModal()" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
           Add Entity
         </button>
@@ -490,7 +509,7 @@
               <p class="text-sm text-gray-600">{{ entity.type }} • EIN: {{ entity.ein }}</p>
             </div>
           </div>
-          <div v-if="isEditing" class="flex gap-2">
+          <div v-if="isEditing && canEditCompany" class="flex gap-2">
             <button @click="openEntityModal(index)" class="text-gray-500 hover:text-[#00896F] p-1.5 rounded-md hover:bg-[#E6F6F2] transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
             </button>
@@ -506,7 +525,7 @@
     <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-lg font-medium text-gray-900">Key Contacts</h3>
-        <button v-if="isEditing && profile.keyContacts.length < 10" @click="openContactModal()" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
+        <button v-if="isEditing && profile.keyContacts.length < 10 && canEditCompany" @click="openContactModal()" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
           Add Contact
         </button>
@@ -524,7 +543,7 @@
               <p class="text-xs text-gray-500">{{ contact.email }} • {{ contact.phone }}</p>
             </div>
           </div>
-          <div v-if="isEditing" class="flex gap-2">
+          <div v-if="isEditing && canEditCompany" class="flex gap-2">
             <button @click="openContactModal(index)" class="text-gray-500 hover:text-[#00896F] p-1.5 rounded-md hover:bg-[#E6F6F2] transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
             </button>
@@ -678,6 +697,8 @@ const { isDark } = useTheme()
 
 const { profile, pictureUrl, loading, saving, error, fetchProfile, saveProfile, sendEmailChangeCode, verifyEmailChangeCode, uploadPicture } = useProfile()
 
+const { can } = usePermissions()
+const canEditCompany = computed(() => can('profile.edit_company_fields'))
 const isEditing = ref(false)
 const pendingPictureFile = ref<File | null>(null)
 const previewUrl = ref<string | null>(null)
@@ -699,10 +720,25 @@ let resendTimer: ReturnType<typeof setInterval> | null = null
 
 const emailChanged = computed(() => !!profile.value && profile.value.email !== savedEmail.value)
 
-onMounted(() => fetchProfile())
+onMounted(() => fetchProfile(false, canEditCompany.value))
 
 watch(profile, (p) => {
   if (p && !savedEmail.value) savedEmail.value = p.email
+}, { immediate: true })
+
+const companyReadOnly = computed(() => {
+  const p: any = profile.value
+  if (!p) return []
+  return [
+    { label: 'Company', value: p.companyName },
+    { label: 'Company Nickname', value: p.companyNickname },
+    { label: 'EIN', value: p.ein },
+    { label: 'Entity Type', value: p.entityType },
+    { label: 'Founded Year', value: p.founded },
+    { label: 'Industry', value: p.industry },
+    { label: 'Country', value: countryName(p.country) },
+    { label: 'Fiscal Year End', value: p.fiscalYearEnd },
+  ]
 })
 
 function resetEmailVerificationState() {

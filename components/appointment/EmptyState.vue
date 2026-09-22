@@ -13,6 +13,7 @@
             {{ currentLang === 'ar' ? 'ليس لديك أي مواعيد في تقويمك. حدد موعد اجتماعك الأول للبدء.' : 'You don\'t have any appointments on your calendar. Schedule your first meeting to get started.' }}
         </p>
         <button
+            v-if="can('appointments.create')"
             @click="$emit('schedule')"
             class="px-8 py-3 rounded-xl bg-[#63DABCEB] text-[#000] font-semibold hover:bg-[#00e6a9] active:scale-95 transition-all shadow-lg hover:shadow-[#00FFBC]/20 cursor-pointer">
             <div class="flex items-center gap-2">
@@ -26,6 +27,7 @@
 </template>
 
 <script setup>
+const { can } = usePermissions()
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 

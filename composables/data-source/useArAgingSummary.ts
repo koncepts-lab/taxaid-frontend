@@ -98,9 +98,10 @@ export function useArAgingSummary() {
     finally { logsLoading.value = false }
   }
 
-  // Initial fetch (same pattern as useCashFlowProjection)
-  fetchSummary()
-  fetchLogs()
+  const load = async () => {
+    await fetchSummary()
+    await fetchLogs()
+  }
 
-  return { rows, totals, loading, error, refresh: fetchSummary, logs, logsLoading, logsMeta, fetchLogs }
+  return { rows, totals, loading, error, refresh: fetchSummary, logs, logsLoading, logsMeta, fetchLogs, load }
 }

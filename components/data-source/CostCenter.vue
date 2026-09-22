@@ -9,7 +9,7 @@
                     'Cost Center Details / Project-wise Reports' }}
             </h2>
 
-            <div class="flex bg-[#61FFD61A] p-1 rounded-xl border border-[#84D7C5]/30">
+            <div v-if="isTaxaid" class="flex bg-[#61FFD61A] p-1 rounded-xl border border-[#84D7C5]/30">
                 <button v-for="mode in ['Hybrid', 'Direct']" :key="mode" @click="$emit('change-mode', mode)"
                     class="px-4 py-1.5 rounded-lg text-sm transition-all duration-300"
                     :class="activeMode === mode ? 'bg-[#00B794] text-white shadow-sm' : 'text-black/80 '">
@@ -27,7 +27,8 @@
                     <h3 class="text-base font-medium mb-1" :class="isDark ? 'text-white' : 'text-[#0A0A0A]'">
                         {{ currentLang === 'ar' ? card.titleAr : card.title }}
                     </h3>
-                    <p v-if="card.subtext" class="text-sm text-[#6A7282] font-normal">
+                    <div v-if="card.pending" class="skeleton h-4 w-44 rounded mt-1"></div>
+                    <p v-else-if="card.subtext" class="text-sm text-[#6A7282] font-normal">
                         {{ card.subtext }}
                     </p>
                 </div>
@@ -45,6 +46,7 @@
 </template>
 
 <script setup>
+const { isTaxaid } = usePermissions()
 import { ref, computed } from 'vue'
 
 const props = defineProps({
@@ -68,9 +70,8 @@ const reportCards = computed(() => [
         id: 'contract',
         title: 'Contract Master',
         titleAr: 'سجل العقود الرئيسي',
-        subtext: props.activeCount !== null
-            ? `Number of active projects - ${props.activeCount}`
-            : 'Number of active projects - ...'
+        pending: props.activeCount === null,
+        subtext: props.activeCount !== null ? `Number of active projects - ${props.activeCount}` : ''
     },
     {
         id: 'budget',
@@ -80,3 +81,14 @@ const reportCards = computed(() => [
     }
 ])
 </script>
+<style scoped>
+.skeleton {
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
+    background-size: 400% 100%;
+    animation: ds-shimmer 1.4s ease infinite;
+}
+@keyframes ds-shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+}
+</style>

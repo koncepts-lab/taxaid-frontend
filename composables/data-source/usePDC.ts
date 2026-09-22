@@ -102,7 +102,10 @@ export function usePDC() {
         finally { logsLoading.value = false }
     }
 
-    onMounted(() => { fetchSummary(); fetchLogs() })
+    const load = async () => {
+        await fetchSummary()
+        await fetchLogs()
+    }
 
     return {
         pdcGroups,
@@ -118,5 +121,6 @@ export function usePDC() {
         logsLoading,
         logsMeta,
         fetchLogs,
+        load,
     }
 }

@@ -287,3 +287,102 @@ input[type="checkbox"]:checked {
 .dark-mode-bg .apexcharts-legend-text {
   color: #ffffff !important;
 }
+
+/* Dark-mode overlays: opaque cards (the generic .bg-white override above is 50% transparent) */
+.dark-mode-bg .fixed .bg-white,
+.dark-mode-bg .fixed.bg-white,
+body.taxaid-dark > .fixed .bg-white,
+body.taxaid-dark > .fixed.bg-white {
+  background-color: #012f27 !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff;
+}
+
+.dark-mode-bg .fixed .bg-white .bg-white,
+body.taxaid-dark > .fixed .bg-white .bg-white {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.dark-mode-bg .fixed .bg-gray-50,
+.dark-mode-bg .fixed .bg-gray-100,
+body.taxaid-dark > .fixed .bg-gray-50,
+body.taxaid-dark > .fixed .bg-gray-100 {
+  background-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+.dark-mode-bg .fixed .hover\:bg-gray-50:hover,
+body.taxaid-dark > .fixed .hover\:bg-gray-50:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-mode-bg .fixed .text-gray-800,
+.dark-mode-bg .fixed .text-gray-900,
+.dark-mode-bg .fixed .text-black,
+.dark-mode-bg .fixed .text-\[\#101828\],
+.dark-mode-bg .fixed .text-\[\#013E32\],
+.dark-mode-bg .fixed .bg-gray-50 .text-gray-800,
+body.taxaid-dark > .fixed .text-gray-800,
+body.taxaid-dark > .fixed .text-gray-900,
+body.taxaid-dark > .fixed .text-black,
+body.taxaid-dark > .fixed .text-\[\#101828\],
+body.taxaid-dark > .fixed .text-\[\#013E32\] {
+  color: #ffffff !important;
+}
+
+.dark-mode-bg .fixed .text-gray-400,
+.dark-mode-bg .fixed .text-gray-500,
+.dark-mode-bg .fixed .text-gray-600,
+.dark-mode-bg .fixed .text-gray-700,
+.dark-mode-bg .fixed .text-\[\#4A5565\],
+.dark-mode-bg .fixed .bg-gray-100.text-gray-500,
+.dark-mode-bg .fixed .bg-gray-100.text-gray-600,
+body.taxaid-dark > .fixed .text-gray-400,
+body.taxaid-dark > .fixed .text-gray-500,
+body.taxaid-dark > .fixed .text-gray-600,
+body.taxaid-dark > .fixed .text-gray-700,
+body.taxaid-dark > .fixed .text-\[\#4A5565\] {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.dark-mode-bg .fixed .border-gray-100,
+.dark-mode-bg .fixed .border-gray-200,
+.dark-mode-bg .fixed .border-gray-300,
+body.taxaid-dark > .fixed .border-gray-100,
+body.taxaid-dark > .fixed .border-gray-200,
+body.taxaid-dark > .fixed .border-gray-300 {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.dark-mode-bg .fixed input,
+.dark-mode-bg .fixed select,
+.dark-mode-bg .fixed textarea,
+body.taxaid-dark > .fixed input,
+body.taxaid-dark > .fixed select,
+body.taxaid-dark > .fixed textarea {
+  color: #ffffff;
+}
+
+.dark-mode-bg .fixed input::placeholder,
+.dark-mode-bg .fixed textarea::placeholder,
+body.taxaid-dark > .fixed input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* Highlighted rows / selected cards and outline buttons that were unreadable on the dark theme */
+.dark-mode-bg .bg-\[\#ECFDF5\],
+.dark-mode-bg .bg-\[\#ECFDF5\]\/60,
+.dark-mode-bg .bg-\[\#F0FDF9\] {
+  background-color: rgba(4, 193, 143, 0.16) !important;
+}
+
+.dark-mode-bg .hover\:bg-\[\#ECFDF5\]:hover {
+  background-color: rgba(4, 193, 143, 0.24) !important;
+}
+
+.dark-mode-bg .text-red-600 {
+  color: #fca5a5 !important;
+}
+
+.dark-mode-bg .border-red-300 {
+  border-color: rgba(248, 113, 113, 0.6) !important;
+}

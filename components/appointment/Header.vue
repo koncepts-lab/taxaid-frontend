@@ -35,6 +35,7 @@
 
                     <!-- Schedule Button -->
                     <button
+                        v-if="can('appointments.create')"
                         @click="isModalOpen = true"
                         class="h-[40px] px-6 flex items-center gap-2 rounded-[10px] bg-[#007B5B] text-white font-medium hover:bg-[#00664B] transition-colors shadow-sm whitespace-nowrap cursor-pointer">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,6 +51,7 @@
 </template>
 
 <script setup>
+const { can } = usePermissions()
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 

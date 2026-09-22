@@ -15,17 +15,17 @@
                     <div class="flex justify-between items-center p-3 bg-[#68E4C4] text-[#013E32]">
                         <span class="text-sm font-normal">{{ currentLang === 'ar' ? 'إجمالي الشيكات' : group.totalLabel
                             }}</span>
-                        <span class=" text-sm font-normal">{{ group.totalAmount }}</span>
+                        <div v-if="loading" class="skeleton h-4 w-24 rounded"></div><span v-else class=" text-sm font-normal">{{ group.totalAmount }}</span>
                     </div>
                     <div class="flex justify-between items-center p-3 bg-[#FFC6C680] text-[#013E32]">
                         <span class="text-sm font-normal">{{ currentLang === 'ar' ? 'مستحق خلال 30 يوم' :
                             'Due in the next 30 days' }}</span>
-                        <span class=" text-sm font-normal">{{ group.due30 }}</span>
+                        <div v-if="loading" class="skeleton h-4 w-24 rounded"></div><span v-else class=" text-sm font-normal">{{ group.due30 }}</span>
                     </div>
                     <div class="flex justify-between items-center p-3 bg-[#F9F6DE] text-[#013E32]">
                         <span class="text-sm font-normal">{{ currentLang === 'ar' ? 'مستحق خلال 45 يوم' :
                             'Due in the next 45 days' }}</span>
-                        <span class=" text-sm font-normal">{{ group.due45 }}</span>
+                        <div v-if="loading" class="skeleton h-4 w-24 rounded"></div><span v-else class=" text-sm font-normal">{{ group.due45 }}</span>
                     </div>
                 </div>
 
@@ -45,7 +45,19 @@
 defineProps({
     isDark: Boolean,
     currentLang: String,
-    pdcGroups: Array
+    pdcGroups: Array,
+    loading: Boolean,
 })
 defineEmits(['open-report'])
 </script>
+<style scoped>
+.skeleton {
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
+    background-size: 400% 100%;
+    animation: ds-shimmer 1.4s ease infinite;
+}
+@keyframes ds-shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+}
+</style>
