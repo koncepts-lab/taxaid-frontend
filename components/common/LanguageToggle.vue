@@ -17,13 +17,17 @@
       :style="{ background: 'linear-gradient(180deg, #057255 0%, #04C18F 100%)' }"
       :class="modelValue === 'ar' ? 'translate-x-[48px]' : 'translate-x-0'"
     >
-      <!-- Arabic Icon (Shown when EN/Left) -->
-      <img src="/images/arbic-icon.svg" class="absolute w-[13px] h-[22px] object-contain transition-all duration-300 transform"
-           :class="modelValue === 'en' ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-50 -rotate-90'" alt="EN" />
-           
-      <!-- English Icon (Shown when AR/Right) -->
-      <img src="/images/english-icon.svg" class="absolute w-[14px] h-[18px] object-contain transition-all duration-300 transform"
-           :class="modelValue === 'ar' ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-50 rotate-90'" alt="AR" />
+      <!-- English Icon: 'EN' (Shown when EN/Left) -->
+      <span 
+        class="absolute text-[13px] font-bold text-white transition-all duration-300 transform select-none"
+        :class="modelValue === 'en' ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-50 -rotate-90'"
+      >EN</span>
+
+      <!-- Arabic Icon: 'ع' (Shown when AR/Right) -->
+      <span 
+        class="absolute text-[18px] font-bold text-white transition-all duration-300 transform select-none leading-none pt-0.5"
+        :class="modelValue === 'ar' ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-50 rotate-90'"
+      >ع</span>
     </div>
   </button>
 </template>
