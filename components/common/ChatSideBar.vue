@@ -77,22 +77,26 @@
                         </div>
                     </div>
                 </div>
-                <div class="flex gap-2 justify-center items-center">
-                    <button @click="newChat" :disabled="sending || !messages.length" :title="currentLang === 'ar' ? 'محادثة جديدة' : 'New chat'"
-                        class="flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                        :class="isDark ? 'border-white/20 text-white hover:bg-white/10' : 'border-primary-100 text-black hover:bg-black/5'">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14" /></svg>
-                        {{ currentLang === 'ar' ? 'جديدة' : 'New chat' }}
+                <div class="flex items-center gap-1.5">
+                    <button @click="newChat" :disabled="sending" :title="currentLang === 'ar' ? 'محادثة جديدة' : 'New chat'"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed bg-[#008472] hover:bg-[#00695C] text-white border border-[#00695C]/20">
+                        <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
+                        </svg>
+                        <span>{{ currentLang === 'ar' ? 'محادثة جديدة' : 'New chat' }}</span>
                     </button>
-                    <button @click="$emit('expand')" class="max-lg:hidden">
-                        <img src="/images/icons/expand-dark.svg" alt="Pin Chat"
-                            class="w-6 h-6 opacity-70 hover:opacity-100"
-                            :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'transform scale-x-[-1]' : '']" />
+                    <button @click="$emit('expand')" class="p-1 rounded-lg transition-colors max-lg:hidden flex items-center justify-center cursor-pointer"
+                        :class="isDark ? 'text-white/70 hover:text-white hover:bg-white/10' : 'text-gray-500 hover:text-black hover:bg-black/5'"
+                        :title="currentLang === 'ar' ? 'توسيع' : 'Expand'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                        </svg>
                     </button>
 
-                    <button @click="closeChat" class="rounded-full transition-colors"
-                        :class="isDark ? 'text-white hover:bg-white/10' : 'text-black hover:bg-black/5'">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button @click="closeChat" class="p-1 rounded-lg transition-colors flex items-center justify-center cursor-pointer"
+                        :class="isDark ? 'text-white/70 hover:text-white hover:bg-white/10' : 'text-gray-500 hover:text-black hover:bg-black/5'"
+                        :title="currentLang === 'ar' ? 'إغلاق' : 'Close'">
+                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12" />
                         </svg>
