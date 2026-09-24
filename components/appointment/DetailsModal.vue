@@ -1,6 +1,7 @@
 <template>
+    <Teleport to="body">
     <Transition name="modal">
-        <div v-if="modelValue" class="fixed inset-0 z-[1001] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4">
+        <div v-if="modelValue" class="fixed inset-0 z-[1200] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4">
             <!-- Backdrop -->
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="$emit('update:modelValue', false)"></div>
 
@@ -107,8 +108,18 @@
                                 :style="isDark ? 'color: rgba(255,255,255,0.4);' : 'color: #505050;'">
                                 {{ currentLang === 'ar' ? 'الحالة' : 'Status' }}
                             </p>
+                            <div v-if="appointment?._monthly_review" class="flex flex-wrap items-center gap-1.5">
+                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap"
+                                    :style="{ backgroundColor: getStatusStyle('monthly_review').bg, color: getStatusStyle('monthly_review').text }">
+                                    {{ currentLang === 'ar' ? 'المراجعة الشهرية' : 'Monthly Review' }}
+                                </span>
+                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap"
+                                    :style="{ backgroundColor: getStatusStyle(appointment?.status).bg, color: getStatusStyle(appointment?.status).text }">
+                                    {{ statusLabel(appointment?.status) }}
+                                </span>
+                            </div>
                             <!-- extra_hours: both pending + extra in black container = one appointment -->
-                            <div v-if="appointment?.status === 'extra_hours'"
+                            <div v-else-if="appointment?.status === 'extra_hours'"
                                 class="inline-flex items-center gap-1.5">
                                 <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium"
                                     :style="{ backgroundColor: getStatusStyle('pending').bg, color: getStatusStyle('pending').text }">
@@ -126,8 +137,8 @@
                         </div>
                     </div>
 
-                    <!-- Meet Link — shown when scheduled/rescheduled and a link exists -->
-                    <div v-if="appointment?.meet_url && ['scheduled', 'rescheduled'].includes(appointment?.status)" class="mb-7">
+                    <!-- Meet Link — only for meetings still ahead: hidden once completed or cancelled -->
+                    <div v-if="appointment?.meet_url && !['completed', 'cancelled'].includes(appointment?.status)" class="mb-7">
                         <p class="mb-2" style="font-weight: 400; font-size: 12px;"
                             :style="isDark ? 'color: rgba(255,255,255,0.4);' : 'color: #505050;'">
                             {{ currentLang === 'ar' ? 'رابط الاجتماع' : 'Meet Link' }}
@@ -172,6 +183,7 @@
             </div>
         </div>
     </Transition>
+    </Teleport>
 </template>
 
 <script setup>

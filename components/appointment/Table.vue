@@ -1,9 +1,10 @@
 <template>
     <div class="w-full overflow-hidden rounded-[16px] border transition-all"
         :class="isDark ? 'bg-[#001410] border-[#03D8B0]/20' : 'bg-white border-gray-100 shadow-sm'">
+        <div class="h-[560px] overflow-y-auto">
         <table class="w-full text-left border-collapse">
-            <thead>
-                <tr :class="isDark ? 'bg-[#00FFBC]/10' : 'bg-[#018E71]'">
+            <thead class="sticky top-0 z-10">
+                <tr :class="isDark ? 'bg-[#00261F]' : 'bg-[#018E71]'">
                     <th v-for="col in columns" :key="col"
                         class="px-6 py-4 text-[14px] font-semibold"
                         :class="isDark ? 'text-[#00FFBC]' : 'text-white'">
@@ -12,7 +13,13 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, idx) in data" :key="idx"
+                <tr v-if="!tableLoading && tableRows.length === 0">
+                    <td :colspan="columns.length" class="px-6 py-16 text-center text-[14px]"
+                        :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                        {{ currentLang === 'ar' ? 'لا توجد مواعيد' : 'No appointments found' }}
+                    </td>
+                </tr>
+                <tr v-for="(item, idx) in tableRows" :key="`${item._monthly_review ? 'r' : 'a'}-${item.id}-${idx}`"
                     class="border-b last:border-0 transition-colors"
                     :class="isDark ? 'border-[#03D8B0]/10 hover:bg-white/5' : 'border-gray-50 hover:bg-gray-50'">
 
@@ -76,6 +83,14 @@
                 </tr>
             </tbody>
         </table>
+        </div>
+        <CommonPaginationBar
+            v-if="tableMeta.total > 10"
+            :meta="tableMeta"
+            :loading="tableLoading"
+            @page-change="(p) => fetchTable(p)"
+            @per-page-change="(n) => fetchTable(1, n)"
+        />
     </div>
 
     <!-- Appointment Details Modal -->
@@ -95,13 +110,9 @@ const formatDate = (dateStr) => {
     try { return format(parseISO(dateStr.slice(0, 10)), 'MMM dd, yyyy') } catch { return dateStr }
 }
 
-const props = defineProps({
-    data: Array
-})
-
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
-const { columns: dynamicColumns, columnsAr, statusStyles, typeStyles, cancelAppointment } = useAppointmentsPage()
+const { columns: dynamicColumns, columnsAr, statusStyles, typeStyles, cancelAppointment, tableRows, tableMeta, tableLoading, fetchTable } = useAppointmentsPage()
 
 const columns = computed(() => {
     return currentLang.value === 'ar' ? columnsAr.value : dynamicColumns.value

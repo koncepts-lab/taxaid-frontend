@@ -3,6 +3,8 @@
 
     <WorkSessionGuardModal :show="showGuard" @dismiss="showGuard = false" />
 
+    <SetScheduleModal v-model="isScheduleModalOpen" :review="selectedReview" @saved="loadReviews(summaryPage)" />
+
     <!-- HEADER -->
     <!-- TODO: NEED Alerts — Review Team Member / Review Consultant has no real notification data yet; points at the shared /admin/notifications page (empty for now) instead of the old /taxaid-partner/notifications, which needs an rp_token this role doesn't have. -->
     <AdminDashboardHeader :userName="admin?.role?.name ?? 'Team Member Dashboard'" :userId="'Welcome, ' + (admin?.full_name ?? '')" :showChangeProfile="false" :showManageAccess="false" changeProfileLink="/profile" notificationsTo="/admin/notifications" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
@@ -190,7 +192,7 @@
                   <div @click="timerState === 'idle' && toggleDropdown('client')"
                        :class="[isDark ? '!bg-white/5 text-white' : 'bg-white', timerState !== 'idle' ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer']"
                        class="w-full flex justify-between items-center px-4 py-2.5 rounded-[10px] text-[14px] shadow-sm border-0 ring-0 h-[40px]">
-                    <span :class="!activityForm.tenant_id ? 'opacity-40' : ''">{{ activityForm.tenant_id ? `C${String(activityForm.tenant_id).padStart(3, '0')}` : 'Select Client Id' }}</span>
+                    <span :class="!activityForm.tenant_id ? 'opacity-40' : ''">{{ activityForm.tenant_id ? clientCode(clients.find(c => c.id === activityForm.tenant_id)?.license_id, activityForm.tenant_id) : 'Select Client Id' }}</span>
                     <img src="/images/icons/down-select.svg" class="w-2.5 h-2.5 transition-transform duration-300" :class="[showClientDropdown ? 'rotate-180' : '', isDark ? 'invert' : '']" alt="v" />
                   </div>
                   <div v-if="showClientDropdown" class="absolute z-[60] left-0 right-0 top-full mt-1.5 py-2 bg-white rounded-[12px] shadow-lg border-0 max-h-[250px] overflow-y-auto no-scrollbar" :class="isDark ? 'bg-[#1a2e2a] border-white/5 text-white' : ''">
@@ -198,7 +200,7 @@
                           @click="selectActivityClient(c.id)"
                           class="px-5 py-2.5 text-[14px] cursor-pointer transition-colors"
                           :class="isDark ? 'hover:bg-white/5' : 'hover:bg-[#E6FAF5]'">
-                      C{{ String(c.id).padStart(3, '0') }}
+                      {{ clientCode(c.license_id, c.id) }}
                     </div>
                   </div>
                 </template>
@@ -583,6 +585,8 @@
                   <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Client Name</th>
                   <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Client Fixed Review</th>
                   <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Status</th>
+                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Scheduled Date</th>
+                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Reschedule</th>
                   <th class="py-4 px-6 font-normal text-[14px] whitespace-nowrap text-right">Project Details</th>
                 </tr>
               </thead>
@@ -619,6 +623,18 @@
                             'bg-[#D1FAE5] text-[#065F46]': s.status === 'Completed',
                           }">{{ s.status }}</span>
                   </td>
+                  <td class="py-4 px-6 text-[14px] whitespace-nowrap">
+                    <div>{{ s.scheduledLabel }}</div>
+                    <div v-if="s.hasMeetUrl" class="text-[12px] opacity-60">Meet link added</div>
+                  </td>
+                  <td class="py-4 px-6">
+                    <button @click="openScheduleModal(s.raw)"
+                            :disabled="!s.canReschedule"
+                            class="px-3 py-1.5 rounded-md border text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                            :class="isDark ? 'border-white/20 text-white hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
+                      Reschedule
+                    </button>
+                  </td>
                   <td class="py-4 px-6 text-right">
                     <NuxtLink :to="`/admin/review-team/member/${s.tenantId}`"
                               class="flex items-center justify-end gap-1 text-[13px] font-medium transition-colors hover:opacity-80"
@@ -629,7 +645,7 @@
                   </td>
                 </tr>
                 <tr v-if="filteredClientSummary.length === 0">
-                  <td colspan="5" class="py-16 text-center text-[14px] opacity-40">No records found.</td>
+                  <td colspan="7"class="py-16 text-center text-[14px] opacity-40">No records found.</td>
                 </tr>
               </tbody>
             </table>
@@ -1011,6 +1027,7 @@ import { useAdminAppointments } from '~/composables/admin/review/useAdminAppoint
 import { useAdminMonthlyReviews } from '~/composables/admin/review/useAdminMonthlyReviews'
 import WorkSessionGuardModal from '~/components/admin/review/WorkSessionGuardModal.vue'
 import SessionTimerRow from '~/components/admin/review/SessionTimerRow.vue'
+import SetScheduleModal from '~/components/admin/review/SetScheduleModal.vue'
 
 const { isDark } = useTheme()
 const { admin } = useAdminAuth()
@@ -1335,10 +1352,14 @@ function formatApptDateTime(date, time) {
   return `${dateStr}, ${h12}:${String(min).padStart(2, '0')} ${ampm}`
 }
 
+function clientCode(licenseId, tenantId) {
+  return licenseId || `C${String(tenantId).padStart(3, '0')}`
+}
+
 const mappedAppointments = computed(() =>
   appointments.value.map(a => ({
     id: a.id,
-    clientId: `C${String(a.tenant_id).padStart(3, '0')}`,
+    clientId: clientCode(a.license_id, a.tenant_id),
     clientName: a.client_name,
     proposedDate: formatApptDateTime(a.appointment_date, a.appointment_time),
     rescheduledDate: a.rescheduled_date ? formatApptDateTime(a.rescheduled_date, a.rescheduled_time) : '-',
@@ -1376,22 +1397,40 @@ function loadReviews(page = 1) {
 
 watch(summarySearch, () => loadReviews(1))
 
-function reviewStatusLabel(status) {
-  const map = { pending: 'Planned', scheduled: 'Ongoing', completed: 'Completed', cancelled: 'Cancelled' }
-  return map[status] ?? (status.charAt(0).toUpperCase() + status.slice(1))
+function reviewStatusLabel(r) {
+  if (r.status === 'completed') return 'Completed'
+  if (r.status === 'cancelled') return 'Cancelled'
+  return r.progress_current > 0 ? 'Ongoing' : 'Planned'
+}
+
+function formatReviewDate(d, t) {
+  if (!d) return '—'
+  return formatApptDateTime(d, t)
+}
+
+const isScheduleModalOpen = ref(false)
+const selectedReview = ref(null)
+
+function openScheduleModal(review) {
+  selectedReview.value = review
+  isScheduleModalOpen.value = true
 }
 
 const mappedReviews = computed(() =>
   reviews.value.map(r => ({
-    clientId: `C${String(r.tenant_id).padStart(3, '0')}`,
+    clientId: clientCode(r.license_id, r.tenant_id),
     clientName: r.client_name,
     tenantId: r.tenant_id,
+    scheduledLabel: formatReviewDate(r.scheduled_date, r.scheduled_time),
+    hasMeetUrl: !!r.meet_url,
+    canReschedule: r.status !== 'completed' && r.status !== 'cancelled',
+    raw: r,
     reviewCurrent: r.progress_current,
     reviewTotal: r.progress_total,
     stepsCurrent: r.progress_current,
     stepsTotal: r.progress_total,
     percent: r.progress_total > 0 ? Math.round((r.progress_current / r.progress_total) * 100) : 0,
-    status: reviewStatusLabel(r.status),
+    status: reviewStatusLabel(r),
   }))
 )
 
@@ -1449,7 +1488,7 @@ const rescheduleLoading = ref(false)
 const calDate = ref(new Date())
 const calYear = computed(() => calDate.value.getFullYear())
 const calMonthIndex = computed(() => calDate.value.getMonth())
-const calMonthName = computed(() => formatInMillions(calDate.value))
+const calMonthName = computed(() => calDate.value.toLocaleDateString('en-US', { month: 'long' }))
 const calFirstDay = computed(() => new Date(calYear.value, calMonthIndex.value, 1).getDay())
 const calDaysInMonth = computed(() => new Date(calYear.value, calMonthIndex.value + 1, 0).getDate())
 const calPrevDays = computed(() => {
@@ -1626,7 +1665,7 @@ const filteredMasterlist = computed(() => {
   const q = masterSearch.value.toLowerCase()
 
   const mapFixed = r => ({
-    clientId: `C${String(r.tenant_id).padStart(3, '0')}`,
+    clientId: clientCode(r.license_id, r.tenant_id),
     clientName: r.client_name,
     date: r.scheduled_date ?? r.month ?? '-',
     type: 'Client Fixed',
@@ -1636,7 +1675,7 @@ const filteredMasterlist = computed(() => {
   })
 
   const mapReview = r => ({
-    clientId: `C${String(r.tenant_id).padStart(3, '0')}`,
+    clientId: clientCode(r.license_id, r.tenant_id),
     clientName: r.client_name,
     date: '-',
     type: 'Client Review',

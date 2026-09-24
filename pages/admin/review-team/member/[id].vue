@@ -1,12 +1,17 @@
 <template>
   <div class="min-h-screen w-full relative flex flex-col font-sans transition-colors duration-300"
-       :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#F8F9FA] text-[#1a1a1a]'">
+       :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#f3f4f6] text-[#1a1a1a]'">
 
-    <AdminDashboardHeader :userName="admin?.role?.name ?? 'Team Member Dashboard'" :userId="'Welcome, ' + (admin?.full_name ?? '')"
-                     :showChangeProfile="true" :showManageAccess="true" changeProfileLink="/profile" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
+    <AdminDashboardHeader :userName="admin?.role?.name ?? 'Team Member Dashboard'" :userId="'Welcome, ' + (admin?.full_name ?? '')" :showChangeProfile="false" :showManageAccess="false" changeProfileLink="/profile" notificationsTo="/admin/notifications" :adminLogout="true" logoutTo="/ad-aqnz-pro-auth-78z46" />
 
     <ClientOnly>
-      <main class="flex-1 p-8" style="margin-top: -18px;">
+      <template #fallback>
+        <main class="flex-1 px-8 py-4">
+          <div class="mb-8 h-10 w-64 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+          <AdminReviewDetailSkeleton />
+        </main>
+      </template>
+      <main class="flex-1 px-8 py-4">
 
         <!-- Header -->
         <div class="mb-8 flex items-center justify-between">
@@ -36,9 +41,7 @@
         </div>
 
         <!-- Loading -->
-        <div v-if="loading" class="flex justify-center py-20">
-          <div class="w-8 h-8 border-2 border-[#00896F] border-t-transparent rounded-full animate-spin"></div>
-        </div>
+        <AdminReviewDetailSkeleton v-if="loading" />
 
         <!-- Not found -->
         <div v-else-if="notFound"
@@ -57,9 +60,9 @@
           <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="rounded-xl p-6 shadow-sm border"
                  :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-gray-100'">
-              <p class="text-[13px] mb-2" :class="isDark ? 'text-white/60' : 'text-gray-500'">Tenant ID</p>
+              <p class="text-[13px] mb-2" :class="isDark ? 'text-white/60' : 'text-gray-500'">Client ID</p>
               <p class="text-[16px] font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
-                {{ detail.review.tenant_id }}
+                {{ detail.review.license_id ?? detail.review.tenant_id }}
               </p>
             </div>
             <div class="rounded-xl p-6 shadow-sm border"
@@ -278,7 +281,7 @@ const { fetchByTenant, saveAnswer, completeReview } = useAdminMonthlyReviews()
 
 const selectedMonth = ref(new Date().toISOString().slice(0, 7))
 const detail = ref(null)
-const loading = ref(false)
+const loading = ref(true)
 const notFound = ref(false)
 const savingId = ref(null)
 const completing = ref(false)
@@ -305,7 +308,7 @@ function formatDate(d) {
 function formatTimestamp(dt) {
   try {
     const date = new Date(dt)
-    return formatInMillions(date)
+    return date.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
   } catch { return dt }
 }
 

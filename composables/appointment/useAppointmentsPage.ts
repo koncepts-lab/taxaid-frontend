@@ -18,10 +18,11 @@ interface Appointment {
 
 interface MonthlyUsageStats {
   total_hours_allocated: number
+  extra_hours_allowed?: number
   total_hours_used: number
   remaining_hours: number
   extra_hours_used: number
-  next_review: { date: string; time: string } | null
+  next_review: { date: string; time: string; type?: string | null } | null
 }
 
 // ── Module-level state — shared across every component that calls this composable ─
@@ -47,28 +48,27 @@ const _monthlyReviews = ref<any[]>([])
 const _loading = ref(false)
 
 // Derived module-level computeds — all component instances read the same values
-const _hasAnyAppointments = computed(() => _cache.value.length > 0)
+const _hasAnyAppointments = computed(() => _cache.value.length > 0 || _monthlyReviews.value.length > 0)
 
 const _appointments = computed<Appointment[]>(() => {
   // Merge regular appointments with monthly reviews (shaped identically by backend)
   const merged = [..._cache.value, ..._monthlyReviews.value]
     .sort((a, b) => a.appointment_date.localeCompare(b.appointment_date))
 
-  let list = merged
-  if (_statusFilter.value) {
-    list = list.filter(a => a.status === _statusFilter.value)
-  }
-  if (_searchQuery.value.trim()) {
-    const q = _searchQuery.value.toLowerCase()
-    list = list.filter(a =>
-      a.consultant?.toLowerCase().includes(q) ||
-      a.type?.toLowerCase().includes(q) ||
-      a.notes?.toLowerCase().includes(q) ||
-      a.title?.toLowerCase().includes(q)
-    )
-  }
-  return list
+  return merged
 })
+
+const _tableRows = ref<Appointment[]>([])
+const _tableMeta = ref({ current_page: 1, last_page: 1, per_page: 10, total: 0, from: 0, to: 0 })
+const _tableLoading = ref(false)
+
+function _filterQs(): string {
+  const p = new URLSearchParams()
+  if (_statusFilter.value === 'monthly_review') p.set('type', 'Monthly Review')
+  else if (_statusFilter.value) p.set('status', _statusFilter.value)
+  if (_searchQuery.value.trim()) p.set('search', _searchQuery.value.trim())
+  return p.toString()
+}
 
 function formatHours(decimal: number): string {
   const h = Math.floor(decimal)
@@ -105,8 +105,10 @@ const _stats = computed(() => [
     value:      _monthlyUsageStats.value.next_review
       ? `${_monthlyUsageStats.value.next_review.date}, ${_monthlyUsageStats.value.next_review.time}`
       : '—',
-    sublabel:   'Upcoming',
-    sublabelAr: 'قادم',
+    sublabel:   _monthlyUsageStats.value.next_review?.type ?? 'Upcoming',
+    sublabelAr: _monthlyUsageStats.value.next_review?.type === 'Monthly Review'
+      ? 'المراجعة الشهرية'
+      : (_monthlyUsageStats.value.next_review?.type ?? 'قادم'),
     icon:       '/images/icons/Next-Review.svg',
   },
 ])
@@ -119,6 +121,7 @@ const _legend = ref([
   { label: 'Extra Hours', labelAr: 'ساعات إضافية',  color: '#F97316' },
   { label: 'Cancelled',   labelAr: 'ملغي',            color: '#991B1B' },
   { label: 'Completed',   labelAr: 'مكتمل',           color: '#018E71' },
+  { label: 'Monthly Review', labelAr: 'المراجعة الشهرية', color: '#7C3AED' },
 ])
 
 const _statusStyles = ref<Record<string, { bg: string; text: string }>>({
@@ -128,21 +131,25 @@ const _statusStyles = ref<Record<string, { bg: string; text: string }>>({
   rescheduled: { bg: '#FFF3E0', text: '#F97316' },
   extra_hours: { bg: '#FFF0E5', text: '#F97316' },
   cancelled:   { bg: '#FFE8E8', text: '#EF4444' },
+  monthly_review: { bg: '#F1E8FF', text: '#7C3AED' },
 })
 
 const _typeStyles = ref<Record<string, { bg: string; text: string }>>({
   'Implementation Feedback': { bg: '#E5F1FF', text: '#3B82F6' },
   'Initial Usability':       { bg: '#FFF4E5', text: '#D97706' },
   'Feature Suggestion':      { bg: '#D6F5ED', text: '#018E71' },
+  'Monthly Review':          { bg: '#E5F1FF', text: '#3B82F6' },
 })
 
 const _columns   = ref(['Date', 'Consultant', 'Type', 'Duration', 'Status', 'Action'])
 const _columnsAr = ref(['التاريخ', 'المستشار', 'النوع', 'المدة', 'الحالة', 'إجراء'])
 
-const BANNER = {
-  text:   'You can request up to 3 extra hours per month, subject to consultant availability.',
-  textAr: 'يمكنك طلب ما يصل إلى 3 ساعات إضافية شهريًا، وفقًا لتوافر المستشار.',
-}
+const _extraHoursAllowed = computed(() => _monthlyUsageStats.value.extra_hours_allowed ?? 0)
+
+const _banner = computed(() => ({
+  text:   `You can request up to ${_extraHoursAllowed.value} extra hours per month, subject to consultant availability.`,
+  textAr: `يمكنك طلب ما يصل إلى ${_extraHoursAllowed.value} ساعات إضافية شهريًا، وفقًا لتوافر المستشار.`,
+}))
 
 export function useAppointmentsPage() {
   const statsLoading = ref(false)
@@ -153,6 +160,7 @@ export function useAppointmentsPage() {
   // (Vue component instance is null after any await — Nuxt composables crash).
   const runtimeConfig = useRuntimeConfig()
   const authToken     = useCookie('auth_token')
+  const activeView    = useState('appointment_active_view', () => 'calendar')
 
   const apiFetch = (url: string, options: any = {}) => {
     const method     = (options.method || 'GET').toUpperCase()
@@ -178,20 +186,58 @@ export function useAppointmentsPage() {
     }
   }
 
+  async function fetchMyConsultants(): Promise<{ id: number; name: string }[]> {
+    try {
+      const res: any = await apiFetch('/my-consultant')
+      return res.consultants ?? (res.data ? [res.data] : [])
+    } catch {
+      return []
+    }
+  }
+
   async function fetchScheduledReviews(): Promise<void> {
     try {
-      const res = await apiFetch('/monthly-reviews')
+      const qs  = _filterQs()
+      const res = await apiFetch(`/monthly-reviews${qs ? `?${qs}` : ''}`)
       _monthlyReviews.value = (res as any).data ?? []
-    } catch {
-      // non-fatal
+    } catch (err: any) {
+      error.value = err?.data?.message ?? 'Failed to load monthly reviews.'
     }
+  }
+
+  async function fetchTable(page = 1, perPage = _tableMeta.value.per_page): Promise<void> {
+    _tableLoading.value = true
+    try {
+      const qs  = _filterQs()
+      const res = await apiFetch(`/appointments?page=${page}&per_page=${perPage}${qs ? `&${qs}` : ''}`)
+      _tableRows.value = (res as any).data ?? []
+      _tableMeta.value = (res as any).meta ?? _tableMeta.value
+    } catch (err: any) {
+      error.value = err?.data?.message ?? 'Failed to load appointments.'
+    } finally {
+      _tableLoading.value = false
+    }
+  }
+
+  async function applyFilters(): Promise<void> {
+    _cache.value      = []
+    _cachedFrom.value = null
+    _cachedTo.value   = null
+    const from = format(subMonths(new Date(), 3), 'yyyy-MM-dd')
+    const to   = format(addMonths(new Date(), 3), 'yyyy-MM-dd')
+    await Promise.all([
+      fetchAppointments(from, to),
+      fetchScheduledReviews(),
+      activeView.value === 'table' ? fetchTable(1) : Promise.resolve(),
+    ])
   }
 
   async function fetchAppointments(from: string, to: string): Promise<void> {
     _loading.value = true
     error.value   = null
     try {
-      const res = await apiFetch(`/appointments?from=${from}&to=${to}`)
+      const qs  = _filterQs()
+      const res = await apiFetch(`/appointments?from=${from}&to=${to}${qs ? `&${qs}` : ''}`)
       const incoming: Appointment[] = (res as any).data ?? []
 
       // Update existing items (so admin status changes like rescheduled are reflected)
@@ -237,7 +283,12 @@ export function useAppointmentsPage() {
     _cachedTo.value   = null
     const from = format(subMonths(new Date(), 3), 'yyyy-MM-dd')
     const to   = format(addMonths(new Date(), 3), 'yyyy-MM-dd')
-    await Promise.all([fetchAppointments(from, to), fetchStats(), fetchScheduledReviews()])
+    await Promise.all([
+      fetchAppointments(from, to),
+      fetchStats(),
+      fetchScheduledReviews(),
+      activeView.value === 'table' ? fetchTable(_tableMeta.value.current_page) : Promise.resolve(),
+    ])
   }
 
   async function extendCacheIfNeeded(targetDate: Date): Promise<void> {
@@ -257,7 +308,10 @@ export function useAppointmentsPage() {
     _cache.value  = [..._cache.value, created].sort((a, b) =>
       a.appointment_date.localeCompare(b.appointment_date)
     )
-    await fetchStats()
+    await Promise.all([
+      fetchStats(),
+      activeView.value === 'table' ? fetchTable(_tableMeta.value.current_page) : Promise.resolve(),
+    ])
     return created
   }
 
@@ -266,13 +320,21 @@ export function useAppointmentsPage() {
     _cache.value = _cache.value.map(a =>
       a.id === id ? { ...a, status: 'cancelled' as const } : a
     )
-    await fetchStats()
+    await Promise.all([
+      fetchStats(),
+      activeView.value === 'table' ? fetchTable(_tableMeta.value.current_page) : Promise.resolve(),
+    ])
   }
 
   onMounted(async () => {
     const from = format(subMonths(new Date(), 3), 'yyyy-MM-dd')
     const to   = format(addMonths(new Date(), 3), 'yyyy-MM-dd')
-    await Promise.all([fetchAppointments(from, to), fetchStats(), fetchScheduledReviews()])
+    await Promise.all([
+      fetchAppointments(from, to),
+      fetchStats(),
+      fetchScheduledReviews(),
+      activeView.value === 'table' ? fetchTable(1) : Promise.resolve(),
+    ])
   })
 
   return {
@@ -285,12 +347,18 @@ export function useAppointmentsPage() {
     error,
     searchQuery:   _searchQuery,
     statusFilter:  _statusFilter,
-    banner:        BANNER,
+    banner:        _banner,
+    extraHoursAllowed: _extraHoursAllowed,
     legend:        _legend,
     statusStyles:  _statusStyles,
     typeStyles:    _typeStyles,
     columns:       _columns,
     columnsAr:     _columnsAr,
+    tableRows:     _tableRows,
+    tableMeta:     _tableMeta,
+    tableLoading:  _tableLoading,
+    fetchTable,
+    applyFilters,
     fetchAppointments,
     fetchStats,
     forceRefresh,
@@ -298,5 +366,6 @@ export function useAppointmentsPage() {
     createAppointment,
     cancelAppointment,
     fetchMyConsultant,
+    fetchMyConsultants,
   }
 }

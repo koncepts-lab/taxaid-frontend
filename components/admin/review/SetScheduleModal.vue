@@ -26,7 +26,7 @@
           <div>
             <label class="block text-[13px] font-medium text-gray-600 mb-1.5">Scheduled Date</label>
             <div class="relative">
-              <button @click="toggleDropdown('calendar')"
+              <button ref="dateBtn" @click="toggleCalendar"
                 class="w-full pl-4 pr-10 h-[44px] rounded-[10px] border flex items-center justify-between transition-all cursor-pointer font-normal bg-white border-[#04C18F]/30"
                 :class="selectedDate ? 'text-[#013e32]' : 'text-[#00000080]'">
                 <span>{{ selectedDate ? formatDisplayDate(selectedDate) : 'dd-mm-yyyy' }}</span>
@@ -38,7 +38,8 @@
               <!-- Calendar Popover -->
               <Transition name="dropdown">
                 <div v-if="activeDropdown === 'calendar'"
-                  class="absolute top-full left-0 mt-2 z-[60] border rounded-xl shadow-2xl overflow-hidden bg-white border-gray-100">
+                  class="fixed z-[1300] border rounded-xl shadow-2xl overflow-hidden bg-white border-gray-100"
+                  :style="calStyle">
                   <VDatePicker
                     v-model="selectedDate"
                     :min-date="tomorrow"
@@ -56,60 +57,10 @@
           <div>
             <label class="block text-[13px] font-medium text-gray-600 mb-1.5">Scheduled Time</label>
 
-            <!-- Wheel selects row -->
-            <div class="flex items-center gap-2 h-[44px]">
-              <!-- Hour -->
-              <div class="relative h-full flex-1">
-                <select v-model="timeHour"
-                  class="h-full w-full px-3 rounded-[10px] border border-[#04C18F]/30 bg-[#E6FFF5]/30 focus:outline-none focus:border-[#04C18F] appearance-none cursor-pointer text-[#013e32] text-[14px]">
-                  <option v-for="h in 12" :key="h" :value="String(h).padStart(2,'0')">{{ String(h).padStart(2,'0') }}</option>
-                </select>
-              </div>
-
-              <span class="font-bold text-gray-500 text-[18px] flex-shrink-0">:</span>
-
-              <!-- Minute -->
-              <div class="relative h-full flex-1">
-                <select v-model="timeMinute"
-                  class="h-full w-full px-3 rounded-[10px] border border-[#04C18F]/30 bg-[#E6FFF5]/30 focus:outline-none focus:border-[#04C18F] appearance-none cursor-pointer text-[#013e32] text-[14px]">
-                  <option v-for="m in ['00','15','30','45']" :key="m" :value="m">{{ m }}</option>
-                </select>
-              </div>
-
-              <span class="font-bold text-gray-500 text-[18px] flex-shrink-0">:</span>
-
-              <!-- AM / PM -->
-              <div class="relative h-full w-20">
-                <select v-model="timeAmpm"
-                  class="h-full w-full px-3 rounded-[10px] border border-[#04C18F]/30 bg-[#E6FFF5]/30 focus:outline-none focus:border-[#04C18F] appearance-none cursor-pointer text-[#013e32] text-[14px]">
-                  <option value="AM">AM</option>
-                  <option value="PM">PM</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Manual entry toggle -->
-            <div class="mt-2 flex items-center gap-2">
-              <button @click="showManualTime = !showManualTime"
-                class="text-[12px] text-[#00896F] hover:underline cursor-pointer">
-                {{ showManualTime ? 'Hide manual entry' : 'Enter time manually' }}
-              </button>
-              <span class="text-[12px] text-gray-400">— selected: {{ timeHour }}:{{ timeMinute }} {{ timeAmpm }}</span>
-            </div>
-
-            <!-- Manual text input -->
-            <Transition name="dropdown">
-              <div v-if="showManualTime" class="mt-2">
-                <input
-                  v-model="manualTimeInput"
-                  type="text"
-                  placeholder="e.g. 09:30 AM"
-                  @blur="parseManualTime"
-                  class="w-full px-4 h-[40px] rounded-[10px] border border-[#04C18F]/30 focus:outline-none focus:border-[#04C18F] text-[14px] text-[#013e32] placeholder-gray-300"
-                />
-                <p class="text-[11px] text-gray-400 mt-1">Format: HH:MM AM/PM — press Tab or click away to apply</p>
-              </div>
-            </Transition>
+            <CommonTimePicker
+              v-model:hour="timeHour"
+              v-model:minute="timeMinute"
+              v-model:ampm="timeAmpm" />
 
             <p v-if="errors.time" class="mt-1 text-[12px] text-red-500">{{ errors.time }}</p>
           </div>
@@ -117,7 +68,7 @@
           <!-- ── Meet URL ── -->
           <div>
             <label class="block text-[13px] font-medium text-gray-600 mb-1.5">
-              Meet Link <span class="text-red-400">*</span>
+              Meet Link (optional)
             </label>
             <input
               v-model="meetUrl"
@@ -203,10 +154,6 @@ const timeHour    = ref('09')
 const timeMinute  = ref('00')
 const timeAmpm    = ref('AM')
 
-// Manual time entry
-const showManualTime   = ref(false)
-const manualTimeInput  = ref('')
-
 // Meet URL + Notes
 const meetUrl = ref('')
 const notes   = ref('')
@@ -214,8 +161,21 @@ const notes   = ref('')
 const submitting = ref(false)
 const errors     = ref<Record<string, string>>({})
 
-function toggleDropdown(name: string) {
-  activeDropdown.value = activeDropdown.value === name ? null : name
+const dateBtn  = ref<HTMLElement | null>(null)
+const calStyle = ref<Record<string, string>>({})
+const CAL_HEIGHT = 330
+const CAL_WIDTH  = 300
+
+function toggleCalendar() {
+  if (activeDropdown.value === 'calendar') { activeDropdown.value = null; return }
+  const rect = dateBtn.value?.getBoundingClientRect()
+  if (rect) {
+    const spaceBelow = window.innerHeight - rect.bottom
+    const top  = spaceBelow >= CAL_HEIGHT + 12 ? rect.bottom + 8 : Math.max(8, rect.top - CAL_HEIGHT - 8)
+    const left = Math.min(Math.max(8, rect.left), window.innerWidth - CAL_WIDTH - 8)
+    calStyle.value = { top: `${top}px`, left: `${left}px` }
+  }
+  activeDropdown.value = 'calendar'
 }
 
 function close() {
@@ -227,33 +187,11 @@ function formatDisplayDate(date: Date) {
   return format(date, 'dd-MM-yyyy')
 }
 
-function parseManualTime() {
-  // Accepts formats: "9:30 AM", "09:30 AM", "9:30AM"
-  const match = manualTimeInput.value.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
-  if (match) {
-    let h = parseInt(match[1])
-    const m = match[2]
-    const period = match[3].toUpperCase()
-    if (h >= 1 && h <= 12 && ['00','15','30','45'].includes(m)) {
-      timeHour.value   = String(h).padStart(2, '0')
-      timeMinute.value = m
-      timeAmpm.value   = period
-      manualTimeInput.value = `${timeHour.value}:${timeMinute.value} ${timeAmpm.value}`
-    }
-  }
-}
-
-// Sync manual input display when wheel changes
-watch([timeHour, timeMinute, timeAmpm], () => {
-  manualTimeInput.value = `${timeHour.value}:${timeMinute.value} ${timeAmpm.value}`
-})
-
 // Pre-fill from existing review when modal opens
 watch(() => props.modelValue, (open) => {
   if (!open) return
   errors.value          = {}
   submitting.value      = false
-  showManualTime.value  = false
   activeDropdown.value  = null
 
   if (props.review?.scheduled_date) {
@@ -277,15 +215,14 @@ watch(() => props.modelValue, (open) => {
 
   meetUrl.value         = props.review?.meet_url ?? ''
   notes.value           = props.review?.notes ?? ''
-  manualTimeInput.value = `${timeHour.value}:${timeMinute.value} ${timeAmpm.value}`
 })
 
 async function handleConfirm() {
   errors.value = {}
 
   if (!selectedDate.value) { errors.value.date    = 'Date is required.' }
-  if (!meetUrl.value || !/^https?:\/\/.+/.test(meetUrl.value)) {
-    errors.value.meetUrl = 'A valid meet link is required (https://...).'
+  if (meetUrl.value && !/^https?:\/\/.+/.test(meetUrl.value)) {
+    errors.value.meetUrl = 'Enter a valid meet link (https://...).'
   }
   if (Object.keys(errors.value).length) return
 
@@ -294,7 +231,7 @@ async function handleConfirm() {
 
   submitting.value = true
   try {
-    await setSchedule(props.review!.id, dateStr, timeStr, meetUrl.value, notes.value || null)
+    await setSchedule(props.review!.id, dateStr, timeStr, meetUrl.value || null, notes.value || null)
     emit('update:modelValue', false)
     emit('saved')
   } catch (err: any) {
