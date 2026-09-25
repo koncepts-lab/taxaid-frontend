@@ -9,7 +9,7 @@
 
         <div class="mx-auto pt-8 lg:pt-0 max-w-[1600px] flex flex-col gap-8">
           <CostCenterProjectDetailHeader ref="headerRef" @reload="fetchData"
-            @export-pdf="handleExportPDF" @selected-date="handleDateChange"
+            @export-excel="handleExport" @selected-date="handleDateChange"
             :title="{ en: data?.cost_center ?? costCenterId, ar: data?.cost_center ?? costCenterId }" />
 
           <!-- Gap-period snapshot notice: shown when the requested date has no
@@ -114,9 +114,11 @@ const handleDateChange = (period) => {
 }
 
 // --- 3. EXPORT LOGIC ---
-const exportPDF = async () => {
-  console.warn("PDF export is currently disabled.");
-};
+const { exportPart } = useExport()
+const handleExport = () => exportPart('cost-center', 'detail', {
+  date: selectedDate.value,
+  cost_center_id: costCenterId.value,
+})
 onMounted(() => {
   fetchProjectData()
 })

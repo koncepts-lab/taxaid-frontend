@@ -133,8 +133,8 @@ async function fetchAll() {
       const ranges = timelineRes.payload.ranges
 
       const categories = ranges.map((r: any) => {
-        const d = new Date(r.start)
-        return formatInMillions(d)
+        const [y, m] = String(r.start).split('-')
+        return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
       })
       const arBalance  = ranges.map((r: any) => parseFloat(((r.ar_value ?? 0) / 1_000_000).toFixed(2)))
       const percentage = ranges.map(() => 0)

@@ -80,8 +80,8 @@ async function fetchAll(lang = 'en') {
       _timelineData.value = {
         apBalance:  ranges.map((r: any) => parseFloat(((r.ap_value ?? 0) / 1_000_000).toFixed(2))),
         categories: ranges.map((r: any) => {
-          const d = new Date(r.start)
-          return formatInMillions(d)
+          const [y, m] = String(r.start).split('-')
+          return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
         }),
         percentage: ranges.map(() => 0)
       }

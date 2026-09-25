@@ -14,15 +14,18 @@
         ]">
         <div class="mx-auto pt-0 lg:pt-0">
           
-          <CommonDashboardHeader 
+          <CommonExportModal v-model="exportOpen" card="indirect-expense" date-mode="range" date-format="iso"
+                        :title="{ en: 'Indirect Expense Analysis', ar: 'تحليل المصروفات غير المباشرة' }"
+                        :filters="{ range_option: rangeOption, custom_from: customFrom, custom_to: customTo }" />
+
+                    <CommonDashboardHeader 
             class="mb-4 lg:mb-8"
             :title="{ en: 'Indirect Expense Analysis', ar: 'تحليل المصروفات غير المباشرة' }"
             :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
             :periods="customPeriods"
             @selected-date="handleDateChange"
             @reload="handleReload"
-            @export-excel="handleExport('excel')"
-            @export-pdf="handleExport('pdf')"
+            @export="exportOpen = true"
             @one-click-summary="handleOneClickSummary"
           />
 
@@ -79,6 +82,7 @@
 </template>
 
 <script setup>
+const exportOpen = ref(false)
 import { ref, onMounted, watch } from 'vue'
 
 const isChatOpen = ref(false)
@@ -125,10 +129,6 @@ const handleDateChange = (periodData) => {
 }
 
 const handleReload = () => fetchAll(currentLang.value)
-
-const handleExport = (type) => {
-  console.log('Export:', type)
-}
 
 const { openOneClickSummary } = useAkeel()
 const handleOneClickSummary = () => openOneClickSummary('INDIRECT_EXPENSE', 'onclick_indirect_expense')

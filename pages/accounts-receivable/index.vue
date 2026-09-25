@@ -12,9 +12,13 @@
         : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
         <div class="mx-auto pt-8 lg:pt-0">
 <!-- TODO: -->
-          <CommonDashboardHeader :title="{ en: 'Accounts Receivable', ar: 'حسابات القبض' }"
+          <CommonExportModal v-model="exportOpen" card="accounts-receivable" date-mode="date" date-format="iso"
+                        :title="{ en: 'Accounts Receivable', ar: 'حسابات القبض' }"
+                        :filters="{ date: activeDate }" />
+
+                    <CommonDashboardHeader :title="{ en: 'Accounts Receivable', ar: 'حسابات القبض' }"
             :subtitle="{ en: 'Accounts Receivable Dashboard', ar: 'لوحة معلومات حسابات القبض' }"
-            :periods="customPeriods" class="mb-8" :minDate="new Date(2026, 5, 15)" @selected-date="handleDateChange" @reload="handleReload" @one-click-summary="handleOneClickSummary" />
+            :periods="customPeriods" class="mb-8" :minDate="new Date(2026, 5, 15)" @selected-date="handleDateChange" @reload="handleReload" @export="exportOpen = true" @one-click-summary="handleOneClickSummary" />
 
           <!-- Gap-day snapshot notice: shown when the selected date has no
                uploaded AR snapshot and the latest earlier upload is displayed -->
@@ -83,6 +87,7 @@
 </template>
 
 <script setup>
+const exportOpen = ref(false)
 import { ref, onMounted, watch } from 'vue'
 import AccountsReceivableAlert from '~/components/accounts-receivable/Alert.vue'
 import AccountsReceivableSummary from '~/components/accounts-receivable/Summary.vue'

@@ -231,7 +231,9 @@
         </Transition>
     </Teleport>
     <FinancialStatementLedgerDetailsModal :isOpen="isLedgerReportOpen" :loading="ledgerReportLoading"
-        :ledgerName="activeLedgerName" :data="ledgerReportData" :isDark="isDark" @close="isLedgerReportOpen = false" />
+        :ledgerName="activeLedgerName" :data="ledgerReportData" :isDark="isDark"
+        :statement="activeTab === 'balance-sheet' ? 'bs' : 'pl'" :rangeOption="mapRangeOption(rangeOption)"
+        :customFrom="customFrom" :customTo="customTo" @close="isLedgerReportOpen = false" />
 </template>
 <script setup>
 import { ref } from 'vue';

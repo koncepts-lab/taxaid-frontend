@@ -23,7 +23,8 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <!-- Export Button -->
-                            <button class="flex items-center gap-2 px-3 lg:px-4 py-1.5 border rounded-lg text-[13px] font-medium transition-colors"
+                            <button @click="exportStatement" :disabled="exporting || !ledgerName"
+                                class="flex items-center gap-2 px-3 lg:px-4 py-1.5 border rounded-lg text-[13px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 :class="isDark ? 'border-white/20 text-white hover:bg-white/10' : 'border-[#013e32]/30 text-[#013e32] hover:bg-[#013e32]/5'">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M16 8l-4-4m0 0L8 8m4-4v12"
@@ -168,6 +169,14 @@ const currentLang = useState('currentLang', () => 'en')
 const rangeOption = useState('revenue_range_option', () => 'Year to Date')
 const customFrom  = useState('revenue_custom_from', () => null)
 const customTo    = useState('revenue_custom_to',   () => null)
+
+const { exporting, exportLedger } = useExport()
+
+const exportStatement = () => exportLedger('revenue', props.ledgerName, {
+    range_option: rangeOption.value,
+    custom_from: customFrom.value,
+    custom_to: customTo.value,
+})
 
 const loading   = ref(false)
 const error     = ref(null)

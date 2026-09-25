@@ -14,6 +14,10 @@
                  ]">
                 <div class="mx-auto pt-0">
                     
+                    <CommonExportModal v-model="exportOpen" card="revenue" date-mode="range" date-format="iso"
+                        :title="{ en: 'Revenue Analysis', ar: 'تحليل الإيرادات' }"
+                        :filters="{ range_option: rangeOption, custom_from: customFrom, custom_to: customTo }" />
+
                     <CommonDashboardHeader
                         class="mb-4 lg:mb-8"
                         :title="{ en: 'Revenue Analysis', ar: 'تحليل الإيرادات' }"
@@ -24,8 +28,7 @@
                         :periods="revenuePeriods"
                         @reload="fetchAll"
                         @selected-date="handleDateSelected"
-                        @export-excel="handleExport('excel')"
-                        @export-pdf="handleExport('pdf')"
+                        @export="exportOpen = true"
                         @one-click-summary="handleOneClickSummary"
                     />
 
@@ -148,6 +151,7 @@
 </template>
 
 <script setup lang="ts">
+const exportOpen = ref(false)
 import { ref, onMounted } from 'vue'
 
 
@@ -189,8 +193,6 @@ const handleDateSelected = (periodData) => {
 
     fetchAll()
 }
-
-const handleExport = (type) => {}
 
 const { openOneClickSummary } = useAkeel()
 const handleOneClickSummary = () => openOneClickSummary('REVENUE_SALES', 'onclick_revenue_sales')

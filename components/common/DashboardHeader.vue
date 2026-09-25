@@ -191,28 +191,28 @@
 
                     <!-- Export Group -->
                     <div class="relative" v-if="showExport">
-                        <button @click="showExportDropdown = !showExportDropdown; if(showExportDropdown) showDateDropdown = false"
+                        <button @click="emit('export')"
                             class="w-[40px] h-[40px] flex items-center justify-center border rounded-lg transition-all"
-                            :class="isDark ? 'bg-red-900 border-red-500' : 'bg-red-50 border-red-500 hover:bg-red-100'">
+                            :class="isDark ? 'bg-primary-900 border-primary-100' : 'bg-white border-[#03D8B0] hover:bg-gray-50'">
                             <img src="/images/icons/export.svg" alt="Export" class="w-5 h-5"
                                 :class="isDark ? 'invert' : ''" />
                         </button>
+                        <!--
                         <Transition name="dropdown">
                             <div v-if="showExportDropdown"
                                 class="absolute mt-2 w-56 border rounded-lg shadow-lg z-[100] py-2 px-2"
                                 :class="[isDark ? 'bg-primary-900 border-primary-100' : 'bg-white border-[#03D8B0]', currentLang === 'ar' ? 'left-0' : 'left-0 md:left-auto md:right-0']">
-                                <button @click="triggerExport('pdf')"
-                                    class="w-full px-4 py-3 text-sm rounded-lg flex items-center transition-colors"
-                                    :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-red-100 text-[#000]'">
-                                    {{ currentLang === 'ar' ? 'تصدير بصيغة PDF (.pdf)' : 'Export as PDF (.pdf)' }}
-                                </button>
                                 <button @click="triggerExport('excel')"
-                                    class="w-full px-4 py-3 text-sm rounded-lg flex items-center transition-colors mt-1"
-                                    :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-green-100 text-[#000]'">
-                                    {{ currentLang === 'ar' ? 'تصدير بصيغة Excel (.xlsx)' : 'Export as Excel (.xlsx)' }}
+                                    class="w-full px-4 py-3 text-sm rounded-lg flex items-center hover:bg-teal-50 dark:hover:bg-white/10 text-black dark:text-white">
+                                    {{ currentLang === 'ar' ? 'تصدير بصيغة إكسل (.xlsx)' : 'Export as Excel (.xlsx)' }}
+                                </button>
+                                <button @click="triggerExport('pdf')"
+                                    class="w-full px-4 py-3 text-sm rounded-lg flex items-center hover:bg-teal-50 dark:hover:bg-white/10 text-black dark:text-white border-t border-gray-100 dark:border-white/5">
+                                    {{ currentLang === 'ar' ? 'تصدير بصيغة PDF (.pdf)' : 'Export as PDF (.pdf)' }}
                                 </button>
                             </div>
                         </Transition>
+                        -->
                     </div>
                 </div>
             </div>
@@ -255,7 +255,7 @@ const props = defineProps({
 })
 
 const { can } = usePermissions()
-const emit = defineEmits(['selected-date', 'reload', 'export-pdf', 'one-click-summary', 'period-change'])
+const emit = defineEmits(['selected-date', 'reload', 'export', 'export-pdf', 'export-excel', 'one-click-summary', 'period-change'])
 
 const router = useRouter()
 const { isDark } = useTheme()

@@ -12,7 +12,11 @@
         : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
         <div class="mx-auto pt-8 lg:pt-0">
 
-          <CommonDashboardHeader 
+          <CommonExportModal v-model="exportOpen" card="accounts-payable" date-mode="date" date-format="iso"
+                        :title="{ en: 'Accounts Payable Analysis', ar: 'تحليل حسابات الدفع' }"
+                        :filters="{ date: activeDate }" />
+
+                    <CommonDashboardHeader 
             :title="{ en: 'Accounts Payable Analysis', ar: 'تحليل حسابات الدفع' }"
             :subtitle="{ en: 'Comprehensive AP tracking and aging insights', ar: 'تتبع شامل لحسابات الدفع ورؤى التقادم' }" 
             :periods="customPeriods"
@@ -20,6 +24,7 @@
             :minDate="new Date(2026, 5, 15)"
             @selected-date="handleDateChange"
             @reload="handleReload"
+            @export="exportOpen = true"
             @one-click-summary="handleOneClickSummary"
           />
 
@@ -90,6 +95,7 @@
 </template>
 
 <script setup>
+const exportOpen = ref(false)
 import { ref, onMounted, watch } from 'vue'
 
 const isChatOpen = ref(false)

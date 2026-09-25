@@ -13,7 +13,7 @@
                         </p>
                     </div>
                     <div class="flex items-center gap-3 self-start lg:self-auto">
-                        <button @click="exportCsv"
+                        <button @click="exportStatement" :disabled="exporting || !statement"
                             class="flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors"
                             :class="isDark ? 'border-[#04C18F] text-white hover:bg-white/10' : 'border-gray-200 text-black hover:bg-gray-50'">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0-12l-4 4m4-4l4 4"/></svg>
@@ -148,23 +148,15 @@ const fmtDate = (d) => {
     return isNaN(dt) ? d : dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-const exportCsv = () => {
-    if (!statement.value) return
-    const s = statement.value
-    const lines = ['Date,Particulars,Voucher No,Debit,Credit,Narration']
-    lines.push(`${fmtDate(s.from)},"Opening Balance",,${s.opening_balance < 0 ? -s.opening_balance : ''},${s.opening_balance >= 0 ? s.opening_balance : ''},`)
-    for (const e of s.entries) {
-        lines.push(`${e.date},"${(e.particulars ?? '').replace(/"/g, '""')}","${e.voucher_no ?? ''}",${e.debit ?? ''},${e.credit ?? ''},"${(e.narration ?? '').replace(/"/g, '""')}"`)
-    }
-    lines.push(`,Total,,${s.total_debit},${s.total_credit},`)
-    lines.push(`,Closing balance,,${s.closing_balance < 0 ? -s.closing_balance : ''},${s.closing_balance >= 0 ? s.closing_balance : ''},`)
-    const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `${props.ledger.replace(/[^\w\- ]/g, '')}-ledger.csv`
-    a.click()
-    URL.revokeObjectURL(a.href)
-}
+const { rangeOption, customFrom, customTo } = useCogs()
+const { exporting, exportLedger } = useExport()
+
+const exportStatement = () => exportLedger('cogs', props.ledger, {
+    range_option: rangeOption.value,
+    custom_from: customFrom.value,
+    custom_to: customTo.value,
+    lang: currentLang.value,
+})
 </script>
 
 <style scoped>

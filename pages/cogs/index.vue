@@ -12,7 +12,11 @@
         : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
         <div class="mx-auto pt-8 lg:pt-0">
 
-          <CommonDashboardHeader 
+          <CommonExportModal v-model="exportOpen" card="cogs" date-mode="range" date-format="iso"
+                        :title="{ en: 'COGS Analysis', ar: 'تحليل تكلفة المبيعات' }"
+                        :filters="{ range_option: rangeOption, custom_from: customFrom, custom_to: customTo }" />
+
+                    <CommonDashboardHeader 
             class="mb-8"
             :title="{ en: 'COGS Analysis', ar: 'تحليل تكلفة المبيعات' }"
             :subtitle="{ en: 'COGS Breakdown by Categories', ar: 'تفصيل تكلفة المبيعات حسب الفئات' }"
@@ -20,6 +24,7 @@
             :oneclickreview="true"
             @selected-date="handleDateChange"
             @reload="handleReload"
+            @export="exportOpen = true"
             @one-click-summary="handleOneClickSummary"
           />
 
@@ -76,6 +81,7 @@
 </template>
 
 <script setup>
+const exportOpen = ref(false)
 import { ref, onMounted, watch } from 'vue'
 
 const isChatOpen = ref(false)

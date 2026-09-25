@@ -13,10 +13,14 @@
       ]">
         <div class="mx-auto pt-8 lg:pt-0">
 
-          <CommonDashboardHeader ref="headerRef" :title="{ en: 'Cost Center Analysis', ar: 'تحليل مركز التكلفة' }"
+          <CommonExportModal v-model="exportOpen" card="cost-center" date-mode="date" date-format="dmy"
+                        :title="{ en: 'Cost Center Analysis', ar: 'تحليل مركز التكلفة' }"
+                        :filters="{ date: ccDate }" />
+
+                    <CommonDashboardHeader ref="headerRef" :title="{ en: 'Cost Center Analysis', ar: 'تحليل مركز التكلفة' }"
             :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
             :periods="costCenterPeriods"
-            @export-pdf="handleExportPDF"
+            @export="exportOpen = true"
             @selected-date="handleDateChange" @reload="fetchData" @one-click-summary="handleOneClickSummary" />
           <div class="my-8">
             <CostCenterSummary ref="summaryRef" />
@@ -59,6 +63,7 @@
 </template>
 
 <script setup>
+const exportOpen = ref(false)
 import { ref } from 'vue'
 
 const isChatOpen = ref(false)
@@ -113,10 +118,6 @@ const handleDateChange = (period) => {
   summaryRef.value?.fetchSummaryData(ccDate.value)
   fetchChart()
 }
-
-const handleExportPDF = async () => {
-  console.warn("PDF export is currently disabled.");
-};
 
 const { openOneClickSummary } = useAkeel()
 const handleOneClickSummary = () => openOneClickSummary('COST_CENTER', 'onclick_cost_center')

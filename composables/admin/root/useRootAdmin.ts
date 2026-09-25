@@ -197,6 +197,20 @@ export function useRootAdmin() {
     })
   }
 
+  async function getAnalyticsEvents(params: Record<string, any> = {}) {
+    return await useAdminApi('/admin/root/analytics-events', {
+      headers: { 'X-Root-Token': rootToken.value || '' },
+      params,
+    })
+  }
+
+  async function clearAnalyticsEvents() {
+    return await useAdminApi('/admin/root/analytics-events', {
+      method: 'DELETE',
+      headers: { 'X-Root-Token': rootToken.value || '' },
+    })
+  }
+
   return {
     isRootUnlocked,
     rootToken,
@@ -221,5 +235,7 @@ export function useRootAdmin() {
     setMainCorsOrigin,
     getMailSettings,
     updateMailSettings,
+    getAnalyticsEvents,
+    clearAnalyticsEvents,
   }
 }
