@@ -6,12 +6,7 @@
             <div class="flex items-center gap-4 lg:ml-auto ml-0">
                 <span v-if="!isMinimized" class="lg:text-xs text-[10px]" :class="isDark ? 'text-white/60' : 'text-black/59'">Values in AED Million</span>
 
-                <select v-if="!isMinimized && years && years.length"
-                    :value="selectedYear"
-                    @change="$emit('changeYear', Number($event.target.value))"
-                    :class="['text-[11px] lg:text-xs border rounded-lg px-2 py-1 font-medium focus:outline-none', isDark ? 'border-white/20 text-white bg-[#001a14]' : 'border-emerald-100 text-primary-450 bg-transparent']">
-                    <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
-                </select>
+                <CommonSelectDropdown v-if="!isMinimized && years && years.length" class="w-[84px]" mode="select" size="xs" :clearable="false" :options="years" :model-value="selectedYear" @update:model-value="$emit('changeYear', Number($event))" />
 
                 <button @click="$emit('toggleMinimize')"
                     class="text-white px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-2 max-lg:hidden"

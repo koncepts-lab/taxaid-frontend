@@ -10,12 +10,7 @@
         </div>
 
         <div class="relative min-w-[220px]">
-          <select v-model="selectedDomain" @change="load" class="w-full pl-4 pr-9 py-2.5 border rounded-lg outline-none focus:border-[#00835D] text-sm appearance-none shadow-sm" :class="isDark ? 'bg-[#003b31] border-white/20 text-white' : 'bg-white border-gray-200 text-gray-700'">
-            <option v-for="d in domainOptions" :key="d" :value="d">{{ formatDomain(d) }}</option>
-          </select>
-          <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </span>
+          <CommonSelectDropdown mode="select" :clearable="false" :options="domainOptions.map(d => ({ value: d, label: formatDomain(d) }))" :model-value="selectedDomain" @update:model-value="v => { selectedDomain = v; load() }" />
         </div>
       </div>
 

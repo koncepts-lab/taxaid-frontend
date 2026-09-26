@@ -367,24 +367,7 @@
             {{ currentLang === 'ar' ? 'مهلة الجلسة (بالدقائق)' : 'Session Timeout (minutes)' }}
           </label>
           <div class="relative">
-            <select v-model="sessionTimeout"
-              class="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-1 transition-all appearance-none pr-10"
-              :class="isDark 
-                ? 'bg-[#00251E] border-teal-900 focus:border-[#00B68D] focus:ring-[#00B68D] text-white' 
-                : 'bg-white border text-gray-900 focus:border-[#00896F] focus:ring-[#00896F]'"
-              :style="!isDark ? 'border-color: #A2E8D6;' : ''">
-              <option v-if="sessionTimeout === null" :value="null" disabled>
-                {{ currentLang === 'ar' ? 'اختر المدة' : 'Select duration' }}
-              </option>
-              <option v-for="opt in timeoutOptions" :key="opt.minutes" :value="opt.minutes">
-                {{ opt.label }}
-              </option>
-            </select>
-            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
+            <CommonSelectDropdown mode="select" :clearable="false" v-model="sessionTimeout" :placeholder="currentLang === 'ar' ? 'اختر المدة' : 'Select duration'" :options="timeoutOptions.map(opt => ({ value: opt.minutes, label: opt.label }))" />
           </div>
         </div>
       </div>

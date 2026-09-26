@@ -34,15 +34,7 @@
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Lead ID</label>
               <div class="relative">
-                <select v-model="selectedLeadId" @change="onLeadSelected" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182] appearance-none bg-white">
-                  <option value="" disabled hidden>Select Lead ID</option>
-                  <option v-for="id in leadIds" :key="id" :value="id">{{ id }}</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
+                <CommonSelectDropdown mode="select" :clearable="false" placeholder="Select Lead ID" :options="leadIds" :model-value="selectedLeadId" @update:model-value="v => { selectedLeadId = v; onLeadSelected() }" />
               </div>
             </div>
             <div>
@@ -53,23 +45,7 @@
             <!-- Row 2 -->
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Contract Sign Date</label>
-              <div class="relative">
-                <div @click="activeCalendar = activeCalendar === 'contract' ? null : 'contract'"
-                  class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] outline-none bg-white flex items-center justify-between cursor-pointer transition-all">
-                  <span :class="!form.contract_sign_date ? 'text-[#717182]' : 'text-gray-700'" class="text-sm">
-                    {{ form.contract_sign_date ? new Date(form.contract_sign_date).toLocaleDateString('en-GB').replace(/\//g, '-') : 'dd-mm-yyyy' }}
-                  </span>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <transition name="fade-slide">
-                  <div v-if="activeCalendar === 'contract'"
-                    class="absolute top-[calc(100%+8px)] left-0 z-[9999] bg-white border border-gray-100 rounded-2xl shadow-2xl p-2">
-                    <VDatePicker v-model="form.contract_sign_date" @update:model-value="activeCalendar = null" color="teal" borderless />
-                  </div>
-                </transition>
-              </div>
+              <CommonDateField v-model="form.contract_sign_date" format="dmy" allow-future />
             </div>
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Project Name</label>
@@ -151,24 +127,7 @@
                 <tbody class="border-b border-gray-100">
                   <tr v-for="(milestone, index) in paginatedMilestones" :key="milestone.id || index" class="border-b border-gray-100/50">
                     <td class="p-2 w-48">
-                      <div class="relative">
-                        <div @click="activeCalendar = activeCalendar === 'milestone-' + index ? null : 'milestone-' + index"
-                          style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);"
-                          class="w-full px-3 py-2.5 rounded outline-none flex items-center justify-between cursor-pointer">
-                          <span :class="!milestone.date ? 'text-[#717182]' : 'text-gray-700'" class="text-sm">
-                            {{ milestone.date ? new Date(milestone.date).toLocaleDateString('en-GB').replace(/\//g, '-') : 'dd-mm-yyyy' }}
-                          </span>
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                        <transition name="fade-slide">
-                          <div v-if="activeCalendar === 'milestone-' + index"
-                            class="absolute top-[calc(100%+8px)] left-0 z-[9999] bg-white border border-gray-100 rounded-2xl shadow-2xl p-2">
-                            <VDatePicker v-model="milestone.date" @update:model-value="activeCalendar = null" color="teal" borderless />
-                          </div>
-                        </transition>
-                      </div>
+                      <CommonDateField v-model="milestone.date" format="dmy" allow-future />
                     </td>
                     <td class="p-2">
                       <input type="text" v-model="milestone.milestone_details" placeholder="Describe Milestone Deliverable" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
@@ -234,10 +193,7 @@
                       <span class="ml-3 text-sm text-gray-500 whitespace-nowrap">
                           {{ currentLang === 'ar' ? 'صفوف لكل صفحة:' : 'Rows per page:' }}
                       </span>
-                      <select v-model="localPerPage"
-                          class="border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white text-gray-700 focus:ring-1 focus:ring-[#00896F] outline-none appearance-none">
-                          <option v-for="opt in perPageOptions" :key="opt" :value="opt">{{ opt }}</option>
-                      </select>
+                      <CommonSelectDropdown class="w-20" mode="select" size="xs" :clearable="false" :options="perPageOptions" v-model="localPerPage" />
                   </div>
               </div>
             </div>
@@ -273,15 +229,7 @@
                     </td>
                     <td class="p-2">
                       <div class="relative">
-                        <select v-model="budget.cost_head" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182] appearance-none">
-                          <option value="" disabled hidden>Select cost head category</option>
-                          <option v-for="head in costHeads" :key="head" :value="head">{{ head }}</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </div>
+                        <CommonSelectDropdown mode="select" :clearable="false" placeholder="Select cost head category" :options="costHeads" v-model="budget.cost_head" />
                       </div>
                     </td>
                     <td class="p-2 w-32">
@@ -345,10 +293,7 @@
                       <span class="ml-3 text-sm text-gray-500 whitespace-nowrap">
                           {{ currentLang === 'ar' ? 'صفوف لكل صفحة:' : 'Rows per page:' }}
                       </span>
-                      <select v-model="budgetPerPage"
-                          class="border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white text-gray-700 focus:ring-1 focus:ring-[#00896F] outline-none appearance-none">
-                          <option v-for="opt in perPageOptions" :key="opt" :value="opt">{{ opt }}</option>
-                      </select>
+                      <CommonSelectDropdown class="w-20" mode="select" size="xs" :clearable="false" :options="perPageOptions" v-model="budgetPerPage" />
                   </div>
               </div>
             </div>
@@ -374,9 +319,7 @@
 import { useRouter } from 'vue-router'
 import { useState } from '#app'
 import { ref, computed, onMounted } from 'vue'
-import { DatePicker as VDatePicker } from 'v-calendar'
 
-const activeCalendar = ref(null)
 
 const router = useRouter()
 const currentLang = useState('currentLang', () => 'en')

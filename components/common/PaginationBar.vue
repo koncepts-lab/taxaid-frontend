@@ -38,11 +38,7 @@
 
       <div class="flex items-center gap-2 mt-2 md:mt-0 w-full md:w-auto justify-center md:justify-start">
         <span class="text-xs md:text-sm whitespace-nowrap" :class="dark ? 'text-white/60' : 'text-gray-500'">Rows per page:</span>
-        <select v-model="localPerPage" @change="$emit('per-page-change', localPerPage)"
-          class="border rounded-lg px-2 py-1 md:py-1.5 text-xs md:text-sm focus:ring-1 focus:ring-[#00896F] outline-none appearance-none"
-          :class="dark ? 'border-white/15 bg-black/40 text-white' : 'border-gray-200 bg-white text-gray-700'">
-          <option v-for="opt in perPageOptions" :key="opt" :value="opt">{{ opt }}</option>
-        </select>
+        <CommonSelectDropdown class="w-20" mode="select" size="xs" :clearable="false" :dark="dark || undefined" :options="perPageOptions" v-model="localPerPage" @update:model-value="$emit('per-page-change', $event)" />
       </div>
     </div>
   </div>

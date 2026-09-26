@@ -119,13 +119,11 @@
       <div class="flex flex-wrap items-end gap-4">
         <div>
           <label class="block text-[13px] text-[#4A5565] mb-1">From</label>
-          <input type="date" v-model="periodForm.from_date" :disabled="!periodUnlocked"
-            class="px-3 py-2 rounded-lg border border-[#04C18F80] text-sm disabled:bg-gray-50 disabled:text-gray-500" />
+          <CommonDateField class="w-48" v-model="periodForm.from_date" :disabled="!periodUnlocked" allow-future />
         </div>
         <div>
           <label class="block text-[13px] text-[#4A5565] mb-1">To</label>
-          <input type="date" v-model="periodForm.to_date" :disabled="!periodUnlocked"
-            class="px-3 py-2 rounded-lg border border-[#04C18F80] text-sm disabled:bg-gray-50 disabled:text-gray-500" />
+          <CommonDateField class="w-48" v-model="periodForm.to_date" :disabled="!periodUnlocked" allow-future />
         </div>
         <button v-if="periodUnlocked" @click="handleSavePeriod" :disabled="busy"
           class="px-5 py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors disabled:opacity-60">

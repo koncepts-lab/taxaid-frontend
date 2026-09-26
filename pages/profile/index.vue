@@ -581,12 +581,7 @@
           </div>
           <div>
             <label class="block text-sm mb-1" :class="isDark ? 'text-white/80' : 'text-gray-700'">Entity Type</label>
-            <select v-model="entityModal.data.type" :class="['w-full h-[40px] border border-[#04C18F] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#00896F] appearance-none', isDark ? 'bg-transparent text-white !border-[#023527]' : 'bg-white text-[#000]']">
-              <option value="" :class="isDark ? 'bg-[#002e26]' : ''">Select Type</option>
-              <option value="Division" :class="isDark ? 'bg-[#002e26]' : ''">Division</option>
-              <option value="Subsidiary" :class="isDark ? 'bg-[#002e26]' : ''">Subsidiary</option>
-              <option value="Affiliate" :class="isDark ? 'bg-[#002e26]' : ''">Affiliate</option>
-            </select>
+            <CommonSelectDropdown mode="select" size="sm" :clearable="false" placeholder="Select Type" v-model="entityModal.data.type" :options="[{ value: '', label: 'Select Type' }, 'Division', 'Subsidiary', 'Affiliate']" />
           </div>
           <div>
             <label class="block text-sm mb-1" :class="isDark ? 'text-white/80' : 'text-gray-700'">EIN (Employer Identification Number)</label>
@@ -599,7 +594,7 @@
           </div>
           <div>
             <label class="block text-sm mb-1" :class="isDark ? 'text-white/80' : 'text-gray-700'">Formation Date</label>
-            <input type="date" v-model="entityModal.data.date" @click="$event.target.showPicker && $event.target.showPicker()" :class="['w-full h-[40px] border border-[#04C18F] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#00896F] cursor-pointer', isDark ? 'bg-transparent text-white !border-[#023527] [color-scheme:dark]' : 'bg-white text-[#000]']" />
+            <CommonDateField v-model="entityModal.data.date" size="sm" allow-future />
           </div>
           <div class="text-sm p-3 rounded-lg border" :class="isDark ? 'bg-white/5 text-white/90 border-white/10' : 'bg-[#F2FAF8] text-[#00896F] border-[#E9F3F0]'">
             <strong>Note:</strong> All fields marked with asterisk (*) are required.

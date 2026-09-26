@@ -80,7 +80,7 @@
       <DashboardSalesForecastVarianceModal
         v-if="activeModalKey === 'sales_forecast_variance' && !isMobile"
         :data="dashboardAlerts.sales_forecast_variance"
-        :date="new Date().toISOString().slice(0, 10)"
+        :date="today"
         @close="dismissModal('sales_forecast_variance')"
         @resolved="onModalResolved" />
     </div>
@@ -88,6 +88,7 @@
 </template>
 
 <script setup>
+const today = localIsoDate()
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const ALERT_KEYS = ['ap_variance', 'ar_variance', 'missing_ledgers', 'sales_forecast_variance']

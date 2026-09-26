@@ -43,13 +43,7 @@
                         {{ currentLang === 'ar' ? card.labelAr : card.label }}
                     </h3>
                     <div class="flex items-center gap-2 shrink-0">
-                        <select v-if="card.id === 'vat_returns' && vatYears.length > 1"
-                            :value="vatSelectedYear"
-                            @change="vatSelectedYear = Number($event.target.value)"
-                            class="text-[11px] lg:text-xs border rounded-lg px-2 py-1 font-medium focus:outline-none"
-                            :class="isDark ? 'bg-white/5 text-white border-white/10' : 'bg-[#F3F4F6] text-primary-450 border-emerald-100'">
-                            <option v-for="y in vatYears" :key="y" :value="y">{{ y }}</option>
-                        </select>
+                        <CommonSelectDropdown v-if="card.id === 'vat_returns' && vatYears.length > 1" class="w-[84px]" mode="select" size="xs" :clearable="false" :options="vatYears" :model-value="vatSelectedYear" @update:model-value="vatSelectedYear = Number($event)" />
                         <div v-if="card.isUploaded" class="text-[#03D8B0]">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.5">

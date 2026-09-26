@@ -551,7 +551,7 @@ const handleSendReminders = async (group) => {
     // immediately instead of the banner re-appearing. Skip when no email.
     if (r.status !== 'no_email') {
       const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
-      const tISO = tomorrow.toISOString().slice(0, 10)
+      const tISO = localIsoDate(tomorrow)
       getInvoices(group).forEach(i => {
         if (i.selected) { i.on_cooldown = true; i.next_reminder_date = tISO }
         i.selected = false

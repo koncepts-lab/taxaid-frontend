@@ -33,7 +33,7 @@ export const useAlertsPage = () => {
     ignored:  'Ignored',
   })
 
-  const currentDate   = ref<string>(new Date().toISOString().split('T')[0])
+  const currentDate   = ref<string>(localIsoDate())
   const currentPeriod = ref<string>('daily')
 
   // Dynamic subtitle for the wheel based on selected period

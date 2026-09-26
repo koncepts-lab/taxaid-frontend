@@ -35,9 +35,7 @@
           </div>
 
           <!-- Month picker -->
-          <input v-model="selectedMonth" type="month"
-                 class="px-4 py-2 border rounded-lg text-sm focus:outline-none focus:border-[#00896F]"
-                 :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'border-gray-200 text-gray-700 bg-white'" />
+          <CommonDateField class="w-44" month v-model="selectedMonth" />
         </div>
 
         <!-- Loading -->
@@ -279,7 +277,7 @@ const tenantId = route.params.id
 
 const { fetchByTenant, saveAnswer, completeReview } = useAdminMonthlyReviews()
 
-const selectedMonth = ref(new Date().toISOString().slice(0, 7))
+const selectedMonth = ref(localIsoMonth())
 const detail = ref(null)
 const loading = ref(true)
 const notFound = ref(false)

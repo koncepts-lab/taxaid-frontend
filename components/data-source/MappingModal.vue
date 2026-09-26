@@ -91,17 +91,7 @@
 
                                     <td v-if="type === 'cost_center'" class="px-6 py-4 text-sm">
                                         <div class="relative">
-                                            <select v-model="row.value"
-                                                class="w-full appearance-none bg-[#F3F4F6] border border-transparent rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#008169] focus:bg-white transition-all pr-10"
-                                                :class="isDark ? 'bg-white/5 text-white border-white/10 focus:bg-[#01261f]' : ''">
-                                                <option value="" disabled>Select Cost Center</option>
-                                                <option v-for="opt in costCenterOptions" :key="opt" :value="opt">{{ opt }}</option>
-                                            </select>
-                                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M6 9l6 6 6-6" />
-                                                </svg>
-                                            </div>
+                                            <CommonSelectDropdown mode="select" :clearable="false" placeholder="Select Cost Center" v-model="row.value" :options="costCenterOptions" />
                                         </div>
                                     </td>
 

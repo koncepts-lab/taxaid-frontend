@@ -45,33 +45,23 @@
 
                             <div v-else class="space-y-3">
                                 <template v-if="dateMode === 'range'">
-                                    <select v-model="custom.preset" class="field" :class="fieldTheme">
-                                        <option v-for="p in PRESETS" :key="p.value" :value="p.value">{{ isAr ? p.ar : p.en }}</option>
-                                    </select>
-                                    <div v-if="custom.preset === 'Custom Dates'" class="grid grid-cols-2 gap-3">
-                                        <label class="block">
-                                            <span class="text-[12px]" :class="muted">{{ t('from') }}</span>
-                                            <input v-model="custom.from" type="date" class="field mt-1" :class="fieldTheme" />
-                                        </label>
-                                        <label class="block">
-                                            <span class="text-[12px]" :class="muted">{{ t('to') }}</span>
-                                            <input v-model="custom.to" type="date" class="field mt-1" :class="fieldTheme" />
-                                        </label>
+                                    <CommonSelectDropdown v-model="custom.preset" mode="select" :clearable="false" :options="presetOptions" />
+                                    <div v-if="custom.preset === 'Custom Dates'">
+                                        <span class="text-[12px] block mb-1" :class="muted">{{ t('period') }}</span>
+                                        <CommonDateField range v-model:from="custom.from" v-model:to="custom.to" :placeholder="t('pickRange')" />
                                     </div>
                                 </template>
-                                <label v-else class="block">
-                                    <span class="text-[12px]" :class="muted">{{ t('date') }}</span>
-                                    <input v-model="custom.date" type="date" class="field mt-1" :class="fieldTheme" />
-                                </label>
+                                <div v-else>
+                                    <span class="text-[12px] block mb-1" :class="muted">{{ t('date') }}</span>
+                                    <CommonDateField v-model="custom.date" :placeholder="t('pick')" />
+                                </div>
                             </div>
 
                             <div v-if="extraFields.length" class="grid gap-3 mt-3" :class="extraFields.length > 1 ? 'grid-cols-2' : 'grid-cols-1'">
-                                <label v-for="f in extraFields" :key="f.key" class="block">
-                                    <span class="text-[12px]" :class="muted">{{ isAr ? f.label.ar : f.label.en }}</span>
-                                    <select v-model="extras[f.key]" class="field mt-1" :class="fieldTheme">
-                                        <option v-for="o in f.options" :key="o.value" :value="o.value">{{ isAr ? o.label.ar : o.label.en }}</option>
-                                    </select>
-                                </label>
+                                <div v-for="f in extraFields" :key="f.key" class="block">
+                                    <span class="text-[12px] block mb-1" :class="muted">{{ isAr ? f.label.ar : f.label.en }}</span>
+                                    <CommonSelectDropdown v-model="extras[f.key]" mode="select" :clearable="false" :options="extraOptions(f)" />
+                                </div>
                             </div>
                         </section>
 
@@ -218,10 +208,10 @@ const PRESETS = [
     { value: 'Custom Dates', en: 'Custom dates', ar: 'تواريخ مخصصة' },
 ]
 
+const presetOptions = computed(() => PRESETS.map(p => ({ value: p.value, label: isAr.value ? p.ar : p.en })))
+const extraOptions = (f) => f.options.map(o => ({ value: o.value, label: isAr.value ? o.label.ar : o.label.en }))
+
 const muted = computed(() => (isDark.value ? 'text-white/50' : 'text-gray-500'))
-const fieldTheme = computed(() => (isDark.value
-    ? 'bg-[#001F1A] border-[#03D8B0]/30 text-white [color-scheme:dark]'
-    : 'bg-white border-[#04C18F]/40 text-[#013e32]'))
 const cardTitle = computed(() => (isAr.value ? props.title.ar : props.title.en))
 
 const options = ref({ sheets: [], details: [], row_limit: 0 })
@@ -280,7 +270,7 @@ const resetState = () => {
     custom.preset = option === 'Custom Range' ? 'Custom Dates' : (PRESETS.some(p => p.value === option) ? option : 'Year to Date')
     custom.from = toIso(props.filters.custom_from)
     custom.to = toIso(props.filters.custom_to)
-    custom.date = toIso(props.filters.date) || new Date().toISOString().slice(0, 10)
+    custom.date = toIso(props.filters.date) || localIsoDate()
 
     for (const field of props.extraFields) extras[field.key] = props.filters[field.key] ?? field.options[0]?.value
 }
@@ -368,16 +358,6 @@ const close = () => {
     letter-spacing: 0.04em;
     text-transform: uppercase;
     margin-bottom: 0.5rem;
-}
-
-.field {
-    width: 100%;
-    height: 44px;
-    padding: 0 1rem;
-    border-radius: 10px;
-    border-width: 1px;
-    font-size: 14px;
-    outline: none;
 }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }

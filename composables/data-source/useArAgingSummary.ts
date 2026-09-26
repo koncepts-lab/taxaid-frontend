@@ -30,7 +30,7 @@ export function useArAgingSummary() {
   const error = ref<string | null>(null)
 
   // Use today's date in YYYY-MM-DD format
-  const currentDate = new Date().toISOString().slice(0, 10)
+  const currentDate = localIsoDate()
 
   const fetchSummary = async () => {
     loading.value = true

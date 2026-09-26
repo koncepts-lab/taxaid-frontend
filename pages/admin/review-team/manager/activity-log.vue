@@ -164,7 +164,7 @@ const { isDark } = useTheme()
 const { admin } = useAdminAuth()
 const rm = useReviewManager()
 
-const selectedDate      = ref(new Date().toISOString().split('T')[0])
+const selectedDate      = ref(localIsoDate())
 const selectedAdminId   = ref(null)
 const consultants       = ref([])
 const logData           = ref({ logs: [], total_formatted: '0h 0m', count_fixed: 0, count_review: 0, count_internal: 0 })
@@ -198,7 +198,7 @@ function nextDay() {
 }
 
 function goToday() {
-  selectedDate.value = new Date().toISOString().split('T')[0]
+  selectedDate.value = localIsoDate()
   loadLog()
 }
 

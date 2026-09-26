@@ -17,7 +17,7 @@
                     <CommonExportModal v-model="exportOpen" card="cash-flow" date-mode="date" date-format="iso"
                         :title="{ en: 'Cash Flow Analysis', ar: 'تحليل التدفقات النقدية' }"
                         :filters="{ date: activeDate, period, scenario }"
-                        :extra-fields="[{ key: 'period', label: { en: 'Projection period', ar: 'فترة التوقع' }, options: [{ value: 3, label: { en: '3 months', ar: '3 أشهر' } }, { value: 6, label: { en: '6 months', ar: '6 أشهر' } }, { value: 9, label: { en: '9 months', ar: '9 أشهر' } }] }, { key: 'scenario', label: { en: 'Scenario', ar: 'السيناريو' }, options: [{ value: '100% Scenario', label: { en: '100% Scenario', ar: 'سيناريو 100%' } }, { value: 'Future Contract', label: { en: 'Future Contract', ar: 'عقد مستقبلي' } }] }]" />
+                        :extra-fields="[{ key: 'period', label: { en: 'Projection period', ar: 'فترة التوقع' }, options: [{ value: 3, label: { en: '3 months', ar: '3 أشهر' } }, { value: 6, label: { en: '6 months', ar: '6 أشهر' } }] }, { key: 'scenario', label: { en: 'Scenario', ar: 'السيناريو' }, options: [{ value: '100% Scenario', label: { en: '100% Scenario', ar: 'سيناريو 100%' } }, { value: 'Future Contract', label: { en: 'Future Contract', ar: 'عقد مستقبلي' } }] }]" />
 
                     <CommonDashboardHeader
                         class="mb-4 lg:mb-8"
