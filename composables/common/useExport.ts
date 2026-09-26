@@ -116,8 +116,8 @@ export const useExport = () => {
   const exportLedger = (card: string, ledger: string, params: Record<string, any> = {}) =>
     download(`exports/${card}/ledger`, { ...params, ledger }, 'TaxAid_Ledger.xlsx', true)
 
-  const exportPart = (card: string, part: string, params: Record<string, any> = {}) =>
-    download(`exports/${card}/${part}`, params, `TaxAid_${card}_${part}.xlsx`, true)
+  const exportPart = (card: string, part: string, params: Record<string, any> = {}, options: { showError?: boolean } = {}) =>
+    download(`exports/${card}/${part}`, params, `TaxAid_${card}_${part}.xlsx`, options.showError ?? true)
 
   const fetchExportOptions = async (card: string) => {
     const response = await $fetch<any>(`exports/${card}/options`, {

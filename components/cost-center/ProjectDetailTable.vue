@@ -8,11 +8,11 @@
           {{ data?.cost_center }}
         </p>
         <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+          {{ valuesNote() }}
         </p>
       </div>
       <div class="flex items-center gap-3">
-        <img src="/images/icons/info.svg" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
+        <CommonInfoTooltip tip="costCenterDetail.table" align="right" />
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon"
           class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
       </div>
@@ -106,7 +106,7 @@
                 {{ currentLang === 'ar' ? 'ملخص مشروع البرج السكني' : 'Residential Tower Project Summary' }}
               </p>
               <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+                {{ valuesNote() }}
               </p>
             </div>
             <button @click="isModalOpen = false"
@@ -212,6 +212,7 @@ const props = defineProps({
 })
 
 const { isDark } = useTheme()
+const { valuesNote } = useCurrency()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 

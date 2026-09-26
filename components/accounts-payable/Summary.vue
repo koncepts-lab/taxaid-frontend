@@ -392,7 +392,7 @@ const toggleGroup = async (idx, customerName) => {
       try {
         const response = await useApi('/ap-report/customer-details', {
           params: {
-            test_date: props.testDate,
+            date: props.testDate,
             customer_name: customerName
           }
         })

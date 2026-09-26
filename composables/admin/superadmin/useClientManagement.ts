@@ -139,6 +139,11 @@ export function useClientManagement() {
   const setTenantTimezone = (tenantId: number, payload: { scope: 'organization' | 'tenant'; tenant_id?: number; zone: string | null }) =>
     useAdminApi(`/admin/tenants/${tenantId}/timezone`, { method: 'PUT', body: payload })
 
+  const getOrgRegion = (tenantId: number) => useAdminApi(`/admin/tenants/${tenantId}/region`)
+
+  const setOrgRegion = (tenantId: number, payload: { tenant_id: number; currency?: string; country?: string }) =>
+    useAdminApi(`/admin/tenants/${tenantId}/region`, { method: 'PUT', body: payload })
+
   return {
     renameOrganization, diagnoseOrganization, getTenants, setTenantStatus, getTenantUsers, setTenantUserStatus,
     updateTenantUser, addTenantUser, deleteTenantUser, getRolesSettings, setRolesToggles, setRolesGroup, resetRolesGroup,
@@ -148,5 +153,6 @@ export function useClientManagement() {
     getCompanyPeriod, updateCompanyPeriod,
     requestBackup, getLatestBackup, downloadBackup,
     getTenantTimezone, setTenantTimezone,
+    getOrgRegion, setOrgRegion,
   }
 }

@@ -51,6 +51,9 @@
 
         <AdminOrgTimezone v-if="representativeTenantId" :key="'org-tz-' + selectedOrgId" class="mt-4"
           :tenant-id="representativeTenantId" />
+
+        <AdminOrgRegion v-if="representativeTenantId" :key="'org-region-' + selectedOrgId" class="mt-4"
+          :tenant-id="representativeTenantId" />
       </div>
 
       <AdminClientStatusUsers v-else-if="orgSubtab === 'users' && representativeTenantId" :key="selectedOrgId"

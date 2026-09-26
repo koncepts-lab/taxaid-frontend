@@ -28,6 +28,7 @@ export function useCogs() {
       })
       if (breakdownRes?.status === 'success') {
         useState('cardPeriod').value = breakdownRes.period ?? null
+        useState('cardToday').value = breakdownRes.today ?? null
         _breakdownData.value = breakdownRes
       }
 

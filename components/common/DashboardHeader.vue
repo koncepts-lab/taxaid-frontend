@@ -16,7 +16,10 @@
                     <p class="text-sm mt-1" :class="isDark ? 'text-white/60' : 'text-black/50'">
                         {{ currentLang === 'ar' ? subtitle?.ar : subtitle?.en }}
                     </p>
-                    <p v-if="cardPeriod && (cardPeriod.from || cardPeriod.as_of)" class="text-xs mt-1" :class="isDark ? 'text-[#6FDBBF]' : 'text-[#00896F]'">
+                    <div v-if="!hasPeriod && waitingForPeriod" class="mt-1 h-4 flex items-center" aria-hidden="true">
+                        <div class="h-3 w-64 max-w-full rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                    </div>
+                    <p v-else-if="hasPeriod" class="text-xs mt-1 h-4 leading-4" :class="isDark ? 'text-[#6FDBBF]' : 'text-[#00896F]'">
                         <template v-if="cardPeriod.from">{{ currentLang === 'ar' ? 'عرض البيانات من' : 'Showing data from' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.from) }}</span> {{ currentLang === 'ar' ? 'إلى' : 'to' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.to) }}</span></template>
                         <template v-else>{{ currentLang === 'ar' ? 'البيانات حتى تاريخ' : 'Showing data as of' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.as_of) }}</span></template>
                     </p>
@@ -225,7 +228,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
 import { format, subMonths, startOfYear, startOfQuarter, subQuarters, subYears } from 'date-fns'
 import { DatePicker as VDatePicker } from 'v-calendar'
 import 'v-calendar/dist/style.css'
@@ -296,7 +299,13 @@ const toDateFormatted = computed(() => {
 const fromDateLabel = computed(() => {
     return currentLang.value === 'ar' ? `منذ ${activePeriod.value} أشهر` : `${activePeriod.value} months ago`
 })
-const today = orgTodayDate()
+const cardToday = useState('cardToday', () => null)
+const serverToday = computed(() => {
+  const m = String(cardToday.value || '').match(/^(\d{4})-(\d{2})-(\d{2})/)
+  return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null
+})
+const today = serverToday
+const baseToday = () => serverToday.value ?? orgTodayDate()
 
 const range = ref({ start: null, end: null })
 const singleDate = ref(null)
@@ -304,9 +313,20 @@ const dateDropdownRef = ref(null)
 const exportDropdownRef = ref(null)
 
 // Calendar pages
-const currMonthPage = ref({ month: today.getMonth() + 1, year: today.getFullYear() });
-const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-const prevMonthPage = ref({ month: prevMonthDate.getMonth() + 1, year: prevMonthDate.getFullYear() });
+const pagesFor = (base) => {
+  const prev = new Date(base.getFullYear(), base.getMonth() - 1, 1)
+  return {
+    curr: { month: base.getMonth() + 1, year: base.getFullYear() },
+    prev: { month: prev.getMonth() + 1, year: prev.getFullYear() },
+  }
+}
+const currMonthPage = ref(pagesFor(baseToday()).curr);
+const prevMonthPage = ref(pagesFor(baseToday()).prev);
+watch(serverToday, (d) => {
+  if (!d) return
+  currMonthPage.value = pagesFor(d).curr
+  prevMonthPage.value = pagesFor(d).prev
+})
 
 const selectedPeriodKey = ref(props.periods[0]?.en || 'Year to Date')
 
@@ -350,22 +370,23 @@ const selectPeriod = (period) => {
 
     if (period.en !== 'Custom Range' && period.en !== 'Custom Date') {
         showDateDropdown.value = false
-        let startDate = new Date()
-        let endDate = new Date()
+        const t = baseToday()
+        let startDate = new Date(t)
+        let endDate = new Date(t)
 
-        if (period.en === 'Year to Date') startDate = startOfYear(today)
-        else if (period.en === 'This Quarter') startDate = startOfQuarter(today)
+        if (period.en === 'Year to Date') startDate = startOfYear(t)
+        else if (period.en === 'This Quarter') startDate = startOfQuarter(t)
         else if (period.en === 'Last Quarter') {
-            startDate = startOfQuarter(subQuarters(today, 1))
-            endDate = new Date(startOfQuarter(today).getTime() - 1)
+            startDate = startOfQuarter(subQuarters(t, 1))
+            endDate = new Date(startOfQuarter(t).getTime() - 1)
         }
-        else if (period.en === 'This Year') startDate = startOfYear(today)
+        else if (period.en === 'This Year') startDate = startOfYear(t)
         else if (period.en === 'Last Year') {
-            startDate = startOfYear(subYears(today, 1))
-            endDate = new Date(startOfYear(today).getTime() - 1)
+            startDate = startOfYear(subYears(t, 1))
+            endDate = new Date(startOfYear(t).getTime() - 1)
         }
-        else if (period.en === 'Previous 3 Months') startDate = subMonths(today, 3)
-        else if (period.en === 'Previous 6 Months') startDate = subMonths(today, 6)
+        else if (period.en === 'Previous 3 Months') startDate = subMonths(t, 3)
+        else if (period.en === 'Previous 6 Months') startDate = subMonths(t, 6)
 
         emit('selected-date', {
             ...period,
@@ -414,6 +435,12 @@ const handleClickOutside = (event) => {
 }
 
 const cardPeriod = useState('cardPeriod', () => null)
+const hasPeriod = computed(() => !!(cardPeriod.value && (cardPeriod.value.from || cardPeriod.value.as_of)))
+// The period line is reserved while the card loads (skeleton); if nothing arrives the space is released
+const waitingForPeriod = ref(true)
+let periodTimer
+onMounted(() => { periodTimer = setTimeout(() => { waitingForPeriod.value = false }, 8000) })
+onBeforeUnmount(() => clearTimeout(periodTimer))
 onMounted(() => { document.addEventListener('mousedown', handleClickOutside) })
 onUnmounted(() => { document.removeEventListener('mousedown', handleClickOutside); cardPeriod.value = null })
 

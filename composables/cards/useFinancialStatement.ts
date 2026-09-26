@@ -57,6 +57,7 @@ async function fetchPLData() {
     const res: any = await useApi('/financial-analysis/pl-maingroup-totals', { method: 'POST', body: payload })
     if (res?.status === 'success') {
       useState('cardPeriod').value = res.period ?? null
+      useState('cardToday').value = res.today ?? null
       try {
         if (res.info) {
           _reportInfo.value = {
@@ -100,6 +101,7 @@ async function fetchBSData() {
     const res: any = await useApi('/financial-analysis/bs-maingroup-totals', { method: 'POST', body: payload })
     if (res?.status === 'success') {
       useState('cardPeriod').value = res.period ?? null
+      useState('cardToday').value = res.today ?? null
       const requested = res.info?.requested_date ?? null
       const snapshot  = res.info?.snapshot_date  ?? null
       _bsRequestedDate.value  = requested

@@ -6,9 +6,7 @@
  * Shared state: activeDate is global so the page and all components stay in sync.
  */
 
-const todayYMD = () => orgToday()
-
-export const apActiveDate = ref(todayYMD())
+export const apActiveDate = ref('')
 
 const _summary            = ref<any[]>([])
 const _agingData          = ref<any>({})
@@ -36,15 +34,22 @@ const _hasInternalEmails = ref(true)
 async function fetchAll(lang = 'en') {
   _loading.value = true
   _error.value   = null
-  const date = apActiveDate.value
+  let date = apActiveDate.value
+  const dateParam = () => (date ? { date } : {})
   const strict = ENABLE_SNAPSHOT_FALLBACK ? {} : { strict_date: 1 }
 
   try {
     // 1. Summary table (/ap-report)
-    const summaryRes: any = await useApi('/ap-report', { params: { test_date: date, ...strict } })
+    const summaryRes: any = await useApi('/ap-report', { params: { ...dateParam(), ...strict } })
+
+    if (!date && summaryRes?.requested_date) {
+      date = summaryRes.requested_date
+      apActiveDate.value = date
+    }
 
     _goLiveDate.value = summaryRes?.go_live_date ?? null
     useState('cardPeriod').value = summaryRes?.period ?? null
+    useState('cardToday').value = summaryRes?.today ?? null
 
     if (ENABLE_SNAPSHOT_FALLBACK && summaryRes?.snapshot_date) {
       _requestedDate.value  = summaryRes.requested_date ?? date
@@ -63,19 +68,19 @@ async function fetchAll(lang = 'en') {
     }
 
     // 2. Aging graph (/ap-report/aging)
-    const agingRes: any = await useApi('/ap-report/aging', { params: { test_date: date, lang, ...strict } })
+    const agingRes: any = await useApi('/ap-report/aging', { params: { ...dateParam(), lang, ...strict } })
     if (agingRes?.status === 'success') {
       _agingData.value = agingRes.payload || {}
     }
 
     // 3. Top vendors (/ap-report/top-eight)
-    const topRes: any = await useApi('/ap-report/top-eight', { params: { test_date: date, ...strict } })
+    const topRes: any = await useApi('/ap-report/top-eight', { params: { ...dateParam(), ...strict } })
     if (topRes?.status === 'success') {
       _topCustomers.value = topRes.payload || null
     }
 
     // 4. Historical movement (/ap-report/timeline)
-    const timelineRes: any = await useApi('/ap-report/timeline', { params: { test_date: date } })
+    const timelineRes: any = await useApi('/ap-report/timeline', { params: { ...dateParam() } })
     if (timelineRes?.status === 'success' && timelineRes.payload) {
       const ranges = timelineRes.payload.ranges || []
       _timelineData.value = {

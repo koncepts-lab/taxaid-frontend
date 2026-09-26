@@ -3,11 +3,11 @@
 
 
     <!-- 1. Container fills the screen height and prevents page-level scrolling -->
-    <div v-if="!isFullScreenChat" class="h-screen font-sans flex overflow-hidden relative z-10" :class="{ '': isDark }"
+    <div v-if="!isFullScreenChat" class="min-h-screen font-sans flex relative z-10" :class="{ '': isDark }"
       :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
       <!-- 2. LEFT AREA: Resizes dynamically -->
-      <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" :class="isChatOpen
+      <div class="flex-1 min-w-0 transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" :class="isChatOpen
         ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
         : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
         <div class="mx-auto pt-8 lg:pt-0">
@@ -114,12 +114,12 @@ const calendarMinDate = computed(() => {
 
 
 const customPeriods = [
-  // { en: 'Year to Date', ar: 'منذ بداية العام' }, // not supported — backend uses single test_date only
+  // { en: 'Year to Date', ar: 'منذ بداية العام' }, // not supported — backend uses a single date only
   // { en: 'This Quarter', ar: 'هذا الربع' },        // not supported
   // { en: 'Last Quarter', ar: 'الربع الماضي' },     // not supported
   // { en: 'This Year',    ar: 'هذه السنة' },        // not supported
   // { en: 'Last Year',    ar: 'السنة الماضية' },    // not supported
-  { en: 'Custom Date', ar: 'تاريخ مخصص' },           // ✅ maps to ?test_date=Y-m-d
+  { en: 'Custom Date', ar: 'تاريخ مخصص' },           // ✅ maps to ?date=Y-m-d
 ]
 
 const handleDateChange = (period) => {

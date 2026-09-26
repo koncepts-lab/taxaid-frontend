@@ -430,7 +430,7 @@ const toggleGroup = async (group) => {
   loadingGroup.value = group.label
   try {
     const res = await useApi('/ar-report/customer-details', {
-      params: { test_date: props.testDate, customer_name: group.label }
+      params: { date: props.testDate, customer_name: group.label }
     })
     if (res?.status === 'success' && Array.isArray(res.data)) {
       invoiceHasEmail.value[group.label] = !!res.has_email

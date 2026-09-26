@@ -2,11 +2,11 @@
   <NuxtLayout name="dashboard">
 
     <!-- 1. Container fills the screen height and prevents page-level scrolling -->
-    <div v-if="!isFullScreenChat" class="h-screen font-sans flex overflow-hidden relative z-10" :class="{ '': isDark }"
+    <div v-if="!isFullScreenChat" class="min-h-screen font-sans flex relative z-10" :class="{ '': isDark }"
       :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
       <!-- 2. LEFT AREA: Resizes dynamically -->
-      <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" :class="[
+      <div class="flex-1 min-w-0 transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" :class="[
         isChatOpen
           ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
           : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')
@@ -93,16 +93,11 @@ const costCenterPeriods = [
   { en: 'Custom Date', ar: 'تاريخ مخصص' },    // ✅ maps to ?date=dd-MM-yyyy
 ]
 
-const todayDDMMYYYY = () => {
-  const [year, month, day] = orgToday().split('-')
-  return `${day}-${month}-${year}`
-}
-
 const fetchData = async () => {
   if (headerRef.value) headerRef.value.resetToDefault()
-  ccDate.value = todayDDMMYYYY()
+  ccDate.value = ''
   await Promise.all([
-    summaryRef.value?.fetchSummaryData(),
+    summaryRef.value?.fetchSummaryData(''),
     fetchChart()
   ])
 }

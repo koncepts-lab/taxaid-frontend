@@ -1,12 +1,7 @@
-const todayDDMMYYYY = () => {
-  const [year, month, day] = orgToday().split('-')
-  return `${day}-${month}-${year}`
-}
-
 export const useCostCenterChart = () => {
   const loading    = useState<boolean>('cc_loading',  () => false)
   const error      = useState<string | null>('cc_error', () => null)
-  const activeDate = useState<string>('cc_date',      () => todayDDMMYYYY())
+  const activeDate = useState<string>('cc_date',      () => '')
 
   const chartRaw = useState<any>('cc_chart_raw', () => null)
 
@@ -14,8 +9,13 @@ export const useCostCenterChart = () => {
     loading.value = true
     error.value   = null
     try {
-      const res = await useApi(`cost-center/revenue-by-totalexpenses?date=${activeDate.value}`) as any
+      const res = await useApi(activeDate.value ? `cost-center/revenue-by-totalexpenses?date=${activeDate.value}` : 'cost-center/revenue-by-totalexpenses') as any
       useState('cardPeriod').value = res?.period ?? null
+      useState('cardToday').value = res?.today ?? null
+      if (!activeDate.value && res?.as_of_date) {
+        const [y, m, d] = String(res.as_of_date).split('-')
+        activeDate.value = `${d}-${m}-${y}`
+      }
       chartRaw.value = res?.data ?? null
     } catch (err: any) {
       error.value = err?.data?.message ?? 'Failed to fetch cost center data'
@@ -41,6 +41,8 @@ export const useCostCenterChart = () => {
       mappingFullNames,
       revenueData:      data.map(item => parseFloat((item.revenue      / 1_000_000).toFixed(2))),
       costData:         data.map(item => parseFloat((item.total_expenses / 1_000_000).toFixed(2))),
+      revenueRaw:       data.map(item => Number(item.revenue ?? 0)),
+      costRaw:          data.map(item => Number(item.total_expenses ?? 0)),
     }
   })
 

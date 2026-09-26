@@ -15,7 +15,7 @@
           {{ currentLang === 'ar' ? 'إجمالي الإيرادات مقابل التكلفة' : 'Overall Revenue vs Cost' }}
         </h2>
         <p class="text-[13px] font-regular mt-1 opacity-80 text-white">
-          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+          {{ note }}
         </p>
       </div>
       <div class="flex items-center gap-6">
@@ -30,14 +30,22 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'الإيرادات' : 'Revenue' }}</span>
           </div>
         </div>
+        <CommonInfoTooltip tip="costCenterOverall.chart" light align="right" />
         <img :src="'/images/icons/expand-white.svg'" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
       </div>
     </div>
 
     <!-- Chart -->
     <div class="flex-1 w-full min-h-[350px] relative z-10 mt-0">
+      <div class="absolute top-0 right-0 rtl:right-auto rtl:left-0 z-20 flex rounded-full border border-white/25 overflow-hidden text-[12px] font-medium" @click.stop>
+        <button type="button" @click="setUnit('millions')" :title="currentLang === 'ar' ? 'عرض القيم مختصرة مثل 1.2M' : 'Show values short, like 1.2M'" class="px-3 py-1 cursor-pointer transition-colors"
+          :class="unit === 'millions' ? 'bg-[#03D8B0] text-[#00342A]' : 'text-white/80 hover:bg-white/10'">{{ currentLang === 'ar' ? 'مختصر' : 'Short' }}</button>
+        <button type="button" @click="setUnit('actual')" :title="currentLang === 'ar' ? 'عرض القيم كاملة مثل 1,200,000' : 'Show full values, like 1,200,000'" class="px-3 py-1 cursor-pointer transition-colors"
+          :class="unit === 'actual' ? 'bg-[#03D8B0] text-[#00342A]' : 'text-white/80 hover:bg-white/10'">{{ currentLang === 'ar' ? 'كامل' : 'Full' }}</button>
+      </div>
       <ClientOnly>
-        <apexchart
+        <CommonApexBarChart
+          :key="chartKey"
           type="bar"
           height="100%"
           :options="chartOptions"
@@ -102,7 +110,7 @@
                 {{ currentLang === 'ar' ? 'إجمالي الإيرادات مقابل التكلفة' : 'Overall Revenue vs Cost' }}
               </h2>
               <p class="text-xs font-regular mt-1 opacity-80 text-white">
-                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+                {{ note }}
               </p>
             </div>
             <div class="flex items-center gap-6">
@@ -125,9 +133,16 @@
           
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10 flex flex-col justify-between" style="background-color: transparent;">
+            <div class="absolute top-3 right-8 rtl:right-auto rtl:left-8 z-20 flex rounded-full border border-white/25 overflow-hidden text-[12px] font-medium" @click.stop>
+        <button type="button" @click="setUnit('millions')" :title="currentLang === 'ar' ? 'عرض القيم مختصرة مثل 1.2M' : 'Show values short, like 1.2M'" class="px-3 py-1 cursor-pointer transition-colors"
+          :class="unit === 'millions' ? 'bg-[#03D8B0] text-[#00342A]' : 'text-white/80 hover:bg-white/10'">{{ currentLang === 'ar' ? 'مختصر' : 'Short' }}</button>
+        <button type="button" @click="setUnit('actual')" :title="currentLang === 'ar' ? 'عرض القيم كاملة مثل 1,200,000' : 'Show full values, like 1,200,000'" class="px-3 py-1 cursor-pointer transition-colors"
+          :class="unit === 'actual' ? 'bg-[#03D8B0] text-[#00342A]' : 'text-white/80 hover:bg-white/10'">{{ currentLang === 'ar' ? 'كامل' : 'Full' }}</button>
+      </div>
             <div class="flex-1">
                 <ClientOnly>
-                  <apexchart
+                  <CommonApexBarChart
+                    :key="chartKey"
                     type="bar"
                     height="100%"
                     :options="chartOptions"
@@ -209,16 +224,62 @@ onMounted(() => {
 const categories = computed(() => overallRevenueVsCost.value?.categories ?? [])
 const mappingFullNames = computed(() => overallRevenueVsCost.value?.mappingFullNames ?? {})
 
+const { code: currency, valuesNote } = useCurrency()
+
+const UNIT_KEY = 'cc_chart_unit'
+const unit = ref('millions')
+onMounted(() => {
+  try {
+    const saved = localStorage.getItem(UNIT_KEY)
+    if (saved === 'millions' || saved === 'actual') unit.value = saved
+  } catch {}
+})
+const setUnit = (value) => {
+  unit.value = value
+  try { localStorage.setItem(UNIT_KEY, value) } catch {}
+}
+const note = computed(() => valuesNote(unit.value === 'millions'))
+
+const whole = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 })
+const million = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 })
+
+// Short mode rounds only from 100,000 up; smaller values stay exact. Full mode is always the whole number.
+const fmt = (value) => {
+  const v = Number(value) || 0
+  if (unit.value === 'millions' && Math.abs(v) >= 100000) return `${million.format(v / 1_000_000)}M`
+  return whole.format(v)
+}
+
+const rawCost = computed(() => overallRevenueVsCost.value?.costRaw ?? [])
+const rawRevenue = computed(() => overallRevenueVsCost.value?.revenueRaw ?? [])
+const peak = computed(() => Math.max(0, ...rawCost.value, ...rawRevenue.value))
+
+// Positive bars too small to see get a minimum height; labels and the tooltip still show the real value.
+const minVisible = computed(() => peak.value * 0.025)
+const plot = (value) => (value > 0 && value < minVisible.value ? minVisible.value : value)
+
 const series = computed(() => [
-  {
-    name: 'Cost',
-    data: overallRevenueVsCost.value?.costData ?? []
-  },
-  {
-    name: 'Revenue',
-    data: overallRevenueVsCost.value?.revenueData ?? []
-  }
+  { name: 'Cost', data: rawCost.value.map(plot) },
+  { name: 'Revenue', data: rawRevenue.value.map(plot) }
 ])
+
+// Axis top comes from the data, rounded up to a clean step, with headroom for the bar labels.
+const axis = computed(() => {
+  const top = peak.value * (1.12)
+  if (top <= 0) return { max: 5, ticks: 5 }
+
+  const rough = top / 5
+  const power = Math.pow(10, Math.floor(Math.log10(rough)))
+  const step = [1, 1.5, 2, 2.5, 3, 4, 5, 10].map(m => m * power).find(s => s >= rough) ?? 10 * power
+  const max = Math.ceil(top / step) * step
+
+  return { max, ticks: Math.max(2, Math.round(max / step)) }
+})
+
+// vue3-apexcharts JSON-copies options on update and drops formatter functions, so redraw the chart on any change
+const chartKey = computed(() => JSON.stringify([unit.value, currency.value, categories.value, rawCost.value, rawRevenue.value]))
+
+const yFormatter = (val) => (val === 0 ? '0' : fmt(val))
 
 const chartOptions = computed(() => ({
   chart: {
@@ -245,7 +306,10 @@ const chartOptions = computed(() => ({
       fontSize: '11px',
       colors: ['#FB7554', '#03D8B0']
     },
-    formatter: (val) => val === 0 ? '' : val.toString().replace('.', ',') + 'M'
+    formatter: (val, { seriesIndex, dataPointIndex }) => {
+      const raw = (seriesIndex === 0 ? rawCost.value : rawRevenue.value)[dataPointIndex]
+      return raw <= 0 ? '' : fmt(raw)
+    }
   },
   xaxis: {
     categories: categories.value,
@@ -267,9 +331,9 @@ const chartOptions = computed(() => ({
   },
   yaxis: {
     min: 0,
-    max: 6,
-    tickAmount: 6,
-    axisBorder: { 
+    max: axis.value.max,
+    tickAmount: axis.value.ticks,
+    axisBorder: {
       show: true,
       color: 'rgba(255, 255, 255, 0.1)',
       width: 1
@@ -280,7 +344,7 @@ const chartOptions = computed(() => ({
         fontSize: '12px',
         colors: '#FFFFFFBF'
       },
-      formatter: (val) => val === 0 ? '0' : val + 'M'
+      formatter: yFormatter
     }
   },
   grid: {
@@ -300,13 +364,13 @@ const chartOptions = computed(() => ({
     shared: true,
     intersect: false,
     theme: 'light',
-    custom: function({ series: s, dataPointIndex }) {
+    custom: function({ dataPointIndex }) {
       const cat = categories.value[dataPointIndex]
       const fullName = mappingFullNames.value[cat]
-      const cVal = s[0][dataPointIndex]
-      const rVal = s[1][dataPointIndex]
-      const variance = (((rVal - cVal) / cVal) * 100).toFixed(1)
-      const varianceSign = variance >= 0 ? '+' : ''
+      const cVal = rawCost.value[dataPointIndex] ?? 0
+      const rVal = rawRevenue.value[dataPointIndex] ?? 0
+      const variance = cVal ? (((rVal - cVal) / cVal) * 100).toFixed(1) : null
+      const varianceSign = variance !== null && variance >= 0 ? '+' : ''
 
       const trFullName = fullName // would map ar if needed
       const trRevenue = currentLang.value === 'ar' ? 'الإيرادات' : 'Revenue'
@@ -316,9 +380,9 @@ const chartOptions = computed(() => ({
       return `
         <div class="custom-tooltip shadow-xl rounded-2xl" style="background:#D9FBF2; padding: 12px 16px; border:none; color:#1A1A1A;">
           <div style="font-size:12px; margin-bottom:8px; font-weight:500;">${trFullName}</div>
-          <div style="font-size:11px; margin-bottom:4px;">${trRevenue}: AED ${rVal.toString().replace('.', ',')}M</div>
-          <div style="font-size:11px; margin-bottom:4px;">${trCost}: AED ${cVal.toString().replace('.', ',')}M</div>
-          <div style="font-size:11px; color:#00A176;">${trVariance}: ${varianceSign}${variance}%</div>
+          <div style="font-size:11px; margin-bottom:4px;">${trRevenue}: ${currency.value} ${fmt(rVal)}</div>
+          <div style="font-size:11px; margin-bottom:4px;">${trCost}: ${currency.value} ${fmt(cVal)}</div>
+          <div style="font-size:11px; color:#00A176;">${trVariance}: ${variance === null ? '—' : varianceSign + variance + '%'}</div>
         </div>
       `
     }

@@ -10,11 +10,18 @@
                         :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'rotate-180' : '']" />
                 </button>
                 <div>
-                    <h1 class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">
+                    <h1 v-if="title" class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">
                         {{ currentLang === 'ar' ? title?.ar : title?.en }}
                     </h1>
+                    <div v-else class="h-8 w-56 rounded-md animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
                     <p class="text-sm mt-1" :class="isDark ? 'text-white/60' : 'text-black/50'">
                         {{ currentLang === 'ar' ? subtitle?.ar : subtitle?.en }}
+                    </p>
+                    <div v-if="!period?.from && waitingForPeriod" class="mt-1 h-4 flex items-center" aria-hidden="true">
+                        <div class="h-3 w-64 max-w-full rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                    </div>
+                    <p v-else class="text-xs mt-1 h-4 leading-4" :class="isDark ? 'text-[#6FDBBF]' : 'text-[#00896F]'">
+                        <template v-if="period?.from">{{ currentLang === 'ar' ? 'عرض البيانات من' : 'Showing data from' }} <span dir="ltr">{{ formatDisplayDate(period.from) }}</span> {{ currentLang === 'ar' ? 'إلى' : 'to' }} <span dir="ltr">{{ formatDisplayDate(period.to) }}</span></template>
                     </p>
                 </div>
             </div>
@@ -32,7 +39,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <span class="lg:text-sm text-xs font-normal">{{ selectedPeriodLabel }}</span>
+                            <span class="lg:text-sm text-xs font-normal min-w-[96px] text-left rtl:text-right">{{ selectedDateLabel }}</span>
                             <svg class="w-4 h-4 transition-transform duration-300"
                                 :class="showDateDropdown ? 'rotate-180' : ''" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
@@ -42,13 +49,11 @@
                         </button>
                         <Transition name="dropdown">
                             <div v-if="showDateDropdown"
-                                class="absolute left-0 rtl:right-0 mt-2 border rounded-lg shadow-lg z-[100] py-2 px-2 min-w-[180px]"
+                                class="absolute left-0 rtl:right-0 mt-2 border rounded-lg shadow-lg z-[100] py-2 px-2"
                                 :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-[#03D8B0]'">
-                                <button v-for="period in periods" :key="period.en" @click="selectPeriod(period)"
-                                    class="w-full text-left rtl:text-right px-4 py-3 font-normal text-sm rounded-lg transition-colors"
-                                    :class="getDropdownItemClass(period)">
-                                    {{ currentLang === 'ar' ? period.ar : period.en }}
-                                </button>
+                                <VDatePicker v-model="pickedDate" :is-dark="isDark" :locale="currentLang === 'ar' ? 'ar' : 'en'"
+                                    color="primary" borderless :max-date="maxDate" :initial-page="initialPage"
+                                    @update:model-value="pickDate" />
                             </div>
                         </Transition>
                     </div>
@@ -57,7 +62,7 @@
                 <div class="flex gap-4">
                     <!-- Reload Button (Triggers local reset + emit) -->
                     <button v-if="showReload" @click="handleReload"
-                        class="w-[40px] h-[40px] flex items-center justify-center border rounded-lg transition-all active:rotate-180"
+                        class="w-[40px] h-[40px] flex items-center justify-center border rounded-lg transition-all"
                         :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-[#03D8B0] hover:bg-gray-50'">
                         <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5"
                             :class="isDark ? 'invert' : ''" />
@@ -95,8 +100,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { format } from 'date-fns'
+import { DatePicker as VDatePicker } from 'v-calendar'
+import 'v-calendar/dist/style.css'
 const props = defineProps({
+    selectedDate: { type: String, default: '' },
+    period: { type: Object, default: null },
+    maxDate: { type: Date, default: null },
     title: { type: Object, default: () => ({ en: 'Residential Projects Overview', ar: 'نظرة عامة على المشاريع السكنية' }) },
     subtitle: { type: Object, default: () => ({ en: 'Detailed performance breakdown', ar: 'تحليل مفصل للأداء والتفاصيل المالية' }) },
     oneclickreview: { type: Boolean, default: true },
@@ -135,12 +146,35 @@ const selectedPeriodLabel = computed(() => {
 
 // --- FUNCTIONS ---
 
+const waitingForPeriod = ref(true)
+let periodTimer
+onMounted(() => { periodTimer = setTimeout(() => { waitingForPeriod.value = false }, 8000) })
+onBeforeUnmount(() => clearTimeout(periodTimer))
+
 const handleBack = () => router.push('/cost-center')
 
-const selectPeriod = (period) => {
-    selectedPeriodKey.value = period.en
+const parseDmy = (value) => {
+    const m = String(value || '').match(/^(\d{2})-(\d{2})-(\d{4})$/)
+    return m ? new Date(+m[3], +m[2] - 1, +m[1]) : null
+}
+
+const pickedDate = ref(parseDmy(props.selectedDate))
+watch(() => props.selectedDate, (value) => { pickedDate.value = parseDmy(value) })
+
+const initialPage = computed(() => {
+    const d = pickedDate.value || props.maxDate || new Date()
+    return { month: d.getMonth() + 1, year: d.getFullYear() }
+})
+
+const selectedDateLabel = computed(() => {
+    if (!pickedDate.value) return currentLang.value === 'ar' ? 'اختر تاريخاً' : 'Select date'
+    return formatDisplayDate(format(pickedDate.value, 'yyyy-MM-dd'))
+})
+
+const pickDate = (value) => {
+    if (!value) return
     showDateDropdown.value = false
-    emit('selected-date', period)
+    emit('selected-date', { custom_from: format(value, 'dd-MM-yyyy') })
 }
 
 const handleReload = () => {
@@ -149,9 +183,7 @@ const handleReload = () => {
 }
 
 const resetToDefault = () => {
-    if (props.periods.length > 0) {
-        selectedPeriodKey.value = props.periods[0].en
-    }
+    pickedDate.value = null
     showDateDropdown.value = false
     showExportDropdown.value = false
 }
