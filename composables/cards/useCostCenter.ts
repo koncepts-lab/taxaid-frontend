@@ -1,6 +1,6 @@
 const todayDDMMYYYY = () => {
-  const d = new Date()
-  return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`
+  const [year, month, day] = orgToday().split('-')
+  return `${day}-${month}-${year}`
 }
 
 export const useCostCenterChart = () => {
@@ -15,6 +15,7 @@ export const useCostCenterChart = () => {
     error.value   = null
     try {
       const res = await useApi(`cost-center/revenue-by-totalexpenses?date=${activeDate.value}`) as any
+      useState('cardPeriod').value = res?.period ?? null
       chartRaw.value = res?.data ?? null
     } catch (err: any) {
       error.value = err?.data?.message ?? 'Failed to fetch cost center data'

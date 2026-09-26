@@ -679,6 +679,8 @@
     </div>
     </Teleport>
 
+    <ProfileDisplayFormatCard />
+
     </template>
     </div>
   </NuxtLayout>

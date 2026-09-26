@@ -16,6 +16,7 @@ export const useCashFlow = () => {
       params.set('scenario', scenario.value)
 
       const res = await useApi(`/cash-flow/projection?${params.toString()}`) as any
+      useState('cardPeriod').value = res.period ?? null
       rawData.value = res.data ?? null
     } catch (err: any) {
       error.value = err?.data?.message ?? 'Failed to fetch cash flow data'

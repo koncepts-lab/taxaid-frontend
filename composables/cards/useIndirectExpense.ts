@@ -27,6 +27,7 @@ export function useIndirectExpense() {
         body: breakdownBody,
       })
       if (breakdownRes?.status === 'success') {
+        useState('cardPeriod').value = breakdownRes.period ?? null
         _breakdownData.value = breakdownRes
       }
 

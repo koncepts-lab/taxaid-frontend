@@ -151,7 +151,8 @@ const syncTexts = () => {
 }
 watch(() => [props.modelValue, props.from, props.to], syncTexts, { immediate: true })
 
-const maxDate = computed(() => (props.allowFuture ? undefined : new Date()))
+const maxDate = ref(props.allowFuture ? undefined : orgTodayDate())
+const refreshMax = () => { maxDate.value = props.allowFuture ? undefined : orgTodayDate() }
 const maxLength = computed(() => (props.month ? 7 : 10))
 const defaultPlaceholder = computed(() => (props.month ? 'mm-yyyy' : 'dd-mm-yyyy'))
 const invalidHint = computed(() => {
@@ -160,7 +161,7 @@ const invalidHint = computed(() => {
 })
 
 const startOfThisMonth = () => {
-  const now = new Date()
+  const now = orgTodayDate()
   return new Date(now.getFullYear(), now.getMonth(), 1)
 }
 
@@ -169,7 +170,7 @@ const inBounds = (key, date) => {
     if (props.month) {
       if (date > startOfThisMonth()) return false
     } else {
-      const end = new Date()
+      const end = orgTodayDate()
       end.setHours(23, 59, 59, 999)
       if (date > end) return false
     }
@@ -248,15 +249,15 @@ const onKeydown = (key, event) => {
 
 const singleValue = ref(null)
 const rangeValue = ref(null)
-const pickerYear = ref(new Date().getFullYear())
-const currentYear = new Date().getFullYear()
+const pickerYear = ref(orgTodayDate().getFullYear())
+const currentYear = orgTodayDate().getFullYear()
 
 const refreshPicker = () => {
   singleValue.value = parseAny(props.modelValue)
   const start = parseAny(props.from)
   const end = parseAny(props.to)
   rangeValue.value = start && end ? { start, end } : null
-  pickerYear.value = (singleValue.value ?? new Date()).getFullYear()
+  pickerYear.value = (singleValue.value ?? orgTodayDate()).getFullYear()
 }
 
 const open = ref(false)
@@ -327,6 +328,7 @@ const closeAndFocus = () => {
 
 const toggle = () => {
   if (open.value) return close()
+  refreshMax()
   refreshPicker()
   columns.value = props.range && !props.month && window.innerWidth >= 720 ? 2 : 1
   positionPanel()

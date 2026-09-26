@@ -550,7 +550,7 @@ const handleSendReminders = async (group) => {
     // Grey the invoices (sent OR already-on-cooldown) so the tooltip shows
     // immediately instead of the banner re-appearing. Skip when no email.
     if (r.status !== 'no_email') {
-      const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
+      const tomorrow = orgTodayDate(); tomorrow.setDate(tomorrow.getDate() + 1)
       const tISO = localIsoDate(tomorrow)
       getInvoices(group).forEach(i => {
         if (i.selected) { i.on_cooldown = true; i.next_reminder_date = tISO }

@@ -134,6 +134,11 @@ export function useClientManagement() {
   const diagnoseOrganization = (organizationId: number, body: Record<string, any> = {}) =>
     useAdminApi('/admin/organizations/diagnose', { method: 'POST', body: { organization_id: organizationId, ...body } })
 
+  const getTenantTimezone = (tenantId: number) => useAdminApi(`/admin/tenants/${tenantId}/timezone`)
+
+  const setTenantTimezone = (tenantId: number, payload: { scope: 'organization' | 'tenant'; tenant_id?: number; zone: string | null }) =>
+    useAdminApi(`/admin/tenants/${tenantId}/timezone`, { method: 'PUT', body: payload })
+
   return {
     renameOrganization, diagnoseOrganization, getTenants, setTenantStatus, getTenantUsers, setTenantUserStatus,
     updateTenantUser, addTenantUser, deleteTenantUser, getRolesSettings, setRolesToggles, setRolesGroup, resetRolesGroup,
@@ -142,5 +147,6 @@ export function useClientManagement() {
     getSyncHistory,
     getCompanyPeriod, updateCompanyPeriod,
     requestBackup, getLatestBackup, downloadBackup,
+    getTenantTimezone, setTenantTimezone,
   }
 }

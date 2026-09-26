@@ -16,6 +16,10 @@
                     <p class="text-sm mt-1" :class="isDark ? 'text-white/60' : 'text-black/50'">
                         {{ currentLang === 'ar' ? subtitle?.ar : subtitle?.en }}
                     </p>
+                    <p v-if="cardPeriod && (cardPeriod.from || cardPeriod.as_of)" class="text-xs mt-1" :class="isDark ? 'text-[#6FDBBF]' : 'text-[#00896F]'">
+                        <template v-if="cardPeriod.from">{{ currentLang === 'ar' ? 'عرض البيانات من' : 'Showing data from' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.from) }}</span> {{ currentLang === 'ar' ? 'إلى' : 'to' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.to) }}</span></template>
+                        <template v-else>{{ currentLang === 'ar' ? 'البيانات حتى تاريخ' : 'Showing data as of' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.as_of) }}</span></template>
+                    </p>
                 </div>
             </div>
 
@@ -96,7 +100,7 @@
 
                                     <VDatePicker v-else v-model="singleDate" :is-dark="isDark"
                                         :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
-                                        :min-date="minDate" :max-date="today" @update:model-value="handleSingleChange" />
+                                        :min-date="minDate" :max-date="today" :initial-page="singleDate ? undefined : currMonthPage" @update:model-value="handleSingleChange" />
                                 </div>
                                 <template v-else>
                                     <div v-for="period in periods" :key="period.en" class="relative group">
@@ -168,7 +172,7 @@
 
                                                 <VDatePicker v-else v-model="singleDate" :is-dark="isDark"
                                                     :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
-                                                    :min-date="minDate" :max-date="today" @update:model-value="handleSingleChange" />
+                                                    :min-date="minDate" :max-date="today" :initial-page="singleDate ? undefined : currMonthPage" @update:model-value="handleSingleChange" />
                                             </div>
                                         </div>
                                     </div>
@@ -292,7 +296,7 @@ const toDateFormatted = computed(() => {
 const fromDateLabel = computed(() => {
     return currentLang.value === 'ar' ? `منذ ${activePeriod.value} أشهر` : `${activePeriod.value} months ago`
 })
-const today = new Date()
+const today = orgTodayDate()
 
 const range = ref({ start: null, end: null })
 const singleDate = ref(null)
@@ -409,8 +413,9 @@ const handleClickOutside = (event) => {
     }
 }
 
+const cardPeriod = useState('cardPeriod', () => null)
 onMounted(() => { document.addEventListener('mousedown', handleClickOutside) })
-onUnmounted(() => { document.removeEventListener('mousedown', handleClickOutside) })
+onUnmounted(() => { document.removeEventListener('mousedown', handleClickOutside); cardPeriod.value = null })
 
 // Helper for active dropdown styling
 const getDropdownItemClass = (period) => {

@@ -84,7 +84,7 @@
                             </p>
                             <p style="font-weight: 400; font-size: 14px;"
                                 :style="isDark ? 'color: #ffffff;' : 'color: #101828;'">
-                                {{ appointment?.appointment_time || '—' }}
+                                {{ appointment?.appointment_time || '—' }}<template v-if="appointment?.timezone"> · {{ String(appointment.timezone).split('/').pop().replace(/_/g, ' ') }}</template>
                             </p>
                         </div>
 

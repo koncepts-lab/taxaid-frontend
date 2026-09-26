@@ -18,7 +18,7 @@
 
                     <CommonDashboardHeader :title="{ en: 'Accounts Receivable', ar: 'حسابات القبض' }"
             :subtitle="{ en: 'Accounts Receivable Dashboard', ar: 'لوحة معلومات حسابات القبض' }"
-            :periods="customPeriods" class="mb-8" :minDate="new Date(2026, 5, 15)" @selected-date="handleDateChange" @reload="handleReload" @export="exportOpen = true" @one-click-summary="handleOneClickSummary" />
+            :periods="customPeriods" class="mb-8" :minDate="calendarMinDate" @selected-date="handleDateChange" @reload="handleReload" @export="exportOpen = true" @one-click-summary="handleOneClickSummary" />
 
           <!-- Gap-day snapshot notice: shown when the selected date has no
                uploaded AR snapshot and the latest earlier upload is displayed -->
@@ -100,7 +100,18 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { activeDate, fetchAll, summary, topCustomers, agingGraph, historicalMovement, snapshotNotice, snapshotDate, requestedDate } = useAccountsReceivablePage()
+const { activeDate, fetchAll, summary, topCustomers, agingGraph, historicalMovement, snapshotNotice, snapshotDate, requestedDate, goLiveDate } = useAccountsReceivablePage()
+
+// Tenant users can't pick a date before go-live; TaxAid staff keep the old limit.
+const accountType = useCookie('account_type')
+const calendarMinDate = computed(() => {
+  if (accountType.value !== 'taxaid' && goLiveDate.value) {
+    const [y, m, d] = String(goLiveDate.value).slice(0, 10).split('-').map(Number)
+    return new Date(y, m - 1, d)
+  }
+  return new Date(2026, 5, 15)
+})
+
 
 const customPeriods = [
   // { en: 'Year to Date', ar: 'منذ بداية العام' }, // not supported — backend uses single test_date only

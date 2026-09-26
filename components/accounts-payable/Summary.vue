@@ -472,7 +472,7 @@ const handleHoldForReview = async (group) => {
     }
     // No success/cooldown banner — greyed rows + hover tooltip are the feedback.
     // Grey the invoices (sent OR already-on-cooldown) so the tooltip shows now.
-    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
+    const tomorrow = orgTodayDate(); tomorrow.setDate(tomorrow.getDate() + 1)
     const tISO = localIsoDate(tomorrow)
     getInvoices(group).forEach(i => {
       if (i.selected) { i.on_cooldown = true; i.next_reminder_date = tISO }

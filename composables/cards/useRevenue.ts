@@ -25,6 +25,7 @@ export const useRevenue = () => {
         useApi('revenue-analysis/top-10-customers',{ method: 'POST', body }) as any,
       ])
 
+      useState('cardPeriod').value = (breakdown as any)?.period ?? null
       breakdownRaw.value    = breakdown
       trendRaw.value        = trend
       topCustomersRaw.value = topCustomers

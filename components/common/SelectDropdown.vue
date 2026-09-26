@@ -22,7 +22,7 @@
         :class="menuClasses">
         <!-- Search -->
         <div v-if="searchable" class="px-2 pb-1">
-          <input ref="searchRef" type="text" v-model="search" placeholder="Search..." @keydown="onSearchKeydown"
+          <input ref="searchRef" type="text" v-model="search" :placeholder="searchPlaceholder" @keydown="onSearchKeydown"
             :class="searchClasses"
             class="w-full px-3 py-1.5 border rounded-md text-sm focus:ring-1 focus:ring-[#00896F] outline-none" />
         </div>
@@ -45,7 +45,7 @@
             <span v-if="hasHighlights" class="w-2.5 h-2.5 rounded-full shrink-0" :class="isHighlighted(opt.value) ? 'bg-[#04C18F]' : ''"></span>
             <span class="truncate">{{ opt.label }}</span>
           </button>
-          <p v-if="filteredOptions.length === 0" class="px-3 py-2 text-sm text-gray-400">No matches</p>
+          <p v-if="filteredOptions.length === 0" class="px-3 py-2 text-sm text-gray-400">{{ noMatchesLabel }}</p>
         </div>
       </div>
     </Teleport>
@@ -62,7 +62,8 @@
 //   placeholder / clear-label / disabled
 //   mode="select"        -> behaves like a native <select>: no empty option, 44px themed field,
 //                           dark-mode menu, keyboard (arrows/Home/End/Enter/Esc/type-ahead), ARIA, RTL.
-//                           Options may be strings or { value, label }; values may be numbers or null.
+//                           Options may be strings or { value, label, search? }; values may be numbers or null.
+//                           `search` is hidden text that also matches the search box (every word must match).
 //   size="md|sm|xs"       -> field/option size in select mode (44 / 38 / 30 px)
 //   :dark="bool"          -> force light/dark in select mode instead of following the theme
 //   invalid              -> red border in select mode
@@ -85,6 +86,8 @@ const props = defineProps({
   size: { type: String, default: 'md' },
   dark: { type: Boolean, default: undefined },
   invalid: { type: Boolean, default: false },
+  searchPlaceholder: { type: String, default: 'Search...' },
+  noMatchesLabel: { type: String, default: 'No matches' },
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -105,8 +108,8 @@ const showClear = computed(() => props.clearable && !search.value && !isSelect.v
 
 const normalized = computed(() => props.options.map((o) => (
   o !== null && typeof o === 'object'
-    ? { value: o.value, label: String(o.label ?? o.value) }
-    : { value: o, label: String(o) }
+    ? { value: o.value, label: String(o.label ?? o.value), search: String(o.search ?? '') }
+    : { value: o, label: String(o), search: '' }
 )))
 
 const hasValue = computed(() => props.modelValue !== '' && props.modelValue !== null && props.modelValue !== undefined)
@@ -192,6 +195,13 @@ const isHighlighted = (value) => value !== '' && value != null && props.highligh
 const filteredOptions = computed(() => {
   const q = search.value.trim().toLowerCase()
   if (!q) return normalized.value
+  if (isSelect.value) {
+    const tokens = q.split(/\s+/)
+    return normalized.value.filter((opt) => {
+      const haystack = `${opt.label} ${opt.search}`.toLowerCase()
+      return tokens.every((token) => haystack.includes(token))
+    })
+  }
   return normalized.value.filter((opt) => opt.label.toLowerCase().includes(q))
 })
 
@@ -231,9 +241,8 @@ const openMenu = async () => {
   if (props.searchable) {
     await nextTick()
     searchRef.value?.focus()
-  } else if (isSelect.value) {
-    scrollActive()
   }
+  if (isSelect.value) scrollActive()
 }
 
 const toggle = async () => {

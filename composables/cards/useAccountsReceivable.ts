@@ -6,10 +6,7 @@
  * Shared state: activeDate is global so the page and all components stay in sync.
  */
 
-const todayYMD = () => {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
+const todayYMD = () => orgToday()
 
 export const arActiveDate = ref(todayYMD())
 
@@ -35,6 +32,7 @@ const _error              = ref<string | null>(null)
 const _snapshotDate   = ref<string | null>(null)
 const _requestedDate  = ref<string | null>(null)
 const _snapshotNotice = ref(false)
+const _goLiveDate     = ref<string | null>(null)
 
 async function fetchAll() {
   _loading.value = true
@@ -45,6 +43,9 @@ async function fetchAll() {
   try {
     // 1. Summary table (/ar-report)
     const summaryRes: any = await useApi(`/ar-report?test_date=${date}${strict}`)
+
+    _goLiveDate.value = summaryRes?.go_live_date ?? null
+    useState('cardPeriod').value = summaryRes?.period ?? null
 
     if (ENABLE_SNAPSHOT_FALLBACK && summaryRes?.snapshot_date) {
       _requestedDate.value  = summaryRes.requested_date ?? date
@@ -178,6 +179,7 @@ export function useAccountsReceivablePage() {
     snapshotDate:       _snapshotDate,
     requestedDate:      _requestedDate,
     snapshotNotice:     _snapshotNotice,
+    goLiveDate:         _goLiveDate,
     fetchAll,
     sendReminders,
   }

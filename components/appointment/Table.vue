@@ -27,7 +27,7 @@
                     <td class="px-6 py-4">
                         <div class="flex flex-row gap-[10px] items-center">
                             <span class="text-[14px] font-medium" :class="isDark ? 'text-white' : 'text-[#111111]'">{{ formatDate(item.appointment_date) }}</span>
-                            <span class="text-[12px] opacity-60" :class="isDark ? 'text-white' : 'text-[#111111]'">{{ item.appointment_time }}</span>
+                            <span class="text-[12px] opacity-60" :class="isDark ? 'text-white' : 'text-[#111111]'">{{ item.appointment_time }}<template v-if="item.timezone"> · {{ String(item.timezone).split('/').pop().replace(/_/g, ' ') }}</template></span>
                         </div>
                     </td>
 

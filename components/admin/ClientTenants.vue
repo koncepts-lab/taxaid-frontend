@@ -48,6 +48,9 @@
 
       <div v-if="orgSubtab === 'organization'" class="mt-4">
         <AdminOrgTenantsCard :key="'org-' + selectedOrgId + '-' + tenantsReload" :organization-id="selectedOrgId" :can-rename="isSuperAdmin" @rename="openRename" @open-tenant="openTenant" @changed="loadOrg(selectedOrgId)" />
+
+        <AdminOrgTimezone v-if="representativeTenantId" :key="'org-tz-' + selectedOrgId" class="mt-4"
+          :tenant-id="representativeTenantId" />
       </div>
 
       <AdminClientStatusUsers v-else-if="orgSubtab === 'users' && representativeTenantId" :key="selectedOrgId"

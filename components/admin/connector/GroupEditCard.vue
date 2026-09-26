@@ -22,7 +22,8 @@
             </span>
           </span>
         </label>
-        <AdminConnectorTimeWheelPicker v-model="draft.sync_time" :is24-hour="is24Hour" />
+        <div v-if="showDefault" class="rounded-[8px] border border-[#04C18F33] px-3 py-2 text-[14px] min-w-[110px]">{{ shown(draft.sync_time) }}</div>
+        <AdminConnectorTimeWheelPicker v-else v-model="draft.sync_time" :is24-hour="is24Hour" />
       </div>
       <div>
         <label class="flex items-center gap-1.5 text-[13px] font-medium mb-1">
@@ -35,7 +36,8 @@
           </span>
         </label>
         <div class="flex items-center gap-3">
-          <AdminConnectorTimeWheelPicker v-model="draft.cycle_2_time" :is24-hour="is24Hour" />
+          <div v-if="showDefault" class="rounded-[8px] border border-[#04C18F33] px-3 py-2 text-[14px] min-w-[110px]">{{ shown(draft.cycle_2_time) }}</div>
+          <AdminConnectorTimeWheelPicker v-else v-model="draft.cycle_2_time" :is24-hour="is24Hour" />
           <label class="flex items-center gap-1.5 text-[12px] text-gray-600 whitespace-nowrap cursor-pointer">
             <input type="checkbox" v-model="draft.cycle_2_enabled" class="w-4 h-4 accent-[#00896F] cursor-pointer" />
             Enabled
@@ -55,7 +57,9 @@
         <input v-model.number="draft.reconciliation_interval_minutes"
                type="number" min="1" class="w-32 rounded-[8px] border border-[#04C18F33] px-3 py-2 text-[14px]" />
       </div>
-      <div class="text-[13px] text-gray-500 pb-2.5">{{ group.erp_connections_count ?? 0 }} tenant(s)</div>
+      <div class="text-[13px] pb-2.5 whitespace-nowrap" :class="isDark ? 'text-white/80' : 'text-[#111111]'">
+        <span class="font-medium">Total Tenants :</span> <span class="font-semibold">{{ group.erp_connections_count ?? 0 }}</span>
+      </div>
       <div class="ml-auto flex items-center gap-2">
         <button v-if="showDelete" @click="$emit('delete')"
                 class="px-4 py-2.5 rounded-[10px] border border-red-300 text-red-500 text-[13px] font-medium hover:bg-red-50 transition-colors cursor-pointer">
@@ -70,6 +74,7 @@
         </div>
       </div>
     </div>
+    <div class="flex items-start gap-8">
     <div>
       <label class="flex items-center gap-1.5 text-[13px] font-medium mb-1">
         Scheduled Full Sync
@@ -84,6 +89,25 @@
         :frequency="draft.full_sync_frequency" :day="draft.full_sync_day"
         @update:frequency="onFrequencyChange"
         @update:day="draft.full_sync_day = $event" />
+    </div>
+    <div class="shrink-0">
+      <label class="flex items-center gap-2 text-[13px] font-medium mb-1">
+        Time zone
+        <label v-if="offDefault" class="flex items-center gap-1.5 text-[12px] font-normal text-gray-600 cursor-pointer">
+          <input type="checkbox" v-model="showDefault" class="w-4 h-4 accent-[#00896F] cursor-pointer" />
+          Show in {{ zoneLabel(group.default_timezone) }} time
+        </label>
+      </label>
+      <div class="flex flex-wrap items-center gap-2">
+        <span v-for="z in zoneTags" :key="z.zone"
+              class="px-3 py-1 rounded-full text-[14px] font-medium whitespace-nowrap"
+              :class="z.majority
+                ? (isDark ? 'bg-[#04C18F]/20 text-[#6FDBBF]' : 'bg-[#DFF7EC] text-[#0B7A55]')
+                : (isDark ? 'bg-[#FDE68A]/15 text-[#FDE68A]' : 'bg-[#FEF9C3] text-[#854D0E]')">
+          {{ zoneLabel(z.zone) }}<template v-if="!z.majority && z.count > 1"> · {{ z.count }}</template>
+        </span>
+      </div>
+    </div>
     </div>
     <div>
       <label class="block text-[13px] font-medium mb-1">Notes</label>
@@ -107,6 +131,30 @@ const props = defineProps({
 const emit = defineEmits(['save', 'delete'])
 
 const { isDark } = useTheme()
+
+const zoneTags = computed(() => props.group.member_zones?.length
+  ? props.group.member_zones
+  : [{ zone: props.group.timezone || 'Asia/Dubai', count: 0, majority: true }])
+const groupZone = computed(() => zoneTags.value.find(z => z.majority)?.zone || props.group.timezone)
+const offDefault = computed(() => !!props.group.default_timezone && groupZone.value !== props.group.default_timezone)
+const showDefault = ref(false)
+
+function offsetMinutes(zone) {
+  const part = new Intl.DateTimeFormat('en-US', { timeZone: zone, timeZoneName: 'longOffset' }).formatToParts(new Date()).find(p => p.type === 'timeZoneName')?.value || 'GMT'
+  const m = part.match(/GMT([+-])(\d{2}):?(\d{2})?/)
+  return m ? (m[1] === '-' ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3] || 0)) : 0
+}
+
+function shown(hhmm) {
+  const [h, m] = String(hhmm || '00:00').split(':').map(Number)
+  const total = (((h * 60 + m - offsetMinutes(groupZone.value) + offsetMinutes(props.group.default_timezone)) % 1440) + 1440) % 1440
+  const hh = Math.floor(total / 60)
+  const mm = String(total % 60).padStart(2, '0')
+  if (props.is24Hour) return `${String(hh).padStart(2, '0')}:${mm}`
+  return `${hh % 12 || 12}:${mm} ${hh < 12 ? 'AM' : 'PM'}`
+}
+
+const zoneLabel = (zone) => String(zone).split('/').pop().replace(/_/g, ' ')
 
 function onFrequencyChange(frequency) {
   props.draft.full_sync_frequency = frequency

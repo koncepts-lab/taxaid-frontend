@@ -77,15 +77,34 @@
         <h3 class="text-[16px] font-semibold">{{ editing.label }}</h3>
         <p class="text-[13px] mt-1 mb-4" :class="dark ? 'text-white/60' : 'text-gray-500'">{{ editing.description }}</p>
 
-        <div v-if="editing.type === 'role_bool'" class="space-y-2 mb-4">
-          <label v-for="role in roles" :key="role" class="flex items-center gap-3 text-sm">
+        <div v-if="editing.group === 'permission.timezone'" class="mb-4">
+          <div class="flex items-center justify-between gap-4 text-sm">
+            <span>{{ mode === 'org' ? 'Master can edit time zone for this organization' : 'Master can edit time zone (global switch)' }}</span>
+            <button type="button" role="switch" :aria-checked="!!editing.form.master_user"
+              @click="editing.form.master_user = !editing.form.master_user"
+              class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer"
+              :class="editing.form.master_user ? 'bg-[#00896F]' : (dark ? 'bg-white/20' : 'bg-gray-300')">
+              <span class="inline-block h-5 w-5 rounded-full bg-white shadow transition-transform"
+                :class="editing.form.master_user ? 'translate-x-[22px]' : 'translate-x-0.5'"></span>
+            </button>
+          </div>
+          <p v-if="mode === 'org' && editing.items?.[0]?.default_value === false" class="text-[12px] mt-2 text-amber-500">
+            Turned off in the global defaults, so this organization's switch is ignored until the global switch is on.
+          </p>
+          <p v-else-if="mode === 'global'" class="text-[12px] mt-2" :class="dark ? 'text-white/50' : 'text-gray-400'">
+            When off, no master can edit the time zone and each organization's own switch is ignored. Organization switches are not changed.
+          </p>
+        </div>
+
+        <div v-else-if="editing.type === 'role_bool'" class="space-y-2 mb-4">
+          <label v-for="role in rolesOf(editing)" :key="role" class="flex items-center gap-3 text-sm">
             <input type="checkbox" v-model="editing.form[role]" class="w-5 h-5 accent-[#00896F]" />
             {{ roleLabel(role, lang) }}
           </label>
         </div>
 
         <div v-else-if="editing.type === 'role_number'" class="space-y-2 mb-4">
-          <div v-for="role in roles" :key="role" class="flex items-center justify-between gap-3 text-sm">
+          <div v-for="role in rolesOf(editing)" :key="role" class="flex items-center justify-between gap-3 text-sm">
             <span>{{ roleLabel(role, lang) }}</span>
             <input v-model="editing.form[role]" type="number" min="0" placeholder="No limit"
               class="w-28 px-3 py-1.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
@@ -97,7 +116,7 @@
             class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
         </div>
 
-        <label v-if="mode === 'org' && !editing.group.startsWith('limit.')" class="flex items-center justify-between gap-4 text-sm mb-4">
+        <label v-if="mode === 'org' && !editing.group.startsWith('limit.') && editing.group !== 'permission.timezone'" class="flex items-center justify-between gap-4 text-sm mb-4">
           <span>
             Master can see this
             <span class="block text-[12px] text-gray-400">Only applies when Master can edit permissions is on.</span>
@@ -199,11 +218,17 @@ const debouncedLoad = () => {
   timer = setTimeout(() => load(1), 300)
 }
 
+const rolesOf = (row) => {
+  const own = (row.items || []).map((i) => i.role).filter(Boolean)
+  return own.length ? own : roles.value
+}
+
 const openEdit = (row) => {
   modalError.value = ''
   const form = {}
-  if (row.type === 'role_bool') roles.value.forEach((r) => { form[r] = asBool(currentOf(row.items.find((i) => i.role === r) ?? {})) })
-  else if (row.type === 'role_number') roles.value.forEach((r) => {
+  if (row.group === 'permission.timezone' && props.mode === 'org') form.master_user = row.items[0]?.org_value == null ? true : asBool(row.items[0].org_value)
+  else if (row.type === 'role_bool') rolesOf(row).forEach((r) => { form[r] = asBool(currentOf(row.items.find((i) => i.role === r) ?? {})) })
+  else if (row.type === 'role_number') rolesOf(row).forEach((r) => {
     const v = currentOf(row.items.find((i) => i.role === r) ?? {})
     form[r] = v ?? ''
   })
@@ -215,13 +240,13 @@ const buildPayload = () => {
   const row = editing.value
   const payload = {}
   if (row.type === 'role_bool') {
-    payload.values = Object.fromEntries(roles.value.map((r) => [r, !!row.form[r]]))
+    payload.values = Object.fromEntries(rolesOf(row).map((r) => [r, !!row.form[r]]))
   } else if (row.type === 'role_number') {
-    payload.values = Object.fromEntries(roles.value.map((r) => [r, row.form[r] === '' || row.form[r] === null ? null : Number(row.form[r])]))
+    payload.values = Object.fromEntries(rolesOf(row).map((r) => [r, row.form[r] === '' || row.form[r] === null ? null : Number(row.form[r])]))
   } else {
     payload.value = row.form.value === '' || row.form.value === null ? null : Number(row.form.value)
   }
-  if (props.mode === 'org' && !row.group.startsWith('limit.') && row.group !== 'limit.users.total') payload.is_admin_default = !row.visible
+  if (props.mode === 'org' && !row.group.startsWith('limit.') && row.group !== 'limit.users.total' && row.group !== 'permission.timezone') payload.is_admin_default = !row.visible
   return payload
 }
 

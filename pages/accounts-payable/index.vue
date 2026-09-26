@@ -21,7 +21,7 @@
             :subtitle="{ en: 'Comprehensive AP tracking and aging insights', ar: 'تتبع شامل لحسابات الدفع ورؤى التقادم' }" 
             :periods="customPeriods"
             class="mb-8"
-            :minDate="new Date(2026, 5, 15)"
+            :minDate="calendarMinDate"
             @selected-date="handleDateChange"
             @reload="handleReload"
             @export="exportOpen = true"
@@ -103,7 +103,18 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { activeDate, fetchAll, summary, agingData, topCustomers, timelineData, snapshotNotice, snapshotDate, requestedDate } = useAccountsPayablePage()
+const { activeDate, fetchAll, summary, agingData, topCustomers, timelineData, snapshotNotice, snapshotDate, requestedDate, goLiveDate } = useAccountsPayablePage()
+
+// Tenant users can't pick a date before go-live; TaxAid staff keep the old limit.
+const accountType = useCookie('account_type')
+const calendarMinDate = computed(() => {
+  if (accountType.value !== 'taxaid' && goLiveDate.value) {
+    const [y, m, d] = String(goLiveDate.value).slice(0, 10).split('-').map(Number)
+    return new Date(y, m - 1, d)
+  }
+  return new Date(2026, 5, 15)
+})
+
 
 const customPeriods = [
     // { en: 'Year to Date', ar: 'منذ بداية العام' }, // not supported — backend uses single test_date only
