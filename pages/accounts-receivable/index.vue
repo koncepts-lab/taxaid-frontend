@@ -35,24 +35,24 @@
           <AccountsReceivableAlert />
 
           <div class="mb-4 lg:mb-8">
-            <AccountsReceivableSummary :data="summary" :testDate="activeDate" />
+            <AccountsReceivableSummary :data="summary" :testDate="activeDate" :loading="showSkeleton" />
           </div>
 
           <div class="mb-4 lg:mb-8">
             <div class="h-[600px]">
-              <AccountsReceivableTopCustomers :data="topCustomers" />
+              <AccountsReceivableTopCustomers :data="topCustomers" :loading="showSkeleton" />
             </div>
           </div>
 
           <div class="mb-4 lg:mb-8">
             <div class="h-[420px]">
-              <AccountsReceivableHistoricalMovement :data="historicalMovement" />
+              <AccountsReceivableHistoricalMovement :data="historicalMovement" :loading="showSkeleton" />
             </div>
           </div>
 
           <div>
             <div class="lg:h-[440px] h-[440px]">
-              <AccountsReceivableAgingGraph :agingData="agingGraph" />
+              <AccountsReceivableAgingGraph :agingData="agingGraph" :loading="showSkeleton" />
             </div>
           </div>
 
@@ -100,7 +100,7 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { activeDate, fetchAll, summary, topCustomers, agingGraph, historicalMovement, snapshotNotice, snapshotDate, requestedDate, goLiveDate } = useAccountsReceivablePage()
+const { loading, activeDate, fetchAll, summary, topCustomers, agingGraph, historicalMovement, snapshotNotice, snapshotDate, requestedDate, goLiveDate } = useAccountsReceivablePage()
 
 // Tenant users can't pick a date before go-live; TaxAid staff keep the old limit.
 const accountType = useCookie('account_type')
@@ -133,11 +133,14 @@ const handleDateChange = (period) => {
 
 const handleReload = () => fetchAll()
 
+const firstLoad = ref(true)
+const showSkeleton = computed(() => loading.value || firstLoad.value)
+
 const { openOneClickSummary } = useAkeel()
 const handleOneClickSummary = () => openOneClickSummary('AR', 'onclick_ar')
 
 onMounted(() => {
-  fetchAll()
+  fetchAll().finally(() => { firstLoad.value = false })
   useLocation().syncSessionLocation()
   useNotificationSettings().syncWebPush()
 })

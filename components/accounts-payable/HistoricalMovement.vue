@@ -9,7 +9,7 @@
         <h2 class="text-[17px] font-medium leading-tight">{{ currentLang === 'ar' ? 'حركة حسابات الدفع التاريخية' :
           'AP balances historical movement' }}</h2>
         <p class="text-[13px] font-normal mt-1" :class="isDark ? 'text-white opacity-60' : 'text-[#00000091]'">{{
-          currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+          currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}</p>
       </div>
       <div class="flex items-center gap-6">
         <!-- Custom Legend -->
@@ -56,7 +56,7 @@
               <h2 class="text-lg font-medium leading-tight" :class="isDark ? 'text-white' : 'text-[#013e32]'">{{
                 currentLang === 'ar' ? 'حركة حسابات الدفع التاريخية' : 'AP balances historical movement' }}</h2>
               <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang
-                === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+                === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}</p>
             </div>
             <div class="flex items-center gap-6">
               <!-- Custom Legend -->

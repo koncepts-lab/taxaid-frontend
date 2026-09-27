@@ -1179,6 +1179,16 @@
             {{ corsReport.message }}
           </div>
 
+          <div v-if="corsSchemeChoices.length" class="p-3 rounded-[10px] text-xs shrink-0 border" :class="isDark ? 'border-white/15 bg-white/5' : 'border-[#04C18F33] bg-[#F0FFFB]'">
+            <p class="mb-2 font-medium">This is a local or IP address. Is it http or https? Pick the correct one.</p>
+            <div class="flex flex-wrap gap-2">
+              <button v-for="choice in corsSchemeChoices" :key="choice" @click="pickCorsScheme(choice)" :disabled="corsSaving"
+                class="px-3 py-1.5 rounded-[8px] border font-mono text-[12px] cursor-pointer transition disabled:opacity-50"
+                :class="isDark ? 'border-white/20 hover:bg-white/10' : 'border-[#007C65]/40 hover:bg-[#007C65]/10'">{{ choice }}</button>
+              <button @click="corsSchemeChoices = []" class="px-3 py-1.5 rounded-[8px] border text-[12px] cursor-pointer opacity-70" :class="isDark ? 'border-white/20' : 'border-gray-300'">Cancel</button>
+            </div>
+          </div>
+
           <div class="space-y-2 overflow-y-auto pr-1 min-h-0">
             <div
               v-for="row in corsOrigins"
@@ -1935,6 +1945,7 @@ const corsOrigins = ref([])
 const corsNewOrigin = ref('')
 const corsSaving = ref(false)
 const corsReport = ref(null)
+const corsSchemeChoices = ref([])
 
 async function loadCorsSettings() {
   try {
@@ -1949,16 +1960,26 @@ async function submitAddCorsOrigin() {
   if (!corsNewOrigin.value.trim()) return
   corsSaving.value = true
   corsReport.value = null
+  corsSchemeChoices.value = []
   try {
     await addCorsOrigin(corsNewOrigin.value.trim())
     corsNewOrigin.value = ''
     corsReport.value = { success: true, message: 'Origin added.' }
     await loadCorsSettings()
   } catch (err) {
-    corsReport.value = { success: false, message: err?.data?.error || err?.data?.message || 'Failed to add origin.' }
+    if (err?.data?.code === 'confirm_scheme') {
+      corsSchemeChoices.value = err.data.suggestions ?? []
+    } else {
+      corsReport.value = { success: false, message: err?.data?.error || err?.data?.message || 'Failed to add origin.' }
+    }
   } finally {
     corsSaving.value = false
   }
+}
+
+async function pickCorsScheme(choice) {
+  corsNewOrigin.value = choice
+  await submitAddCorsOrigin()
 }
 
 async function removeCorsOrigin(id) {

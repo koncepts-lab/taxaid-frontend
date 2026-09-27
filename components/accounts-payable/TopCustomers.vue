@@ -7,7 +7,7 @@
       <div class="flex flex-col">
         <h2 class="text-[16px] font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات الدفع' :
           'Top Account Payable customer wise' }}</h2>
-        <p class="text-[12px] font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+        <p class="text-[12px] font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}</p>
       </div>
       <div class="flex items-center gap-6">
         <div class="flex items-center gap-6 text-[14px] font-regular">
@@ -63,7 +63,7 @@
             <div class="flex flex-col">
               <h2 class="text-lg font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات الدفع' :
                 'Top Account Payable customer wise' }}</h2>
-              <p class="text-xs font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+              <p class="text-xs font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}</p>
             </div>
             <div class="flex items-center gap-6">
               <div class="flex items-center gap-6 text-[14px] font-regular">

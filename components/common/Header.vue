@@ -261,9 +261,9 @@
           </div>
 
           <div class="mt-6 pt-4 border-t border-gray-100 flex justify-center items-center gap-4 text-xs text-gray-400">
-            <NuxtLink to="/privacy">{{ currentLang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' }}</NuxtLink>
+            <NuxtLink to="/legal/privacy">{{ currentLang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' }}</NuxtLink>
             <span class="h-3 w-px bg-gray-300"></span>
-            <NuxtLink to="/terms">{{ currentLang === 'ar' ? 'شروط الخدمة' : 'Terms of Service' }}</NuxtLink>
+            <NuxtLink to="/legal/terms">{{ currentLang === 'ar' ? 'شروط الخدمة' : 'Terms of Service' }}</NuxtLink>
           </div>
         </div>
       </div>

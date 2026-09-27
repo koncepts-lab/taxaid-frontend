@@ -9,7 +9,7 @@
           {{ currentLang === 'ar' ? 'الرسم البياني حسب التقادم' : 'Graph based on aging' }}
         </h2>
         <p class="text-[12px] font-regular mt-1 opacity-80">
-          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+          {{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}
         </p>
       </div>
       <div class="flex items-center gap-6">
@@ -66,7 +66,7 @@
                 {{ currentLang === 'ar' ? 'الرسم البياني حسب التقادم' : 'Graph based on aging' }}
               </h2>
               <p class="text-xs font-regular mt-1 opacity-80">
-                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+                {{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}
               </p>
             </div>
             <div class="flex items-center gap-6">

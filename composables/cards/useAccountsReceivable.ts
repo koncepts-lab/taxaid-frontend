@@ -95,6 +95,8 @@ async function fetchAll() {
         name:    c.customer,
         nameAr:  c.customer,
         value:   parseFloat((c.value / 1_000_000).toFixed(2)),
+        valueRaw: Number(c.value) || 0,
+        percentage: c.percentage ?? '0%',
       }))
 
       let running = 0
@@ -135,7 +137,10 @@ async function fetchAll() {
         totalCurrent > 0 ? Math.round(((b.value ?? 0) / totalCurrent) * 100) : 0
       )
 
-      _agingGraph.value = { agingCategories: categories, percentOfTotal, previousYearData, currentYearData, cumulativeData }
+      const previousYearRaw = previous.map((b: any) => Number(b.value) || 0)
+      const currentYearRaw  = current.map((b: any) => Number(b.value) || 0)
+
+      _agingGraph.value = { agingCategories: categories, percentOfTotal, previousYearData, currentYearData, previousYearRaw, currentYearRaw, cumulativeData }
     }
 
     // 4. Historical movement (/ar-report/timeline)
@@ -150,7 +155,9 @@ async function fetchAll() {
       const arBalance  = ranges.map((r: any) => parseFloat(((r.ar_value ?? 0) / 1_000_000).toFixed(2)))
       const percentage = ranges.map(() => 0)
 
-      _historicalMovement.value = { categories, arBalance, percentage }
+      const arBalanceRaw = ranges.map((r: any) => Number(r.ar_value ?? 0))
+
+      _historicalMovement.value = { categories, arBalance, arBalanceRaw, percentage }
     }
 
   } catch (e: any) {

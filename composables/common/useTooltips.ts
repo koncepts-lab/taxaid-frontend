@@ -40,6 +40,22 @@ export const TOOLTIPS: Record<string, { en: string; ar: string }> = {
     en: 'Profit as a percentage of revenue.',
     ar: 'الربح كنسبة مئوية من الإيرادات.',
   },
+  'accountsReceivable.summary': {
+    en: 'Outstanding receivables per customer, split into aging buckets (days overdue) as of the selected date, with a total row. Click a customer to see its invoices and send payment reminders.',
+    ar: 'المبالغ المستحقة لكل عميل موزعة على فئات التقادم (أيام التأخر) حتى التاريخ المحدد، مع صف الإجمالي. اضغط على عميل لعرض فواتيره وإرسال تذكيرات الدفع.',
+  },
+  'accountsReceivable.topCustomers': {
+    en: 'The customers with the largest outstanding receivables as of the selected date. The line shows the cumulative share of total accounts receivable.',
+    ar: 'العملاء الذين لديهم أكبر المبالغ المستحقة حتى التاريخ المحدد. يوضح الخط النسبة التراكمية من إجمالي حسابات القبض.',
+  },
+  'accountsReceivable.historical': {
+    en: 'Total accounts receivable balance for each month, showing how the amount owed by customers has moved over time.',
+    ar: 'إجمالي رصيد حسابات القبض لكل شهر، ويوضح كيف تغيرت المبالغ المستحقة على العملاء مع الوقت.',
+  },
+  'accountsReceivable.aging': {
+    en: 'Outstanding receivables grouped by how many days overdue they are, compared with an earlier date. The line shows the cumulative share of total accounts receivable.',
+    ar: 'المبالغ المستحقة مجمعة حسب عدد أيام التأخر ومقارنة بتاريخ سابق. يوضح الخط النسبة التراكمية من إجمالي حسابات القبض.',
+  },
   'accountsPayable.summary': {
     en: 'Outstanding payables per vendor, split into aging buckets (days overdue) as of the selected date, with a total row. Click a vendor to see its invoices.',
     ar: 'المبالغ المستحقة لكل مورد موزعة على فئات التقادم (أيام التأخر) حتى التاريخ المحدد، مع صف الإجمالي. اضغط على مورد لعرض فواتيره.',

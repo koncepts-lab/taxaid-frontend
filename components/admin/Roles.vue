@@ -55,7 +55,7 @@
         <button @click="setTab('Tenants Management')" :class="activeTab === 'Tenants Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Organization Management</button>
         <button @click="setTab('AI Settings')" :class="activeTab === 'AI Settings' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">AI Settings</button>
         <button @click="setTab('Organizations'); if (!organizationsLoaded) loadOrganizations()" :class="activeTab === 'Organizations' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">New User Requests</button>
-        <button @click="setTab('Roles & Settings')" :class="activeTab === 'Roles & Settings' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Roles & Settings</button>
+        <button @click="setTab('Roles & Settings')" :class="activeTab === 'Roles & Settings' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Roles and Permissions</button>
       </div>
 
       <!-- VM status badge → click opens detail modal -->
@@ -480,7 +480,8 @@
 
     <!-- AI Settings — global instructions, kill switch, catalog, chat prompts -->
     <div v-else-if="activeTab === 'Roles & Settings'">
-      <AdminRolesAndSettingsGroupsTable mode="global" title="Roles & Settings" subtitle="Global defaults every organization uses unless it has its own override." class="mt-4" />
+      <AdminRolesAndSettingsGroupsTable mode="global" title="Permission Settings" subtitle="Global defaults every organization uses unless it has its own override." class="mt-4" />
+      <AdminRolesAndSettingsCmsContent class="mt-6" />
     </div>
 
     <div v-else-if="activeTab === 'AI Settings'">

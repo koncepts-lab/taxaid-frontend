@@ -3,7 +3,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const adminToken = useCookie('admin_token')
   const rpToken    = useCookie('rp_token')
 
-  const publicPages   = ['/', '/home', '/taxaid-partnership-login', '/verify-email', '/ad-aqnz-pro-auth-78z46', '/admin-reset-password', '/reset-password','/ticketing/ticketing-dashboard', '/connector']
+  const publicPages   = ['/', '/home', '/taxaid-partnership-login', '/verify-email', '/ad-aqnz-pro-auth-78z46', '/admin-reset-password', '/reset-password','/connector']
   const adminPrefixes = ['/admin']
   const rpPrefixes    = ['/taxaid-partner']
 

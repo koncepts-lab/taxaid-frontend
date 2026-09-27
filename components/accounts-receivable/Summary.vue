@@ -9,11 +9,12 @@
         <p class="text-[12px] font-normal" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
           {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED' }}
         </p>
+        <CommonInfoTooltip tip="accountsReceivable.summary" align="right" />
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon" class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100" @click="isModalOpen = true" />
       </div>
     </div>
 
-    <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative">
+    <div class="w-full max-w-full overflow-auto custom-scrollbar relative" :style="scrollStyle">
       <table class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1000px] table-fixed">
         <colgroup>
             <col style="width: 25%" />
@@ -23,7 +24,7 @@
             <col style="width: 15%" />
             <col style="width: 15%" />
         </colgroup>
-        <thead class="text-white lg:sticky lg:top-[32px] z-20" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+        <thead class="text-white sticky top-0 z-20" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
           <tr class="transition-all duration-500">
             <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
             <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">
@@ -43,12 +44,18 @@
           </tr>
         </thead>
         <tbody>
-          <template v-for="group in paginatedData" :key="group.label">
+          <template v-if="loading">
+            <tr v-for="n in FIXED_ROWS" :key="'sk' + n" class="border-b animate-pulse" :class="isDark ? 'border-white/5' : 'border-gray-100'">
+              <td class="px-8 py-5"><div class="h-[14px] rounded" :class="[isDark ? 'bg-white/10' : 'bg-gray-200', n % 2 ? 'w-40' : 'w-56']"></div></td>
+              <td v-for="c in 5" :key="c" class="px-6 py-5"><div class="h-[14px] w-16 ml-auto rtl:ml-0 rtl:mr-auto rounded" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+            </tr>
+          </template>
+          <template v-for="group in (loading ? [] : arData)" :key="group.label">
             <!-- Main Group Row -->
             <tr :class="[
                 isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100',
                 'text-[14px] font-medium transition-all duration-500',
-                expandedGroups.includes(group.label) ? 'lg:sticky lg:top-[92px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : ''
+                expandedGroups.includes(group.label) ? 'sticky top-[60px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : ''
               ]">
               <td class="px-8 py-5" :class="isDark ? 'text-white' : 'text-[#000]'">
                 <div class="flex items-center gap-2 cursor-pointer" @click="toggleGroup(group)">
@@ -143,9 +150,12 @@
               </td>
             </tr>
           </template>
+          <tr v-if="fillerHeight" aria-hidden="true">
+            <td colspan="6" class="p-0" :style="{ height: `${fillerHeight}px` }"></td>
+          </tr>
         </tbody>
         <tfoot>
-          <tr :class="isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]'" class="transition-all duration-500 text-[14px] font-medium">
+          <tr v-if="!loading" :class="isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]'" class="transition-all duration-500 text-[14px] font-medium sticky bottom-0 z-10">
             <td class="px-8 py-5" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
             <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.total) }}</td>
             <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age30) }}</td>
@@ -155,37 +165,6 @@
           </tr>
         </tfoot>
       </table>
-    </div>
-
-    <!-- Pagination -->
-    <div v-if="paginatedData.length > 0" class="lg:py-6 py-4 px-4 lg:px-8 flex flex-wrap items-center justify-between gap-3">
-        <span class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-500'">
-            {{ currentLang === 'ar' ? 'عرض' : 'Showing' }} {{ pageStart }}–{{ pageEnd }} {{ currentLang === 'ar' ? 'من' : 'of' }} {{ totalItems }} {{ currentLang === 'ar' ? 'النتائج' : 'results' }}
-        </span>
-        <div class="flex items-center gap-1.5">
-            <button @click="goToPage(currentPage - 1)"
-                :disabled="currentPage <= 1"
-                class="px-3 py-1.5 rounded-lg border text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                :class="isDark ? 'border-white/10 text-white/80 bg-[#1a1a1a] hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
-                {{ currentLang === 'ar' ? 'السابق' : 'Previous' }}
-            </button>
-            <button v-for="p in visiblePages" :key="p"
-                @click="goToPage(p)"
-                :class="[
-                    p === currentPage
-                        ? (isDark ? 'bg-[#00896F] text-white border-[#00896F]' : 'bg-[#00896F] text-white border-[#00896F]')
-                        : (isDark ? 'bg-[#1a1a1a] text-white/80 border-white/10 hover:bg-white/10' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'),
-                    'w-8 h-8 flex items-center justify-center rounded-lg border text-sm font-medium transition-all'
-                ]">
-                {{ p }}
-            </button>
-            <button @click="goToPage(currentPage + 1)"
-                :disabled="currentPage >= totalPages"
-                class="px-3 py-1.5 rounded-lg border text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                :class="isDark ? 'border-white/10 text-white/80 bg-[#1a1a1a] hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
-                {{ currentLang === 'ar' ? 'التالي' : 'Next' }}
-            </button>
-        </div>
     </div>
 
     <Teleport to="body">
@@ -354,7 +333,8 @@ import { ref, reactive, computed, onMounted } from 'vue'
 
 const props = defineProps({
   data:     { type: Array,  default: () => [] },
-  testDate: { type: String, default: '' }
+  testDate: { type: String, default: '' },
+  loading:  { type: Boolean, default: false }
 })
 
 const { isDark } = useTheme()
@@ -370,39 +350,27 @@ const invoiceHasEmail = ref({}) // has_email per customer label, from /ar-report
 const sendingKey     = ref(null) // label of the company currently sending (per-group)
 const sendStatus     = reactive({ type: '', message: '' })
 
-const currentPage = ref(1)
-const itemsPerPage = 10
+const ROW_HEIGHT = 60
+const FIXED_ROWS = 6
+const MAX_ROWS = 10
 
 const arData = computed(() => props.data)
 
-const totalItems = computed(() => arData.value.length)
-const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage))
-
-const paginatedData = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage
-    const end = start + itemsPerPage
-    return arData.value.slice(start, end)
+// Header and total row count as one row each; expanded invoices lift the cap so the table grows.
+const scrollStyle = computed(() => {
+  const n = arData.value.length
+  if (props.loading) return { minHeight: `${(FIXED_ROWS + 2) * ROW_HEIGHT}px` }
+  if (n === 0 || expandedGroups.value.length) return {}
+  if (n <= FIXED_ROWS) return { minHeight: `${(FIXED_ROWS + 2) * ROW_HEIGHT}px` }
+  return { maxHeight: `${(MAX_ROWS + 2) * ROW_HEIGHT}px` }
 })
 
-const pageStart = computed(() => Math.min((currentPage.value - 1) * itemsPerPage + 1, totalItems.value))
-const pageEnd = computed(() => Math.min(currentPage.value * itemsPerPage, totalItems.value))
-
-const visiblePages = computed(() => {
-    let pages = []
-    for (let i = 1; i <= totalPages.value; i++) {
-        if (i === 1 || i === totalPages.value || (i >= currentPage.value - 1 && i <= currentPage.value + 1)) {
-            pages.push(i)
-        } else if (pages[pages.length - 1] !== '...') {
-            pages.push('...')
-        }
-    }
-    return pages
+// Empty space under a short list so the total row always sits at the bottom of the fixed-height card.
+const fillerHeight = computed(() => {
+  const n = arData.value.length
+  if (props.loading || n === 0 || n >= FIXED_ROWS || expandedGroups.value.length) return 0
+  return (FIXED_ROWS - n) * ROW_HEIGHT
 })
-
-const goToPage = (p) => {
-    if (p === '...' || p < 1 || p > totalPages.value) return
-    currentPage.value = p
-}
 
 const summaryTotal = computed(() => {
   const rows = props.data

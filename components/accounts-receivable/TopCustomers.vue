@@ -7,7 +7,7 @@
     <div class="flex flex-col lg:flex-row justify-between items-start mb-6 text-white relative z-10 gap-4">
       <div class="flex flex-col">
         <h2 class="text-[16px] font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات القبض' : 'Top Account Receivable customer wise' }}</h2>
-        <p class="text-[12px] font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+        <p class="text-[12px] font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}</p>
       </div>
       <div class="flex items-center gap-3 lg:gap-6 w-full lg:w-auto justify-between lg:justify-end">
         <div class="flex items-center gap-3 lg:gap-6 text-[10px] lg:text-[14px] font-regular leading-normal">
@@ -20,13 +20,15 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
           </div>
         </div>
+        <CommonInfoTooltip tip="accountsReceivable.topCustomers" light align="right" />
         <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity hidden lg:block" @click="isModalOpen = true" />
       </div>
     </div>
 
     <!-- Chart -->
     <div class="flex-1 w-full min-h-[300px] lg:min-h-[350px] relative z-10">
-      <div v-if="!series || series.every(s => !s.data || s.data.length === 0)" class="absolute inset-0 z-20 flex items-center justify-center">
+      <div v-if="loading" class="absolute inset-0 rounded-2xl bg-white/10 animate-pulse"></div>
+      <div v-else-if="!series || series.every(s => !s.data || s.data.length === 0)" class="absolute inset-0 z-20 flex items-center justify-center">
         <div class="flex flex-col items-center gap-3 text-center px-6">
           <p class="text-sm font-medium opacity-60 text-white">
             {{ currentLang === 'ar' ? 'البيانات فارغة' : 'Data empty' }}
@@ -59,7 +61,7 @@
           <div class="flex justify-between items-center py-6 px-8 border-b border-white/10 text-white relative z-10 w-full">
             <div class="flex flex-col">
               <h2 class="text-lg font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات القبض' : 'Top Account Receivable customer wise' }}</h2>
-              <p class="text-xs font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+              <p class="text-xs font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}</p>
             </div>
             <div class="flex items-center gap-6">
               <div class="flex items-center gap-6 text-[14px] font-regular leading-normal">
@@ -114,8 +116,11 @@
 import { ref, computed } from 'vue'
 
 const props = defineProps({
-  data: { type: Object, default: () => ({ customersData: [], cumulativeLine: [] }) }
+  data: { type: Object, default: () => ({ customersData: [], cumulativeLine: [] }) },
+  loading: { type: Boolean, default: false }
 })
+
+const { formatWhole: fmt, axisFor, plotter } = useChartHelper()
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
@@ -130,24 +135,27 @@ const customers = computed(() => {
   }))
 })
 
-const series = computed(() => [
-  {
-    name: 'AR Balance',
-    type: 'column',
-    data: customersData.value.map((c) => c.value)
-  },
-  {
-    name: 'Cumulative %',
-    type: 'line',
-    data: props.data?.cumulativeLine ?? []
-  }
-])
+const rawValues = computed(() => customersData.value.map((c) => Number(c.valueRaw) || 0))
+const peak = computed(() => Math.max(0, ...rawValues.value))
+const axis = computed(() => axisFor(peak.value))
+
+const series = computed(() => {
+  const plot = plotter(peak.value)
+  return [
+    {
+      name: 'AR Balance',
+      type: 'column',
+      data: rawValues.value.map(plot)
+    },
+    {
+      name: 'Cumulative %',
+      type: 'line',
+      data: props.data?.cumulativeLine ?? []
+    }
+  ]
+})
 
 const chartOptions = computed(() => {
-  const allBarData = series.value[0].data
-  const rawMax = Math.max(...allBarData, 0)
-  const dynamicMax = rawMax > 4 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
-
   const allCumulativeData = series.value[1]?.data || []
   const rawCumulativeMax = Math.max(...allCumulativeData, 100)
   const dynamicCumulativeMax = Math.ceil(rawCumulativeMax / 5) * 5
@@ -181,7 +189,7 @@ const chartOptions = computed(() => {
       colors: ['#FFFFFFBF'],
       fontWeight: 400
     },
-    formatter: (val) => val.toString().replace('.', ',') + "M"
+    formatter: (val, { dataPointIndex }) => fmt(rawValues.value[dataPointIndex])
   },
   markers: {
     size: 5,
@@ -213,8 +221,8 @@ const chartOptions = computed(() => {
   yaxis: [
     {
       min: 0,
-      max: dynamicMax,
-      tickAmount: 5,
+      max: axis.value.max,
+      tickAmount: axis.value.ticks,
       axisBorder: {
         show: true,
         color: '#00403333',
@@ -226,7 +234,7 @@ const chartOptions = computed(() => {
           fontSize: '14px',
           colors: '#FFFFFF'
         },
-        formatter: (val) => val === 0 ? "0" : val + "M"
+        formatter: (val) => val === 0 ? "0" : fmt(val)
       }
     },
     {
@@ -258,7 +266,7 @@ const chartOptions = computed(() => {
     custom: function({ series, seriesIndex, dataPointIndex, w }) {
       const customer = customersData.value[dataPointIndex]
       const customerName = currentLang.value === 'ar' ? customer.nameAr : customer.name
-      const bal = series[0][dataPointIndex]
+      const bal = rawValues.value[dataPointIndex]
       const cum = series[1][dataPointIndex]
       
       const balLabel = currentLang.value === 'ar' ? 'رصيد حسابات القبض' : 'AR Balance'
@@ -271,11 +279,11 @@ const chartOptions = computed(() => {
           <div class="tooltip-body">
             <div class="tooltip-row">
               <span class="label">${balLabel}:</span>
-              <span class="value teal">AED ${bal.toString().replace('.', ',')}M</span>
+              <span class="value teal">AED ${fmt(bal)}</span>
             </div>
             <div class="tooltip-row">
               <span class="label">${totLabel}:</span>
-              <span class="value teal">15%</span>
+              <span class="value teal">${customer.percentage || '0%'}</span>
             </div>
             <div class="tooltip-row">
               <span class="label">${cumLabel}:</span>
@@ -306,7 +314,7 @@ const chartOptions = computed(() => {
         yaxis: [
           {
             labels: {
-              formatter: (val) => Math.abs(val) === 0 ? '0' : Math.abs(val) + 'M',
+              formatter: (val) => Math.abs(val) === 0 ? '0' : fmt(Math.abs(val)),
               style: {
                 fontSize: '11px',
                 colors: '#FFFFFF'
