@@ -30,6 +30,7 @@ const _snapshotNotice = ref(false)
 const _goLiveDate     = ref<string | null>(null)
 // Tenant-wide: whether Hold-for-Review has any internal recipient configured.
 const _hasInternalEmails = ref(true)
+const _hasMailSettings = ref(true)
 
 async function fetchAll(lang = 'en') {
   _loading.value = true
@@ -65,6 +66,7 @@ async function fetchAll(lang = 'en') {
     if (summaryRes?.status === 'success') {
       _summary.value = summaryRes.data || []
       _hasInternalEmails.value = summaryRes.has_internal_emails ?? true
+      _hasMailSettings.value = summaryRes.has_mail_settings ?? true
     }
 
     // 2. Aging graph (/ap-report/aging)
@@ -85,6 +87,7 @@ async function fetchAll(lang = 'en') {
       const ranges = timelineRes.payload.ranges || []
       _timelineData.value = {
         apBalance:  ranges.map((r: any) => parseFloat(((r.ap_value ?? 0) / 1_000_000).toFixed(2))),
+        apBalanceRaw: ranges.map((r: any) => Number(r.ap_value ?? 0)),
         categories: ranges.map((r: any) => {
           const [y, m] = String(r.start).split('-')
           return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
@@ -111,7 +114,7 @@ async function holdForReview(items: { customer: string, invoices: any[] }[]) {
     return {
       ok: false,
       code: e?.data?.code ?? null,
-      message: e?.data?.message ?? 'Failed to send hold-for-review.',
+      status: e?.statusCode ?? e?.status ?? null,
       results: [],
     }
   }
@@ -132,6 +135,7 @@ export function useAccountsPayablePage() {
     snapshotNotice: _snapshotNotice,
     goLiveDate: _goLiveDate,
     hasInternalEmails: _hasInternalEmails,
+    hasMailSettings: _hasMailSettings,
     fetchAll,
   }
 }

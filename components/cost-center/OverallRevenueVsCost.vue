@@ -37,12 +37,7 @@
 
     <!-- Chart -->
     <div class="flex-1 w-full min-h-[350px] relative z-10 mt-0">
-      <div class="absolute top-0 right-0 rtl:right-auto rtl:left-0 z-20 flex rounded-full border border-white/25 overflow-hidden text-[12px] font-medium" @click.stop>
-        <button type="button" @click="setUnit('millions')" :title="currentLang === 'ar' ? 'عرض القيم مختصرة مثل 1.2M' : 'Show values short, like 1.2M'" class="px-3 py-1 cursor-pointer transition-colors"
-          :class="unit === 'millions' ? 'bg-[#03D8B0] text-[#00342A]' : 'text-white/80 hover:bg-white/10'">{{ currentLang === 'ar' ? 'مختصر' : 'Short' }}</button>
-        <button type="button" @click="setUnit('actual')" :title="currentLang === 'ar' ? 'عرض القيم كاملة مثل 1,200,000' : 'Show full values, like 1,200,000'" class="px-3 py-1 cursor-pointer transition-colors"
-          :class="unit === 'actual' ? 'bg-[#03D8B0] text-[#00342A]' : 'text-white/80 hover:bg-white/10'">{{ currentLang === 'ar' ? 'كامل' : 'Full' }}</button>
-      </div>
+      <CommonUnitToggle storage-key="cc_chart_unit" class="absolute top-0 right-0 rtl:right-auto rtl:left-0 z-20" />
       <ClientOnly>
         <CommonApexBarChart
           :key="chartKey"
@@ -133,12 +128,7 @@
           
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10 flex flex-col justify-between" style="background-color: transparent;">
-            <div class="absolute top-3 right-8 rtl:right-auto rtl:left-8 z-20 flex rounded-full border border-white/25 overflow-hidden text-[12px] font-medium" @click.stop>
-        <button type="button" @click="setUnit('millions')" :title="currentLang === 'ar' ? 'عرض القيم مختصرة مثل 1.2M' : 'Show values short, like 1.2M'" class="px-3 py-1 cursor-pointer transition-colors"
-          :class="unit === 'millions' ? 'bg-[#03D8B0] text-[#00342A]' : 'text-white/80 hover:bg-white/10'">{{ currentLang === 'ar' ? 'مختصر' : 'Short' }}</button>
-        <button type="button" @click="setUnit('actual')" :title="currentLang === 'ar' ? 'عرض القيم كاملة مثل 1,200,000' : 'Show full values, like 1,200,000'" class="px-3 py-1 cursor-pointer transition-colors"
-          :class="unit === 'actual' ? 'bg-[#03D8B0] text-[#00342A]' : 'text-white/80 hover:bg-white/10'">{{ currentLang === 'ar' ? 'كامل' : 'Full' }}</button>
-      </div>
+            <CommonUnitToggle storage-key="cc_chart_unit" class="absolute top-3 right-8 rtl:right-auto rtl:left-8 z-20" />
             <div class="flex-1">
                 <ClientOnly>
                   <CommonApexBarChart
@@ -226,18 +216,7 @@ const mappingFullNames = computed(() => overallRevenueVsCost.value?.mappingFullN
 
 const { code: currency, valuesNote } = useCurrency()
 
-const UNIT_KEY = 'cc_chart_unit'
-const unit = ref('millions')
-onMounted(() => {
-  try {
-    const saved = localStorage.getItem(UNIT_KEY)
-    if (saved === 'millions' || saved === 'actual') unit.value = saved
-  } catch {}
-})
-const setUnit = (value) => {
-  unit.value = value
-  try { localStorage.setItem(UNIT_KEY, value) } catch {}
-}
+const { unit } = useChartHelper('cc_chart_unit')
 const note = computed(() => valuesNote(unit.value === 'millions'))
 
 const whole = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 })

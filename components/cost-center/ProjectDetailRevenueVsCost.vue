@@ -35,12 +35,7 @@
 
     <!-- Chart -->
     <div class="flex-1 min-h-0 mt-0 relative">
-      <div class="absolute top-0 right-0 rtl:right-auto rtl:left-0 z-10 flex rounded-full border border-white/25 overflow-hidden text-[12px] font-medium" @click.stop>
-        <button type="button" @click="setUnit('millions')" :title="currentLang === 'ar' ? 'عرض القيم مختصرة مثل 1.2M' : 'Show values short, like 1.2M'" class="px-3 py-1 cursor-pointer transition-colors"
-          :class="unit === 'millions' ? 'bg-[#00D8B0] text-[#00342A]' : 'text-white/80 hover:bg-white/10'">{{ currentLang === 'ar' ? 'مختصر' : 'Short' }}</button>
-        <button type="button" @click="setUnit('actual')" :title="currentLang === 'ar' ? 'عرض القيم كاملة مثل 1,200,000' : 'Show full values, like 1,200,000'" class="px-3 py-1 cursor-pointer transition-colors"
-          :class="unit === 'actual' ? 'bg-[#00D8B0] text-[#00342A]' : 'text-white/80 hover:bg-white/10'">{{ currentLang === 'ar' ? 'كامل' : 'Full' }}</button>
-      </div>
+      <CommonUnitToggle storage-key="cc_chart_unit" class="absolute top-0 right-0 rtl:right-auto rtl:left-0 z-10" />
       <ClientOnly>
         <CommonApexBarChart
           :key="chartKey"
@@ -87,12 +82,7 @@
           
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10 min-h-[350px]">
-            <div class="absolute top-3 right-8 rtl:right-auto rtl:left-8 z-10 flex rounded-full border border-white/25 overflow-hidden text-[12px] font-medium" @click.stop>
-        <button type="button" @click="setUnit('millions')" :title="currentLang === 'ar' ? 'عرض القيم مختصرة مثل 1.2M' : 'Show values short, like 1.2M'" class="px-3 py-1 cursor-pointer transition-colors"
-          :class="unit === 'millions' ? 'bg-[#00D8B0] text-[#00342A]' : 'text-white/80 hover:bg-white/10'">{{ currentLang === 'ar' ? 'مختصر' : 'Short' }}</button>
-        <button type="button" @click="setUnit('actual')" :title="currentLang === 'ar' ? 'عرض القيم كاملة مثل 1,200,000' : 'Show full values, like 1,200,000'" class="px-3 py-1 cursor-pointer transition-colors"
-          :class="unit === 'actual' ? 'bg-[#00D8B0] text-[#00342A]' : 'text-white/80 hover:bg-white/10'">{{ currentLang === 'ar' ? 'كامل' : 'Full' }}</button>
-      </div>
+            <CommonUnitToggle storage-key="cc_chart_unit" class="absolute top-3 right-8 rtl:right-auto rtl:left-8 z-10" />
             <ClientOnly>
               <CommonApexBarChart :key="chartKey" width="100%" height="100%" type="bar" :options="chartOptions" :series="series"></CommonApexBarChart>
             </ClientOnly>
@@ -116,18 +106,7 @@ const props = defineProps({
 const { code: currency, valuesNote } = useCurrency()
 const projectName = computed(() => props.data?.cost_center || '')
 
-const UNIT_KEY = 'cc_chart_unit'
-const unit = ref('millions')
-onMounted(() => {
-  try {
-    const saved = localStorage.getItem(UNIT_KEY)
-    if (saved === 'millions' || saved === 'actual') unit.value = saved
-  } catch {}
-})
-const setUnit = (value) => {
-  unit.value = value
-  try { localStorage.setItem(UNIT_KEY, value) } catch {}
-}
+const { unit } = useChartHelper('cc_chart_unit')
 
 const title = computed(() => {
   const base = currentLang.value === 'ar' ? 'الفعلي مقابل الميزانية' : 'Actual vs Budget'

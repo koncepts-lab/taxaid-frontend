@@ -20,6 +20,7 @@
               'ar' ? 'رصيد حسابات الدفع' : 'Account Payable Balance' }}</span>
           </div>
         </div>
+        <CommonInfoTooltip tip="accountsPayable.historical" align="right" />
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand"
           class="w-6 h-6 opacity-70 hover:opacity-100 transition-opacity cursor-pointer ml-4 max-lg:hidden"
           @click="isModalOpen = true" />
@@ -28,7 +29,8 @@
 
     <!-- Chart -->
     <div class="flex-1 w-full relative z-10 min-h-[300px]">
-      <div v-if="!series || series.every(s => !s.data || s.data.length === 0)" class="absolute inset-0 z-20 flex items-center justify-center">
+      <div v-if="loading" class="absolute inset-0 rounded-2xl animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+      <div v-else-if="!series || series.every(s => !s.data || s.data.length === 0)" class="absolute inset-0 z-20 flex items-center justify-center">
         <div class="flex flex-col items-center gap-3 text-center px-6">
           <p class="text-sm font-medium opacity-60" :class="isDark ? 'text-white' : 'text-[#013E32]'">
             {{ currentLang === 'ar' ? 'البيانات فارغة' : 'Data empty' }}
@@ -96,17 +98,23 @@
 import { ref, computed } from 'vue'
 
 const props = defineProps({
-  data: { type: Object, default: () => ({ categories: [], apBalance: [], percentage: [] }) }
+  data: { type: Object, default: () => ({ categories: [], apBalance: [], percentage: [] }) },
+  loading: { type: Boolean, default: false }
 })
+
+const { formatWhole: fmt, axisFor } = useChartHelper()
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
+const rawBalance = computed(() => props.data?.apBalanceRaw ?? (props.data?.apBalance ?? []).map(v => Number(v) * 1_000_000))
+const axis = computed(() => axisFor(Math.max(0, ...rawBalance.value)))
+
 const series = computed(() => [
   {
     name: 'AP Balance',
-    data: props.data?.apBalance ?? []
+    data: rawBalance.value
   },
   {
     name: 'Percentage',
@@ -115,10 +123,6 @@ const series = computed(() => [
 ])
 
 const chartOptions = computed(() => {
-  const allData = series.value[0]?.data || []
-  const rawMax = Math.max(...allData, 0)
-  const dynamicMax = rawMax > 4 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
-
   return ({
   chart: {
     type: 'line',
@@ -168,8 +172,8 @@ const chartOptions = computed(() => {
   yaxis: [
     {
       min: 0,
-      max: dynamicMax,
-      tickAmount: 5,
+      max: axis.value.max,
+      tickAmount: axis.value.ticks,
       axisBorder: {
         show: true,
         color: isDark.value ? '#FFFFFF0F' : '#EFEFEF',
@@ -180,7 +184,7 @@ const chartOptions = computed(() => {
           colors: isDark.value ? '#FFFFFF' : '#00000091',
           fontSize: '12px'
         },
-        formatter: (val) => val === 0 ? '0' : val + 'M'
+        formatter: (val) => val === 0 ? '0' : fmt(val)
       }
     },
     {
@@ -215,7 +219,7 @@ const chartOptions = computed(() => {
           <div class="tooltip-body">
             <div class="tooltip-row">
               <span class="label">${currentLang.value === 'ar' ? 'رصيد حسابات القبض' : 'AP Balance'}:</span>
-              <span class="value">AED ${bal.toString().replace('.', ',')}M</span>
+              <span class="value">AED ${fmt(bal)}</span>
             </div>
           </div>
         </div>

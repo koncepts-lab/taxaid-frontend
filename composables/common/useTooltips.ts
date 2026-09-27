@@ -40,6 +40,22 @@ export const TOOLTIPS: Record<string, { en: string; ar: string }> = {
     en: 'Profit as a percentage of revenue.',
     ar: 'الربح كنسبة مئوية من الإيرادات.',
   },
+  'accountsPayable.summary': {
+    en: 'Outstanding payables per vendor, split into aging buckets (days overdue) as of the selected date, with a total row. Click a vendor to see its invoices.',
+    ar: 'المبالغ المستحقة لكل مورد موزعة على فئات التقادم (أيام التأخر) حتى التاريخ المحدد، مع صف الإجمالي. اضغط على مورد لعرض فواتيره.',
+  },
+  'accountsPayable.topCustomers': {
+    en: 'The vendors with the largest outstanding payables as of the selected date. The line shows the cumulative share of total accounts payable.',
+    ar: 'الموردون الذين لديهم أكبر المبالغ المستحقة حتى التاريخ المحدد. يوضح الخط النسبة التراكمية من إجمالي حسابات الدفع.',
+  },
+  'accountsPayable.historical': {
+    en: 'Total accounts payable balance for each month, showing how the amount owed to vendors has moved over time.',
+    ar: 'إجمالي رصيد حسابات الدفع لكل شهر، ويوضح كيف تغيرت المبالغ المستحقة للموردين مع الوقت.',
+  },
+  'accountsPayable.aging': {
+    en: 'Outstanding payables grouped by how many days overdue they are, compared with the previous year. The line shows the cumulative share of total accounts payable.',
+    ar: 'المبالغ المستحقة مجمعة حسب عدد أيام التأخر ومقارنة بالسنة الماضية. يوضح الخط النسبة التراكمية من إجمالي حسابات الدفع.',
+  },
 }
 
 export const useTooltips = () => {

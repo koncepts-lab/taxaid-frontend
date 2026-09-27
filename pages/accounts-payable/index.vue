@@ -43,24 +43,24 @@
           <AccountsPayableAlert />
 
           <div class="mb-4 lg:mb-8">
-            <AccountsPayableSummary :data="summary" :testDate="activeDate" />
+            <AccountsPayableSummary :data="summary" :testDate="activeDate" :loading="showSkeleton" />
           </div>
 
           <div class="mb-4 lg:mb-8">
             <div class="h-[600px]">
-              <AccountsPayableTopCustomers :data="topCustomers" />
+              <AccountsPayableTopCustomers :data="topCustomers" :loading="showSkeleton" />
             </div>
           </div>
 
           <div class="mb-4 lg:mb-8">
             <div class="h-[420px]">
-              <AccountsPayableHistoricalMovement :data="timelineData" />
+              <AccountsPayableHistoricalMovement :data="timelineData" :loading="showSkeleton" />
             </div>
           </div>
 
           <div>
             <div class="lg:h-[440px] h-[440px]">
-              <AccountsPayableAgingGraph :agingData="agingData" />
+              <AccountsPayableAgingGraph :agingData="agingData" :loading="showSkeleton" />
             </div>
           </div>
 
@@ -103,7 +103,7 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { activeDate, fetchAll, summary, agingData, topCustomers, timelineData, snapshotNotice, snapshotDate, requestedDate, goLiveDate } = useAccountsPayablePage()
+const { loading, activeDate, fetchAll, summary, agingData, topCustomers, timelineData, snapshotNotice, snapshotDate, requestedDate, goLiveDate } = useAccountsPayablePage()
 
 // Tenant users can't pick a date before go-live; TaxAid staff keep the old limit.
 const accountType = useCookie('account_type')
@@ -136,13 +136,16 @@ const handleDateChange = (period) => {
 
 const handleReload = () => fetchAll(currentLang.value)
 
+const firstLoad = ref(true)
+const showSkeleton = computed(() => loading.value || firstLoad.value)
+
 const { openOneClickSummary } = useAkeel()
 const handleOneClickSummary = () => openOneClickSummary('AP', 'onclick_ap')
 
 watch(currentLang, () => fetchAll(currentLang.value))
 
 onMounted(() => {
-  fetchAll(currentLang.value)
+  fetchAll(currentLang.value).finally(() => { firstLoad.value = false })
   useLocation().syncSessionLocation()
   useNotificationSettings().syncWebPush()
 })

@@ -28,6 +28,7 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
           </div>
         </div>
+        <CommonInfoTooltip tip="accountsPayable.aging" light align="right" />
         <img src="/images/icons/expand-white.svg" alt="Expand"
           class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity max-lg:hidden"
           @click="isModalOpen = true" />
@@ -35,7 +36,10 @@
     </div>
 
     <!-- Chart -->
-    <div v-if="hasData" class="flex-1 w-full min-h-[320px] relative z-10">
+    <div v-if="loading" class="flex-1 w-full min-h-[320px] relative z-10">
+      <div class="absolute inset-0 rounded-2xl bg-white/10 animate-pulse"></div>
+    </div>
+    <div v-else-if="hasData" class="flex-1 w-full min-h-[320px] relative z-10">
       <ClientOnly>
         <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
@@ -110,7 +114,6 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { formatToMillions } from '~/utils/formatters'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
@@ -120,8 +123,11 @@ const props = defineProps({
   agingData: {
     type: Object,
     default: () => ({})
-  }
+  },
+  loading: { type: Boolean, default: false }
 })
+
+const { formatWhole: fmt, axisFor, plotter } = useChartHelper()
 
 const arabicBuckets = {
   "0 - 30 days": "أكثر من 30 يوم",
@@ -157,22 +163,36 @@ const agingCategories = computed(() => {
   })
 })
 
-const series = computed(() => {
+const rawSeries = computed(() => {
   const compData = props.agingData?.comparison_data || []
   // Mapping first array as Current and second as Previous based on API logic
   const currentSummary = compData[0]?.aging_summary?.filter(i => i.bucket !== "Total AP") || []
   const previousSummary = compData[1]?.aging_summary?.filter(i => i.bucket !== "Total AP") || []
 
+  return {
+    previous: previousSummary.map(item => Number(item.value) || 0),
+    current: currentSummary.map(item => Number(item.value) || 0),
+    summary: currentSummary
+  }
+})
+
+const barPeak = computed(() => Math.max(0, ...rawSeries.value.previous, ...rawSeries.value.current))
+const axis = computed(() => axisFor(barPeak.value))
+
+const series = computed(() => {
+  const plot = plotter(barPeak.value)
+  const currentSummary = rawSeries.value.summary
+
   return [
     {
       name: 'Previous Year',
       type: 'bar',
-      data: previousSummary.map(item => Number(formatToMillions(item.value, 2).replace(/,/g, '')))
+      data: rawSeries.value.previous.map(plot)
     },
     {
       name: 'Current Year',
       type: 'bar',
-      data: currentSummary.map(item => Number(formatToMillions(item.value, 2).replace(/,/g, '')))
+      data: rawSeries.value.current.map(plot)
     },
     {
       name: 'Cumulative %',
@@ -184,11 +204,6 @@ const series = computed(() => {
 })
 
 const chartOptions = computed(() => {
-  // UI FIX: Calculate dynamic max for Y-axis based on data to prevent values hitting the ceiling
-  const allBarData = [...series.value[0].data, ...series.value[1].data]
-  const rawMax = Math.max(...allBarData, 0)
-  const dynamicMax = rawMax > 4 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
-
   const allCumulativeData = series.value[2]?.data || []
   const rawCumulativeMax = Math.max(...allCumulativeData, 100)
   const dynamicCumulativeMax = Math.ceil(rawCumulativeMax / 5) * 5
@@ -224,9 +239,10 @@ const chartOptions = computed(() => {
         colors: ['#FFFFFFBF'],
         fontWeight: 400
       },
-      formatter: (val, { seriesIndex }) => {
-        if (val === 0) return '0'
-        const formatted = val.toString().replace('.', ',') + 'M'
+      formatter: (val, { seriesIndex, dataPointIndex }) => {
+        const raw = (seriesIndex === 0 ? rawSeries.value.previous : rawSeries.value.current)[dataPointIndex]
+        if (!raw) return '0'
+        const formatted = fmt(raw)
         return seriesIndex === 0 ? `${formatted}\u00A0\u00A0\u00A0\u00A0` : `\u00A0\u00A0\u00A0\u00A0${formatted}`
       }
     },
@@ -259,8 +275,8 @@ const chartOptions = computed(() => {
       {
         seriesName: 'Previous Year',
         min: 0,
-        max: dynamicMax, // UI FIX: dynamic instead of hardcoded 5
-        tickAmount: 5,
+        max: axis.value.max,
+        tickAmount: axis.value.ticks,
         axisBorder: {
           show: true,
           color: '#00403399',
@@ -272,14 +288,14 @@ const chartOptions = computed(() => {
             fontSize: '13px', 
             colors: '#FFFFFFBF'
            },
-          formatter: (val) => val === 0 ? '0' : Math.round(val) + 'M'
+          formatter: (val) => val === 0 ? '0' : fmt(val)
         }
       },
       {
         seriesName: 'Current Year',
         show: false,
         min: 0,
-        max: dynamicMax
+        max: axis.value.max
       },
       {
         seriesName: 'Cumulative %',
@@ -326,7 +342,7 @@ const chartOptions = computed(() => {
           ? `متأخر ${arabicBuckets[item.bucket] || item.bucket}` 
           : `Overdue ${enDisp}`
         
-        const curYearFormatted = formatToMillions(item.value, 2).replace('.', ',')
+        const curYearFormatted = fmt(item.value)
         const cyrLabel = currentLang.value === 'ar' ? 'السنة الحالية' : 'Current year'
         const totLabel = currentLang.value === 'ar' ? '% من إجمالي AP' : '% of Total AP'
         const cumLabel = currentLang.value === 'ar' ? 'التراكمي %' : 'Cumulative %'
@@ -337,7 +353,7 @@ const chartOptions = computed(() => {
             <div class="tooltip-body">
               <div class="tooltip-row">
                 <span class="label">${cyrLabel}:</span>
-                <span class="value teal">AED ${curYearFormatted}M</span>
+                <span class="value teal">AED ${curYearFormatted}</span>
               </div>
               <div class="tooltip-row">
                 <span class="label">${totLabel}:</span>
