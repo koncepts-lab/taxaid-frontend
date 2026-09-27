@@ -32,10 +32,12 @@
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.896-1.596-5.48-4.18-7.076-7.076l1.293-.97c.362-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" /></svg>
             </div>
             <h3 class="text-[18px] font-normal mb-1" style="color: #FFFFFF;">Phone Support</h3>
-            <p class="text-[14px] font-normal mb-6" style="color: #FFFFFFCC;">Call us: 1-800-TAXAID (829-2443)</p>
+            <p class="text-[14px] font-normal mb-1" style="color: #FFFFFFCC;">Mon-Fri from 9am to 6pm EST</p>
+            <p class="text-[16px] font-medium mb-1" style="color: #FFFFFF;">+971 2236 6586</p>
+            <p class="text-[13px] font-normal mb-6" style="color: #FFFFFF99;">Sales & Inquiries</p>
           </div>
-          <a href="tel:18008292443" class="block text-center w-full transition-colors font-normal py-2.5 rounded-lg text-[14px]" style="background-color: #86E4CB; color: #0A0A0A;">
-            Schedule Call
+          <a href="tel:+97122366586" class="block text-center w-full transition-colors font-normal py-2.5 rounded-lg text-[14px]" style="background-color: #86E4CB; color: #0A0A0A;">
+            Call Now
           </a>
         </div>
 
@@ -46,11 +48,24 @@
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.909A2.25 2.25 0 0 1 2.25 8.5v-.243" /></svg>
             </div>
             <h3 class="text-[18px] font-normal mb-1" style="color: #FFFFFF;">Email Support</h3>
-            <p class="text-[14px] font-normal mb-6" style="color: #FFFFFFCC;">support@taxaid.com</p>
+            <p class="text-[14px] font-normal mb-6" style="color: #FFFFFFCC;">We'll respond within 24 hours</p>
           </div>
-          <a href="mailto:support@taxaid.com" class="block text-center w-full transition-colors font-normal py-2.5 rounded-lg text-[14px]" style="background-color: #86E4CB; color: #0A0A0A;">
-            Send Email
+          <a href="mailto:contact@taxaidai.com" class="block text-center w-full transition-colors font-normal py-2.5 rounded-lg text-[14px]" style="background-color: #86E4CB; color: #0A0A0A;">
+            contact@taxaidai.com
           </a>
+        </div>
+
+        <!-- Visit Us -->
+        <div class="rounded-xl p-6 flex flex-col justify-between text-white" style="background-color: #1C5F50;">
+          <div>
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background-color: #04725A; color: #04C18F;">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
+            </div>
+            <h3 class="text-[18px] font-normal mb-1" style="color: #FFFFFF;">Visit Us</h3>
+            <p class="text-[14px] font-normal mb-1" style="color: #FFFFFFCC;">Our headquarters</p>
+            <p class="text-[14px] font-normal" style="color: #FFFFFF;">M 04, 1221 ADCP Building</p>
+            <p class="text-[14px] font-normal mb-6" style="color: #FFFFFF;">Opposite Abu Dhabi Central Bus Terminal, Al Nahyan, Abu Dhabi.</p>
+          </div>
         </div>
       </div>
 
