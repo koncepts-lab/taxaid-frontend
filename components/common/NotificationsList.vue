@@ -1,9 +1,16 @@
 <template>
   <div>
     <!-- Title Section -->
-    <div class="space-y-1">
-      <h1 class="text-[24px] font-medium" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">All Notifications</h1>
-      <p class="text-[14px] font-normal" :class="isDark ? 'text-white/60' : 'text-gray-500'">Showing {{ totalCount }} notifications</p>
+    <div class="flex items-start justify-between gap-4">
+      <div class="space-y-1">
+        <h1 class="text-[24px] font-medium" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">All Notifications</h1>
+        <p class="text-[14px] font-normal" :class="isDark ? 'text-white/60' : 'text-gray-500'">Showing {{ totalCount }} notifications</p>
+      </div>
+      <button v-if="hasUnread" @click="$emit('mark-all-read')"
+        class="text-[14px] font-medium flex-shrink-0 px-4 py-2 rounded-full text-white transition-colors"
+        :class="isDark ? 'bg-[#00896F] hover:bg-[#00705a]' : 'bg-[#00896F] hover:bg-[#006552]'">
+        Mark all read
+      </button>
     </div>
 
     <!-- Tabs Section -->
@@ -23,14 +30,23 @@
 
     <!-- Notifications List -->
     <div class="space-y-10 mt-8">
-      <div v-if="loading" class="text-center py-16" :class="isDark ? 'text-white/40' : 'text-gray-400'">Loading...</div>
+      <div v-if="loading" class="space-y-3">
+        <div v-for="n in 5" :key="n" class="flex items-center gap-6 p-5 rounded-[16px] border" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+          <div class="w-2.5 h-2.5 rounded-full animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+          <div class="w-12 h-12 rounded-full flex-shrink-0 animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-4 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-200'" :style="{ width: n % 2 ? '70%' : '50%' }"></div>
+            <div class="h-3 w-24 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
+          </div>
+        </div>
+      </div>
       <div v-else-if="!filteredGroups.length" class="text-center py-16" :class="isDark ? 'text-white/40' : 'text-gray-400'">No notifications.</div>
 
       <div v-for="group in filteredGroups" :key="group.id" class="space-y-4">
         <h3 class="text-[16px] font-medium" :class="isDark ? 'text-white/80' : 'text-[#1a1a1a]'">{{ group.date }}</h3>
 
         <div class="space-y-3">
-          <div v-for="item in group.items" :key="item.id"
+          <div v-for="item in group.items" :key="item.id" @click="$emit('item-click', item)"
                class="group relative flex items-center gap-6 p-5 rounded-[16px] border transition-all duration-300 hover:shadow-md cursor-pointer overflow-hidden"
                :class="isDark ? 'bg-[#00141080] border-white/10 hover:border-[#00BE8CBD]' : 'bg-white border-gray-100 hover:border-[#00BE8CBD]'">
 
@@ -56,6 +72,12 @@
                 <span>{{ item.category }}</span>
               </div>
             </div>
+
+            <button v-if="item.unread" @click.stop="$emit('item-click', item)"
+              class="relative text-[13px] font-medium px-3 py-1.5 rounded-lg flex-shrink-0 border transition-colors"
+              :class="isDark ? 'text-[#00BE8CBD] border-[#00BE8CBD]/30 hover:bg-white/5' : 'text-[#00896F] border-[#00896F]/40 hover:bg-[#E6FFF9]'">
+              Mark as read
+            </button>
           </div>
         </div>
       </div>
@@ -74,9 +96,11 @@ const props = defineProps({
   activeTab: { type: String, default: 'All' },
   loading: { type: Boolean, default: false },
 })
-defineEmits(['update:activeTab'])
+defineEmits(['update:activeTab', 'item-click', 'mark-all-read'])
 
 const { isDark } = useTheme()
+
+const hasUnread = computed(() => props.groups.some(g => g.items.some(i => i.unread)))
 
 const totalCount = computed(() => props.groups.reduce((sum, g) => sum + g.items.length, 0))
 

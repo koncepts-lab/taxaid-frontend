@@ -173,7 +173,7 @@
                 </tr>
                 <tr v-for="(entry, index) in manualEntries" :key="index" class="bg-white">
                   <td class="py-2 px-2">
-                    <input type="text" v-model="entry.date" placeholder="dd-mm-yyyy" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />
+                    <CommonDateField v-model="entry.date" format="dmy" size="sm" allow-future />
                   </td>
                   <td class="py-2 px-2">
                     <input type="text" v-model="entry.partyName" placeholder="Enter vendor name" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />

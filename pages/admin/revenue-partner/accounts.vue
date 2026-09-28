@@ -1184,7 +1184,7 @@ async function handleAddPartner() {
 }
 
 // ── Upload handlers ─────────────────────────────────────────────────────────
-const defaultMonth = new Date().toISOString().slice(0, 7)
+const defaultMonth = localIsoMonth()
 
 async function handleUploadHosting() {
   if (!excelFile.value) { showUploadResult(false, 'No file selected.'); return }

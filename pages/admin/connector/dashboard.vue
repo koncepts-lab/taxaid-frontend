@@ -77,6 +77,7 @@
               <tr v-for="row in tenantRows" :key="row.tenant_id" class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
                 <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">
                   {{ row.company_name }}<span v-if="row.license_id" class="text-gray-400"> ({{ row.license_id }})</span>
+                  <span v-if="row.timezone" class="ml-2 px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap" :class="isDark ? 'bg-white/10 text-white/70' : 'bg-gray-100 text-gray-600'">{{ String(row.timezone).split('/').pop().replace(/_/g, ' ') }}</span>
                 </td>
                 <td class="py-6 px-8 text-[14px] font-regular">
                   <div class="flex items-center gap-2">
@@ -196,6 +197,27 @@
             @page-change="(p) => loadCustomGroups(p)" @per-page-change="(pp) => loadCustomGroups(1, pp)" />
         </div>
       </div>
+
+      <!-- Zone reshuffle: only offered after Save & Reshard finds tenants outside their group's zone -->
+      <Teleport to="body">
+        <div v-if="zoneCases.length" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div class="bg-white rounded-2xl shadow-xl p-8 w-[520px] max-w-full space-y-4 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-[18px] font-semibold text-[#111]">Tenants outside their group's time zone</h3>
+            <ul class="text-[14px] text-gray-700 space-y-1">
+              <li v-for="c in zoneCases" :key="c.group_id">
+                {{ c.group }} ({{ String(c.zone).split('/').pop().replace(/_/g, ' ') }}): {{ c.members.length }} tenant(s) in {{ [...new Set(c.members.map(m => String(m.zone).split('/').pop().replace(/_/g, ' ')))].join(', ') }}
+              </li>
+            </ul>
+            <p class="text-[13px] text-gray-500">Create a group for each of those zones, or place them in the group closest to their zone.</p>
+            <p v-if="zoneMessage" class="text-[13px] text-[#00896F]">{{ zoneMessage }}</p>
+            <div class="flex flex-wrap justify-end gap-2 pt-2">
+              <button @click="zoneCases = []" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 cursor-pointer">Skip</button>
+              <button @click="reshuffleZones('closest')" :disabled="reshufflingZones" class="px-4 py-2 rounded-lg border border-[#00896F] text-[#00896F] text-sm font-medium hover:bg-[#00896F]/10 disabled:opacity-60 cursor-pointer">Place in closest group</button>
+              <button @click="reshuffleZones('new_group')" :disabled="reshufflingZones" class="px-4 py-2 rounded-lg bg-[#00896F] text-white text-sm font-medium hover:bg-[#00705a] disabled:opacity-60 cursor-pointer">Create new group</button>
+            </div>
+          </div>
+        </div>
+      </Teleport>
 
       <!-- Delete custom group confirm -->
       <Teleport to="body">
@@ -841,6 +863,24 @@ async function loadShardingSettings() {
   const res = await cd.getShardingSettings().catch(() => null)
   if (res) maxGroupsDraft.value = res.max_groups
 }
+const zoneCases = ref([])
+const reshufflingZones = ref(false)
+const zoneMessage = ref('')
+async function reshuffleZones(mode) {
+  reshufflingZones.value = true
+  zoneMessage.value = ''
+  try {
+    const res = await cd.reshuffleZones(mode)
+    reshardMessage.value = res?.moved ? `Moved ${res.moved} tenant(s) by zone.` : reshardMessage.value
+    zoneCases.value = []
+    await Promise.all([loadGroups(1), loadGroupFilterOptions()])
+  } catch {
+    zoneMessage.value = 'Could not reshuffle by zone.'
+  } finally {
+    reshufflingZones.value = false
+  }
+}
+
 async function saveMaxGroups() {
   savingMaxGroups.value = true
   reshardMessage.value = ''
@@ -848,6 +888,7 @@ async function saveMaxGroups() {
     const res = await cd.updateShardingSettings(maxGroupsDraft.value)
     reshardMessage.value = `Saved. ${res.moved ?? 0} tenant(s) moved.`
     await Promise.all([loadGroups(1), loadGroupFilterOptions()])
+    zoneCases.value = (await cd.getZoneMismatches().catch(() => ({ data: [] })))?.data ?? []
   } catch (e) {
     reshardMessage.value = e?.data?.message ?? e?.data?.error ?? 'Save failed.'
   } finally {

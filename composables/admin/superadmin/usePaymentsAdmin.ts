@@ -84,6 +84,9 @@ export function usePaymentsAdmin() {
     return useAdminApi(`/admin/subscriptions?${q.toString()}`)
   }
 
+  const cancelSubscription = (tenantSubscriptionId: number) =>
+    useAdminApi(`/admin/subscriptions/${tenantSubscriptionId}/cancel`, { method: 'POST' })
+
   const getPayments = (page = 1, perPage = 10, status?: string) => {
     const q = new URLSearchParams({ page: String(page), per_page: String(perPage) })
     if (status) q.set('status', status)
@@ -127,7 +130,7 @@ export function usePaymentsAdmin() {
   return {
     getPlans, getPlan, getOrgPlansGrouped, getPlanStats, getOrganizations, assignPlanToOrg, createPlan, createPlanVersion, updatePlanStatus,
     getEntitlementDefinitions, createEntitlementDefinition, toggleEntitlementDefinitionActive, getAiModelOptions,
-    getSubscriptions, getPayments, setDunningOverride, getAlerts,
+    getSubscriptions, cancelSubscription, getPayments, setDunningOverride, getAlerts,
     getPaymentSettings, updatePaymentSettings, getTrialPlan, saveTrialPlan, demoEditPlan,
   }
 }

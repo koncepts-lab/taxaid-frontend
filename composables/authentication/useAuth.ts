@@ -56,6 +56,12 @@ export const useAuth = () => {
         const currency = useCookie('currency', cookieOptions)
         currency.value = response.data.tenant?.currency ?? null
 
+        const timezone = useCookie('timezone', cookieOptions)
+        timezone.value = response.data.tenant?.timezone ?? null
+
+        const displayFormat = useCookie('display_format', cookieOptions)
+        displayFormat.value = response.data.user?.display_format ?? null
+
         const identity = useCookie('identity', cookieOptions)
         identity.value = { name: response.data.user?.company_name ?? '', email: response.data.user?.email ?? '' } as any
 
@@ -104,6 +110,8 @@ export const useAuth = () => {
     useCookie('account_type').value = null
     useCookie('permissions').value = null
     useCookie('currency').value = null
+    useCookie('timezone').value = null
+    useCookie('display_format').value = null
     useCookie('identity').value = null
     resetProfile()
     try {

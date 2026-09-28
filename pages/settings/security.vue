@@ -367,32 +367,47 @@
             {{ currentLang === 'ar' ? 'مهلة الجلسة (بالدقائق)' : 'Session Timeout (minutes)' }}
           </label>
           <div class="relative">
-            <select v-model="sessionTimeout"
-              class="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-1 transition-all appearance-none pr-10"
-              :class="isDark 
-                ? 'bg-[#00251E] border-teal-900 focus:border-[#00B68D] focus:ring-[#00B68D] text-white' 
-                : 'bg-white border text-gray-900 focus:border-[#00896F] focus:ring-[#00896F]'"
-              :style="!isDark ? 'border-color: #A2E8D6;' : ''">
-              <option v-if="sessionTimeout === null" :value="null" disabled>
-                {{ currentLang === 'ar' ? 'اختر المدة' : 'Select duration' }}
-              </option>
-              <option v-for="opt in timeoutOptions" :key="opt.minutes" :value="opt.minutes">
-                {{ opt.label }}
-              </option>
-            </select>
-            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
+            <CommonSelectDropdown mode="select" :clearable="false" v-model="sessionTimeout" :placeholder="currentLang === 'ar' ? 'اختر المدة' : 'Select duration'" :options="timeoutOptions.map(opt => ({ value: opt.minutes, label: opt.label }))" />
           </div>
         </div>
       </div>
 
       <!-- 5. <<<ADD Roles based Card for user admin here>>> -->
 
+      <!-- 6. DELETE ACCOUNT CARD -->
+      <div class="rounded-2xl border p-6 transition-all duration-300"
+        :class="isDark ? 'bg-[#2E0A0A] border-red-950/40 text-white' : 'bg-white border-red-100 shadow-[0_4px_20px_rgba(220,38,38,0.05)]'">
+
+        <div class="flex items-start gap-4 mb-6">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
+            :class="isDark ? 'bg-red-950 text-red-300' : 'bg-red-50 text-red-600'">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-[24px] font-regular mb-2" :class="isDark ? 'text-white' : 'text-red-700'">
+              {{ currentLang === 'ar' ? 'حذف الحساب' : 'Delete Account' }}
+            </h2>
+            <p class="text-[14px] text-[#000000CC]" :class="isDark ? 'text-white/70' : ''">
+              {{ currentLang === 'ar'
+                ? 'حذف حسابك وبياناتك بشكل دائم. هذا الإجراء يخضع لمراجعة فريقنا قبل تنفيذه.'
+                : 'Permanently delete your account and your data. This goes through a review before it happens.' }}
+            </p>
+          </div>
+        </div>
+
+        <button @click="showDeleteModal = true"
+          class="px-4 py-2.5 rounded-lg text-sm font-medium border transition-all"
+          :class="isDark ? 'border-red-900 text-red-300 hover:bg-red-950/40' : 'border-red-200 text-red-600 hover:bg-red-50'">
+          {{ currentLang === 'ar' ? 'حذف حسابي' : 'Delete My Account' }}
+        </button>
+      </div>
+
     </div>
     </div>
+
+    <CommonDeleteAccountModal :open="showDeleteModal" @close="showDeleteModal = false" />
   </NuxtLayout>
 </template>
 
@@ -527,11 +542,14 @@ const emailUpdates = ref(false)
 const allowSupportAccess = ref(true)
 
 const downloadData = () => {
-  alert(currentLang.value === 'ar' 
+  alert(currentLang.value === 'ar'
     ? 'بدأ تنزيل بياناتك. سيتم إرسال بريد إلكتروني عند انتهاء التصدير.'
     : 'Your data download has started. An email will be sent once the export is ready.'
   )
 }
+
+// Delete Account — full flow lives in CommonDeleteAccountModal
+const showDeleteModal = ref(false)
 </script>
 
 <style scoped>

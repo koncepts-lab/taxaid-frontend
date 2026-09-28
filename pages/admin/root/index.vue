@@ -971,6 +971,160 @@
         </div>
       </div>
 
+      <!-- TAB 7: ANALYTICS -->
+      <div
+        v-else-if="activeTab === 'analytics'"
+        :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-[#E5E5E5]'"
+        class="rounded-[20px] border shadow-sm p-6 sm:p-8 space-y-6 w-full max-w-full min-w-0 overflow-hidden"
+      >
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div class="flex items-center gap-2">
+            <h2 class="text-[20px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">Analytics</h2>
+            <span class="relative inline-block group/tip">
+              <span class="w-4 h-4 rounded-full border text-[10px] flex items-center justify-center cursor-help" :class="isDark ? 'border-white/40 text-white/60' : 'border-gray-400 text-gray-400'">i</span>
+              <span class="pointer-events-none absolute z-50 top-full left-0 mt-2 w-64 rounded-lg bg-[#003d35] text-white text-[12px] leading-snug px-3 py-2 opacity-0 group-hover/tip:opacity-100 transition-opacity">
+                Important events only (export limits, slow or heavy runs). Rows older than 1 year are removed every week.
+              </span>
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              @click="loadAnalytics(analyticsMeta.page)"
+              :disabled="analyticsLoading"
+              class="h-[40px] px-4 rounded-[10px] border text-[13px] font-medium transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
+              :class="isDark ? 'border-[#10FFD4]/40 text-[#10FFD4] hover:bg-[#10FFD4]/10' : 'border-[#00896F] text-[#00896F] bg-[#E6FFF5]/60 hover:bg-[#E6FFF5]'"
+            >
+              <svg class="w-4 h-4" :class="analyticsLoading ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>Refresh</span>
+            </button>
+
+            <template v-if="!analyticsConfirmClear">
+              <button
+                @click="analyticsConfirmClear = true"
+                :disabled="!analyticsMeta.total"
+                class="h-[40px] px-4 rounded-[10px] border text-[13px] font-medium transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                :class="isDark ? 'border-red-500/50 text-red-300 bg-red-950/20 hover:bg-red-950/50' : 'border-red-300 text-red-600 bg-red-50/60 hover:bg-red-50'"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>Clear all</span>
+              </button>
+            </template>
+            <template v-else>
+              <button
+                @click="clearAnalytics"
+                :disabled="analyticsClearing"
+                class="h-[40px] px-4 rounded-[10px] text-[13px] font-medium text-white bg-red-600 hover:bg-red-700 transition cursor-pointer disabled:opacity-60 inline-flex items-center gap-2"
+              >
+                <svg v-if="analyticsClearing" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>{{ analyticsClearing ? 'Clearing...' : 'Yes, delete all events' }}</span>
+              </button>
+              <button
+                @click="analyticsConfirmClear = false"
+                class="h-[40px] px-4 rounded-[10px] border text-[13px] font-medium transition cursor-pointer"
+                :class="isDark ? 'border-white/15 text-white hover:bg-white/10' : 'border-gray-300 text-gray-700 hover:bg-gray-50'"
+              >Cancel</button>
+            </template>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-[13px] font-medium opacity-80 mb-1.5">Category</label>
+            <select
+              v-model="analyticsCategory"
+              @change="onAnalyticsCategoryChange"
+              class="w-full h-[42px] px-3.5 rounded-[10px] border outline-none text-[13px] cursor-pointer"
+              :class="isDark ? 'bg-black/40 border-white/10 text-white' : 'bg-white border-[#04C18F33] text-[#1a1a1a]'"
+            >
+              <option value="">All categories</option>
+              <option v-for="c in analyticsCategories" :key="c" :value="c">{{ c }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[13px] font-medium opacity-80 mb-1.5">Event</label>
+            <select
+              v-model="analyticsEvent"
+              @change="loadAnalytics(1)"
+              class="w-full h-[42px] px-3.5 rounded-[10px] border outline-none text-[13px] cursor-pointer"
+              :class="isDark ? 'bg-black/40 border-white/10 text-white' : 'bg-white border-[#04C18F33] text-[#1a1a1a]'"
+            >
+              <option value="">All events</option>
+              <option v-for="e in analyticsEventOptions" :key="e" :value="e">{{ e }}</option>
+            </select>
+          </div>
+          <div class="sm:col-span-2 flex items-end">
+            <p class="text-[13px] pb-3" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">
+              {{ analyticsMeta.total.toLocaleString() }} event{{ analyticsMeta.total === 1 ? '' : 's' }}
+            </p>
+          </div>
+        </div>
+
+        <div
+          v-if="analyticsError"
+          class="p-4 rounded-[10px] text-xs"
+          :class="reportBoxClasses(false)"
+        >{{ analyticsError }}</div>
+
+        <div class="w-full h-[480px] overflow-auto rounded-[14px] border" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+          <table class="w-full text-[13px] min-w-[860px]">
+            <thead class="sticky top-0 z-10" :class="isDark ? 'bg-[#0B2E27] text-white/70' : 'bg-gray-50 text-gray-600'">
+              <tr class="text-left">
+                <th class="px-4 py-3 font-medium whitespace-nowrap">When</th>
+                <th class="px-4 py-3 font-medium">Event</th>
+                <th class="px-4 py-3 font-medium">Subject</th>
+                <th class="px-4 py-3 font-medium">Who</th>
+                <th class="px-4 py-3 font-medium">Status</th>
+                <th class="px-4 py-3 font-medium">Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="analyticsLoading && !analyticsRows.length">
+                <td colspan="6" class="px-4 py-10 text-center" :class="isDark ? 'text-white/50' : 'text-gray-400'">Loading...</td>
+              </tr>
+              <tr v-else-if="!analyticsRows.length">
+                <td colspan="6" class="px-4 py-10 text-center" :class="isDark ? 'text-white/50' : 'text-gray-400'">No events recorded.</td>
+              </tr>
+              <tr
+                v-for="row in analyticsRows"
+                :key="row.id"
+                class="border-t align-top"
+                :class="isDark ? 'border-white/5' : 'border-gray-100'"
+              >
+                <td class="px-4 py-3 whitespace-nowrap" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatAnalyticsTime(row.created_at) }}</td>
+                <td class="px-4 py-3">
+                  <span class="block text-[11px] uppercase tracking-wider opacity-60 mb-1">{{ row.category }}</span>
+                  <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold" :class="analyticsEventClasses(row.event)">{{ row.event }}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ row.subject || '—' }}</td>
+                <td class="px-4 py-3" :class="isDark ? 'text-white/80' : 'text-gray-700'">
+                  <span class="block whitespace-nowrap">{{ row.tenant_name || row.actor_type }}</span>
+                  <span v-if="row.actor_id" class="block text-[11px] opacity-60 whitespace-nowrap">{{ row.actor_type }} #{{ row.actor_id }}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ row.status_code || '—' }}</td>
+                <td class="px-4 py-3 text-[12px] font-mono leading-relaxed" :class="isDark ? 'text-white/70' : 'text-gray-600'">{{ formatAnalyticsMeta(row.meta) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <CommonPaginationBar
+          v-if="analyticsMeta.total > 0"
+          :meta="analyticsPaginationMeta"
+          :loading="analyticsLoading"
+          :per-page-options="[10, 25, 50, 100]"
+          :dark="isDark"
+          @page-change="loadAnalytics"
+          @per-page-change="onAnalyticsPerPageChange"
+        />
+      </div>
+
       <!-- CORS Origins — standalone cards, shown alongside the CORS & Environment tab -->
       <div v-if="activeTab === 'diagnostics'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div
@@ -1023,6 +1177,16 @@
             :class="reportBoxClasses(corsReport.success)"
           >
             {{ corsReport.message }}
+          </div>
+
+          <div v-if="corsSchemeChoices.length" class="p-3 rounded-[10px] text-xs shrink-0 border" :class="isDark ? 'border-white/15 bg-white/5' : 'border-[#04C18F33] bg-[#F0FFFB]'">
+            <p class="mb-2 font-medium">This is a local or IP address. Is it http or https? Pick the correct one.</p>
+            <div class="flex flex-wrap gap-2">
+              <button v-for="choice in corsSchemeChoices" :key="choice" @click="pickCorsScheme(choice)" :disabled="corsSaving"
+                class="px-3 py-1.5 rounded-[8px] border font-mono text-[12px] cursor-pointer transition disabled:opacity-50"
+                :class="isDark ? 'border-white/20 hover:bg-white/10' : 'border-[#007C65]/40 hover:bg-[#007C65]/10'">{{ choice }}</button>
+              <button @click="corsSchemeChoices = []" class="px-3 py-1.5 rounded-[8px] border text-[12px] cursor-pointer opacity-70" :class="isDark ? 'border-white/20' : 'border-gray-300'">Cancel</button>
+            </div>
           </div>
 
           <div class="space-y-2 overflow-y-auto pr-1 min-h-0">
@@ -1134,6 +1298,7 @@ const {
   getSystemInfo, getCommands, lock, getConnectorInfraSettings, updateConnectorInfraSettings,
   getCorsSettings, addCorsOrigin, deleteCorsOrigin, setMainCorsOrigin,
   getMailSettings, updateMailSettings,
+  getAnalyticsEvents, clearAnalyticsEvents,
 } = useRootAdmin()
 const { admin } = useAdminAuth()
 
@@ -1147,6 +1312,7 @@ onMounted(() => {
   loadConnectorInfraSettings()
   loadCorsSettings()
   loadMailSettings()
+  if (activeTab.value === 'analytics') loadAnalytics()
   resumeActiveJobIfAny()
 })
 
@@ -1157,6 +1323,7 @@ const tabs = [
   { id: 'mail', label: 'Mailer / SMTP Tester' },
   { id: 'diagnostics', label: 'CORS & Environment' },
   { id: 'connector-infra', label: 'Connector Infra Settings' },
+  { id: 'analytics', label: 'Analytics' },
 ]
 
 const route = useRoute()
@@ -1165,6 +1332,10 @@ const activeTab = ref(tabs.some(t => t.id === route.query.tab) ? route.query.tab
 
 watch(activeTab, (val) => {
   router.replace({ query: { ...route.query, tab: val } })
+})
+
+watch(activeTab, (val) => {
+  if (val === 'analytics') loadAnalytics(analyticsMeta.value.page)
 })
 
 // CLOUD RUN JOB TOGGLE STATE
@@ -1676,11 +1847,105 @@ async function saveConnectorInfraSettings() {
   }
 }
 
+// 7. ANALYTICS
+const analyticsRows = ref([])
+const analyticsMeta = ref({ total: 0, page: 1, last_page: 1, per_page: 25 })
+const analyticsPairs = ref([])
+const analyticsCategory = ref('')
+const analyticsEvent = ref('')
+const analyticsLoading = ref(false)
+const analyticsError = ref('')
+const analyticsPerPage = ref(25)
+const analyticsConfirmClear = ref(false)
+const analyticsClearing = ref(false)
+
+const analyticsPaginationMeta = computed(() => ({
+  current_page: analyticsMeta.value.page,
+  per_page: analyticsMeta.value.per_page,
+  total: analyticsMeta.value.total,
+  last_page: analyticsMeta.value.last_page,
+}))
+
+const analyticsCategories = computed(() => [...new Set(analyticsPairs.value.map(p => p.category))])
+const analyticsEventOptions = computed(() => [...new Set(
+  analyticsPairs.value.filter(p => !analyticsCategory.value || p.category === analyticsCategory.value).map(p => p.event)
+)])
+
+async function loadAnalytics(page = 1) {
+  analyticsLoading.value = true
+  analyticsError.value = ''
+  try {
+    const res = await getAnalyticsEvents({
+      page,
+      per_page: analyticsPerPage.value,
+      category: analyticsCategory.value || undefined,
+      event: analyticsEvent.value || undefined,
+    })
+    analyticsRows.value = res?.data || []
+    analyticsMeta.value = res?.meta || analyticsMeta.value
+    analyticsPairs.value = res?.filters || []
+  } catch (err) {
+    analyticsError.value = err?.data?.message || err?.data?.error || err?.message || 'Failed to load analytics.'
+  } finally {
+    analyticsLoading.value = false
+  }
+}
+
+function onAnalyticsPerPageChange(n) {
+  analyticsPerPage.value = n
+  loadAnalytics(1)
+}
+
+function onAnalyticsCategoryChange() {
+  analyticsEvent.value = ''
+  loadAnalytics(1)
+}
+
+async function clearAnalytics() {
+  analyticsClearing.value = true
+  analyticsError.value = ''
+  try {
+    await clearAnalyticsEvents()
+    analyticsConfirmClear.value = false
+    analyticsCategory.value = ''
+    analyticsEvent.value = ''
+    await loadAnalytics(1)
+  } catch (err) {
+    analyticsError.value = err?.data?.message || err?.data?.error || err?.message || 'Clear failed.'
+  } finally {
+    analyticsClearing.value = false
+  }
+}
+
+function formatAnalyticsTime(value) {
+  return value ? new Date(value).toLocaleString() : '—'
+}
+
+function formatAnalyticsMeta(meta) {
+  if (!meta) return '—'
+  const parts = []
+  for (const [key, value] of Object.entries(meta)) {
+    if (value === null || value === '') continue
+    if (key === 'duration_ms') parts.push(`duration ${(value / 1000).toFixed(1)}s`)
+    else if (key === 'peak_mb') parts.push(`peak ${value} MB`)
+    else if (typeof value === 'number') parts.push(`${key} ${value.toLocaleString()}`)
+    else parts.push(`${key} ${value}`)
+  }
+  return parts.join(' · ') || '—'
+}
+
+function analyticsEventClasses(event) {
+  if (event === 'high_memory') return isDark.value ? 'bg-red-950/60 text-red-300' : 'bg-red-100 text-red-800'
+  if (event === 'too_large' || event === 'slow') return isDark.value ? 'bg-amber-950/60 text-amber-300' : 'bg-amber-100 text-amber-800'
+  return isDark.value ? 'bg-white/10 text-white/80' : 'bg-gray-100 text-gray-700'
+}
+
 // 6. CORS SETTINGS
 const corsOrigins = ref([])
 const corsNewOrigin = ref('')
 const corsSaving = ref(false)
 const corsReport = ref(null)
+const corsSchemeChoices = ref([])
 
 async function loadCorsSettings() {
   try {
@@ -1695,16 +1960,26 @@ async function submitAddCorsOrigin() {
   if (!corsNewOrigin.value.trim()) return
   corsSaving.value = true
   corsReport.value = null
+  corsSchemeChoices.value = []
   try {
     await addCorsOrigin(corsNewOrigin.value.trim())
     corsNewOrigin.value = ''
     corsReport.value = { success: true, message: 'Origin added.' }
     await loadCorsSettings()
   } catch (err) {
-    corsReport.value = { success: false, message: err?.data?.error || err?.data?.message || 'Failed to add origin.' }
+    if (err?.data?.code === 'confirm_scheme') {
+      corsSchemeChoices.value = err.data.suggestions ?? []
+    } else {
+      corsReport.value = { success: false, message: err?.data?.error || err?.data?.message || 'Failed to add origin.' }
+    }
   } finally {
     corsSaving.value = false
   }
+}
+
+async function pickCorsScheme(choice) {
+  corsNewOrigin.value = choice
+  await submitAddCorsOrigin()
 }
 
 async function removeCorsOrigin(id) {

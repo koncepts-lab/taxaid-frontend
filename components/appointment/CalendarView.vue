@@ -83,21 +83,13 @@
                 <!-- Appointment Pills -->
                 <div class="flex flex-col gap-1 mt-0.5">
                     <template v-for="(appt, i) in getAppointmentsForDay(day)" :key="i">
-                        <!-- extra_hours: pill color = pending normally / extra_hours when that filter active -->
-                        <!-- dot at right = extra_hours accent color to signal extra allocation -->
-                        <div v-if="appt.status === 'extra_hours'"
+                        <!-- bar color = pending/completed/cancelled/monthly review legend color; scheduled/rescheduled/extra_hours = dot -->
+                        <button
                             @click="openDetails(appt)"
-                            class="w-full flex items-center gap-1 px-2 py-0.5 rounded-[5px] cursor-pointer hover:opacity-80 active:scale-[0.97] transition-all"
-                            :style="extraHoursPillStyle">
-                            <span class="text-[11px] font-medium truncate flex-1 min-w-0">{{ appt.consultant }}</span>
-                            <span class="w-2 h-2 rounded-full flex-shrink-0" :style="{ background: getStatusText('extra_hours') }"></span>
-                        </div>
-                        <!-- Normal appointment pill -->
-                        <button v-else
-                            @click="openDetails(appt)"
-                            class="w-full text-left px-2 py-0.5 rounded-[5px] text-[11px] font-medium truncate transition-all cursor-pointer hover:opacity-80 active:scale-[0.97]"
-                            :style="{ background: getStatusBg(appt.status), color: getStatusText(appt.status) }">
-                            {{ appt.consultant }}
+                            class="w-full flex items-center gap-1 text-left px-2 py-0.5 rounded-[5px] text-[11px] font-medium transition-all cursor-pointer hover:opacity-80 active:scale-[0.97]"
+                            :style="pillStyle(appt)">
+                            <span class="truncate flex-1 min-w-0">{{ pillLabel(appt) }}</span>
+                            <span v-if="dotStatus(appt)" class="w-2 h-2 rounded-full flex-shrink-0" :style="{ background: getStatusText(dotStatus(appt)) }"></span>
                         </button>
                     </template>
                 </div>
@@ -155,7 +147,7 @@ const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const monthLabel = computed(() => {
     const d = new Date(currentYear.value, currentMonth.value, 1)
-    return formatInMillions(d)
+    return d.toLocaleDateString(currentLang.value === 'ar' ? 'ar-AE-u-nu-latn' : 'en-US', { month: 'long', year: 'numeric' })
 })
 
 const daysInMonth = computed(() => {
@@ -255,11 +247,25 @@ const { legend: dynamicLegend, statusStyles, statusFilter } = useAppointmentsPag
 const getStatusBg   = (status) => statusStyles.value[status]?.bg   || '#F3F4F6'
 const getStatusText = (status) => statusStyles.value[status]?.text || '#6B7280'
 
-// extra_hours pill: pending color by default; switches to extra_hours color when that filter is active
-const extraHoursPillStyle = computed(() => {
-    const base = statusFilter.value === 'extra_hours' ? 'extra_hours' : 'pending'
-    return { background: getStatusBg(base), color: getStatusText(base) }
-})
+const BASE_PENDING_STATUSES = ['scheduled', 'rescheduled', 'extra_hours']
+
+// Dot: scheduled/rescheduled state, or extra hours on a completed meeting that actually used them
+const dotStatus = (appt) => {
+    if (appt.status === 'completed' && appt.uses_extra_hours) return 'extra_hours'
+    return ['scheduled', 'rescheduled'].includes(appt.status) ? appt.status : null
+}
+
+const barStatus = (appt) => {
+    if (appt._monthly_review) return 'monthly_review'
+    if (appt.status === 'extra_hours' && statusFilter.value === 'extra_hours') return 'extra_hours'
+    return BASE_PENDING_STATUSES.includes(appt.status) ? 'pending' : appt.status
+}
+
+const pillStyle = (appt) => ({ background: getStatusBg(barStatus(appt)), color: getStatusText(barStatus(appt)) })
+
+const pillLabel = (appt) => appt._monthly_review
+    ? (currentLang.value === 'ar' ? 'المراجعة الشهرية' : 'Monthly Review')
+    : (appt.type || appt.consultant)
 
 // ─── Legend ───────────────────────────────────────────────────────────────────
 const legend = computed(() => {

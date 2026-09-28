@@ -27,8 +27,8 @@
                     <template v-else>
                         <tr v-for="(log, idx) in logs" :key="idx" class="transition-colors border-b last:border-none h-[52px]"
                             :class="isDark ? 'bg-[#00141080] border-white/5 text-white/70' : 'bg-white border-gray-100 text-[#4D4D4D]'">
-                            <td class="px-6 py-4 text-sm whitespace-nowrap">{{ log.date }}</td>
-                            <td class="px-4 py-4 text-sm whitespace-nowrap">{{ log.time }}</td>
+                            <td class="px-6 py-4 text-sm whitespace-nowrap">{{ formatDisplayDate(log.date) }}</td>
+                            <td class="px-4 py-4 text-sm whitespace-nowrap">{{ formatDisplayTime(log.time) }}</td>
                             <td class="px-4 py-4 text-sm whitespace-nowrap">{{ log.user }}</td>
                             <td class="px-4 py-4 text-sm">{{ log.details }}</td>
                         </tr>

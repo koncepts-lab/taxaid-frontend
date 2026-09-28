@@ -462,7 +462,7 @@ const masterlistLoading = ref(false)
 
 // Client Fixed — monthly reviews (backend paginated)
 const { reviews: fixedRows, meta: fixedMeta, fetchReviews } = useAdminMonthlyReviews()
-const currentMonth = new Date().toISOString().slice(0, 7)
+const currentMonth = localIsoMonth()
 const fixedCurrentPage = ref(1)
 
 function fixedNext() {

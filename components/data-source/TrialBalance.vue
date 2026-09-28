@@ -199,10 +199,7 @@
                     <span class="ml-3 text-sm text-gray-500 whitespace-nowrap">
                         {{ currentLang === 'ar' ? 'صفوف لكل صفحة:' : 'Rows per page:' }}
                     </span>
-                    <select v-model="localPerPage" @change="handlePerPageChange"
-                        class="border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white text-gray-700 focus:ring-1 focus:ring-[#00896F] outline-none appearance-none">
-                        <option v-for="opt in perPageOptions" :key="opt" :value="opt">{{ opt }}</option>
-                    </select>
+                    <CommonSelectDropdown class="w-20" mode="select" size="xs" :clearable="false" :options="perPageOptions" :model-value="localPerPage" @update:model-value="v => { localPerPage = v; handlePerPageChange() }" />
                 </div>
             </div>
         </div>
@@ -523,10 +520,7 @@
                             <span class="ml-3 text-sm text-gray-500 whitespace-nowrap">
                                 {{ currentLang === 'ar' ? 'صفوف لكل صفحة:' : 'Rows per page:' }}
                             </span>
-                            <select v-model="localPerPage" @change="handlePerPageChange"
-                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white text-gray-700 focus:ring-1 focus:ring-[#00896F] outline-none appearance-none">
-                                <option v-for="opt in perPageOptions" :key="opt" :value="opt">{{ opt }}</option>
-                            </select>
+                            <CommonSelectDropdown class="w-20" mode="select" size="xs" :clearable="false" :options="perPageOptions" :model-value="localPerPage" @update:model-value="v => { localPerPage = v; handlePerPageChange() }" />
                         </div>
                     </div>
 
@@ -696,12 +690,10 @@ const toDateInput = (str) => {
     if (ddMonYYYY) {
         const mon = MONTH_MAP[ddMonYYYY[2]]
         if (mon !== undefined) {
-            const d = new Date(parseInt(ddMonYYYY[3]), mon, parseInt(ddMonYYYY[1]))
-            return d.toISOString().split('T')[0]
+            return localIsoDate(new Date(parseInt(ddMonYYYY[3]), mon, parseInt(ddMonYYYY[1])))
         }
     }
-    const d = new Date(str)
-    return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0]
+    return toIsoDay(str)
 }
 
 const NO_FROM_LABELS = ['CT Due date', 'Go live date (as on)', 'Historical data since']
@@ -729,7 +721,7 @@ const strToDate = (str) => {
 }
 const dateToStr = (d) => {
     if (!d) return ''
-    return new Date(d).toISOString().split('T')[0]
+    return toIsoDay(d)
 }
 const displayDate = (str) => {
     if (!str) return ''

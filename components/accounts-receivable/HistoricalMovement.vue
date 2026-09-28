@@ -7,7 +7,7 @@
     <div class="flex flex-col lg:flex-row justify-between items-start mb-6 relative z-10 w-full gap-4" :class="isDark ? 'text-white' : 'text-[#000000]'">
       <div class="flex flex-col">
         <h2 class="text-[17px] font-medium leading-tight">{{ currentLang === 'ar' ? 'حركة حسابات القبض التاريخية' : 'AR balances historical movement' }}</h2>
-        <p class="text-[13px] font-normal mt-1" :class="isDark ? 'text-white opacity-60' : 'text-[#00000091]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+        <p class="text-[13px] font-normal mt-1" :class="isDark ? 'text-white opacity-60' : 'text-[#00000091]'">{{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}</p>
       </div>
       <div class="flex items-center gap-3 lg:gap-6 w-full lg:w-auto justify-between lg:justify-end">
         <!-- Custom Legend -->
@@ -17,13 +17,15 @@
             <span class="text-[11px] lg:text-[13px] font-normal leading-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'رصيد حسابات القبض' : 'Account Receivable Balance' }}</span>
           </div>
         </div>
+        <CommonInfoTooltip tip="accountsReceivable.historical" align="right" />
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-6 h-6 opacity-70 hover:opacity-100 transition-opacity cursor-pointer ml-4 hidden lg:block" @click="isModalOpen = true" />
       </div>
     </div>
 
     <!-- Chart -->
     <div class="flex-1 w-full relative z-10 min-h-[300px]">
-      <div v-if="!data || data.length === 0" class="absolute inset-0 z-20 flex items-center justify-center">
+      <div v-if="loading" class="absolute inset-0 rounded-2xl animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+      <div v-else-if="!data || data.length === 0" class="absolute inset-0 z-20 flex items-center justify-center">
         <div class="flex flex-col items-center gap-3 text-center px-6">
           <p class="text-sm font-medium opacity-60" :class="isDark ? 'text-white' : 'text-[#013E32]'">
             {{ currentLang === 'ar' ? 'البيانات فارغة' : 'Data empty' }}
@@ -48,7 +50,7 @@
           <div class="flex justify-between items-center py-6 px-8 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
             <div class="flex flex-col">
               <h2 class="text-lg font-medium leading-tight" :class="isDark ? 'text-white' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'حركة حسابات القبض التاريخية' : 'AR balances historical movement' }}</h2>
-              <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+              <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}</p>
             </div>
             <div class="flex items-center gap-6">
               <!-- Custom Legend -->
@@ -92,17 +94,23 @@
 import { ref, computed } from 'vue'
 
 const props = defineProps({
-  data: { type: Object, default: () => ({ categories: [], arBalance: [], percentage: [] }) }
+  data: { type: Object, default: () => ({ categories: [], arBalance: [], percentage: [] }) },
+  loading: { type: Boolean, default: false }
 })
+
+const { formatWhole: fmt, axisFor } = useChartHelper()
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
+const rawBalance = computed(() => props.data?.arBalanceRaw ?? (props.data?.arBalance ?? []).map(v => Number(v) * 1_000_000))
+const axis = computed(() => axisFor(Math.max(0, ...rawBalance.value)))
+
 const series = computed(() => [
   {
     name: 'AR Balance',
-    data: props.data?.arBalance ?? []
+    data: rawBalance.value
   },
   {
     name: 'Percentage',
@@ -111,10 +119,6 @@ const series = computed(() => [
 ])
 
 const chartOptions = computed(() => {
-  const allData = series.value[0]?.data || []
-  const rawMax = Math.max(...allData, 0)
-  const dynamicMax = rawMax > 4 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
-
   return ({
   chart: {
     type: 'line',
@@ -164,8 +168,8 @@ const chartOptions = computed(() => {
   yaxis: [
     {
       min: 0,
-      max: dynamicMax,
-      tickAmount: 5,
+      max: axis.value.max,
+      tickAmount: axis.value.ticks,
       axisBorder: {
         show: true,
         color: isDark.value ? '#FFFFFF0F' : '#EFEFEF',
@@ -176,7 +180,7 @@ const chartOptions = computed(() => {
           colors: isDark.value ? '#FFFFFF' : '#00000091',
           fontSize: '12px'
         },
-        formatter: (val) => val === 0 ? '0' : val + 'M'
+        formatter: (val) => val === 0 ? '0' : fmt(val)
       }
     },
     {
@@ -211,7 +215,7 @@ const chartOptions = computed(() => {
           <div class="tooltip-body">
             <div class="tooltip-row">
               <span class="label">${currentLang.value === 'ar' ? 'رصيد حسابات القبض' : 'AR Balance'}:</span>
-              <span class="value">AED ${bal.toString().replace('.', ',')}M</span>
+              <span class="value">AED ${fmt(bal)}</span>
             </div>
           </div>
         </div>
@@ -233,7 +237,7 @@ const chartOptions = computed(() => {
         yaxis: [
           {
             labels: {
-              formatter: (val) => Math.abs(val) === 0 ? '0' : Math.abs(val) + 'M',
+              formatter: (val) => Math.abs(val) === 0 ? '0' : fmt(Math.abs(val)),
               style: {
                 fontSize: '11px',
                 colors: isDark.value ? '#FFFFFFBF' : '#00000091'

@@ -76,13 +76,11 @@
                     <div class="grid grid-cols-2 gap-4 mt-2">
                         <div>
                             <label class="text-sm font-semibold text-gray-800 mb-1 block">Period From</label>
-                            <input v-model="form.period_from" type="date"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-base text-gray-900 focus:outline-none focus:border-[#008169]" />
+                            <CommonDateField v-model="form.period_from" allow-future />
                         </div>
                         <div>
                             <label class="text-sm font-semibold text-gray-800 mb-1 block">Period To</label>
-                            <input v-model="form.period_to" type="date"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-base text-gray-900 focus:outline-none focus:border-[#008169]" />
+                            <CommonDateField v-model="form.period_to" allow-future />
                         </div>
                         <div>
                             <label class="text-sm font-semibold text-gray-800 mb-1 block">Standard Rated Supplies</label>

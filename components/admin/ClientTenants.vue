@@ -48,6 +48,12 @@
 
       <div v-if="orgSubtab === 'organization'" class="mt-4">
         <AdminOrgTenantsCard :key="'org-' + selectedOrgId + '-' + tenantsReload" :organization-id="selectedOrgId" :can-rename="isSuperAdmin" @rename="openRename" @open-tenant="openTenant" @changed="loadOrg(selectedOrgId)" />
+
+        <AdminOrgTimezone v-if="representativeTenantId" :key="'org-tz-' + selectedOrgId" class="mt-4"
+          :tenant-id="representativeTenantId" />
+
+        <AdminOrgRegion v-if="representativeTenantId" :key="'org-region-' + selectedOrgId" class="mt-4"
+          :tenant-id="representativeTenantId" />
       </div>
 
       <AdminClientStatusUsers v-else-if="orgSubtab === 'users' && representativeTenantId" :key="selectedOrgId"
@@ -141,7 +147,10 @@
                 <td class="py-4 px-6 whitespace-nowrap">{{ o.plan_name || 'No plan' }}</td>
                 <td class="py-4 px-6">{{ o.tenants_count }}</td>
                 <td class="py-4 px-6">
-                  <div class="flex flex-wrap gap-1.5">
+                  <div v-if="o.organization_status === 'suspended'" class="flex flex-wrap gap-1.5">
+                    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-medium bg-amber-100 text-amber-700">Organization suspended</span>
+                  </div>
+                  <div v-else class="flex flex-wrap gap-1.5">
                     <span v-for="(count, status) in o.status_counts" :key="status"
                       :class="statusClass(status)" class="inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-medium capitalize">{{ count }} {{ status }}</span>
                   </div>

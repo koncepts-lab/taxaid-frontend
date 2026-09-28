@@ -13,6 +13,7 @@
         <SettingsCompanyAiAlert />
         <SettingsCompanyMailSettings />
         <SettingsOrganizationSettingsRolesManagementTeamManagement v-if="can('team.manage')" />
+        <SettingsCompanyTimezoneSettings />
       </div>
 
     </div>

@@ -1,5 +1,5 @@
 <template>
-    <div class="mb-8 p-4 rounded-2xl flex items-center gap-4 transition-all"
+    <div v-if="extraHoursAllowed > 0" class="mb-8 p-4 rounded-2xl flex items-center gap-4 transition-all"
         :class="isDark ? 'bg-[#00FFBC]/10 border border-[#00FFBC]/30 text-[#00FFBC]' : 'bg-[#40D9B1A6] border border-[#00FFBC]/20 text-[#013e32]'">
         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
             <img src="/images/icons/bulb.svg" class="w-5 h-5" :class="isDark ? 'invert' : ''" />
@@ -13,7 +13,7 @@
 <script setup>
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
-const { banner } = useAppointmentsPage()
+const { banner, extraHoursAllowed } = useAppointmentsPage()
 </script>
 
 <style scoped>

@@ -10,7 +10,7 @@
           {{ currentLang === 'ar' ? 'الرسم البياني حسب التقادم' : 'Graph based on aging' }}
         </h2>
         <p class="text-[12px] font-regular mt-1 opacity-80">
-          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+          {{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}
         </p>
       </div>
       <div class="flex items-center gap-3 lg:gap-6 w-full lg:w-auto justify-between lg:justify-end">
@@ -29,13 +29,15 @@
             <span class="opacity-90 leading-normal">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
           </div>
         </div>
+        <CommonInfoTooltip tip="accountsReceivable.aging" light align="right" />
         <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity hidden lg:block" @click="isModalOpen = true" />
       </div>
     </div>
 
     <!-- Chart -->
     <div class="flex-1 w-full min-h-[320px] relative z-10">
-      <div v-if="!series || series.every(s => !s.data || s.data.length === 0)" class="absolute inset-0 z-20 flex items-center justify-center">
+      <div v-if="loading" class="absolute inset-0 rounded-2xl bg-white/10 animate-pulse"></div>
+      <div v-else-if="!series || series.every(s => !s.data || s.data.length === 0)" class="absolute inset-0 z-20 flex items-center justify-center">
         <div class="flex flex-col items-center gap-3 text-center px-6">
           <p class="text-sm font-medium opacity-60 text-white">
             {{ currentLang === 'ar' ? 'البيانات فارغة' : 'Data empty' }}
@@ -63,7 +65,7 @@
                 {{ currentLang === 'ar' ? 'الرسم البياني حسب التقادم' : 'Graph based on aging' }}
               </h2>
               <p class="text-xs font-regular mt-1 opacity-80">
-                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+                {{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}
               </p>
             </div>
             <div class="flex items-center gap-6">
@@ -116,8 +118,11 @@
 import { ref, computed } from 'vue'
 
 const props = defineProps({
-  agingData: { type: Object, default: () => ({}) }
+  agingData: { type: Object, default: () => ({}) },
+  loading: { type: Boolean, default: false }
 })
+
+const { formatWhole: fmt, axisFor, plotter } = useChartHelper()
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
@@ -132,29 +137,33 @@ const agingCategories = computed(() => props.agingData?.agingCategories ?? [
 
 const percentOfTotal = computed(() => props.agingData?.percentOfTotal ?? [])
 
-const series = computed(() => [
-  {
-    name: 'Previous Year',
-    type: 'bar',
-    data: props.agingData?.previousYearData ?? []
-  },
-  {
-    name: 'Current Year',
-    type: 'bar',
-    data: props.agingData?.currentYearData ?? []
-  },
-  {
-    name: 'Cumulative %',
-    type: 'line',
-    data: props.agingData?.cumulativeData ?? []
-  }
-])
+const rawPrevious = computed(() => props.agingData?.previousYearRaw ?? [])
+const rawCurrent = computed(() => props.agingData?.currentYearRaw ?? [])
+const barPeak = computed(() => Math.max(0, ...rawPrevious.value, ...rawCurrent.value))
+const axis = computed(() => axisFor(barPeak.value))
+
+const series = computed(() => {
+  const plot = plotter(barPeak.value)
+  return [
+    {
+      name: 'Previous Year',
+      type: 'bar',
+      data: rawPrevious.value.map(plot)
+    },
+    {
+      name: 'Current Year',
+      type: 'bar',
+      data: rawCurrent.value.map(plot)
+    },
+    {
+      name: 'Cumulative %',
+      type: 'line',
+      data: props.agingData?.cumulativeData ?? []
+    }
+  ]
+})
 
 const chartOptions = computed(() => {
-  const allBarData = [...series.value[0].data, ...series.value[1].data]
-  const rawMax = Math.max(...allBarData, 0)
-  const dynamicMax = rawMax > 4 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
-
   const allCumulativeData = series.value[2]?.data || []
   const rawCumulativeMax = Math.max(...allCumulativeData, 100)
   const dynamicCumulativeMax = Math.ceil(rawCumulativeMax / 5) * 5
@@ -190,7 +199,7 @@ const chartOptions = computed(() => {
       colors: ['#FFFFFFBF'],
       fontWeight: 400
     },
-    formatter: (val) => val.toString().replace('.', ',') + 'M'
+    formatter: (val, { seriesIndex, dataPointIndex }) => fmt((seriesIndex === 0 ? rawPrevious.value : rawCurrent.value)[dataPointIndex])
   },
   markers: {
     size: [0, 0, 6],
@@ -221,8 +230,8 @@ const chartOptions = computed(() => {
     {
       seriesName: 'Previous Year',
       min: 0,
-      max: dynamicMax,
-      tickAmount: 5,
+      max: axis.value.max,
+      tickAmount: axis.value.ticks,
       axisBorder: {
         show: true,
         color: '#00403399',
@@ -234,14 +243,14 @@ const chartOptions = computed(() => {
           fontSize: '13px',
           colors: '#FFFFFFBF'
         },
-        formatter: (val) => val === 0 ? '0' : val + 'M'
+        formatter: (val) => val === 0 ? '0' : fmt(val)
       }
     },
     {
       seriesName: 'Current Year',
       show: false,
       min: 0,
-      max: dynamicMax
+      max: axis.value.max
     },
     {
       seriesName: 'Cumulative %',
@@ -274,7 +283,7 @@ const chartOptions = computed(() => {
     custom: function({ series: s, dataPointIndex }) {
       const cat = agingCategories.value[dataPointIndex]
       const catLabel = currentLang.value === 'ar' ? cat.ar : cat.en
-      const curYear = s[1][dataPointIndex]
+      const curYear = rawCurrent.value[dataPointIndex] ?? 0
       const cumPct  = s[2][dataPointIndex]
       const pctTot  = percentOfTotal.value[dataPointIndex]
 
@@ -288,7 +297,7 @@ const chartOptions = computed(() => {
           <div class="tooltip-body">
             <div class="tooltip-row">
               <span class="label">${cyrLabel}:</span>
-              <span class="value teal">AED ${curYear.toString().replace('.', ',')}M</span>
+              <span class="value teal">AED ${fmt(curYear)}</span>
             </div>
             <div class="tooltip-row">
               <span class="label">${totLabel}:</span>
@@ -323,7 +332,7 @@ const chartOptions = computed(() => {
         yaxis: [
           {
             labels: {
-              formatter: (val) => Math.abs(val) === 0 ? '0' : Math.abs(val) + 'M',
+              formatter: (val) => Math.abs(val) === 0 ? '0' : fmt(Math.abs(val)),
               style: {
                 fontSize: '11px',
                 colors: '#FFFFFFBF'

@@ -17,7 +17,7 @@ export function useNotifications() {
   }
 
   // mode: 'dashboard' -> { ticket_count, default_count }; 'page' -> paginated { data, total, ... }
-  async function fetchNotifications(params: { type?: 'ticket' | 'default'; mode?: 'dashboard' | 'page'; page?: number; per_page?: number } = {}): Promise<any> {
+  async function fetchNotifications(params: { type?: 'ticket' | 'default'; mode?: 'dashboard' | 'page'; page?: number; per_page?: number; date?: string } = {}): Promise<any> {
     return await apiFetch('/admin/notifications-feed', { params })
   }
 
@@ -32,7 +32,7 @@ export function useNotifications() {
         message: n.message,
         time,
         category: n.category === 'default' ? 'Default' : 'Ticket',
-        unread: n.category === 'ticket' ? !n.is_read : false,
+        unread: !n.is_read,
       }
       if (!byDate.has(date)) byDate.set(date, [])
       byDate.get(date)!.push(entry)
@@ -40,5 +40,13 @@ export function useNotifications() {
     return Array.from(byDate.entries()).map(([date, items]) => ({ id: date, date, items }))
   }
 
-  return { fetchNotifications, toGroups }
+  function markRead(notificationId: number): Promise<any> {
+    return apiFetch(`/admin/notifications/${notificationId}/read`, { method: 'PUT' })
+  }
+
+  function markAllRead(): Promise<any> {
+    return apiFetch('/admin/notifications/read-all', { method: 'PUT' })
+  }
+
+  return { fetchNotifications, markRead, markAllRead, toGroups }
 }

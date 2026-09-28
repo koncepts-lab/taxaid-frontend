@@ -133,7 +133,7 @@
                 </tr>
                 <tr v-for="(entry, index) in manualEntries" :key="index" class="bg-white">
                   <td class="py-2 px-2">
-                    <input type="date" v-model="entry.date" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64]" />
+                    <CommonDateField v-model="entry.date" size="sm" allow-future />
                   </td>
                   <td class="py-2 px-2">
                     <input type="text" v-model="entry.projectName" placeholder="Enter project name" class="w-full bg-gray-50 border border-gray-200 rounded-md py-1.5 px-3 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#058a64] placeholder-gray-400" />

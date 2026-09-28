@@ -6,12 +6,7 @@
  * Shared state: activeDate is global so the page and all components stay in sync.
  */
 
-const todayYMD = () => {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-export const arActiveDate = ref(todayYMD())
+export const arActiveDate = ref('')
 
 // ── GAP-DAY FALLBACK TOGGLE ────────────────────────────────────────────────
 // true (default, also the behavior if this line is missing): a date with no
@@ -35,16 +30,32 @@ const _error              = ref<string | null>(null)
 const _snapshotDate   = ref<string | null>(null)
 const _requestedDate  = ref<string | null>(null)
 const _snapshotNotice = ref(false)
+const _goLiveDate     = ref<string | null>(null)
 
 async function fetchAll() {
   _loading.value = true
   _error.value   = null
-  const date = arActiveDate.value
-  const strict = ENABLE_SNAPSHOT_FALLBACK ? '' : '&strict_date=1'
+  let date = arActiveDate.value
+  const strict = !ENABLE_SNAPSHOT_FALLBACK
+  const withDate = (path: string, useStrict = true) => {
+    const parts: string[] = []
+    if (date) parts.push(`date=${date}`)
+    if (useStrict && strict) parts.push('strict_date=1')
+    return parts.length ? `${path}?${parts.join('&')}` : path
+  }
 
   try {
     // 1. Summary table (/ar-report)
-    const summaryRes: any = await useApi(`/ar-report?test_date=${date}${strict}`)
+    const summaryRes: any = await useApi(withDate('/ar-report'))
+
+    if (!date && summaryRes?.requested_date) {
+      date = summaryRes.requested_date
+      arActiveDate.value = date
+    }
+
+    _goLiveDate.value = summaryRes?.go_live_date ?? null
+    useState('cardPeriod').value = summaryRes?.period ?? null
+    useState('cardToday').value = summaryRes?.today ?? null
 
     if (ENABLE_SNAPSHOT_FALLBACK && summaryRes?.snapshot_date) {
       _requestedDate.value  = summaryRes.requested_date ?? date
@@ -74,7 +85,7 @@ async function fetchAll() {
     }
 
     // 2. Top customers chart (/ar-report/top-eight)
-    const topRes: any = await useApi(`/ar-report/top-eight?test_date=${date}${strict}`)
+    const topRes: any = await useApi(withDate('/ar-report/top-eight'))
     if (topRes?.status === 'success' && topRes.payload?.top_customers) {
       const customers = topRes.payload.top_customers
       const totalAR   = topRes.payload.total_ar_value ?? 1
@@ -84,6 +95,8 @@ async function fetchAll() {
         name:    c.customer,
         nameAr:  c.customer,
         value:   parseFloat((c.value / 1_000_000).toFixed(2)),
+        valueRaw: Number(c.value) || 0,
+        percentage: c.percentage ?? '0%',
       }))
 
       let running = 0
@@ -96,7 +109,7 @@ async function fetchAll() {
     }
 
     // 3. Aging graph (/ar-report/aging)
-    const agingRes: any = await useApi(`/ar-report/aging?test_date=${date}${strict}`)
+    const agingRes: any = await useApi(withDate('/ar-report/aging'))
     if (agingRes?.status === 'success' && agingRes.payload?.comparison_data) {
       const compData = agingRes.payload.comparison_data
       const toM = (v: any) => parseFloat(((v ?? 0) / 1_000_000).toFixed(2))
@@ -124,22 +137,27 @@ async function fetchAll() {
         totalCurrent > 0 ? Math.round(((b.value ?? 0) / totalCurrent) * 100) : 0
       )
 
-      _agingGraph.value = { agingCategories: categories, percentOfTotal, previousYearData, currentYearData, cumulativeData }
+      const previousYearRaw = previous.map((b: any) => Number(b.value) || 0)
+      const currentYearRaw  = current.map((b: any) => Number(b.value) || 0)
+
+      _agingGraph.value = { agingCategories: categories, percentOfTotal, previousYearData, currentYearData, previousYearRaw, currentYearRaw, cumulativeData }
     }
 
     // 4. Historical movement (/ar-report/timeline)
-    const timelineRes: any = await useApi(`/ar-report/timeline?test_date=${date}`)
+    const timelineRes: any = await useApi(withDate('/ar-report/timeline', false))
     if (timelineRes?.status === 'success' && timelineRes.payload?.ranges) {
       const ranges = timelineRes.payload.ranges
 
       const categories = ranges.map((r: any) => {
-        const d = new Date(r.start)
-        return formatInMillions(d)
+        const [y, m] = String(r.start).split('-')
+        return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
       })
       const arBalance  = ranges.map((r: any) => parseFloat(((r.ar_value ?? 0) / 1_000_000).toFixed(2)))
       const percentage = ranges.map(() => 0)
 
-      _historicalMovement.value = { categories, arBalance, percentage }
+      const arBalanceRaw = ranges.map((r: any) => Number(r.ar_value ?? 0))
+
+      _historicalMovement.value = { categories, arBalance, arBalanceRaw, percentage }
     }
 
   } catch (e: any) {
@@ -178,6 +196,7 @@ export function useAccountsReceivablePage() {
     snapshotDate:       _snapshotDate,
     requestedDate:      _requestedDate,
     snapshotNotice:     _snapshotNotice,
+    goLiveDate:         _goLiveDate,
     fetchAll,
     sendReminders,
   }

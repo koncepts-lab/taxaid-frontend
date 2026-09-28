@@ -1,14 +1,15 @@
 <template>
-  <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl max-h-100 overflow-y-auto"
+  <div class="w-full h-[29rem] transition-all duration-500 rounded-3xl overflow-y-auto"
     :class="isDark ? 'bg-[#00141080]' : 'bg-white shadow-sm'">
 
     <div class="py-5 lg:px-8 px-4 flex justify-between items-center">
       <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
         {{ currentLang === 'ar' ? 'ملخص مركز التكلفة' : 'Cost Center Summary' }}
+        <CommonInfoTooltip tip="costCenterSummary.table" light class="ml-2 rtl:ml-0 rtl:mr-2" />
       </p>
       <div class="flex gap-4 items-center">
         <p class="text-[12px] font-normal" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+          {{ valuesNote() }}
         </p>
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon"
           class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 max-lg:hidden" @click="isModalOpen = true" />
@@ -18,21 +19,33 @@
     <table class="w-full text-left rtl:text-right border-collapse ">
       <thead class="text-white sticky top-0 " :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
         <tr>
-          <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'الإيرادات' :
-            'Revenue' }}</th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ?
-            'تكلف المبيعات' : 'COGS' }}</th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ?
-            'المصروفات غير المباشرة' : 'Indirect Exp.' }}</th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'الربح' :
-            'Profit' }}</th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ? 'هامش الربح'
-            : 'Profit Margin' }}</th>
+          <th class="px-8 py-5 font-medium text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }} <CommonInfoTooltip tip="costCenterSummary.particulars" light /></span></th>
+          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'الإيرادات' :
+            'Revenue' }} <CommonInfoTooltip tip="costCenterSummary.revenue" light /></span></th>
+          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ?
+            'تكلف المبيعات' : 'COGS' }} <CommonInfoTooltip tip="costCenterSummary.cogs" light /></span></th>
+          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ?
+            'المصروفات غير المباشرة' : 'Indirect Exp.' }} <CommonInfoTooltip tip="costCenterSummary.indirect" light /></span></th>
+          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'الربح' :
+            'Profit' }} <CommonInfoTooltip tip="costCenterSummary.profit" light align="right" /></span></th>
+          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'هامش الربح'
+            : 'Profit Margin' }} <CommonInfoTooltip tip="costCenterSummary.margin" light align="right" /></span></th>
         </tr>
       </thead>
       <tbody>
-        <template v-for="(item, idx) in tableData" :key="idx">
+        <template v-if="isLoading">
+          <tr v-for="n in 6" :key="'sk' + n" class="border-b animate-pulse" :class="isDark ? 'border-white/5' : 'border-[#F2F2F2]'">
+            <td class="px-8 py-5"><div class="h-[14px] rounded" :class="[isDark ? 'bg-white/10' : 'bg-gray-200', n % 2 ? 'w-40' : 'w-56']"></div></td>
+            <td v-for="c in 4" :key="c" class="px-6 py-5"><div class="h-[14px] w-16 rounded" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+            <td class="px-6 py-5"><div class="h-[26px] w-16 rounded-full" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+          </tr>
+        </template>
+        <tr v-else-if="!tableData.length">
+          <td colspan="6" class="px-8 py-16 text-center text-[14px]" :class="isDark ? 'text-white/50' : 'text-gray-400'">
+            {{ currentLang === 'ar' ? 'لا توجد بيانات لهذا التاريخ' : 'No data for this date' }}
+          </td>
+        </tr>
+        <template v-for="(item, idx) in (isLoading ? [] : tableData)" :key="idx">
           <tr class="transition-all duration-500 border-b cursor-pointer" @mouseenter="onRowEnter"
             @mouseleave="onRowLeave" @click="goToDetail(item)"
             :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50'">
@@ -59,7 +72,7 @@
         </template>
       </tbody>
       <tfoot>
-        <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
+        <tr v-if="summaryTotal && !isLoading" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
           <td class="px-8 py-5 font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
             currentLang === 'ar' ? summaryTotal.labelAr : summaryTotal.label }}</td>
           <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
@@ -91,9 +104,10 @@
             <div>
               <p class="text-lg font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
                 {{ currentLang === 'ar' ? 'ملخص مركز التكلفة' : 'Cost Center Summary' }}
+                <CommonInfoTooltip tip="costCenterSummary.table" class="ml-2 rtl:ml-0 rtl:mr-2" />
               </p>
               <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+                {{ valuesNote() }}
               </p>
             </div>
             <button @click="isModalOpen = false"
@@ -107,19 +121,18 @@
             <table class="w-full text-left rtl:text-right border-collapse relative">
               <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
                 <tr>
-                  <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}
-                  </th>
-                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ?
-                    'الإيرادات' : 'Revenue' }}</th>
-                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ?
-                    'تكلفة المبيعات' : 'COGS' }}</th>
-                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ?
-                    'المصروفات غير المباشرة' : 'Indirect Exp.' }}</th>
-                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ?
+                  <th class="px-8 py-5 font-medium text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }} <CommonInfoTooltip tip="costCenterSummary.particulars" light /></span></th>
+                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ?
+                    'الإيرادات' : 'Revenue' }} <CommonInfoTooltip tip="costCenterSummary.revenue" light /></span></th>
+                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ?
+                    'تكلفة المبيعات' : 'COGS' }} <CommonInfoTooltip tip="costCenterSummary.cogs" light /></span></th>
+                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ?
+                    'المصروفات غير المباشرة' : 'Indirect Exp.' }} <CommonInfoTooltip tip="costCenterSummary.indirect" light /></span></th>
+                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ?
                     'الربح' :
-                    'Profit' }}</th>
-                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]">{{ currentLang === 'ar' ?
-                    'هامش الربح' : 'Profit Margin' }}</th>
+                    'Profit' }} <CommonInfoTooltip tip="costCenterSummary.profit" light align="right" /></span></th>
+                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ?
+                    'هامش الربح' : 'Profit Margin' }} <CommonInfoTooltip tip="costCenterSummary.margin" light align="right" /></span></th>
                 </tr>
               </thead>
               <tbody class="bg-white">
@@ -195,6 +208,7 @@
 import { ref, onMounted } from 'vue'
 
 const { isDark } = useTheme()
+const { valuesNote } = useCurrency()
 const currentLang = useState('currentLang', () => 'en')
 const router = useRouter()
 
@@ -214,32 +228,27 @@ const onRowLeave = () => {
   hoveredRowRect.value = null
 }
 
-const todayDDMMYYYY = () => {
-  const d = new Date()
-  return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`
-}
-
-const selectedDate = ref(todayDDMMYYYY())
+const selectedDate = ref('')
 
 const goToDetail = (item) => {
   router.push({
     path: `/cost-center/${item.id}`,
-    query: { date: selectedDate.value }
+    query: selectedDate.value ? { date: selectedDate.value } : {}
   })
 }
 
 // Mapping Function to clean and format API data
+// Values are shown exactly as the API sends them; COGS is "-" only when the API has no COGS for the row.
 const mapApiData = (item) => {
   return {
     id: item.id,
     label: item.cost_center,
-    labelAr: item.cost_center, // API doesn't provide Arabic, using same for now
+    labelAr: item.cost_center,
     revenue: item.revenue,
-    cogs: item.cogs || '-',
+    cogs: item.direct_expenses ?? '-',
     indirectExp: item.indirect_expenses,
     profit: item.profit,
-    // Convert margin string "-433.7%" to numeric -433.7 for the CSS logic
-    margin: parseFloat(item.profit_margin.replace('%', ''))
+    margin: parseFloat(String(item.profit_margin).replace('%', ''))
   }
 }
 
@@ -247,9 +256,16 @@ const fetchSummaryData = async (dateStr = selectedDate.value) => {
   isLoading.value = true
   try {
     // 2. Use a Template Literal for a dynamic URL
-    const response = await useApi(`cost-center/summary-by-date?date=${dateStr}`, {
+    const response = await useApi(dateStr ? `cost-center/summary-by-date?date=${dateStr}` : 'cost-center/summary-by-date', {
       method: 'GET'
     })
+
+    if (dateStr) {
+      selectedDate.value = dateStr
+    } else if (response?.to_date) {
+      const [y, m, d] = String(response.to_date).split('-')
+      selectedDate.value = `${d}-${m}-${y}`
+    }
 
     if (response.status === 'success' && response.data) {
       const rawData = [...response.data]

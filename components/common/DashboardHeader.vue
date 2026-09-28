@@ -16,6 +16,13 @@
                     <p class="text-sm mt-1" :class="isDark ? 'text-white/60' : 'text-black/50'">
                         {{ currentLang === 'ar' ? subtitle?.ar : subtitle?.en }}
                     </p>
+                    <div v-if="!hasPeriod && waitingForPeriod" class="mt-1 h-4 flex items-center" aria-hidden="true">
+                        <div class="h-3 w-64 max-w-full rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                    </div>
+                    <p v-else-if="hasPeriod" class="text-xs mt-1 h-4 leading-4" :class="isDark ? 'text-[#6FDBBF]' : 'text-[#00896F]'">
+                        <template v-if="cardPeriod.from">{{ currentLang === 'ar' ? 'عرض البيانات من' : 'Showing data from' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.from) }}</span> {{ currentLang === 'ar' ? 'إلى' : 'to' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.to) }}</span></template>
+                        <template v-else>{{ currentLang === 'ar' ? 'البيانات حتى تاريخ' : 'Showing data as of' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.as_of) }}</span></template>
+                    </p>
                 </div>
             </div>
 
@@ -96,7 +103,7 @@
 
                                     <VDatePicker v-else v-model="singleDate" :is-dark="isDark"
                                         :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
-                                        :min-date="minDate" :max-date="today" @update:model-value="handleSingleChange" />
+                                        :min-date="minDate" :max-date="today" :initial-page="singleDate ? undefined : currMonthPage" @update:model-value="handleSingleChange" />
                                 </div>
                                 <template v-else>
                                     <div v-for="period in periods" :key="period.en" class="relative group">
@@ -168,7 +175,7 @@
 
                                                 <VDatePicker v-else v-model="singleDate" :is-dark="isDark"
                                                     :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
-                                                    :min-date="minDate" :max-date="today" @update:model-value="handleSingleChange" />
+                                                    :min-date="minDate" :max-date="today" :initial-page="singleDate ? undefined : currMonthPage" @update:model-value="handleSingleChange" />
                                             </div>
                                         </div>
                                     </div>
@@ -191,28 +198,28 @@
 
                     <!-- Export Group -->
                     <div class="relative" v-if="showExport">
-                        <button @click="showExportDropdown = !showExportDropdown; if(showExportDropdown) showDateDropdown = false"
+                        <button @click="emit('export')"
                             class="w-[40px] h-[40px] flex items-center justify-center border rounded-lg transition-all"
-                            :class="isDark ? 'bg-red-900 border-red-500' : 'bg-red-50 border-red-500 hover:bg-red-100'">
+                            :class="isDark ? 'bg-primary-900 border-primary-100' : 'bg-white border-[#03D8B0] hover:bg-gray-50'">
                             <img src="/images/icons/export.svg" alt="Export" class="w-5 h-5"
                                 :class="isDark ? 'invert' : ''" />
                         </button>
+                        <!--
                         <Transition name="dropdown">
                             <div v-if="showExportDropdown"
                                 class="absolute mt-2 w-56 border rounded-lg shadow-lg z-[100] py-2 px-2"
                                 :class="[isDark ? 'bg-primary-900 border-primary-100' : 'bg-white border-[#03D8B0]', currentLang === 'ar' ? 'left-0' : 'left-0 md:left-auto md:right-0']">
-                                <button @click="triggerExport('pdf')"
-                                    class="w-full px-4 py-3 text-sm rounded-lg flex items-center transition-colors"
-                                    :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-red-100 text-[#000]'">
-                                    {{ currentLang === 'ar' ? 'تصدير بصيغة PDF (.pdf)' : 'Export as PDF (.pdf)' }}
-                                </button>
                                 <button @click="triggerExport('excel')"
-                                    class="w-full px-4 py-3 text-sm rounded-lg flex items-center transition-colors mt-1"
-                                    :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-green-100 text-[#000]'">
-                                    {{ currentLang === 'ar' ? 'تصدير بصيغة Excel (.xlsx)' : 'Export as Excel (.xlsx)' }}
+                                    class="w-full px-4 py-3 text-sm rounded-lg flex items-center hover:bg-teal-50 dark:hover:bg-white/10 text-black dark:text-white">
+                                    {{ currentLang === 'ar' ? 'تصدير بصيغة إكسل (.xlsx)' : 'Export as Excel (.xlsx)' }}
+                                </button>
+                                <button @click="triggerExport('pdf')"
+                                    class="w-full px-4 py-3 text-sm rounded-lg flex items-center hover:bg-teal-50 dark:hover:bg-white/10 text-black dark:text-white border-t border-gray-100 dark:border-white/5">
+                                    {{ currentLang === 'ar' ? 'تصدير بصيغة PDF (.pdf)' : 'Export as PDF (.pdf)' }}
                                 </button>
                             </div>
                         </Transition>
+                        -->
                     </div>
                 </div>
             </div>
@@ -221,7 +228,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
 import { format, subMonths, startOfYear, startOfQuarter, subQuarters, subYears } from 'date-fns'
 import { DatePicker as VDatePicker } from 'v-calendar'
 import 'v-calendar/dist/style.css'
@@ -255,7 +262,7 @@ const props = defineProps({
 })
 
 const { can } = usePermissions()
-const emit = defineEmits(['selected-date', 'reload', 'export-pdf', 'one-click-summary', 'period-change'])
+const emit = defineEmits(['selected-date', 'reload', 'export', 'export-pdf', 'export-excel', 'one-click-summary', 'period-change'])
 
 const router = useRouter()
 const { isDark } = useTheme()
@@ -292,7 +299,13 @@ const toDateFormatted = computed(() => {
 const fromDateLabel = computed(() => {
     return currentLang.value === 'ar' ? `منذ ${activePeriod.value} أشهر` : `${activePeriod.value} months ago`
 })
-const today = new Date()
+const cardToday = useState('cardToday', () => null)
+const serverToday = computed(() => {
+  const m = String(cardToday.value || '').match(/^(\d{4})-(\d{2})-(\d{2})/)
+  return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null
+})
+const today = serverToday
+const baseToday = () => serverToday.value ?? orgTodayDate()
 
 const range = ref({ start: null, end: null })
 const singleDate = ref(null)
@@ -300,9 +313,20 @@ const dateDropdownRef = ref(null)
 const exportDropdownRef = ref(null)
 
 // Calendar pages
-const currMonthPage = ref({ month: today.getMonth() + 1, year: today.getFullYear() });
-const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-const prevMonthPage = ref({ month: prevMonthDate.getMonth() + 1, year: prevMonthDate.getFullYear() });
+const pagesFor = (base) => {
+  const prev = new Date(base.getFullYear(), base.getMonth() - 1, 1)
+  return {
+    curr: { month: base.getMonth() + 1, year: base.getFullYear() },
+    prev: { month: prev.getMonth() + 1, year: prev.getFullYear() },
+  }
+}
+const currMonthPage = ref(pagesFor(baseToday()).curr);
+const prevMonthPage = ref(pagesFor(baseToday()).prev);
+watch(serverToday, (d) => {
+  if (!d) return
+  currMonthPage.value = pagesFor(d).curr
+  prevMonthPage.value = pagesFor(d).prev
+})
 
 const selectedPeriodKey = ref(props.periods[0]?.en || 'Year to Date')
 
@@ -346,22 +370,23 @@ const selectPeriod = (period) => {
 
     if (period.en !== 'Custom Range' && period.en !== 'Custom Date') {
         showDateDropdown.value = false
-        let startDate = new Date()
-        let endDate = new Date()
+        const t = baseToday()
+        let startDate = new Date(t)
+        let endDate = new Date(t)
 
-        if (period.en === 'Year to Date') startDate = startOfYear(today)
-        else if (period.en === 'This Quarter') startDate = startOfQuarter(today)
+        if (period.en === 'Year to Date') startDate = startOfYear(t)
+        else if (period.en === 'This Quarter') startDate = startOfQuarter(t)
         else if (period.en === 'Last Quarter') {
-            startDate = startOfQuarter(subQuarters(today, 1))
-            endDate = new Date(startOfQuarter(today).getTime() - 1)
+            startDate = startOfQuarter(subQuarters(t, 1))
+            endDate = new Date(startOfQuarter(t).getTime() - 1)
         }
-        else if (period.en === 'This Year') startDate = startOfYear(today)
+        else if (period.en === 'This Year') startDate = startOfYear(t)
         else if (period.en === 'Last Year') {
-            startDate = startOfYear(subYears(today, 1))
-            endDate = new Date(startOfYear(today).getTime() - 1)
+            startDate = startOfYear(subYears(t, 1))
+            endDate = new Date(startOfYear(t).getTime() - 1)
         }
-        else if (period.en === 'Previous 3 Months') startDate = subMonths(today, 3)
-        else if (period.en === 'Previous 6 Months') startDate = subMonths(today, 6)
+        else if (period.en === 'Previous 3 Months') startDate = subMonths(t, 3)
+        else if (period.en === 'Previous 6 Months') startDate = subMonths(t, 6)
 
         emit('selected-date', {
             ...period,
@@ -409,8 +434,15 @@ const handleClickOutside = (event) => {
     }
 }
 
+const cardPeriod = useState('cardPeriod', () => null)
+const hasPeriod = computed(() => !!(cardPeriod.value && (cardPeriod.value.from || cardPeriod.value.as_of)))
+// The period line is reserved while the card loads (skeleton); if nothing arrives the space is released
+const waitingForPeriod = ref(true)
+let periodTimer
+onMounted(() => { periodTimer = setTimeout(() => { waitingForPeriod.value = false }, 8000) })
+onBeforeUnmount(() => clearTimeout(periodTimer))
 onMounted(() => { document.addEventListener('mousedown', handleClickOutside) })
-onUnmounted(() => { document.removeEventListener('mousedown', handleClickOutside) })
+onUnmounted(() => { document.removeEventListener('mousedown', handleClickOutside); cardPeriod.value = null })
 
 // Helper for active dropdown styling
 const getDropdownItemClass = (period) => {

@@ -111,12 +111,7 @@
             </div>
             <div>
               <label class="block text-[13px] text-gray-600 mb-1.5">{{ currentLang === 'ar' ? 'التشفير' : 'Encryption' }}</label>
-              <select v-model="mailForm.encryption"
-                class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:border-[#00896F]">
-                <option value="tls">TLS (587)</option>
-                <option value="ssl">SSL (465)</option>
-                <option :value="null">{{ currentLang === 'ar' ? 'بدون' : 'None' }}</option>
-              </select>
+              <CommonSelectDropdown mode="select" :clearable="false" v-model="mailForm.encryption" :options="[{ value: 'tls', label: 'TLS (587)' }, { value: 'ssl', label: 'SSL (465)' }, { value: null, label: currentLang === 'ar' ? 'بدون' : 'None' }]" />
             </div>
             <div>
               <label class="block text-[13px] text-gray-600 mb-1.5">{{ currentLang === 'ar' ? 'اسم المستخدم *' : 'Username *' }}</label>

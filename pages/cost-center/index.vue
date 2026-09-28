@@ -2,21 +2,25 @@
   <NuxtLayout name="dashboard">
 
     <!-- 1. Container fills the screen height and prevents page-level scrolling -->
-    <div v-if="!isFullScreenChat" class="h-screen font-sans flex overflow-hidden relative z-10" :class="{ '': isDark }"
+    <div v-if="!isFullScreenChat" class="min-h-screen font-sans flex relative z-10" :class="{ '': isDark }"
       :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
       <!-- 2. LEFT AREA: Resizes dynamically -->
-      <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" :class="[
+      <div class="flex-1 min-w-0 transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" :class="[
         isChatOpen
           ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
           : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')
       ]">
         <div class="mx-auto pt-8 lg:pt-0">
 
-          <CommonDashboardHeader ref="headerRef" :title="{ en: 'Cost Center Analysis', ar: 'تحليل مركز التكلفة' }"
+          <CommonExportModal v-model="exportOpen" card="cost-center" date-mode="date" date-format="dmy"
+                        :title="{ en: 'Cost Center Analysis', ar: 'تحليل مركز التكلفة' }"
+                        :filters="{ date: ccDate }" />
+
+                    <CommonDashboardHeader ref="headerRef" :title="{ en: 'Cost Center Analysis', ar: 'تحليل مركز التكلفة' }"
             :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
             :periods="costCenterPeriods"
-            @export-pdf="handleExportPDF"
+            @export="exportOpen = true"
             @selected-date="handleDateChange" @reload="fetchData" @one-click-summary="handleOneClickSummary" />
           <div class="my-8">
             <CostCenterSummary ref="summaryRef" />
@@ -59,6 +63,7 @@
 </template>
 
 <script setup>
+const exportOpen = ref(false)
 import { ref } from 'vue'
 
 const isChatOpen = ref(false)
@@ -88,16 +93,11 @@ const costCenterPeriods = [
   { en: 'Custom Date', ar: 'تاريخ مخصص' },    // ✅ maps to ?date=dd-MM-yyyy
 ]
 
-const todayDDMMYYYY = () => {
-  const d = new Date()
-  return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`
-}
-
 const fetchData = async () => {
   if (headerRef.value) headerRef.value.resetToDefault()
-  ccDate.value = todayDDMMYYYY()
+  ccDate.value = ''
   await Promise.all([
-    summaryRef.value?.fetchSummaryData(),
+    summaryRef.value?.fetchSummaryData(''),
     fetchChart()
   ])
 }
@@ -113,10 +113,6 @@ const handleDateChange = (period) => {
   summaryRef.value?.fetchSummaryData(ccDate.value)
   fetchChart()
 }
-
-const handleExportPDF = async () => {
-  console.warn("PDF export is currently disabled.");
-};
 
 const { openOneClickSummary } = useAkeel()
 const handleOneClickSummary = () => openOneClickSummary('COST_CENTER', 'onclick_cost_center')

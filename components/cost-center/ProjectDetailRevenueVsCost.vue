@@ -6,10 +6,10 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center flex-shrink-0 relative">
       <div class="mb-2">
         <h2 class="text-[16px] font-regular text-white">
-          {{ currentLang === 'ar' ? 'الفعلي مقابل الميزانية - مشروع البرج السكني' : 'Actual vs Budget – Residential Tower Project' }}
+          {{ title }}
         </h2>
         <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white' : 'text-[#FFFFFF5C]'">
-          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+          {{ note }}
         </p>
       </div>
 
@@ -23,11 +23,7 @@
           <span class="w-3 h-3 rounded-full bg-[#00D8B0]"></span>
           <span class="text-white font-regular">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</span>
         </div>
-        <img 
-          src="/images/icons/info-white.svg" 
-          alt="Info" 
-          class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
-        />
+        <CommonInfoTooltip tip="costCenterDetail.chart" light align="right" />
         <img 
           src="/images/icons/expand-white.svg" 
           alt="Expand" 
@@ -39,8 +35,10 @@
 
     <!-- Chart -->
     <div class="flex-1 min-h-0 mt-0 relative">
+      <CommonUnitToggle storage-key="cc_chart_unit" class="absolute top-0 right-0 rtl:right-auto rtl:left-0 z-10" />
       <ClientOnly>
-        <apexchart
+        <CommonApexBarChart
+          :key="chartKey"
           type="bar"
           height="100%"
           :options="chartOptions"
@@ -59,10 +57,10 @@
           <div class="flex justify-between items-center py-6 px-8 border-b border-white/10 relative z-10">
             <div class="flex flex-col">
               <h2 class="text-lg font-regular text-white">
-                {{ currentLang === 'ar' ? 'الإيرادات مقابل التكلفة - مشروع البرج السكني' : 'Revenue vs Cost – Residential Tower Project' }}
+                {{ title }}
               </h2>
               <p class="text-xs font-regular mt-1" :class="isDark ? 'text-white' : 'text-[#FFFFFF5C]'">
-                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+                {{ note }}
               </p>
             </div>
             <div class="flex items-center gap-6">
@@ -84,8 +82,9 @@
           
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10 min-h-[350px]">
+            <CommonUnitToggle storage-key="cc_chart_unit" class="absolute top-3 right-8 rtl:right-auto rtl:left-8 z-10" />
             <ClientOnly>
-              <apexchart width="100%" height="100%" type="bar" :options="chartOptions" :series="series"></apexchart>
+              <CommonApexBarChart :key="chartKey" width="100%" height="100%" type="bar" :options="chartOptions" :series="series"></CommonApexBarChart>
             </ClientOnly>
           </div>
         </div>
@@ -95,7 +94,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
@@ -104,14 +103,60 @@ const props = defineProps({
   data: { type: Object, default: () => ({}) }
 })
 
-const tableRows = computed(() => props.data?.table_data ?? [])
+const { code: currency, valuesNote } = useCurrency()
+const projectName = computed(() => props.data?.cost_center || '')
 
+const { unit } = useChartHelper('cc_chart_unit')
+
+const title = computed(() => {
+  const base = currentLang.value === 'ar' ? 'الفعلي مقابل الميزانية' : 'Actual vs Budget'
+  return projectName.value ? `${base} – ${projectName.value}` : base
+})
+const note = computed(() => valuesNote(unit.value === 'millions'))
+
+const whole = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 })
+const million = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 })
+
+// Millions mode rounds only from 100,000 up; smaller values stay exact. Actual mode is always the full number.
+const fmt = (value) => {
+  const v = Number(value) || 0
+  if (unit.value === 'millions' && Math.abs(v) >= 100000) return `${million.format(v / 1_000_000)}M`
+  return whole.format(v)
+}
+
+const tableRows = computed(() => props.data?.table_data ?? [])
 const categories = computed(() => tableRows.value.map(row => row.particulars ?? ''))
+const rawActual = computed(() => tableRows.value.map(row => Number(row.actual ?? 0)))
+const rawBudget = computed(() => tableRows.value.map(row => Number(row.budget ?? 0)))
+
+const peak = computed(() => Math.max(0, ...rawActual.value, ...rawBudget.value))
+
+// Positive bars too small to see get a minimum height; labels and the tooltip still show the real value.
+const minVisible = computed(() => peak.value * 0.025)
+const plot = (value) => (value > 0 && value < minVisible.value ? minVisible.value : value)
 
 const series = computed(() => [
-  { name: 'Actual', data: tableRows.value.map(row => parseFloat(((row.actual ?? 0) / 1_000_000).toFixed(2))) },
-  { name: 'Budget', data: tableRows.value.map(row => parseFloat(((row.budget ?? 0) / 1_000_000).toFixed(2))) }
+  { name: 'Actual', data: rawActual.value.map(plot) },
+  { name: 'Budget', data: rawBudget.value.map(plot) }
 ])
+
+// Axis top is taken from the data, rounded up to a clean step, with headroom for the bar labels.
+const axis = computed(() => {
+  const top = peak.value * (1.12)
+  if (top <= 0) return { max: 5, ticks: 5 }
+
+  const rough = top / 5
+  const power = Math.pow(10, Math.floor(Math.log10(rough)))
+  const step = [1, 1.5, 2, 2.5, 3, 4, 5, 10].map(m => m * power).find(s => s >= rough) ?? 10 * power
+  const max = Math.ceil(top / step) * step
+
+  return { max, ticks: Math.max(2, Math.round(max / step)) }
+})
+
+const chartKey = computed(() => JSON.stringify([unit.value, currency.value, categories.value, rawActual.value, rawBudget.value]))
+
+const yFormatter = (val) => (val === 0 ? '0' : fmt(val))
+const compactLabels = computed(() => unit.value === 'actual')
 
 const chartOptions = computed(() => ({
   chart: {
@@ -122,7 +167,7 @@ const chartOptions = computed(() => ({
   },
   plotOptions: {
     bar: {
-      columnWidth: '40px',
+      columnWidth: unit.value === 'actual' ? '64px' : '40px',
       borderRadius: 8,
       borderRadiusApplication: 'around',
       dataLabels: { position: 'top' }
@@ -132,8 +177,11 @@ const chartOptions = computed(() => ({
   dataLabels: {
     enabled: true,
     offsetY: -45,
-    style: { fontSize: '14px', colors: ['#03D8B0'], fontWeight: 500 },
-    formatter: (val) => val === 0 ? '' : val.toString().replace('.', ',') + 'M'
+    style: { fontSize: compactLabels.value ? '11px' : '14px', colors: ['#03D8B0'], fontWeight: 500 },
+    formatter: (val, { seriesIndex, dataPointIndex }) => {
+      const raw = (seriesIndex === 0 ? rawActual.value : rawBudget.value)[dataPointIndex]
+      return raw <= 0 ? '' : fmt(raw)
+    }
   },
   xaxis: {
     categories: categories.value,
@@ -144,12 +192,13 @@ const chartOptions = computed(() => ({
   },
   yaxis: {
     min: 0,
-    tickAmount: 5,
+    max: axis.value.max,
+    tickAmount: axis.value.ticks,
     labels: {
       style: { fontSize: '13px', colors: '#FFFFFF', fontWeight: 500 },
-      formatter: (val) => val === 0 ? '0' : val.toFixed(0) + 'M'
+      formatter: yFormatter
     },
-    axisBorder: { 
+    axisBorder: {
       show: true,
       color: 'rgba(255, 255, 255, 0.3)',
       width: 1
@@ -194,7 +243,7 @@ const chartOptions = computed(() => ({
         },
         yaxis: {
           labels: {
-            formatter: (val) => val === 0 ? '0' : val.toFixed(0) + 'M',
+            formatter: yFormatter,
             style: {
               fontSize: '11px',
               colors: '#FFFFFF'
@@ -208,25 +257,25 @@ const chartOptions = computed(() => ({
     shared: true,
     intersect: false,
     theme: 'light',
-    custom: function({ series: s, dataPointIndex, w }) {
+    custom: function({ dataPointIndex, w }) {
       const category = w.globals.labels[dataPointIndex]
-      const actual = s[0][dataPointIndex]
-      const budget = s[1][dataPointIndex]
+      const actual = rawActual.value[dataPointIndex] ?? 0
+      const budget = rawBudget.value[dataPointIndex] ?? 0
       const varianceValue = budget - actual
-      const variancePercent = ((varianceValue / budget) * 100).toFixed(1)
+      const variancePercent = budget ? ((varianceValue / budget) * 100).toFixed(1) : null
       const varianceSign = varianceValue >= 0 ? '+' : ''
 
       return `
         <div class="px-5 py-4 bg-[#E2FFF3] rounded-xl shadow-2xl border-none" style="min-width: 200px;">
           <div class="font-semibold mb-3 text-[#000] text-[15px]">${category}</div>
-          <div class="text-[#333] text-[13px] mb-1.5 flex justify-between">
-            <span>Actual:</span> <span class="font-bold text-[#FF7B5F]">AED ${actual.toFixed(1)}M</span>
+          <div class="text-[#333] text-[13px] mb-1.5 flex justify-between gap-4">
+            <span>Actual:</span> <span class="font-bold text-[#FF7B5F]">${currency.value} ${fmt(actual)}</span>
           </div>
-          <div class="text-[#333] text-[13px] mb-1.5 flex justify-between">
-            <span>Budget:</span> <span class="font-bold text-[#00A176]">AED ${budget.toFixed(1)}M</span>
+          <div class="text-[#333] text-[13px] mb-1.5 flex justify-between gap-4">
+            <span>Budget:</span> <span class="font-bold text-[#00A176]">${currency.value} ${fmt(budget)}</span>
           </div>
-          <div class="text-[14px] pt-1 border-t border-black/5 mt-1 flex justify-between">
-            <span>Variance:</span> <span class="font-bold text-[#00A176]">${varianceSign}${variancePercent}%</span>
+          <div class="text-[14px] pt-1 border-t border-black/5 mt-1 flex justify-between gap-4">
+            <span>Variance:</span> <span class="font-bold text-[#00A176]">${variancePercent === null ? '—' : varianceSign + variancePercent + '%'}</span>
           </div>
         </div>
       `

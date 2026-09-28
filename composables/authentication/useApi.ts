@@ -24,6 +24,8 @@ export const useApi = async (url: string, options: any = {}) => {
           useCookie('account_type').value = null
           useCookie('permissions').value = null
           useCookie('currency').value = null
+          useCookie('timezone').value = null
+          useCookie('display_format').value = null
           navigateTo('/home') // Send them back to login
         }
       }

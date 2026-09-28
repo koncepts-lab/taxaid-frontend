@@ -126,7 +126,7 @@ const formError  = ref('')
 const form = ref({ time_in: '', time_out: '' })
 
 function todayDateTime(time: string): string {
-  const today = new Date().toISOString().slice(0, 10)
+  const today = localIsoDate()
   return `${today} ${time}:00`
 }
 

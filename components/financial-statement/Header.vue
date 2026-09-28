@@ -143,7 +143,7 @@ const isDark = useTheme().isDark
 
 const showExportDropdown = ref(false)
 const showDateDropdown = ref(false)
-const today = new Date();
+const today = orgTodayDate();
 
 const dateDropdownRef = ref(null)
 const exportDropdownRef = ref(null)

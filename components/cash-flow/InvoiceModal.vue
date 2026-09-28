@@ -14,7 +14,7 @@
                             </span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <button @click="exportCsv"
+                            <button @click="exportInvoices" :disabled="exporting || !rows.length"
                                 class="flex items-center gap-2 px-3 lg:px-4 py-1.5 border rounded-lg text-[13px] font-medium transition-colors"
                                 :class="isDark ? 'border-white/20 text-white hover:bg-white/10' : 'border-[#013e32]/30 text-[#013e32] hover:bg-[#013e32]/5'">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0-12l-4 4m4-4l4 4"/></svg>
@@ -113,6 +113,8 @@ const {
     customerDetailLoading: loading,
     customerDetailError: error,
     fetchCustomerDetail,
+    period,
+    activeDate,
 } = useCashFlow()
 
 const close = () => emit('update:open', false)
@@ -144,20 +146,14 @@ const totals = computed(() => {
 
 const fmt = (val) => Math.round(val).toLocaleString('en-US')
 
-const exportCsv = () => {
-    const header = ['Invoice No.', 'Due Date', ...monthsList.value]
-    const lines = [header.join(',')]
-    for (const row of rows.value) {
-        lines.push([`"${row.invoice_no}"`, `"${row.due_date}"`, ...monthsList.value.map(m => row.month === m ? row.amount : '')].join(','))
-    }
-    lines.push(['Total', '', ...monthsList.value.map(m => totals.value[m] ?? 0)].join(','))
-    const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `${props.customer.replace(/[^\w\- ]/g, '')}-invoices.csv`
-    a.click()
-    URL.revokeObjectURL(a.href)
-}
+const { exporting, exportPart } = useExport()
+
+const exportInvoices = () => exportPart('cash-flow', 'invoices', {
+    side: props.type,
+    customer: props.customer,
+    period: period.value,
+    date: activeDate.value,
+})
 </script>
 
 <style scoped>

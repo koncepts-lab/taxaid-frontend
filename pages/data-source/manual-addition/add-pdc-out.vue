@@ -32,25 +32,11 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6 mb-10">
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">PDC Issue Date</label>
-              <div class="relative">
-                <input type="text" v-model="form.pdc_issue_date" placeholder="dd-mm-yyyy" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-              </div>
+              <CommonDateField v-model="form.pdc_issue_date" format="dmy" allow-future />
             </div>
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">PDC Realisation Date</label>
-              <div class="relative">
-                <input type="text" v-model="form.pdc_realisation_date" placeholder="dd-mm-yyyy" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-              </div>
+              <CommonDateField v-model="form.pdc_realisation_date" format="dmy" allow-future />
             </div>
             <div>
               <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Bank Name</label>
@@ -139,10 +125,7 @@
                       <span class="ml-3 text-sm text-gray-500 whitespace-nowrap">
                           {{ currentLang === 'ar' ? 'صفوف لكل صفحة:' : 'Rows per page:' }}
                       </span>
-                      <select v-model="localPerPage"
-                          class="border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white text-gray-700 focus:ring-1 focus:ring-[#00896F] outline-none appearance-none">
-                          <option v-for="opt in perPageOptions" :key="opt" :value="opt">{{ opt }}</option>
-                      </select>
+                      <CommonSelectDropdown class="w-20" mode="select" size="xs" :clearable="false" :options="perPageOptions" v-model="localPerPage" />
                   </div>
               </div>
             </div>

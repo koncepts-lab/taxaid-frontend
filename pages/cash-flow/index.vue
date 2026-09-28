@@ -14,6 +14,11 @@
                 ]">
                 <div class="mx-auto pt-0">
                     
+                    <CommonExportModal v-model="exportOpen" card="cash-flow" date-mode="date" date-format="iso"
+                        :title="{ en: 'Cash Flow Analysis', ar: 'تحليل التدفقات النقدية' }"
+                        :filters="{ date: activeDate, period, scenario }"
+                        :extra-fields="[{ key: 'period', label: { en: 'Projection period', ar: 'فترة التوقع' }, options: [{ value: 3, label: { en: '3 months', ar: '3 أشهر' } }, { value: 6, label: { en: '6 months', ar: '6 أشهر' } }] }, { key: 'scenario', label: { en: 'Scenario', ar: 'السيناريو' }, options: [{ value: '100% Scenario', label: { en: '100% Scenario', ar: 'سيناريو 100%' } }, { value: 'Future Contract', label: { en: 'Future Contract', ar: 'عقد مستقبلي' } }] }]" />
+
                     <CommonDashboardHeader
                         class="mb-4 lg:mb-8"
                         :title="{ en: 'Cash Flow Analysis', ar: 'تحليل التدفقات النقدية' }"
@@ -27,8 +32,7 @@
                         @reload="fetchProjection"
                         @selected-date="handleDateSelected"
                         @period-change="handlePeriodChange"
-                        @export-excel="handleExport('excel')"
-                        @export-pdf="handleExport('pdf')"
+                        @export="exportOpen = true"
                         @one-click-summary="handleOneClickSummary"
                     />
 
@@ -83,6 +87,7 @@
 </template>
 
 <script setup>
+const exportOpen = ref(false)
 import { ref, onMounted } from 'vue'
 
 const isChatOpen = ref(false)
@@ -90,7 +95,7 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { fetchProjection, activeDate, period } = useCashFlow()
+const { fetchProjection, activeDate, period, scenario } = useCashFlow()
 
 // Backend only accepts: date (single Y-m-d anchor), period (3 or 6), scenario
 // No range_option concept — Custom Date is the only supported date filter
@@ -116,8 +121,6 @@ const handlePeriodChange = (months) => {
     period.value = months
     fetchProjection()
 }
-
-const handleExport = (type) => {}
 
 const { openOneClickSummary } = useAkeel()
 const handleOneClickSummary = () => openOneClickSummary('CASH_FLOW_BANK', 'onclick_cash_flow_bank')

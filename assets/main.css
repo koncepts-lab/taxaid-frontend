@@ -386,3 +386,93 @@ body.taxaid-dark > .fixed input::placeholder {
 .dark-mode-bg .border-red-300 {
   border-color: rgba(248, 113, 113, 0.6) !important;
 }
+
+@layer base {
+  @supports (appearance: base-select) {
+    select,
+    select::picker(select) {
+      appearance: base-select;
+    }
+
+    select {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    select::picker-icon {
+      color: #00896f;
+      font-size: 11px;
+      transition: rotate 0.2s ease;
+    }
+
+    select:open::picker-icon {
+      rotate: 180deg;
+    }
+
+    select::picker(select) {
+      padding: 6px;
+      margin-top: 6px;
+      border: 1px solid rgba(4, 193, 143, 0.4);
+      border-radius: 14px;
+      background: #ffffff;
+      color: #013e32;
+      box-shadow: 0 12px 32px rgba(1, 62, 50, 0.14);
+    }
+
+    select option {
+      padding: 9px 12px;
+      border-radius: 9px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    select option::checkmark {
+      display: none;
+    }
+
+    select option:hover,
+    select option:focus-visible {
+      background: #e6fff5;
+    }
+
+    select option:checked {
+      background: #d6f5ed;
+      color: #013e32;
+      font-weight: 600;
+    }
+
+    body.taxaid-dark select::picker-icon {
+      color: #00ffbc;
+    }
+
+    body.taxaid-dark select::picker(select) {
+      background: #002e26;
+      border-color: rgba(3, 216, 176, 0.3);
+      color: #ffffff;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    body.taxaid-dark select option:hover,
+    body.taxaid-dark select option:focus-visible {
+      background: rgba(0, 255, 188, 0.12);
+    }
+
+    body.taxaid-dark select option:checked {
+      background: rgba(0, 255, 188, 0.2);
+      color: #00ffbc;
+    }
+  }
+}
+
+@supports (appearance: base-select) {
+  select.appearance-none,
+  select.appearance-none::picker(select) {
+    appearance: base-select;
+  }
+
+  select.appearance-none::picker-icon {
+    display: none;
+  }
+}

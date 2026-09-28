@@ -9,13 +9,17 @@
                 ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
                 : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
                 <div class="mx-auto">
+                    <CommonExportModal v-model="exportOpen" card="financial-statement" date-mode="range" date-format="iso"
+                        :title="{ en: 'Financial Statement Analysis', ar: 'تحليل القوائم المالية' }"
+                        :filters="{ range_option: filters.range_option, custom_from: filters.custom_from, custom_to: filters.custom_to, ratio_type: selectedRatioType }" />
+
                     <CommonDashboardHeader
                         :title="{ en: 'Financial Statement Analysis', ar: 'تحليل القوائم المالية' }"
                         :subtitle="{ en: 'Income, balance sheet, and financial ratios overview.', ar: 'نظرة عامة على الدخل والميزانية العمومية والنسب المالية.' }"
                         :periods="customPeriods"
                         @selected-date="handleDateUpdate"
                         @reload="fetchTabData(activeTab)"
-                        @export-pdf="handleExportPDF"
+                        @export="exportOpen = true"
                         @one-click-summary="handleOneClickSummary" />
 
                     <!-- Gap-day snapshot notice: shown when the Balance Sheet
@@ -88,6 +92,7 @@
 </template>
 
 <script setup>
+const exportOpen = ref(false)
 import { ref, computed, watch } from 'vue'
 import ParticleBackground from '~/components/common/ParticleBackground.vue'
 
@@ -165,10 +170,6 @@ const handleDateUpdate = (payload) => {
 watch([activeTab, filters], () => {
     fetchTabData(activeTab.value)
 }, { immediate: true, deep: true })
-
-const handleExportPDF = async () => {
-    console.warn("PDF export is currently disabled.");
-}
 
 const { openOneClickSummary } = useAkeel()
 const handleOneClickSummary = () => openOneClickSummary('FINANCIAL_STATEMENTS', 'onclick_financial_statements')

@@ -6,12 +6,7 @@
  * Shared state: activeDate is global so the page and all components stay in sync.
  */
 
-const todayYMD = () => {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-export const apActiveDate = ref(todayYMD())
+export const apActiveDate = ref('')
 
 const _summary            = ref<any[]>([])
 const _agingData          = ref<any>({})
@@ -32,18 +27,30 @@ const ENABLE_SNAPSHOT_FALLBACK = true
 const _snapshotDate   = ref<string | null>(null)
 const _requestedDate  = ref<string | null>(null)
 const _snapshotNotice = ref(false)
+const _goLiveDate     = ref<string | null>(null)
 // Tenant-wide: whether Hold-for-Review has any internal recipient configured.
 const _hasInternalEmails = ref(true)
+const _hasMailSettings = ref(true)
 
 async function fetchAll(lang = 'en') {
   _loading.value = true
   _error.value   = null
-  const date = apActiveDate.value
+  let date = apActiveDate.value
+  const dateParam = () => (date ? { date } : {})
   const strict = ENABLE_SNAPSHOT_FALLBACK ? {} : { strict_date: 1 }
 
   try {
     // 1. Summary table (/ap-report)
-    const summaryRes: any = await useApi('/ap-report', { params: { test_date: date, ...strict } })
+    const summaryRes: any = await useApi('/ap-report', { params: { ...dateParam(), ...strict } })
+
+    if (!date && summaryRes?.requested_date) {
+      date = summaryRes.requested_date
+      apActiveDate.value = date
+    }
+
+    _goLiveDate.value = summaryRes?.go_live_date ?? null
+    useState('cardPeriod').value = summaryRes?.period ?? null
+    useState('cardToday').value = summaryRes?.today ?? null
 
     if (ENABLE_SNAPSHOT_FALLBACK && summaryRes?.snapshot_date) {
       _requestedDate.value  = summaryRes.requested_date ?? date
@@ -59,29 +66,31 @@ async function fetchAll(lang = 'en') {
     if (summaryRes?.status === 'success') {
       _summary.value = summaryRes.data || []
       _hasInternalEmails.value = summaryRes.has_internal_emails ?? true
+      _hasMailSettings.value = summaryRes.has_mail_settings ?? true
     }
 
     // 2. Aging graph (/ap-report/aging)
-    const agingRes: any = await useApi('/ap-report/aging', { params: { test_date: date, lang, ...strict } })
+    const agingRes: any = await useApi('/ap-report/aging', { params: { ...dateParam(), lang, ...strict } })
     if (agingRes?.status === 'success') {
       _agingData.value = agingRes.payload || {}
     }
 
     // 3. Top vendors (/ap-report/top-eight)
-    const topRes: any = await useApi('/ap-report/top-eight', { params: { test_date: date, ...strict } })
+    const topRes: any = await useApi('/ap-report/top-eight', { params: { ...dateParam(), ...strict } })
     if (topRes?.status === 'success') {
       _topCustomers.value = topRes.payload || null
     }
 
     // 4. Historical movement (/ap-report/timeline)
-    const timelineRes: any = await useApi('/ap-report/timeline', { params: { test_date: date } })
+    const timelineRes: any = await useApi('/ap-report/timeline', { params: { ...dateParam() } })
     if (timelineRes?.status === 'success' && timelineRes.payload) {
       const ranges = timelineRes.payload.ranges || []
       _timelineData.value = {
         apBalance:  ranges.map((r: any) => parseFloat(((r.ap_value ?? 0) / 1_000_000).toFixed(2))),
+        apBalanceRaw: ranges.map((r: any) => Number(r.ap_value ?? 0)),
         categories: ranges.map((r: any) => {
-          const d = new Date(r.start)
-          return formatInMillions(d)
+          const [y, m] = String(r.start).split('-')
+          return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
         }),
         percentage: ranges.map(() => 0)
       }
@@ -105,7 +114,7 @@ async function holdForReview(items: { customer: string, invoices: any[] }[]) {
     return {
       ok: false,
       code: e?.data?.code ?? null,
-      message: e?.data?.message ?? 'Failed to send hold-for-review.',
+      status: e?.statusCode ?? e?.status ?? null,
       results: [],
     }
   }
@@ -124,7 +133,9 @@ export function useAccountsPayablePage() {
     snapshotDate:   _snapshotDate,
     requestedDate:  _requestedDate,
     snapshotNotice: _snapshotNotice,
+    goLiveDate: _goLiveDate,
     hasInternalEmails: _hasInternalEmails,
+    hasMailSettings: _hasMailSettings,
     fetchAll,
   }
 }

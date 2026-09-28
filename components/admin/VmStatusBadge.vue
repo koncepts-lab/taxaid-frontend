@@ -1,6 +1,6 @@
 <template>
   <!-- VM status badge → click opens detail modal -->
-  <button @click="openModal" title="VM status (Reverb / Queue / Scheduler / Redis / DB)"
+  <button @click="openModal" title="VM status (Reverb / Queue / Scheduler / Redis)"
     :class="loading ? 'bg-white text-gray-400 border-gray-200' : online ? 'text-emerald-700 border-emerald-200 bg-emerald-50 hover:bg-emerald-100' : 'text-red-600 border-red-200 bg-red-50 hover:bg-red-100'"
     class="py-1.5 px-4 rounded-full border transition-colors flex items-center gap-2 text-[13px] font-medium whitespace-nowrap shadow-sm shrink-0 min-w-[190px] justify-center">
     <span v-if="!loading" :class="online ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'" class="w-2 h-2 rounded-full shrink-0"></span>
@@ -37,17 +37,14 @@
         <div v-if="loading && !status" class="py-10 text-center text-gray-400">Loading…</div>
 
         <template v-else>
-          <!-- 8 status tiles -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
             <div :class="reverbRunning ? 'bg-gray-50' : 'bg-red-50/60'" class="rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Reverb</div><div :class="reverbRunning ? 'text-emerald-600' : 'text-red-600'" class="font-semibold">{{ reverbRunning ? 'Running' : status?.data?.reverb ? 'Stopped' : 'Unreachable' }}</div></div>
             <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Latency</div><div class="font-semibold text-gray-800">{{ status?.data?.reverb?.latency_ms != null ? status.data.reverb.latency_ms + ' ms' : '—' }}</div></div>
             <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Service</div><div class="font-semibold text-gray-800">{{ status?.data?.reverb?.service ?? '—' }}</div></div>
             <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Queue (general)</div><div :class="status?.data?.queue?.general?.running ? 'text-emerald-600' : 'text-red-600'" class="font-semibold">{{ status?.data?.queue?.general?.service ?? '—' }}</div></div>
             <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Queue (connector)</div><div :class="status?.data?.queue?.connector?.running ? 'text-emerald-600' : 'text-red-600'" class="font-semibold">{{ status?.data?.queue?.connector?.service ?? '—' }}</div></div>
-            <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Failed Jobs</div><div class="font-semibold text-gray-800">{{ status?.data?.queue?.failed_jobs ?? '—' }}</div></div>
             <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Scheduler</div><div :class="status?.data?.scheduler?.running ? 'text-emerald-600' : 'text-red-600'" class="font-semibold">{{ status?.data?.scheduler?.service ?? '—' }}</div></div>
             <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">Redis</div><div :class="status?.data?.redis?.connected ? 'text-emerald-600' : 'text-red-600'" class="font-semibold">{{ status?.data?.redis?.connected ? (status.data.redis.latency_ms + ' ms') : 'Down' }}</div></div>
-            <div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-400 mb-1">DB</div><div :class="status?.data?.db?.connected ? 'text-emerald-600' : 'text-red-600'" class="font-semibold">{{ status?.data?.db?.connected ? (status.data.db.latency_ms + ' ms') : 'Down' }}</div></div>
           </div>
 
           <!-- IPs (always shown) -->

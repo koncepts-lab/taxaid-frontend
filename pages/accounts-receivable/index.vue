@@ -3,18 +3,22 @@
 
 
     <!-- 1. Container fills the screen height and prevents page-level scrolling -->
-    <div v-if="!isFullScreenChat" class="h-screen font-sans flex overflow-hidden relative z-10" :class="{ '': isDark }"
+    <div v-if="!isFullScreenChat" class="min-h-screen font-sans flex relative z-10" :class="{ '': isDark }"
       :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
       <!-- 2. LEFT AREA: Resizes dynamically -->
-      <div class="flex-1 overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" :class="isChatOpen
+      <div class="flex-1 min-w-0 transition-all duration-500 ease-in-out lg:p-8 p-0 pt-8" :class="isChatOpen
         ? (currentLang === 'ar' ? '2xl:ml-[480px] ml-[400px]' : '2xl:mr-[480px] mr-[400px]')
         : (currentLang === 'ar' ? 'lg:ml-[170px] ml-0' : 'lg:mr-[170px] mr-0')">
         <div class="mx-auto pt-8 lg:pt-0">
 <!-- TODO: -->
-          <CommonDashboardHeader :title="{ en: 'Accounts Receivable', ar: 'حسابات القبض' }"
+          <CommonExportModal v-model="exportOpen" card="accounts-receivable" date-mode="date" date-format="iso"
+                        :title="{ en: 'Accounts Receivable', ar: 'حسابات القبض' }"
+                        :filters="{ date: activeDate }" />
+
+                    <CommonDashboardHeader :title="{ en: 'Accounts Receivable', ar: 'حسابات القبض' }"
             :subtitle="{ en: 'Accounts Receivable Dashboard', ar: 'لوحة معلومات حسابات القبض' }"
-            :periods="customPeriods" class="mb-8" :minDate="new Date(2026, 5, 15)" @selected-date="handleDateChange" @reload="handleReload" @one-click-summary="handleOneClickSummary" />
+            :periods="customPeriods" class="mb-8" :minDate="calendarMinDate" @selected-date="handleDateChange" @reload="handleReload" @export="exportOpen = true" @one-click-summary="handleOneClickSummary" />
 
           <!-- Gap-day snapshot notice: shown when the selected date has no
                uploaded AR snapshot and the latest earlier upload is displayed -->
@@ -31,24 +35,24 @@
           <AccountsReceivableAlert />
 
           <div class="mb-4 lg:mb-8">
-            <AccountsReceivableSummary :data="summary" :testDate="activeDate" />
+            <AccountsReceivableSummary :data="summary" :testDate="activeDate" :loading="showSkeleton" />
           </div>
 
           <div class="mb-4 lg:mb-8">
             <div class="h-[600px]">
-              <AccountsReceivableTopCustomers :data="topCustomers" />
+              <AccountsReceivableTopCustomers :data="topCustomers" :loading="showSkeleton" />
             </div>
           </div>
 
           <div class="mb-4 lg:mb-8">
             <div class="h-[420px]">
-              <AccountsReceivableHistoricalMovement :data="historicalMovement" />
+              <AccountsReceivableHistoricalMovement :data="historicalMovement" :loading="showSkeleton" />
             </div>
           </div>
 
           <div>
             <div class="lg:h-[440px] h-[440px]">
-              <AccountsReceivableAgingGraph :agingData="agingGraph" />
+              <AccountsReceivableAgingGraph :agingData="agingGraph" :loading="showSkeleton" />
             </div>
           </div>
 
@@ -83,6 +87,7 @@
 </template>
 
 <script setup>
+const exportOpen = ref(false)
 import { ref, onMounted, watch } from 'vue'
 import AccountsReceivableAlert from '~/components/accounts-receivable/Alert.vue'
 import AccountsReceivableSummary from '~/components/accounts-receivable/Summary.vue'
@@ -95,15 +100,26 @@ const isFullScreenChat = ref(false)
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { activeDate, fetchAll, summary, topCustomers, agingGraph, historicalMovement, snapshotNotice, snapshotDate, requestedDate } = useAccountsReceivablePage()
+const { loading, activeDate, fetchAll, summary, topCustomers, agingGraph, historicalMovement, snapshotNotice, snapshotDate, requestedDate, goLiveDate } = useAccountsReceivablePage()
+
+// Tenant users can't pick a date before go-live; TaxAid staff keep the old limit.
+const accountType = useCookie('account_type')
+const calendarMinDate = computed(() => {
+  if (accountType.value !== 'taxaid' && goLiveDate.value) {
+    const [y, m, d] = String(goLiveDate.value).slice(0, 10).split('-').map(Number)
+    return new Date(y, m - 1, d)
+  }
+  return new Date(2026, 5, 15)
+})
+
 
 const customPeriods = [
-  // { en: 'Year to Date', ar: 'منذ بداية العام' }, // not supported — backend uses single test_date only
+  // { en: 'Year to Date', ar: 'منذ بداية العام' }, // not supported — backend uses a single date only
   // { en: 'This Quarter', ar: 'هذا الربع' },        // not supported
   // { en: 'Last Quarter', ar: 'الربع الماضي' },     // not supported
   // { en: 'This Year',    ar: 'هذه السنة' },        // not supported
   // { en: 'Last Year',    ar: 'السنة الماضية' },    // not supported
-  { en: 'Custom Date', ar: 'تاريخ مخصص' },           // ✅ maps to ?test_date=Y-m-d
+  { en: 'Custom Date', ar: 'تاريخ مخصص' },           // ✅ maps to ?date=Y-m-d
 ]
 
 const handleDateChange = (period) => {
@@ -117,11 +133,14 @@ const handleDateChange = (period) => {
 
 const handleReload = () => fetchAll()
 
+const firstLoad = ref(true)
+const showSkeleton = computed(() => loading.value || firstLoad.value)
+
 const { openOneClickSummary } = useAkeel()
 const handleOneClickSummary = () => openOneClickSummary('AR', 'onclick_ar')
 
 onMounted(() => {
-  fetchAll()
+  fetchAll().finally(() => { firstLoad.value = false })
   useLocation().syncSessionLocation()
   useNotificationSettings().syncWebPush()
 })

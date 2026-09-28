@@ -26,6 +26,7 @@ export interface ActivityLogEntry {
   appointment_type: 'client_fixed' | 'client_review' | 'internal'
   tenant_id: number | null
   client_name: string
+  license_id?: string | null
 }
 
 export interface MonthlyStats {
@@ -45,6 +46,7 @@ export interface ActivityStats {
 export interface ActivityClient {
   id: number
   name: string
+  license_id?: string | null
 }
 
 export interface ActiveTimer {
@@ -86,7 +88,7 @@ function mapLogs(raw: ActivityLogEntry[]) {
     timeIn:     e.time_in,
     timeOut:    e.time_out ?? '—',
     type:       typeLabel(e.appointment_type),
-    clientId:   e.tenant_id ? String(e.tenant_id) : '—',
+    clientId:   e.license_id ?? (e.tenant_id ? String(e.tenant_id) : '—'),
     clientName: e.client_name,
   }))
 }

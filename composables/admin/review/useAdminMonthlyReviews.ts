@@ -5,6 +5,7 @@ export interface AdminMonthlyReview {
   id: number
   tenant_id: number
   client_name: string
+  license_id: string | null
   month: string
   status: 'pending' | 'scheduled' | 'completed' | 'cancelled'
   scheduled_date: string | null
@@ -76,7 +77,7 @@ export function useAdminMonthlyReviews() {
     return res.data ?? []
   }
 
-  async function setSchedule(id: number, date: string, time: string, meetUrl: string, notes?: string | null): Promise<void> {
+  async function setSchedule(id: number, date: string, time: string, meetUrl: string | null, notes?: string | null): Promise<void> {
     await useAdminApi(`/admin/monthly-reviews/${id}/schedule`, {
       method: 'PATCH',
       body: { scheduled_date: date, scheduled_time: time, meet_url: meetUrl, notes: notes ?? null },

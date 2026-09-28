@@ -15,6 +15,10 @@
            <img src="/images/logo.png" alt="Taxaid" class="w-full" />
         </div>
 
+        <NuxtLink to="/support-help" class="absolute bottom-6 text-[13px] text-[#00000066] hover:text-[#000000B2] transition-colors" :class="isRtl ? 'right-6' : 'left-6'">
+          {{ isRtl ? 'الدعم والمساعدة' : 'Support & Help' }}
+        </NuxtLink>
+
         <div class="w-full max-w-[430px] pt-10">
           <!-- Dynamic Title -->
           <h1 class="text-center text-[32px] font-semibold text-[#000] mb-3">

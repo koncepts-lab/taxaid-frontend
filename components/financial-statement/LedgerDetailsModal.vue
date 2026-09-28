@@ -21,34 +21,41 @@
                     <div class="flex items-center gap-4">
                         <!-- EXPORT SECTION -->
                         <div class="relative " ref="exportDropdownRef">
-                            <button @click="showExportDropdown = !showExportDropdown"
-                                class="flex items-center gap-2 px-4 py-1.5 border rounded-lg text-sm font-medium transition-colors md:mr-6 mr-0"
-                                :class="isDark ? 'bg-red-900 border-red-500 text-white hover:bg-red-800' : 'bg-red-50 border-red-500 text-red-700 hover:bg-red-100'">
+                            <button @click="triggerExport('excel')" :disabled="exporting"
+                                class="flex items-center gap-2 px-4 py-1.5 border rounded-lg text-sm font-medium transition-colors md:mr-6 mr-0 disabled:opacity-50"
+                                :class="isDark ? 'border-white/10 text-white hover:bg-white/10' : 'border-primary-100 text-gray-700 hover:bg-gray-50'">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M16 8l-4-4m0 0L8 8m4-4v12"
                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
                                 <span>{{ currentLang === 'ar' ? 'تصدير' : 'Export' }}</span>
                             </button>
-
+                            <!--
                             <Transition name="dropdown">
                                 <div v-if="showExportDropdown"
                                     class="absolute mt-2 w-52 border rounded-xl shadow-xl z-50 py-2 px-2" :class="[
                                         isDark ? 'bg-primary-900 border-primary-100 shadow-black/50' : 'bg-white border-primary-100',
                                         currentLang === 'ar' ? 'left-0' : 'right-0'
                                     ]">
-
+                                    <button @click="triggerExport('excel')"
+                                        class="w-full px-3 py-2 text-sm rounded-lg flex items-center gap-3 transition-colors"
+                                        :class="[
+                                            currentLang === 'ar' ? 'flex-row-reverse text-right' : 'text-left',
+                                            isDark ? 'text-white hover:bg-white/10' : 'text-gray-700 hover:bg-primary-700'
+                                        ]">
+                                        <span class="flex-1">{{ currentLang === 'ar' ? 'تصدير بصيغة إكسل (.xlsx)' : 'Export as Excel (.xlsx)' }}</span>
+                                    </button>
                                     <button @click="triggerExport('pdf')"
                                         class="w-full px-3 py-2 text-sm rounded-lg flex items-center gap-3 transition-colors"
                                         :class="[
                                             currentLang === 'ar' ? 'flex-row-reverse text-right' : 'text-left',
-                                            isDark ? 'text-red-400 hover:bg-red-500/10' : 'text-red-600 hover:bg-red-50'
+                                            isDark ? 'text-white hover:bg-white/10' : 'text-gray-700 hover:bg-primary-700'
                                         ]">
-                                        <span class="flex-1">{{ currentLang === 'ar' ? 'تصدير بصيغة PDF (.pdf)' :
-                                            'Export as PDF (.pdf)' }}</span>
+                                        <span class="flex-1">{{ currentLang === 'ar' ? 'تصدير بصيغة PDF (.pdf)' : 'Export as PDF (.pdf)' }}</span>
                                     </button>
                                 </div>
                             </Transition>
+                            -->
                         </div>
 
                         <button @click="$emit('close')"
@@ -150,7 +157,11 @@ const props = defineProps({
     ledgerName: String,
     data: Object,
     isDark: Boolean,
-    currentLang: { type: String, default: 'en' }
+    currentLang: { type: String, default: 'en' },
+    statement: { type: String, default: 'pl' },
+    rangeOption: { type: String, default: 'Year to Date' },
+    customFrom: { type: String, default: null },
+    customTo: { type: String, default: null }
 });
 
 const emit = defineEmits(['close']);
@@ -175,17 +186,21 @@ const formatNumber = (val) => {
     return formatInMillions(num);
 };
 
+const { exporting, exportPart } = useExport();
+
 const triggerExport = (type) => {
     if (!props.data?.report) return;
 
-    if (type === 'pdf') {
-        exportToPDF();
+    if (type === 'excel') {
+        exportPart('financial-statement', 'ledger', {
+            statement: props.statement,
+            ledger_name: props.ledgerName,
+            range_option: props.rangeOption,
+            custom_from: props.customFrom,
+            custom_to: props.customTo,
+        });
     }
     showExportDropdown.value = false;
-};
-
-const exportToPDF = () => {
-    console.warn("PDF export is currently disabled.");
 };
 </script>
 

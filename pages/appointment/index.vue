@@ -22,12 +22,12 @@
                 <div class="flex flex-col min-h-[500px] mb-12">
                     <!-- Calendar/table always renders immediately (empty grid during load) -->
                     <!-- Empty state only shows once loading finishes and there is truly no data -->
-                    <template v-if="!loading && !hasAnyAppointments">
+                    <template v-if="!loading && !hasAnyAppointments && !searchQuery.trim() && !statusFilter">
                         <AppointmentEmptyState @schedule="isModalOpen = true" />
                     </template>
                     <template v-else>
                         <AppointmentCalendarView v-if="activeView === 'calendar'" :data="appointments" />
-                        <AppointmentTable v-else :data="appointments" />
+                        <AppointmentTable v-else />
                     </template>
                 </div>
 
@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
@@ -50,7 +50,17 @@ const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = useState('isScheduleModalOpen', () => false)
 const activeView = useState('appointment_active_view', () => 'calendar')
 
-const { appointments, hasAnyAppointments, monthlyUsageStats, loading, error, createAppointment } = useAppointmentsPage()
+const { appointments, hasAnyAppointments, monthlyUsageStats, loading, error, createAppointment, searchQuery, statusFilter, applyFilters, fetchTable } = useAppointmentsPage()
+
+let filterTimer = null
+watch([searchQuery, statusFilter], () => {
+  clearTimeout(filterTimer)
+  filterTimer = setTimeout(applyFilters, 300)
+})
+
+watch(activeView, (v) => { if (v === 'table') fetchTable(1) })
+
+onBeforeUnmount(() => clearTimeout(filterTimer))
 
 useHead({
   title: 'Appointments | Taxaid.AI',

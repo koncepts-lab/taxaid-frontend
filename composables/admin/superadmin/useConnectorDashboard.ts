@@ -85,6 +85,14 @@ export function useConnectorDashboard() {
     return _tenants.value
   }
 
+  async function getZoneMismatches(): Promise<any> {
+    return apiFetch('/admin/connector/groups/zone-mismatches')
+  }
+
+  async function reshuffleZones(mode: 'new_group' | 'closest'): Promise<any> {
+    return apiFetch('/admin/connector/groups/reshuffle-zones', { method: 'POST', body: { mode } })
+  }
+
   async function getShardingSettings(): Promise<any> {
     const res = await apiFetch('/admin/connector/sharding-settings')
     _shardingSettings.value = res
@@ -250,6 +258,8 @@ export function useConnectorDashboard() {
     downloadUpdatePackage,
     setLatestPackage,
     getShardingSettings,
+    reshuffleZones,
+    getZoneMismatches,
     updateShardingSettings,
     createCustomGroup,
     pinTenantToCustomGroup,

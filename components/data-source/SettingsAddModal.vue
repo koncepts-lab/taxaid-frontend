@@ -33,24 +33,7 @@
                                 :class="isDark ? 'text-white/80' : 'text-black'">
                                 {{ currentLang === 'ar' ? 'رمز العملة *' : 'Currency Code *' }}
                             </label>
-                            <select v-model="form.code" @change="onCodeChange"
-                                class="w-full px-4 py-3.5 rounded-xl border appearance-none outline-none transition-all text-sm cursor-pointer"
-                                :class="[
-                                    errors.code ? 'border-red-500' : (isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#00B794]' : 'bg-white border-[#04C18F80] text-gray-900 focus:border-[#00B794]'),
-                                    !form.code ? 'text-gray-400' : ''
-                                ]">
-                                <option value="" disabled>{{ currentLang === 'ar' ? 'اختر الرمز' : 'Select Code' }}
-                                </option>
-                                <option v-for="(name, code) in currencyMap" :key="code" :value="code">{{ code }}
-                                </option>
-                            </select>
-                            <div
-                                class="absolute inset-y-0 ltr:right-4 rtl:left-4 top-10 flex items-center text-black/80 pointer-events-none opacity-50 h-fit">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M6 9l6 6 6-6" />
-                                </svg>
-                            </div>
+                            <CommonSelectDropdown mode="select" :clearable="false" :invalid="!!errors.code" :placeholder="currentLang === 'ar' ? 'اختر الرمز' : 'Select Code'" :options="Object.keys(currencyMap)" :model-value="form.code" @update:model-value="v => { form.code = v; onCodeChange() }" />
                             <p v-if="errors.code" class="text-red-500 text-xs mt-1">{{ errors.code }}</p>
                         </div>
 

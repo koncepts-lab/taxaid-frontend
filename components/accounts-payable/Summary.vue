@@ -10,14 +10,15 @@
         <p class="text-[12px] font-normal" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
           {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED' }}
         </p>
+        <CommonInfoTooltip tip="accountsPayable.summary" align="right" />
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon"
           class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 max-lg:hidden" @click="isModalOpen = true" />
       </div>
     </div>
-    <div class="w-full overflow-x-auto no-scrollbar">
+    <div class="w-full overflow-auto ap-scroll" :style="scrollStyle">
 
       <table class="w-full text-left rtl:text-right border-collapse min-w-175">
-        <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+        <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
           <tr>
             <th class="lg:px-8 px-4 py-5 font-normal text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars'
             }}</th>
@@ -37,10 +38,21 @@
             <th v-for="col in tableColumns" :key="col.key" class="lg:px-6 px-4 py-5 font-normal text-right rtl:text-left text-[14px] whitespace-nowrap">
               {{ col.label }}
             </th>
+            <template v-if="loading && !tableColumns.length">
+              <th v-for="c in 4" :key="'sk-th' + c" class="lg:px-6 px-4 py-5">
+                <div class="h-[14px] w-14 ml-auto rtl:ml-0 rtl:mr-auto rounded bg-white/20 animate-pulse"></div>
+              </th>
+            </template>
           </tr>
         </thead>
         <tbody>
-          <template v-for="(group, gIdx) in mainRows" :key="gIdx">
+          <template v-if="loading">
+            <tr v-for="n in FIXED_ROWS" :key="'sk' + n" class="border-b animate-pulse" :class="isDark ? 'border-white/5' : 'border-[#F2F2F2]'">
+              <td class="lg:px-8 px-4 py-5"><div class="h-[14px] rounded" :class="[isDark ? 'bg-white/10' : 'bg-gray-200', n % 2 ? 'w-40' : 'w-56']"></div></td>
+              <td v-for="c in skeletonColumns + 1" :key="c" class="lg:px-6 px-4 py-5"><div class="h-[14px] w-16 ml-auto rtl:ml-0 rtl:mr-auto rounded" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+            </tr>
+          </template>
+          <template v-for="(group, gIdx) in (loading ? [] : mainRows)" :key="gIdx">
             <!-- Main Group Row -->
             <tr class="transition-all duration-500 border-b border-white/5"
               :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'">
@@ -86,15 +98,16 @@
                       </div>
                     </div>
                     <button @click="handleHoldForReview(group)"
-                      :disabled="sendingKey !== null || groupSelectedCount(group) === 0 || !hasInternalEmails"
-                      :title="!hasInternalEmails ? (currentLang === 'ar' ? 'لم يتم إعداد أي بريد إلكتروني داخلي — أضفه في دليل البريد الداخلي' : 'No internal email recipients configured — add them in the Internal Email Directory') : ''"
+                      :disabled="sendingKey !== null || groupSelectedCount(group) === 0 || !!holdBlockedTip"
+                      :title="holdBlockedTip"
                       class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-3 rounded-xl flex items-center gap-3 text-[16px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <svg v-if="sendingKey === group.customer" class="animate-spin shrink-0" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
+                      <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
                           d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                       </svg>
-                      {{ sendingKey === group.customer ? '...' : (currentLang === 'ar' ? `مراجعة معلقة (${groupSelectedCount(group)})` : `Hold for Review (${groupSelectedCount(group)})`) }}
+                      {{ currentLang === 'ar' ? `مراجعة معلقة (${groupSelectedCount(group)})` : `Hold for Review (${groupSelectedCount(group)})` }}
                     </button>
                   </div>
 
@@ -130,9 +143,12 @@
               </td>
             </tr>
           </template>
+          <tr v-if="fillerHeight" aria-hidden="true">
+            <td :colspan="tableColumns.length + 2" class="p-0" :style="{ height: `${fillerHeight}px` }"></td>
+          </tr>
         </tbody>
         <tfoot>
-          <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'" class="transition-all duration-500">
+          <tr v-if="summaryTotal && !loading" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'" class="transition-all duration-500 sticky bottom-0 z-10">
             <td class="lg:px-8 px-4 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
               currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
             <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
@@ -237,15 +253,15 @@
                               </span>
                             </div>
                           </div>
-                          <button @click="handleHoldForReview(group)" :disabled="sendingKey !== null || groupSelectedCount(group) === 0"
+                          <button @click="handleHoldForReview(group)" :disabled="sendingKey !== null || groupSelectedCount(group) === 0 || !!holdBlockedTip" :title="holdBlockedTip"
                             class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-3 rounded-xl flex items-center gap-3 text-[16px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-                              xmlns="http://www.w3.org/2000/svg">
+                            <svg v-if="sendingKey === group.customer" class="animate-spin shrink-0" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
+                            <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <path
                                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-                            {{ sendingKey === group.customer ? '...' : (currentLang === 'ar' ? `مراجعة معلقة (${groupSelectedCount(group)})` : `Hold for Review (${groupSelectedCount(group)})`) }}
+                            {{ currentLang === 'ar' ? `مراجعة معلقة (${groupSelectedCount(group)})` : `Hold for Review (${groupSelectedCount(group)})` }}
                           </button>
                         </div>
 
@@ -330,13 +346,46 @@ const props = defineProps({
   testDate: {
     type: String,
     default: ''
+  },
+  loading: {
+    type: Boolean,
+    default: false
   }
 })
+
+const ROW_HEIGHT = 60
+const FIXED_ROWS = 6
+const MAX_ROWS = 10
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { holdForReview, hasInternalEmails } = useAccountsPayablePage()
+const { holdForReview, hasInternalEmails, hasMailSettings } = useAccountsPayablePage()
+const { can } = usePermissions()
+
+const setupTip = (needsMail) => {
+  const ar = currentLang.value === 'ar'
+  if (needsMail) {
+    if (can('company_settings.access')) return ar ? 'لم يتم إعداد بريد الشركة. أضفه من إعدادات الشركة.' : 'Company mail is not set up. Go to Company Settings to add it.'
+    return ar ? 'لم يتم إعداد بريد الشركة. اطلب من المسؤول (مستخدم لديه صلاحية إعدادات الشركة) إضافته.' : 'Company mail is not set up. Ask your admin (a user with Company Settings access) to add it.'
+  }
+  if (can('data_source.access')) return ar ? 'لا يوجد مستلمون داخليون. أضفهم من مصدر البيانات > البريد الداخلي.' : 'No internal recipients. Add them in Data Source > Internal Email.'
+  return ar ? 'لا يوجد مستلمون داخليون. اطلب من المسؤول (مستخدم لديه صلاحية مصدر البيانات) إضافتهم.' : 'No internal recipients. Ask your admin (a user with Data Source access) to add them.'
+}
+
+const holdBlockedTip = computed(() => {
+  if (!hasMailSettings.value) return setupTip(true)
+  if (!hasInternalEmails.value) return setupTip(false)
+  return ''
+})
+
+const errorTip = (res) => {
+  const ar = currentLang.value === 'ar'
+  if (res.code === 'mail_not_configured') return setupTip(true)
+  if (res.code === 'no_internal_emails') return setupTip(false)
+  if (res.code === 'send_failed') return ar ? 'تعذر إرسال البريد. حاول مرة أخرى.' : 'Could not send the email. Please try again.'
+  return ar ? 'حدث خطأ ما. حاول مرة أخرى.' : 'Something went wrong. Please try again.'
+}
 
 const expandedGroups = ref([])
 const isModalOpen = ref(false)
@@ -367,6 +416,25 @@ const mainRows = computed(() => {
   return props.data.filter(row => !row.isTotal)
 })
 
+const skeletonColumns = computed(() => tableColumns.value.length || 4)
+
+// Header and total row count as one row each; expanded invoices lift the cap so the table grows.
+const scrollStyle = computed(() => {
+  const n = mainRows.value.length
+  if (holdsFixedHeight.value) return { minHeight: `${(FIXED_ROWS + 2) * ROW_HEIGHT}px` }
+  if (n === 0 || expandedGroups.value.length) return {}
+  return { maxHeight: `${(MAX_ROWS + 2) * ROW_HEIGHT}px` }
+})
+
+const holdsFixedHeight = computed(() => props.loading || (mainRows.value.length > 0 && mainRows.value.length <= FIXED_ROWS && !expandedGroups.value.length))
+
+// Empty space under a short list so the total row always sits at the bottom of the fixed-height card.
+const fillerHeight = computed(() => {
+  const n = mainRows.value.length
+  if (props.loading || n === 0 || n >= FIXED_ROWS || expandedGroups.value.length) return 0
+  return (FIXED_ROWS - n) * ROW_HEIGHT
+})
+
 const summaryTotal = computed(() => {
   if (!props.data || props.data.length === 0) return null
   return props.data.find(row => row.isTotal) || null
@@ -392,7 +460,7 @@ const toggleGroup = async (idx, customerName) => {
       try {
         const response = await useApi('/ap-report/customer-details', {
           params: {
-            test_date: props.testDate,
+            date: props.testDate,
             customer_name: customerName
           }
         })
@@ -467,13 +535,13 @@ const handleHoldForReview = async (group) => {
   try {
     const res = await holdForReview(items)
     if (!res.ok) {
-      flashStatus('error', res.message)
+      flashStatus('error', errorTip(res))
       return
     }
     // No success/cooldown banner — greyed rows + hover tooltip are the feedback.
     // Grey the invoices (sent OR already-on-cooldown) so the tooltip shows now.
-    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
-    const tISO = tomorrow.toISOString().slice(0, 10)
+    const tomorrow = orgTodayDate(); tomorrow.setDate(tomorrow.getDate() + 1)
+    const tISO = localIsoDate(tomorrow)
     getInvoices(group).forEach(i => {
       if (i.selected) { i.on_cooldown = true; i.next_reminder_date = tISO }
       i.selected = false
@@ -487,5 +555,9 @@ const handleHoldForReview = async (group) => {
 <style scoped>
 input[type="checkbox"] {
   accent-color: #008864;
+}
+
+.ap-scroll {
+  scrollbar-width: thin;
 }
 </style>

@@ -26,6 +26,13 @@
       <p class="mt-4 text-gray-600">Loading...</p>
     </div>
   </div>
+  <CommonErrorPopupModal
+    :isOpen="!!exportError"
+    :isDark="isDark"
+    title="Export failed"
+    :message="exportError || ''"
+    @close="exportError = null"
+  />
 </template>
 
 <script setup>
@@ -36,6 +43,7 @@ import ParticleBackground from '~/components/common/ParticleBackground.vue'
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 const mounted = ref(false)
+const { exportError } = useExport()
 
 onMounted(() => {
   mounted.value = true

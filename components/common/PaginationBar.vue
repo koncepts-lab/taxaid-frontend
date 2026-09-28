@@ -1,26 +1,29 @@
 <template>
-  <div class="px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row items-center justify-between gap-3 border-t border-gray-100 mt-2">
-    <span class="text-xs md:text-sm text-gray-500 text-center md:text-left">
+  <div class="px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row items-center justify-between gap-3 border-t mt-2"
+    :class="dark ? 'border-white/10' : 'border-gray-100'">
+    <span class="text-xs md:text-sm text-center md:text-left" :class="dark ? 'text-white/60' : 'text-gray-500'">
       Showing {{ pageStart }}–{{ pageEnd }} of {{ meta.total }} results
     </span>
 
     <div class="flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
       <button @click="goToPage(meta.current_page - 1)"
         :disabled="meta.current_page <= 1 || loading"
-        class="px-2 md:px-3 py-1 md:py-1.5 rounded-lg border border-gray-200 text-xs md:text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+        class="px-2 md:px-3 py-1 md:py-1.5 rounded-lg border text-xs md:text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        :class="dark ? 'border-white/15 text-white/80 bg-transparent hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
         Previous
       </button>
 
       <template v-for="p in visiblePages" :key="p">
         <span v-if="p === '...'"
-          class="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-xs md:text-sm text-gray-400 select-none">
+          class="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-xs md:text-sm select-none"
+          :class="dark ? 'text-white/40' : 'text-gray-400'">
           &hellip;
         </span>
         <button v-else
           @click="goToPage(p)"
           :class="p === meta.current_page
             ? 'bg-[#00896F] text-white border-[#00896F]'
-            : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+            : (dark ? 'bg-transparent text-white/80 border-white/15 hover:bg-white/10' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50')"
           class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg border text-xs md:text-sm font-medium transition-all">
           {{ p }}
         </button>
@@ -28,16 +31,14 @@
 
       <button @click="goToPage(meta.current_page + 1)"
         :disabled="meta.current_page >= meta.last_page || loading"
-        class="px-2 md:px-3 py-1 md:py-1.5 rounded-lg border border-gray-200 text-xs md:text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+        class="px-2 md:px-3 py-1 md:py-1.5 rounded-lg border text-xs md:text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        :class="dark ? 'border-white/15 text-white/80 bg-transparent hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
         Next
       </button>
 
       <div class="flex items-center gap-2 mt-2 md:mt-0 w-full md:w-auto justify-center md:justify-start">
-        <span class="text-xs md:text-sm text-gray-500 whitespace-nowrap">Rows per page:</span>
-        <select v-model="localPerPage" @change="$emit('per-page-change', localPerPage)"
-          class="border border-gray-200 rounded-lg px-2 py-1 md:py-1.5 text-xs md:text-sm bg-white text-gray-700 focus:ring-1 focus:ring-[#00896F] outline-none appearance-none">
-          <option v-for="opt in perPageOptions" :key="opt" :value="opt">{{ opt }}</option>
-        </select>
+        <span class="text-xs md:text-sm whitespace-nowrap" :class="dark ? 'text-white/60' : 'text-gray-500'">Rows per page:</span>
+        <CommonSelectDropdown class="w-20" mode="select" size="xs" :clearable="false" :dark="dark || undefined" :options="perPageOptions" v-model="localPerPage" @update:model-value="$emit('per-page-change', $event)" />
       </div>
     </div>
   </div>
@@ -53,6 +54,7 @@ const props = defineProps({
   meta: { type: Object, required: true },
   loading: { type: Boolean, default: false },
   perPageOptions: { type: Array, default: () => [10, 20, 30] },
+  dark: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['page-change', 'per-page-change'])

@@ -1,5 +1,7 @@
 // Who is signed in (display name + email) for the header. Set at login, updated when the profile is saved,
 // and filled from /me once if it is missing, so the full /profile is only ever called by the profile page.
+let syncedThisLoad = false
+
 export const useIdentity = () => {
   const cookie = useCookie<any>('identity')
 
@@ -13,10 +15,14 @@ export const useIdentity = () => {
   }
 
   const ensureIdentity = async () => {
-    if (identity.value?.email || !useCookie('auth_token').value) return
+    const timezone = useCookie('timezone')
+    if ((syncedThisLoad && identity.value?.email && timezone.value) || !useCookie('auth_token').value) return
+    syncedThisLoad = true
     try {
       const me: any = await useApi('/me')
+      useCookie('display_format').value = me?.data?.user?.display_format ?? null
       setIdentity(me?.data?.user?.company_name, me?.data?.user?.email)
+      if (me?.data?.tenant?.timezone) timezone.value = me.data.tenant.timezone
     } catch {}
   }
 

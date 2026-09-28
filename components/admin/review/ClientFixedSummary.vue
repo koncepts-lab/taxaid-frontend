@@ -20,8 +20,7 @@
 
       <!-- Month picker -->
       <div class="relative">
-        <input v-model="selectedMonth" type="month"
-          class="px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#00896F] text-gray-700 bg-white" />
+        <CommonDateField class="w-44" month v-model="selectedMonth" />
       </div>
 
       <button @click="handleRefresh" title="Refresh"
@@ -142,7 +141,7 @@ import PaginationBar from './PaginationBar.vue'
 
 const { reviews, meta, loading, fetchReviews } = useAdminMonthlyReviews()
 
-const selectedMonth = ref(new Date().toISOString().slice(0, 7))
+const selectedMonth = ref(localIsoMonth())
 const search        = ref('')
 const currentPage   = ref(1)
 

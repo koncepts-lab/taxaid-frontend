@@ -1,29 +1,43 @@
 <template>
   <NuxtLayout name="admin">
     <div class="p-4 md:p-8 max-w-[100vw] overflow-x-hidden">
-      <button @click="goBack"
-        class="inline-flex items-center gap-2 pl-4 pr-6 py-2 rounded-full border text-[14px] font-medium transition-all mb-4"
-        :class="isDark ? 'bg-[#057759]/60 border-white/10 text-white hover:bg-[#057759]' : 'bg-[#00896F] border-[#00896F] text-white hover:bg-[#00705a]'">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-        {{ currentLang === 'ar' ? 'رجوع' : 'Back' }}
-      </button>
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <button @click="goBack"
+          class="inline-flex items-center gap-2 pl-4 pr-6 py-2 rounded-full border text-[14px] font-medium transition-all"
+          :class="isDark ? 'bg-[#057759]/60 border-white/10 text-white hover:bg-[#057759]' : 'bg-[#00896F] border-[#00896F] text-white hover:bg-[#00705a]'">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+          {{ currentLang === 'ar' ? 'رجوع' : 'Back' }}
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button v-if="selectedDate !== today" @click="selectedDate = today; load()"
+            class="text-[13px] font-medium px-3 py-2 rounded-full text-white transition-colors"
+            :class="isDark ? 'bg-[#00896F] hover:bg-[#00705a]' : 'bg-[#00896F] hover:bg-[#006552]'">
+            {{ currentLang === 'ar' ? 'اليوم' : 'Today' }}
+          </button>
+          <CommonDateField v-model="selectedDate" size="sm" />
+        </div>
+      </div>
+
       <CommonNotificationsList
         :groups="notificationGroups"
         :tabs="tabs"
         :active-tab="activeTab"
         :loading="loading"
         @update:active-tab="onTabChange"
+        @item-click="onItemClick"
+        @mark-all-read="onMarkAllRead"
       />
     </div>
   </NuxtLayout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
-const { fetchNotifications, toGroups } = useNotifications()
+const { fetchNotifications, markRead, markAllRead, toGroups } = useNotifications()
 const router = useRouter()
 
 function goBack() {
@@ -43,10 +57,13 @@ const tabs = ref([
   { name: 'Default', count: 0 },
 ])
 
+const today = new Date().toISOString().slice(0, 10)
+const selectedDate = ref(today)
+
 async function load() {
   loading.value = true
   try {
-    const res = await fetchNotifications({ mode: 'page', per_page: 50 })
+    const res = await fetchNotifications({ mode: 'page', per_page: 50, date: selectedDate.value })
     const items = res?.data ?? []
     notificationGroups.value = toGroups(items)
 
@@ -66,5 +83,26 @@ function onTabChange(name) {
   activeTab.value = name
 }
 
+async function onItemClick(item) {
+  if (typeof item.id !== 'number' || !item.unread) return
+  item.unread = false
+  try {
+    await markRead(item.id)
+  } catch {
+    item.unread = true
+  }
+}
+
+async function onMarkAllRead() {
+  const changed = notificationGroups.value.flatMap(g => g.items).filter(i => i.unread)
+  changed.forEach(i => { i.unread = false })
+  try {
+    await markAllRead()
+  } catch {
+    changed.forEach(i => { i.unread = true })
+  }
+}
+
+watch(selectedDate, load)
 onMounted(load)
 </script>

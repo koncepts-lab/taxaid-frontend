@@ -11,10 +11,10 @@
       </div>
 
       <div class="flex items-baseline gap-2">
-        <span class="text-[10px] opacity-50" :class="isDark ? 'text-white' : 'text-black'">AED</span>
+        <span class="text-[10px] opacity-50" :class="isDark ? 'text-white' : 'text-black'">{{ code }}</span>
 
         <span class="text-[20px] font-bold" :class="isDark ? 'text-white' : 'text-[#013e32]'">
-          {{ formatToMillions(card.value || 0) }} M
+          {{ formatFull(card.value) }}
         </span>
       </div>
     </div>
@@ -32,10 +32,15 @@ const props = defineProps({
 })
 
 const { isDark } = useTheme()
+const { code } = useCurrency()
 const currentLang = useState('currentLang', () => 'en')
 watch(currentLang, () => {
   console.log("🚀 ~ currentLang:", props.value)
 })
+// Cards show the full amount from the API with thousands separators
+const fullNumber = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 })
+const formatFull = (value) => fullNumber.format(Number(value) || 0)
+
 // Map the API's contract_summary object to the cards array
 const cards = computed(() => {
   if (!props.summaryData) return []
@@ -47,19 +52,19 @@ const cards = computed(() => {
     {
       label: 'Contract Value',
       labelAr: 'قيمة العقد',
-      value: formatInMillions(data.contract_value) || '0',
+      value: data.contract_value,
       icon: '/images/icons/Contract-Value.svg'
     },
     {
       label: 'Invoiced Amount',
       labelAr: 'المبلغ المفوتر',
-      value: data.invoiced?.toLocaleString() || '0',
+      value: data.invoiced,
       icon: '/images/icons/Invoiced.svg'
     },
     {
       label: 'Yet to Invoice',
       labelAr: 'المتبقي للفوترة',
-      value: data.yet_to_invoice?.toLocaleString() || '0',
+      value: data.yet_to_invoice,
       icon: '/images/icons/pending.svg'
     }
   ]
