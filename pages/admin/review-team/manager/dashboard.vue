@@ -446,6 +446,11 @@
         <AdminConsultantRequests team="review" :isDark="isDark" currentLang="en" />
       </div>
 
+      <!-- User Requests (account deletion review queue — §6.2) -->
+      <div v-if="activeTab === 'User Requests'">
+        <AdminAccountDeletionRequests role="review" :isDark="isDark" currentLang="en" />
+      </div>
+
       <div v-if="activeTab === 'Client review analysis progress'" :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-[#E5E5E5]'" class="rounded-[20px] border shadow-sm p-8 pb-12 space-y-8">
         
         <!-- Section Header -->
@@ -545,7 +550,7 @@ const route = useRoute()
 const router = useRouter()
 const rm = useReviewManager()
 
-const tabs = ['Productivity tracker', 'Data Sync Status', 'Client fixed progress', 'Consultant workload', 'Assign Consultant', 'Client review analysis progress', 'Consultant Requests']
+const tabs = ['Productivity tracker', 'Data Sync Status', 'Client fixed progress', 'Consultant workload', 'Assign Consultant', 'Client review analysis progress', 'Consultant Requests', 'User Requests']
 const activeTab = ref(tabs.includes(route.query.tab) ? route.query.tab : 'Productivity tracker')
 
 function setTab(tab) {

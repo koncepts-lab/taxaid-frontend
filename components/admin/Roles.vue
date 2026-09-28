@@ -54,7 +54,7 @@
         <button @click="setTab('Partner Management'); loadPartners()" :class="activeTab === 'Partner Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Partner Management</button>
         <button @click="setTab('Tenants Management')" :class="activeTab === 'Tenants Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Organization Management</button>
         <button @click="setTab('AI Settings')" :class="activeTab === 'AI Settings' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">AI Settings</button>
-        <button @click="setTab('Organizations'); if (!organizationsLoaded) loadOrganizations()" :class="activeTab === 'Organizations' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">New User Requests</button>
+        <button @click="setTab('Organizations'); if (!organizationsLoaded) loadOrganizations()" :class="activeTab === 'Organizations' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Client Requests</button>
         <button @click="setTab('Roles & Settings')" :class="activeTab === 'Roles & Settings' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Roles and Permissions</button>
       </div>
 
@@ -420,8 +420,18 @@
       <AdminClientTenants />
     </div>
 
-    <!-- Organizations Tab — full registration_requests history, who approved/rejected each -->
+    <!-- Client Requests Tab — a request-type list: New User Requests (existing) + Account Deletion -->
     <div v-else-if="activeTab === 'Organizations'">
+      <div class="flex bg-white p-1 rounded-full shadow-sm w-fit border border-gray-100 mt-4 mb-2">
+        <button @click="setClientRequestSubTab('new-user')" class="px-6 py-1.5 rounded-full text-sm transition-colors"
+          :class="clientRequestSubTab === 'new-user' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold' : 'text-gray-700 hover:bg-gray-50'">New User Requests</button>
+        <button @click="setClientRequestSubTab('account-deletion')" class="px-6 py-1.5 rounded-full text-sm transition-colors"
+          :class="clientRequestSubTab === 'account-deletion' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold' : 'text-gray-700 hover:bg-gray-50'">Account Deletion</button>
+      </div>
+
+      <AdminAccountDeletionRequests v-if="clientRequestSubTab === 'account-deletion'" role="super-admin" />
+
+      <template v-else>
       <div class="bg-[#61FFD62E] border border-[#00BE8CBD] rounded-[10px] p-4 flex flex-col md:flex-row gap-4 justify-between items-center mt-4">
         <div class="relative w-full md:w-[40%]">
           <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -476,6 +486,7 @@
         <CommonPaginationBar v-if="organizationMeta.total > 0" :meta="organizationMeta" :loading="organizationsLoading"
           @page-change="(p) => loadOrganizations(p)" @per-page-change="(pp) => { organizationPerPage = pp; loadOrganizations(1) }" />
       </div>
+      </template>
     </div>
 
     <!-- AI Settings — global instructions, kill switch, catalog, chat prompts -->
@@ -1043,6 +1054,12 @@ const router = useRouter()
 const tabMap = { users: 'User Management', systems: 'System Access Control', partners: 'Partner Management', clients: 'Tenants Management', 'organization-management': 'Tenants Management', organizations: 'Organizations', 'new-user-requests': 'Organizations', 'ai-settings': 'AI Settings', 'roles-and-settings': 'Roles & Settings' }
 const tabKey = { 'User Management': 'users', 'System Access Control': 'systems', 'Partner Management': 'partners', 'Tenants Management': 'organization-management', 'Organizations': 'new-user-requests', 'AI Settings': 'ai-settings', 'Roles & Settings': 'roles-and-settings' }
 const activeTab = ref(tabMap[route.query.tab] ?? 'User Management')
+const clientRequestSubTab = ref(route.query.subtab === 'account-deletion' ? 'account-deletion' : 'new-user')
+
+function setClientRequestSubTab(name) {
+  clientRequestSubTab.value = name
+  router.replace({ query: { ...route.query, subtab: name } })
+}
 
 // An organization page is open (?tab=organization-management&organization_id=N) → hide header/cards/tabs (SPA takeover)
 const clientDetailOpen = computed(() =>

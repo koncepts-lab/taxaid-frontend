@@ -131,6 +131,9 @@ export function useClientManagement() {
   const renameOrganization = (organizationId: number, name: string) =>
     useAdminApi(`/admin/organizations/${organizationId}`, { method: 'PATCH', body: { name } })
 
+  const setOrganizationStatus = (organizationId: number, status: 'active' | 'suspended') =>
+    useAdminApi(`/admin/organizations/${organizationId}/status`, { method: 'PATCH', body: { status } })
+
   const diagnoseOrganization = (organizationId: number, body: Record<string, any> = {}) =>
     useAdminApi('/admin/organizations/diagnose', { method: 'POST', body: { organization_id: organizationId, ...body } })
 
@@ -145,7 +148,7 @@ export function useClientManagement() {
     useAdminApi(`/admin/tenants/${tenantId}/region`, { method: 'PUT', body: payload })
 
   return {
-    renameOrganization, diagnoseOrganization, getTenants, setTenantStatus, getTenantUsers, setTenantUserStatus,
+    renameOrganization, setOrganizationStatus, diagnoseOrganization, getTenants, setTenantStatus, getTenantUsers, setTenantUserStatus,
     updateTenantUser, addTenantUser, deleteTenantUser, getRolesSettings, setRolesToggles, setRolesGroup, resetRolesGroup,
     getSchedule, setSchedule, syncNow, adminSyncNow, stopSync,
     openSettings, requestLogs, downloadLogs,

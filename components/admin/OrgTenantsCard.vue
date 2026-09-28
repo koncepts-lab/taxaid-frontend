@@ -79,6 +79,38 @@
         @page-change="(p) => load(p)" @per-page-change="() => {}" />
     </div>
 
+    <div v-if="!loading && org" class="px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-4">
+      <div class="min-w-0">
+        <p class="text-[13px] font-medium text-gray-800">Organization status:
+          <span class="capitalize" :class="org.status === 'suspended' ? 'text-amber-700' : 'text-[#065F46]'">{{ org.status || 'active' }}</span>
+        </p>
+        <p v-if="org.status !== 'suspended' && !allTenantsSuspended" class="text-[12px] text-gray-400 mt-0.5">Every tenant must be suspended before the organization can be suspended.</p>
+      </div>
+      <button v-if="org.status === 'suspended'" @click="orgTarget = 'active'" :disabled="orgBusy"
+        class="whitespace-nowrap px-4 py-2 bg-[#00896F] text-white rounded-md text-[13px] font-medium hover:bg-[#00705a] disabled:opacity-60">Unsuspend Organization</button>
+      <button v-else @click="orgTarget = 'suspended'" :disabled="orgBusy || !allTenantsSuspended"
+        class="whitespace-nowrap px-4 py-2 border rounded-md text-[13px] font-medium disabled:opacity-40"
+        :class="isDark ? 'border-red-400 text-red-300 hover:bg-red-500/10' : 'border-red-300 text-red-600 hover:bg-red-50'">Suspend Organization</button>
+    </div>
+
+    <div v-if="orgTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div class="bg-white rounded-xl shadow-lg w-[400px] max-w-full p-6">
+        <h3 class="text-[16px] font-semibold text-gray-900 mb-2">{{ orgTarget === 'active' ? 'Unsuspend organization?' : 'Suspend organization?' }}</h3>
+        <p class="text-sm text-gray-500 mb-6">
+          <span class="font-medium text-gray-700">{{ org?.name }}</span><br>
+          {{ orgTarget === 'active' ? 'Every user of this organization will regain the ability to log in.' : 'No user of this organization will be able to log in until it is unsuspended.' }}
+        </p>
+        <div class="flex justify-end gap-3">
+          <button @click="orgTarget = null" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+          <button @click="applyOrgStatus" :disabled="orgBusy"
+            :class="orgTarget === 'active' ? 'bg-[#00896F] hover:bg-[#00705a]' : 'bg-red-600 hover:bg-red-700'"
+            class="px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-60">
+            {{ orgTarget === 'active' ? 'Unsuspend' : 'Suspend' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div v-if="target" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div class="bg-white rounded-xl shadow-lg w-[400px] max-w-full p-6">
         <h3 class="text-[16px] font-semibold text-gray-900 mb-2">{{ target.next === 'live' ? 'Unsuspend tenant?' : 'Suspend tenant?' }}</h3>
@@ -116,7 +148,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['changed', 'open-tenant', 'loaded', 'rename'])
 
-const { getTenants, setTenantStatus } = useClientManagement()
+const { getTenants, setTenantStatus, setOrganizationStatus } = useClientManagement()
 
 const PAGE_SIZE = 10
 
@@ -127,8 +159,11 @@ const loading = ref(true)
 const busy = ref(false)
 const error = ref('')
 const target = ref(null)
+const orgTarget = ref(null)
+const orgBusy = ref(false)
 
 const fixedRows = computed(() => (meta.value.total > 5 ? PAGE_SIZE : 5))
+const allTenantsSuspended = computed(() => tenants.value.length > 0 && tenants.value.every((t) => t.status === 'suspended'))
 
 const statusClass = (status) => {
   if (status === 'live') return 'bg-[#D1FAE5] text-[#065F46]'
@@ -174,7 +209,7 @@ async function load(page = 1) {
       last_page: res?.last_page ?? 1,
     }
     const first = tenants.value[0]
-    org.value = first ? { id: first.organization_id, name: first.organization_name } : org.value
+    org.value = first ? { id: first.organization_id, name: first.organization_name, status: first.organization_status } : org.value
     emit('loaded', tenants.value)
   } catch (e) {
     error.value = e?.data?.message ?? 'Failed to load organization.'
@@ -196,6 +231,22 @@ async function apply() {
     target.value = null
   } finally {
     busy.value = false
+  }
+}
+
+async function applyOrgStatus() {
+  orgBusy.value = true
+  error.value = ''
+  try {
+    await setOrganizationStatus(props.organizationId, orgTarget.value)
+    org.value = org.value ? { ...org.value, status: orgTarget.value } : org.value
+    orgTarget.value = null
+    emit('changed')
+  } catch (e) {
+    error.value = e?.data?.message ?? 'Failed to update organization status.'
+    orgTarget.value = null
+  } finally {
+    orgBusy.value = false
   }
 }
 

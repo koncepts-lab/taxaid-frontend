@@ -28,6 +28,9 @@
 
         <div class="flex-1 min-w-0">
           <CommonLegalBody :loading="state.loading" :error="state.error" :html="state.html" :dark="isDark" />
+          <NuxtLink v-if="activeKey === 'account-deletion-policy'" to="/account-deletion" class="inline-block mt-2 text-sm underline" style="color: #00896F;">
+            {{ currentLang === 'ar' ? 'ابدأ طلب حذف الحساب ←' : 'Start an account deletion request →' }}
+          </NuxtLink>
         </div>
       </div>
     </div>

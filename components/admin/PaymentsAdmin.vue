@@ -226,8 +226,14 @@
                 <td class="py-4 px-6 capitalize">{{ s.billing_cycle }}</td>
                 <td class="py-4 px-6 capitalize">{{ s.status }}</td>
                 <td class="py-4 px-6">
-                  <input type="number" min="0" v-model.number="s.dunning_grace_days" @change="saveDunning(s)"
-                    class="w-24 border border-gray-200 rounded-md px-2 py-1 text-sm focus:outline-none focus:border-[#00896F]" placeholder="default" />
+                  <div class="flex items-center gap-3">
+                    <input type="number" min="0" v-model.number="s.dunning_grace_days" @change="saveDunning(s)"
+                      class="w-24 border border-gray-200 rounded-md px-2 py-1 text-sm focus:outline-none focus:border-[#00896F]" placeholder="default" />
+                    <button v-if="s.status === 'active' && s.organization?.status === 'suspended'" @click="cancelTarget = s"
+                      class="px-4 py-1.5 rounded-md text-xs font-medium border border-[#FB2C36] text-[#FB2C36] hover:bg-[#FEE2E2] whitespace-nowrap">
+                      Cancel Subscription
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -789,6 +795,24 @@
         </div>
       </div>
     </div>
+
+    <div v-if="cancelTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div class="bg-white rounded-xl shadow-lg w-[420px] max-w-full p-6">
+        <h3 class="text-[16px] font-semibold text-gray-900 mb-2">Cancel this subscription?</h3>
+        <p class="text-sm text-gray-500 mb-6">
+          <span class="font-medium text-gray-700">{{ cancelTarget.organization?.name ?? `Org #${cancelTarget.organization_id}` }}</span><br>
+          This ends the subscription immediately. This cannot be undone.
+        </p>
+        <p v-if="cancelError" class="text-sm text-[#EF4444] mb-3">{{ cancelError }}</p>
+        <div class="flex justify-end gap-3">
+          <button @click="cancelTarget = null" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Back</button>
+          <button @click="confirmCancelSubscription" :disabled="cancelBusy"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-60">
+            {{ cancelBusy ? 'Cancelling…' : 'Cancel Subscription' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -799,7 +823,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 const {
   getPlans, getOrgPlansGrouped, getPlanStats, getOrganizations, assignPlanToOrg, createPlan, createPlanVersion, updatePlanStatus,
   getEntitlementDefinitions, createEntitlementDefinition, toggleEntitlementDefinitionActive: apiToggleDefinitionActive, getAiModelOptions,
-  getSubscriptions, getPayments, setDunningOverride, getAlerts,
+  getSubscriptions, cancelSubscription, getPayments, setDunningOverride, getAlerts,
   getPaymentSettings, updatePaymentSettings, getTrialPlan, saveTrialPlan, demoEditPlan,
 } = usePaymentsAdmin()
 
@@ -1248,6 +1272,22 @@ async function loadSubscriptions(page = 1) {
   }
 }
 function subscriptionsPerPageChange(pp) { subscriptionsMeta.value.per_page = pp; loadSubscriptions(1) }
+
+const cancelTarget = ref(null)
+const cancelBusy = ref(false)
+const cancelError = ref('')
+async function confirmCancelSubscription() {
+  cancelBusy.value = true; cancelError.value = ''
+  try {
+    await cancelSubscription(cancelTarget.value.id)
+    cancelTarget.value = null
+    await loadSubscriptions(subscriptionsMeta.value.current_page)
+  } catch (e) {
+    cancelError.value = e?.data?.message || 'Failed to cancel subscription.'
+  } finally {
+    cancelBusy.value = false
+  }
+}
 async function saveDunning(sub) {
   await setDunningOverride(sub.id, sub.dunning_grace_days || null)
 }
