@@ -1,9 +1,14 @@
 <template>
   <div class="space-y-6">
     <!-- Header (hidden while a client config is open — SPA takeover) -->
-    <div v-if="!clientDetailOpen">
-      <h1 class="text-2xl font-medium text-[#013E32]">User & System Access Management</h1>
-      <p class="text-gray-500 mt-1">Centralized admin control to manage users and access across all dashboards.</p>
+    <div v-if="!clientDetailOpen" class="flex justify-between items-start">
+      <div>
+        <h1 class="text-2xl font-medium text-[#013E32]">User & System Access Management</h1>
+        <p class="text-gray-500 mt-1">Centralized admin control to manage users and access across all dashboards.</p>
+      </div>
+
+      <!-- VM status badge → click opens detail modal -->
+      <AdminVmStatusBadge />
     </div>
 
     <!-- Top 4 Summary Cards -->
@@ -45,9 +50,8 @@
       </div>
     </div>
 
-    <!-- Header with Tabs and Socket Button -->
-    <div v-if="!clientDetailOpen" class="flex justify-between items-center mt-8 w-full">
-      <!-- Tabs -->
+    <!-- Tabs -->
+    <div v-if="!clientDetailOpen" class="flex items-center mt-8 w-full">
       <div class="flex items-center gap-2 text-sm bg-white p-1.5 rounded-full border border-gray-100 shadow-sm w-fit overflow-x-auto">
         <button @click="setTab('User Management')" :class="activeTab === 'User Management' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">User Management</button>
         <button @click="setTab('System Access Control')" :class="activeTab === 'System Access Control' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">System Access Control</button>
@@ -57,9 +61,6 @@
         <button @click="setTab('Organizations'); if (!organizationsLoaded) loadOrganizations()" :class="activeTab === 'Organizations' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Client Requests</button>
         <button @click="setTab('Roles & Settings')" :class="activeTab === 'Roles & Settings' ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'" class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">Roles and Permissions</button>
       </div>
-
-      <!-- VM status badge → click opens detail modal -->
-      <AdminVmStatusBadge />
     </div>
 
     <!-- User Management Tab -->

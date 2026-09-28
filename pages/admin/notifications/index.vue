@@ -10,11 +10,12 @@
         </button>
 
         <div class="flex items-center gap-2">
-          <CommonDateField v-model="selectedDate" size="sm" />
           <button v-if="selectedDate !== today" @click="selectedDate = today; load()"
-            class="text-[13px] underline" :class="isDark ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-gray-700'">
+            class="text-[13px] font-medium px-3 py-2 rounded-full text-white transition-colors"
+            :class="isDark ? 'bg-[#00896F] hover:bg-[#00705a]' : 'bg-[#00896F] hover:bg-[#006552]'">
             {{ currentLang === 'ar' ? 'اليوم' : 'Today' }}
           </button>
+          <CommonDateField v-model="selectedDate" size="sm" />
         </div>
       </div>
 

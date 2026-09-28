@@ -3,17 +3,17 @@
     <div ref="fieldRef" :class="fieldClasses"
       class="w-full rounded-[10px] border flex items-center gap-2 px-3 transition-colors">
       <template v-if="range">
-        <input :value="texts.from" @input="onInput('from', $event)" @blur="commit('from')" @keydown="onKeydown('from', $event)"
+        <input :value="texts.from" @input="onInput('from', $event)" @blur="commit('from')" @keydown="onKeydown('from', $event)" @click="openOnClick"
           type="text" inputmode="numeric" :maxlength="maxLength" autocomplete="off" dir="ltr" :disabled="disabled"
           :placeholder="placeholderFrom || defaultPlaceholder" :title="bad.from ? invalidHint : undefined"
           :class="inputClasses" class="flex-1 min-w-0 w-0 bg-transparent outline-none text-left tabular-nums" />
         <span class="shrink-0 opacity-50">–</span>
-        <input :value="texts.to" @input="onInput('to', $event)" @blur="commit('to')" @keydown="onKeydown('to', $event)"
+        <input :value="texts.to" @input="onInput('to', $event)" @blur="commit('to')" @keydown="onKeydown('to', $event)" @click="openOnClick"
           type="text" inputmode="numeric" :maxlength="maxLength" autocomplete="off" dir="ltr" :disabled="disabled"
           :placeholder="placeholderTo || defaultPlaceholder" :title="bad.to ? invalidHint : undefined"
           :class="inputClasses" class="flex-1 min-w-0 w-0 bg-transparent outline-none text-left tabular-nums" />
       </template>
-      <input v-else :value="texts.single" @input="onInput('single', $event)" @blur="commit('single')" @keydown="onKeydown('single', $event)"
+      <input v-else :value="texts.single" @input="onInput('single', $event)" @blur="commit('single')" @keydown="onKeydown('single', $event)" @click="openOnClick"
         type="text" inputmode="numeric" :maxlength="maxLength" autocomplete="off" dir="ltr" :disabled="disabled"
         :placeholder="placeholder || defaultPlaceholder" :title="bad.single ? invalidHint : undefined"
         :class="inputClasses" class="flex-1 min-w-0 w-0 bg-transparent outline-none text-left tabular-nums" />
@@ -271,7 +271,9 @@ const panelStyle = ref({})
 const anyBad = computed(() => props.invalid || bad.single || bad.from || bad.to)
 
 const fieldClasses = computed(() => [
-  props.size === 'sm' ? 'h-[38px] text-[13px]' : 'h-[44px] text-[14px]',
+  // min-w keeps the input from collapsing to 0 in a shrink-to-fit flex row
+  props.size === 'sm' ? 'h-[38px] text-[13px] min-w-[132px]' : 'h-[44px] text-[14px] min-w-[150px]',
+  props.range ? (props.size === 'sm' ? 'min-w-[240px]' : 'min-w-[270px]') : '',
   open.value
     ? 'border-[#00896F] ring-1 ring-[#00896F]'
     : anyBad.value
@@ -334,6 +336,8 @@ const toggle = () => {
   positionPanel()
   open.value = true
 }
+
+const openOnClick = () => { if (!open.value) toggle() }
 
 const onSingle = (value) => {
   const date = parseAny(value)

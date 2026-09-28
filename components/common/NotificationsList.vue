@@ -6,8 +6,9 @@
         <h1 class="text-[24px] font-medium" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">All Notifications</h1>
         <p class="text-[14px] font-normal" :class="isDark ? 'text-white/60' : 'text-gray-500'">Showing {{ totalCount }} notifications</p>
       </div>
-      <button v-if="hasUnread" @click="$emit('mark-all-read')" class="text-[14px] font-medium underline flex-shrink-0"
-        :class="isDark ? 'text-white/70 hover:text-white' : 'text-[#00896F] hover:text-[#006552]'">
+      <button v-if="hasUnread" @click="$emit('mark-all-read')"
+        class="text-[14px] font-medium flex-shrink-0 px-4 py-2 rounded-full text-white transition-colors"
+        :class="isDark ? 'bg-[#00896F] hover:bg-[#00705a]' : 'bg-[#00896F] hover:bg-[#006552]'">
         Mark all read
       </button>
     </div>
@@ -73,8 +74,8 @@
             </div>
 
             <button v-if="item.unread" @click.stop="$emit('item-click', item)"
-              class="relative text-[13px] font-medium px-3 py-1.5 rounded-lg flex-shrink-0 transition-colors"
-              :class="isDark ? 'text-[#00BE8CBD] hover:bg-white/5' : 'text-[#00896F] hover:bg-[#E6FFF9]'">
+              class="relative text-[13px] font-medium px-3 py-1.5 rounded-lg flex-shrink-0 border transition-colors"
+              :class="isDark ? 'text-[#00BE8CBD] border-[#00BE8CBD]/30 hover:bg-white/5' : 'text-[#00896F] border-[#00896F]/40 hover:bg-[#E6FFF9]'">
               Mark as read
             </button>
           </div>
