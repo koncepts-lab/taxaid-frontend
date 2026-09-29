@@ -12,7 +12,7 @@ function toMonthRow(row: any, extras: Record<string, any> = {}) {
 }
 
 function transformSummaryRow(row: any) {
-  const base: Record<string, any> = { name: row.particulars ?? '' }
+  const base: Record<string, any> = { name: row.particulars ?? '', subgroups: (row.subgroups ?? []).map(transformSubgroupEntry) }
   if (row.is_gap) {
     return { ...base, type: 'header', ...Object.fromEntries(MONTHS.map(k => [k, null])), total: null }
   }
@@ -23,7 +23,7 @@ function transformSummaryRow(row: any) {
 // Balance-sheet rows are snapshots — summing 12 monthly balances is not a
 // balance. The "total" column shows the latest month with data instead
 function transformSnapshotRow(row: any) {
-  const base: Record<string, any> = { name: row.particulars ?? '' }
+  const base: Record<string, any> = { name: row.particulars ?? '', subgroups: (row.subgroups ?? []).map(transformSubgroupEntry) }
   if (row.is_gap) {
     return { ...base, type: 'header', ...Object.fromEntries(MONTHS.map(k => [k, null])), total: null }
   }
@@ -47,6 +47,10 @@ function transformDetailedRow(row: any) {
   if (row.is_group_total)   base.type = 'net-row'
   else if (row.is_subgroup_total) base.type = 'header'
   return toMonthRow(row, base)
+}
+
+function transformSubgroupEntry(entry: any) {
+  return toMonthRow({ months: entry.months }, { name: entry.subgroup, isUnmapped: !!entry.is_unmapped })
 }
 
 function transformSalaryRow(row: any) {

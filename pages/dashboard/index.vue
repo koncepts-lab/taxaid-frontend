@@ -61,27 +61,27 @@
         </div>
       </div>
 
-      <!-- Only one active alert modal renders at a time -->
+      <DashboardAlertToasts v-if="!isMobile" :keys="pendingKeys" @open="openModalKey = $event" @close="dismissKey" />
       <DashboardApVarianceReconciliationModal
-        v-if="activeModalKey === 'ap_variance' && !isMobile"
+        v-if="openModalKey === 'ap_variance' && !isMobile"
         :data="dashboardAlerts.ap_variance"
-        @close="dismissModal('ap_variance')"
+        @close="closeModal"
         @resolved="onModalResolved" />
       <DashboardArVarianceReconciliationModal
-        v-if="activeModalKey === 'ar_variance' && !isMobile"
+        v-if="openModalKey === 'ar_variance' && !isMobile"
         :data="dashboardAlerts.ar_variance"
-        @close="dismissModal('ar_variance')"
+        @close="closeModal"
         @resolved="onModalResolved" />
       <DashboardNewLedgerDetectedModal
-        v-if="activeModalKey === 'missing_ledgers' && !isMobile"
+        v-if="openModalKey === 'missing_ledgers' && !isMobile"
         :data="dashboardAlerts.missing_ledgers"
-        @close="dismissModal('missing_ledgers')"
+        @close="closeModal"
         @resolved="onModalResolved" />
       <DashboardSalesForecastVarianceModal
-        v-if="activeModalKey === 'sales_forecast_variance' && !isMobile"
+        v-if="openModalKey === 'sales_forecast_variance' && !isMobile"
         :data="dashboardAlerts.sales_forecast_variance"
         :date="today"
-        @close="dismissModal('sales_forecast_variance')"
+        @close="closeModal"
         @resolved="onModalResolved" />
     </div>
   </NuxtLayout>
@@ -113,20 +113,37 @@ const { fetchSummary } = useDashboard()
 const fetchDashboardAlerts = async () => {
   if (!can('alerts.access')) return
   const res = await useApi('/dashboard/alerts')
-  if (res?.status === 'success') dashboardAlerts.value = res.data
+  if (res?.status === 'success') {
+    dashboardAlerts.value = res.data
+    registerShown()
+  }
 }
 
-const dismissedKeys = ref(new Set())
-const activeModalKey = computed(() =>
-  ALERT_KEYS.find((key) => dashboardAlerts.value[key] && !dismissedKeys.value.has(key)) ?? null
+const shownKeys = ref(new Set())
+const closedKeys = ref(new Set())
+const openModalKey = ref(null)
+
+const registerShown = () => {
+  for (const key of ALERT_KEYS) {
+    if (!dashboardAlerts.value[key] || shownKeys.value.has(key)) continue
+    shownKeys.value = new Set(shownKeys.value).add(key)
+  }
+}
+
+const pendingKeys = computed(() =>
+  ALERT_KEYS.filter((key) => dashboardAlerts.value[key] && shownKeys.value.has(key) && !closedKeys.value.has(key))
 )
 
-const dismissModal = (key) => {
-  dismissedKeys.value = new Set(dismissedKeys.value).add(key)
+const dismissKey = (key) => {
+  closedKeys.value = new Set(closedKeys.value).add(key)
+}
+
+const closeModal = () => {
+  openModalKey.value = null
 }
 
 const onModalResolved = async () => {
-  dismissedKeys.value = new Set()
+  openModalKey.value = null
   await fetchDashboardAlerts()
 }
 

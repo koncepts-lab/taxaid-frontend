@@ -20,8 +20,12 @@
                         <div class="h-3 w-64 max-w-full rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
                     </div>
                     <p v-else-if="hasPeriod" class="text-xs mt-1 h-4 leading-4" :class="isDark ? 'text-[#6FDBBF]' : 'text-[#00896F]'">
-                        <template v-if="cardPeriod.from">{{ currentLang === 'ar' ? 'عرض البيانات من' : 'Showing data from' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.from) }}</span> {{ currentLang === 'ar' ? 'إلى' : 'to' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.to) }}</span></template>
-                        <template v-else>{{ currentLang === 'ar' ? 'البيانات حتى تاريخ' : 'Showing data as of' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.as_of) }}</span></template>
+                        <template v-if="cardPeriod.from">{{ currentLang === 'ar' ? 'السنة الحالية:' : 'Current Year:' }} {{ currentLang === 'ar' ? 'عرض البيانات من' : 'Showing data from' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.from) }}</span> {{ currentLang === 'ar' ? 'إلى' : 'to' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.to) }}</span></template>
+                        <template v-else>{{ currentLang === 'ar' ? 'السنة الحالية:' : 'Current Year:' }} {{ currentLang === 'ar' ? 'البيانات حتى تاريخ' : 'Showing data as of' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.as_of) }}</span></template>
+                    </p>
+                    <p v-if="hasPeriod && previousPeriod" class="text-xs mt-1 leading-4" :class="isDark ? 'text-white/60' : 'text-black/50'">
+                        <template v-if="previousPeriod.from">{{ currentLang === 'ar' ? 'السنة السابقة:' : 'Previous Year:' }} {{ currentLang === 'ar' ? 'مقارنة بالفترة من' : 'Compared with' }} <span dir="ltr">{{ formatDisplayDate(previousPeriod.from) }}</span> {{ currentLang === 'ar' ? 'إلى' : 'to' }} <span dir="ltr">{{ formatDisplayDate(previousPeriod.to) }}</span></template>
+                        <template v-else>{{ currentLang === 'ar' ? 'السنة السابقة:' : 'Previous Year:' }} {{ currentLang === 'ar' ? 'مقارنة بالبيانات حتى تاريخ' : 'Compared with data as of' }} <span dir="ltr">{{ formatDisplayDate(previousPeriod.as_of) }}</span></template>
                     </p>
                 </div>
             </div>
@@ -436,6 +440,11 @@ const handleClickOutside = (event) => {
 
 const cardPeriod = useState('cardPeriod', () => null)
 const hasPeriod = computed(() => !!(cardPeriod.value && (cardPeriod.value.from || cardPeriod.value.as_of)))
+const previousPeriod = computed(() => {
+    const p = cardPeriod.value?.previous
+    if (!p || !p.to) return null
+    return cardPeriod.value.as_of ? { as_of: p.to } : { from: p.from, to: p.to }
+})
 // The period line is reserved while the card loads (skeleton); if nothing arrives the space is released
 const waitingForPeriod = ref(true)
 let periodTimer

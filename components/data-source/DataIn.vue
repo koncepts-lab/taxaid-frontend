@@ -551,8 +551,18 @@
                                             class="px-6 py-2.5 font-medium text-[#013E32]">{{ row.particulars }}</td>
                                     </tr>
                                     <!-- Normal or summary row -->
-                                    <tr v-else :class="row.is_summary ? 'font-semibold text-[#013E32]' : 'text-gray-700 hover:bg-gray-50'">
-                                        <td class="px-6 py-3 border-b border-gray-50 whitespace-nowrap">{{ row.particulars }}</td>
+                                    <tr v-else :class="[row.is_summary ? 'font-semibold text-[#013E32]' : 'text-gray-700 hover:bg-gray-50', hasViewSubgroups(row) ? 'cursor-pointer' : '']"
+                                        @click="hasViewSubgroups(row) && toggleViewRow(row.particulars)">
+                                        <td class="px-6 py-3 border-b border-gray-50 whitespace-nowrap">
+                                            <span v-if="hasViewSubgroups(row)" class="inline-flex items-center gap-1.5">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                                                    class="transition-transform shrink-0" :class="expandedViewRows.has(row.particulars) ? 'rotate-90' : ''">
+                                                    <path d="M9 6l6 6-6 6" />
+                                                </svg>
+                                                {{ row.particulars }}
+                                            </span>
+                                            <template v-else>{{ row.particulars }}</template>
+                                        </td>
                                         <template v-if="showMonthly">
                                             <td v-for="(h, i) in viewModalHeaders" :key="i"
                                                 class="px-4 py-3 border-b border-gray-50 text-right tabular-nums whitespace-nowrap">
@@ -561,6 +571,26 @@
                                         </template>
                                         <td class="px-6 py-3 border-b border-gray-50 text-right tabular-nums whitespace-nowrap">
                                             {{ row.total !== null ? formatStandardNumber(row.total) : '—' }}
+                                        </td>
+                                    </tr>
+
+                                    <tr v-for="(sub, sIndex) in (hasViewSubgroups(row) && expandedViewRows.has(row.particulars) ? row.subgroups : [])"
+                                        :key="`${idx}-sub-${sIndex}`" class="bg-gray-50/60">
+                                        <td class="px-6 py-2 border-b border-gray-50 whitespace-nowrap text-gray-500 text-xs">
+                                            <span class="pl-5 inline-flex items-center gap-1.5">
+                                                {{ sub.subgroup }}
+                                                <span v-if="sub.is_unmapped" title="Not found in this tenant's TB mapping"
+                                                    class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-700">Unmapped</span>
+                                            </span>
+                                        </td>
+                                        <template v-if="showMonthly">
+                                            <td v-for="(h, i) in viewModalHeaders" :key="i"
+                                                class="px-4 py-2 border-b border-gray-50 text-right tabular-nums whitespace-nowrap text-gray-500 text-xs">
+                                                {{ (sub.months[i] ?? 0).toLocaleString() }}
+                                            </td>
+                                        </template>
+                                        <td class="px-6 py-2 border-b border-gray-50 text-right tabular-nums whitespace-nowrap text-gray-500 text-xs">
+                                            {{ formatStandardNumber(sub.total) }}
                                         </td>
                                     </tr>
                                 </template>
@@ -1003,13 +1033,26 @@ const viewModalRows = computed(() => {
             continue
         }
         const months = row.months || []
-        const total = months.reduce((sum, v) => sum + (v || 0), 0)
+        // BS rows are month-end snapshots (a balance), not a flow — summing 12 balances
+        // isn't a real number. Use the latest month that has data instead. PL rows are
+        // flows (revenue/expense for that month), so summing across the year is correct.
+        const total = id === "bs"
+            ? months.reduce((latest, v) => (v !== null && v !== 0 ? v : latest), 0)
+            : months.reduce((sum, v) => sum + (v || 0), 0)
         if (id === "bs" && rows.length === 0) rows.push({ particulars: "Assets", total: null, months: [], is_section: true })
         if (id === "bs" && row.particulars === "Shareholder’s Equity") rows.push({ particulars: "Liabilities & Equity", total: null, months: [], is_section: true })
-        rows.push({ particulars: row.particulars, total: total, months: months, is_summary: row.is_summary })
+        rows.push({ particulars: row.particulars, total: total, months: months, is_summary: row.is_summary, subgroups: row.subgroups || [] })
     }
     return rows
 })
+
+const expandedViewRows = ref(new Set())
+const hasViewSubgroups = (row) => !row.is_section && Array.isArray(row.subgroups) && row.subgroups.length > 0
+const toggleViewRow = (particulars) => {
+    const next = new Set(expandedViewRows.value)
+    next.has(particulars) ? next.delete(particulars) : next.add(particulars)
+    expandedViewRows.value = next
+}
 
 const handleViewDetailedReport = async (id) => {
     const data = await budgetFetchViewData(id)
@@ -1020,6 +1063,7 @@ const handleViewDetailedReport = async (id) => {
         : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
     viewModalType.value = id
     showMonthly.value = true
+    expandedViewRows.value = new Set()
     viewModalOpen.value = true
 }
 
