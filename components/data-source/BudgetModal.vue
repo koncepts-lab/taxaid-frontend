@@ -44,12 +44,14 @@
                                 </thead>
 
                                 <tbody>
-                                    <tr v-for="(row, index) in data" :key="index" class="transition-colors" :class="[
+                                    <template v-for="(row, index) in data" :key="index">
+                                    <tr class="transition-colors" :class="[
                                         row.type === 'header' ? (isDark ? 'bg-[#61FFD6]/10' : 'bg-[#C2F9E9]') : '',
                                         row.type === 'net-row' ? (isDark ? 'bg-[#61FFD6]/10' : 'bg-primary-1200') : '',
+                                        hasSubgroups(row) ? 'cursor-pointer' : '',
 
                                         isDark ? 'border-b border-white/5' : 'border-b border-gray-100'
-                                    ]">
+                                    ]" @click="hasSubgroups(row) && toggleRow(row.name)">
 
                                         <td v-if="showSiNo" class="px-4 py-4 text-sm ">{{ row.type ? '' :
                                             index + 1 }}</td>
@@ -64,9 +66,36 @@
 
                                                 (['header', 'total-row', 'net-row'].includes(row.type) || col.fontBold) ? 'font-medium' : 'font-normal'
                                             ]">
-                                            {{ row[col.key] || '' }}
+                                            <span v-if="col.key === 'name' && hasSubgroups(row)" class="inline-flex items-center gap-1.5">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                    class="transition-transform shrink-0" :class="expandedRows.has(row.name) ? 'rotate-90' : ''">
+                                                    <path d="M9 6l6 6-6 6" />
+                                                </svg>
+                                                {{ row[col.key] || '' }}
+                                            </span>
+                                            <template v-else>{{ row[col.key] || '' }}</template>
                                         </td>
                                     </tr>
+
+                                    <tr v-for="(sub, sIndex) in (hasSubgroups(row) && expandedRows.has(row.name) ? row.subgroups : [])"
+                                        :key="`${index}-sub-${sIndex}`"
+                                        :class="isDark ? 'border-b border-white/5 bg-white/[0.02]' : 'border-b border-gray-100 bg-gray-50/60'">
+                                        <td v-if="showSiNo"></td>
+                                        <td v-for="col in columns" :key="col.key"
+                                            class="px-3 py-2.5 text-sm whitespace-nowrap"
+                                            :class="isDark ? 'text-white/60' : 'text-gray-600'">
+                                            <span v-if="col.key === 'name'" class="pl-6 inline-flex items-center gap-1.5">
+                                                {{ sub[col.key] || '' }}
+                                                <span v-if="sub.isUnmapped" title="Not found in this tenant's TB mapping"
+                                                    class="px-1.5 py-0.5 rounded text-[11px] font-medium"
+                                                    :class="isDark ? 'bg-amber-400/20 text-amber-300' : 'bg-amber-100 text-amber-700'">
+                                                    Unmapped
+                                                </span>
+                                            </span>
+                                            <template v-else>{{ sub[col.key] || '' }}</template>
+                                        </td>
+                                    </tr>
+                                    </template>
                                 </tbody>
                             </table>
                         </div>
@@ -85,7 +114,9 @@
 </template>
 
 <script setup>
-defineProps({
+import { ref, watch } from 'vue'
+
+const props = defineProps({
     isOpen: Boolean,
     title: String,
     columns: Array,
@@ -97,6 +128,15 @@ defineProps({
     loading: { type: Boolean, default: false },
 })
 defineEmits(['close'])
+
+const expandedRows = ref(new Set())
+const hasSubgroups = (row) => !row.type && Array.isArray(row.subgroups) && row.subgroups.length > 0
+const toggleRow = (name) => {
+    const next = new Set(expandedRows.value)
+    next.has(name) ? next.delete(name) : next.add(name)
+    expandedRows.value = next
+}
+watch(() => props.isOpen, (open) => { if (!open) expandedRows.value = new Set() })
 </script>
 
 <style scoped>
