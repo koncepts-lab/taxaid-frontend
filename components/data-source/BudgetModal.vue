@@ -73,7 +73,7 @@
                                                 </svg>
                                                 {{ row[col.key] || '' }}
                                             </span>
-                                            <template v-else>{{ row[col.key] || '' }}</template>
+                                            <template v-else>{{ formatCellValue(row[col.key], col.key) }}</template>
                                         </td>
                                     </tr>
 
@@ -92,7 +92,7 @@
                                                     Unmapped
                                                 </span>
                                             </span>
-                                            <template v-else>{{ sub[col.key] || '' }}</template>
+                                            <template v-else>{{ formatCellValue(sub[col.key], col.key) }}</template>
                                         </td>
                                     </tr>
                                     </template>
@@ -136,6 +136,12 @@ const toggleRow = (name) => {
     next.has(name) ? next.delete(name) : next.add(name)
     expandedRows.value = next
 }
+
+const formatCellValue = (val, colKey) => {
+    if (['name', 'mainGroup', 'subGroup', 'empNo'].includes(colKey)) return val || ''
+    return formatCurrency(val)
+}
+
 watch(() => props.isOpen, (open) => { if (!open) expandedRows.value = new Set() })
 </script>
 
