@@ -88,3 +88,26 @@ export const formatStandardNumber = (value: number | string | null | undefined, 
     maximumFractionDigits: decimals,
   }).format(num);
 };
+
+/**
+ * Formats a currency/number with thousands comma separators.
+ * Example: 1417145 -> "1,417,145"
+ */
+export const formatCurrency = (
+  value: number | string | null | undefined,
+  decimals: number = 0,
+  fallback: string = "-"
+): string => {
+  if (value === null || value === undefined || value === "") return fallback;
+  const num = cleanNumber(value);
+
+  if (isNaN(num)) {
+    return String(value);
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: 2,
+  }).format(num);
+};
+

@@ -122,17 +122,21 @@
                             <td class="px-4 py-3 text-center text-sm">AED</td>
                         </tr>
 
-                        <tr v-for="month in quarter.months" :key="month.label" class="border-b transition-colors"
-                            :class="isDark ? 'border-white/5 hover:bg-white/5 text-white/80' : 'border-gray-100 hover:bg-gray-50 text-gray-700'">
-                            <td class="px-6 py-3" :class="isDark ? 'border-white/5' : 'border-gray-100'">{{ month.label }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ month.actual ?? '-' }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ month.income ?? '-' }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ month.forecast ?? '-' }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ month.possible ?? '-' }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ month.budget ?? '-' }}</td>
+                        <tr v-for="month in quarter.months" :key="month.label" class="transition-colors"
+                            :class="[
+                                month.is_total
+                                    ? (isDark ? 'bg-white/[0.06] font-medium text-white border-0' : 'bg-[#F2F4F7] font-medium text-gray-800 border-0')
+                                    : (isDark ? 'border-b border-white/5 hover:bg-white/5 text-white/80' : 'border-b border-gray-100 hover:bg-gray-50 text-gray-700')
+                            ]">
+                            <td class="px-6 py-3" :class="month.is_total ? 'border-0' : (isDark ? 'border-white/5' : 'border-gray-100')">{{ month.label }}</td>
+                            <td class="px-4 py-3 text-center text-sm">{{ formatCurrency(month.actual) }}</td>
+                            <td class="px-4 py-3 text-center text-sm">{{ formatCurrency(month.income) }}</td>
+                            <td class="px-4 py-3 text-center text-sm">{{ formatCurrency(month.forecast) }}</td>
+                            <td class="px-4 py-3 text-center text-sm">{{ formatCurrency(month.possible) }}</td>
+                            <td class="px-4 py-3 text-center text-sm">{{ formatCurrency(month.budget) }}</td>
                             <td class="px-4 py-3 text-center text-sm font-medium"
                                 :class="month.diff !== null && parseFloat(month.diff) < 0 ? 'text-red-500' : 'text-green-600'">
-                                {{ month.diff ?? '-' }}
+                                {{ formatCurrency(month.diff) }}
                             </td>
                         </tr>
                     </template>
