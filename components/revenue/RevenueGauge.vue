@@ -5,7 +5,7 @@
     <div class="w-full flex items-center justify-between mb-4">
       <div class="flex flex-col">
         <h2 class="text-[16px] font-normal leading-tight">{{ currentLang === 'ar' ? 'الهدف ، العام الماضي والحالي' : 'Target , Previous Year and Current' }}</h2>
-        <p class="text-[12px] opacity-70 font-normal mt-1">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+        <p class="text-[12px] opacity-70 font-normal mt-1">{{ valuesNote(true) }}</p>
       </div>
       <div class="flex items-center gap-3">
         <img src="/images/icons/info-white.svg" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
@@ -15,10 +15,24 @@
 
     <!-- Gauge Area -->
     <div class="relative w-full flex flex-col items-center justify-center flex-1 py-4 min-h-[250px]">
-      <!-- Loading Overlay -->
-      <div v-if="loading" class="absolute inset-0 z-20 flex items-center justify-center bg-white/5 dark:bg-black/5 backdrop-blur-[2px]">
-        <div class="flex flex-col items-center gap-3">
-          <div class="w-10 h-10 border-4 border-[#03D9B0] border-t-transparent rounded-full animate-spin"></div>
+      <!-- Loading Skeleton -->
+      <div v-if="loading" class="w-full flex flex-col items-center justify-center animate-pulse">
+        <div class="relative w-full max-w-[400px] flex flex-col items-center">
+          <svg class="w-full h-auto block" :viewBox="`0 0 ${svgW} ${svgH}`">
+            <path
+              :d="arcPath(startDeg, endDeg)"
+              stroke="rgba(255,255,255,0.12)"
+              :stroke-width="strokeW"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <text :x="polarToCartesian(-180, r).x" :y="polarToCartesian(-180, r).y + 35" text-anchor="middle" fill="white" font-size="18" font-weight="500" opacity="0.3">0</text>
+            <text :x="polarToCartesian(0, r).x" :y="polarToCartesian(0, r).y + 35" text-anchor="middle" fill="white" font-size="18" font-weight="500" opacity="0.3">100%</text>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center translate-y-2">
+            <div class="h-10 w-24 rounded-lg bg-white/20 mb-2"></div>
+            <div class="h-3 w-32 rounded bg-white/15"></div>
+          </div>
         </div>
       </div>
 
@@ -27,7 +41,7 @@
         <p class="text-xs font-medium text-white/60">{{ currentLang === 'ar' ? 'فشل تحميل البيانات.' : 'Failed to load data.' }}</p>
       </div>
 
-      <div v-if="!loading && !error" class="relative w-full max-w-[400px]">
+      <div v-else-if="!loading && !error" class="relative w-full max-w-[400px]">
         <svg class="w-full h-auto block" :viewBox="`0 0 ${svgW} ${svgH}`">
           <!-- Ticks -->
           <g>
@@ -76,37 +90,45 @@
 
 
     <!-- Legend (Dashboard Style) -->
-    <div v-if="!loading && !error" class="w-full grid grid-cols-3 gap-2 mt-[-90px] pt-6 border-t border-white/10">
-      <div class="flex flex-col items-center lg:text-center">
-        <div class="flex lg:items-center lg:justify-center items-normal gap-2 mb-1 min-h-[36px]">
-          <div class="w-2 h-2 lg:h-3 lg:w-3 rounded-full" :style="{ backgroundColor: colors.lastYear }"></div>
-          <span class="text-[12px] lg:whitespace-nowrap whitespace-normal font-light lg:text-center text-left">{{ currentLang === 'ar' ? 'العام الماضي' : 'Previous Year' }} ({{ lastYearPct }}%)</span>
+    <div class="w-full grid grid-cols-3 gap-2 mt-[-90px] pt-6 border-t border-white/10" :class="{ 'animate-pulse': loading }">
+      <template v-if="loading">
+        <div v-for="g in 3" :key="'g-skel-' + g" class="flex flex-col items-center gap-2">
+          <div class="h-3 w-20 rounded bg-white/20"></div>
+          <div class="h-5 w-24 rounded bg-white/20"></div>
         </div>
-        <div class="text-[14px] lg:text-[18px] font-medium lg:text-center text-left">
-          <template v-if="currentLang === 'ar'">{{ formatToMillions(props.data?.previousValue || 0) }} مليون د.إ</template>
-          <template v-else>AED {{ formatToMillions(props.data?.previousValue || 0) }}M</template>
+      </template>
+      <template v-else-if="!error">
+        <div class="flex flex-col items-center lg:text-center">
+          <div class="flex lg:items-center lg:justify-center items-normal gap-2 mb-1 min-h-[36px]">
+            <div class="w-2 h-2 lg:h-3 lg:w-3 rounded-full" :style="{ backgroundColor: colors.lastYear }"></div>
+            <span class="text-[12px] lg:whitespace-nowrap whitespace-normal font-light lg:text-center text-left">{{ currentLang === 'ar' ? 'العام الماضي' : 'Previous Year' }} ({{ lastYearPct }}%)</span>
+          </div>
+          <div class="text-[14px] lg:text-[18px] font-medium lg:text-center text-left">
+            <template v-if="currentLang === 'ar'">{{ formatToMillions(props.data?.previousValue || 0) }} مليون {{ currencyCode === 'AED' ? 'د.إ' : currencyCode }}</template>
+            <template v-else>{{ currencyCode }} {{ formatToMillions(props.data?.previousValue || 0) }}M</template>
+          </div>
         </div>
-      </div>
-      <div class="flex flex-col items-center lg:text-center">
-        <div class="flex lg:items-center lg:justify-center items-normal gap-2 mb-1 min-h-[36px]">
-          <div class="w-2 h-2 lg:h-3 lg:w-3 rounded-full" :style="{ backgroundColor: colors.currentYear }"></div>
-          <span class="text-[12px] font-light lg:whitespace-nowrap whitespace-normal lg:text-center text-left">{{ currentLang === 'ar' ? 'الحالي' : 'Current' }} ({{ Math.round(currentYearPct) }}%)</span>
+        <div class="flex flex-col items-center lg:text-center">
+          <div class="flex lg:items-center lg:justify-center items-normal gap-2 mb-1 min-h-[36px]">
+            <div class="w-2 h-2 lg:h-3 lg:w-3 rounded-full" :style="{ backgroundColor: colors.currentYear }"></div>
+            <span class="text-[12px] font-light lg:whitespace-nowrap whitespace-normal lg:text-center text-left">{{ currentLang === 'ar' ? 'الحالي' : 'Current' }} ({{ Math.round(currentYearPct) }}%)</span>
+          </div>
+          <div class="text-[14px] lg:text-[18px] font-medium lg:text-center text-left">
+            <template v-if="currentLang === 'ar'">{{ formatToMillions(currentYearAchieved) }} مليون {{ currencyCode === 'AED' ? 'د.إ' : currencyCode }}</template>
+            <template v-else>{{ currencyCode }} {{ formatToMillions(currentYearAchieved) }}M</template>
+          </div>
         </div>
-        <div class="text-[14px] lg:text-[18px] font-medium lg:text-center text-left">
-          <template v-if="currentLang === 'ar'">{{ formatToMillions(currentYearAchieved) }} مليون د.إ</template>
-          <template v-else>AED {{ formatToMillions(currentYearAchieved) }}M</template>
+        <div class="flex flex-col items-center lg:text-center">
+          <div class="flex lg:items-center lg:justify-center items-normal gap-2 mb-1 min-h-[36px]">
+            <div class="w-2 h-2 lg:h-3 lg:w-3 rounded-full" :style="{ backgroundColor: colors.balance }"></div>
+            <span class="text-[12px] font-light lg:whitespace-nowrap whitespace-normal lg:text-center text-left">{{ currentLang === 'ar' ? 'المستهدف' : 'Target' }} (100%)</span>
+          </div>
+          <div class="text-[14px] lg:text-[18px] font-medium lg:text-center text-left">
+            <template v-if="currentLang === 'ar'">{{ formatToMillions(currentYearTarget) }} مليون {{ currencyCode === 'AED' ? 'د.إ' : currencyCode }}</template>
+            <template v-else>{{ currencyCode }} {{ formatToMillions(currentYearTarget) }}M</template>
+          </div>
         </div>
-      </div>
-      <div class="flex flex-col items-center lg:text-center">
-        <div class="flex lg:items-center lg:justify-center items-normal gap-2 mb-1 min-h-[36px]">
-          <div class="w-2 h-2 lg:h-3 lg:w-3 rounded-full" :style="{ backgroundColor: colors.balance }"></div>
-          <span class="text-[12px] font-light lg:whitespace-nowrap whitespace-normal lg:text-center text-left">{{ currentLang === 'ar' ? 'المستهدف' : 'Target' }} (100%)</span>
-        </div>
-        <div class="text-[14px] lg:text-[18px] font-medium lg:text-center text-left">
-          <template v-if="currentLang === 'ar'">{{ formatToMillions(currentYearTarget) }} مليون د.إ</template>
-          <template v-else>AED {{ formatToMillions(currentYearTarget) }}M</template>
-        </div>
-      </div>
+      </template>
     </div>
 
     <!-- Modal -->
@@ -117,7 +139,7 @@
           <div class="flex justify-between items-center py-6 px-8 border-b border-white/10">
             <div class="flex flex-col">
               <h2 class="text-lg font-normal leading-tight text-white">{{ currentLang === 'ar' ? 'الهدف ، العام الماضي والحالي' : 'Target , Previous Year and Current' }}</h2>
-              <p class="text-xs opacity-70 font-normal mt-1 text-white">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+              <p class="text-xs opacity-70 font-normal mt-1 text-white">{{ valuesNote(true) }}</p>
             </div>
             <div class="flex items-center gap-4">
               <img src="/images/icons/info-white.svg" alt="Info Icon" class="w-5 h-5 cursor-pointer hover:opacity-100" />
@@ -184,8 +206,8 @@
                   <span class="text-[14px] opacity-70 whitespace-nowrap">{{ currentLang === 'ar' ? 'العام الماضي' : 'Previous Year' }} ({{ lastYearPct }}%)</span>
                 </div>
                 <div class="text-[20px] font-bold">
-                  <template v-if="currentLang === 'ar'">0,8 مليون د.إ</template>
-                  <template v-else>AED 0.8M</template>
+                  <template v-if="currentLang === 'ar'">{{ formatToMillions(props.data?.previousValue || 0) }} مليون {{ currencyCode === 'AED' ? 'د.إ' : currencyCode }}</template>
+                  <template v-else>{{ currencyCode }} {{ formatToMillions(props.data?.previousValue || 0) }}M</template>
                 </div>
               </div>
               <div class="flex flex-col items-center text-center">
@@ -194,8 +216,8 @@
                   <span class="text-[14px] opacity-70 whitespace-nowrap">{{ currentLang === 'ar' ? 'الحالي' : 'Current' }} ({{ Math.round(currentYearPct) }}%)</span>
                 </div>
                 <div class="text-[20px] font-bold">
-                  <template v-if="currentLang === 'ar'">7,8 مليون د.إ</template>
-                  <template v-else>AED 7.8M</template>
+                  <template v-if="currentLang === 'ar'">{{ formatToMillions(currentYearAchieved) }} مليون {{ currencyCode === 'AED' ? 'د.إ' : currencyCode }}</template>
+                  <template v-else>{{ currencyCode }} {{ formatToMillions(currentYearAchieved) }}M</template>
                 </div>
               </div>
               <div class="flex flex-col items-center text-center">
@@ -204,8 +226,8 @@
                   <span class="text-[14px] opacity-70 whitespace-nowrap">{{ currentLang === 'ar' ? 'المستهدف' : 'Target' }} (100%)</span>
                 </div>
                 <div class="text-[20px] font-bold">
-                  <template v-if="currentLang === 'ar'">8,5 مليون د.إ</template>
-                  <template v-else>AED 8.5M</template>
+                  <template v-if="currentLang === 'ar'">{{ formatToMillions(currentYearTarget) }} مليون {{ currencyCode === 'AED' ? 'د.إ' : currencyCode }}</template>
+                  <template v-else>{{ currencyCode }} {{ formatToMillions(currentYearTarget) }}M</template>
                 </div>
               </div>
             </div>
@@ -225,10 +247,11 @@ const props = defineProps({
   error: [String, Object]
 })
 
-// Support for language state if available, fallback to 'en'
 const { isDark } = useTheme();
 const currentLang = useState('currentLang', () => 'en');
 const isModalOpen = ref(false);
+
+const { code: currencyCode, valuesNote } = useCurrency();
 
 // Data
 const currentYearTarget   = computed(() => props.data?.target          ?? 8500000);

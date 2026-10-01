@@ -8,7 +8,7 @@
           {{ data?.cost_center }}
         </p>
         <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-          {{ valuesNote() }}
+          {{ valuesNote(false) }}
         </p>
       </div>
       <div class="flex items-center gap-3">
@@ -22,26 +22,23 @@
       <table class="w-full text-left rtl:text-right border-collapse">
         <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
           <tr>
-            <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
-            <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'الفعلي' : 'Actual' }}
-            </th>
-            <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget'
-              }}</th>
-            <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'المتبقي من السنة' :
-              'Year to Go' }}</th>
+            <th class="px-8 py-5 font-medium text-[14px] text-left rtl:text-right">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
+            <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'الفعلي' : 'Actual' }}</th>
+            <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</th>
+            <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'المتبقي من السنة' : 'Year to Go' }}</th>
           </tr>
         </thead>
         <tbody>
           <template v-for="(item, idx) in tableData" :key="idx">
             <tr class="transition-all duration-500 border-b"
               :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50'">
-              <td class="px-8 py-5">
+              <td class="px-8 py-5 text-left rtl:text-right">
                 <span class="font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang
                   === 'ar' ? item.labelAr : item.label }}</span>
               </td>
-              <td class="px-6 py-5 text-center font-medium text-[14px]"
+              <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
                 :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.actual }}</td>
-              <td class="px-6 py-5 text-center font-normal text-[14px]"
+              <td class="px-6 py-5 text-right rtl:text-left font-normal text-[14px] tabular-nums"
                 :class="isDark ? 'text-white' : 'text-[#333333]'">{{ item.budget }}</td>
               <td class="px-6 py-5 text-center">
                 <div class="relative w-[65px] h-[32px] overflow-hidden mx-auto">
@@ -52,7 +49,7 @@
                       stroke-width="12" stroke-linecap="round" :stroke-dasharray="251"
                       :stroke-dashoffset="251 - (251 * item.progress / 100)" />
                   </svg>
-                  <div class="absolute inset-x-0 bottom-0 text-[10px] text-center font-bold"
+                  <div class="absolute inset-x-0 bottom-0 text-[10px] text-center font-bold tabular-nums"
                     :class="isDark ? 'text-white' : 'text-[#333333]'">
                     {{ item.progress }}%
                   </div>
@@ -63,16 +60,15 @@
           <!-- Total Row -->
           <tr v-if="grossProfit" class="transition-all duration-500"
             :class="isDark ? 'bg-[#00D9A4]/20' : 'bg-[#68E4C4]'">
-            <td class="px-8 py-5">
+            <td class="px-8 py-5 text-left rtl:text-right">
               <span class="font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#013e32]'">{{ currentLang ===
                 'ar' ?
                 grossProfit.labelAr : grossProfit.label }}</span>
             </td>
-            <td class="px-6 py-5 text-center font-bold text-[14px]" :class="isDark ? 'text-white' : 'text-[#013e32]'">{{
+            <td class="px-6 py-5 text-right rtl:text-left font-bold text-[14px] tabular-nums" :class="isDark ? 'text-white' : 'text-[#013e32]'">{{
               grossProfit.actual }}</td>
-            <td class="px-6 py-5 text-center font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#013e32]'">
-              {{
-                grossProfit.budget }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums" :class="isDark ? 'text-white' : 'text-[#013e32]'">
+              {{ grossProfit.budget }}</td>
             <td class="px-6 py-5 text-center">
               <div class="relative w-[65px] h-[32px] overflow-hidden mx-auto">
                 <svg viewBox="0 0 100 50" class="w-full h-full">
@@ -82,7 +78,7 @@
                     stroke-width="12" stroke-linecap="round" :stroke-dasharray="251"
                     :stroke-dashoffset="251 - (251 * grossProfit.progress / 100)" />
                 </svg>
-                <div class="absolute inset-x-0 bottom-0 text-[10px] text-center font-bold"
+                <div class="absolute inset-x-0 bottom-0 text-[10px] text-center font-bold tabular-nums"
                   :class="isDark ? 'text-white' : 'text-[#013e32]'">
                   {{ grossProfit.progress }}%
                 </div>
@@ -106,7 +102,7 @@
                 {{ currentLang === 'ar' ? 'ملخص مشروع البرج السكني' : 'Residential Tower Project Summary' }}
               </p>
               <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-                {{ valuesNote() }}
+                {{ valuesNote(false) }}
               </p>
             </div>
             <button @click="isModalOpen = false"
@@ -121,30 +117,23 @@
             <table class="w-full text-left rtl:text-right border-collapse relative">
               <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
                 <tr>
-                  <th class="px-8 py-5 font-medium text-[14px]">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}
-                  </th>
-                  <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'الفعلي' :
-                    'Actual' }}
-                  </th>
-                  <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'الميزانية' :
-                    'Budget'
-                    }}</th>
-                  <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'المتبقي من السنة'
-                    :
-                    'Year to Go' }}</th>
+                  <th class="px-8 py-5 font-medium text-[14px] text-left rtl:text-right">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }}</th>
+                  <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'الفعلي' : 'Actual' }}</th>
+                  <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</th>
+                  <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'المتبقي من السنة' : 'Year to Go' }}</th>
                 </tr>
               </thead>
               <tbody :class="isDark ? 'bg-[#00141080]' : 'bg-white'">
                 <template v-for="(item, idx) in tableData" :key="'modal-' + idx">
                   <tr class="transition-all duration-500 border-b"
                     :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50'">
-                    <td class="px-8 py-5">
+                    <td class="px-8 py-5 text-left rtl:text-right">
                       <span class="font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{
                         currentLang === 'ar' ? item.labelAr : item.label }}</span>
                     </td>
-                    <td class="px-6 py-5 text-center font-medium text-[14px]"
+                    <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
                       :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.actual }}</td>
-                    <td class="px-6 py-5 text-center font-normal text-[14px]"
+                    <td class="px-6 py-5 text-right rtl:text-left font-normal text-[14px] tabular-nums"
                       :class="isDark ? 'text-white' : 'text-[#333333]'">{{ item.budget }}</td>
                     <td class="px-6 py-5 text-center">
                       <div class="relative w-[65px] h-[32px] overflow-hidden mx-auto">
@@ -155,7 +144,7 @@
                             stroke-width="12" stroke-linecap="round" :stroke-dasharray="251"
                             :stroke-dashoffset="251 - (251 * item.progress / 100)" />
                         </svg>
-                        <div class="absolute inset-x-0 bottom-0 text-[10px] text-center font-bold"
+                        <div class="absolute inset-x-0 bottom-0 text-[10px] text-center font-bold tabular-nums"
                           :class="isDark ? 'text-white' : 'text-[#333333]'">
                           {{ item.progress }}%
                         </div>
@@ -166,15 +155,15 @@
                 <!-- Total Row Modal -->
                 <tr v-if="grossProfit" class="transition-all duration-500 sticky bottom-0 z-10"
                   :class="isDark ? 'bg-[#00D9A4]' : 'bg-[#68E4C4]'">
-                  <td class="px-8 py-5">
+                  <td class="px-8 py-5 text-left rtl:text-right">
                     <span class="font-medium text-[14px]" :class="isDark ? 'text-black' : 'text-[#013e32]'">{{
                       currentLang
                         === 'ar' ? grossProfit.labelAr : grossProfit.label }}</span>
                   </td>
-                  <td class="px-6 py-5 text-center font-bold text-[14px]"
+                  <td class="px-6 py-5 text-right rtl:text-left font-bold text-[14px] tabular-nums"
                     :class="isDark ? 'text-black' : 'text-[#013e32]'">
                     {{ grossProfit.actual }}</td>
-                  <td class="px-6 py-5 text-center font-medium text-[14px]"
+                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
                     :class="isDark ? 'text-black' : 'text-[#013e32]'">{{ grossProfit.budget }}</td>
                   <td class="px-6 py-5 text-center">
                     <div class="relative w-[65px] h-[32px] overflow-hidden mx-auto">
@@ -185,7 +174,7 @@
                           stroke-width="12" stroke-linecap="round" :stroke-dasharray="251"
                           :stroke-dashoffset="251 - (251 * grossProfit.progress / 100)" />
                       </svg>
-                      <div class="absolute inset-x-0 bottom-0 text-[10px] text-center font-bold"
+                      <div class="absolute inset-x-0 bottom-0 text-[10px] text-center font-bold tabular-nums"
                         :class="isDark ? 'text-black' : 'text-[#013e32]'">
                         {{ grossProfit.progress }}%
                       </div>
@@ -203,6 +192,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { formatStandardNumber } from '~/utils/formatters'
 
 const props = defineProps({
   data: {
@@ -216,33 +206,26 @@ const { valuesNote } = useCurrency()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
-// 1. Table Rows Computed
 const tableData = computed(() => {
-  // Access the array safely
   const rawRows = props.data?.table_data || []
 
-  // Return empty if no data yet
   if (rawRows.length === 0) return []
 
   return rawRows
     .filter(item => {
-      // Case-insensitive check to remove the total row from the main list
       const label = item.particulars?.toLowerCase() || ''
       return label !== 'gross profit' && label !== 'total'
     })
     .map(item => ({
       label: item.particulars,
       labelAr: item.particulars,
-      // Ensure we pass numbers to the formatter
-      actual: formatStandardNumber(item.actual ?? 0),
-      budget: formatStandardNumber(item.budget ?? 0),
-      // Robust percentage cleaning
+      actual: formatStandardNumber(item.actual ?? 0, 2),
+      budget: formatStandardNumber(item.budget ?? 0, 2),
       progress: parseFloat(String(item.year_to_go || '0').replace('%', '')) || 0,
       variance: item.variance
     }))
 })
 
-// 2. Gross Profit Computed
 const grossProfit = computed(() => {
   const rows = props.data?.table_data || []
   const total = rows.find(item => item.particulars?.toLowerCase() === 'gross profit')
@@ -252,14 +235,13 @@ const grossProfit = computed(() => {
   return {
     label: total.particulars,
     labelAr: total.particulars,
-    actual: formatStandardNumber(total.actual ?? 0),
-    budget: formatStandardNumber(total.budget ?? 0),
+    actual: formatStandardNumber(total.actual ?? 0, 2),
+    budget: formatStandardNumber(total.budget ?? 0, 2),
     progress: parseFloat(String(total.year_to_go || '0').replace('%', '')) || 0,
     variance: total.variance
   }
 })
 
-// 3. Debugging Watcher (This will show data in console as soon as it arrives)
 watch(() => props.data, (newVal) => {
   if (newVal?.table_data) {
     console.log("Data arrived in Table Component:", JSON.parse(JSON.stringify(newVal.table_data)))
@@ -272,7 +254,6 @@ const gaugeColor = (value) => {
   return '#fb7554'
 }
 
-// Expose these for the index.vue export functionality
 defineExpose({
   tableData,
   summaryTotal: grossProfit

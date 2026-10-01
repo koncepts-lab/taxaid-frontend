@@ -69,30 +69,31 @@
                   </svg>
                 </div>
               </td>
-              <td class="lg:px-6 px-4 py-5 text-right rtl:text-left font-semibold text-[14px]"
+              <td class="lg:px-6 px-4 py-5 text-right rtl:text-left font-semibold text-[14px] tabular-nums"
                 :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
                 {{ formatValue(group.amount) }}
               </td>
-              <td v-for="col in tableColumns" :key="col.key" class="lg:px-6 px-4 py-5 text-right rtl:text-left text-[14px] font-medium"
+              <td v-for="col in tableColumns" :key="col.key" class="lg:px-6 px-4 py-5 text-right rtl:text-left text-[14px] font-medium tabular-nums"
                 :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">
                 {{ formatValue(group[col.key]) }}
               </td>
             </tr>
 
             <!-- Expandable Invoice Section -->
-            <tr v-if="expandedGroups.includes(gIdx)">
-              <td :colspan="tableColumns.length + 2" class="p-0">
-                <div :class="isDark ? '' : 'bg-[#A2E8D6]'" class="p-8">
-                  <div class="flex justify-between items-start mb-6">
+            <template v-if="expandedGroups.includes(gIdx)">
+              <!-- Action Bar Row -->
+              <tr :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                <td :colspan="tableColumns.length + 2" class="lg:px-8 px-4 py-5 border-t border-black/5 dark:border-white/5">
+                  <div class="flex justify-between items-center">
                     <div>
-                      <h3 class="text-[16px] font-normal mb-6" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
+                      <h3 class="text-[15px] font-medium mb-2" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
                         {{ currentLang === 'ar' ? 'حدد الفواتير لإرسال تذكيرات تعليق الدفع' :
                           'Select Invoices to hold payments' }}
                       </h3>
                       <div class="flex items-center gap-3">
                         <input type="checkbox" :checked="isGroupAllSelected(group)" @change="toggleGroupSelectAll(group)"
                           class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
-                        <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
+                        <span class="text-[14px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
                           {{ currentLang === 'ar' ? `تحديد الكل (${fetchedInvoices[group.customer]?.length || 0})` : `Select All (${fetchedInvoices[group.customer]?.length || 0})` }}
                         </span>
                       </div>
@@ -100,9 +101,9 @@
                     <button @click="handleHoldForReview(group)"
                       :disabled="sendingKey !== null || groupSelectedCount(group) === 0 || !!holdBlockedTip"
                       :title="holdBlockedTip"
-                      class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-3 rounded-xl flex items-center gap-3 text-[16px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                      <svg v-if="sendingKey === group.customer" class="animate-spin shrink-0" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
-                      <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-2.5 rounded-xl flex items-center gap-3 text-[14px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                      <svg v-if="sendingKey === group.customer" class="animate-spin shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
+                      <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
                           d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
@@ -110,38 +111,50 @@
                       {{ currentLang === 'ar' ? `مراجعة معلقة (${groupSelectedCount(group)})` : `Hold for Review (${groupSelectedCount(group)})` }}
                     </button>
                   </div>
+                </td>
+              </tr>
 
-                  <div class="space-y-4 mt-8" v-if="!loadingInvoices[group.customer]">
-                    <div v-if="!fetchedInvoices[group.customer]?.length" class="text-center py-4 opacity-50">
-                      {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
+              <!-- Loading State -->
+              <tr v-if="loadingInvoices[group.customer]" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                <td :colspan="tableColumns.length + 2" class="text-center py-6 opacity-60 text-sm border-t border-black/5 dark:border-white/5">
+                  {{ currentLang === 'ar' ? 'جاري تحميل الفواتير...' : 'Loading invoices...' }}
+                </td>
+              </tr>
+
+              <!-- Empty State -->
+              <tr v-else-if="!fetchedInvoices[group.customer]?.length" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                <td :colspan="tableColumns.length + 2" class="text-center py-6 opacity-60 text-sm border-t border-black/5 dark:border-white/5">
+                  {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
+                </td>
+              </tr>
+
+              <!-- Real Invoice Rows: perfectly lined up with table columns -->
+              <template v-else>
+                <tr v-for="(inv, iIdx) in fetchedInvoices[group.customer]" :key="'inv-' + iIdx"
+                  class="border-t border-black/5 dark:border-white/5 transition-opacity"
+                  :class="[isDark ? 'bg-black/20 hover:bg-black/30' : 'bg-[#A2E8D6] hover:bg-[#8ee0cb]', inv.on_cooldown ? 'opacity-45' : '']">
+                  <td class="lg:px-8 px-4 py-3.5">
+                    <div class="flex items-center gap-3">
+                      <input type="checkbox" v-model="inv.selected" :disabled="inv.on_cooldown"
+                        class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864] shrink-0 disabled:cursor-not-allowed">
+                      <span class="text-[14px] font-normal truncate max-w-[200px]"
+                        :class="[isDark ? 'text-white' : 'text-[#1A1A1A]', inv.on_cooldown ? 'underline decoration-dotted underline-offset-4 cursor-help' : '']"
+                        @mouseenter="inv.on_cooldown && showCooldownTip($event, inv)" @mouseleave="hideCooldownTip">
+                        {{ inv.invoice_no !== '0' ? inv.invoice_no : inv.description }}
+                      </span>
                     </div>
-                    <div v-else v-for="(inv, iIdx) in fetchedInvoices[group.customer]" :key="iIdx"
-                      class="grid items-center border-t border-black/5 dark:border-white/5 pt-4 transition-opacity"
-                      :class="inv.on_cooldown ? 'opacity-45' : ''"
-                      :style="{ gridTemplateColumns: `2.25fr repeat(${tableColumns.length + 1}, minmax(0, 1fr))` }">
-                      <div class="flex items-center gap-3 pr-2">
-                        <input type="checkbox" v-model="inv.selected" :disabled="inv.on_cooldown"
-                          class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864] shrink-0 disabled:cursor-not-allowed">
-                        <span class="text-[16px] font-normal truncate"
-                          :class="[isDark ? 'text-white' : 'text-[#1A1A1A]', inv.on_cooldown ? 'underline decoration-dotted underline-offset-4 cursor-help' : '']"
-                          @mouseenter="inv.on_cooldown && showCooldownTip($event, inv)" @mouseleave="hideCooldownTip">
-                          {{ inv.invoice_no !== '0' ? inv.invoice_no : inv.description }}
-                        </span>
-                      </div>
-                      <div class="text-right rtl:text-left font-normal text-[16px]"
-                        :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
-                        <span class="underline underline-offset-4 cursor-pointer">{{ formatValue(inv.amount) }}</span>
-                      </div>
-                      <div v-for="col in tableColumns" :key="col.key" class="text-right rtl:text-left text-[16px] font-normal"
-                        :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ formatValue(inv[col.key]) }}</div>
-                    </div>
-                  </div>
-                  <div v-else class="text-center py-8 opacity-50">
-                    <span class="text-sm">{{ currentLang === 'ar' ? 'جاري تحميل الفواتير...' : 'Loading invoices...' }}</span>
-                  </div>
-                </div>
-              </td>
-            </tr>
+                  </td>
+                  <td class="lg:px-6 px-4 py-3.5 text-right rtl:text-left font-semibold text-[14px] tabular-nums"
+                    :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
+                    {{ formatValue(inv.amount) }}
+                  </td>
+                  <td v-for="col in tableColumns" :key="'inv-col-' + col.key" class="lg:px-6 px-4 py-3.5 text-right rtl:text-left text-[14px] font-normal tabular-nums"
+                    :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">
+                    {{ formatValue(inv[col.key]) }}
+                  </td>
+                </tr>
+              </template>
+            </template>
           </template>
           <tr v-if="fillerHeight" aria-hidden="true">
             <td :colspan="tableColumns.length + 2" class="p-0" :style="{ height: `${fillerHeight}px` }"></td>
@@ -151,9 +164,9 @@
           <tr v-if="summaryTotal && !loading" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'" class="transition-all duration-500 sticky bottom-0 z-10">
             <td class="lg:px-8 px-4 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
               currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
+            <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
               :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ formatValue(summaryTotal.amount) }}</td>
-            <td v-for="col in tableColumns" :key="'foot-' + col.key" class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
+            <td v-for="col in tableColumns" :key="'foot-' + col.key" class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
               :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ formatValue(summaryTotal[col.key]) }}</td>
           </tr>
         </tfoot>
@@ -225,38 +238,39 @@
                         </svg>
                       </div>
                     </td>
-                    <td class="px-6 py-5 text-right rtl:text-left font-semibold text-[14px]"
+                    <td class="px-6 py-5 text-right rtl:text-left font-semibold text-[14px] tabular-nums"
                       :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
                       {{ formatValue(group.amount) }}
                     </td>
-                    <td v-for="col in tableColumns" :key="'modal-td-' + col.key" class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium"
+                    <td v-for="col in tableColumns" :key="'modal-td-' + col.key" class="px-6 py-5 text-right rtl:text-left text-[14px] font-medium tabular-nums"
                       :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">
                       {{ formatValue(group[col.key]) }}
                     </td>
                   </tr>
 
                   <!-- Expandable Invoice Section -->
-                  <tr v-if="expandedGroups.includes(gIdx)">
-                    <td :colspan="tableColumns.length + 2" class="p-0">
-                      <div :class="isDark ? 'bg-transparent' : 'bg-[#A2E8D6]'" class="p-8">
-                        <div class="flex justify-between items-start mb-6">
+                  <template v-if="expandedGroups.includes(gIdx)">
+                    <!-- Action Bar Row -->
+                    <tr :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                      <td :colspan="tableColumns.length + 2" class="px-8 py-5 border-t border-black/5 dark:border-white/5">
+                        <div class="flex justify-between items-center">
                           <div>
-                            <h3 class="text-[16px] font-normal mb-6" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
+                            <h3 class="text-[15px] font-medium mb-2" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
                               {{ currentLang === 'ar' ? 'حدد الفواتير لإرسال تذكيرات تعليق الدفع' :
                                 'Select Invoices to hold payments' }}
                             </h3>
                             <div class="flex items-center gap-3">
                               <input type="checkbox" :checked="isGroupAllSelected(group)" @change="toggleGroupSelectAll(group)"
                                 class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
-                              <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
+                              <span class="text-[14px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
                                 {{ currentLang === 'ar' ? `تحديد الكل (${fetchedInvoices[group.customer]?.length || 0})` : `Select All (${fetchedInvoices[group.customer]?.length || 0})` }}
                               </span>
                             </div>
                           </div>
                           <button @click="handleHoldForReview(group)" :disabled="sendingKey !== null || groupSelectedCount(group) === 0 || !!holdBlockedTip" :title="holdBlockedTip"
-                            class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-3 rounded-xl flex items-center gap-3 text-[16px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            <svg v-if="sendingKey === group.customer" class="animate-spin shrink-0" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
-                            <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-2.5 rounded-xl flex items-center gap-3 text-[14px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            <svg v-if="sendingKey === group.customer" class="animate-spin shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
+                            <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <path
                                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
@@ -264,38 +278,50 @@
                             {{ currentLang === 'ar' ? `مراجعة معلقة (${groupSelectedCount(group)})` : `Hold for Review (${groupSelectedCount(group)})` }}
                           </button>
                         </div>
+                      </td>
+                    </tr>
 
-                        <div class="space-y-4 mt-8" v-if="!loadingInvoices[group.customer]">
-                          <div v-if="!fetchedInvoices[group.customer]?.length" class="text-center py-4 opacity-50">
-                            {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
+                    <!-- Loading State -->
+                    <tr v-if="loadingInvoices[group.customer]" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                      <td :colspan="tableColumns.length + 2" class="text-center py-6 opacity-60 text-sm border-t border-black/5 dark:border-white/5">
+                        {{ currentLang === 'ar' ? 'جاري تحميل الفواتير...' : 'Loading invoices...' }}
+                      </td>
+                    </tr>
+
+                    <!-- Empty State -->
+                    <tr v-else-if="!fetchedInvoices[group.customer]?.length" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                      <td :colspan="tableColumns.length + 2" class="text-center py-6 opacity-60 text-sm border-t border-black/5 dark:border-white/5">
+                        {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
+                      </td>
+                    </tr>
+
+                    <!-- Real Invoice Rows -->
+                    <template v-else>
+                      <tr v-for="(inv, iIdx) in fetchedInvoices[group.customer]" :key="'modal-inv-' + iIdx"
+                        class="border-t border-black/5 dark:border-white/5 transition-opacity"
+                        :class="[isDark ? 'bg-black/20 hover:bg-black/30' : 'bg-[#A2E8D6] hover:bg-[#8ee0cb]', inv.on_cooldown ? 'opacity-45' : '']">
+                        <td class="px-8 py-3.5">
+                          <div class="flex items-center gap-3">
+                            <input type="checkbox" v-model="inv.selected" :disabled="inv.on_cooldown"
+                              class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864] shrink-0 disabled:cursor-not-allowed">
+                            <span class="text-[14px] font-normal truncate max-w-[200px]"
+                              :class="[isDark ? 'text-white' : 'text-[#1A1A1A]', inv.on_cooldown ? 'underline decoration-dotted underline-offset-4 cursor-help' : '']"
+                              @mouseenter="inv.on_cooldown && showCooldownTip($event, inv)" @mouseleave="hideCooldownTip">
+                              {{ inv.invoice_no !== '0' ? inv.invoice_no : inv.description }}
+                            </span>
                           </div>
-                          <div v-else v-for="(inv, iIdx) in fetchedInvoices[group.customer]" :key="'modal-inv-' + iIdx"
-                            class="grid items-center border-t border-black/5 dark:border-white/5 pt-4 transition-opacity"
-                            :class="inv.on_cooldown ? 'opacity-45' : ''"
-                            :style="{ gridTemplateColumns: `2.25fr repeat(${tableColumns.length + 1}, minmax(0, 1fr))` }">
-                            <div class="flex items-center gap-3 pr-2">
-                              <input type="checkbox" v-model="inv.selected" :disabled="inv.on_cooldown"
-                                class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864] shrink-0 disabled:cursor-not-allowed">
-                              <span class="text-[16px] font-normal truncate"
-                                :class="[isDark ? 'text-white' : 'text-[#1A1A1A]', inv.on_cooldown ? 'underline decoration-dotted underline-offset-4 cursor-help' : '']"
-                                @mouseenter="inv.on_cooldown && showCooldownTip($event, inv)" @mouseleave="hideCooldownTip">
-                                {{ inv.invoice_no !== '0' ? inv.invoice_no : inv.description }}
-                              </span>
-                            </div>
-                            <div class="text-right rtl:text-left font-normal text-[16px]"
-                              :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
-                              <span class="underline underline-offset-4 cursor-pointer">{{ formatValue(inv.amount) }}</span>
-                            </div>
-                            <div v-for="col in tableColumns" :key="'modal-td-' + col.key" class="text-right rtl:text-left text-[16px] font-normal"
-                              :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ formatValue(inv[col.key]) }}</div>
-                          </div>
-                        </div>
-                        <div v-else class="text-center py-8 opacity-50">
-                          <span class="text-sm">{{ currentLang === 'ar' ? 'جاري تحميل الفواتير...' : 'Loading invoices...' }}</span>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
+                        </td>
+                        <td class="px-6 py-3.5 text-right rtl:text-left font-semibold text-[14px] tabular-nums"
+                          :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
+                          {{ formatValue(inv.amount) }}
+                        </td>
+                        <td v-for="col in tableColumns" :key="'modal-inv-col-' + col.key" class="px-6 py-3.5 text-right rtl:text-left text-[14px] font-normal tabular-nums"
+                          :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">
+                          {{ formatValue(inv[col.key]) }}
+                        </td>
+                      </tr>
+                    </template>
+                  </template>
                 </template>
               </tbody>
               <tfoot>
@@ -303,9 +329,9 @@
                   class="transition-all duration-500 sticky bottom-0 z-10">
                   <td class="px-8 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
                     currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
+                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
                     :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ formatValue(summaryTotal.amount) }}</td>
-                  <td v-for="col in tableColumns" :key="'modal-foot-' + col.key" class="px-6 py-5 text-right rtl:text-left font-medium text-[14px]"
+                  <td v-for="col in tableColumns" :key="'modal-foot-' + col.key" class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
                     :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ formatValue(summaryTotal[col.key]) }}</td>
                 </tr>
               </tfoot>
@@ -337,6 +363,7 @@
 
 <script setup>
 import { ref, reactive, computed } from 'vue'
+import { formatStandardNumber } from '~/utils/formatters'
 
 const props = defineProps({
   data: {
@@ -355,7 +382,7 @@ const props = defineProps({
 
 const ROW_HEIGHT = 60
 const FIXED_ROWS = 6
-const MAX_ROWS = 10
+const MAX_ROWS = 15
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
@@ -441,10 +468,10 @@ const summaryTotal = computed(() => {
 })
 
 const formatValue = (val) => {
-  if (val === undefined || val === null) return '0'
+  if (val === undefined || val === null || val === '') return '0.00'
   const num = Number(val)
-  if (isNaN(num)) return '0'
-  return formatStandardNumber(num)
+  if (isNaN(num)) return '0.00'
+  return formatStandardNumber(num, 2)
 }
 
 const toggleGroup = async (idx, customerName) => {

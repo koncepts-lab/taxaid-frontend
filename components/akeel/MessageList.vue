@@ -19,10 +19,7 @@
         </div>
     </div>
 
-    <!-- Reuses the real Revenue ledger modal as-is — button-only, never opens by default.
-         ledgerRefs only ever populate from System-category tool results, so this only ever
-         opens for real data the chat actually surfaced. -->
-    <RevenueLedgerModal :is-open="ledgerModalOpen" :ledger-name="selectedLedgerName" @close="ledgerModalOpen = false" />
+    <CommonLedgerModal :is-open="ledgerModalOpen" :ledger-name="selectedLedgerName" card="revenue" @close="ledgerModalOpen = false" />
 </template>
 
 <script setup>

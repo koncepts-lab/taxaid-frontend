@@ -41,7 +41,7 @@ onBeforeUnmount(clearAutoClose);
   <Teleport to="body">
     <Transition name="fade">
       <div v-if="isOpen"
-          class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          class="fixed inset-0 z-[20001] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           @click.self="close">
 
         <div class="w-full max-w-md shadow-2xl rounded-2xl"

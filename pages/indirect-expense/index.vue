@@ -30,24 +30,24 @@
           />
 
           <div class="mb-4 lg:mb-8">
-            <IndirectExpenseSummary :data="breakdownData?.data" />
+            <IndirectExpenseSummary :data="breakdownData?.data" :loading="loading" :error="error" />
           </div>
 
           <div class="grid grid-cols-1 gap-8 mb-4 lg:mb-8">
             <div>
-              <IndirectExpenseTopCategories :data="breakdownData?.charts?.expense_by_category" />
+              <IndirectExpenseTopCategories :data="breakdownData?.charts?.expense_by_category" :loading="loading" :error="error" />
             </div>
           </div>
 
           <div class="grid grid-cols-1 gap-8 mb-4 lg:mb-8">
             <div class="h-auto lg:h-[450px]">
-              <IndirectExpenseOverheadTrends :data="trendData" />
+              <IndirectExpenseOverheadTrends :data="trendData" :loading="loading" />
             </div>
           </div>
 
           <div class="grid grid-cols-1 gap-8">
             <div class="h-auto lg:h-[450px]">
-              <IndirectExpenseOverheadVsRevenue :data="expenseVsRevenueData" />
+              <IndirectExpenseOverheadVsRevenue :data="expenseVsRevenueData" :loading="loading" />
             </div>
           </div>
 
@@ -108,7 +108,7 @@ const backendRangeMap = {
     'Custom Range':      'Custom Dates',
 }
 
-const { rangeOption, customFrom, customTo, breakdownData, trendData, expenseVsRevenue: expenseVsRevenueData, fetchAll } = useIndirectExpense()
+const { rangeOption, customFrom, customTo, breakdownData, trendData, expenseVsRevenue: expenseVsRevenueData, loading, error, fetchAll } = useIndirectExpense()
 
 const handleDateChange = (periodData) => {
     rangeOption.value = backendRangeMap[periodData.en] ?? 'Year to Date'

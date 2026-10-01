@@ -54,15 +54,15 @@
               </div>
               <div class="grid grid-cols-[2fr_1fr_1fr_1fr] gap-6 px-8 py-5" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]/80'">
                 <div class="h-[14px] w-24 rounded bg-white/50" />
-                <div class="h-[14px] w-14 rounded bg-white/50 mx-auto" />
-                <div class="h-[14px] w-14 rounded bg-white/50 mx-auto" />
+                <div class="h-[14px] w-14 rounded bg-white/50 ml-auto rtl:mr-auto rtl:ml-0" />
+                <div class="h-[14px] w-14 rounded bg-white/50 ml-auto rtl:mr-auto rtl:ml-0" />
                 <div class="h-[14px] w-20 rounded bg-white/50 mx-auto" />
               </div>
               <div v-for="r in 8" :key="r" class="grid grid-cols-[2fr_1fr_1fr_1fr] gap-6 px-8 py-5 border-b"
                 :class="isDark ? 'border-white/5' : 'border-[#F2F2F2]'">
                 <div class="h-[14px] rounded" :class="[skBar, r % 3 === 0 ? 'w-40' : 'w-56']" />
-                <div class="h-[14px] w-16 rounded mx-auto" :class="skBar" />
-                <div class="h-[14px] w-16 rounded mx-auto" :class="skBar" />
+                <div class="h-[14px] w-16 rounded ml-auto rtl:mr-auto rtl:ml-0" :class="skBar" />
+                <div class="h-[14px] w-16 rounded ml-auto rtl:mr-auto rtl:ml-0" :class="skBar" />
                 <div class="h-[14px] w-16 rounded mx-auto" :class="skBar" />
               </div>
             </div>

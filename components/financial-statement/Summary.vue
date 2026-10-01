@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full transition-all duration-500 rounded-3xl"
+    <div class="w-full transition-all duration-500 rounded-3xl overflow-hidden"
         :class="isDark ? 'bg-[#00141050]' : 'bg-white'" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
         <div v-if="activeTab === 'schedules'" class="lg:px-8 px-4 lg:pb-8 pb-4 flex flex-col lg:flex-row gap-4 transition-all duration-500">
@@ -70,7 +70,6 @@
             </div>
 
             <div class="flex items-center w-full lg:w-auto">
-                <!-- Show-all-data toggle: OFF (default) hides rows with no data at all -->
                 <div class="flex items-center gap-2 me-4 shrink-0">
                     <span class="text-xs" :class="isDark ? 'text-white/60' : 'text-black/60'">
                         {{ currentLang === 'ar' ? 'عرض كل البيانات' : 'Show all data' }}
@@ -118,7 +117,6 @@
             </div>
         </div>
 
-        <!-- Table Wrapper (Horizontal Scroll) -->
         <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative">
             <table class="w-full text-start border-collapse min-w-[900px] lg:min-w-full table-fixed">
                 <thead class="text-white lg:sticky lg:top-0 z-20 shadow-sm" :class="isDark ? 'bg-primary-1100' : 'bg-primary-750'">
@@ -153,7 +151,6 @@
                     </th>
                     <th class="font-medium text-center  text-sm px-4">{{ t.colPrevious }}</th>
 
-                    <!-- Hide Balance/Budget column only when "All Ratios" is selected -->
                     <th v-if="!(activeTab === 'ratios' && selectedRatio === 'All Ratios')"
                         class="font-medium text-center  text-sm px-4">
                         {{ activeTab === 'ratios' ? t.colBalance : t.colBudget }}
@@ -164,13 +161,42 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Loading / error / empty states (previously a failed fetch left a silent blank table) -->
-                <tr v-if="loading">
-                    <td colspan="7" class="px-8 py-12 text-center text-sm"
-                        :class="isDark ? 'text-white/50' : 'text-gray-400'">
-                        {{ currentLang === 'ar' ? 'جارٍ التحميل...' : 'Loading report...' }}
-                    </td>
-                </tr>
+                <template v-if="loading">
+                    <tr v-for="n in 14" :key="`skel-${n}`"
+                        class="border-b"
+                        :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border-gray-50'">
+                        <td :class="isCompressed ? 'lg:px-8 px-4 py-3' : 'lg:px-8 px-4 py-4'">
+                            <div class="h-4 rounded animate-pulse w-3/4"
+                                :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                        </td>
+                        <td class="text-center px-4">
+                            <div class="h-4 w-8 rounded animate-pulse mx-auto"
+                                :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                        </td>
+                        <td class="text-center px-4">
+                            <div class="h-4 w-20 rounded animate-pulse mx-auto"
+                                :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                        </td>
+                        <td class="text-center px-4">
+                            <div class="h-4 w-20 rounded animate-pulse mx-auto"
+                                :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                        </td>
+                        <td v-if="!(activeTab === 'ratios' && selectedRatio === 'All Ratios')" class="text-center px-4">
+                            <div class="h-4 w-20 rounded animate-pulse mx-auto"
+                                :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                        </td>
+                        <td class="text-center px-4">
+                            <div class="h-4 w-14 rounded-full animate-pulse mx-auto"
+                                :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                        </td>
+                        <td class="lg:pe-8 pe-4 py-2">
+                            <div class="flex justify-center items-end">
+                                <div class="w-[65px] h-[32px] rounded-t-full animate-pulse"
+                                    :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </template>
                 <tr v-else-if="error">
                     <td colspan="7" class="px-8 py-12 text-center text-sm text-red-500">
                         {{ error }}
@@ -183,7 +209,7 @@
                     </td>
                 </tr>
 
-                <template v-else v-for="(row, i) in paginatedRows" :key="i">
+                <template v-else v-for="(row, i) in visibleRows" :key="i">
                     <tr v-if="row.isHeader" :class="isDark ? 'bg-primary-1050' : 'bg-primary-800'">
                         <td colspan="7" class="lg:px-8 px-4 py-3 font-medium text-start"
                             :class="isDark ? 'text-white/80' : 'text-primary-950'">{{ row.label }}</td>
@@ -192,7 +218,6 @@
                         row.isSummary ? (isDark ? 'bg-[#003d30] font-medium' : 'bg-primary-800 font-medium') : (isDark ? 'bg-[#002e26] border-b border-white/5' : 'bg-white border-b border-gray-50')
                     ]" class="transition-all duration-500">
 
-                        <!-- DYNAMIC CELL LOGIC -->
                         <template v-if="activeTab === 'ratios'">
                             <template v-if="selectedRatio === 'All Ratios'">
                                 <td class="lg:px-8 px-4 py-4 text-start text-sm"
@@ -234,7 +259,6 @@
                             :class="[row.isSummary || row.isTotal ? 'font-medium' : 'font-normal', isDark ? 'text-white/80' : 'text-black']">
                             {{ row.previous }}</td>
 
-                        <!-- Budget/Balance Cell -->
                         <td v-if="!(activeTab === 'ratios' && selectedRatio === 'All Ratios')"
                             class="text-center px-4 text-sm"
                             :class="[row.isSummary || row.isTotal ? 'font-medium' : 'font-normal', isDark ? 'text-white/80' : 'text-black']">
@@ -277,37 +301,6 @@
                 </template>
             </tbody>
         </table>
-        </div>
-
-        <!-- Pagination -->
-        <div v-if="visibleRows.length > 0" class="lg:py-6 py-4 px-4 lg:px-8 flex flex-wrap items-center justify-between gap-3">
-            <span class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-500'">
-                {{ currentLang === 'ar' ? 'عرض' : 'Showing' }} {{ pageStart }}–{{ pageEnd }} {{ currentLang === 'ar' ? 'من' : 'of' }} {{ totalItems }} {{ currentLang === 'ar' ? 'النتائج' : 'results' }}
-            </span>
-            <div class="flex items-center gap-1.5">
-                <button @click="goToPage(currentPage - 1)"
-                    :disabled="currentPage <= 1"
-                    class="px-3 py-1.5 rounded-lg border text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                    :class="isDark ? 'border-white/10 text-white/80 bg-[#1a1a1a] hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
-                    {{ currentLang === 'ar' ? 'السابق' : 'Previous' }}
-                </button>
-                <button v-for="p in visiblePages" :key="p"
-                    @click="goToPage(p)"
-                    :class="[
-                        p === currentPage
-                            ? (isDark ? 'bg-[#00896F] text-white border-[#00896F]' : 'bg-[#00896F] text-white border-[#00896F]')
-                            : (isDark ? 'bg-[#1a1a1a] text-white/80 border-white/10 hover:bg-white/10' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'),
-                        'w-8 h-8 flex items-center justify-center rounded-lg border text-sm font-medium transition-all'
-                    ]">
-                    {{ p }}
-                </button>
-                <button @click="goToPage(currentPage + 1)"
-                    :disabled="currentPage >= totalPages"
-                    class="px-3 py-1.5 rounded-lg border text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                    :class="isDark ? 'border-white/10 text-white/80 bg-[#1a1a1a] hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
-                    {{ currentLang === 'ar' ? 'التالي' : 'Next' }}
-                </button>
-            </div>
         </div>
 
         <div v-if="reportInfo?.current" class="lg:px-8 px-4 py-6 lg:text-sm text-xs transition-all duration-500"
@@ -366,42 +359,6 @@ const visibleRows = computed(() => {
     const rows = props.data ?? []
     return showAllData.value ? rows : rows.filter(rowHasData)
 })
-
-const currentPage = ref(1);
-const perPage = ref(10);
-
-const totalItems = computed(() => visibleRows.value.length);
-const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / perPage.value)));
-
-const paginatedRows = computed(() => {
-    const start = (currentPage.value - 1) * perPage.value;
-    return visibleRows.value.slice(start, start + perPage.value);
-});
-
-const pageStart = computed(() => totalItems.value === 0 ? 0 : (currentPage.value - 1) * perPage.value + 1);
-const pageEnd = computed(() => Math.min(currentPage.value * perPage.value, totalItems.value));
-
-const visiblePages = computed(() => {
-    // Show a window of pages if there are many, or all if few. Here we just show all for simplicity like Trial Balance.
-    const pages = [];
-    let start = Math.max(1, currentPage.value - 2);
-    let end = Math.min(totalPages.value, start + 4);
-    if (end - start < 4) start = Math.max(1, end - 4);
-    for (let i = start; i <= end; i++) {
-        pages.push(i);
-    }
-    return pages;
-});
-
-const goToPage = (page) => {
-    if (page >= 1 && page <= totalPages.value) {
-        currentPage.value = page;
-    }
-};
-
-watch(visibleRows, () => {
-    currentPage.value = 1;
-});
 
 const config = useRuntimeConfig();
 const baseUrl = config.public.apiBase;

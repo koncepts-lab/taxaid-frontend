@@ -29,7 +29,7 @@
           />
 
           <div class="mb-4 lg:mb-8">
-            <CogsSummary :data="breakdownData?.data" />
+            <CogsSummary :data="breakdownData?.data" :loading="loading" :error="error" />
           </div>
 
           <div class="mb-4 lg:mb-8">
@@ -107,7 +107,7 @@ const backendRangeMap = {
     'Custom Range':      'Custom Dates',
 }
 
-const { rangeOption, customFrom, customTo, breakdownData, trendData, revenueToCogsData, fetchAll } = useCogs()
+const { rangeOption, customFrom, customTo, breakdownData, trendData, revenueToCogsData, loading, error, fetchAll } = useCogs()
 
 const handleDateChange = (periodData) => {
     rangeOption.value = backendRangeMap[periodData.en] ?? 'Year to Date'

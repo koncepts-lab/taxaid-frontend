@@ -1,7 +1,7 @@
 <template>
     <Teleport to="body">
         <Transition name="export-modal">
-            <div v-if="modelValue" class="fixed inset-0 z-[1200] flex items-center justify-center p-4" :dir="isAr ? 'rtl' : 'ltr'">
+            <div v-if="modelValue" class="fixed inset-0 z-[20000] flex items-center justify-center p-4" :dir="isAr ? 'rtl' : 'ltr'">
                 <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="close"></div>
 
                 <div class="relative w-full max-w-[560px] max-h-[92vh] flex flex-col rounded-[24px] shadow-2xl overflow-hidden"

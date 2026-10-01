@@ -41,8 +41,19 @@ const scheduleMapBS: Record<string, string> = {
 }
 
 const fmtNum = (num: any) => {
-  if (num === null || num === undefined || isNaN(num)) return num
-  return formatStandardNumber(num)
+  if (num === null || num === undefined || num === '-' || num === '') return '-'
+  const clean = typeof num === 'string' ? num.replace(/,/g, '') : num
+  const val = Number(clean)
+  if (isNaN(val)) return num
+  return formatStandardNumber(val, 2)
+}
+
+const fmtVariance = (v: any) => {
+  if (v === null || v === undefined || v === '-' || v === '') return '-'
+  const clean = String(v).replace(/[%,]/g, '').trim()
+  const val = Number(clean)
+  if (isNaN(val)) return String(v)
+  return `${val.toFixed(2)}%`
 }
 
 async function fetchPLData() {
@@ -70,7 +81,7 @@ async function fetchPLData() {
         label:    row.label,
         current:  fmtNum(row.current_year),
         previous: fmtNum(row.previous_year),
-        variance: row.variance_percent,
+        variance: fmtVariance(row.variance_percent),
         budget:   row.budget !== null ? fmtNum(row.budget) : '-',
         progress: row.ytg_percent !== null ? String(row.ytg_percent).replace('%', '') : '-',
         isSummary: row.isSummary,
@@ -112,7 +123,7 @@ async function fetchBSData() {
         label:    row.label,
         current:  fmtNum(row.current_year),
         previous: fmtNum(row.previous_year),
-        variance: row.variance_percent !== null ? row.variance_percent : '-',
+        variance: fmtVariance(row.variance_percent),
         budget:   row.budget !== null ? fmtNum(row.budget) : '-',
         progress: row.ytg_percent !== null ? String(row.ytg_percent).replace('%', '') : '-',
         isSummary: row.isSummary || false,
@@ -121,8 +132,6 @@ async function fetchBSData() {
         schedule:  scheduleMapBS[row.label] ?? '-',
       }))
     } else {
-      // Previously a non-success response left the table silently blank —
-      // the "balance sheet didn't show up" symptom.
       _error.value = res?.message ?? 'Failed to load the Balance Sheet report.'
     }
   } catch (e: any) {
@@ -155,8 +164,12 @@ async function fetchRatiosData() {
         }
         const isPct = (v: any) => row.category === 'Profitability' || String(row.key_metric).toLowerCase().includes('margin')
         const fmt = (v: any) => {
-          if (v === null || v === undefined) return '-'
-          return isPct(v) && !String(v).includes('%') ? `${v}%` : v
+          if (v === null || v === undefined || v === '-' || v === '') return '-'
+          const clean = String(v).replace(/[%,]/g, '').trim()
+          const n = Number(clean)
+          if (isNaN(n)) return v
+          const formatted = formatStandardNumber(n, 2)
+          return isPct(v) || String(v).includes('%') ? `${formatted}%` : formatted
         }
         return {
           label:    row.key_metric,
@@ -164,7 +177,7 @@ async function fetchRatiosData() {
           current:  fmt(row.current_year),
           previous: fmt(row.previous_year),
           budget:   fmt(row.budget),
-          variance: row.variance_percent !== null ? row.variance_percent : '-',
+          variance: fmtVariance(row.variance_percent),
           progress: progressVal,
           isSummary: false,
           isHeader:  false,

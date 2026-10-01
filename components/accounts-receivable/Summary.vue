@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full transition-all duration-500 rounded-3xl"
+  <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl"
     :class="isDark ? 'bg-[#00141080]' : 'bg-white shadow-sm'">
     <div class="py-5 lg:px-8 px-4 flex justify-between items-center sticky top-[-32px] z-30 rounded-t-3xl" :class="isDark ? 'bg-[#001a14]' : 'bg-white'">
       <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
@@ -47,7 +47,7 @@
           <template v-if="loading">
             <tr v-for="n in FIXED_ROWS" :key="'sk' + n" class="border-b animate-pulse" :class="isDark ? 'border-white/5' : 'border-gray-100'">
               <td class="px-8 py-5"><div class="h-[14px] rounded" :class="[isDark ? 'bg-white/10' : 'bg-gray-200', n % 2 ? 'w-40' : 'w-56']"></div></td>
-              <td v-for="c in 5" :key="c" class="px-6 py-5"><div class="h-[14px] w-16 ml-auto rtl:ml-0 rtl:mr-auto rounded" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+              <td v-for="c in 5" :key="c" class="px-6 py-5 text-right rtl:text-left"><div class="h-[14px] w-16 ml-auto rtl:ml-0 rtl:mr-auto rounded" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
             </tr>
           </template>
           <template v-for="group in (loading ? [] : arData)" :key="group.label">
@@ -70,26 +70,27 @@
                   </button>
                 </div>
               </td>
-              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-[#00FFBC]' : 'text-[#00b484]'">{{ formatStandardNumber(group.total) }}</td>
-              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age30) }}</td>
-              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age3060) }}</td>
-              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age6090) }}</td>
-              <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age90plus) }}</td>
+              <td class="px-6 py-5 text-right rtl:text-left font-semibold tabular-nums text-[14px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">{{ formatStandardNumber(group.total, 2) }}</td>
+              <td class="px-6 py-5 text-right rtl:text-left font-medium tabular-nums text-[14px]" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age30, 2) }}</td>
+              <td class="px-6 py-5 text-right rtl:text-left font-medium tabular-nums text-[14px]" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age3060, 2) }}</td>
+              <td class="px-6 py-5 text-right rtl:text-left font-medium tabular-nums text-[14px]" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age6090, 2) }}</td>
+              <td class="px-6 py-5 text-right rtl:text-left font-medium tabular-nums text-[14px]" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age90plus, 2) }}</td>
             </tr>
 
             <!-- Expandable Invoice Section -->
-            <tr v-if="expandedGroups.includes(group.label)">
-              <td colspan="6" class="p-0 border-none">
-                <div :class="isDark ? 'bg-[#003D2E]' : 'bg-[#E8FBF3]'" class="p-8 shadow-inner">
-                  <div class="flex justify-between items-start mb-6">
+            <template v-if="expandedGroups.includes(group.label)">
+              <!-- Action Bar Row -->
+              <tr :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                <td colspan="6" class="lg:px-8 px-4 py-5 border-t border-black/5 dark:border-white/5">
+                  <div class="flex justify-between items-center">
                     <div>
-                      <h3 class="text-[16px] font-normal mb-6" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
+                      <h3 class="text-[15px] font-medium mb-2" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
                         {{ currentLang === 'ar' ? 'حدد الفواتير لإرسال التذكيرات' : 'Select invoices to send reminders.' }}
                       </h3>
                       <div class="flex items-center gap-3">
                         <input type="checkbox" :checked="isGroupAllSelected(group)" @change="toggleGroupSelectAll(group)"
-                          class="custom-checkbox">
-                        <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
+                          class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864]">
+                        <span class="text-[14px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
                           {{ currentLang === 'ar' ? `تحديد الكل (${getInvoices(group).length})` : `Select All (${getInvoices(group).length})` }}
                         </span>
                       </div>
@@ -98,9 +99,9 @@
                       <button @click="handleSendReminders(group)"
                         :disabled="sendingKey !== null || groupSelectedCount(group) === 0 || !hasEmail(group)"
                         :title="emailTooltip(group)"
-                        class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-3 rounded-xl flex items-center gap-3 text-[16px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg v-if="sendingKey === group.label" class="animate-spin shrink-0" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
-                        <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-2.5 rounded-xl flex items-center gap-3 text-[14px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg v-if="sendingKey === group.label" class="animate-spin shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
+                        <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                         {{ currentLang === 'ar' ? `إرسال تذكير (${groupSelectedCount(group)})` : `Send Reminder (${groupSelectedCount(group)})` }}
@@ -110,58 +111,81 @@
                       </span>
                     </div>
                   </div>
+                </td>
+              </tr>
 
+              <!-- Loading State -->
+              <tr v-if="loadingGroup === group.label" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                <td colspan="6" class="text-center py-6 opacity-60 text-sm border-t border-black/5 dark:border-white/5">
+                  {{ currentLang === 'ar' ? 'جاري تحميل الفواتير...' : 'Loading invoices...' }}
+                </td>
+              </tr>
 
-                  <!-- Loading spinner -->
-                  <div v-if="loadingGroup === group.label" class="flex justify-center py-6">
-                    <div class="w-8 h-8 border-4 border-[#005A48] border-t-transparent rounded-full animate-spin"></div>
-                  </div>
+              <!-- Empty State -->
+              <tr v-else-if="!getInvoices(group).length" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                <td colspan="6" class="text-center py-6 opacity-60 text-sm border-t border-black/5 dark:border-white/5">
+                  {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
+                </td>
+              </tr>
 
-                  <div v-else class="space-y-4 mt-8">
-                    <div v-if="getInvoices(group).length === 0" class="text-[14px] opacity-60 py-4" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
-                      {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
+              <!-- Native Invoice Rows -->
+              <template v-else>
+                <tr v-for="(inv, iIdx) in getInvoices(group)" :key="'inv-' + iIdx"
+                  class="border-t border-black/5 dark:border-white/5 transition-opacity"
+                  :class="[isDark ? 'bg-black/20 hover:bg-black/30' : 'bg-[#A2E8D6] hover:bg-[#8ee0cb]', inv.on_cooldown ? 'opacity-45' : '']">
+                  <td class="lg:px-8 px-4 py-3.5">
+                    <div class="flex items-center gap-3">
+                      <input type="checkbox" v-model="inv.selected" :disabled="inv.on_cooldown"
+                        class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864] shrink-0 disabled:cursor-not-allowed">
+                      <span class="text-[14px] font-normal truncate max-w-[200px]"
+                        :class="[isDark ? 'text-white' : 'text-[#1A1A1A]', inv.on_cooldown ? 'underline decoration-dotted underline-offset-4 cursor-help' : '']"
+                        @mouseenter="inv.on_cooldown && showCooldownTip($event, inv)" @mouseleave="hideCooldownTip">
+                        {{ inv.invoiceNo }}
+                      </span>
                     </div>
-                    <div v-for="(inv, iIdx) in getInvoices(group)" :key="iIdx"
-                      class="grid grid-cols-6 items-center border-b pt-4 pb-4 transition-opacity"
-                      :class="[
-                          inv.on_cooldown ? 'opacity-45' : '',
-                          isDark ? 'border-white/5' : 'border-[#b2edd4]'
-                      ]">
-                      <div class="flex items-center gap-3">
-                        <input type="checkbox" v-model="inv.selected" :disabled="inv.on_cooldown"
-                          class="custom-checkbox">
-                        <!-- Invoice no; cooldown → dotted underline + fixed tooltip on hover -->
-                        <span class="text-[16px] font-normal"
-                          :class="[isDark ? 'text-white' : 'text-[#1A1A1A]', inv.on_cooldown ? 'underline decoration-dotted underline-offset-4 cursor-help' : '']"
-                          @mouseenter="inv.on_cooldown && showCooldownTip($event, inv)" @mouseleave="hideCooldownTip">
-                          {{ inv.invoiceNo }}
-                        </span>
-                      </div>
-                      <div class="text-right rtl:text-left font-normal text-[16px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
-                        <span class="underline underline-offset-4 cursor-pointer">{{ formatStandardNumber(inv.amount) }}</span>
-                      </div>
-                      <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age30?.toLocaleString() }}</div>
-                      <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age3060?.toLocaleString() }}</div>
-                      <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age6090?.toLocaleString() }}</div>
-                      <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age90plus?.toLocaleString() }}</div>
-                    </div>
-                  </div>
-                </div>
-              </td>
-            </tr>
+                  </td>
+                  <td class="lg:px-6 px-4 py-3.5 text-right rtl:text-left font-semibold text-[14px] tabular-nums"
+                    :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
+                    {{ formatStandardNumber(inv.amount, 2) }}
+                  </td>
+                  <td class="lg:px-6 px-4 py-3.5 text-right rtl:text-left text-[14px] font-normal tabular-nums"
+                    :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">
+                    {{ formatStandardNumber(inv.age30, 2) }}
+                  </td>
+                  <td class="lg:px-6 px-4 py-3.5 text-right rtl:text-left text-[14px] font-normal tabular-nums"
+                    :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">
+                    {{ formatStandardNumber(inv.age3060, 2) }}
+                  </td>
+                  <td class="lg:px-6 px-4 py-3.5 text-right rtl:text-left text-[14px] font-normal tabular-nums"
+                    :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">
+                    {{ formatStandardNumber(inv.age6090, 2) }}
+                  </td>
+                  <td class="lg:px-6 px-4 py-3.5 text-right rtl:text-left text-[14px] font-normal tabular-nums"
+                    :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">
+                    {{ formatStandardNumber(inv.age90plus, 2) }}
+                  </td>
+                </tr>
+              </template>
+            </template>
           </template>
           <tr v-if="fillerHeight" aria-hidden="true">
             <td colspan="6" class="p-0" :style="{ height: `${fillerHeight}px` }"></td>
           </tr>
         </tbody>
         <tfoot>
-          <tr v-if="!loading" :class="isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]'" class="transition-all duration-500 text-[14px] font-medium sticky bottom-0 z-10">
+          <tr v-if="loading" :class="isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]'" class="transition-all duration-500 text-[14px] font-medium sticky bottom-0 z-10 animate-pulse">
             <td class="px-8 py-5" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.total) }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age30) }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age3060) }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age6090) }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age90plus) }}</td>
+            <td v-for="c in 5" :key="'tot-sk-' + c" class="px-6 py-5 text-right rtl:text-left">
+              <div class="h-[14px] w-20 rounded inline-block ml-auto rtl:ml-0 rtl:mr-auto" :class="isDark ? 'bg-white/20' : 'bg-[#008864]/20'"></div>
+            </td>
+          </tr>
+          <tr v-else-if="summaryTotal" :class="isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]'" class="transition-all duration-500 text-[14px] font-medium sticky bottom-0 z-10">
+            <td class="px-8 py-5 font-semibold" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left font-semibold tabular-nums" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.total, 2) }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left font-semibold tabular-nums" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age30, 2) }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left font-semibold tabular-nums" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age3060, 2) }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left font-semibold tabular-nums" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age6090, 2) }}</td>
+            <td class="px-6 py-5 text-right rtl:text-left font-semibold tabular-nums" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age90plus, 2) }}</td>
           </tr>
         </tfoot>
       </table>
@@ -176,7 +200,7 @@
                 {{ currentLang === 'ar' ? 'ملخص حسابات القبض' : 'Accounts Receivable Summary' }}
               </p>
               <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED' }}
+                {{ currentLang === 'ar' ? 'القيم بالدرهم الإماراتي' : 'Values in AED' }}
               </p>
             </div>
             <button @click="isModalOpen = false" class="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
@@ -250,54 +274,55 @@
                             </button>
                           </div>
                         </td>
-                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-[#00FFBC]' : 'text-[#00b484]'">{{ formatStandardNumber(group.total) }}</td>
-                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age30) }}</td>
-                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age3060) }}</td>
-                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age6090) }}</td>
-                        <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age90plus) }}</td>
+                        <td class="px-6 py-5 text-right rtl:text-left font-semibold tabular-nums text-[14px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">{{ formatStandardNumber(group.total, 2) }}</td>
+                        <td class="px-6 py-5 text-right rtl:text-left font-medium tabular-nums text-[14px]" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age30, 2) }}</td>
+                        <td class="px-6 py-5 text-right rtl:text-left font-medium tabular-nums text-[14px]" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age3060, 2) }}</td>
+                        <td class="px-6 py-5 text-right rtl:text-left font-medium tabular-nums text-[14px]" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age6090, 2) }}</td>
+                        <td class="px-6 py-5 text-right rtl:text-left font-medium tabular-nums text-[14px]" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ formatStandardNumber(group.age90plus, 2) }}</td>
                       </tr>
-    
+
                       <!-- Expandable Invoice Section (modal version) -->
-                      <tr v-if="expandedGroups.includes(group.label)">
-                        <td colspan="6" class="p-0 border-none">
-                          <div :class="isDark ? 'bg-[#003D2E]' : 'bg-[#E8FBF3]'" class="p-8 shadow-inner">
-                            <div v-if="loadingGroup === group.label" class="flex justify-center py-6">
-                              <div class="w-8 h-8 border-4 border-[#005A48] border-t-transparent rounded-full animate-spin"></div>
-                            </div>
-                            <div v-else class="space-y-4">
-                              <div v-if="getInvoices(group).length === 0" class="text-[14px] opacity-60 py-4" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
-                                {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
+                      <template v-if="expandedGroups.includes(group.label)">
+                        <tr v-if="loadingGroup === group.label" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                          <td colspan="6" class="text-center py-6 opacity-60 text-sm border-t border-black/5 dark:border-white/5">
+                            {{ currentLang === 'ar' ? 'جاري تحميل الفواتير...' : 'Loading invoices...' }}
+                          </td>
+                        </tr>
+                        <tr v-else-if="!getInvoices(group).length" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                          <td colspan="6" class="text-center py-6 opacity-60 text-sm border-t border-black/5 dark:border-white/5">
+                            {{ currentLang === 'ar' ? 'لا توجد فواتير' : 'No invoices found.' }}
+                          </td>
+                        </tr>
+                        <template v-else>
+                          <tr v-for="(inv, iIdx) in getInvoices(group)" :key="'modal-inv-' + iIdx"
+                            class="border-t border-black/5 dark:border-white/5 transition-opacity"
+                            :class="isDark ? 'bg-black/20 hover:bg-black/30' : 'bg-[#A2E8D6] hover:bg-[#8ee0cb]'">
+                            <td class="lg:px-8 px-4 py-3.5">
+                              <div class="flex items-center gap-3">
+                                <input type="checkbox" v-model="inv.selected"
+                                  class="w-[18px] h-[18px] rounded border-2 border-gray-300 text-[#008864] bg-white/20 focus:ring-[#008864] shrink-0">
+                                <span class="text-[14px] font-normal truncate max-w-[200px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ inv.invoiceNo }}</span>
                               </div>
-                              <div v-for="(inv, iIdx) in getInvoices(group)" :key="'modal-inv-' + iIdx"
-                                class="grid grid-cols-6 items-center border-b pt-4 pb-4"
-                                :class="isDark ? 'border-white/5' : 'border-[#b2edd4]'">
-                                <div class="flex items-center gap-3">
-                                  <input type="checkbox" v-model="inv.selected"
-                                    class="custom-checkbox">
-                                  <span class="text-[16px] font-normal" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ inv.invoiceNo }}</span>
-                                </div>
-                                <div class="text-right rtl:text-left font-normal text-[16px]" :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">
-                                  <span class="underline underline-offset-4 cursor-pointer">{{ formatStandardNumber(inv.amount) }}</span>
-                                </div>
-                                <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age30?.toLocaleString() }}</div>
-                                <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age3060?.toLocaleString() }}</div>
-                                <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age6090?.toLocaleString() }}</div>
-                                <div class="text-right rtl:text-left text-[16px] font-normal" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ inv.age90plus?.toLocaleString() }}</div>
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
+                            </td>
+                            <td class="lg:px-6 px-4 py-3.5 text-right rtl:text-left font-semibold text-[14px] tabular-nums"
+                              :class="isDark ? 'text-[#00FFBC]' : 'text-[#008864]'">{{ formatStandardNumber(inv.amount, 2) }}</td>
+                            <td class="lg:px-6 px-4 py-3.5 text-right rtl:text-left text-[14px] font-normal tabular-nums" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ formatStandardNumber(inv.age30, 2) }}</td>
+                            <td class="lg:px-6 px-4 py-3.5 text-right rtl:text-left text-[14px] font-normal tabular-nums" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ formatStandardNumber(inv.age3060, 2) }}</td>
+                            <td class="lg:px-6 px-4 py-3.5 text-right rtl:text-left text-[14px] font-normal tabular-nums" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ formatStandardNumber(inv.age6090, 2) }}</td>
+                            <td class="lg:px-6 px-4 py-3.5 text-right rtl:text-left text-[14px] font-normal tabular-nums" :class="isDark ? 'text-white/80' : 'text-[#1A1A1A]'">{{ formatStandardNumber(inv.age90plus, 2) }}</td>
+                          </tr>
+                        </template>
+                      </template>
                     </template>
                   </tbody>
                   <tfoot>
-                    <tr :class="isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]'" class="transition-all duration-500 text-[14px] font-medium">
+                    <tr :class="isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]'" class="transition-all duration-500 text-[14px] font-semibold sticky bottom-0 z-10">
                       <td class="px-8 py-5" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.total) }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age30) }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age3060) }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age6090) }}</td>
-                      <td class="px-6 py-5 text-right rtl:text-left" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age90plus) }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left tabular-nums" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.total, 2) }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left tabular-nums" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age30, 2) }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left tabular-nums" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age3060, 2) }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left tabular-nums" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age6090, 2) }}</td>
+                      <td class="px-6 py-5 text-right rtl:text-left tabular-nums" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatStandardNumber(summaryTotal.age90plus, 2) }}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -352,7 +377,7 @@ const sendStatus     = reactive({ type: '', message: '' })
 
 const ROW_HEIGHT = 60
 const FIXED_ROWS = 6
-const MAX_ROWS = 10
+const MAX_ROWS = 15
 
 const arData = computed(() => props.data)
 

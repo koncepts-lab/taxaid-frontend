@@ -79,11 +79,13 @@ export const useRevenue = () => {
     const chart = breakdownRaw.value?.charts?.revenue_by_category
     if (!chart) return null
     return {
-      categories:   chart.categories,
-      categoriesAr: chart.categories,
+      categories:   chart.categories ?? [],
+      categoriesAr: chart.categories ?? [],
+      previousYearRaw: chart.previous_year ?? [],
+      currentYearRaw:  chart.current_year ?? [],
       series: [
-        { name: 'Previous Year', nameAr: 'السنة السابقة', data: chart.previous_year.map((v: number) => Number((v / 1_000_000).toFixed(2))) },
-        { name: 'Current Year',  nameAr: 'السنة الحالية',  data: chart.current_year.map((v: number) => Number((v / 1_000_000).toFixed(2))) },
+        { name: 'Previous Year', nameAr: 'السنة السابقة', data: (chart.previous_year ?? []).map((v: number) => Number((v / 1_000_000).toFixed(2))) },
+        { name: 'Current Year',  nameAr: 'السنة الحالية',  data: (chart.current_year ?? []).map((v: number) => Number((v / 1_000_000).toFixed(2))) },
       ],
     }
   })
@@ -91,12 +93,14 @@ export const useRevenue = () => {
   // ── Trend line chart ──────────────────────────────────────────────────────
   const trendData = computed(() => {
     const apiData: any[] = trendRaw.value?.data ?? []
-    if (!apiData.length) return { categories: [], series: [] }
+    if (!apiData.length) return { categories: [], series: [], previousYearRaw: [], currentYearRaw: [] }
     return {
       categories: apiData.map((item: any) => item.month_short),
+      previousYearRaw: apiData.map((item: any) => Number(item.previous_year ?? 0)),
+      currentYearRaw:  apiData.map((item: any) => Number(item.current_year ?? 0)),
       series: [
-        { name: 'Previous Year', nameAr: 'السنة السابقة', data: apiData.map((item: any) => Number((item.previous_year / 1_000_000).toFixed(2))) },
-        { name: 'Current Year',  nameAr: 'السنة الحالية',  data: apiData.map((item: any) => Number((item.current_year  / 1_000_000).toFixed(2))) },
+        { name: 'Previous Year', nameAr: 'السنة السابقة', data: apiData.map((item: any) => Number(((item.previous_year ?? 0) / 1_000_000).toFixed(2))) },
+        { name: 'Current Year',  nameAr: 'السنة الحالية',  data: apiData.map((item: any) => Number(((item.current_year ?? 0)  / 1_000_000).toFixed(2))) },
       ],
     }
   })
@@ -112,13 +116,15 @@ export const useRevenue = () => {
     const cumulative: number[] = []
 
     const customers = res.data.top_10_ledgers.map((item: any, index: number) => {
-      const valM = Number((item.amount / 1_000_000).toFixed(2))
-      runningSum += item.amount
+      const rawAmount = Number(item.amount ?? 0)
+      const valM = Number((rawAmount / 1_000_000).toFixed(2))
+      runningSum += rawAmount
       cumulative.push(Number(((runningSum / total) * 100).toFixed(2)))
       return {
         id:      `C${index + 1}`,
         name:    item.name,
         nameAr:  item.name,
+        rawAmount,
         value:   valM,
         color:   colors[index % colors.length],
       }

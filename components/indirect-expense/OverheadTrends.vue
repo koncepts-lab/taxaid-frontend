@@ -2,43 +2,57 @@
   <div class="w-full h-full rounded-[20px] p-6 shadow-sm relative group cursor-pointer transition-all duration-300 flex flex-col"
     :style="isDark ? { background: '#015645' } : { background: 'linear-gradient(180deg, #00A176 0%, #004E3F 100%)' }">
     <!-- Header Area -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center flex-shrink-0">
-       <!-- Title -->
-      <div class="mb-4 lg:mb-2">
-        <h2 class="text-[16px] font-regular text-white">{{ currentLang === 'ar' ? 'اتحاهات النفقات العامة مع السنة السابقة' : 'Overhead Trends with Previous year' }}</h2>
-        <p class="text-[12px] font-regular mt-1 text-[#FFFFFFCF]">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center flex-shrink-0 gap-3">
+      <!-- Title -->
+      <div>
+        <h2 class="text-[16px] font-medium text-white">{{ currentLang === 'ar' ? 'اتحاهات النفقات العامة مع السنة السابقة' : 'Overhead Trends with Previous year' }}</h2>
+        <p class="text-[12px] font-normal mt-1 text-[#FFFFFFCF]">{{ valuesNote(unit === 'millions') }}</p>
       </div>
 
-      <!-- Legend & Expand Icon -->
-      <div class="flex items-center gap-3 lg:gap-4 text-[10px] lg:text-xs font-medium w-full lg:w-auto justify-between lg:justify-end">
-             <div class="flex items-center gap-3 lg:gap-4">
-               <div class="flex items-center gap-1.5">
-                 <span class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#FF7B5F]"></span>
-                 <span class="text-white">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }}</span>
-               </div>
-               <div class="flex items-center gap-1.5">
-                 <span class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#00FFBC]"></span>
-                 <span class="text-white">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
-               </div>
-             </div>
-             <div class="flex items-center gap-3 lg:gap-4">
-               <img 
-                 src="/images/icons/info-white.svg" 
-                 alt="Info" 
-                 class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
-               />
-               <img 
-                 src="/images/icons/expand-white.svg" 
-                 alt="Expand" 
-                 class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity hidden lg:block"
-                 @click="isModalOpen = true"
-               />
-             </div>
+      <!-- Legend & Controls -->
+      <div class="flex items-center gap-3 lg:gap-4 text-[10px] lg:text-xs font-medium w-full lg:w-auto justify-between lg:justify-end shrink-0">
+        <div class="flex items-center gap-3 lg:gap-4">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#FF7B5F]"></span>
+            <span class="text-white">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }}</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#00FFBC]"></span>
+            <span class="text-white">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 lg:gap-4">
+          <CommonUnitToggle :on-dark="true" storage-key="indirect_expense_overhead_trends_unit" />
+          <img 
+            src="/images/icons/info-white.svg" 
+            alt="Info" 
+            class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+          />
+          <img 
+            src="/images/icons/expand-white.svg" 
+            alt="Expand" 
+            class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity hidden lg:block"
+            @click="isModalOpen = true"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Skeleton (Zero CLS) -->
+    <div v-if="loading" class="flex-1 min-h-[300px] mt-6 flex flex-col justify-between animate-pulse">
+      <div class="flex items-end justify-between h-[230px] w-full px-4 border-b border-white/10">
+        <div v-for="c in 6" :key="'ot-skel-' + c" class="flex items-end gap-1.5">
+          <div class="w-3 lg:w-4 rounded-t bg-[#FF7B5F]/30" :style="{ height: (30 + (c * 8)) + '%' }"></div>
+          <div class="w-3 lg:w-4 rounded-t bg-[#00FFBC]/30" :style="{ height: (40 + (c * 7)) + '%' }"></div>
+        </div>
+      </div>
+      <div class="flex justify-between pt-3">
+        <div v-for="c in 6" :key="'ot-lbl-' + c" class="h-3 w-12 rounded bg-white/15"></div>
       </div>
     </div>
 
     <!-- Chart Area -->
-    <div class="flex-1 min-h-0 mt-6">
+    <div v-else class="flex-1 min-h-[300px] mt-6">
       <ClientOnly>
         <apexchart width="100%" height="100%" type="line" :options="chartOptions" :series="chartSeries"></apexchart>
       </ClientOnly>
@@ -53,8 +67,8 @@
           <!-- Modal Header -->
           <div class="flex justify-between items-center py-6 px-8 border-b border-white/10">
             <div class="flex flex-col">
-              <h2 class="text-lg font-regular text-white">{{ currentLang === 'ar' ? 'اتحاهات النفقات العامة مع السنة السابقة' : 'Overhead Trends with Previous year' }}</h2>
-              <p class="text-xs font-regular mt-1 text-[#FFFFFFCF]">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+              <h2 class="text-lg font-medium text-white">{{ currentLang === 'ar' ? 'اتحاهات النفقات العامة مع السنة السابقة' : 'Overhead Trends with Previous year' }}</h2>
+              <p class="text-xs font-normal mt-1 text-[#FFFFFFCF]">{{ valuesNote(unit === 'millions') }}</p>
             </div>
             <div class="flex items-center gap-6">
               <div class="flex items-center gap-4 text-sm font-medium">
@@ -67,22 +81,20 @@
                   <span class="text-white">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
                 </div>
               </div>
-               <img 
-                src="/images/icons/info-white.svg" 
-                alt="Info" 
-                class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
-              />
+              <CommonUnitToggle :on-dark="true" storage-key="indirect_expense_overhead_trends_unit" />
               <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
-                <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-width="2" stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
           </div>
           
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10 min-h-[350px]">
-             <ClientOnly>
-               <apexchart width="100%" height="100%" type="line" :options="chartOptions" :series="chartSeries"></apexchart>
-             </ClientOnly>
+            <ClientOnly>
+              <apexchart width="100%" height="100%" type="line" :options="chartOptions" :series="chartSeries"></apexchart>
+            </ClientOnly>
           </div>
         </div>
       </div>
@@ -91,140 +103,140 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { formatToMillions } from '~/utils/formatters'
+import { computed, ref } from 'vue'
+import { formatToMillions, formatStandardNumber } from '~/utils/formatters'
+import { useCurrency } from '~/composables/common/useCurrency'
+import { useChartHelper } from '~/composables/common/useChartHelper'
+
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
+const { valuesNote, code: currencyCode } = useCurrency()
+const { unit } = useChartHelper('indirect_expense_overhead_trends_unit')
 const isModalOpen = ref(false)
 
 const props = defineProps({
   data: {
     type: Array,
     default: () => []
+  },
+  loading: {
+    type: Boolean,
+    default: false
   }
 })
 
-const chartCategories = computed(() => props.data.map((item: any) => item.month_short))
+const chartCategories = computed(() => {
+  return props.data.map((item: any) => item.month_year || item.month_short || '')
+})
 
-const chartSeries = computed(() => [
-  {
-    name: currentLang.value === 'ar' ? 'السنة الحالية' : 'Current Year',
-    data: props.data.map((item: any) => parseFloat(formatToMillions(item.current_year ?? 0, 2)))
-  },
-  {
-    name: currentLang.value === 'ar' ? 'السنة السابقة' : 'Previous Year',
-    data: props.data.map((item: any) => parseFloat(formatToMillions(item.previous_year ?? 0, 2)))
-  }
-])
+const chartSeries = computed(() => {
+  const isMil = unit.value === 'millions'
+  return [
+    {
+      name: currentLang.value === 'ar' ? 'السنة الحالية' : 'Current Year',
+      data: props.data.map((item: any) => {
+        const val = Number(item.current_year) || 0
+        return isMil ? parseFloat((val / 1_000_000).toFixed(2)) : val
+      })
+    },
+    {
+      name: currentLang.value === 'ar' ? 'السنة السابقة' : 'Previous Year',
+      data: props.data.map((item: any) => {
+        const val = Number(item.previous_year) || 0
+        return isMil ? parseFloat((val / 1_000_000).toFixed(2)) : val
+      })
+    }
+  ]
+})
 
 const rawData = computed(() => props.data)
 
 const yMax = computed(() => {
   const allVals = chartSeries.value.flatMap(s => s.data)
   const max = Math.max(...allVals, 0)
-  return Math.ceil(max + 1)
+  return max > 0 ? (unit.value === 'millions' ? Math.ceil(max * 1.15) : Math.ceil(max * 1.1)) : 10
 })
 
-const chartOptions = computed(() => ({
-  chart: {
-    type: 'line',
-    toolbar: { show: false },
-    fontFamily: 'inherit',
-    zoom: { enabled: false },
-    background: 'transparent'
-  },
-  legend: { show: false },
-  colors: ['#00FFBC', '#FF7B5F'],
-  dataLabels: { enabled: false },
-  stroke: {
-    curve: 'smooth',
-    width: 3
-  },
-  xaxis: {
-    categories: chartCategories.value,
-    labels: {
-        style: { colors: '#FFFFFFBF', fontSize: '13px', fontWeight: 400 }
+const chartOptions = computed(() => {
+  const isMil = unit.value === 'millions'
+  return {
+    chart: {
+      type: 'line',
+      toolbar: { show: false },
+      fontFamily: 'inherit',
+      zoom: { enabled: false },
+      background: 'transparent'
     },
-    axisBorder: { show: false },
-    axisTicks: { show: false },
-    tooltip: { enabled: false }
-  },
-  yaxis: {
-    min: 0,
-    max: yMax.value,
-    tickAmount: 5,
-    labels: {
-      formatter: (value: number) => value.toFixed(0) + ' M',
-      style: { colors: '#FFFFFFBF', fontSize: '13px', fontWeight: 400 }
-    },
-    axisBorder: { show: false }
-  },
-  grid: {
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    strokeDashArray: 0,
-    xaxis: { lines: { show: false } },
-    yaxis: { lines: { show: true } },
-  },
-  markers: {
-    size: 5,
+    legend: { show: false },
     colors: ['#00FFBC', '#FF7B5F'],
-    strokeColors: '#fff',
-    strokeWidth: 2,
-    hover: { size: 7 }
-  },
-  tooltip: {
-    custom: function({series, seriesIndex, dataPointIndex, w}: any) {
-      const monthName = chartCategories.value[dataPointIndex];
-      const raw = rawData.value[dataPointIndex] as any;
-      
-      const currentYearVal = formatToMillions(raw?.current_year ?? 0, 2);
-      const previousYearVal = formatToMillions(raw?.previous_year ?? 0, 2);
-      const variancePercent = raw?.variance_percent ?? '0%';
-      
-      const currentLabel = currentLang.value === 'ar' ? 'السنة الحالية: ' : 'Current Year: ';
-      const previousLabel = currentLang.value === 'ar' ? 'السنة السابقة: ' : 'Previous Year: ';
-      const diffLabel = currentLang.value === 'ar' ? 'التغير: ' : 'Change: ';
-      
-      return '<div class="px-5 py-4 bg-[#E2F9F4] rounded-xl shadow-xl border-none" style="min-width: 200px;">' +
-        '<div class="font-bold mb-2 text-[#000] text-[16px]">' + monthName + '</div>' +
-        '<div class="text-[#333] text-[14px] mb-1">' + currentLabel + '<span class="font-bold"> AED ' + currentYearVal + 'M</span></div>' +
-        '<div class="text-[#333] text-[14px] mb-1">' + previousLabel + '<span class="font-bold"> AED ' + previousYearVal + 'M</span></div>' +
-        '<div class="text-[#333] text-[14px]">' + diffLabel + '<span class="font-bold text-[#FF582F]"> ' + variancePercent + '</span></div>' +
-        '</div>'
-    }
-  },
-  responsive: [
-    {
-      breakpoint: 640,
-      options: {
-        xaxis: {
-          labels: {
-            style: {
-              fontSize: '11px',
-              colors: '#FFFFFF'
-            }
-          }
+    dataLabels: { enabled: false },
+    stroke: {
+      curve: 'smooth',
+      width: 3
+    },
+    xaxis: {
+      categories: chartCategories.value,
+      labels: {
+        style: { colors: '#FFFFFFBF', fontSize: '13px', fontWeight: 400 }
+      },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      tooltip: { enabled: false }
+    },
+    yaxis: {
+      min: 0,
+      max: yMax.value,
+      tickAmount: 5,
+      labels: {
+        formatter: (value: number) => {
+          if (isMil) return value.toFixed(1) + ' M'
+          return formatStandardNumber(value, 0)
         },
-        yaxis: {
-          labels: {
-            formatter: (value: number) => Math.abs(value).toFixed(0) + ' M',
-            style: {
-              fontSize: '11px',
-              colors: '#FFFFFF'
-            }
-          },
-          axisBorder: {
-            show: true,
-            color: 'rgba(255, 255, 255, 0.3)',
-            width: 1,
-            offsetX: -2,
-            offsetY: -2
-          }
-        }
+        style: { colors: '#FFFFFFBF', fontSize: '13px', fontWeight: 400 }
+      },
+      axisBorder: { show: false }
+    },
+    grid: {
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      strokeDashArray: 0,
+      xaxis: { lines: { show: false } },
+      yaxis: { lines: { show: true } },
+    },
+    markers: {
+      size: 5,
+      colors: ['#00FFBC', '#FF7B5F'],
+      strokeColors: '#fff',
+      strokeWidth: 2,
+      hover: { size: 7 }
+    },
+    tooltip: {
+      custom: function({ dataPointIndex }: any) {
+        const monthName = chartCategories.value[dataPointIndex]
+        const raw = rawData.value[dataPointIndex] as any
+        
+        const currentYearVal = isMil
+          ? formatToMillions(raw?.current_year ?? 0, 2) + ' M'
+          : formatStandardNumber(raw?.current_year ?? 0, 2)
+        const previousYearVal = isMil
+          ? formatToMillions(raw?.previous_year ?? 0, 2) + ' M'
+          : formatStandardNumber(raw?.previous_year ?? 0, 2)
+        const variancePercent = raw?.variance_percent ?? '0%'
+        
+        const currentLabel = currentLang.value === 'ar' ? 'السنة الحالية: ' : 'Current Year: '
+        const previousLabel = currentLang.value === 'ar' ? 'السنة السابقة: ' : 'Previous Year: '
+        const diffLabel = currentLang.value === 'ar' ? 'التغير: ' : 'Change: '
+        const code = currencyCode.value
+        
+        return '<div class="px-5 py-4 bg-[#E2F9F4] rounded-xl shadow-xl border-none" style="min-width: 200px;">' +
+          '<div class="font-bold mb-2 text-[#000] text-[16px]">' + monthName + '</div>' +
+          '<div class="text-[#333] text-[14px] mb-1">' + currentLabel + '<span class="font-bold"> ' + code + ' ' + currentYearVal + '</span></div>' +
+          '<div class="text-[#333] text-[14px] mb-1">' + previousLabel + '<span class="font-bold"> ' + code + ' ' + previousYearVal + '</span></div>' +
+          '<div class="text-[#333] text-[14px]">' + diffLabel + '<span class="font-bold text-[#FF582F]"> ' + variancePercent + '</span></div>' +
+          '</div>'
       }
     }
-  ]
-}));
+  }
+})
 </script>
 
 <style scoped>

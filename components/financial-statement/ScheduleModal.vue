@@ -184,15 +184,21 @@
                                                                 : 'bg-primary-1150 hover:bg-emerald-100/80 border-b border-emerald-200/60'
                                                         ]">
                                                         <td class="lg:px-8 px-4 py-3.5 text-start">
-                                                            <CommonTooltip
-                                                                :text="currentLang === 'ar' ? 'عرض دفتر الأستاذ' : 'View Ledger'"
-                                                                position="top">
-                                                                <button @click="openGlReport(ledger)"
-                                                                    class="underline cursor-pointer font-medium text-left"
-                                                                    :class="isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-black/80 hover:text-emerald-800'">
-                                                                    {{ ledger.ledger_name || ledger.subgroup }}
-                                                                </button>
-                                                            </CommonTooltip>
+                                                            <template v-if="isLedgerLinkable(ledger)">
+                                                                <CommonTooltip
+                                                                    :text="currentLang === 'ar' ? 'عرض دفتر الأستاذ' : 'View Ledger'"
+                                                                    position="top">
+                                                                    <button @click="openGlReport(ledger)"
+                                                                        class="underline cursor-pointer font-medium text-left"
+                                                                        :class="isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-black/80 hover:text-emerald-800'">
+                                                                        {{ ledger.ledger_name || ledger.subgroup }}
+                                                                    </button>
+                                                                </CommonTooltip>
+                                                            </template>
+                                                            <span v-else class="font-medium text-left"
+                                                                :class="isDark ? 'text-white' : 'text-[#000]'">
+                                                                {{ ledger.ledger_name || ledger.subgroup }}
+                                                            </span>
                                                         </td>
                                                         <td class="px-4 py-3.5 text-center "
                                                             :class="isDark ? 'text-gray-200' : 'text-gray-600'">
@@ -230,13 +236,14 @@
             </div>
         </Transition>
     </Teleport>
-    <FinancialStatementLedgerDetailsModal :isOpen="isLedgerReportOpen" :loading="ledgerReportLoading"
-        :ledgerName="activeLedgerName" :data="ledgerReportData" :isDark="isDark"
-        :statement="activeTab === 'balance-sheet' ? 'bs' : 'pl'" :rangeOption="mapRangeOption(rangeOption)"
-        :customFrom="customFrom" :customTo="customTo" @close="isLedgerReportOpen = false" />
+    <FinancialStatementLedgerModal :isOpen="isLedgerReportOpen" :loading="ledgerReportLoading"
+        :ledgerName="activeLedgerName" :data="ledgerReportData" :isDark="props.isDark"
+        :statement="props.activeTab === 'balance-sheet' ? 'bs' : 'pl'" :rangeOption="mapRangeOption(props.rangeOption)"
+        :customFrom="props.customFrom" :customTo="props.customTo" @close="isLedgerReportOpen = false" />
 </template>
 <script setup>
 import { ref } from 'vue';
+import FinancialStatementLedgerModal from './LedgerModal.vue';
 const config = useRuntimeConfig();
 const baseUrl = config.public.apiBase;
 const currentLang = useState('currentLang', () => 'en')
@@ -277,12 +284,20 @@ const formatNumber = (num) => {
     if (num === null || num === undefined) return '0';
     return formatStandardNumber(num);
 };
+
 const isLedgerReportOpen = ref(false);
 const ledgerReportLoading = ref(false);
 const ledgerReportData = ref({ entries: [] });
 const activeLedgerName = ref('');
 
+const isLedgerLinkable = (ledger) => {
+    if (!ledger || ledger.isTotal) return false
+    const name = (ledger.ledger_name || ledger.subgroup || '').trim().toLowerCase()
+    return name !== 'total' && name !== 'total revenue' && name !== 'إجمالي' && name !== 'المجموع'
+}
+
 const openGlReport = async (ledger) => {
+    if (!isLedgerLinkable(ledger)) return;
     activeLedgerName.value = ledger.ledger_name || ledger.subgroup;
     isLedgerReportOpen.value = true;
     ledgerReportLoading.value = true;

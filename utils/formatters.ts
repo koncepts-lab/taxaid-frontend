@@ -95,7 +95,7 @@ export const formatStandardNumber = (value: number | string | null | undefined, 
  */
 export const formatCurrency = (
   value: number | string | null | undefined,
-  decimals: number = 0,
+  decimals: number = 2,
   fallback: string = "-"
 ): string => {
   if (value === null || value === undefined || value === "") return fallback;
@@ -107,7 +107,7 @@ export const formatCurrency = (
 
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: decimals,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: decimals,
   }).format(num);
 };
 

@@ -1,10 +1,10 @@
 <template>
-    <div class="w-full transition-all duration-500 rounded-3xl">
+    <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl">
         <div class="py-5 lg:px-8 px-4 flex justify-between items-center sticky top-0 z-30 rounded-t-3xl" 
              :class="isDark ? 'bg-[#001a14]' : 'bg-white'">
             <div>
                 <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص الإيرادات' : 'Revenue Summary' }}</p>
-                <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بالدرهم الإماراتي' : 'Values in AED' }}</p>
+                <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ valuesNote(false) }}</p>
             </div>
             <div class="flex items-center gap-3">
                 <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
@@ -18,23 +18,15 @@
         </div>
 
         <!-- Inline Table Container with overflow -->
-        <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative min-h-[200px]">
-            <!-- Loading Overlay -->
-            <div v-if="loading" class="absolute inset-0 z-20 flex items-center justify-center bg-white/50 dark:bg-black/20 backdrop-blur-[2px]">
-                <div class="flex flex-col items-center gap-3">
-                    <div class="w-10 h-10 border-4 border-[#00C9A2] border-t-transparent rounded-full animate-spin"></div>
-                    <p class="text-sm font-medium" :class="isDark ? 'text-white/80' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'جاري التحميل...' : 'Loading Data...' }}</p>
-                </div>
-            </div>
-
+        <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative min-h-[350px]">
             <!-- Error State -->
-            <div v-else-if="error" class="absolute inset-0 z-20 flex items-center justify-center bg-red-50/10 backdrop-blur-[2px]">
+            <div v-if="error" class="flex items-center justify-center bg-red-50/10 backdrop-blur-[2px] py-16">
                 <div class="flex flex-col items-center gap-3 text-center px-6">
                     <p class="text-sm font-medium text-red-600">{{ currentLang === 'ar' ? 'فشل تحميل البيانات.' : 'Failed to load data.' }}</p>
                 </div>
             </div>
 
-            <table v-if="!loading && !error" class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px] table-fixed">
+            <table v-else class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px] table-fixed">
                 <colgroup>
                     <col style="width: 28%;" />
                     <col style="width: 15%;" />
@@ -51,7 +43,6 @@
                     <th :class="isCompressed ? 'px-4' : 'px-6'" class="py-5 font-medium text-right rtl:text-left text-[14px]">
                         <div class="flex items-center justify-end rtl:justify-start gap-2">
                             {{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}
-                          
                         </div>
                     </th>
                     <th :class="isCompressed ? 'px-4' : 'px-6'" class="py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }}</th>
@@ -60,7 +51,30 @@
                     <th :class="isCompressed ? 'px-4' : 'px-6'" class="py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'السنة القادمة' : 'Year to Go' }}</th>
                 </tr>
             </thead>
-            <tbody v-for="(row, i) in data" :key="i"> 
+            <tbody>
+                <template v-if="loading">
+                    <tr v-for="n in 6" :key="'sum-sk-' + n" class="border-b animate-pulse" :class="isDark ? 'border-white/5' : 'border-[#F2F2F2]'">
+                        <td :class="isCompressed ? 'px-8 py-4' : 'px-8 py-5'">
+                            <div class="h-[14px] rounded" :class="[isDark ? 'bg-white/10' : 'bg-gray-200', n % 2 ? 'w-40' : 'w-56']"></div>
+                        </td>
+                        <td v-for="c in 3" :key="c" :class="isCompressed ? 'px-4 py-4' : 'px-6 py-5'" class="text-right rtl:text-left">
+                            <div class="h-[14px] w-20 rounded inline-block" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                        </td>
+                        <td :class="isCompressed ? 'px-4 py-4' : 'px-6 py-5'" class="text-center">
+                            <div class="h-[26px] w-16 rounded-full inline-block" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                        </td>
+                        <td :class="isCompressed ? 'px-4 py-4' : 'px-6 py-5'" class="text-center">
+                            <div class="h-[28px] w-14 rounded-full inline-block" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                        </td>
+                    </tr>
+                </template>
+                <tr v-else-if="!data || !data.length">
+                    <td colspan="6" class="px-8 py-16 text-center text-[14px]" :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                        {{ currentLang === 'ar' ? 'لا توجد بيانات متاحة' : 'No data available' }}
+                    </td>
+                </tr>
+            </tbody>
+            <tbody v-if="!loading" v-for="(row, i) in data" :key="i"> 
                     <!-- Parent Row -->
                     <tr :class="[
                         row.isSummary
@@ -155,14 +169,12 @@
                                                 'text-[14px] font-medium transition-all duration-500'
                                             ]">
                             <td :class="[isCompressed ? 'px-8 py-4' : 'px-8 py-5']">
-                                <div class="relative inline-block group ltr:pl-4 rtl:pr-4">
-                                    <!-- Tooltip -->
+                                <div v-if="isLedgerLinkable(child)" class="relative inline-block group ltr:pl-4 rtl:pr-4">
                                     <div class="absolute top-1/2 -translate-y-1/2 ltr:left-full rtl:right-full ltr:ml-2 rtl:mr-2 pointer-events-none
                                         opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap">
                                         <div class="bg-[#013e32] text-white text-[12px] font-medium px-3 py-1.5 rounded-lg shadow-lg">
                                             {{ currentLang === 'ar' ? 'عرض دفتر الأستاذ' : 'View Ledger' }}
                                         </div>
-                                        <!-- Sharp Arrow -->
                                         <div class="absolute top-1/2 -translate-y-1/2 ltr:-left-1 rtl:-right-1 w-2 h-2 bg-[#013e32] rotate-45"></div>
                                     </div>
                                     <span class="underline underline-offset-4 cursor-pointer font-medium"
@@ -171,6 +183,9 @@
                                         {{ currentLang === 'ar' ? child.labelAr : child.label }}
                                     </span>
                                 </div>
+                                <span v-else class="ltr:pl-4 rtl:pr-4 font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">
+                                    {{ currentLang === 'ar' ? child.labelAr : child.label }}
+                                </span>
                             </td>
                             <td class="text-right rtl:text-left font-medium" :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white' : 'text-[#000]']">{{ child.current }}</td>
                             <td :class="[isCompressed ? 'px-4' : 'px-6', isDark ? 'text-white/80' : 'text-[#000] opacity-80', 'text-right rtl:text-left font-medium']">{{ child.previous }}</td>
@@ -206,7 +221,7 @@
                                 {{ currentLang === 'ar' ? 'ملخص الإيرادات' : 'Revenue Summary' }}
                             </p>
                             <p class="text-[12px] mt-0.5" :class="isDark ? 'text-white/50' : 'text-[#00000096]'">
-                                {{ currentLang === 'ar' ? 'القيم بالدرهم الإماراتي' : 'Values in AED' }}
+                                {{ valuesNote(false) }}
                             </p>
                         </div>
                         <button @click="isModalOpen = false"
@@ -324,14 +339,12 @@
                                                                 'text-[14px] font-medium'
                                                             ]">
                                             <td class="px-8 py-4">
-                                                <div class="relative inline-block group pl-4">
-                                                    <!-- Tooltip -->
+                                                <div v-if="isLedgerLinkable(child)" class="relative inline-block group pl-4">
                                                     <div class="absolute top-1/2 -translate-y-1/2 ltr:left-full rtl:right-full ltr:ml-2 rtl:mr-2 pointer-events-none
                                                         opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap">
                                                         <div class="bg-[#013e32] text-white text-[12px] font-medium px-3 py-1.5 rounded-lg shadow-lg">
                                                             {{ currentLang === 'ar' ? 'عرض دفتر الأستاذ' : 'View Ledger' }}
                                                         </div>
-                                                        <!-- Sharp Arrow -->
                                                         <div class="absolute top-1/2 -translate-y-1/2 ltr:-left-1 rtl:-right-1 w-2 h-2 bg-[#013e32] rotate-45"></div>
                                                     </div>
                                                     <span class="underline underline-offset-4 cursor-pointer font-medium"
@@ -340,6 +353,9 @@
                                                         {{ currentLang === 'ar' ? child.labelAr : child.label }}
                                                     </span>
                                                 </div>
+                                                <span v-else class="pl-4 font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">
+                                                    {{ currentLang === 'ar' ? child.labelAr : child.label }}
+                                                </span>
                                             </td>
                                             <td class="px-6 py-4 text-right font-medium" :class="isDark ? 'text-white' : 'text-[#000]'">{{ child.current }}</td>
                                             <td class="px-6 py-4 text-right font-medium" :class="isDark ? 'text-white/80' : 'text-[#000] opacity-80'">{{ child.previous }}</td>
@@ -362,9 +378,10 @@
     </Teleport>
 
     <!-- ── Ledger Detail Modal ── -->
-    <RevenueLedgerModal
+    <CommonLedgerModal
         :is-open="isLedgerOpen"
         :ledger-name="selectedLedger"
+        card="revenue"
         @close="isLedgerOpen = false"
     />
 </template>
@@ -381,6 +398,7 @@ const props = defineProps({
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+const { valuesNote } = useCurrency()
 
 const isModalOpen = ref(false)
 
@@ -388,7 +406,14 @@ const isModalOpen = ref(false)
 const isLedgerOpen = ref(false)
 const selectedLedger = ref('')
 
+const isLedgerLinkable = (child) => {
+    if (!child) return false
+    const name = (child.label || child.labelAr || '').trim().toLowerCase()
+    return name !== 'total' && name !== 'total revenue' && name !== 'إجمالي' && name !== 'المجموع'
+}
+
 const openLedger = (child) => {
+    if (!isLedgerLinkable(child)) return
     selectedLedger.value = currentLang.value === 'ar' ? child.labelAr : child.label
     isLedgerOpen.value = true
 }

@@ -5,7 +5,7 @@
     <div class="flex flex-col lg:flex-row lg:justify-between items-start gap-4 lg:gap-0 mb-6 w-full z-10">
       <div class="flex flex-col">
         <h2 class="text-[16px] font-regular leading-tight" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'الإيرادات - أفضل 10 عملاء حسب القيمة' : 'Revenue - Top 10 Customers by value' }}</h2>
-        <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+        <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ valuesNote(unit === 'millions') }}</p>
       </div>
       <div class="flex flex-row items-center gap-4 lg:gap-6 w-full lg:w-auto justify-between lg:justify-end">
         <div class="flex items-center gap-4 lg:gap-6 text-[12px] font-regular">
@@ -18,7 +18,8 @@
             <span :class="isDark ? 'text-white/60' : 'text-[#0000005C]'" class="whitespace-normal text-left">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
           </div>
         </div>
-        <div class="flex items-center gap-4 lg:ml-4">
+        <CommonUnitToggle :on-dark="isDark" storage-key="revenue_top_customers_unit" />
+        <div class="flex items-center gap-4 lg:ml-2">
           <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
           <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-6 h-6 cursor-pointer opacity-60 hidden lg:block" @click="isModalOpen = true" />
         </div>
@@ -27,11 +28,15 @@
 
     <!-- Chart -->
     <div class="flex-1 w-full min-h-[350px] relative">
-      <!-- Loading Overlay -->
-      <div v-if="loading" class="absolute inset-0 z-20 flex items-center justify-center bg-white/10 backdrop-blur-[2px] rounded-2xl">
-        <div class="flex flex-col items-center gap-3">
-          <div class="w-10 h-10 border-4 border-[#04C18F] border-t-transparent rounded-full animate-spin"></div>
-          <p class="text-sm font-medium" :class="isDark ? 'text-white/80' : 'text-[#013E32]'">{{ currentLang === 'ar' ? 'جاري التحميل...' : 'Loading Data...' }}</p>
+      <!-- Loading Skeleton (10 Columns + Dual Axis Layout) -->
+      <div v-if="loading" class="w-full h-full min-h-[350px] flex flex-col justify-between py-4 animate-pulse">
+        <div class="flex items-end justify-between gap-2 h-[260px] w-full px-2 border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+          <div v-for="b in 10" :key="'cust-bar-' + b" class="flex-1 flex flex-col items-center justify-end h-full">
+            <div class="w-full max-w-[28px] rounded-t" :style="{ height: (20 + ((11 - b) * 7.5)) + '%' }" :class="isDark ? 'bg-[#04C18F]/25' : 'bg-[#04C18F]/20'"></div>
+          </div>
+        </div>
+        <div class="flex justify-between px-2 pt-2">
+          <div v-for="b in 10" :key="'cust-lbl-' + b" class="h-3 w-4 rounded" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
         </div>
       </div>
 
@@ -64,6 +69,7 @@
 
       <ClientOnly v-else-if="!loading && !error">
         <apexchart
+          :key="chartKey"
           type="line"
           height="100%"
           :options="chartOptions"
@@ -73,11 +79,16 @@
     </div>
 
     <!-- Bottom Legend Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-y-3 gap-x-4 mt-0">
-      <div v-for="item in customers" :key="item.id" class="flex items-center gap-1.5 whitespace-nowrap overflow-hidden">
-        <span class="text-[12px] font-regular" :style="{ color: item.color }">{{ item.id }}</span>
-        <span class="text-[12px] font-regular truncate" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">- {{ item.displayName }}</span>
-      </div>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-y-3 gap-x-4 mt-0" :class="{ 'animate-pulse': loading }">
+      <template v-if="loading">
+        <div v-for="leg in 10" :key="'cust-leg-sk-' + leg" class="h-4 rounded" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+      </template>
+      <template v-else>
+        <div v-for="item in customers" :key="item.id" class="flex items-center gap-1.5 whitespace-nowrap overflow-hidden">
+          <span class="text-[12px] font-regular" :style="{ color: item.color }">{{ item.id }}</span>
+          <span class="text-[12px] font-regular truncate" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">- {{ item.displayName }}</span>
+        </div>
+      </template>
     </div>
 
     <!-- Modal -->
@@ -88,7 +99,7 @@
           <div class="flex justify-between items-start py-6 px-8 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
             <div class="flex flex-col">
               <h2 class="text-lg font-regular leading-tight" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ currentLang === 'ar' ? 'الإيرادات - أفضل 10 عملاء حسب القيمة' : 'Revenue - Top 10 Customers by value' }}</h2>
-              <p class="text-xs font-regular mt-1" :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+              <p class="text-xs font-regular mt-1" :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ valuesNote(unit === 'millions') }}</p>
             </div>
             <div class="flex items-center gap-6">
               <div class="flex items-center gap-4 text-[12px] font-regular">
@@ -101,7 +112,8 @@
                   <span :class="isDark ? 'text-white/60' : 'text-[#0000005C]'">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
                 </div>
               </div>
-              <div class="flex items-center gap-4">
+              <CommonUnitToggle :on-dark="isDark" storage-key="revenue_top_customers_unit" />
+              <div class="flex items-center gap-4 ml-2">
                 <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info Icon" class="w-5 h-5 cursor-pointer hover:opacity-100" />
                 <button @click="isModalOpen = false" class="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                   <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5" :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
@@ -146,6 +158,7 @@
 
             <ClientOnly v-else-if="!loading && !error">
               <apexchart
+                :key="chartKey + '-modal'"
                 type="line"
                 height="100%"
                 :options="chartOptions"
@@ -174,10 +187,35 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
 
+const { code: currencyCode, valuesNote } = useCurrency()
+const { unit } = useChartHelper('revenue_top_customers_unit')
+
+const whole = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 })
+const million = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 })
+
+const fmt = (value: any) => {
+  const v = Number(value) || 0
+  if (unit.value === 'millions') {
+    return `${million.format(v / 1_000_000)}M`
+  }
+  return whole.format(v)
+}
+
 const { loading, error, topCustomersData, fetchAll: fetchTopCustomers } = useRevenue()
 
 const customersData = computed(() => topCustomersData.value?.customers ?? [])
 const cumulativePct = computed(() => topCustomersData.value?.cumulative ?? [])
+
+const rawAmounts = computed(() => {
+  return customersData.value.map((c: any) => {
+    if (c.rawAmount !== undefined) return c.rawAmount
+    return (Number(c.value) || 0) * 1_000_000
+  })
+})
+
+const peak = computed(() => Math.max(0, ...rawAmounts.value))
+const minVisible = computed(() => peak.value * 0.025)
+const plot = (value: number) => (value > 0 && value < minVisible.value ? minVisible.value : value)
 
 const customers = computed(() => {
   return customersData.value.map((c: any) => ({
@@ -190,7 +228,7 @@ const series = computed(() => [
   {
     name: 'Revenue',
     type: 'column',
-    data: customersData.value.map((c: any) => c.value)
+    data: rawAmounts.value.map(plot)
   },
   {
     name: 'Cumulative %',
@@ -198,6 +236,26 @@ const series = computed(() => [
     data: cumulativePct.value
   }
 ])
+
+const axis = computed(() => {
+  const top = peak.value * 1.15
+  if (top <= 0) return { max: 5, ticks: 5 }
+
+  const rough = top / 5
+  const power = Math.pow(10, Math.floor(Math.log10(rough)))
+  const step = [1, 1.5, 2, 2.5, 3, 4, 5, 10].map(m => m * power).find(s => s >= rough) ?? 10 * power
+  const max = Math.ceil(top / step) * step
+
+  return { max, ticks: Math.max(2, Math.round(max / step)) }
+})
+
+const chartKey = computed(() => JSON.stringify([
+  unit.value,
+  currentLang.value,
+  customersData.value.map((c: any) => c.id),
+  rawAmounts.value,
+  cumulativePct.value
+]))
 
 const chartOptions = computed(() => ({
   chart: {
@@ -221,16 +279,21 @@ const chartOptions = computed(() => ({
   dataLabels: {
     enabled: true,
     enabledOnSeries: [0],
-    offsetY: -25,
+    offsetY: -22,
     style: {
-      fontSize: '12px',
+      fontSize: '11px',
       colors: [isDark.value ? '#00E0A5CF' : '#013E32CF'],
       fontWeight: 500
     },
     background: {
       enabled: false,
     },
-    formatter: (val) => val.toString().replace(',', '.') + "M"
+    formatter: (val: any, opts: any) => {
+      const dIdx = opts?.dataPointIndex ?? 0
+      const raw = rawAmounts.value[dIdx] ?? val
+      if (raw === 0) return '0'
+      return fmt(raw)
+    }
   },
   markers: {
     size: 5,
@@ -253,9 +316,9 @@ const chartOptions = computed(() => ({
   },
   yaxis: [
     {
-      // Dynamically set max based on data, without enforcing min: 0 to allow negative values
-      max: customersData.value.length ? Math.ceil(Math.max(...customersData.value.map((c: any) => c.value), 1)) : 1,
-      tickAmount: 5,
+      min: 0,
+      max: axis.value.max,
+      tickAmount: axis.value.ticks,
       axisBorder: {
         show: true,
         color: isDark.value ? '#F2F2F20F' : '#f1f1f1',
@@ -266,7 +329,7 @@ const chartOptions = computed(() => ({
           fontSize: '12px',
           colors: isDark.value ? '#FFFFFF80' : '#8C8C8C'
         },
-        formatter: (val) => val === 0 ? "0" : val + "M"
+        formatter: (val: any) => val === 0 ? "0" : fmt(val)
       }
     },
     {
@@ -279,7 +342,7 @@ const chartOptions = computed(() => ({
           fontSize: '12px',
           colors: isDark.value ? '#FFFFFF80' : '#8C8C8C'
         },
-        formatter: (val) => val + "%"
+        formatter: (val: any) => val + "%"
       }
     }
   ],
@@ -292,19 +355,18 @@ const chartOptions = computed(() => ({
     shared: true,
     theme: isDark.value ? 'dark' : 'light',
     intersect: false,
-    custom: function({ series, seriesIndex, dataPointIndex, w }) {
+    custom: function({ series, seriesIndex, dataPointIndex, w }: any) {
       const customer = customersData.value[dataPointIndex]
       if (!customer) return ''
       
       const customerName = currentLang.value === 'ar' ? customer.nameAr : customer.name
-      const rev = series[0][dataPointIndex]
+      const raw = rawAmounts.value[dataPointIndex] ?? 0
       const cum = series[1][dataPointIndex]
       
       const revLabel = currentLang.value === 'ar' ? 'الإيرادات' : 'Revenue'
       const contLabel = currentLang.value === 'ar' ? 'المساهمات' : 'Contributions'
 
-      // Using the global formatInMillions utility for the tooltip
-      const formattedRev = formatInMillions(customer.value * 1000000, { showCurrency: false, suffix: 'M' })
+      const formattedRev = fmt(raw)
 
       return `
         <div class="custom-tooltip shadow-2xl">
@@ -312,7 +374,7 @@ const chartOptions = computed(() => ({
           <div class="tooltip-body">
             <div class="tooltip-row">
               <span class="label">${revLabel}:</span>
-              <span class="value">AED ${formattedRev}</span>
+              <span class="value">${currencyCode.value} ${formattedRev}</span>
             </div>
             <div class="tooltip-row">
               <span class="label">${contLabel}:</span>

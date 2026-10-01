@@ -9,7 +9,7 @@
       </p>
       <div class="flex gap-4 items-center">
         <p class="text-[12px] font-normal" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-          {{ valuesNote() }}
+          {{ valuesNote(false) }}
         </p>
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon"
           class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 max-lg:hidden" @click="isModalOpen = true" />
@@ -19,25 +19,25 @@
     <table class="w-full text-left rtl:text-right border-collapse ">
       <thead class="text-white sticky top-0 " :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
         <tr>
-          <th class="px-8 py-5 font-medium text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }} <CommonInfoTooltip tip="costCenterSummary.particulars" light /></span></th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'الإيرادات' :
-            'Revenue' }} <CommonInfoTooltip tip="costCenterSummary.revenue" light /></span></th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ?
-            'تكلف المبيعات' : 'COGS' }} <CommonInfoTooltip tip="costCenterSummary.cogs" light /></span></th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ?
-            'المصروفات غير المباشرة' : 'Indirect Exp.' }} <CommonInfoTooltip tip="costCenterSummary.indirect" light /></span></th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'الربح' :
+          <th class="px-8 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }} <CommonInfoTooltip tip="costCenterSummary.particulars" light /></span></th>
+          <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ? 'الإيرادات' :
+            'Revenue' }} <CommonInfoTooltip tip="costCenterSummary.revenue" light align="right" /></span></th>
+          <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ?
+            'تكلفة المبيعات' : 'COGS' }} <CommonInfoTooltip tip="costCenterSummary.cogs" light align="right" /></span></th>
+          <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ?
+            'المصروفات غير المباشرة' : 'Indirect Exp.' }} <CommonInfoTooltip tip="costCenterSummary.indirect" light align="right" /></span></th>
+          <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ? 'الربح' :
             'Profit' }} <CommonInfoTooltip tip="costCenterSummary.profit" light align="right" /></span></th>
-          <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'هامش الربح'
+          <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ? 'هامش الربح'
             : 'Profit Margin' }} <CommonInfoTooltip tip="costCenterSummary.margin" light align="right" /></span></th>
         </tr>
       </thead>
       <tbody>
         <template v-if="isLoading">
           <tr v-for="n in 6" :key="'sk' + n" class="border-b animate-pulse" :class="isDark ? 'border-white/5' : 'border-[#F2F2F2]'">
-            <td class="px-8 py-5"><div class="h-[14px] rounded" :class="[isDark ? 'bg-white/10' : 'bg-gray-200', n % 2 ? 'w-40' : 'w-56']"></div></td>
-            <td v-for="c in 4" :key="c" class="px-6 py-5"><div class="h-[14px] w-16 rounded" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
-            <td class="px-6 py-5"><div class="h-[26px] w-16 rounded-full" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+            <td class="px-8 py-5 text-left rtl:text-right"><div class="h-[14px] rounded" :class="[isDark ? 'bg-white/10' : 'bg-gray-200', n % 2 ? 'w-40' : 'w-56']"></div></td>
+            <td v-for="c in 4" :key="c" class="px-6 py-5 text-right rtl:text-left"><div class="h-[14px] w-20 ml-auto rtl:ml-0 rtl:mr-auto rounded" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+            <td class="px-6 py-5 text-right rtl:text-left"><div class="h-[26px] w-16 ml-auto rtl:ml-0 rtl:mr-auto rounded-full" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
           </tr>
         </template>
         <tr v-else-if="!tableData.length">
@@ -49,20 +49,20 @@
           <tr class="transition-all duration-500 border-b cursor-pointer" @mouseenter="onRowEnter"
             @mouseleave="onRowLeave" @click="goToDetail(item)"
             :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50'">
-            <td class="px-8 py-5">
+            <td class="px-8 py-5 text-left rtl:text-right">
               <span class="font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang ===
                 'ar' ? item.labelAr : item.label }}</span>
             </td>
-            <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+            <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
               :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.revenue }}</td>
-            <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+            <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
               :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.cogs }}</td>
-            <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+            <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
               :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.indirectExp }}</td>
-            <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+            <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
               :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.profit }}</td>
-            <td class="px-6 py-5 text-left rtl:text-right">
-              <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;" :class="item.margin >= 0
+            <td class="px-6 py-5 text-right rtl:text-left">
+              <span class="inline-block px-3 py-1 text-[13px] font-medium tabular-nums" style="border-radius: 19px;" :class="item.margin >= 0
                 ? (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]')
                 : (isDark ? 'bg-[#FB7554]/20 text-[#FF582F]' : 'bg-[#FB75544D] text-[#FF582F]')">
                 {{ item.margin >= 0 ? '+' : '' }}{{ item.margin }}%
@@ -73,18 +73,18 @@
       </tbody>
       <tfoot>
         <tr v-if="summaryTotal && !isLoading" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
-          <td class="px-8 py-5 font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
+          <td class="px-8 py-5 font-normal text-[14px] text-left rtl:text-right" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
             currentLang === 'ar' ? summaryTotal.labelAr : summaryTotal.label }}</td>
-          <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+          <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
             :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.revenue }}</td>
-          <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+          <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
             :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.cogs }}</td>
-          <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+          <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
             :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.indirectExp }}</td>
-          <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+          <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
             :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.profit }}</td>
-          <td class="px-6 py-5 text-left rtl:text-right">
-            <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;"
+          <td class="px-6 py-5 text-right rtl:text-left">
+            <span class="inline-block px-3 py-1 text-[13px] font-medium tabular-nums" style="border-radius: 19px;"
               :class="summaryTotal.margin >= 0 ? (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]') : (isDark ? 'bg-[#FB7554]/20 text-[#FF582F]' : 'bg-[#FB75544D] text-[#FF582F]')">
               {{ summaryTotal.margin >= 0 ? '+' : '' }}{{ summaryTotal.margin }}%
             </span>
@@ -107,7 +107,7 @@
                 <CommonInfoTooltip tip="costCenterSummary.table" class="ml-2 rtl:ml-0 rtl:mr-2" />
               </p>
               <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-                {{ valuesNote() }}
+                {{ valuesNote(false) }}
               </p>
             </div>
             <button @click="isModalOpen = false"
@@ -121,17 +121,17 @@
             <table class="w-full text-left rtl:text-right border-collapse relative">
               <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
                 <tr>
-                  <th class="px-8 py-5 font-medium text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }} <CommonInfoTooltip tip="costCenterSummary.particulars" light /></span></th>
-                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ?
-                    'الإيرادات' : 'Revenue' }} <CommonInfoTooltip tip="costCenterSummary.revenue" light /></span></th>
-                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ?
-                    'تكلفة المبيعات' : 'COGS' }} <CommonInfoTooltip tip="costCenterSummary.cogs" light /></span></th>
-                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ?
-                    'المصروفات غير المباشرة' : 'Indirect Exp.' }} <CommonInfoTooltip tip="costCenterSummary.indirect" light /></span></th>
-                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ?
+                  <th class="px-8 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }} <CommonInfoTooltip tip="costCenterSummary.particulars" light /></span></th>
+                  <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ?
+                    'الإيرادات' : 'Revenue' }} <CommonInfoTooltip tip="costCenterSummary.revenue" light align="right" /></span></th>
+                  <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ?
+                    'تكلفة المبيعات' : 'COGS' }} <CommonInfoTooltip tip="costCenterSummary.cogs" light align="right" /></span></th>
+                  <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ?
+                    'المصروفات غير المباشرة' : 'Indirect Exp.' }} <CommonInfoTooltip tip="costCenterSummary.indirect" light align="right" /></span></th>
+                  <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ?
                     'الربح' :
                     'Profit' }} <CommonInfoTooltip tip="costCenterSummary.profit" light align="right" /></span></th>
-                  <th class="px-6 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ?
+                  <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ?
                     'هامش الربح' : 'Profit Margin' }} <CommonInfoTooltip tip="costCenterSummary.margin" light align="right" /></span></th>
                 </tr>
               </thead>
@@ -139,20 +139,20 @@
                 <template v-for="(item, idx) in tableData" :key="'modal-' + idx">
                   <tr class="transition-all duration-500 border-b border-[#F2F2F2] hover:bg-gray-50 cursor-pointer"
                     @mouseenter="onRowEnter" @mouseleave="onRowLeave" @click="goToDetail(item)">
-                    <td class="px-8 py-5">
+                    <td class="px-8 py-5 text-left rtl:text-right">
                       <span class="font-normal text-[14px] text-[#333333]">{{ currentLang === 'ar' ? item.labelAr :
                         item.label }}</span>
                     </td>
-                    <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px] text-[#1A1A1A]">{{
+                    <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] text-[#1A1A1A] tabular-nums">{{
                       item.revenue }}</td>
-                    <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px] text-[#1A1A1A]">{{ item.cogs
+                    <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] text-[#1A1A1A] tabular-nums">{{ item.cogs
                       }}</td>
-                    <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px] text-[#1A1A1A]">{{
+                    <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] text-[#1A1A1A] tabular-nums">{{
                       item.indirectExp }}</td>
-                    <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px] text-[#1A1A1A]">{{ item.profit
+                    <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] text-[#1A1A1A] tabular-nums">{{ item.profit
                       }}</td>
-                    <td class="px-6 py-5 text-left rtl:text-right">
-                      <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;"
+                    <td class="px-6 py-5 text-right rtl:text-left">
+                      <span class="inline-block px-3 py-1 text-[13px] font-medium tabular-nums" style="border-radius: 19px;"
                         :class="item.margin >= 0 ? 'bg-[#6EFFA04D] text-[#008864]' : 'bg-[#FB75544D] text-[#FF582F]'">
                         {{ item.margin >= 0 ? '+' : '' }}{{ item.margin }}%
                       </span>
@@ -163,18 +163,18 @@
               <tfoot class="sticky bottom-0 z-10">
                 <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'"
                   class="transition-all duration-500">
-                  <td class="px-8 py-5 font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
+                  <td class="px-8 py-5 font-normal text-[14px] text-left rtl:text-right" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
                     currentLang === 'ar' ? summaryTotal.labelAr : summaryTotal.label }}</td>
-                  <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
                     :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.revenue }}</td>
-                  <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
                     :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.cogs }}</td>
-                  <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
                     :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.indirectExp }}</td>
-                  <td class="px-6 py-5 text-left rtl:text-right font-medium text-[14px]"
+                  <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
                     :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ summaryTotal.profit }}</td>
-                  <td class="px-6 py-5 text-left rtl:text-right">
-                    <span class="inline-block px-3 py-1 text-[13px] font-medium" style="border-radius: 19px;"
+                  <td class="px-6 py-5 text-right rtl:text-left">
+                    <span class="inline-block px-3 py-1 text-[13px] font-medium tabular-nums" style="border-radius: 19px;"
                       :class="summaryTotal.margin >= 0 ? (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]') : (isDark ? 'bg-[#FB7554]/20 text-[#FF582F]' : 'bg-[#FB75544D] text-[#FF582F]')">
                       {{ summaryTotal.margin >= 0 ? '+' : '' }}{{ summaryTotal.margin }}%
                     </span>
@@ -206,6 +206,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { formatStandardNumber, formatCurrency } from '~/utils/formatters'
 
 const { isDark } = useTheme()
 const { valuesNote } = useCurrency()
@@ -216,7 +217,6 @@ const isModalOpen = ref(false)
 const hoveredRowRect = ref(null)
 const isLoading = ref(true)
 
-// Reactive references for the data
 const tableData = ref([])
 const summaryTotal = ref(null)
 
@@ -237,18 +237,16 @@ const goToDetail = (item) => {
   })
 }
 
-// Mapping Function to clean and format API data
-// Values are shown exactly as the API sends them; COGS is "-" only when the API has no COGS for the row.
 const mapApiData = (item) => {
   return {
     id: item.id,
     label: item.cost_center,
     labelAr: item.cost_center,
-    revenue: item.revenue,
-    cogs: item.direct_expenses ?? '-',
-    indirectExp: item.indirect_expenses,
-    profit: item.profit,
-    margin: parseFloat(String(item.profit_margin).replace('%', ''))
+    revenue: formatCurrency(item.revenue, 2, '-'),
+    cogs: item.direct_expenses != null && item.direct_expenses !== '' && item.direct_expenses !== '-' ? formatCurrency(item.direct_expenses, 2, '-') : '-',
+    indirectExp: formatCurrency(item.indirect_expenses, 2, '-'),
+    profit: formatCurrency(item.profit, 2, '-'),
+    margin: isNaN(parseFloat(String(item.profit_margin).replace('%', ''))) ? 0 : parseFloat(String(item.profit_margin).replace('%', ''))
   }
 }
 

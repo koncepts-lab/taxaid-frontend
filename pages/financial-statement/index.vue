@@ -49,8 +49,7 @@
                         </button>
                     </div>
 
-                    <!-- Table Container -->
-                    <div class="rounded-3xl shadow-sm border border-transparent mb-10"
+                    <div class="rounded-3xl shadow-sm border border-transparent mb-10 overflow-hidden"
                         :class="isDark ? 'bg-[#00141050]' : 'bg-white'">
                         <FinancialStatementSummary :data="activeTabData.rows" :is-compressed="isChatOpen"
                             :filters="filters" :active-tab="activeTab" @ask-akeel="handleInfo"
