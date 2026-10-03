@@ -9,17 +9,11 @@ export interface ExportResult {
 }
 
 export const useExport = () => {
-  const config = useRuntimeConfig()
-  const token = useCookie('auth_token')
   const currentLang = useState('currentLang', () => 'en')
 
   const exporting = useState<boolean>('export_busy', () => false)
   const exportError = useState<string | null>('export_error', () => null)
   const progress = useState<ExportProgress>('export_progress', () => ({ stage: 'idle', percent: null }))
-
-  const authHeaders = () => ({
-    ...(token.value ? { Authorization: `Bearer ${token.value}` } : {}),
-  })
 
   const buildQuery = (params: Record<string, any>) => {
     const query = new URLSearchParams({ type: 'xlsx', lang: currentLang.value === 'ar' ? 'ar' : 'en' })
@@ -50,11 +44,9 @@ export const useExport = () => {
     URL.revokeObjectURL(url)
   }
 
-  const readFailure = async (response: Response): Promise<string> => {
-    try {
-      const body = await response.json()
-      if (body?.message) return body.message
-    } catch {}
+  const readFailure = (response: Response): string => {
+    const body = (response as any)._data
+    if (body?.message) return body.message
 
     return currentLang.value === 'ar' ? 'فشل التصدير. حاول مرة أخرى.' : 'Export failed. Please try again.'
   }
@@ -67,38 +59,20 @@ export const useExport = () => {
     progress.value = { stage: 'preparing', percent: null }
 
     try {
-      const response = await fetch(`${config.public.apiBase}/${path}?${buildQuery(params)}`, {
-        headers: { Accept: '*/*', ...authHeaders() },
-      })
+      const response = await useApi(`/${path}?${buildQuery(params)}`, {
+        raw: true, headers: { Accept: '*/*' },
+      }) as Response
 
       if (!response.ok) {
-        const message = await readFailure(response)
+        const message = readFailure(response)
         if (showError) exportError.value = message
         return { ok: false, message }
       }
 
-      const total = Number(response.headers.get('content-length')) || 0
       const filename = filenameFrom(response.headers.get('content-disposition')) ?? fallbackName
-      progress.value = { stage: 'downloading', percent: total ? 0 : null }
+      progress.value = { stage: 'downloading', percent: 100 }
 
-      const reader = response.body?.getReader()
-      if (!reader) {
-        saveBlob(await response.blob(), filename)
-        return { ok: true }
-      }
-
-      const chunks: Uint8Array[] = []
-      let received = 0
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        chunks.push(value)
-        received += value.length
-        if (total) progress.value = { stage: 'downloading', percent: Math.min(100, Math.round((received / total) * 100)) }
-      }
-
-      saveBlob(new Blob(chunks, { type: response.headers.get('content-type') ?? 'application/octet-stream' }), filename)
+      saveBlob((response as any)._data as Blob, filename)
       return { ok: true }
     } catch {
       const message = currentLang.value === 'ar' ? 'تعذر الاتصال بالخادم.' : 'Could not reach the server.'
@@ -120,11 +94,7 @@ export const useExport = () => {
     download(`exports/${card}/${part}`, params, `TaxAid_${card}_${part}.xlsx`, options.showError ?? true)
 
   const fetchExportOptions = async (card: string) => {
-    const response = await $fetch<any>(`exports/${card}/options`, {
-      baseURL: config.public.apiBase,
-      query: { lang: currentLang.value === 'ar' ? 'ar' : 'en' },
-      headers: { Accept: 'application/json', ...authHeaders() },
-    })
+    const response = await useApi(`/exports/${card}/options?lang=${currentLang.value === 'ar' ? 'ar' : 'en'}`) as any
 
     return response.data as {
       row_limit: number

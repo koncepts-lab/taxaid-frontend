@@ -241,12 +241,14 @@ const bodyRows = computed(() => {
     const s = statement.value
     if (!s) return []
     const rows = []
-    rows.push({
-        date: s.from ? formatDate(s.from) : '',
-        particulars: `${s.opening_balance >= 0 ? 'By' : 'To'} ${currentLang.value === 'ar' ? 'الرصيد الافتتاحي' : 'Opening Balance'}`,
-        debit: s.opening_balance < 0 ? fmt(Math.abs(s.opening_balance)) : '-',
-        credit: s.opening_balance >= 0 ? fmt(s.opening_balance) : '-',
-    })
+    if (s.opening_balance !== null && s.opening_balance !== undefined) {
+        rows.push({
+            date: s.from ? formatDate(s.from) : '',
+            particulars: `${s.opening_balance >= 0 ? 'By' : 'To'} ${currentLang.value === 'ar' ? 'الرصيد الافتتاحي' : 'Opening Balance'}`,
+            debit: s.opening_balance < 0 ? fmt(Math.abs(s.opening_balance)) : '-',
+            credit: s.opening_balance >= 0 ? fmt(s.opening_balance) : '-',
+        })
+    }
     for (const e of (s.entries || [])) {
         rows.push({
             date: formatDate(e.date),
@@ -261,8 +263,9 @@ const bodyRows = computed(() => {
 const totals = computed(() => {
     const s = statement.value
     if (!s) return { debit: '-', credit: '-', closingDebit: '-', closingCredit: '-', finalDebit: '-', finalCredit: '-' }
-    const openingDr = s.opening_balance < 0 ? Math.abs(s.opening_balance) : 0
-    const openingCr = s.opening_balance >= 0 ? s.opening_balance : 0
+    const opening   = s.opening_balance ?? 0
+    const openingDr = opening < 0 ? Math.abs(opening) : 0
+    const openingCr = opening >= 0 ? opening : 0
     const grandDr   = Number(s.total_debit || 0) + openingDr
     const grandCr   = Number(s.total_credit || 0) + openingCr
     const final     = Math.max(grandDr, grandCr)

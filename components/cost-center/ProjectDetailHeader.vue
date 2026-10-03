@@ -52,7 +52,7 @@
                                 class="absolute left-0 rtl:right-0 mt-2 border rounded-lg shadow-lg z-[100] py-2 px-2"
                                 :class="isDark ? 'bg-[#002E26] border-[#03D8B0]' : 'bg-white border-[#03D8B0]'">
                                 <VDatePicker v-model="pickedDate" :is-dark="isDark" :locale="currentLang === 'ar' ? 'ar' : 'en'"
-                                    color="primary" borderless :max-date="maxDate" :initial-page="initialPage"
+                                    color="teal" borderless :max-date="maxDate" :initial-page="initialPage"
                                     @update:model-value="pickDate" />
                             </div>
                         </Transition>

@@ -61,7 +61,7 @@
                                         <div class="flex gap-4 justify-center">
                                             <div class="p-3" :class="isDark ? ' border-primary-100' : ''">
                                                 <VDatePicker v-model="range.start" :is-dark="isDark"
-                                                    :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary"
+                                                    :locale="currentLang === 'ar' ? 'ar' : 'en'" color="teal"
                                                     borderless :max-date="range.end || today"
                                                     :initial-page="prevMonthPage"
                                                     @update:model-value="emitDateChange" />
@@ -69,7 +69,7 @@
 
                                             <div class="p-3">
                                                 <VDatePicker v-model="range.end" :is-dark="isDark"
-                                                    :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary"
+                                                    :locale="currentLang === 'ar' ? 'ar' : 'en'" color="teal"
                                                     borderless :min-date="range.start || undefined" :max-date="today"
                                                     :initial-page="currMonthPage"
                                                     @update:model-value="emitDateChange" />

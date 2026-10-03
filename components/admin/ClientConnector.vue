@@ -6,6 +6,7 @@
       <div>
         <h2 class="text-[16px] font-medium text-[#101828]">Last Sync</h2>
         <p class="text-[14px] mt-0.5 text-[#4A5565]">{{ lastSyncText }}</p>
+        <p v-if="schedule?.device_name" class="text-[13px] mt-0.5 text-[#4A5565]">Device: {{ schedule.device_name }}</p>
         <p v-if="schedule?.last_status_reason" class="text-[13px] mt-0.5 text-amber-600">{{ schedule.last_status_reason }}</p>
       </div>
       <div class="flex items-center gap-3">

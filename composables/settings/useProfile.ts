@@ -62,13 +62,8 @@ const _error      = ref<string | null>(null)
 const _pictureUrl = ref<string | null>(null)
 
 async function _loadPictureBlobUrl(): Promise<void> {
-  const config = useRuntimeConfig()
-  const token  = useCookie('auth_token')
   const get = (cache: RequestCache) =>
-    fetch(`${config.public.apiBase}/profile/picture`, {
-      headers: { Authorization: `Bearer ${token.value}` },
-      cache,
-    })
+    useApi('/profile/picture', { raw: true, cache }) as Promise<Response>
   const isImage = (b: Blob | null): b is Blob => !!b && b.size > 0 && b.type.startsWith('image/')
 
   try {
@@ -81,11 +76,11 @@ async function _loadPictureBlobUrl(): Promise<void> {
       return
     }
 
-    let blob = res.ok ? await res.blob() : null
+    let blob = res.ok ? (res as any)._data as Blob : null
 
     if (!isImage(blob)) {
       res  = await get('reload')
-      blob = res.ok ? await res.blob() : null
+      blob = res.ok ? (res as any)._data as Blob : null
     }
 
     if (isImage(blob)) {

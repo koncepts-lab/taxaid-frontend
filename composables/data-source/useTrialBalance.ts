@@ -389,17 +389,23 @@ export function useTrialBalance() {
   }
 
   const downloadMappingTemplate = async () => {
-    const config = useRuntimeConfig()
-    const token  = useCookie('auth_token')
-    const res = await fetch(`${config.public.apiBase}/ledgers/mapping-import/template`, {
-      headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
-    })
-    if (!res.ok) throw new Error('Failed to download template')
-    const blob      = await res.blob()
+    const blob = await useApi('/ledgers/mapping-import/template', { responseType: 'blob' }) as Blob
     const objectUrl = URL.createObjectURL(blob)
     const anchor    = document.createElement('a')
     anchor.href     = objectUrl
     anchor.download = 'Trial_Balance_Mapping_Template.xlsx'
+    document.body.appendChild(anchor)
+    anchor.click()
+    document.body.removeChild(anchor)
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
+  }
+
+  const downloadMapping = async () => {
+    const blob = await useApi('/ledgers/mapping-export', { responseType: 'blob' }) as Blob
+    const objectUrl = URL.createObjectURL(blob)
+    const anchor    = document.createElement('a')
+    anchor.href     = objectUrl
+    anchor.download = 'Trial_Balance_Mapping.xlsx'
     document.body.appendChild(anchor)
     anchor.click()
     document.body.removeChild(anchor)
@@ -520,5 +526,6 @@ export function useTrialBalance() {
     confirmMappingImport,
     cancelMappingImport,
     downloadMappingTemplate,
+    downloadMapping,
   }
 }

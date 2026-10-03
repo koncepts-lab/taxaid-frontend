@@ -341,9 +341,10 @@
         </div>
 
         <!-- Data Integrity Error Modal -->
+        <Teleport to="body">
         <Transition name="fade">
             <div v-if="isIntegrityModalOpen"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                class="fixed inset-0 z-[1200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
                 <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl relative p-8">
                     <button @click="isIntegrityModalOpen = false"
                         class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors">
@@ -400,11 +401,13 @@
                 </div>
             </div>
         </Transition>
+        </Teleport>
 
         <!-- Detailed Report Modal -->
+        <Teleport to="body">
         <Transition name="fade">
             <div v-if="isReportModalOpen"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                class="fixed inset-0 z-[1200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
                 <div class="bg-white rounded-2xl w-full max-w-7xl shadow-2xl flex flex-col relative p-8 max-h-[78vh]">
 
                     <button @click="isReportModalOpen = false"
@@ -414,9 +417,22 @@
                         </svg>
                     </button>
 
-                    <h3 class="text-2xl font-semibold text-gray-900 mb-4 px-2">
-                        {{ currentLang === 'ar' ? 'ميزان المراجعة - تقرير مفصل' : 'Trial Balance - Detailed Report' }}
-                    </h3>
+                    <div class="flex items-center justify-between gap-4 mb-4 px-2 pr-14">
+                        <h3 class="text-2xl font-semibold text-gray-900">
+                            {{ currentLang === 'ar' ? 'ميزان المراجعة - تقرير مفصل' : 'Trial Balance - Detailed Report' }}
+                        </h3>
+                        <button @click="handleDownload" :disabled="downloading"
+                            class="shrink-0 flex items-center gap-2 px-6 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-xl font-normal text-base transition-all active:scale-95 shadow-sm disabled:opacity-50">
+                            <svg v-if="downloading" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin shrink-0">
+                                <circle cx="12" cy="12" r="9" stroke-opacity="0.25" />
+                                <path d="M21 12a9 9 0 0 0-9-9" />
+                            </svg>
+                            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                            </svg>
+                            {{ currentLang === 'ar' ? 'تصدير' : 'Export' }}
+                        </button>
+                    </div>
 
                     <!-- Modal badges -->
                     <div class="px-2 mb-4 flex items-center gap-3">
@@ -527,6 +543,7 @@
                 </div>
             </div>
         </Transition>
+        </Teleport>
     </div>
 
     <!-- Calendar portal — rendered at body level to escape overflow:hidden table containers -->
@@ -538,7 +555,7 @@
             :style="{ top: calendarPos.top + 'px', left: calendarPos.left + 'px' }"
             @click.stop>
             <VDatePicker :model-value="strToDate(calendarValue)" :is-dark="isDark"
-                :locale="currentLang === 'ar' ? 'ar' : 'en'" color="primary" borderless
+                :locale="currentLang === 'ar' ? 'ar' : 'en'" color="teal" borderless
                 @update:model-value="onCalendarSelect" />
         </div>
     </Teleport>
@@ -577,6 +594,7 @@ const props = defineProps({
     onRefreshOptions: { type: Function, default: null },
     onRefreshFilterOptions: { type: Function, default: null },
     onOpenImport:     { type: Function, default: null },
+    onDownload:       { type: Function, default: null },
 })
 const { isTaxaid } = usePermissions()
 const isAdminMode = computed(() => props.userType === 'admin' && isTaxaid.value)
@@ -586,6 +604,13 @@ const handleRefreshOptions = async () => {
     if (!props.onRefreshOptions || refreshingOptions.value) return
     refreshingOptions.value = true
     try { await props.onRefreshOptions() } finally { refreshingOptions.value = false }
+}
+
+const downloading = ref(false)
+const handleDownload = async () => {
+    if (!props.onDownload || downloading.value) return
+    downloading.value = true
+    try { await props.onDownload() } finally { downloading.value = false }
 }
 
 const handleRefreshFilterOptions = () => {

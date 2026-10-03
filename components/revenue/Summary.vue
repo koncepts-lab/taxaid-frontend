@@ -18,7 +18,7 @@
         </div>
 
         <!-- Inline Table Container with overflow -->
-        <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative min-h-[350px]">
+        <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative">
             <!-- Error State -->
             <div v-if="error" class="flex items-center justify-center bg-red-50/10 backdrop-blur-[2px] py-16">
                 <div class="flex flex-col items-center gap-3 text-center px-6">

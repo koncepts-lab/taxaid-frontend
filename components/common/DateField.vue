@@ -52,10 +52,10 @@
           </div>
         </div>
         <VDatePicker v-else-if="range" v-model.range="rangeValue" :columns="columns" :is-dark="dk"
-          :locale="isAr ? 'ar' : 'en'" color="primary" borderless transparent :max-date="maxDate"
+          :locale="isAr ? 'ar' : 'en'" color="teal" borderless transparent :max-date="maxDate"
           @update:model-value="onRange" />
         <VDatePicker v-else v-model="singleValue" :is-dark="dk"
-          :locale="isAr ? 'ar' : 'en'" color="primary" borderless transparent :max-date="maxDate"
+          :locale="isAr ? 'ar' : 'en'" color="teal" borderless transparent :max-date="maxDate"
           @update:model-value="onSingle" />
       </div>
     </Teleport>

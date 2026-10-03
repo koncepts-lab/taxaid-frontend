@@ -358,32 +358,17 @@ export const useDataIn = () => {
   // Returns a blob object URL for inline viewing (iframe), not download.
   // Caller must URL.revokeObjectURL() when done.
   const fetchVatFileUrl = async (id: number): Promise<string> => {
-    const url = `${config.public.apiBase}/tax-queries/vat/returns/${id}/file`
-    const res = await fetch(url, {
-      headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
-    })
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({})) as any
-      throw new Error(body?.message ?? `Failed to load certificate (${res.status})`)
-    }
-    const blob = await res.blob()
+    const blob = await useApi(`/tax-queries/vat/returns/${id}/file`, { responseType: 'blob' }) as Blob
     return URL.createObjectURL(blob)
   }
 
   // ── Data-in sample download ────────────────────────────────────────────────
   const downloadSample = async (id: string): Promise<void> => {
-    const url = `${config.public.apiBase}/data-source/data-in/sample/${id}`
-    const res = await fetch(url, {
-      headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
-    })
-    if (!res.ok) throw new Error(`Failed to download sample for ${id}`)
-    const blob      = await res.blob()
+    const blob      = await useApi(`/data-source/data-in/sample/${id}`, { responseType: 'blob' }) as Blob
     const objectUrl = URL.createObjectURL(blob)
     const anchor    = document.createElement('a')
     anchor.href     = objectUrl
-    const disposition = res.headers.get('Content-Disposition') ?? ''
-    const match       = disposition.match(/filename="?([^"]+)"?/)
-    anchor.download   = match?.[1] ?? `${id}_Template.xlsx`
+    anchor.download = `${id}_Template.xlsx`
     document.body.appendChild(anchor)
     anchor.click()
     document.body.removeChild(anchor)
@@ -445,11 +430,7 @@ export const useDataIn = () => {
   // ── Budget upload status — restore state from backend on mount ───────────
   const fetchBudgetStatuses = async (): Promise<void> => {
     try {
-      const res = await fetch(`${config.public.apiBase}/data-source/budget/upload-status`, {
-        headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
-      })
-      if (!res.ok) return
-      const json = await res.json() as any
+      const json = await useApi('/data-source/budget/upload-status') as any
       const data = json?.data ?? {}
       for (const [id, status] of Object.entries(data) as any[]) {
         budgetStatuses.value[id] = {
@@ -469,24 +450,16 @@ export const useDataIn = () => {
     if (!endpoint) return
     budgetFetchingId.value = id
     budgetError.value      = null
-    const y   = year ?? new Date().getFullYear()
-    const url = `${config.public.apiBase}${endpoint}?year=${y}`
+    const y = year ?? new Date().getFullYear()
     try {
-      const res = await fetch(url, {
-        headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
-      })
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({})) as any
-        budgetError.value = body?.message ?? `Sync failed for ${id} (${res.status})`
-        return
-      }
+      await useApi(`${endpoint}?year=${y}`)
       budgetStatuses.value[id] = {
         isUploaded: true,
         fileName:   budgetStatuses.value[id]?.fileName ?? null,
         uploadDate: new Date().toLocaleDateString(),
       }
     } catch (err: any) {
-      budgetError.value = err?.message ?? `Sync failed for ${id}`
+      budgetError.value = err?.data?.message ?? err?.message ?? `Sync failed for ${id}`
     } finally {
       budgetFetchingId.value = null
     }
@@ -498,22 +471,13 @@ export const useDataIn = () => {
     if (!endpoint) return null
     budgetViewLoading.value = true
     budgetError.value       = null
-    const y   = _year ?? new Date().getFullYear()
-    const url = `${config.public.apiBase}${endpoint}?year=${y}`
+    const y = _year ?? new Date().getFullYear()
     try {
-      const res = await fetch(url, {
-        headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
-      })
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({})) as any
-        budgetError.value = body?.message ?? `Failed to load ${id} data (${res.status})`
-        return null
-      }
-      const json = await res.json() as any
+      const json = await useApi(`${endpoint}?year=${y}`) as any
       budgetViewData.value = json as BudgetViewData
       return budgetViewData.value
     } catch (err: any) {
-      budgetError.value = err?.message ?? `Failed to load ${id} data`
+      budgetError.value = err?.data?.message ?? err?.message ?? `Failed to load ${id} data`
       return null
     } finally {
       budgetViewLoading.value = false
@@ -522,18 +486,11 @@ export const useDataIn = () => {
 
   // ── Budget sample download — GET /data-source/budget/sample/{id} ───────────
   const budgetDownloadSample = async (id: string): Promise<void> => {
-    const url = `${config.public.apiBase}/data-source/budget/sample/${id}`
-    const res = await fetch(url, {
-      headers: { Authorization: token.value ? `Bearer ${token.value}` : '' },
-    })
-    if (!res.ok) throw new Error(`Failed to download budget sample for ${id}`)
-    const blob      = await res.blob()
+    const blob      = await useApi(`/data-source/budget/sample/${id}`, { responseType: 'blob' }) as Blob
     const objectUrl = URL.createObjectURL(blob)
     const anchor    = document.createElement('a')
     anchor.href     = objectUrl
-    const disposition = res.headers.get('Content-Disposition') ?? ''
-    const match       = disposition.match(/filename="?([^"]+)"?/)
-    anchor.download   = match?.[1] ?? `budget_${id}_template.xlsx`
+    anchor.download = `budget_${id}_template.xlsx`
     document.body.appendChild(anchor)
     anchor.click()
     document.body.removeChild(anchor)

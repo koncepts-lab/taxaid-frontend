@@ -156,14 +156,14 @@
 
       <div class="group relative flex items-center gap-2 md:gap-4 p-1 cursor-pointer z-[100000]"
         @click.stop="isProfileOpen = true" :class="currentLang === 'ar' ? 'mr-1 md:mr-3' : 'ml-1 md:ml-3'">
-        <div class="header-profile-text-container text-right hidden lg:block" :class="currentLang === 'ar' ? 'text-left' : 'text-right'">
-          <div class="font-medium text-[15px] leading-tight transition-colors duration-300"
-            :class="isDark ? 'text-white' : 'text-[#013E32]'">
+        <div class="header-profile-text-container text-right hidden lg:block max-w-[160px] xl:max-w-[260px]" :class="currentLang === 'ar' ? 'text-left' : 'text-right'">
+          <div class="font-medium text-[15px] leading-tight transition-colors duration-300 truncate"
+            :class="isDark ? 'text-white' : 'text-[#013E32]'" :title="identity?.name || ''">
             {{ identity?.name || '...' }}
           </div>
-          <div class="text-[12px] font-light transition-colors duration-300"
-            :class="isDark ? 'text-white/80' : 'text-[#013E32]'">
-            {{ identity?.email || '' }}
+          <div class="text-[12px] font-light transition-colors duration-300 truncate"
+            :class="isDark ? 'text-white/80' : 'text-[#013E32]'" :title="identityContact">
+            {{ identityContact }}
           </div>
         </div>
         <div class="relative header-profile-img-container">
@@ -182,7 +182,7 @@
             <div v-else class="w-14 h-14 rounded-full border-2 border-white shadow-sm bg-white"></div>
             <div class="flex-1">
               <h4 class="font-medium text-[#013E32] text-sm leading-tight break-all">{{ identity?.name || '' }}</h4>
-              <p class="text-sm text-[#013E32]/70 font-medium break-all">{{ identity?.email || '' }}</p>
+              <p class="text-sm text-[#013E32]/70 font-medium break-all">{{ identityContact }}</p>
               <NuxtLink to="/profile" class="text-[#00B68D] text-sm font-medium  mt-1 inline-block">View
                 Profile</NuxtLink>
             </div>
@@ -370,7 +370,7 @@
             <div v-else class="w-14 h-14 rounded-full border-2 border-white shadow-sm bg-white"></div>
             <div class="flex-1">
               <h4 class="font-medium text-[#013E32] text-sm leading-tight break-all">{{ identity?.name || '' }}</h4>
-              <p class="text-sm text-[#013E32]/70 font-medium break-all">{{ identity?.email || '' }}</p>
+              <p class="text-sm text-[#013E32]/70 font-medium break-all">{{ identityContact }}</p>
               <NuxtLink to="/profile" class="text-[#00B68D] text-sm font-medium  mt-1 inline-block">View
                 Profile</NuxtLink>
             </div>
@@ -464,7 +464,7 @@ const { isDark, toggleTheme } = useTheme()
 const isMenuOpen = ref(false)
 
 const { pictureUrl, refreshPicture } = useProfile()
-const { identity, ensureIdentity } = useIdentity()
+const { identity, identityContact, ensureIdentity } = useIdentity()
 
 const route = useRoute()
 

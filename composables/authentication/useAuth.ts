@@ -63,7 +63,12 @@ export const useAuth = () => {
         displayFormat.value = response.data.user?.display_format ?? null
 
         const identity = useCookie('identity', cookieOptions)
-        identity.value = { name: response.data.user?.company_name ?? '', email: response.data.user?.email ?? '' } as any
+        identity.value = {
+          name: response.data.user?.company_name ?? '',
+          email: response.data.user?.email ?? '',
+          role: response.data.user?.role ?? null,
+          accountType: response.data.user?.account_type ?? null,
+        } as any
 
         resetProfile()
 
