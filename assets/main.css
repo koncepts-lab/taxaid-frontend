@@ -284,6 +284,17 @@ input[type="checkbox"]:checked {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
+.dark-mode-bg .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-title,
+.dark-mode-bg .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-text,
+.dark-mode-bg .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-text-y-label,
+.dark-mode-bg .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-text-y-value,
+.dark-mode-bg .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-text-goals-label,
+.dark-mode-bg .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-text-goals-value,
+.dark-mode-bg .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-text-z-label,
+.dark-mode-bg .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-text-z-value {
+  color: #fff !important;
+}
+
 .dark-mode-bg .apexcharts-legend-text {
   color: #ffffff !important;
 }

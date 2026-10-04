@@ -1,8 +1,8 @@
 <template>
-  <div class="w-full h-[29rem] transition-all duration-500 rounded-3xl overflow-y-auto"
-    :class="isDark ? 'bg-[#00141080]' : 'bg-white shadow-sm'">
+  <div class="w-full h-[29rem] transition-all duration-500 rounded-3xl flex flex-col overflow-hidden"
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white shadow-sm'">
 
-    <div class="py-5 lg:px-8 px-4 flex justify-between items-center">
+    <div class="py-5 lg:px-8 px-4 flex justify-between items-center shrink-0">
       <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
         {{ currentLang === 'ar' ? 'ملخص مركز التكلفة' : 'Cost Center Summary' }}
         <CommonInfoTooltip tip="costCenterSummary.table" light class="ml-2 rtl:ml-0 rtl:mr-2" />
@@ -16,6 +16,7 @@
       </div>
     </div>
 
+    <div class="flex-1 overflow-y-auto">
     <table class="w-full text-left rtl:text-right border-collapse ">
       <thead class="text-white sticky top-0 " :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
         <tr>
@@ -34,7 +35,7 @@
       </thead>
       <tbody>
         <template v-if="isLoading">
-          <tr v-for="n in 6" :key="'sk' + n" class="border-b animate-pulse" :class="isDark ? 'border-white/5' : 'border-[#F2F2F2]'">
+          <tr v-for="n in 5" :key="'sk' + n" class="border-b animate-pulse" :class="isDark ? 'border-white/5' : 'border-[#F2F2F2]'">
             <td class="px-8 py-5 text-left rtl:text-right"><div class="h-[14px] rounded" :class="[isDark ? 'bg-white/10' : 'bg-gray-200', n % 2 ? 'w-40' : 'w-56']"></div></td>
             <td v-for="c in 4" :key="c" class="px-6 py-5 text-right rtl:text-left"><div class="h-[14px] w-20 ml-auto rtl:ml-0 rtl:mr-auto rounded" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
             <td class="px-6 py-5 text-right rtl:text-left"><div class="h-[26px] w-16 ml-auto rtl:ml-0 rtl:mr-auto rounded-full" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
@@ -71,8 +72,12 @@
           </tr>
         </template>
       </tbody>
+    </table>
+    </div>
+
+    <table v-if="summaryTotal && !isLoading" class="w-full text-left rtl:text-right border-collapse shrink-0">
       <tfoot>
-        <tr v-if="summaryTotal && !isLoading" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
+        <tr :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
           <td class="px-8 py-5 font-normal text-[14px] text-left rtl:text-right" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
             currentLang === 'ar' ? summaryTotal.labelAr : summaryTotal.label }}</td>
           <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
@@ -117,7 +122,7 @@
             </button>
           </div>
 
-          <div class="overflow-y-auto w-full no-scrollbar flex-1 relative bg-white dark:bg-[#00141080]">
+          <div class="overflow-y-auto w-full no-scrollbar flex-1 relative" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
             <table class="w-full text-left rtl:text-right border-collapse relative">
               <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
                 <tr>
@@ -135,25 +140,26 @@
                     'هامش الربح' : 'Profit Margin' }} <CommonInfoTooltip tip="costCenterSummary.margin" light align="right" /></span></th>
                 </tr>
               </thead>
-              <tbody class="bg-white">
+              <tbody :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
                 <template v-for="(item, idx) in tableData" :key="'modal-' + idx">
-                  <tr class="transition-all duration-500 border-b border-[#F2F2F2] hover:bg-gray-50 cursor-pointer"
-                    @mouseenter="onRowEnter" @mouseleave="onRowLeave" @click="goToDetail(item)">
+                  <tr class="transition-all duration-500 border-b cursor-pointer"
+                    @mouseenter="onRowEnter" @mouseleave="onRowLeave" @click="goToDetail(item)"
+                    :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50'">
                     <td class="px-8 py-5 text-left rtl:text-right">
-                      <span class="font-normal text-[14px] text-[#333333]">{{ currentLang === 'ar' ? item.labelAr :
+                      <span class="font-normal text-[14px]" :class="isDark ? 'text-white' : 'text-[#333333]'">{{ currentLang === 'ar' ? item.labelAr :
                         item.label }}</span>
                     </td>
-                    <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] text-[#1A1A1A] tabular-nums">{{
+                    <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
                       item.revenue }}</td>
-                    <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] text-[#1A1A1A] tabular-nums">{{ item.cogs
+                    <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.cogs
                       }}</td>
-                    <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] text-[#1A1A1A] tabular-nums">{{
+                    <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
                       item.indirectExp }}</td>
-                    <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] text-[#1A1A1A] tabular-nums">{{ item.profit
+                    <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ item.profit
                       }}</td>
                     <td class="px-6 py-5 text-right rtl:text-left">
                       <span class="inline-block px-3 py-1 text-[13px] font-medium tabular-nums" style="border-radius: 19px;"
-                        :class="item.margin >= 0 ? 'bg-[#6EFFA04D] text-[#008864]' : 'bg-[#FB75544D] text-[#FF582F]'">
+                        :class="item.margin >= 0 ? (isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#6EFFA04D] text-[#008864]') : (isDark ? 'bg-[#FB7554]/20 text-[#FF582F]' : 'bg-[#FB75544D] text-[#FF582F]')">
                         {{ item.margin >= 0 ? '+' : '' }}{{ item.margin }}%
                       </span>
                     </td>

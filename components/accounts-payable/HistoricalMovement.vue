@@ -1,7 +1,7 @@
 <template>
   <div
     :class="['historical-movement-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-sm', isDark ? '' : 'border border-[#EFEFEF]']"
-    :style="isDark ? 'background: #00141080 !important' : ''">
+    :style="isDark ? 'background: #002e26 !important' : ''">
     <!-- Header -->
     <div class="flex lg:flex-row flex-col max-lg:gap-2 justify-between items-start mb-6 relative z-10 w-full"
       :class="isDark ? 'text-white' : 'text-[#000000]'">
@@ -9,7 +9,7 @@
         <h2 class="text-[17px] font-medium leading-tight">{{ currentLang === 'ar' ? 'حركة حسابات الدفع التاريخية' :
           'AP balances historical movement' }}</h2>
         <p class="text-[13px] font-normal mt-1" :class="isDark ? 'text-white opacity-60' : 'text-[#00000091]'">{{
-          currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}</p>
+          valuesNote(unit === 'millions') }}</p>
       </div>
       <div class="flex items-center gap-6">
         <!-- Custom Legend -->
@@ -20,6 +20,7 @@
               'ar' ? 'رصيد حسابات الدفع' : 'Account Payable Balance' }}</span>
           </div>
         </div>
+        <CommonUnitToggle :on-dark="isDark" storage-key="ap_historical_unit" />
         <CommonInfoTooltip tip="accountsPayable.historical" align="right" />
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand"
           class="w-6 h-6 opacity-70 hover:opacity-100 transition-opacity cursor-pointer ml-4 max-lg:hidden"
@@ -55,8 +56,8 @@
             <div class="flex flex-col">
               <h2 class="text-lg font-medium leading-tight" :class="isDark ? 'text-white' : 'text-[#013e32]'">{{
                 currentLang === 'ar' ? 'حركة حسابات الدفع التاريخية' : 'AP balances historical movement' }}</h2>
-              <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang
-                === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}</p>
+              <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{
+                valuesNote(unit === 'millions') }}</p>
             </div>
             <div class="flex items-center gap-6">
               <!-- Custom Legend -->
@@ -67,6 +68,7 @@
                     === 'ar' ? 'رصيد حسابات الدفع' : 'Account Payable Balance' }}</span>
                 </div>
               </div>
+              <CommonUnitToggle :on-dark="isDark" storage-key="ap_historical_unit" />
               <button @click="isModalOpen = false"
                 class="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                 <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5"
@@ -76,7 +78,7 @@
           </div>
 
           <!-- Modal Body (Chart) -->
-          <div class="flex-1 w-full p-8 relative z-10" :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
+          <div class="flex-1 w-full p-8 relative z-10" :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff]'">
             <div v-if="!series || series.every(s => !s.data || s.data.length === 0)" class="absolute inset-0 z-20 flex items-center justify-center">
               <div class="flex flex-col items-center gap-3 text-center px-6">
                 <p class="text-base font-medium opacity-60" :class="isDark ? 'text-white' : 'text-[#013E32]'">
@@ -102,7 +104,8 @@ const props = defineProps({
   loading: { type: Boolean, default: false }
 })
 
-const { formatWhole: fmt, axisFor } = useChartHelper()
+const { unit, fmt, axisFmt, axisFor } = useChartHelper('ap_historical_unit')
+const { valuesNote, code } = useCurrency()
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
@@ -184,7 +187,7 @@ const chartOptions = computed(() => {
           colors: isDark.value ? '#FFFFFF' : '#00000091',
           fontSize: '12px'
         },
-        formatter: (val) => val === 0 ? '0' : fmt(val)
+        formatter: (val) => val === 0 ? '0' : axisFmt(val)
       }
     },
     {
@@ -210,7 +213,7 @@ const chartOptions = computed(() => {
   tooltip: {
     theme: 'light',
     custom: function ({ series, seriesIndex, dataPointIndex, w }) {
-      const monthLabel = w.globals.categoryLabels[dataPointIndex]
+      const monthLabel = props.data?.categories?.[dataPointIndex] ?? w.globals.categoryLabels[dataPointIndex]
       const bal = series[0][dataPointIndex]
 
       return `
@@ -219,7 +222,7 @@ const chartOptions = computed(() => {
           <div class="tooltip-body">
             <div class="tooltip-row">
               <span class="label">${currentLang.value === 'ar' ? 'رصيد حسابات القبض' : 'AP Balance'}:</span>
-              <span class="value">AED ${fmt(bal)}</span>
+              <span class="value">${code.value} ${fmt(bal)}</span>
             </div>
           </div>
         </div>
@@ -237,6 +240,13 @@ const chartOptions = computed(() => {
 
 :deep(.apexcharts-canvas) {
   margin: 0 auto;
+}
+
+:deep(.apexcharts-tooltip),
+:deep(.dark-mode-bg .apexcharts-tooltip) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 :deep(.custom-tooltip) {

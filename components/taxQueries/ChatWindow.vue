@@ -1,6 +1,6 @@
 <template>
     <div :class="['rounded-2xl border flex flex-col p-4 relative h-full min-h-0 overflow-hidden', isDark ? 'bg-[#002e26] border-white/10 shadow-none' : 'bg-white border-emerald-50 shadow-sm']">
-        <button @click="$emit('shrink')" class="absolute top-4 right-4 p-2 rounded-full transition-colors z-10 cursor-pointer" :class="isDark ? 'text-white/70 hover:text-white hover:bg-white/10' : 'text-gray-500 hover:text-black hover:bg-black/5'" :title="isMinimized ? 'Contract Chat' : 'Expand Chat'">
+        <button @click="$emit('shrink')" class="absolute top-4 right-4 p-2 rounded-full transition-colors z-10 cursor-pointer" :class="isDark ? 'text-white hover:bg-white/10' : 'text-gray-500 hover:text-black hover:bg-black/5'" :title="isMinimized ? 'Contract Chat' : 'Expand Chat'">
             <svg v-if="!isMinimized" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
             </svg>

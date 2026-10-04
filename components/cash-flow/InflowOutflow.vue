@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-full rounded-[20px] p-6 shadow-sm relative group cursor-pointer transition-all duration-300 flex flex-col"
-    :style="isDark ? { background: '#00141080' } : { background: 'linear-gradient(205.59deg, #005A48 8.7%, #00342A 83.81%)' }">
+    :style="isDark ? { background: '#002e26' } : { background: 'linear-gradient(205.59deg, #005A48 8.7%, #00342A 83.81%)' }">
     <!-- Header Area -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center flex-shrink-0">
       
@@ -186,11 +186,11 @@ const chartOptions = computed(() => ({
       const outflowLabel = currentLang.value === 'ar' ? 'التدفق الخارجي: ' : 'Outflow: ';
       const netCashflowLabel = currentLang.value === 'ar' ? 'صافي التدفق النقدي: ' : 'Net Cashflow: ';
       
-      return '<div class="px-4 py-3 bg-white rounded-lg shadow-xl border-none" style="min-width: 180px;">' +
-        '<div class="font-semibold mb-2 text-[#000] text-[13px]">' + month + '</div>' +
-        '<div class="text-[#000] text-[12px] mb-1">' + inflowLabel + '<span class="font-semibold">AED ' + inflowValue.toFixed(1) + 'M</span></div>' +
-        '<div class="text-[#000] text-[12px] mb-1">' + outflowLabel + '<span class="font-semibold">AED ' + outflowValue.toFixed(1) + 'M</span></div>' +
-        '<div class="text-[12px]">' + netCashflowLabel + '<span class="font-semibold text-[#00A176]">+' + netPercentage + '%</span></div>' +
+      return '<div class="px-4 py-3 rounded-lg shadow-xl border-none" style="min-width: 180px; background: #ffffff;">' +
+        '<div class="font-semibold mb-2 text-[13px]" style="color: #1A1A1A;">' + month + '</div>' +
+        '<div class="text-[12px] mb-1" style="color: #1A1A1A;">' + inflowLabel + '<span class="font-semibold">AED ' + inflowValue.toFixed(1) + 'M</span></div>' +
+        '<div class="text-[12px] mb-1" style="color: #1A1A1A;">' + outflowLabel + '<span class="font-semibold">AED ' + outflowValue.toFixed(1) + 'M</span></div>' +
+        '<div class="text-[12px]" style="color: #1A1A1A;">' + netCashflowLabel + '<span class="font-semibold text-[#00A176]">+' + netPercentage + '%</span></div>' +
         '</div>'
     }
   },
@@ -248,5 +248,11 @@ const chartOptions = computed(() => ({
   background: white !important;
   border: none !important;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+:deep(.dark-mode-bg .apexcharts-tooltip) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 </style>

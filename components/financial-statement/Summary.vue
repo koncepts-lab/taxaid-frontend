@@ -1,6 +1,6 @@
 <template>
     <div class="w-full transition-all duration-500 rounded-3xl overflow-hidden"
-        :class="isDark ? 'bg-[#00141050]' : 'bg-white'" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+        :class="isDark ? 'bg-[#002e26]' : 'bg-white'" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
         <div v-if="activeTab === 'schedules'" class="lg:px-8 px-4 lg:pb-8 pb-4 flex flex-col lg:flex-row gap-4 transition-all duration-500">
             <div class="flex-1 relative">
@@ -61,7 +61,7 @@
         </div>
 
         <div class="lg:py-6 py-4 lg:px-8 px-4 flex lg:flex-row flex-col lg:justify-between h-fit justify-center lg:items-center items-start  transition-all duration-500"
-            :class="isDark ? 'bg-[#00141050]' : 'bg-white', activeTab === 'ratios' ? 'lg:gap-0 gap-4' : ''">
+            :class="[isDark ? 'bg-[#002e26]' : 'bg-white', activeTab === 'ratios' ? 'lg:gap-0 gap-4' : '']">
             <div>
                 <p class="text-base font-medium" :class="isDark ? 'text-white' : 'text-primary-450'">{{ translatedTitle
                 }}</p>

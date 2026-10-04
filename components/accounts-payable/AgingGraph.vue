@@ -1,7 +1,7 @@
 <template>
   <div
     class="aging-graph-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-md "
-    :style="isDark ? 'background: #00141080 !important' : ''">
+    :style="isDark ? 'background: #002e26 !important' : ''">
     <!-- Header -->
     <div class="flex lg:flex-row flex-col max-lg:gap-2 justify-between items-start mb-4 text-white relative z-10">
       <div class="flex flex-col">
@@ -9,7 +9,7 @@
           {{ currentLang === 'ar' ? 'الرسم البياني حسب التقادم' : 'Graph based on aging' }}
         </h2>
         <p class="text-[12px] font-regular mt-1 opacity-80">
-          {{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}
+          {{ valuesNote(unit === 'millions') }}
         </p>
       </div>
       <div class="flex items-center gap-6">
@@ -28,6 +28,7 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
           </div>
         </div>
+        <CommonUnitToggle :on-dark="true" storage-key="ap_aging_unit" />
         <CommonInfoTooltip tip="accountsPayable.aging" light align="right" />
         <img src="/images/icons/expand-white.svg" alt="Expand"
           class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity max-lg:hidden"
@@ -66,7 +67,7 @@
                 {{ currentLang === 'ar' ? 'الرسم البياني حسب التقادم' : 'Graph based on aging' }}
               </h2>
               <p class="text-xs font-regular mt-1 opacity-80">
-                {{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}
+                {{ valuesNote(unit === 'millions') }}
               </p>
             </div>
             <div class="flex items-center gap-6">
@@ -85,6 +86,7 @@
                   <span class="opacity-90">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
                 </div>
               </div>
+              <CommonUnitToggle :on-dark="true" storage-key="ap_aging_unit" />
               <button @click="isModalOpen = false"
                 class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                 <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert"
@@ -127,7 +129,8 @@ const props = defineProps({
   loading: { type: Boolean, default: false }
 })
 
-const { formatWhole: fmt, axisFor, plotter } = useChartHelper()
+const { unit, fmt, axisFmt, axisFor, plotter } = useChartHelper('ap_aging_unit')
+const { valuesNote, code } = useCurrency()
 
 const arabicBuckets = {
   "0 - 30 days": "أكثر من 30 يوم",
@@ -242,7 +245,7 @@ const chartOptions = computed(() => {
       formatter: (val, { seriesIndex, dataPointIndex }) => {
         const raw = (seriesIndex === 0 ? rawSeries.value.previous : rawSeries.value.current)[dataPointIndex]
         if (!raw) return '0'
-        const formatted = fmt(raw)
+        const formatted = axisFmt(raw)
         return seriesIndex === 0 ? `${formatted}\u00A0\u00A0\u00A0\u00A0` : `\u00A0\u00A0\u00A0\u00A0${formatted}`
       }
     },
@@ -288,7 +291,7 @@ const chartOptions = computed(() => {
             fontSize: '13px', 
             colors: '#FFFFFFBF'
            },
-          formatter: (val) => val === 0 ? '0' : fmt(val)
+          formatter: (val) => val === 0 ? '0' : axisFmt(val)
         }
       },
       {
@@ -353,7 +356,7 @@ const chartOptions = computed(() => {
             <div class="tooltip-body">
               <div class="tooltip-row">
                 <span class="label">${cyrLabel}:</span>
-                <span class="value teal">AED ${curYearFormatted}</span>
+                <span class="value teal">${code.value} ${curYearFormatted}</span>
               </div>
               <div class="tooltip-row">
                 <span class="label">${totLabel}:</span>
@@ -379,6 +382,13 @@ const chartOptions = computed(() => {
 
 :deep(.apexcharts-canvas) {
   margin: 0 auto;
+}
+
+:deep(.apexcharts-tooltip),
+:deep(.dark-mode-bg .apexcharts-tooltip) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 :deep(.custom-tooltip) {

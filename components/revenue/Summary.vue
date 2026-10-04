@@ -1,7 +1,7 @@
 <template>
     <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl">
         <div class="py-5 lg:px-8 px-4 flex justify-between items-center sticky top-0 z-30 rounded-t-3xl" 
-             :class="isDark ? 'bg-[#001a14]' : 'bg-white'">
+             :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
             <div>
                 <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص الإيرادات' : 'Revenue Summary' }}</p>
                 <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ valuesNote(false) }}</p>
@@ -79,7 +79,7 @@
                     <tr :class="[
                         row.isSummary
                             ? (isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]')
-                            : (isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100'),
+                            : (isDark ? 'bg-[#002e26] border-b border-white/10' : 'bg-white border-b border-gray-100'),
                         'text-[14px] font-medium transition-all duration-500',
                         (row.children && expandedRows[i]) ? 'lg:sticky lg:top-[142px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : ''
                     ]">
@@ -211,7 +211,7 @@
                 @click.self="isModalOpen = false">
 
                 <div class="w-full max-h-[78vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col transition-all duration-300" style="max-width: 1500px;"
-                    :class="isDark ? 'bg-[#001a14] border border-white/10' : 'bg-white'">
+                    :class="isDark ? 'bg-[#002e26] border border-white/10' : 'bg-white'">
 
                     <!-- Modal Header -->
                     <div class="flex justify-between items-center py-5 px-8 shrink-0"

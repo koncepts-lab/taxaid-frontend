@@ -1,7 +1,7 @@
 <template>
   <div
     class="breakdown-chart-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-md"
-    :style="isDark ? 'background: #00141080 !important' : ''">
+    :style="isDark ? 'background: #002e26 !important' : ''">
     <!-- Header -->
     <div class="flex lg:flex-row flex-col max-lg:gap-4 justify-between items-start mb-4 text-white relative z-10">
       <div class="flex flex-col">
@@ -9,7 +9,7 @@
           {{ currentLang === 'ar' ? 'تفصيل تكلفة المبيعات حسب الفئة' : 'COGS Breakdown by Category' }}
         </h2>
         <p class="text-[12px] font-regular mt-1 opacity-80">
-          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+          {{ valuesNote(unit === 'millions') }}
         </p>
       </div>
       <div class="flex items-center gap-6">
@@ -24,8 +24,8 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
           </div>
         </div>
-        <img src="/images/icons/info-white.svg" alt="Info"
-          class="w-5 h-5 cursor-pointer opacity-80 hover:opacity-100 transition-opacity max-lg:hidden" />
+        <CommonUnitToggle :on-dark="true" storage-key="cogs_breakdown_unit" />
+        <CommonInfoTooltip tip="cogs.breakdownByCategory" light class="max-lg:hidden" />
         <img src="/images/icons/expand-white.svg" alt="Expand"
           class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity max-lg:hidden"
           @click="isModalOpen = true" />
@@ -35,7 +35,7 @@
     <!-- Chart -->
     <div class="flex-1 w-full min-h-[320px] relative z-10">
       <ClientOnly>
-        <apexchart :key="data?.charts?.cogs_by_category?.categories?.length" type="bar" height="100%" :options="chartOptions" :series="series" />
+        <apexchart :key="(data?.charts?.cogs_by_category?.categories?.length || 0) + '-' + unit" type="bar" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
     </div>
 
@@ -53,7 +53,7 @@
                 {{ currentLang === 'ar' ? 'تفصيل تكلفة المبيعات حسب الفئة' : 'COGS Breakdown by Category' }}
               </h2>
               <p class="text-xs font-regular mt-1 opacity-80">
-                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+                {{ valuesNote(unit === 'millions') }}
               </p>
             </div>
             <div class="flex items-center gap-6">
@@ -68,6 +68,7 @@
                   <span class="opacity-90">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
                 </div>
               </div>
+              <CommonUnitToggle :on-dark="true" storage-key="cogs_breakdown_unit" />
               <button @click="isModalOpen = false"
                 class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                 <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert"
@@ -79,7 +80,7 @@
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10">
             <ClientOnly>
-              <apexchart type="bar" height="100%" :options="chartOptions" :series="series" />
+              <apexchart :key="(data?.charts?.cogs_by_category?.categories?.length || 0) + '-' + unit + '-modal'" type="bar" height="100%" :options="chartOptions" :series="series" />
             </ClientOnly>
           </div>
         </div>
@@ -90,7 +91,6 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { formatToMillions } from '~/utils/formatters'
 
 const props = defineProps({
   data: {
@@ -101,6 +101,8 @@ const props = defineProps({
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+const { valuesNote, code } = useCurrency()
+const { unit, fmt, axisFmt, axisFor } = useChartHelper('cogs_breakdown_unit')
 const isModalOpen = ref(false)
 
 const categories = computed(() => {
@@ -119,11 +121,11 @@ const series = computed(() => {
     return [
       {
         name: 'Previous Year',
-        data: chartData.previous_year.map(val => Number(formatToMillions(val || 0, 2).replace(/,/g, '')))
+        data: chartData.previous_year.map(val => Number(val) || 0)
       },
       {
         name: 'Current Year',
-        data: chartData.current_year.map(val => Number(formatToMillions(val || 0, 2).replace(/,/g, '')))
+        data: chartData.current_year.map(val => Number(val) || 0)
       }
     ]
   }
@@ -134,11 +136,9 @@ const series = computed(() => {
 })
 
 const chartOptions = computed(() => {
-  // Calculate dynamic max for Y-axis based on data to prevent values hitting the ceiling
   const allData = [...series.value[0].data, ...series.value[1].data]
-  const rawMax = Math.max(...allData, 0)
-  // Logic: only if it exceeds the original 5M range, add 10% buffer and round to nearest 5.
-  const dynamicMax = rawMax > 5 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
+  const peak = Math.max(0, ...allData)
+  const axis = axisFor(peak)
 
   return {
     chart: {
@@ -164,7 +164,7 @@ const chartOptions = computed(() => {
         fontSize: '11px',
         colors: ['#03D8B0'] // Adjust accordingly, using teal for labels as mostly seen
       },
-      formatter: (val) => val.toString().replace('.', ',') + 'M'
+      formatter: (val) => axisFmt(val)
     },
     xaxis: {
       categories: categories.value.map(c => currentLang.value === 'ar' ? c.ar : c.en),
@@ -186,8 +186,8 @@ const chartOptions = computed(() => {
     },
     yaxis: {
       min: 0,
-      max: dynamicMax,
-      tickAmount: 5,
+      max: axis.max,
+      tickAmount: axis.ticks,
       axisBorder: {
         show: true,
         color: '#004033',
@@ -199,7 +199,7 @@ const chartOptions = computed(() => {
           fontSize: '12px',
           colors: '#FFFFFFBF'
         },
-        formatter: (val) => val === 0 ? '0' : Math.round(val) + 'M'
+        formatter: (val) => val === 0 ? '0' : axisFmt(val)
       }
     },
     grid: {
@@ -215,7 +215,7 @@ const chartOptions = computed(() => {
       theme: 'light',
       y: {
         formatter: function (val) {
-          return "AED " + val + "M"
+          return code.value + " " + fmt(val)
         }
       }
     }

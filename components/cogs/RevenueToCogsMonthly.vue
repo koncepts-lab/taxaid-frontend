@@ -1,7 +1,7 @@
 <template>
   <div
     class="rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-sm"
-    :class="isDark ? 'bg-[#00141080]' : 'bg-white'">
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
     <!-- Header -->
     <div class="flex lg:flex-row flex-col max-lg:gap-4 justify-between items-start mb-4 relative z-10"
       :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
@@ -10,7 +10,7 @@
           {{ currentLang === 'ar' ? 'الإيرادات مقابل تكلفة المبيعات شهريا' : 'Revenue to COGS Monthly' }}
         </h2>
         <p class="text-[12px] font-regular mt-1 opacity-80" :class="isDark ? 'text-white' : 'text-[#00000096]'">
-          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+          {{ valuesNote(unit === 'millions') }}
         </p>
       </div>
       <div class="flex items-center gap-6">
@@ -25,8 +25,8 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'الإيرادات' : 'Revenue' }}</span>
           </div>
         </div>
-        <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info"
-          class="w-5 h-5 cursor-pointer opacity-80 hover:opacity-100 transition-opacity max-lg:hidden" />
+        <CommonUnitToggle :on-dark="isDark" storage-key="cogs_revenue_to_cogs_unit" />
+        <CommonInfoTooltip tip="cogs.revenueToCogsMonthly" :light="isDark" class="max-lg:hidden" />
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand"
           class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity max-lg:hidden"
           @click="isModalOpen = true" />
@@ -36,7 +36,7 @@
     <!-- Chart -->
     <div class="flex-1 w-full min-h-[320px] relative z-10 mt-0">
       <ClientOnly>
-        <apexchart :key="data.length" type="bar" height="100%" :options="chartOptions" :series="series" />
+        <apexchart :key="data.length + '-' + unit" type="bar" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
     </div>
 
@@ -55,7 +55,7 @@
                 {{ currentLang === 'ar' ? 'الإيرادات مقابل تكلفة المبيعات شهريا' : 'Revenue to COGS Monthly' }}
               </h2>
               <p class="text-xs font-regular mt-1 opacity-80" :class="isDark ? 'text-white' : 'text-[#00000096]'">
-                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+                {{ valuesNote(unit === 'millions') }}
               </p>
             </div>
             <div class="flex items-center gap-6">
@@ -70,6 +70,7 @@
                   <span class="opacity-90">{{ currentLang === 'ar' ? 'الإيرادات' : 'Revenue' }}</span>
                 </div>
               </div>
+              <CommonUnitToggle :on-dark="isDark" storage-key="cogs_revenue_to_cogs_unit" />
               <button @click="isModalOpen = false"
                 class="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                 <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 flex-shrink-0"
@@ -79,9 +80,9 @@
           </div>
 
           <!-- Modal Body (Chart) -->
-          <div class="flex-1 w-full p-8 relative z-10" style="background-color: #fff;">
+          <div class="flex-1 w-full p-8 relative z-10" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
             <ClientOnly>
-              <apexchart type="bar" height="100%" :options="chartOptions" :series="series" />
+              <apexchart :key="data.length + '-' + unit + '-modal'" type="bar" height="100%" :options="chartOptions" :series="series" />
             </ClientOnly>
           </div>
         </div>
@@ -100,14 +101,16 @@ const props = defineProps({
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+const { valuesNote, code } = useCurrency()
+const { unit, fmt, axisFmt, axisFor } = useChartHelper('cogs_revenue_to_cogs_unit')
 const isModalOpen = ref(false)
 
 const months = computed(() => {
   if (props.data && props.data.length > 0) {
-    return props.data.map(item => ({
-      en: item.month_short,
-      ar: item.month_short
-    }))
+    return props.data.map(item => {
+      const label = item.year ? `${item.month_short} ${item.year}` : item.month_short
+      return { en: label, ar: label }
+    })
   }
   return []
 })
@@ -117,12 +120,12 @@ const series = computed(() => {
     return [
       {
         name: 'COGS',
-        data: props.data.map(item => Number(formatToMillions(item.cogs || 0, 2).replace(/,/g, ''))),
+        data: props.data.map(item => Number(item.cogs) || 0),
         dataLabels: { offsetX: -12 }
       },
       {
         name: 'Revenue',
-        data: props.data.map(item => Number(formatToMillions(item.revenue || 0, 2).replace(/,/g, ''))),
+        data: props.data.map(item => Number(item.revenue) || 0),
         dataLabels: { offsetX: 12 }
       }
     ]
@@ -134,11 +137,9 @@ const series = computed(() => {
 })
 
 const chartOptions = computed(() => {
-  // Calculate dynamic max for Y-axis based on data to prevent values hitting the ceiling
   const allData = [...series.value[0].data, ...series.value[1].data]
-  const rawMax = Math.max(...allData, 0)
-  // Logic: only if it exceeds the original 5M range, add 10% buffer and round to nearest 5.
-  const dynamicMax = rawMax > 5 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
+  const peak = Math.max(0, ...allData)
+  const axis = axisFor(peak)
 
   return {
     chart: {
@@ -164,7 +165,7 @@ const chartOptions = computed(() => {
         fontSize: '10px',
         colors: [isDark.value ? '#FFFFFF' : '#005A48']
       },
-      formatter: (val) => val.toString().replace('.', ',') + 'M'
+      formatter: (val) => axisFmt(val)
     },
     xaxis: {
       categories: months.value.map(m => currentLang.value === 'ar' ? m.ar : m.en),
@@ -186,8 +187,8 @@ const chartOptions = computed(() => {
     },
     yaxis: {
       min: 0,
-      max: dynamicMax,
-      tickAmount: 5,
+      max: axis.max,
+      tickAmount: axis.ticks,
       axisBorder: {
         show: true,
         color: isDark.value ? 'rgba(255, 255, 255, 0.1)' : '#EFEFEF',
@@ -199,7 +200,7 @@ const chartOptions = computed(() => {
           fontSize: '12px',
           colors: isDark.value ? '#FFFFFFBF' : '#00000099'
         },
-        formatter: (val) => val === 0 ? '0' : val + 'M'
+        formatter: (val) => val === 0 ? '0' : axisFmt(val)
       }
     },
     grid: {
@@ -244,8 +245,8 @@ const chartOptions = computed(() => {
         return `
           <div class="custom-tooltip-cogs shadow-xl rounded-2xl" style="background:#D9FBF2; padding: 12px 16px; border:none;  color:#1A1A1A;">
             <div style="font-size:12px; margin-bottom:8px; font-weight:500;">${catLabel}</div>
-            <div style="font-size:11px; margin-bottom:4px;">${trRevenue}: AED ${rVal.toString().replace('.', ',')}M</div>
-            <div style="font-size:11px; margin-bottom:4px;">${trCOGS}: AED ${cVal.toString().replace('.', ',')}M</div>
+            <div style="font-size:11px; margin-bottom:4px;">${trRevenue}: ${code.value} ${fmt(rVal)}</div>
+            <div style="font-size:11px; margin-bottom:4px;">${trCOGS}: ${code.value} ${fmt(cVal)}</div>
             <div style="font-size:11px; color:#00A176;">${trRatio}: ${ratio}</div>
           </div>
         `

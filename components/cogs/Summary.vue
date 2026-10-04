@@ -1,22 +1,21 @@
 <template>
   <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl"
-    :class="isDark ? 'bg-[#00141080]' : 'bg-white shadow-sm'">
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white shadow-sm'">
 
     <div class="py-5 lg:px-8 px-4 flex justify-between items-center">
       <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
         {{ currentLang === 'ar' ? 'ملخص تكلفة المبيعات' : 'COGS Summary' }}
+        <CommonInfoTooltip tip="cogsSummary.table" light class="ml-2 rtl:ml-0 rtl:mr-2" />
       </p>
       <div class="flex gap-4 items-center">
         <p class="text-[12px] font-normal" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
           {{ valuesNote(false) }}
         </p>
-        <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info Icon"
-          class="w-5 h-5 cursor-pointer opacity-80 hover:opacity-100 max-lg:hidden" />
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon"
           class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 max-lg:hidden" @click="isModalOpen = true" />
       </div>
     </div>
-    <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative min-h-[350px]">
+    <div class="w-full max-w-full overflow-auto custom-scrollbar relative" :style="scrollStyle">
       <div v-if="error" class="flex items-center justify-center bg-red-50/10 backdrop-blur-[2px] py-16">
         <div class="flex flex-col items-center gap-3 text-center px-6">
           <p class="text-sm font-medium text-red-600">{{ currentLang === 'ar' ? 'فشل تحميل البيانات.' : 'Failed to load data.' }}</p>
@@ -34,12 +33,12 @@
         </colgroup>
         <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
           <tr>
-            <th class="lg:px-8 px-4 py-5 font-medium text-[14px] text-left rtl:text-right">{{ currentLang === 'ar' ? 'تكلفة المبيعات' : 'COGS' }}</th>
-            <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</th>
-            <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }}</th>
-            <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</th>
-            <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'التباين' : 'Variance' }}</th>
-            <th class="lg:px-6 px-4 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'السنة للذهاب' : 'Year to Go' }}</th>
+            <th class="lg:px-8 px-4 py-5 font-medium text-[14px] text-left rtl:text-right"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'تكلفة المبيعات' : 'COGS' }} <CommonInfoTooltip tip="cogsSummary.cogs" light /></span></th>
+            <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }} <CommonInfoTooltip tip="cogsSummary.currentYear" light align="right" /></span></th>
+            <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }} <CommonInfoTooltip tip="cogsSummary.previousYear" light align="right" /></span></th>
+            <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }} <CommonInfoTooltip tip="cogsSummary.budget" light align="right" /></span></th>
+            <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ? 'التباين' : 'Variance' }} <CommonInfoTooltip tip="cogsSummary.variance" light align="right" /></span></th>
+            <th class="lg:px-6 px-4 py-5 font-medium text-center text-[14px]"><span class="inline-flex items-center justify-center gap-1.5">{{ currentLang === 'ar' ? 'السنة للذهاب' : 'Year to Go' }} <CommonInfoTooltip tip="cogsSummary.ytg" light /></span></th>
           </tr>
         </thead>
         <tbody>
@@ -51,14 +50,12 @@
               <td class="lg:px-6 px-4 py-3 text-center"><div class="h-[28px] w-14 rounded-full inline-block mx-auto" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
             </tr>
           </template>
-          <template v-else-if="!tableData.length">
-            <tr v-for="n in 6" :key="'cogs-empty-' + n" class="border-b" :class="isDark ? 'border-white/5' : 'border-[#F2F2F2]'">
-              <td v-if="n === 1" colspan="6" class="px-8 py-16 text-center text-[14px]" :class="isDark ? 'text-white/50' : 'text-gray-400'">
+          <template v-else>
+            <tr v-if="!tableData.length">
+              <td colspan="6" class="px-8 text-center text-[14px]" :style="{ height: (ROW_HEIGHT * 2) + 'px' }" :class="isDark ? 'text-white/50' : 'text-gray-400'">
                 {{ currentLang === 'ar' ? 'لا توجد بيانات متاحة' : 'No data available' }}
               </td>
             </tr>
-          </template>
-          <template v-else>
             <template v-for="(item, idx) in tableData" :key="idx">
               <tr class="transition-all duration-500 border-b"
                 :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50'">
@@ -137,13 +134,8 @@
               </template>
             </template>
 
-            <tr v-for="n in emptyRowsCount" :key="'empty-row-' + n" class="border-b" :class="isDark ? 'border-white/5' : 'border-[#F2F2F2]'">
-              <td class="lg:px-8 px-4 py-5">&nbsp;</td>
-              <td class="lg:px-6 px-4 py-5">&nbsp;</td>
-              <td class="lg:px-6 px-4 py-5">&nbsp;</td>
-              <td class="lg:px-6 px-4 py-5">&nbsp;</td>
-              <td class="lg:px-6 px-4 py-5">&nbsp;</td>
-              <td class="lg:px-6 px-4 py-3">&nbsp;</td>
+            <tr v-if="fillerHeight" aria-hidden="true">
+              <td colspan="6" class="p-0" :style="{ height: `${fillerHeight}px` }"></td>
             </tr>
           </template>
         </tbody>
@@ -200,13 +192,14 @@
       <div v-if="isModalOpen"
         class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
         :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-        <div class="w-full max-h-[78vh] rounded-xl shadow-2xl flex flex-col overflow-hidden"
+        <div class="w-full min-h-[50vh] max-h-[78vh] rounded-xl shadow-2xl flex flex-col overflow-hidden"
           :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff]'" style="max-width: 1500px; margin: 0 15px;">
           <div class="flex justify-between items-center py-6 px-8 border-b"
             :class="isDark ? 'border-white/5' : 'border-gray-100'">
             <div>
               <p class="text-lg font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
                 {{ currentLang === 'ar' ? 'ملخص تكلفة المبيعات' : 'COGS Summary' }}
+                <CommonInfoTooltip tip="cogsSummary.table" class="ml-2 rtl:ml-0 rtl:mr-2" />
               </p>
               <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
                 {{ valuesNote(false) }}
@@ -214,26 +207,39 @@
             </div>
             <button @click="isModalOpen = false"
               class="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
-              <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Close Modal"
-                class="w-6 h-6 transition-transform" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
+              <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 flex-shrink-0"
+                :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
             </button>
           </div>
 
           <div class="overflow-y-auto w-full no-scrollbar flex-1 relative"
-            :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
+            :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff]'">
             <table class="w-full text-left rtl:text-right border-collapse relative">
               <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
                 <tr>
-                  <th class="lg:px-8 px-4 py-5 font-medium text-[14px] text-left rtl:text-right">{{ currentLang === 'ar' ? 'تكلفة المبيعات' : 'COGS' }}</th>
-                  <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</th>
-                  <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }}</th>
-                  <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</th>
-                  <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'التباين' : 'Variance' }}</th>
-                  <th class="lg:px-6 px-4 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'السنة للذهاب' : 'Year to Go' }}</th>
+                  <th class="lg:px-8 px-4 py-5 font-medium text-[14px] text-left rtl:text-right"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'تكلفة المبيعات' : 'COGS' }} <CommonInfoTooltip tip="cogsSummary.cogs" light /></span></th>
+                  <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }} <CommonInfoTooltip tip="cogsSummary.currentYear" light align="right" /></span></th>
+                  <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ? 'السنة السابقة' : 'Previous Year' }} <CommonInfoTooltip tip="cogsSummary.previousYear" light align="right" /></span></th>
+                  <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }} <CommonInfoTooltip tip="cogsSummary.budget" light align="right" /></span></th>
+                  <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ? 'التباين' : 'Variance' }} <CommonInfoTooltip tip="cogsSummary.variance" light align="right" /></span></th>
+                  <th class="lg:px-6 px-4 py-5 font-medium text-center text-[14px]"><span class="inline-flex items-center justify-center gap-1.5">{{ currentLang === 'ar' ? 'السنة للذهاب' : 'Year to Go' }} <CommonInfoTooltip tip="cogsSummary.ytg" light /></span></th>
                 </tr>
               </thead>
               <tbody>
-                <template v-for="(item, idx) in tableData" :key="'modal-' + idx">
+                <template v-if="loading">
+                  <tr v-for="n in 6" :key="'modal-cogs-sk-' + n" class="border-b animate-pulse" :class="isDark ? 'border-white/5' : 'border-[#F2F2F2]'">
+                    <td class="lg:px-8 px-4 py-5"><div class="h-[14px] rounded" :class="[isDark ? 'bg-white/10' : 'bg-gray-200', n % 2 ? 'w-40' : 'w-56']"></div></td>
+                    <td v-for="c in 3" :key="c" class="lg:px-6 px-4 py-5 text-right rtl:text-left"><div class="h-[14px] w-20 rounded inline-block ml-auto rtl:ml-0 rtl:mr-auto" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+                    <td class="lg:px-6 px-4 py-5 text-right rtl:text-left"><div class="h-[26px] w-16 rounded-full inline-block ml-auto rtl:ml-0 rtl:mr-auto" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+                    <td class="lg:px-6 px-4 py-3 text-center"><div class="h-[28px] w-14 rounded-full inline-block mx-auto" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div></td>
+                  </tr>
+                </template>
+                <tr v-else-if="!tableData.length">
+                  <td colspan="6" class="px-8 text-center text-[14px]" :style="{ height: (ROW_HEIGHT * 6) + 'px' }" :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                    {{ currentLang === 'ar' ? 'لا توجد بيانات متاحة' : 'No data available' }}
+                  </td>
+                </tr>
+                <template v-else><template v-for="(item, idx) in tableData" :key="'modal-' + idx">
                   <tr class="transition-all duration-500 border-b"
                     :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50'">
                     <td class="lg:px-8 px-4 py-5">
@@ -311,7 +317,7 @@
                       <td class="px-6 py-4 text-right rtl:text-left text-[13px]" :class="isDark ? 'text-white/50' : 'text-black/50'">-</td>
                     </tr>
                   </template>
-                </template>
+                </template></template>
               </tbody>
               <tfoot class="sticky bottom-0 z-10">
                 <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
@@ -400,11 +406,14 @@ const parsePercent = (val) => {
   return isNaN(num) ? 0 : num
 }
 
+const ROW_HEIGHT = 60
+const FIXED_ROWS = 6
+const MAX_ROWS = 15
+
 const tableData = computed(() => {
   if (!props.data || !Array.isArray(props.data)) return []
   return props.data
     .filter(item => !item.isTotal && !item.is_balance)
-    .slice(0, 10)
     .map(item => ({
       label: item.subgroup,
       labelAr: item.subgroup,
@@ -416,9 +425,19 @@ const tableData = computed(() => {
     }))
 })
 
-const emptyRowsCount = computed(() => {
-  const count = tableData.value.length
-  return count > 0 && count < 6 ? 6 - count : 0
+const fillerHeight = computed(() => {
+  if (props.loading || Object.keys(expanded.value).length > 0) return 0
+  const n = tableData.value.length
+  if (n === 0) return Math.max(0, (FIXED_ROWS - 2) * ROW_HEIGHT)
+  if (n >= FIXED_ROWS) return 0
+  return (FIXED_ROWS - n) * ROW_HEIGHT
+})
+
+const scrollStyle = computed(() => {
+  if (Object.keys(expanded.value).length > 0) return {}
+  const n = tableData.value.length
+  if (n <= MAX_ROWS) return {}
+  return { maxHeight: `${(MAX_ROWS + 1) * ROW_HEIGHT}px` }
 })
 
 const summaryTotal = computed(() => {

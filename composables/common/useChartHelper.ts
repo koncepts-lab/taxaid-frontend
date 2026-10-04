@@ -1,5 +1,6 @@
 const whole = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 })
 const million = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 })
+const raw = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 // Shared chart helpers: Short/Full switch (kept per session under storageKey), axis fitting and small-bar visibility.
 export const useChartHelper = (storageKey = 'chart_unit') => {
@@ -18,6 +19,12 @@ export const useChartHelper = (storageKey = 'chart_unit') => {
   }
 
   const fmt = (value: any) => {
+    const v = Number(value) || 0
+    if (unit.value === 'millions' && Math.abs(v) >= 100000) return `${million.format(v / 1_000_000)}M`
+    return raw.format(v)
+  }
+
+  const axisFmt = (value: any) => {
     const v = Number(value) || 0
     if (unit.value === 'millions' && Math.abs(v) >= 100000) return `${million.format(v / 1_000_000)}M`
     return whole.format(v)
@@ -43,5 +50,5 @@ export const useChartHelper = (storageKey = 'chart_unit') => {
     return (value: number) => (value > 0 && value < min ? min : value)
   }
 
-  return { unit, setUnit, fmt, formatWhole, axisFor, plotter }
+  return { unit, setUnit, fmt, axisFmt, formatWhole, axisFor, plotter }
 }

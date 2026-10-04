@@ -1,6 +1,6 @@
 <template>
   <div class="relative z-[1] rounded-3xl p-8 h-full flex flex-col transition-all duration-500"
-    :class="isDark ? 'bg-[#00141080] border-none shadow-none' : 'bg-white shadow-sm border border-gray-100'">
+    :class="isDark ? 'bg-[#002e26] border-none shadow-none' : 'bg-white shadow-sm border border-gray-100'">
     <div class="flex justify-between items-start mb-4">
       <div class="flex flex-col">
         <h2 class="text-[16px] font-normal leading-tight" :class="isDark ? 'text-white' : 'text-[#000]'">{{ currentLang === 'ar' ? 'الإيرادات حسب الفئة' : 'Revenue by category' }}</h2>
@@ -109,7 +109,7 @@
           </div>
           
           <!-- Modal Body (Chart) -->
-          <div class="flex-1 w-full p-8 relative z-10 flex flex-col justify-between" :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
+          <div class="flex-1 w-full p-8 relative z-10 flex flex-col justify-between" :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff]'">
             <!-- Empty State -->
             <div v-if="!loading && !error && (!series || series.every(s => !s.data || s.data.length === 0))" class="absolute inset-0 z-20 flex items-center justify-center bg-white/50 dark:bg-black/10 backdrop-blur-[2px]">
               <div class="flex flex-col items-center gap-3 text-center px-6">

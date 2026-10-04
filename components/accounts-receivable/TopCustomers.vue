@@ -1,13 +1,13 @@
 <template>
   <div
     class="top-customers-card rounded-3xl p-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-md"
-    :style="isDark ? 'background: #015A49CC !important' : ''"
+    :style="isDark ? 'background: #015A49 !important' : ''"
   >
     <!-- Header -->
     <div class="flex flex-col lg:flex-row justify-between items-start mb-6 text-white relative z-10 gap-4">
       <div class="flex flex-col">
         <h2 class="text-[16px] font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات القبض' : 'Top Account Receivable customer wise' }}</h2>
-        <p class="text-[12px] font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}</p>
+        <p class="text-[12px] font-regular mt-2 opacity-80">{{ valuesNote(unit === 'millions') }}</p>
       </div>
       <div class="flex items-center gap-3 lg:gap-6 w-full lg:w-auto justify-between lg:justify-end">
         <div class="flex items-center gap-3 lg:gap-6 text-[10px] lg:text-[14px] font-regular leading-normal">
@@ -20,6 +20,7 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
           </div>
         </div>
+        <CommonUnitToggle :on-dark="true" storage-key="ar_top_customers_unit" />
         <CommonInfoTooltip tip="accountsReceivable.topCustomers" light align="right" />
         <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity hidden lg:block" @click="isModalOpen = true" />
       </div>
@@ -61,7 +62,7 @@
           <div class="flex justify-between items-center py-6 px-8 border-b border-white/10 text-white relative z-10 w-full">
             <div class="flex flex-col">
               <h2 class="text-lg font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات القبض' : 'Top Account Receivable customer wise' }}</h2>
-              <p class="text-xs font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}</p>
+              <p class="text-xs font-regular mt-2 opacity-80">{{ valuesNote(unit === 'millions') }}</p>
             </div>
             <div class="flex items-center gap-6">
               <div class="flex items-center gap-6 text-[14px] font-regular leading-normal">
@@ -74,6 +75,7 @@
                   <span class="opacity-90">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
                 </div>
               </div>
+              <CommonUnitToggle :on-dark="true" storage-key="ar_top_customers_unit" />
               <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                 <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
               </button>
@@ -120,7 +122,8 @@ const props = defineProps({
   loading: { type: Boolean, default: false }
 })
 
-const { formatWhole: fmt, axisFor, plotter } = useChartHelper()
+const { unit, fmt, axisFmt, axisFor, plotter } = useChartHelper('ar_top_customers_unit')
+const { valuesNote, code } = useCurrency()
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
@@ -189,7 +192,7 @@ const chartOptions = computed(() => {
       colors: ['#FFFFFFBF'],
       fontWeight: 400
     },
-    formatter: (val, { dataPointIndex }) => fmt(rawValues.value[dataPointIndex])
+    formatter: (val, { dataPointIndex }) => axisFmt(rawValues.value[dataPointIndex])
   },
   markers: {
     size: 5,
@@ -234,7 +237,7 @@ const chartOptions = computed(() => {
           fontSize: '14px',
           colors: '#FFFFFF'
         },
-        formatter: (val) => val === 0 ? "0" : fmt(val)
+        formatter: (val) => val === 0 ? "0" : axisFmt(val)
       }
     },
     {
@@ -279,7 +282,7 @@ const chartOptions = computed(() => {
           <div class="tooltip-body">
             <div class="tooltip-row">
               <span class="label">${balLabel}:</span>
-              <span class="value teal">AED ${fmt(bal)}</span>
+              <span class="value teal">${code.value} ${fmt(bal)}</span>
             </div>
             <div class="tooltip-row">
               <span class="label">${totLabel}:</span>
@@ -314,7 +317,7 @@ const chartOptions = computed(() => {
         yaxis: [
           {
             labels: {
-              formatter: (val) => Math.abs(val) === 0 ? '0' : fmt(Math.abs(val)),
+              formatter: (val) => Math.abs(val) === 0 ? '0' : axisFmt(Math.abs(val)),
               style: {
                 fontSize: '11px',
                 colors: '#FFFFFF'
@@ -359,6 +362,13 @@ const chartOptions = computed(() => {
 
 :deep(.apexcharts-canvas) {
   margin: 0 auto;
+}
+
+:deep(.apexcharts-tooltip),
+:deep(.dark-mode-bg .apexcharts-tooltip) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 :deep(.custom-tooltip) {

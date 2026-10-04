@@ -1,13 +1,13 @@
 <template>
   <div
     class="top-customers-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-md"
-    :style="isDark ? 'background: #015A49CC !important' : ''">
+    :style="isDark ? 'background: #015A49 !important' : ''">
     <!-- Header -->
     <div class="flex lg:flex-row flex-col max-lg:gap-2 justify-between items-start mb-6 text-white relative z-10">
       <div class="flex flex-col">
         <h2 class="text-[16px] font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات الدفع' :
           'Top Account Payable customer wise' }}</h2>
-        <p class="text-[12px] font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}</p>
+        <p class="text-[12px] font-regular mt-2 opacity-80">{{ valuesNote(unit === 'millions') }}</p>
       </div>
       <div class="flex items-center gap-6">
         <div class="flex items-center gap-6 text-[14px] font-regular">
@@ -20,6 +20,7 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
           </div>
         </div>
+        <CommonUnitToggle :on-dark="true" storage-key="ap_top_customers_unit" />
         <CommonInfoTooltip tip="accountsPayable.topCustomers" light align="right" />
         <img src="/images/icons/expand-white.svg" alt="Expand"
           class="max-lg:hidden w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity"
@@ -63,7 +64,7 @@
             <div class="flex flex-col">
               <h2 class="text-lg font-regular leading-tight">{{ currentLang === 'ar' ? 'أفضل العملاء حسب حسابات الدفع' :
                 'Top Account Payable customer wise' }}</h2>
-              <p class="text-xs font-regular mt-2 opacity-80">{{ currentLang === 'ar' ? 'القيم بالدرهم' : 'Values in AED' }}</p>
+              <p class="text-xs font-regular mt-2 opacity-80">{{ valuesNote(unit === 'millions') }}</p>
             </div>
             <div class="flex items-center gap-6">
               <div class="flex items-center gap-6 text-[14px] font-regular">
@@ -76,6 +77,7 @@
                   <span class="opacity-90">{{ currentLang === 'ar' ? 'إيرادات' : 'Revenue' }}</span>
                 </div>
               </div>
+              <CommonUnitToggle :on-dark="true" storage-key="ap_top_customers_unit" />
               <button @click="isModalOpen = false"
                 class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                 <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert"
@@ -123,7 +125,8 @@ const props = defineProps({
   loading: { type: Boolean, default: false }
 })
 
-const { formatWhole: fmt, axisFor, plotter } = useChartHelper()
+const { unit, fmt, axisFmt, axisFor, plotter } = useChartHelper('ap_top_customers_unit')
+const { valuesNote, code } = useCurrency()
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
@@ -198,7 +201,7 @@ const chartOptions = computed(() => {
       colors: ['#FFFFFFBF'],
       fontWeight: 400
     },
-    formatter: (val, { dataPointIndex }) => fmt(rawValues.value[dataPointIndex])
+    formatter: (val, { dataPointIndex }) => axisFmt(rawValues.value[dataPointIndex])
   },
   markers: {
     size: 5,
@@ -243,7 +246,7 @@ const chartOptions = computed(() => {
           fontSize: '14px',
           colors: '#FFFFFF'
         },
-        formatter: (val) => val === 0 ? "0" : fmt(val)
+        formatter: (val) => val === 0 ? "0" : axisFmt(val)
       }
     },
     {
@@ -292,7 +295,7 @@ const chartOptions = computed(() => {
           <div class="tooltip-body">
             <div class="tooltip-row">
               <span class="label">${balLabel}:</span>
-              <span class="value teal">AED ${curFormatted}</span>
+              <span class="value teal">${code.value} ${curFormatted}</span>
             </div>
             <div class="tooltip-row">
               <span class="label">${totLabel}:</span>
@@ -318,6 +321,13 @@ const chartOptions = computed(() => {
 
 :deep(.apexcharts-canvas) {
   margin: 0 auto;
+}
+
+:deep(.apexcharts-tooltip),
+:deep(.dark-mode-bg .apexcharts-tooltip) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 :deep(.custom-tooltip) {

@@ -173,11 +173,11 @@ const chartOptions = computed(() => ({
       const previousYearLabel = currentLang.value === 'ar' ? 'السنة السابقة: ' : 'Previous Year: ';
       const declineLabel = currentLang.value === 'ar' ? 'الانخفاض: ' : 'Decline: ';
       
-      return '<div class="px-5 py-4 bg-white rounded-xl shadow-xl border-none" style="min-width: 200px;">' +
-        '<div class="font-bold mb-2 text-[#000] text-[16px]">' + monthName + '</div>' +
-        '<div class="text-[#000] text-[14px] mb-1">' + currentYearLabel + '<span class="font-medium"> AED ' + currentYear.toFixed(1).replace('.', ',') + 'M</span></div>' +
-        '<div class="text-[#000] text-[14px] mb-1">' + previousYearLabel + '<span class="font-medium"> AED ' + previousYear.toFixed(1).replace('.', ',') + 'M</span></div>' +
-        '<div class="text-[#000] text-[14px]">' + declineLabel + '<span class="font-bold text-[#FF7B5F]"> ' + decline + '</span></div>' +
+      return '<div class="px-5 py-4 rounded-xl shadow-xl border-none" style="min-width: 200px; background: #ffffff;">' +
+        '<div class="font-bold mb-2 text-[16px]" style="color: #1A1A1A;">' + monthName + '</div>' +
+        '<div class="text-[14px] mb-1" style="color: #1A1A1A;">' + currentYearLabel + '<span class="font-medium"> AED ' + currentYear.toFixed(1).replace('.', ',') + 'M</span></div>' +
+        '<div class="text-[14px] mb-1" style="color: #1A1A1A;">' + previousYearLabel + '<span class="font-medium"> AED ' + previousYear.toFixed(1).replace('.', ',') + 'M</span></div>' +
+        '<div class="text-[14px]" style="color: #1A1A1A;">' + declineLabel + '<span class="font-bold text-[#FF7B5F]"> ' + decline + '</span></div>' +
         '</div>'
     }
   },
@@ -235,5 +235,11 @@ const chartOptions = computed(() => ({
   background: white !important;
   border: none !important;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+:deep(.dark-mode-bg .apexcharts-tooltip) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 </style>

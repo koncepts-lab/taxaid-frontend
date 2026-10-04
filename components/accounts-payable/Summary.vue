@@ -1,6 +1,6 @@
 <template>
   <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl"
-    :class="isDark ? 'bg-[#00141080]' : 'bg-white shadow-sm'">
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white shadow-sm'">
 
     <div class="py-5 lg:px-8 px-4 flex lg:flex-row flex-col justify-between lg:items-center max-lg:gap-2">
       <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
@@ -8,7 +8,7 @@
       </p>
       <div class="flex gap-4 items-center">
         <p class="text-[12px] font-normal" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED' }}
+          {{ valuesNote(false) }}
         </p>
         <CommonInfoTooltip tip="accountsPayable.summary" align="right" />
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand Icon"
@@ -25,14 +25,7 @@
             <th class="lg:px-6 px-4 py-5 font-normal text-right rtl:text-left text-[14px]">
               <div class="flex items-center justify-end rtl:justify-start gap-2">
                 {{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}
-                <img src="/images/icons/edit-white.svg" class="w-[21px] h-auto" v-if="!isDark" />
-                <svg v-else width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
-                  class="opacity-70">
-                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
+                <img src="/images/icons/edit-white.svg" class="w-[21px] h-auto" />
               </div>
             </th>
             <th v-for="col in tableColumns" :key="col.key" class="lg:px-6 px-4 py-5 font-normal text-right rtl:text-left text-[14px] whitespace-nowrap">
@@ -114,12 +107,13 @@
                 </td>
               </tr>
 
-              <!-- Loading State -->
-              <tr v-if="loadingInvoices[group.customer]" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
-                <td :colspan="tableColumns.length + 2" class="text-center py-6 opacity-60 text-sm border-t border-black/5 dark:border-white/5">
-                  {{ currentLang === 'ar' ? 'جاري تحميل الفواتير...' : 'Loading invoices...' }}
-                </td>
-              </tr>
+              <!-- Loading Skeleton -->
+              <template v-if="loadingInvoices[group.customer]">
+                <tr v-for="sk in 4" :key="'inv-sk-' + sk" class="border-t border-black/5 dark:border-white/5 animate-pulse" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                  <td class="lg:px-8 px-4 py-3.5"><div class="h-[14px] rounded" :class="[isDark ? 'bg-white/20' : 'bg-black/10', sk % 2 ? 'w-32' : 'w-24']"></div></td>
+                  <td v-for="c in tableColumns.length + 1" :key="c" class="lg:px-6 px-4 py-3.5 text-right rtl:text-left"><div class="h-[14px] w-16 ml-auto rtl:ml-0 rtl:mr-auto rounded" :class="isDark ? 'bg-white/20' : 'bg-black/10'"></div></td>
+                </tr>
+              </template>
 
               <!-- Empty State -->
               <tr v-else-if="!fetchedInvoices[group.customer]?.length" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
@@ -153,6 +147,21 @@
                     {{ formatValue(inv[col.key]) }}
                   </td>
                 </tr>
+                <template v-if="loadingMore === group.customer">
+                  <tr v-for="sk in 3" :key="'inv-more-sk-' + sk" class="border-t border-black/5 dark:border-white/5 animate-pulse" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                    <td class="lg:px-8 px-4 py-3.5"><div class="h-[14px] rounded" :class="[isDark ? 'bg-white/20' : 'bg-black/10', sk % 2 ? 'w-32' : 'w-24']"></div></td>
+                    <td v-for="c in tableColumns.length + 1" :key="c" class="lg:px-6 px-4 py-3.5 text-right rtl:text-left"><div class="h-[14px] w-16 ml-auto rtl:ml-0 rtl:mr-auto rounded" :class="isDark ? 'bg-white/20' : 'bg-black/10'"></div></td>
+                  </tr>
+                </template>
+                <tr v-else-if="invoiceHasMore[group.customer]" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                  <td :colspan="tableColumns.length + 2" class="text-center py-3 border-t border-black/5 dark:border-white/5">
+                    <button @click="loadMoreInvoices(group)"
+                      class="text-[13px] font-medium underline underline-offset-2 hover:opacity-70 transition-opacity"
+                      :class="isDark ? 'text-white' : 'text-[#013e32]'">
+                      {{ currentLang === 'ar' ? 'تحميل المزيد' : 'Load more' }}
+                    </button>
+                  </td>
+                </tr>
               </template>
             </template>
           </template>
@@ -160,8 +169,13 @@
             <td :colspan="tableColumns.length + 2" class="p-0" :style="{ height: `${fillerHeight}px` }"></td>
           </tr>
         </tbody>
+      </table>
+    </div>
+
+    <div v-if="loading || summaryTotal" class="w-full overflow-x-auto no-scrollbar">
+      <table class="w-full text-left rtl:text-right border-collapse min-w-175">
         <tfoot>
-          <tr v-if="summaryTotal && !loading" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'" class="transition-all duration-500 sticky bottom-0 z-10">
+          <tr v-if="summaryTotal && !loading" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'" class="transition-all duration-500">
             <td class="lg:px-8 px-4 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
               currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
             <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
@@ -186,7 +200,7 @@
                 {{ currentLang === 'ar' ? 'ملخص حسابات الدفع' : 'Accounts Payable Summary' }}
               </p>
               <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">
-                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED' }}
+                {{ valuesNote(false) }}
               </p>
             </div>
             <button @click="isModalOpen = false"
@@ -196,7 +210,7 @@
             </button>
           </div>
 
-          <div class="overflow-y-auto w-full no-scrollbar flex-1 relative bg-white dark:bg-[#00141080]">
+          <div class="overflow-y-auto w-full no-scrollbar flex-1 relative" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
             <table class="w-full text-left rtl:text-right border-collapse relative">
               <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
                 <tr>
@@ -206,14 +220,7 @@
                   <th class="px-6 py-5 font-normal text-right rtl:text-left text-[14px]">
                     <div class="flex items-center justify-end rtl:justify-start gap-2">
                       {{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}
-                      <img src="/images/icons/edit-white.svg" class="w-[21px] h-auto" v-if="!isDark" />
-                      <svg v-else width="21" height="21" viewBox="0 0 24 24" fill="none"
-                        xmlns="http://www.w3.org/2000/svg" class="opacity-70">
-                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor"
-                          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor"
-                          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                      </svg>
+                      <img src="/images/icons/edit-white.svg" class="w-[21px] h-auto" />
                     </div>
                   </th>
                   <th v-for="col in tableColumns" :key="'modal-th-' + col.key" class="px-6 py-5 font-normal text-right rtl:text-left text-[14px] whitespace-nowrap">
@@ -224,7 +231,7 @@
               <tbody>
                 <template v-for="(group, gIdx) in mainRows" :key="'modal-' + gIdx">
                   <tr class="transition-all duration-500 border-b border-black/5 dark:border-white/5"
-                    :class="isDark ? 'hover:bg-white/5 bg-[#00141080]' : 'hover:bg-gray-50 bg-white'">
+                    :class="isDark ? 'hover:bg-white/5 bg-[#002e26]' : 'hover:bg-gray-50 bg-white'">
                     <td class="px-8 py-5">
                       <div class="flex items-center gap-2 cursor-pointer" @click="toggleGroup(gIdx, group.customer)">
                         <span class="font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">
@@ -281,12 +288,13 @@
                       </td>
                     </tr>
 
-                    <!-- Loading State -->
-                    <tr v-if="loadingInvoices[group.customer]" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
-                      <td :colspan="tableColumns.length + 2" class="text-center py-6 opacity-60 text-sm border-t border-black/5 dark:border-white/5">
-                        {{ currentLang === 'ar' ? 'جاري تحميل الفواتير...' : 'Loading invoices...' }}
-                      </td>
-                    </tr>
+                    <!-- Loading Skeleton -->
+                    <template v-if="loadingInvoices[group.customer]">
+                      <tr v-for="sk in 4" :key="'modal-inv-sk-' + sk" class="border-t border-black/5 dark:border-white/5 animate-pulse" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                        <td class="px-8 py-3.5"><div class="h-[14px] rounded" :class="[isDark ? 'bg-white/20' : 'bg-black/10', sk % 2 ? 'w-32' : 'w-24']"></div></td>
+                        <td v-for="c in tableColumns.length + 1" :key="c" class="px-6 py-3.5 text-right rtl:text-left"><div class="h-[14px] w-16 ml-auto rtl:ml-0 rtl:mr-auto rounded" :class="isDark ? 'bg-white/20' : 'bg-black/10'"></div></td>
+                      </tr>
+                    </template>
 
                     <!-- Empty State -->
                     <tr v-else-if="!fetchedInvoices[group.customer]?.length" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
@@ -320,13 +328,28 @@
                           {{ formatValue(inv[col.key]) }}
                         </td>
                       </tr>
+                      <template v-if="loadingMore === group.customer">
+                        <tr v-for="sk in 3" :key="'modal-inv-more-sk-' + sk" class="border-t border-black/5 dark:border-white/5 animate-pulse" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                          <td class="px-8 py-3.5"><div class="h-[14px] rounded" :class="[isDark ? 'bg-white/20' : 'bg-black/10', sk % 2 ? 'w-32' : 'w-24']"></div></td>
+                          <td v-for="c in tableColumns.length + 1" :key="c" class="px-6 py-3.5 text-right rtl:text-left"><div class="h-[14px] w-16 ml-auto rtl:ml-0 rtl:mr-auto rounded" :class="isDark ? 'bg-white/20' : 'bg-black/10'"></div></td>
+                        </tr>
+                      </template>
+                      <tr v-else-if="invoiceHasMore[group.customer]" :class="isDark ? 'bg-black/20' : 'bg-[#A2E8D6]'">
+                        <td :colspan="tableColumns.length + 2" class="text-center py-3 border-t border-black/5 dark:border-white/5">
+                          <button @click="loadMoreInvoices(group)"
+                            class="text-[13px] font-medium underline underline-offset-2 hover:opacity-70 transition-opacity"
+                            :class="isDark ? 'text-white' : 'text-[#013e32]'">
+                            {{ currentLang === 'ar' ? 'تحميل المزيد' : 'Load more' }}
+                          </button>
+                        </td>
+                      </tr>
                     </template>
                   </template>
                 </template>
               </tbody>
               <tfoot>
                 <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'"
-                  class="transition-all duration-500 sticky bottom-0 z-10">
+                  class="transition-all duration-500">
                   <td class="px-8 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
                     currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
                   <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
@@ -362,7 +385,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { formatStandardNumber } from '~/utils/formatters'
 
 const props = defineProps({
@@ -386,8 +409,10 @@ const MAX_ROWS = 15
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+const { valuesNote } = useCurrency()
 
-const { holdForReview, hasInternalEmails, hasMailSettings } = useAccountsPayablePage()
+const { holdForReview, hasInternalEmails, hasMailSettings, fetchCustomerInvoicesBatch } = useAccountsPayablePage()
+const PRELOAD_CUSTOMERS = 10
 const { can } = usePermissions()
 
 const setupTip = (needsMail) => {
@@ -421,6 +446,31 @@ const sendStatus = reactive({ type: '', message: '' })
 
 const fetchedInvoices = ref({})
 const loadingInvoices = ref({})
+const invoicePage = ref({}) // last page fetched, per customer
+const invoiceHasMore = ref({}) // more invoices to load, per customer
+const loadingMore = ref(null) // customer currently loading its next page
+const INVOICES_PER_PAGE = 10
+
+watch(() => props.data, async (data) => {
+  expandedGroups.value = []
+  fetchedInvoices.value = {}
+  loadingInvoices.value = {}
+  invoicePage.value = {}
+  invoiceHasMore.value = {}
+  loadingMore.value = null
+
+  const firstNames = (data ?? []).filter(row => !row.isTotal).slice(0, PRELOAD_CUSTOMERS).map(g => g.customer).filter(Boolean)
+  if (!firstNames.length) return
+
+  const batch = await fetchCustomerInvoicesBatch(firstNames, INVOICES_PER_PAGE)
+  for (const name of firstNames) {
+    const entry = batch[name]
+    if (!entry) continue
+    fetchedInvoices.value[name] = (entry.data || []).filter(inv => !inv.isTotal)
+    invoicePage.value[name] = 1
+    invoiceHasMore.value[name] = !!entry.has_more
+  }
+}, { immediate: true })
 
 const formatBucketLabel = (key) => {
   let formatted = key.replace('bucket_', '').replace(/_/g, '-')
@@ -449,7 +499,8 @@ const skeletonColumns = computed(() => tableColumns.value.length || 4)
 const scrollStyle = computed(() => {
   const n = mainRows.value.length
   if (holdsFixedHeight.value) return { minHeight: `${(FIXED_ROWS + 2) * ROW_HEIGHT}px` }
-  if (n === 0 || expandedGroups.value.length) return {}
+  if (n === 0) return {}
+  if (expandedGroups.value.length) return { minHeight: `${(FIXED_ROWS + 2) * ROW_HEIGHT}px` }
   return { maxHeight: `${(MAX_ROWS + 2) * ROW_HEIGHT}px` }
 })
 
@@ -479,7 +530,7 @@ const toggleGroup = async (idx, customerName) => {
   if (index > -1) {
     expandedGroups.value.splice(index, 1)
   } else {
-    expandedGroups.value.push(idx)
+    expandedGroups.value = [idx]
     //Better to use a single API call to fetch customer details instead of calling it individually on each user click,
     // as this negatively impacts both UX and performance.!!!!!!!!!!!!
     if (!fetchedInvoices.value[customerName] && !loadingInvoices.value[customerName]) {
@@ -488,19 +539,49 @@ const toggleGroup = async (idx, customerName) => {
         const response = await useApi('/ap-report/customer-details', {
           params: {
             date: props.testDate,
-            customer_name: customerName
+            customer_name: customerName,
+            page: 1,
+            per_page: INVOICES_PER_PAGE
           }
         })
         if (response && response.status === 'success') {
           fetchedInvoices.value[customerName] = (response.data || []).filter(inv => !inv.isTotal)
+          invoicePage.value[customerName] = response.page ?? 1
+          invoiceHasMore.value[customerName] = !!response.has_more
         }
       } catch (err) {
         console.error('Error fetching invoices:', err)
         fetchedInvoices.value[customerName] = []
+        invoiceHasMore.value[customerName] = false
       } finally {
         loadingInvoices.value[customerName] = false
       }
     }
+  }
+}
+
+const loadMoreInvoices = async (group) => {
+  const customerName = group?.customer
+  if (!customerName || loadingMore.value || !invoiceHasMore.value[customerName]) return
+
+  loadingMore.value = customerName
+  try {
+    const nextPage = (invoicePage.value[customerName] ?? 1) + 1
+    const response = await useApi('/ap-report/customer-details', {
+      params: { date: props.testDate, customer_name: customerName, page: nextPage, per_page: INVOICES_PER_PAGE }
+    })
+    if (response && response.status === 'success') {
+      fetchedInvoices.value[customerName] = [
+        ...(fetchedInvoices.value[customerName] ?? []),
+        ...(response.data || []).filter(inv => !inv.isTotal)
+      ]
+      invoicePage.value[customerName] = response.page ?? nextPage
+      invoiceHasMore.value[customerName] = !!response.has_more
+    }
+  } catch (err) {
+    console.error('Error fetching more invoices:', err)
+  } finally {
+    loadingMore.value = null
   }
 }
 

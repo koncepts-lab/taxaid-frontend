@@ -14,7 +14,7 @@ export function useDashboard() {
   const cashflowPeriod = useState<number>('dashboard_cashflow_period', () => 3)
   const requestSeq = useState<number>('dashboard_request_seq', () => 0)
   // Session cache for period-toggle results, keyed by card+period+date —
-  // switching 3→6→9 refetches each period once, then reuses it.
+  // switching 3→6 refetches each period once, then reuses it.
   const periodCache = useState<Record<string, any>>('dashboard_period_cache', () => ({}))
 
   // Pass e.g. ['cash_flow'] to only recompute/refetch that card (used by the

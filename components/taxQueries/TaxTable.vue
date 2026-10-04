@@ -14,6 +14,7 @@
                     :class="isMinimized ? (isDark ? 'bg-white/10' : 'bg-primary-100') : 'bg-none'">
                     <span v-if="isMinimized">{{ title }} Summary</span>
                     <img :src="isMinimized ? '/images/icons/contract.svg' : '/images/icons/expand.svg'" class="w-5 h-5"
+                        :class="isDark && !isMinimized ? 'invert' : ''"
                         :alt="isMinimized ? 'Expand' : 'Contract'" />
                 </button>
             </div>

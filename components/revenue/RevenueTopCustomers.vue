@@ -1,6 +1,6 @@
 <template>
   <div class="rounded-3xl p-8 h-full flex flex-col relative transition-all duration-500"
-    :class="isDark ? 'bg-[#00141080] border-none shadow-none' : 'bg-white shadow-sm border border-gray-100'">
+    :class="isDark ? 'bg-[#002e26] border-none shadow-none' : 'bg-white shadow-sm border border-gray-100'">
     <!-- Header -->
     <div class="flex flex-col lg:flex-row lg:justify-between items-start gap-4 lg:gap-0 mb-6 w-full z-10">
       <div class="flex flex-col">
@@ -123,7 +123,7 @@
           </div>
           
           <!-- Modal Body (Chart) -->
-          <div class="flex-1 w-full p-8 relative z-10 min-h-[350px]" :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
+          <div class="flex-1 w-full p-8 relative z-10 min-h-[350px]" :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff]'">
             <!-- Loading Overlay -->
             <div v-if="loading" class="absolute inset-0 z-20 flex items-center justify-center bg-white/10 backdrop-blur-[2px]">
               <div class="flex flex-col items-center gap-3">
@@ -168,7 +168,7 @@
           </div>
 
           <!-- Bottom Legend Grid -->
-          <div class="grid grid-cols-2 md:grid-cols-5 gap-y-3 gap-x-4 mt-0 px-8 pb-8" :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-y-3 gap-x-4 mt-0 px-8 pb-8" :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff]'">
             <div v-for="item in customers" :key="'modal-' + item.id" class="flex items-center gap-1.5 whitespace-nowrap overflow-hidden">
               <span class="text-[12px] font-regular" :style="{ color: item.color }">{{ item.id }}</span>
               <span class="text-[12px] font-regular truncate" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">- {{ item.displayName }}</span>
@@ -439,6 +439,13 @@ const chartOptions = computed(() => ({
 <style scoped>
 :deep(.apexcharts-canvas) {
   margin: 0 auto;
+}
+
+:deep(.apexcharts-tooltip),
+:deep(.dark-mode-bg .apexcharts-tooltip) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 :deep(.custom-tooltip) {

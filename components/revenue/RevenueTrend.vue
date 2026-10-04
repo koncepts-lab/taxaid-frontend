@@ -290,7 +290,7 @@ const chartOptions = computed(() => ({
   tooltip: {
     theme: 'light',
     custom: function({ series, seriesIndex, dataPointIndex, w }: any) {
-      const monthLabel = w.globals.categoryLabels[dataPointIndex]
+      const monthLabel = categories.value[dataPointIndex] ?? w.globals.categoryLabels[dataPointIndex]
       const curYearValue = Number(series[1][dataPointIndex] || 0)
       const preYearValue = Number(series[0][dataPointIndex] || 0)
       
@@ -336,11 +336,18 @@ const chartOptions = computed(() => ({
 }
 
 .revenue-trend-card.dark-mode {
-  background: #00141080 !important;
+  background: #002e26 !important;
 }
 
 :deep(.apexcharts-canvas) {
   margin: 0 auto;
+}
+
+:deep(.apexcharts-tooltip),
+:deep(.dark-mode-bg .apexcharts-tooltip) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* Specific glow for Previous Year (#FF582F) at index 1 */

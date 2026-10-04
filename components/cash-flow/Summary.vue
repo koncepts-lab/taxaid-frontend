@@ -1,6 +1,6 @@
 <template>
     <div class="w-full transition-all duration-500 rounded-3xl">
-        <div class="sticky top-0 z-20 py-5 lg:px-8 px-4 flex justify-between items-center rounded-t-3xl" :class="isDark ? 'bg-[#001813]' : 'bg-white'">
+        <div class="sticky top-0 z-20 py-5 lg:px-8 px-4 flex justify-between items-center rounded-t-3xl" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
             <div>
                 <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص التدفقات النقدية' : 'Cashflow Summary' }}</p>
                 <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بالدرهم الإماراتي' : 'Values in AED' }}</p>
@@ -36,7 +36,7 @@
                     </button>
                 </div>
 
-                <div class="w-full flex-1 overflow-auto custom-scrollbar" :class="isDark ? 'bg-[#00141080]' : 'bg-white'">
+                <div class="w-full flex-1 overflow-auto custom-scrollbar" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
                     <CashFlowSummaryTable :is-modal="true" />
                 </div>
             </div>

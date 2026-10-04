@@ -49,7 +49,7 @@
 
                     <div :class="['rounded px-2 py-2.5 border mb-4 flex flex-col gap-1', isDark ? 'bg-[#001a14] border-white/10' : 'bg-white border-primary-100/29']">
                         <div class="flex items-center">
-                            <img src="/images/icons/calendar.svg" class="w-4 h-4 inline-block mr-2" />
+                            <img src="/images/icons/calendar.svg" class="w-4 h-4 inline-block mr-2" :class="isDark ? 'invert' : ''" />
                             <p class="text-xs font-medium" :class="isDark ? 'text-white/50' : 'text-black/50'">Upcoming Tax Deadlines</p>
                         </div>
                         <div v-for="deadline in deadlines" :key="deadline.label" class="text-xs" :class="isDark ? 'text-white/90' : 'text-black'">
@@ -69,7 +69,7 @@
                                 ? (isDark ? 'bg-white/10 text-white border-white/20' : 'bg-primary-350 text-[#008472] border-primary-100') 
                                 : (isDark ? 'text-white/60 hover:bg-white/5 border-transparent' : 'text-gray-500 hover:bg-primary-350 border-primary-100/33')
                         ]">
-                            <img :src="tab.icon" class="w-4 h-4 rounded-sm" /> {{ tab.name }}
+                            <img :src="tab.icon" class="w-4 h-4 rounded-sm" :class="isDark ? 'invert' : ''" /> {{ tab.name }}
                         </button>
                     </div>
 

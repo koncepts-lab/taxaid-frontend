@@ -1,7 +1,7 @@
 <template>
   <div
     class="last-6-months-card rounded-3xl lg:p-8 p-4 max-lg:py-8 h-full flex flex-col relative transition-all duration-500 overflow-hidden shadow-md"
-    :style="isDark ? 'background: #00141080 !important' : ''">
+    :style="isDark ? 'background: #002e26 !important' : ''">
     <!-- Header -->
     <div class="flex  lg:flex-row flex-col max-lg:gap-4 justify-between items-start mb-4 text-white relative z-10">
       <div class="flex flex-col">
@@ -9,7 +9,7 @@
           {{ currentLang === 'ar' ? 'آخر 6 أشهر مقارنة بالعام الماضي' : 'Last 6 months to Previous year' }}
         </h2>
         <p class="text-[12px] font-regular mt-1 opacity-80">
-          {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+          {{ valuesNote(unit === 'millions') }}
         </p>
       </div>
       <div class="flex items-center gap-6">
@@ -24,8 +24,8 @@
             <span class="opacity-90">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
           </div>
         </div>
-        <img src="/images/icons/info-white.svg" alt="Info"
-          class="w-5 h-5 cursor-pointer opacity-80 hover:opacity-100 transition-opacity max-lg:hidden" />
+        <CommonUnitToggle :on-dark="true" storage-key="cogs_last6months_unit" />
+        <CommonInfoTooltip tip="cogs.last6Months" light class="max-lg:hidden" />
         <img src="/images/icons/expand-white.svg" alt="Expand"
           class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity max-lg:hidden"
           @click="isModalOpen = true" />
@@ -35,7 +35,7 @@
     <!-- Chart -->
     <div class="flex-1 w-full min-h-[320px] relative z-10 mt-6">
       <ClientOnly>
-        <apexchart :key="data.length" type="line" height="100%" :options="chartOptions" :series="series" />
+        <apexchart :key="data.length + '-' + unit" type="line" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
     </div>
 
@@ -53,7 +53,7 @@
                 {{ currentLang === 'ar' ? 'آخر 6 أشهر مقارنة بالعام الماضي' : 'Last 6 months to Previous year' }}
               </h2>
               <p class="text-xs font-regular mt-1 opacity-80">
-                {{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}
+                {{ valuesNote(unit === 'millions') }}
               </p>
             </div>
             <div class="flex items-center gap-6">
@@ -68,6 +68,7 @@
                   <span class="opacity-90">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }}</span>
                 </div>
               </div>
+              <CommonUnitToggle :on-dark="true" storage-key="cogs_last6months_unit" />
               <button @click="isModalOpen = false"
                 class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                 <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert"
@@ -79,7 +80,7 @@
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10">
             <ClientOnly>
-              <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
+              <apexchart :key="data.length + '-' + unit + '-modal'" type="line" height="100%" :options="chartOptions" :series="series" />
             </ClientOnly>
           </div>
         </div>
@@ -90,7 +91,6 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { formatToMillions } from '~/utils/formatters'
 
 const props = defineProps({
   data: {
@@ -101,15 +101,18 @@ const props = defineProps({
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+const { valuesNote, code } = useCurrency()
+const { unit, fmt, axisFmt, axisFor } = useChartHelper('cogs_last6months_unit')
 const isModalOpen = ref(false)
 
 const months = computed(() => {
   if (props.data && props.data.length > 0) {
     return props.data.map(item => {
       const monthVal = item.month_short || item.month || item.month_name || 'N/A'
+      const label = item.year ? `${monthVal} ${item.year}` : monthVal
       return {
-        en: monthVal,
-        ar: monthVal
+        en: label,
+        ar: label
       }
     })
   }
@@ -121,11 +124,11 @@ const series = computed(() => {
     return [
       {
         name: 'Previous Year',
-        data: props.data.map(item => Number(formatToMillions(item.previous_year || 0, 2).replace(/,/g, '')))
+        data: props.data.map(item => Number(item.previous_year) || 0)
       },
       {
         name: 'Current Year',
-        data: props.data.map(item => Number(formatToMillions(item.current_year || 0, 2).replace(/,/g, '')))
+        data: props.data.map(item => Number(item.current_year) || 0)
       }
     ]
   }
@@ -136,11 +139,9 @@ const series = computed(() => {
 })
 
 const chartOptions = computed(() => {
-  // Calculate dynamic max for Y-axis based on data to prevent values hitting the ceiling
   const allData = [...series.value[0].data, ...series.value[1].data]
-  const rawMax = Math.max(...allData, 0)
-  // Logic: only if it exceeds the original 5M range, add 10% buffer and round to nearest 5.
-  const dynamicMax = rawMax > 5 ? Math.ceil((rawMax * 1.1) / 5) * 5 : 5
+  const peak = Math.max(0, ...allData)
+  const axis = axisFor(peak)
 
   return {
     chart: {
@@ -179,8 +180,8 @@ const chartOptions = computed(() => {
     },
     yaxis: {
       min: 0,
-      max: dynamicMax,
-      tickAmount: 5,
+      max: axis.max,
+      tickAmount: axis.ticks,
       axisBorder: {
         show: true,
         color: '#004033',
@@ -192,7 +193,7 @@ const chartOptions = computed(() => {
           fontSize: '12px',
           colors: '#FFFFFFBF'
         },
-        formatter: (val) => val === 0 ? '0' : val + ' M'
+        formatter: (val) => val === 0 ? '0' : axisFmt(val)
       }
     },
     grid: {
@@ -223,17 +224,17 @@ const chartOptions = computed(() => {
         const pyLabel = currentLang.value === 'ar' ? 'السنة السابقة' : 'Previous Year'
 
         return `
-          <div class="custom-tooltip-line shadow-xl rounded-2xl" style="background:#ffffff; padding: 12px 18px; border:none; color:#1A1A1A;">
-            <div style="font-size:13px; margin-bottom:10px; font-weight:600;">${catLabel}</div>
-            <div style="font-size:12px; margin-bottom:6px; display:flex; justify-content:space-between; width: 160px;">
+          <div class="custom-tooltip-line shadow-xl rounded-2xl" style="background:#ffffff; padding: 12px 18px; border:none; color:#1A1A1A; width: max-content; max-width: 260px;">
+            <div style="font-size:13px; margin-bottom:10px; font-weight:600; white-space: nowrap;">${catLabel}</div>
+            <div style="font-size:12px; margin-bottom:6px; display:flex; justify-content:space-between; gap:12px; white-space: nowrap;">
                <span>${cyLabel}:</span>
-               <span style="font-weight:600;">AED ${cyVal.toString().replace('.', ',')}M</span>
+               <span style="font-weight:600;">${code.value} ${fmt(cyVal)}</span>
             </div>
-            <div style="font-size:12px; margin-bottom:6px; display:flex; justify-content:space-between; width: 160px;">
+            <div style="font-size:12px; margin-bottom:6px; display:flex; justify-content:space-between; gap:12px; white-space: nowrap;">
                <span>${pyLabel}:</span>
-               <span style="font-weight:600;">AED ${pyVal.toString().replace('.', ',')}M</span>
+               <span style="font-weight:600;">${code.value} ${fmt(pyVal)}</span>
             </div>
-            <div style="font-size:12px; display:flex; justify-content:space-between; width: 160px;">
+            <div style="font-size:12px; display:flex; justify-content:space-between; gap:12px; white-space: nowrap;">
                <span>${declineText}:</span>
                <span style="color:${declineColor}; font-weight:600;">${declinePrefix}${decline}%</span>
             </div>

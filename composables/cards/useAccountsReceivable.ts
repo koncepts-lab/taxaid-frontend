@@ -184,6 +184,23 @@ async function sendReminders(items: { customer: string, invoices: any[] }[]) {
   }
 }
 
+async function fetchCustomerInvoicesBatch(customerNames: string[], perPage = 10) {
+  if (!customerNames.length) return {}
+  try {
+    const res: any = await useApi('/ar-report/customer-details-batch', {
+      method: 'POST',
+      body: { customers: customerNames, date: arActiveDate.value, per_page: perPage }
+    })
+    if (res?.status !== 'success' || !Array.isArray(res.results)) return {}
+
+    const map: Record<string, any> = {}
+    for (const r of res.results) map[r.customer] = r
+    return map
+  } catch {
+    return {}
+  }
+}
+
 export function useAccountsReceivablePage() {
   return {
     activeDate:         arActiveDate,
@@ -199,5 +216,6 @@ export function useAccountsReceivablePage() {
     goLiveDate:         _goLiveDate,
     fetchAll,
     sendReminders,
+    fetchCustomerInvoicesBatch,
   }
 }

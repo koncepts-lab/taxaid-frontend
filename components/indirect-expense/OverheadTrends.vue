@@ -228,7 +228,7 @@ const chartOptions = computed(() => {
         const code = currencyCode.value
         
         return '<div class="px-5 py-4 bg-[#E2F9F4] rounded-xl shadow-xl border-none" style="min-width: 200px;">' +
-          '<div class="font-bold mb-2 text-[#000] text-[16px]">' + monthName + '</div>' +
+          '<div class="font-bold mb-2 text-[16px]" style="color: #1A1A1A;">' + monthName + '</div>' +
           '<div class="text-[#333] text-[14px] mb-1">' + currentLabel + '<span class="font-bold"> ' + code + ' ' + currentYearVal + '</span></div>' +
           '<div class="text-[#333] text-[14px] mb-1">' + previousLabel + '<span class="font-bold"> ' + code + ' ' + previousYearVal + '</span></div>' +
           '<div class="text-[#333] text-[14px]">' + diffLabel + '<span class="font-bold text-[#FF582F]"> ' + variancePercent + '</span></div>' +
@@ -251,7 +251,8 @@ const chartOptions = computed(() => {
   clip-path: inset(0 100% 0 0);
 }
 
-:deep(.apexcharts-tooltip) {
+:deep(.apexcharts-tooltip),
+:deep(.dark-mode-bg .apexcharts-tooltip) {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;

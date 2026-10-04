@@ -72,6 +72,46 @@ export const TOOLTIPS: Record<string, { en: string; ar: string }> = {
     en: 'Outstanding payables grouped by how many days overdue they are, compared with the previous year. The line shows the cumulative share of total accounts payable.',
     ar: 'المبالغ المستحقة مجمعة حسب عدد أيام التأخر ومقارنة بالسنة الماضية. يوضح الخط النسبة التراكمية من إجمالي حسابات الدفع.',
   },
+  'cogsSummary.table': {
+    en: 'Cost of goods sold by subgroup, comparing the current year, previous year and budget up to the selected date, with a total row. Click a row to view its ledgers.',
+    ar: 'تكلفة المبيعات حسب كل مجموعة فرعية، مقارنة بالسنة الحالية والسنة السابقة والميزانية حتى التاريخ المحدد، مع صف الإجمالي. اضغط على صف لعرض دفاتره.',
+  },
+  'cogsSummary.cogs': {
+    en: 'The COGS subgroup the figures on this row belong to. Click to expand its ledgers.',
+    ar: 'المجموعة الفرعية لتكلفة المبيعات التي تخص أرقام هذا الصف. اضغط للتوسيع وعرض الدفاتر.',
+  },
+  'cogsSummary.currentYear': {
+    en: 'Amount booked to this subgroup for the financial year up to the selected date.',
+    ar: 'المبلغ المسجل على هذه المجموعة الفرعية للسنة المالية حتى التاريخ المحدد.',
+  },
+  'cogsSummary.previousYear': {
+    en: 'Amount booked to this subgroup for the same period of the previous financial year.',
+    ar: 'المبلغ المسجل على هذه المجموعة الفرعية لنفس الفترة من السنة المالية السابقة.',
+  },
+  'cogsSummary.budget': {
+    en: 'Budgeted amount for this subgroup for the financial year.',
+    ar: 'المبلغ المدرج بالميزانية لهذه المجموعة الفرعية للسنة المالية.',
+  },
+  'cogsSummary.variance': {
+    en: 'Current year versus budget, as a percentage of budget.',
+    ar: 'السنة الحالية مقابل الميزانية، كنسبة مئوية من الميزانية.',
+  },
+  'cogsSummary.ytg': {
+    en: 'Year to Go: the share of the annual budget still remaining.',
+    ar: 'المتبقي من السنة: النسبة المتبقية من الميزانية السنوية.',
+  },
+  'cogs.last6Months': {
+    en: 'Total COGS for each of the last 6 months, compared with the same month a year earlier.',
+    ar: 'إجمالي تكلفة المبيعات لكل شهر من آخر 6 أشهر، مقارنة بنفس الشهر من العام السابق.',
+  },
+  'cogs.revenueToCogsMonthly': {
+    en: 'Revenue against COGS for each of the last 6 months, so you can see how the cost ratio has moved over time.',
+    ar: 'الإيرادات مقابل تكلفة المبيعات لكل شهر من آخر 6 أشهر، لمتابعة تغير نسبة التكلفة مع الوقت.',
+  },
+  'cogs.breakdownByCategory': {
+    en: 'COGS for the financial year up to the selected date, broken down by category, compared with the previous year.',
+    ar: 'تكلفة المبيعات للسنة المالية حتى التاريخ المحدد، موزعة حسب الفئة، مقارنة بالسنة السابقة.',
+  },
 }
 
 export const useTooltips = () => {

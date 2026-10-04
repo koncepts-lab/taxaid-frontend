@@ -1,8 +1,8 @@
 <template>
   <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl"
-    :class="isDark ? 'bg-[#00141080]' : 'bg-white shadow-sm'">
-    
-    <div class="lg:px-8 px-4 py-5 flex justify-between items-center text-left rtl:text-right sticky top-0 z-30 rounded-t-3xl" :class="isDark ? 'bg-[#001410]' : 'bg-white'">
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white shadow-sm'">
+
+    <div class="lg:px-8 px-4 py-5 flex justify-between items-center text-left rtl:text-right sticky top-0 z-30 rounded-t-3xl" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
       <div>
         <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
           {{ currentLang === 'ar' ? 'ملخص المصروفات غير المباشرة' : 'Indirect Expense Summary' }}
@@ -225,7 +225,7 @@
           </div>
           
           <div class="overflow-y-auto w-full custom-scrollbar flex-1 min-h-0 relative"
-            :class="isDark ? 'bg-[#00141080]' : 'bg-[#fff]'">
+            :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff]'">
             <table class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px] table-fixed">
               <colgroup>
                 <col style="width: 25%" />
@@ -245,7 +245,7 @@
                   <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]">{{ currentLang === 'ar' ? 'المتبقي من السنة' : 'Year to Go' }}</th>
                 </tr>
               </thead>
-              <tbody :class="isDark ? 'bg-[#00141080]' : 'bg-white'">
+              <tbody :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
                 <template v-for="(item, idx) in mainRows" :key="'modal-' + idx">
                   <tr class="transition-all duration-500 border-b"
                     :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50'">

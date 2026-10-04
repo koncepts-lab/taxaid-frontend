@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-full rounded-[20px] p-6 shadow-sm relative group cursor-pointer transition-all duration-300 flex flex-col"
-    :class="isDark ? 'bg-[#00141080]' : 'bg-white'">
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
     <!-- Header Area -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center flex-shrink-0 gap-3">
       <!-- Title -->
@@ -238,7 +238,7 @@ const chartOptions = computed(() => {
         const code = currencyCode.value
         
         return '<div class="px-5 py-4 bg-[#E2F9F4] rounded-xl shadow-xl border-none" style="min-width: 220px;">' +
-          '<div class="font-bold mb-2 text-[#000] text-[16px]">' + monthName + '</div>' +
+          '<div class="font-bold mb-2 text-[16px]" style="color: #1A1A1A;">' + monthName + '</div>' +
           '<div class="text-[#333] text-[14px] mb-1">' + revenueLabel + '<span class="font-bold text-[#007965]"> ' + code + ' ' + revenue + '</span></div>' +
           '<div class="text-[#333] text-[14px] mb-1">' + overheadLabel + '<span class="font-bold text-[#D48806]"> ' + code + ' ' + overhead + '</span></div>' +
           '<div class="text-[#333] text-[14px]">' + ratioLabel + '<span class="font-bold text-[#007965]"> ' + ratio + '</span></div>' +
@@ -250,4 +250,10 @@ const chartOptions = computed(() => {
 </script>
 
 <style scoped>
+:deep(.apexcharts-tooltip),
+:deep(.dark-mode-bg .apexcharts-tooltip) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
 </style>

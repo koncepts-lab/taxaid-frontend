@@ -27,7 +27,7 @@
 
             <!-- Incoming (expandable) -->
             <tr class="transition-all duration-500 relative z-10" :class="[
-                isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100',
+                isDark ? 'bg-[#002e26] border-b border-white/10' : 'bg-white border-b border-gray-100',
                 expandedRow === 'incoming' ? (isModal ? 'sticky top-[52px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : 'lg:sticky lg:top-[142px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10') : ''
             ]">
                 <td :class="[cellPad, isDark ? 'text-white' : 'text-black', 'font-medium text-[14px]']">
@@ -97,7 +97,7 @@
 
             <!-- Outgoing (expandable) -->
             <tr class="transition-all duration-500 relative z-10" :class="[
-                isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100',
+                isDark ? 'bg-[#002e26] border-b border-white/10' : 'bg-white border-b border-gray-100',
                 expandedRow === 'outgoing' ? (isModal ? 'sticky top-[52px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10' : 'lg:sticky lg:top-[142px] z-10 shadow-sm outline outline-1 outline-gray-100 dark:outline-white/10') : ''
             ]">
                 <td :class="[cellPad, isDark ? 'text-white' : 'text-black', 'font-medium text-[14px]']">
@@ -176,7 +176,7 @@
             </tr>
 
             <!-- Adjustment Rows -->
-            <tr class="transition-all duration-500" :class="isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100'">
+            <tr class="transition-all duration-500" :class="isDark ? 'bg-[#002e26] border-b border-white/10' : 'bg-white border-b border-gray-100'">
                 <td :class="[cellPad, isDark ? 'text-white' : 'text-black', 'font-medium text-[14px]']">
                     {{ currentLang === 'ar' ? 'التدفق الخارج لشراء الأصول' : 'Outflow for Asset purchase' }}
                 </td>
@@ -184,7 +184,7 @@
                     {{ value }}
                 </td>
             </tr>
-            <tr class="transition-all duration-500" :class="isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100'">
+            <tr class="transition-all duration-500" :class="isDark ? 'bg-[#002e26] border-b border-white/10' : 'bg-white border-b border-gray-100'">
                 <td :class="[cellPad, isDark ? 'text-white' : 'text-black', 'font-medium text-[14px]']">
                     {{ currentLang === 'ar' ? 'التدفق الخارج لسداد القرض' : 'Outflow for Loan repayment' }}
                 </td>
@@ -192,7 +192,7 @@
                     {{ value }}
                 </td>
             </tr>
-            <tr class="transition-all duration-500" :class="isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100'">
+            <tr class="transition-all duration-500" :class="isDark ? 'bg-[#002e26] border-b border-white/10' : 'bg-white border-b border-gray-100'">
                 <td :class="[cellPad, isDark ? 'text-white' : 'text-black', 'font-medium text-[14px]']">
                     {{ currentLang === 'ar' ? 'تدفق/خروج من المساهمين' : 'Inflow/ outflow from shareholders' }}
                 </td>
@@ -200,7 +200,7 @@
                     {{ value }}
                 </td>
             </tr>
-            <tr class="transition-all duration-500" :class="isDark ? 'bg-[#001a14] border-b border-white/10' : 'bg-white border-b border-gray-100'">
+            <tr class="transition-all duration-500" :class="isDark ? 'bg-[#002e26] border-b border-white/10' : 'bg-white border-b border-gray-100'">
                 <td :class="[cellPad, isDark ? 'text-white' : 'text-black', 'font-medium text-[14px]']">
                     {{ currentLang === 'ar' ? 'التسويات المدفوعة مقدماً' : 'Prepaid adjustments' }}
                 </td>
