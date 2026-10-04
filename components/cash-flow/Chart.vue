@@ -7,7 +7,7 @@
        <!-- Title -->
       <div class="mb-4 lg:mb-2">
         <h2 class="text-[16px] font-regular text-white">{{ currentLang === 'ar' ? 'التدفق النقدي بناءً على السيناريو (2025-26)' : 'Cash flow based on Scenario (2025-26)' }}</h2>
-        <p class="text-[12px] font-regular mt-1 text-[#FFFFFFCF]">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+        <p class="text-[12px] font-regular mt-1 text-[#FFFFFFCF]">{{ valuesNote(true) }}</p>
       </div>
 
       <!-- Legend & Expand Icon -->
@@ -53,7 +53,7 @@
           <div class="flex justify-between items-center py-6 px-8 border-b border-white/10">
             <div class="flex flex-col">
               <h2 class="text-lg font-regular text-white">{{ currentLang === 'ar' ? 'التدفق النقدي بناءً على السيناريو (2025-26)' : 'Cash flow based on Scenario (2025-26)' }}</h2>
-              <p class="text-xs font-regular mt-1 text-[#FFFFFFCF]">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+              <p class="text-xs font-regular mt-1 text-[#FFFFFFCF]">{{ valuesNote(true) }}</p>
             </div>
             <div class="flex items-center gap-6">
               <div class="flex items-center gap-4 text-sm font-medium">
@@ -93,6 +93,7 @@
 import { computed, ref } from 'vue';
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
+const { code: currencyCode, valuesNote } = useCurrency()
 const isModalOpen = ref(false)
 
 const { scenarioChart } = useCashFlow()
@@ -175,8 +176,8 @@ const chartOptions = computed(() => ({
       
       return '<div class="px-5 py-4 rounded-xl shadow-xl border-none" style="min-width: 200px; background: #ffffff;">' +
         '<div class="font-bold mb-2 text-[16px]" style="color: #1A1A1A;">' + monthName + '</div>' +
-        '<div class="text-[14px] mb-1" style="color: #1A1A1A;">' + currentYearLabel + '<span class="font-medium"> AED ' + currentYear.toFixed(1).replace('.', ',') + 'M</span></div>' +
-        '<div class="text-[14px] mb-1" style="color: #1A1A1A;">' + previousYearLabel + '<span class="font-medium"> AED ' + previousYear.toFixed(1).replace('.', ',') + 'M</span></div>' +
+        '<div class="text-[14px] mb-1" style="color: #1A1A1A;">' + currentYearLabel + '<span class="font-medium"> ' + currencyCode.value + ' ' + currentYear.toFixed(1).replace('.', ',') + 'M</span></div>' +
+        '<div class="text-[14px] mb-1" style="color: #1A1A1A;">' + previousYearLabel + '<span class="font-medium"> ' + currencyCode.value + ' ' + previousYear.toFixed(1).replace('.', ',') + 'M</span></div>' +
         '<div class="text-[14px]" style="color: #1A1A1A;">' + declineLabel + '<span class="font-bold text-[#FF7B5F]"> ' + decline + '</span></div>' +
         '</div>'
     }

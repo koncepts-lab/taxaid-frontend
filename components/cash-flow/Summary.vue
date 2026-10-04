@@ -3,7 +3,7 @@
         <div class="sticky top-0 z-20 py-5 lg:px-8 px-4 flex justify-between items-center rounded-t-3xl" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
             <div>
                 <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص التدفقات النقدية' : 'Cashflow Summary' }}</p>
-                <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بالدرهم الإماراتي' : 'Values in AED' }}</p>
+                <p class="text-[12px] font-normal mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ valuesNote(false) }}</p>
             </div>
             <div class="flex items-center gap-3">
                 <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
@@ -29,7 +29,7 @@
                 <div class="flex justify-between items-center py-6 px-8 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
                     <div class="flex flex-col">
                         <h2 class="text-lg font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص التدفقات النقدية' : 'Cashflow Summary' }}</h2>
-                        <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ currentLang === 'ar' ? 'القيم بالدرهم الإماراتي' : 'Values in AED' }}</p>
+                        <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ valuesNote(false) }}</p>
                     </div>
                     <button @click="isModalOpen = false" class="p-2 rounded-full transition-colors flex-shrink-0" :class="isDark ? 'hover:bg-white/10' : 'hover:bg-black/5'">
                         <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5" :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
@@ -54,6 +54,7 @@ const props = defineProps({
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+const { valuesNote } = useCurrency()
 
 const isModalOpen = ref(false)
 </script>

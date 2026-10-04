@@ -10,7 +10,7 @@
                                 {{ customer }}
                             </h3>
                             <span class="text-[12px] mt-0.5 block" :class="isDark ? 'text-white/50' : 'text-[#00000096]'">
-                                {{ currentLang === 'ar' ? 'القيم بالدرهم الإماراتي' : 'Values in AED' }}
+                                {{ valuesNote(false) }}
                             </span>
                         </div>
                         <div class="flex items-center gap-3">
@@ -108,6 +108,7 @@ const emit = defineEmits(['update:open'])
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
+const { valuesNote } = useCurrency()
 const {
     customerDetail: data,
     customerDetailLoading: loading,

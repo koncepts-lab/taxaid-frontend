@@ -54,8 +54,10 @@ export const useCashFlow = () => {
 
   // ── helpers ──────────────────────────────────────────────────────────────
 
+  const { code: currencyCode } = useCurrency()
+
   const fmt  = (val: number) => Math.round(val).toLocaleString('en-US')
-  const fmtM = (val: number) => `AED ${(val / 1_000_000).toFixed(1)} M`
+  const fmtM = (val: number) => `${currencyCode.value} ${fmt(val)}`
   const toM  = (val: number) => parseFloat((val / 1_000_000).toFixed(2))
 
   const months = computed((): string[] => {

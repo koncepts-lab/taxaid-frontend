@@ -61,8 +61,8 @@
           type="button"
           @click="prevPage"
           :disabled="page === 0"
-          class="flex items-center gap-1 px-2.5 py-1 rounded-lg border transition-colors disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/10"
-          :class="isDark ? 'border-white/20' : 'border-gray-200'"
+          class="flex items-center gap-1 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          :class="isDark ? 'bg-gradient-to-r from-[#00A176] to-[#004E3F] text-white hover:brightness-110' : 'border border-gray-200 hover:bg-gray-100'"
         >
           <svg class="w-3.5 h-3.5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -78,8 +78,8 @@
           type="button"
           @click="nextPage"
           :disabled="page >= totalPages - 1"
-          class="flex items-center gap-1 px-2.5 py-1 rounded-lg border transition-colors disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/10"
-          :class="isDark ? 'border-white/20' : 'border-gray-200'"
+          class="flex items-center gap-1 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          :class="isDark ? 'bg-gradient-to-r from-[#00A176] to-[#004E3F] text-white hover:brightness-110' : 'border border-gray-200 hover:bg-gray-100'"
         >
           <span>{{ currentLang === 'ar' ? 'التالي' : 'Next' }}</span>
           <svg class="w-3.5 h-3.5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,8 +137,8 @@
                 type="button"
                 @click="prevPage"
                 :disabled="page === 0"
-                class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border transition-colors disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/10"
-                :class="isDark ? 'border-white/20' : 'border-gray-200'"
+                class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                :class="isDark ? 'bg-gradient-to-r from-[#00A176] to-[#004E3F] text-white hover:brightness-110' : 'border border-gray-200 hover:bg-gray-100'"
               >
                 <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -154,8 +154,8 @@
                 type="button"
                 @click="nextPage"
                 :disabled="page >= totalPages - 1"
-                class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border transition-colors disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/10"
-                :class="isDark ? 'border-white/20' : 'border-gray-200'"
+                class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                :class="isDark ? 'bg-gradient-to-r from-[#00A176] to-[#004E3F] text-white hover:brightness-110' : 'border border-gray-200 hover:bg-gray-100'"
               >
                 <span>{{ currentLang === 'ar' ? 'التالي' : 'Next' }}</span>
                 <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,23 +197,34 @@ const fmt = (value) => {
   return whole.format(v)
 }
 
+// Y-axis always shows millions regardless of the unit toggle — only bar/tooltip values follow the toggle.
+const fmtYAxis = (value) => {
+  const v = Number(value) || 0
+  return `${million.format(v / 1_000_000)}M`
+}
+
 const page = ref(0)
 const pageSize = 5
 
+// TEMP: pads category data for carousel testing — remove once confirmed, revert to the plain computeds below.
+const TEST_EXTRA_CATEGORIES = 9
+const testNames = Array.from({ length: TEST_EXTRA_CATEGORIES }, (_, i) => `Test Category ${i + 1}`)
+
 const rawCategories = computed(() => {
-  return currentLang.value === 'ar' ? (props.data?.categoriesAr || []) : (props.data?.categories || [])
+  const base = currentLang.value === 'ar' ? (props.data?.categoriesAr || []) : (props.data?.categories || [])
+  return [...base, ...testNames]
 })
 
 const rawPrev = computed(() => {
-  if (props.data?.previousYearRaw?.length) return props.data.previousYearRaw
-  const s = props.data?.series?.[0]?.data ?? []
-  return s.map(v => v * 1_000_000)
+  const base = props.data?.previousYearRaw?.length ? props.data.previousYearRaw : (props.data?.series?.[0]?.data ?? []).map(v => v * 1_000_000)
+  const extra = testNames.map((_, i) => (i + 1) * 180_000)
+  return [...base, ...extra]
 })
 
 const rawCurr = computed(() => {
-  if (props.data?.currentYearRaw?.length) return props.data.currentYearRaw
-  const s = props.data?.series?.[1]?.data ?? []
-  return s.map(v => v * 1_000_000)
+  const base = props.data?.currentYearRaw?.length ? props.data.currentYearRaw : (props.data?.series?.[1]?.data ?? []).map(v => v * 1_000_000)
+  const extra = testNames.map((_, i) => (i + 1) * 230_000)
+  return [...base, ...extra]
 })
 
 const totalPairs = computed(() => rawCategories.value.length)
@@ -327,6 +338,9 @@ const chartOptions = computed(() => ({
     axisTicks: {
       show: false
     },
+    tooltip: {
+      enabled: false
+    },
     labels: {
       style: {
         fontSize: '12px',
@@ -334,8 +348,9 @@ const chartOptions = computed(() => ({
         fontWeight: 400
       },
       offsetY: 0,
-      rotate: -45,
+      rotate: 0,
       rotateAlways: false,
+      trim: true,
       hideOverlappingLabels: false
     }
   },
@@ -351,7 +366,7 @@ const chartOptions = computed(() => ({
       },
       formatter: (value) => {
         if (value === 0) return '0'
-        return fmt(value)
+        return fmtYAxis(value)
       },
       offsetX: 0
     },
@@ -442,8 +457,9 @@ const chartOptions = computed(() => ({
             style: {
               fontSize: '10px'
             },
-            rotate: -45,
-            rotateAlways: true,
+            rotate: 0,
+            rotateAlways: false,
+            trim: true,
             hideOverlappingLabels: false
           }
         }

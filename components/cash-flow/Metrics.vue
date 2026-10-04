@@ -71,10 +71,10 @@
                         :class="isDark ? 'bg-[#002E26] border border-[#03D8B0]' : 'bg-white border border-gray-100'">
                         <button v-for="scenario in scenarios" :key="scenario.en" 
                              @click="selectScenario(scenario)"
-                             class="w-full text-left rtl:text-right px-6 py-3 text-sm transition-all duration-200 rounded-[10px] mb-1 last:mb-0 hover:bg-[#E0FFF6] hover:text-[#013E32]"
+                             class="w-full text-left rtl:text-right px-6 py-3 text-sm transition-all duration-200 rounded-[10px] mb-1 last:mb-0 hover:bg-[#E0FFF6] hover:text-[#004d3d]"
                              :class="[
-                                 selectedScenarioKey === scenario.en 
-                                    ? 'bg-[#E0FFF6] text-[#013E32] font-medium' 
+                                 selectedScenarioKey === scenario.en
+                                    ? 'bg-[#E0FFF6] text-[#004d3d] font-medium'
                                     : (isDark ? 'text-white' : 'text-black')
                              ]">
                              {{ currentLang === 'ar' ? scenario.ar : scenario.en }}

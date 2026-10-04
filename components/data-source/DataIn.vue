@@ -953,7 +953,7 @@ const handleVarianceConfirm = async () => {
             budgetStatuses.value[varianceTargetId.value] = {
                 isUploaded: true,
                 fileName: variancePreview.value.file_name ?? null,
-                uploadDate: new Date().toLocaleDateString(),
+                uploadDate: formatDisplayDate(new Date()),
             }
         } else {
             emit('uploaded', varianceTargetId.value)

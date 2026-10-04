@@ -7,7 +7,7 @@
        <!-- Title -->
       <div class="mb-4 lg:mb-2">
         <h2 class="text-[16px] font-regular text-white">{{ currentLang === 'ar' ? 'التدفق الداخلي مقابل التدفق الخارجي' : 'Inflow vs Outflow' }}</h2>
-        <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white' : 'text-[#FFFFFF5C]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+        <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white' : 'text-[#FFFFFF5C]'">{{ valuesNote(true) }}</p>
       </div>
 
       <!-- Legend & Expand Icon -->
@@ -53,7 +53,7 @@
           <div class="flex justify-between items-center py-6 px-8 border-b border-white/10">
             <div class="flex flex-col">
               <h2 class="text-lg font-regular text-white">{{ currentLang === 'ar' ? 'التدفق الداخلي مقابل التدفق الخارجي' : 'Inflow vs Outflow' }}</h2>
-              <p class="text-xs font-regular mt-1" :class="isDark ? 'text-white' : 'text-[#FFFFFF5C]'">{{ currentLang === 'ar' ? 'القيم بمليون درهم' : 'Values in AED Million' }}</p>
+              <p class="text-xs font-regular mt-1" :class="isDark ? 'text-white' : 'text-[#FFFFFF5C]'">{{ valuesNote(true) }}</p>
             </div>
             <div class="flex items-center gap-6">
               <div class="flex items-center gap-4 text-sm font-medium">
@@ -93,6 +93,7 @@
 import { computed, ref } from 'vue';
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
+const { code: currencyCode, valuesNote } = useCurrency()
 const isModalOpen = ref(false)
 
 const { inflowOutflow } = useCashFlow()
@@ -188,8 +189,8 @@ const chartOptions = computed(() => ({
       
       return '<div class="px-4 py-3 rounded-lg shadow-xl border-none" style="min-width: 180px; background: #ffffff;">' +
         '<div class="font-semibold mb-2 text-[13px]" style="color: #1A1A1A;">' + month + '</div>' +
-        '<div class="text-[12px] mb-1" style="color: #1A1A1A;">' + inflowLabel + '<span class="font-semibold">AED ' + inflowValue.toFixed(1) + 'M</span></div>' +
-        '<div class="text-[12px] mb-1" style="color: #1A1A1A;">' + outflowLabel + '<span class="font-semibold">AED ' + outflowValue.toFixed(1) + 'M</span></div>' +
+        '<div class="text-[12px] mb-1" style="color: #1A1A1A;">' + inflowLabel + '<span class="font-semibold">' + currencyCode.value + ' ' + inflowValue.toFixed(1) + 'M</span></div>' +
+        '<div class="text-[12px] mb-1" style="color: #1A1A1A;">' + outflowLabel + '<span class="font-semibold">' + currencyCode.value + ' ' + outflowValue.toFixed(1) + 'M</span></div>' +
         '<div class="text-[12px]" style="color: #1A1A1A;">' + netCashflowLabel + '<span class="font-semibold text-[#00A176]">+' + netPercentage + '%</span></div>' +
         '</div>'
     }

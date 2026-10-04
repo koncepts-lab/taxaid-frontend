@@ -750,8 +750,7 @@ const dateToStr = (d) => {
 }
 const displayDate = (str) => {
     if (!str) return ''
-    const d = new Date(str)
-    return isNaN(d.getTime()) ? str : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+    return formatDisplayDate(str)
 }
 
 const activeCalendar = ref(null)

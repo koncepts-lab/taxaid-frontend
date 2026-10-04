@@ -211,10 +211,10 @@
 
             <!-- Closing -->
             <tr class="transition-all duration-500" :class="isDark ? 'bg-[#1F6F4D] text-white' : 'bg-[#68E4C4] text-black'">
-                <td :class="[cellPad, 'font-medium text-[14px]']">
+                <td :class="[cellPad, 'font-medium text-[14px] rounded-bl-3xl rtl:rounded-bl-none rtl:rounded-br-3xl']">
                     {{ currentLang === 'ar' ? 'الإغلاق' : 'Closing' }}
                 </td>
-                <td v-for="(value, idx) in closing" :key="idx" :class="[cellPadX, 'text-right rtl:text-left font-medium text-[14px]']">
+                <td v-for="(value, idx) in closing" :key="idx" :class="[cellPadX, 'text-right rtl:text-left font-medium text-[14px]', idx === closing.length - 1 ? 'rounded-br-3xl rtl:rounded-br-none rtl:rounded-bl-3xl' : '']">
                     {{ value }}
                 </td>
             </tr>
