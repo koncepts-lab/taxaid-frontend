@@ -26,7 +26,7 @@
                         ]" />
                 </div>
                 <div class="flex items-center gap-3">
-                    <button @click="fetchRows" :disabled="loading" class="p-3 border rounded-xl transition-all"
+                    <button @click="resetAndReload" :disabled="loading" title="Reset filters and reload" class="p-3 border rounded-xl transition-all"
                         :class="[isDark ? 'bg-white/5 border-white/10 text-[#00B794]' : 'bg-white hover:bg-[#86E4CB] border-[#04C18F80] text-[#00896F]', loading ? 'opacity-50 cursor-not-allowed' : '']">
                         <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5" :class="loading ? 'animate-spin' : ''">
                     </button>
@@ -55,7 +55,7 @@
             </div>
 
             <!-- Table -->
-            <div class="overflow-x-auto border rounded-xl transition-colors"
+            <div class="overflow-x-auto border rounded-xl transition-colors min-h-[440px]"
                 :class="isDark ? 'border-white/10' : 'border-gray-100'">
                 <table class="w-full text-left rtl:text-right border-separate border-spacing-0">
                     <thead>
@@ -65,12 +65,19 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-                        <tr v-if="!loading && !rows.length">
+                        <template v-if="loading">
+                            <tr v-for="n in meta.per_page" :key="'sk'+n" class="h-[64px]">
+                                <td v-for="h in headers" :key="h" class="px-4 py-5">
+                                    <div class="h-4 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'" style="width: 70%"></div>
+                                </td>
+                            </tr>
+                        </template>
+                        <tr v-else-if="!rows.length">
                             <td :colspan="headers.length" class="px-4 py-10 text-center text-sm text-gray-400">
                                 No credential requests found.
                             </td>
                         </tr>
-                        <tr v-for="req in rows" :key="req.id" class="hover:bg-gray-50/50 transition-colors">
+                        <tr v-else v-for="req in rows" :key="req.id" class="hover:bg-gray-50/50 transition-colors">
                             <td class="px-4 py-5 text-sm font-medium text-black">{{ req.consultant_name }}</td>
                             <td class="px-4 py-5 text-sm">{{ req.client_name || '-' }}</td>
                             <td class="px-4 py-5 text-sm tabular-nums">{{ req.client_id }}</td>
@@ -105,27 +112,9 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
-            <div class="flex flex-col md:flex-row items-center justify-between gap-3">
-                <p class="text-sm text-[#717182]">
-                    Showing {{ rows.length ? (currentPage - 1) * 10 + 1 : 0 }}–{{ (currentPage - 1) * 10 + rows.length }} of {{ total }}
-                </p>
-                <div class="flex items-center gap-2">
-                    <button @click="goToPage(currentPage - 1)" :disabled="currentPage <= 1"
-                        class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
-                        Prev
-                    </button>
-                    <button v-for="p in pageWindow" :key="p" @click="goToPage(p)"
-                        class="w-9 h-9 rounded-md text-sm transition-colors"
-                        :class="p === currentPage ? 'bg-[#00896F] text-white font-bold' : 'border border-gray-200 text-gray-700 hover:bg-gray-50'">
-                        {{ p }}
-                    </button>
-                    <button @click="goToPage(currentPage + 1)" :disabled="currentPage >= lastPage"
-                        class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
-                        Next
-                    </button>
-                </div>
-            </div>
+            <CommonPaginationBar v-if="meta.total > 10" :meta="meta" :loading="loading"
+                :per-page-options="[10, 20, 50]"
+                @page-change="p => fetchRows(p)" @per-page-change="p => fetchRows(1, p)" />
         </div>
 
         <!-- Review Modal -->
@@ -358,9 +347,7 @@ const loading     = ref(false)
 const search      = ref('')
 const statusFilter = ref('')
 const filterOpen  = ref(false)
-const currentPage = ref(1)
-const lastPage    = ref(1)
-const total       = ref(0)
+const meta        = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
 
 const statusOptions = [
     { value: '',           label: 'All Statuses' },
@@ -373,51 +360,43 @@ const statusOptions = [
 ]
 const statusLabel = computed(() => statusOptions.find(o => o.value === statusFilter.value)?.label ?? 'All Statuses')
 
-async function fetchRows() {
+async function fetchRows(page = meta.value.current_page, perPage = meta.value.per_page) {
     loading.value = true
     try {
         const p = await getCredentialRequests({
             search: search.value.trim() || undefined,
             status: statusFilter.value || undefined,
-            page: currentPage.value,
-            per_page: 10,
+            page,
+            per_page: perPage,
         })
-        rows.value        = p.data ?? []
-        currentPage.value = p.current_page ?? 1
-        lastPage.value    = p.last_page ?? 1
-        total.value       = p.total ?? 0
+        rows.value = p.data ?? []
+        meta.value = {
+            current_page: p.current_page ?? 1,
+            per_page: perPage,
+            total: p.total ?? 0,
+            last_page: p.last_page ?? 1,
+        }
     } finally {
         loading.value = false
     }
 }
 
-function goToPage(p) {
-    if (p < 1 || p > lastPage.value || p === currentPage.value) return
-    currentPage.value = p
-    fetchRows()
-}
-
-const pageWindow = computed(() => {
-    const win = 5
-    let start = Math.max(1, currentPage.value - Math.floor(win / 2))
-    const end = Math.min(lastPage.value, start + win - 1)
-    start = Math.max(1, end - win + 1)
-    const pages = []
-    for (let i = start; i <= end; i++) pages.push(i)
-    return pages
-})
-
 let searchTimer = null
 watch(search, () => {
     clearTimeout(searchTimer)
-    searchTimer = setTimeout(() => { currentPage.value = 1; fetchRows() }, 350)
+    searchTimer = setTimeout(() => fetchRows(1), 350)
 })
+
+function resetAndReload() {
+    search.value = ''
+    statusFilter.value = ''
+    fetchRows(1)
+}
 
 function selectStatus(val) {
     statusFilter.value = val
     filterOpen.value = false
-    currentPage.value = 1
-    fetchRows()
+    fetchRows(1)
 }
 
 // --- Modals ---

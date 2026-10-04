@@ -547,6 +547,7 @@ const delayInputs = reactive({})
 const formatDate = (dateInput) => {
     if (!dateInput) return '-'
     const date = new Date(dateInput)
+    if (isNaN(date.getTime())) return '-'
     return new Intl.DateTimeFormat('en-GB', {
         day: '2-digit',
         month: 'short',

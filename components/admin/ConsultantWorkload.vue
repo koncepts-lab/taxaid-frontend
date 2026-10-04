@@ -10,14 +10,14 @@
                         <path d="m21 21-4.3-4.3" />
                     </svg>
                 </span>
-                <input type="text" :placeholder="currentLang === 'ar' ? 'بحث باسم العميل...' : 'Search...'"
+                <input type="text" v-model="search" :placeholder="currentLang === 'ar' ? 'بحث باسم المستشار...' : 'Search consultants...'"
                     class="w-full py-3 border rounded-xl text-sm outline-none transition-all" :class="[
                         currentLang === 'ar' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left',
                         isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-[#04C18F80] text-black'
                     ]" />
             </div>
             <div class="flex items-center gap-3">
-                <button @click="loadWorkload" :disabled="loading" class="p-3 border rounded-xl transition-all"
+                <button @click="resetAndReload" :disabled="loading" title="Reset filters and reload" class="p-3 border rounded-xl transition-all"
                     :class="[isDark ? 'bg-white/5 border-white/10 text-[#00B794]' : 'bg-white hover:bg-[#86E4CB] border-[#04C18F80] text-[#00896F]', loading ? 'opacity-50 cursor-not-allowed' : '']">
                     <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5" :class="loading ? 'animate-spin' : ''">
                 </button>
@@ -27,7 +27,7 @@
         </div>
 
         <!-- Main Data Table -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto min-h-[440px]">
             <table class="w-full text-left border-collapse min-w-[600px]">
                 <thead>
                     <tr class="text-[#1A1A1A] font-medium text-sm border-b border-gray-50">
@@ -39,7 +39,17 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
-                    <tr v-for="consultant in consultants" :key="consultant.name"
+                    <template v-if="loading">
+                        <tr v-for="n in workloadMeta.per_page" :key="'sk'+n" class="h-[68px]">
+                            <td v-for="c in 5" :key="c" class="px-6 py-5">
+                                <div class="h-4 rounded bg-gray-100 animate-pulse" style="width: 70%"></div>
+                            </td>
+                        </tr>
+                    </template>
+                    <tr v-else-if="!consultants.length">
+                        <td colspan="5" class="px-6 py-10 text-center text-sm text-gray-400">No consultants found.</td>
+                    </tr>
+                    <tr v-else v-for="consultant in consultants" :key="consultant.name"
                         class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-5 text-sm text-gray-700">{{ consultant.name }}</td>
                         <td class="px-6 py-5 text-sm text-center text-gray-700">{{ consultant.new }}</td>
@@ -55,6 +65,10 @@
                 </tbody>
             </table>
         </div>
+
+        <CommonPaginationBar v-if="workloadMeta.total > 10" :meta="workloadMeta" :loading="loading"
+            :per-page-options="[10, 20, 50]"
+            @page-change="p => loadWorkload(p)" @per-page-change="p => loadWorkload(1, p)" />
 
         <!-- Details Modal -->
         <div v-if="showModal"
@@ -75,50 +89,66 @@
                 </div>
 
                 <!-- Modal Content with Blue Border Box -->
-                <div class=" pb-8">
-                    <div class=" rounded-lg overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="text-[#1A1A1A] font-medium text-sm border-b border-gray-100">
-                                    <th class="px-6 py-4 w-1/2">Project Name</th>
-                                    <th class="px-6 py-4 text-center">New</th>
-                                    <th class="px-6 py-4 text-center">Ongoing</th>
-                                    <th class="px-6 py-4 text-center">Critical</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                <tr v-for="project in projectDetails" :key="project.id" class="text-sm">
-                                    <td class="px-6 py-4 text-gray-700 font-medium">{{ project.name }}</td>
+                <div class="pb-4 px-2">
+                    <div class="rounded-lg overflow-hidden">
+                        <div class="overflow-y-auto min-h-[520px]" style="max-height: 520px">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="sticky top-0 bg-white z-10">
+                                    <tr class="text-[#1A1A1A] font-medium text-sm border-b border-gray-100">
+                                        <th class="px-6 py-4 w-1/2">Project Name</th>
+                                        <th class="px-6 py-4 text-center">New</th>
+                                        <th class="px-6 py-4 text-center">Ongoing</th>
+                                        <th class="px-6 py-4 text-center">Critical</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <template v-if="detailsLoading">
+                                        <tr v-for="n in detailsMeta.per_page" :key="'sk'+n" class="h-[56px]">
+                                            <td v-for="c in 4" :key="c" class="px-6 py-4">
+                                                <div class="h-4 rounded bg-gray-100 animate-pulse" style="width: 60%"></div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr v-else-if="!projectDetails.length">
+                                        <td colspan="4" class="px-6 py-10 text-center text-sm text-gray-400">No projects assigned.</td>
+                                    </tr>
+                                    <tr v-else v-for="project in projectDetails" :key="project.id" class="text-sm">
+                                        <td class="px-6 py-4 text-gray-700 font-medium">{{ project.name }}</td>
 
-                                    <!-- New Column -->
-                                    <td class="px-6 py-4 text-center">
-                                        <div v-if="project.isNew" class="flex justify-center">
-                                            <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                    </td>
+                                        <!-- New Column -->
+                                        <td class="px-6 py-4 text-center">
+                                            <div v-if="project.isNew" class="flex justify-center">
+                                                <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                        </td>
 
-                                    <!-- Ongoing Column -->
-                                    <td class="px-6 py-4 text-center">
-                                        <div v-if="project.isOngoing" class="flex justify-center">
-                                            <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                    </td>
+                                        <!-- Ongoing Column -->
+                                        <td class="px-6 py-4 text-center">
+                                            <div v-if="project.isOngoing" class="flex justify-center">
+                                                <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                        </td>
 
-                                    <!-- Critical Column -->
-                                    <td class="px-6 py-4 text-center">
-                                        <div v-if="project.isCritical" class="flex justify-center">
-                                            <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                        <!-- Critical Column -->
+                                        <td class="px-6 py-4 text-center">
+                                            <div v-if="project.isCritical" class="flex justify-center">
+                                                <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <CommonPaginationBar v-if="detailsMeta.total > 20" class="px-6 pt-4" :meta="detailsMeta" :loading="detailsLoading"
+                            :per-page-options="[20, 50, 100]"
+                            @page-change="p => loadDetailsPage(p)" @per-page-change="p => loadDetailsPage(1, p)" />
                     </div>
                 </div>
             </div>
@@ -127,7 +157,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 const props = defineProps({ isDark: Boolean, currentLang: { type: String, default: 'en' } })
 const { getConsultantWorkload, getConsultantWorkloadDetails } = useImplementation()
@@ -136,6 +166,8 @@ const showModal = ref(false)
 const selectedConsultant = ref(null)
 const loading = ref(false)
 const detailsLoading = ref(false)
+const search = ref('')
+const workloadMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
 
 // --- MOCK DATA (commented out — replaced by API) ---
 // const consultants = [
@@ -156,40 +188,69 @@ const detailsLoading = ref(false)
 const consultants = ref([])
 const projectDetails = ref([])
 
-async function loadWorkload() {
+async function loadWorkload(page = workloadMeta.value.current_page, perPage = workloadMeta.value.per_page) {
     loading.value = true
     try {
-        const data = await getConsultantWorkload()
-        consultants.value = data.map(c => ({
+        const res = await getConsultantWorkload({ search: search.value.trim() || undefined, page, perPage })
+        consultants.value = res.data.map(c => ({
             consultant_id: c.consultant_id,
             name:          c.consultant_name,
             new:           c.new_projects,
             ongoing:       c.ongoing_projects,
             critical:      c.critical_projects,
         }))
+        workloadMeta.value = {
+            current_page: res.page,
+            per_page: res.per_page,
+            total: res.total,
+            last_page: Math.max(1, Math.ceil(res.total / res.per_page)),
+        }
     } finally {
         loading.value = false
     }
 }
 
-onMounted(loadWorkload)
+let workloadSearchTimer = null
+watch(search, () => {
+    clearTimeout(workloadSearchTimer)
+    workloadSearchTimer = setTimeout(() => loadWorkload(1), 350)
+})
+
+onMounted(() => loadWorkload())
+
+const detailsMeta = ref({ current_page: 1, per_page: 20, total: 0, last_page: 1 })
 
 const openModal = async (consultant) => {
     selectedConsultant.value = consultant
     showModal.value = true
+    detailsMeta.value = { current_page: 1, per_page: 20, total: 0, last_page: 1 }
+    await loadDetailsPage(1)
+}
+
+async function loadDetailsPage(page = detailsMeta.value.current_page, perPage = detailsMeta.value.per_page) {
     detailsLoading.value = true
-    projectDetails.value = []
     try {
-        const data = await getConsultantWorkloadDetails(consultant.consultant_id)
-        projectDetails.value = data.map((p, i) => ({
-            id:       i + 1,
+        const res = await getConsultantWorkloadDetails(selectedConsultant.value.consultant_id, { page, perPage })
+        projectDetails.value = res.data.map((p, i) => ({
+            id:       (page - 1) * perPage + i + 1,
             name:     p.project_name,
             isNew:     !!p.new,
             isOngoing: !!p.ongoing,
             isCritical: !!p.critical,
         }))
+        detailsMeta.value = {
+            current_page: res.page,
+            per_page: res.per_page,
+            total: res.total,
+            last_page: Math.max(1, Math.ceil(res.total / res.per_page)),
+        }
     } finally {
         detailsLoading.value = false
     }
+}
+
+function resetAndReload() {
+    search.value = ''
+    loadWorkload(1)
 }
 </script>

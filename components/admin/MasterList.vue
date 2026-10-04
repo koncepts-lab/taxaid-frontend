@@ -13,6 +13,9 @@
                 <input type="text" v-model="search" placeholder="Search by client name or client ID..."
                     class="w-full pl-12 pr-4 py-3 bg-white/50 border border-[#04C18F] rounded-xl text-sm focus:ring-1 focus:ring-[#00896F] outline-none shadow-sm transition-all placeholder:text-[#717182] text-black" />
             </div>
+            <div class="w-[200px]">
+                <CommonSelectDropdown mode="select" v-model="status" :options="statusOptions" :clearable="false" />
+            </div>
             <button @click="fetchClients()"
                 class="p-3 bg-white/50 hover:bg-[#86E4CB] border border-[#04C18F] rounded-xl hover:bg-gray-50 transition-all shadow-sm text-[#00896F]">
                 <img src="/images/icons/reload.svg" alt="Refresh" class="w-5 h-5">
@@ -119,6 +122,12 @@ const { isDark } = useTheme()
 
 const loading = ref(false)
 const search = ref('')
+const status = ref('')
+const statusOptions = [
+    { value: '', label: 'Ongoing & Pending' },
+    { value: 'Completed', label: 'Completed' },
+    { value: 'all', label: 'All' },
+]
 const activeErpTooltip = ref(null)
 function toggleErpTooltip(id) {
     activeErpTooltip.value = activeErpTooltip.value === id ? null : id
@@ -143,7 +152,7 @@ async function fetchClients(newPage = page.value, newPerPage = perPage.value) {
     page.value = newPage
     perPage.value = newPerPage
     try {
-        const res = await getMyClients({ page: newPage, perPage: newPerPage, search: search.value.trim() })
+        const res = await getMyClients({ page: newPage, perPage: newPerPage, search: search.value.trim(), status: status.value })
         total.value = res.total
         tableData.value = res.data.map(item => ({
             id:          item.client_id,
@@ -165,6 +174,8 @@ watch(search, () => {
     clearTimeout(searchTimer)
     searchTimer = setTimeout(() => fetchClients(1), 350)
 })
+
+watch(status, () => fetchClients(1))
 
 onMounted(() => fetchClients())
 

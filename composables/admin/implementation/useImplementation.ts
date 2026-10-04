@@ -17,12 +17,13 @@ export function useImplementation() {
   }
 
   // Manager routes — role: Super Admin, Implementation Manager
-  async function getPool(implementationStatus?: string, connectorStatus?: string): Promise<any[]> {
-    const params: any = {}
-    if (implementationStatus) params.implementation_status = implementationStatus
-    if (connectorStatus) params.connector_status = connectorStatus
+  async function getPool(opts: { implementationStatus?: string; connectorStatus?: string; page?: number; perPage?: number; search?: string } = {}): Promise<{ data: any[]; total: number; page: number; per_page: number }> {
+    const params: any = { page: opts.page ?? 1, per_page: opts.perPage ?? 10 }
+    if (opts.implementationStatus) params.implementation_status = opts.implementationStatus
+    if (opts.connectorStatus) params.connector_status = opts.connectorStatus
+    if (opts.search) params.search = opts.search
     const res: any = await apiFetch('/admin/implementation-pool', { params })
-    return res.data ?? []
+    return { data: res.data ?? [], total: res.total ?? 0, page: res.page ?? 1, per_page: res.per_page ?? 10 }
   }
 
   async function getConsultants(): Promise<any[]> {
@@ -41,16 +42,18 @@ export function useImplementation() {
     return res.data ?? res
   }
 
-  async function getConsultantWorkload(): Promise<any[]> {
-    const res: any = await apiFetch('/admin/implementation-pool/consultant-workload')
-    return res.data ?? []
+  async function getConsultantWorkload(opts: { search?: string; page?: number; perPage?: number } = {}): Promise<{ data: any[]; total: number; page: number; per_page: number }> {
+    const params: any = { page: opts.page ?? 1, per_page: opts.perPage ?? 10 }
+    if (opts.search) params.search = opts.search
+    const res: any = await apiFetch('/admin/implementation-pool/consultant-workload', { params })
+    return { data: res.data ?? [], total: res.total ?? 0, page: res.page ?? 1, per_page: res.per_page ?? 10 }
   }
 
-  async function getConsultantWorkloadDetails(consultantId: number): Promise<any[]> {
+  async function getConsultantWorkloadDetails(consultantId: number, opts: { page?: number; perPage?: number } = {}): Promise<{ data: any[]; total: number; page: number; per_page: number }> {
     const res: any = await apiFetch('/admin/implementation-pool/consultant-workload-details', {
-      params: { consultant_id: consultantId },
+      params: { consultant_id: consultantId, page: opts.page ?? 1, per_page: opts.perPage ?? 20 },
     })
-    return res.data ?? []
+    return { data: res.data ?? [], total: res.total ?? 0, page: res.page ?? 1, per_page: res.per_page ?? 20 }
   }
 
   async function getProjectStatusCounts(): Promise<any> {
@@ -59,9 +62,9 @@ export function useImplementation() {
   }
 
   // Member routes — role: Super Admin, Implementation Consultant
-  async function getMyClients(opts: { page?: number; perPage?: number; search?: string } = {}): Promise<{ data: any[]; total: number; page: number; per_page: number }> {
+  async function getMyClients(opts: { page?: number; perPage?: number; search?: string; status?: string } = {}): Promise<{ data: any[]; total: number; page: number; per_page: number }> {
     const res: any = await apiFetch('/admin/implementation-pool/my-clients', {
-      query: { page: opts.page ?? 1, per_page: opts.perPage ?? 20, search: opts.search || undefined },
+      query: { page: opts.page ?? 1, per_page: opts.perPage ?? 20, search: opts.search || undefined, status: opts.status || undefined },
     })
     return { data: res.data ?? [], total: res.total ?? 0, page: res.page ?? 1, per_page: res.per_page ?? 20 }
   }

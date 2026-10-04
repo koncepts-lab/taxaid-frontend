@@ -35,13 +35,13 @@
                             isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-[#04C18F80] text-black'
                         ]" />
                 </div>
-                <button @click="loadRegistrations(1)" :disabled="registrationLoading" class="p-3 border rounded-xl transition-all"
+                <button @click="resetRegistrations" :disabled="registrationLoading" title="Reset filters and reload" class="p-3 border rounded-xl transition-all"
                     :class="[isDark ? 'bg-white/5 border-white/10 text-[#00B794]' : 'bg-white hover:bg-[#86E4CB] border-[#04C18F80] text-[#00896F]', registrationLoading ? 'opacity-50 cursor-not-allowed' : '']">
                     <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5" :class="registrationLoading ? 'animate-spin' : ''">
                 </button>
             </div>
 
-            <div class="overflow-x-auto border rounded-xl transition-colors" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+            <div class="overflow-x-auto border rounded-xl transition-colors min-h-[440px]" :class="isDark ? 'border-white/10' : 'border-gray-100'">
                 <table class="w-full text-left rtl:text-right border-separate border-spacing-0 min-w-[900px]">
                     <thead>
                         <tr class="bg-[#00896F] text-white">
@@ -54,9 +54,15 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-                        <tr v-if="registrationLoading"><td colspan="6" class="px-4 py-10 text-center text-gray-400">Loading...</td></tr>
+                        <template v-if="registrationLoading">
+                            <tr v-for="n in registrationMeta.per_page" :key="'sk'+n" class="h-[64px]">
+                                <td v-for="c in 6" :key="c" class="px-4 py-5">
+                                    <div class="h-4 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'" style="width: 70%"></div>
+                                </td>
+                            </tr>
+                        </template>
                         <tr v-else-if="!registrationRows.length"><td colspan="6" class="px-4 py-10 text-center text-gray-400">No pending registrations.</td></tr>
-                        <tr v-for="row in registrationRows" :key="row.id" class="hover:bg-gray-50/50 transition-colors">
+                        <tr v-else v-for="row in registrationRows" :key="row.id" class="hover:bg-gray-50/50 transition-colors">
                             <td class="px-4 py-5 text-sm">{{ row.company_name }}</td>
                             <td class="px-4 py-5 text-sm">{{ row.org_name || '-' }}</td>
                             <td class="px-4 py-5 text-sm">{{ row.email }}</td>
@@ -74,13 +80,9 @@
                 </table>
             </div>
 
-            <div v-if="registrationMeta.last_page > 1" class="flex items-center justify-center gap-2 pt-2">
-                <button v-for="p in registrationMeta.last_page" :key="p" @click="loadRegistrations(p)"
-                    class="w-8 h-8 rounded-full text-sm transition-colors"
-                    :class="p === registrationMeta.current_page ? 'bg-[#00B794] text-white' : 'text-gray-500 hover:bg-gray-100'">
-                    {{ p }}
-                </button>
-            </div>
+            <CommonPaginationBar v-if="registrationMeta.total > 10" :meta="registrationMeta" :loading="registrationLoading"
+                :per-page-options="[10, 20, 50]"
+                @page-change="p => loadRegistrations(p)" @per-page-change="p => loadRegistrations(1, p)" />
         </div>
 
         <!-- 2b. Pool Content Card -->
@@ -105,14 +107,14 @@
                             <path d="m21 21-4.3-4.3" />
                         </svg>
                     </span>
-                    <input type="text" :placeholder="currentLang === 'ar' ? 'بحث باسم العميل...' : 'Search...'"
+                    <input type="text" v-model="poolSearch" :placeholder="currentLang === 'ar' ? 'بحث باسم العميل...' : 'Search...'"
                         class="w-full py-3 border rounded-xl text-sm outline-none transition-all" :class="[
                             currentLang === 'ar' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left',
                             isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-[#04C18F80] text-black'
                         ]" />
                 </div>
                 <div class="flex items-center gap-3">
-                    <button @click="loadPool" :disabled="loading" class="p-3 border rounded-xl transition-all"
+                    <button @click="resetPool" :disabled="loading" title="Reset filters and reload" class="p-3 border rounded-xl transition-all"
                         :class="[isDark ? 'bg-white/5 border-white/10 text-[#00B794]' : 'bg-white hover:bg-[#86E4CB] border-[#04C18F80] text-[#00896F]', loading ? 'opacity-50 cursor-not-allowed' : '']">
                         <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5" :class="loading ? 'animate-spin' : ''">
                     </button>
@@ -131,10 +133,9 @@
             </div>
 
             <!-- 3. Dynamic Table -->
-            <div class="overflow-x-auto border rounded-xl transition-colors"
+            <div class="overflow-x-auto border rounded-xl transition-colors min-h-[440px]"
                 :class="isDark ? 'border-white/10' : 'border-gray-100'">
-                <!-- Increased min-width to 2200px to accommodate all columns in "All Projects" -->
-                <table class="w-full text-left rtl:text-right border-separate border-spacing-0 min-w-[2200px]">
+                <table class="w-full text-left rtl:text-right border-separate border-spacing-0">
                     <thead>
                         <tr class="bg-[#00896F] text-white">
                             <th v-for="h in translatedHeaders" :key="h"
@@ -143,21 +144,34 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-                        <tr v-for="client in activeTableData" :key="client.id"
+                        <template v-if="loading">
+                            <tr v-for="n in poolMeta.per_page" :key="'sk'+n" class="h-[64px]">
+                                <td v-for="h in translatedHeaders" :key="h" class="px-4 py-5">
+                                    <div class="h-4 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'" style="width: 70%"></div>
+                                </td>
+                            </tr>
+                        </template>
+                        <tr v-else-if="!activeTableData.length">
+                            <td :colspan="translatedHeaders.length" class="px-4 py-10 text-center text-sm text-gray-400">
+                                No clients found.
+                            </td>
+                        </tr>
+                        <tr v-else v-for="client in activeTableData" :key="client.id"
                             class="hover:bg-gray-50/50 transition-colors">
-                            <!-- 1. ID -->
-                            <td class="px-4 py-5 text-sm text-black tabular-nums">{{ client.id }}</td>
-                            <!-- 2. Name -->
-                            <td class="px-4 py-5 text-sm ">{{ client.name }}</td>
+                            <td class="px-4 py-5">
+                                <div class="text-sm font-medium text-black">{{ client.name }}</div>
+                                <div class="text-xs text-gray-400 tabular-nums">{{ client.id }}<span v-if="client.industry && client.industry !== '-'"> &middot; {{ client.industry }}</span></div>
+                                <button @click="openContactModal(client)"
+                                    class="mt-1.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors"
+                                    :class="isDark ? 'bg-white/10 text-[#00E6B8] hover:bg-white/20' : 'bg-[#E6FDF9] text-[#00896F] hover:bg-[#CFF7ED]'">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                    Contact
+                                </button>
+                            </td>
                             <!-- 3. Date -->
                             <td class="px-4 py-5 text-sm ">{{ client.date }}</td>
                             <!-- 4. ERP -->
                             <td class="px-4 py-5 text-sm">{{ client.erp }}</td>
-
-                            <!-- 5. Industry (Visible in New, Completed, All) -->
-                            <td v-if="['new', 'completed', 'all'].includes(activeSubTab)" class="px-4 py-5 text-sm">
-                                {{ client.industry || '-' }}
-                            </td>
 
                             <!-- 6. Status/Connector (Visible in New, Ongoing, All) -->
                             <td v-if="['new', 'ongoing', 'all'].includes(activeSubTab)" class="px-4 py-5">
@@ -193,14 +207,6 @@
                                 </div>
                                 <span v-else>-</span>
                             </td>
-
-                            <!-- 8. Mobile Number (Visible in New, All) -->
-                            <td v-if="['new', 'all'].includes(activeSubTab)"
-                                class="px-4 py-5 text-sm whitespace-nowrap">{{ client.phone || '-' }}</td>
-
-                            <!-- 9. Email (Visible in New, All) -->
-                            <td v-if="['new', 'all'].includes(activeSubTab)" class="px-4 py-5 text-sm">{{ client.email
-                                || '-' }}</td>
 
                             <!-- 10. End Date (Visible in Ongoing, Completed, All) -->
                             <td v-if="['ongoing', 'completed', 'all'].includes(activeSubTab)"
@@ -251,6 +257,10 @@
                     </tbody>
                 </table>
             </div>
+
+            <CommonPaginationBar v-if="poolMeta.total > 10" :meta="poolMeta" :loading="loading"
+                :per-page-options="[10, 20, 50]"
+                @page-change="p => loadPool(p)" @per-page-change="p => loadPool(1, p)" />
         </div>
 
         <!-- Registration Review Modal -->
@@ -299,6 +309,46 @@
                                 class="px-5 py-2 bg-[#007C65] text-white rounded-md text-sm font-medium hover:bg-[#006A56] disabled:opacity-60 transition-colors">
                                 {{ registrationActing ? 'Approving…' : 'Approve — Provision Organization' }}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
+        <Teleport to="body">
+            <Transition name="fade">
+                <div v-if="showContactModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                    <div class="bg-white rounded-2xl shadow-xl w-[420px] max-w-full flex flex-col">
+                        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-[16px] font-semibold text-gray-900">Contact Details</h3>
+                                <p class="text-xs text-gray-400 mt-0.5">{{ contactClient?.name }}</p>
+                            </div>
+                            <button @click="showContactModal = false" class="text-gray-400 hover:text-gray-600">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </div>
+                        <div class="p-6 space-y-4 text-sm">
+                            <div>
+                                <p class="text-xs text-gray-400 mb-1">Mobile Number</p>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="font-medium text-gray-900">{{ contactClient?.phone && contactClient.phone !== '-' ? contactClient.phone : 'Not available' }}</span>
+                                    <button v-if="contactClient?.phone && contactClient.phone !== '-'" @click="copyToClipboard(contactClient.phone)"
+                                        class="text-gray-400 hover:text-[#00896F] transition-colors" title="Copy mobile number">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 mb-1">Email</p>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="font-medium text-gray-900 truncate">{{ contactClient?.email && contactClient.email !== '-' ? contactClient.email : 'Not available' }}</span>
+                                    <button v-if="contactClient?.email && contactClient.email !== '-'" @click="copyToClipboard(contactClient.email)"
+                                        class="text-gray-400 hover:text-[#00896F] transition-colors shrink-0" title="Copy email">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -420,11 +470,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 const props = defineProps({ isDark: Boolean, currentLang: { type: String, default: 'en' } })
 
-const { getPool, getConsultants, updateAssignment, getRegistrationRequests, getRegistrationRequestDetail, approveRegistrationRequest, rejectRegistrationRequest } = useImplementation()
+const { getPool, getConsultants, updateAssignment, getProjectStatusCounts, getRegistrationRequests, getRegistrationRequestDetail, approveRegistrationRequest, rejectRegistrationRequest } = useImplementation()
 
 const route  = useRoute()
 const router = useRouter()
@@ -434,7 +484,8 @@ const activeSubTab = ref(validSubTabs.includes(route.query.subtab) ? route.query
 function setSubTab(id) {
     activeSubTab.value = id
     router.replace({ query: { ...route.query, subtab: id } })
-    if (id === 'registrations' && !registrationsLoaded.value) loadRegistrations()
+    if (id === 'registrations') { if (!registrationsLoaded.value) loadRegistrations() }
+    else loadPool(1)
 }
 const openDropdownId = ref(null)
 const dropdownPos = ref({ top: 0, left: 0, width: 0 })
@@ -444,14 +495,12 @@ const selectedFilter = ref('All Connector Statuses')
 const loading = ref(false)
 const consultantList = ref([])
 
-// --- 1. MOCK DATA STORE (commented out — replaced by API) ---
-// const mockData = ref({
-//     'new': [{ id: 'client-7', name: 'Logistics Express Inc.', date: '01/10/2026', erp: 'SAP', industry: 'Logistics', connectorStatus: 'Pending', phone: '+ 123 123 123', email: 'sarah@gmail.com', consultant: '' }],
-//     'ongoing': [{ id: 'client-11', name: 'Al Dhabi Contracting', date: '01/10/2026', erp: 'SAP', status: 'Pending', progress: 8, endDate: '01/10/2026', overrun: '+5 days', consultant: 'Sarah Johnson' }],
-//     'completed': [{ id: 'client-134', name: 'Maritime Logistics', date: '01/10/2026', erp: 'Oracle', industry: 'Maritime', status: 'Connected', progress: 15, endDate: '01/10/2026', overrun: '-', consultant: 'Sarah Johnson' }]
-// })
+const statusCounts = ref({ new: 0, ongoing: 0, completed: 0 })
+const poolRows = ref([])
+const poolMeta = ref({ current_page: 1, per_page: 10, total: 0, last_page: 1 })
+const poolSearch = ref('')
 
-const poolData = ref({ new: [], ongoing: [], completed: [] })
+const SUBTAB_TO_STATUS = { new: 'New', ongoing: 'Ongoing', completed: 'Completed' }
 
 function mapClient(item) {
     return {
@@ -476,36 +525,70 @@ function mapClient(item) {
     }
 }
 
-async function loadPool() {
+async function loadStatusCounts() {
+    const counts = await getProjectStatusCounts()
+    statusCounts.value = {
+        new:       counts.new_projects ?? 0,
+        ongoing:   counts.ongoing_projects ?? 0,
+        completed: counts.completed_projects ?? 0,
+    }
+}
+
+async function loadPool(page = poolMeta.value.current_page, perPage = poolMeta.value.per_page) {
+    if (activeSubTab.value === 'registrations') return
     loading.value = true
     try {
-        const all = await getPool()
-        poolData.value.new       = all.filter(c => c.implementation_status === 'New').map(mapClient)
-        poolData.value.ongoing   = all.filter(c => c.implementation_status === 'Ongoing').map(mapClient)
-        poolData.value.completed = all.filter(c => c.implementation_status === 'Completed').map(mapClient)
+        const connectorStatus = activeSubTab.value === 'ongoing' && selectedFilter.value !== 'All Connector Statuses'
+            ? selectedFilter.value : undefined
+        const res = await getPool({
+            implementationStatus: SUBTAB_TO_STATUS[activeSubTab.value],
+            connectorStatus,
+            search: poolSearch.value.trim() || undefined,
+            page, perPage,
+        })
+        poolRows.value = res.data.map(mapClient)
+        poolMeta.value = {
+            current_page: res.page,
+            per_page: res.per_page,
+            total: res.total,
+            last_page: Math.max(1, Math.ceil(res.total / res.per_page)),
+        }
     } finally {
         loading.value = false
     }
 }
 
-// --- 2. DYNAMIC COMPUTE FOR "ALL" DATA ---
-const activeTableData = computed(() => {
-    if (activeSubTab.value === 'all') {
-        return [...poolData.value.new, ...poolData.value.ongoing, ...poolData.value.completed]
-    }
-    const data = poolData.value[activeSubTab.value] ?? []
-    if (activeSubTab.value === 'ongoing' && selectedFilter.value !== 'All Connector Statuses') {
-        return data.filter(c => c.status === selectedFilter.value)
-    }
-    return data
+function resetPool() {
+    poolSearch.value = ''
+    selectedFilter.value = 'All Connector Statuses'
+    loadPool(1)
+}
+
+let poolSearchTimer = null
+watch(poolSearch, () => {
+    clearTimeout(poolSearchTimer)
+    poolSearchTimer = setTimeout(() => loadPool(1), 350)
 })
+
+function copyToClipboard(text) {
+    navigator.clipboard?.writeText(text).catch(() => {})
+}
+
+const showContactModal = ref(false)
+const contactClient = ref(null)
+function openContactModal(client) {
+    contactClient.value = client
+    showContactModal.value = true
+}
+
+const activeTableData = computed(() => poolRows.value)
 
 const subTabs = computed(() => [
     { id: 'registrations', label: 'Registrations', labelAr: 'طلبات التسجيل', count: registrationMeta.value.total },
-    { id: 'new', label: 'New', labelAr: 'جديد', count: poolData.value.new.length },
-    { id: 'ongoing', label: 'Ongoing', labelAr: 'قيد التنفيذ', count: poolData.value.ongoing.length },
-    { id: 'completed', label: 'Completed', labelAr: 'مكتمل', count: poolData.value.completed.length },
-    { id: 'all', label: 'All Projects', labelAr: 'جميع المشاريع', count: poolData.value.new.length + poolData.value.ongoing.length + poolData.value.completed.length },
+    { id: 'new', label: 'New', labelAr: 'جديد', count: statusCounts.value.new },
+    { id: 'ongoing', label: 'Ongoing', labelAr: 'قيد التنفيذ', count: statusCounts.value.ongoing },
+    { id: 'completed', label: 'Completed', labelAr: 'مكتمل', count: statusCounts.value.completed },
+    { id: 'all', label: 'All Projects', labelAr: 'جميع المشاريع', count: statusCounts.value.new + statusCounts.value.ongoing + statusCounts.value.completed },
 ])
 
 // --- Organization registration review (new tenants awaiting approval) ---
@@ -519,16 +602,21 @@ const showRegistrationDetail = ref(false)
 const registrationActing   = ref(false)
 const registrationEnableAi = ref(false)
 
-async function loadRegistrations(page = 1) {
+async function loadRegistrations(page = 1, perPage = registrationMeta.value.per_page) {
     registrationLoading.value = true
     try {
-        const res = await getRegistrationRequests({ search: registrationSearch.value || undefined, page, per_page: 10 })
+        const res = await getRegistrationRequests({ search: registrationSearch.value || undefined, page, per_page: perPage })
         registrationRows.value = res.data ?? []
         registrationMeta.value = res.meta ?? { current_page: 1, last_page: 1, total: 0, per_page: 10 }
         registrationsLoaded.value = true
     } finally {
         registrationLoading.value = false
     }
+}
+
+function resetRegistrations() {
+    registrationSearch.value = ''
+    loadRegistrations(1)
 }
 
 async function openRegistrationDetail(row) {
@@ -570,13 +658,13 @@ function registrationStatusPillClass(status) {
 }
 
 const tabConfigs = {
-    'new': { title: 'New Clients', titleAr: 'عملاء جدد', sub: 'Assign consultants to projects', headers: ['Client ID', 'Client Name', 'Date Assigned', 'ERP', 'Industry', 'Connector', 'Mobile Number', 'Email', 'Partner', 'Consultant', 'Action'], headersAr: ['المعرف', 'الاسم', 'التاريخ', 'ERP', 'الصناعة', 'الموصل', 'الهاتف', 'البريد', 'الشريك', 'المستشار', 'إجراء'] },
-    'ongoing': { title: 'Ongoing Projects', titleAr: 'مشاريع قيد التنفيذ', sub: 'Track progress and assignments', headers: ['Client ID', 'Client Name', 'Date Assigned', 'ERP', 'Status', 'Progress Indicator', 'Expected Close', 'Overrun', 'Partner', 'Consultant', 'Delays'], headersAr: ['المعرف', 'الاسم', 'التاريخ', 'ERP', 'الحالة', 'مؤشر التقدم', 'تاريخ الإغلاق', 'التجاوز', 'الشريك', 'المستشار', 'التأخيرات'] },
-    'completed': { title: 'Completed Projects', titleAr: 'المشاريع المكتملة', sub: 'Successfully completed projects', headers: ['Client ID', 'Client Name', 'Date Assigned', 'ERP', 'Industry', 'Go Live Date', 'Overrun', 'Consultant ID'], headersAr: ['المعرف', 'الاسم', 'التاريخ', 'ERP', 'الصناعة', 'تاريخ الإطلاق', 'التجاوز', 'المستشار'] },
+    'new': { title: 'New Clients', titleAr: 'عملاء جدد', sub: 'Assign consultants to projects', headers: ['Client Details', 'Date Assigned', 'ERP', 'Connector', 'Partner', 'Consultant', 'Action'], headersAr: ['بيانات العميل', 'التاريخ', 'ERP', 'الموصل', 'الشريك', 'المستشار', 'إجراء'] },
+    'ongoing': { title: 'Ongoing Projects', titleAr: 'مشاريع قيد التنفيذ', sub: 'Track progress and assignments', headers: ['Client Details', 'Date Assigned', 'ERP', 'Status', 'Progress Indicator', 'Expected Close', 'Overrun', 'Partner', 'Consultant', 'Delays'], headersAr: ['بيانات العميل', 'التاريخ', 'ERP', 'الحالة', 'مؤشر التقدم', 'تاريخ الإغلاق', 'التجاوز', 'الشريك', 'المستشار', 'التأخيرات'] },
+    'completed': { title: 'Completed Projects', titleAr: 'المشاريع المكتملة', sub: 'Successfully completed projects', headers: ['Client Details', 'Date Assigned', 'ERP', 'Go Live Date', 'Overrun', 'Consultant ID'], headersAr: ['بيانات العميل', 'التاريخ', 'ERP', 'تاريخ الإطلاق', 'التجاوز', 'المستشار'] },
     'all': {
         title: 'All Projects', titleAr: 'جميع المشاريع', sub: 'Complete project implementation history',
-        headers: ['Client ID', 'Client Name', 'Date Assigned', 'ERP', 'Industry', 'Status/Connector', 'Progress', 'Mobile', 'Email', 'End Date', 'Overrun', 'Consultant'],
-        headersAr: ['المعرف', 'الاسم', 'التاريخ', 'ERP', 'الصناعة', 'الحالة', 'التقدم', 'الهاتف', 'البريد', 'تاريخ الانتهاء', 'التجاوز', 'المستشار']
+        headers: ['Client Details', 'Date Assigned', 'ERP', 'Status/Connector', 'Progress', 'End Date', 'Overrun', 'Consultant'],
+        headersAr: ['بيانات العميل', 'التاريخ', 'ERP', 'الحالة', 'التقدم', 'تاريخ الانتهاء', 'التجاوز', 'المستشار']
     }
 }
 
@@ -603,13 +691,33 @@ const openDropdown = (event, type, client) => {
     dropdownPos.value = { top: rect.bottom + window.scrollY + 5, left: rect.left + window.scrollX, width: rect.width }
     openDropdownId.value = id
 }
-const handleSelect = (val) => {
-    if (activeDropdownType.value === 'filter') selectedFilter.value = val
-    else if (activeClient.value) { if (activeDropdownType.value === 'conn') activeClient.value.connectorStatus = val; else activeClient.value.consultant = val }
+const handleSelect = async (val) => {
+    const type = activeDropdownType.value
+    const client = activeClient.value
     openDropdownId.value = null
+
+    if (type === 'filter') {
+        selectedFilter.value = val
+        await loadPool(1)
+        return
+    }
+    if (!client) return
+    if (type === 'conn') {
+        const prev = client.connectorStatus
+        client.connectorStatus = val
+        client.status = val
+        try {
+            await updateAssignment({ client_id: client.id, connector_status: val })
+        } catch {
+            client.connectorStatus = prev
+            client.status = prev
+        }
+    } else {
+        client.consultant = val
+    }
 }
 const dropdownItems = computed(() => {
-    if (activeDropdownType.value === 'filter') return ['All Connector Statuses', 'Pending', 'Manual Connector', 'Connected', 'Send']
+    if (activeDropdownType.value === 'filter') return ['All Connector Statuses', 'Pending', 'Manual Connected', 'Connected', 'Send']
     if (activeDropdownType.value === 'conn') return ['Pending', 'Manual Connected', 'Send', 'Connected']
     // consultant dropdown: show names from API
     return consultantList.value.map(c => c.full_name)
@@ -621,7 +729,7 @@ const assignProject = async (client) => {
         implementation_consultant_id: consultant?.id ?? null,
         implementation_status: 'Ongoing',
     })
-    await loadPool()
+    await Promise.all([loadPool(poolMeta.value.current_page), loadStatusCounts()])
 }
 // Delays modal
 const { getActivePartners, linkPartnerToClient, getClientDelays } = useImplementation()
@@ -677,13 +785,10 @@ async function confirmLinkPartner() {
     partnerLinking.value = true
     try {
         await linkPartnerToClient(selectedPartner.value.id, partnerModalClient.value._tenantId)
-        for (const tab of ['new', 'ongoing', 'completed']) {
-            const idx = poolData.value[tab].findIndex(c => c.id === partnerModalClient.value.id)
-            if (idx !== -1) {
-                poolData.value[tab][idx].partnerId   = selectedPartner.value.id
-                poolData.value[tab][idx].partnerName = selectedPartner.value.name
-                break
-            }
+        const idx = poolRows.value.findIndex(c => c.id === partnerModalClient.value.id)
+        if (idx !== -1) {
+            poolRows.value[idx].partnerId   = selectedPartner.value.id
+            poolRows.value[idx].partnerName = selectedPartner.value.name
         }
         showPartnerConfirm.value = false
     } finally {
@@ -693,7 +798,9 @@ async function confirmLinkPartner() {
 
 onMounted(async () => {
     window.addEventListener('click', (e) => { if (!e.target.closest('button')) openDropdownId.value = null })
-    const [, consultants] = await Promise.all([loadPool(), getConsultants(), loadRegistrations()])
+    const tasks = [loadStatusCounts(), getConsultants(), loadRegistrations()]
+    if (activeSubTab.value !== 'registrations') tasks.push(loadPool(1))
+    const [, consultants] = await Promise.all(tasks)
     consultantList.value = consultants
 })
 </script>

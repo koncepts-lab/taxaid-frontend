@@ -158,7 +158,7 @@ onMounted(async () => {
     let client = selectedClient.value
     if (!client) {
         try {
-            const pool = await getMyClients({ perPage: 1000 })
+            const pool = await getMyClients({ perPage: 1000, status: 'all' })
             const match = pool.data.find(p => p.client_id === clientId)
             if (match) {
                 client = {
