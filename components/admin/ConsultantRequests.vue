@@ -1,118 +1,90 @@
 <template>
     <div class="space-y-6">
         <!-- Content Card -->
-        <div class="rounded-2xl border transition-all duration-300 p-8 space-y-6"
-            :class="isDark ? 'bg-[#015F4D]/20 border-[#00B794]/30 text-white' : 'bg-white border-gray-100 shadow-sm text-black'">
+        <div class="rounded-[20px] border shadow-sm p-8 pb-12 space-y-8 transition-all duration-300"
+            :class="isDark ? 'bg-[#00141080] border-white/10 text-white' : 'bg-white border-[#E5E5E5] text-black'">
 
             <div class="space-y-1 text-left rtl:text-right">
-                <h3 class="text-xl font-normal">{{ currentLang === 'ar' ? 'طلبات بيانات الاعتماد' : 'Temporary Credential Requests' }}</h3>
-                <p class="text-base text-[#717182]">{{ currentLang === 'ar' ? 'الموافقة على أو رفض طلبات تسجيل الدخول المؤقت' : 'Approve or reject temporary login requests from consultants' }}</p>
+                <h2 class="text-[24px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">{{ currentLang === 'ar' ? 'طلبات بيانات الاعتماد' : 'Temporary Credential Requests' }}</h2>
+                <p class="text-[14px] text-[#00000080]" :class="isDark ? 'text-white/60' : ''">{{ currentLang === 'ar' ? 'الموافقة على أو رفض طلبات تسجيل الدخول المؤقت' : 'Approve or reject temporary login requests from consultants' }}</p>
             </div>
 
             <!-- Search bar Row -->
-            <div class="flex flex-col md:flex-row items-center gap-3">
-                <div class="relative flex-1 w-full">
-                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400 rtl:left-auto rtl:right-0 rtl:pr-4">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8" />
-                            <path d="m21 21-4.3-4.3" />
-                        </svg>
+            <div class="flex items-center gap-4">
+                <div class="relative flex-1">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 opacity-30">
+                        <img src="/images/icons/search.svg" class="w-5 h-5" :class="isDark ? 'invert brightness-0' : ''" alt="search" />
                     </span>
                     <input type="text" v-model="search"
                         :placeholder="currentLang === 'ar' ? 'بحث بالاستشاري أو العميل...' : 'Search by consultant, client name or ID...'"
-                        class="w-full py-3 border rounded-xl text-sm outline-none transition-all" :class="[
-                            currentLang === 'ar' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left',
-                            isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-[#04C18F80] text-black'
-                        ]" />
+                        class="w-full h-[48px] pl-12 pr-4 rounded-[10px] border border-[#04C18F33] outline-none focus:border-[#00896F] transition-colors text-[14px] font-regular"
+                        :class="[currentLang === 'ar' ? 'pr-12 pl-4 text-right' : '', isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a] placeholder-[#0000004D]']" />
                 </div>
-                <div class="flex items-center gap-3">
-                    <button @click="resetAndReload" :disabled="loading" title="Reset filters and reload" class="p-3 border rounded-xl transition-all"
-                        :class="[isDark ? 'bg-white/5 border-white/10 text-[#00B794]' : 'bg-white hover:bg-[#86E4CB] border-[#04C18F80] text-[#00896F]', loading ? 'opacity-50 cursor-not-allowed' : '']">
-                        <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5" :class="loading ? 'animate-spin' : ''">
-                    </button>
+                <button @click="resetAndReload" :disabled="loading" title="Reset filters and reload"
+                    class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
+                    :class="[isDark ? 'bg-black/20 border-white/10' : 'bg-white', loading ? 'opacity-50 cursor-not-allowed' : '']">
+                    <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', loading ? 'animate-spin' : '']">
+                </button>
 
-                    <div class="relative">
-                        <button @click.stop="filterOpen = !filterOpen"
-                            class="flex items-center gap-3 px-4 py-3 bg-white border border-[#04C18F80] rounded-xl text-sm text-[#717182] transition-all">
-                            <span>{{ statusLabel }}</span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="3" class="transition-transform" :class="{ 'rotate-180': filterOpen }">
-                                <path d="m6 9 6 6 6-6" />
-                            </svg>
+                <div class="relative w-[220px]">
+                    <button @click.stop="filterOpen = !filterOpen"
+                        class="w-full h-[48px] px-4 rounded-[10px] border border-[#04C18F] flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
+                        :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a]'">
+                        <span class="text-[14px] font-regular flex-1 text-center">{{ statusLabel }}</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3" class="transition-transform opacity-40" :class="{ 'rotate-180': filterOpen }">
+                            <path d="m6 9 6 6 6-6" />
+                        </svg>
+                    </button>
+                    <div v-if="filterOpen"
+                        class="absolute top-full left-0 right-0 mt-2 bg-white rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-gray-100 p-2 z-20 flex flex-col gap-1">
+                        <button v-for="opt in statusOptions" :key="opt.value" @click.stop="selectStatus(opt.value)"
+                            class="text-left px-4 py-2.5 rounded-[10px] text-[15px] transition-colors cursor-pointer"
+                            :class="statusFilter === opt.value ? 'bg-[#E6FFF3] text-[#1a1a1a]' : 'text-[#1a1a1a] hover:bg-gray-50'">
+                            {{ opt.label }}
                         </button>
-                        <Transition name="fade">
-                            <div v-if="filterOpen"
-                                class="absolute right-0 mt-2 z-50 bg-white rounded-2xl shadow-[0_10px_50px_rgba(0,0,0,0.2)] border border-gray-100 p-2 w-48">
-                                <div v-for="opt in statusOptions" :key="opt.value" @click.stop="selectStatus(opt.value)"
-                                    class="px-4 py-2.5 text-xs rounded-xl cursor-pointer transition-colors hover:bg-[#E6FDF9] hover:text-[#00896F]"
-                                    :class="statusFilter === opt.value ? 'bg-[#E6FDF9] text-[#00896F] font-bold' : 'text-gray-700'">
-                                    {{ opt.label }}
-                                </div>
-                            </div>
-                        </Transition>
                     </div>
                 </div>
             </div>
 
             <!-- Table -->
-            <div class="overflow-x-auto border rounded-xl transition-colors min-h-[440px]"
-                :class="isDark ? 'border-white/10' : 'border-gray-100'">
-                <table class="w-full text-left rtl:text-right border-separate border-spacing-0">
-                    <thead>
-                        <tr class="bg-[#00896F] text-white">
-                            <th v-for="h in headers" :key="h" class="px-4 py-4 text-sm font-normal tracking-wider last:border-0">
-                                {{ h }}</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-                        <template v-if="loading">
-                            <tr v-for="n in meta.per_page" :key="'sk'+n" class="h-[64px]">
-                                <td v-for="h in headers" :key="h" class="px-4 py-5">
-                                    <div class="h-4 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'" style="width: 70%"></div>
-                                </td>
-                            </tr>
-                        </template>
-                        <tr v-else-if="!rows.length">
-                            <td :colspan="headers.length" class="px-4 py-10 text-center text-sm text-gray-400">
-                                No credential requests found.
-                            </td>
-                        </tr>
-                        <tr v-else v-for="req in rows" :key="req.id" class="hover:bg-gray-50/50 transition-colors">
-                            <td class="px-4 py-5 text-sm font-medium text-black">{{ req.consultant_name }}</td>
-                            <td class="px-4 py-5 text-sm">{{ req.client_name || '-' }}</td>
-                            <td class="px-4 py-5 text-sm tabular-nums">{{ req.client_id }}</td>
-                            <td class="px-4 py-5 text-sm whitespace-nowrap">{{ formatTime(req.requested_at) }}</td>
-                            <td class="px-4 py-5">
-                                <span class="px-3 py-0.5 rounded-full text-sm capitalize" :class="statusPill(req.status)">
-                                    {{ req.status }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-5 text-sm max-w-[220px] truncate" :class="!req.request_note ? 'text-center text-gray-400' : ''" :title="req.request_note || ''">
-                                {{ req.request_note || '—' }}
-                            </td>
-                            <td class="px-4 py-5">
-                                <div class="flex items-center gap-2">
-                                    <button v-if="req.status === 'pending'" @click="openReview(req)"
-                                        class="bg-[#00B68D] hover:bg-[#006552] text-white px-5 py-1.5 rounded-md text-xs font-bold transition-colors">
-                                        Review
-                                    </button>
-                                    <button v-else @click="openView(req)"
-                                        class="bg-white border border-[#00896F] text-[#00896F] hover:bg-[#E6FDF9] px-5 py-1.5 rounded-md text-xs font-medium transition-colors">
-                                        View
-                                    </button>
-                                    <button v-if="req.has_logged_in" @click="openInfo(req)"
-                                        class="bg-white border border-[#193CB8] text-[#193CB8] hover:bg-[#DBEAFE] px-4 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5">
-                                        <span v-if="req.is_online" class="w-2 h-2 rounded-full bg-[#15803D] animate-pulse"></span>
-                                        Info
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <CommonAdminDataTable :headers="headers" :loading="loading" :row-count="rows.length" :dark="isDark" empty-text="No credential requests found.">
+                <tr v-for="req in rows" :key="req.id" class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
+                    <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ req.consultant_name }}</td>
+                    <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ req.client_name || '-' }}</td>
+                    <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC] tabular-nums" :class="isDark ? 'text-white/90' : ''">{{ req.client_id }}</td>
+                    <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC] whitespace-nowrap" :class="isDark ? 'text-white/90' : ''">{{ formatTime(req.requested_at) }}</td>
+                    <td class="py-6 px-8">
+                        <span class="px-3 py-0.5 rounded-full text-[13px] capitalize" :class="statusPill(req.status)">
+                            {{ req.status }}
+                        </span>
+                    </td>
+                    <td class="py-6 px-8 text-[14px] font-regular max-w-[220px] truncate" :class="!req.request_note ? 'text-center text-gray-400' : (isDark ? 'text-white/90' : 'text-[#000000CC]')" :title="req.request_note || ''">
+                        {{ req.request_note || '—' }}
+                    </td>
+                    <td class="py-6 px-8">
+                        <div class="flex items-center gap-2">
+                            <button v-if="req.status === 'pending'" @click="openReview(req)"
+                                class="px-5 py-2 rounded-[8px] bg-[#04C18F] text-white text-[13px] font-medium hover:bg-[#03a87c] transition-colors cursor-pointer shadow-sm">
+                                Review
+                            </button>
+                            <button v-else @click="openView(req)"
+                                class="px-5 py-2 rounded-[8px] border border-[#00896F] text-[#00896F] text-[13px] font-medium hover:bg-[#E6FDF9] transition-colors cursor-pointer"
+                                :class="isDark ? 'bg-transparent' : 'bg-white'">
+                                View
+                            </button>
+                            <button v-if="req.has_logged_in" @click="openInfo(req)"
+                                class="px-4 py-2 rounded-[8px] border border-[#193CB8] text-[#193CB8] text-[13px] font-medium hover:bg-[#DBEAFE] transition-colors cursor-pointer flex items-center gap-1.5"
+                                :class="isDark ? 'bg-transparent' : 'bg-white'">
+                                <span v-if="req.is_online" class="w-2 h-2 rounded-full bg-[#15803D] animate-pulse"></span>
+                                Info
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </CommonAdminDataTable>
 
-            <CommonPaginationBar v-if="meta.total > 10" :meta="meta" :loading="loading"
+            <CommonPaginationBar v-if="meta.total > 0" :meta="meta" :loading="loading" :dark="isDark"
                 :per-page-options="[10, 20, 50]"
                 @page-change="p => fetchRows(p)" @per-page-change="p => fetchRows(1, p)" />
         </div>

@@ -54,9 +54,10 @@
           </div>
           <div v-if="showConsDropdown" class="absolute top-full left-0 mt-2 bg-white rounded-[12px] shadow-lg border border-gray-100 p-2 z-30 min-w-[220px] flex flex-col gap-1">
             <button v-for="c in consultants" :key="c.id" @click="selectConsultant(c)"
-                    class="text-left px-4 py-2.5 rounded-[10px] text-[14px] transition-colors cursor-pointer hover:bg-[#E6FFF3]">
+                    class="text-left px-4 py-2.5 rounded-[10px] text-[14px] text-[#1a1a1a] transition-colors cursor-pointer hover:bg-[#E6FFF3]">
               {{ c.name }}
             </button>
+            <p v-if="!consultants.length" class="px-4 py-2.5 text-[13px] text-[#6C768A]">No review consultants found for your department.</p>
           </div>
         </div>
       </div>
@@ -171,7 +172,12 @@ const logData           = ref({ logs: [], total_formatted: '0h 0m', count_fixed:
 const showConsDropdown  = ref(false)
 
 onMounted(async () => {
-  consultants.value = await rm.getConsultantList()
+  try {
+    consultants.value = await rm.getConsultantList()
+  } catch (e) {
+    console.error('Failed to load consultant list', e)
+    consultants.value = []
+  }
   if (consultants.value.length) {
     selectedAdminId.value = consultants.value[0].id
     await loadLog()

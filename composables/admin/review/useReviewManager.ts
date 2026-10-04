@@ -27,32 +27,32 @@ export function useReviewManager() {
     return res
   }
 
-  async function getSyncStatus(page = 1, search = '', status = ''): Promise<any> {
-    const res: any = await apiFetch(`/admin/review/clients/sync-status?page=${page}&search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`)
+  async function getSyncStatus(page = 1, search = '', status = '', perPage = 10): Promise<any> {
+    const res: any = await apiFetch(`/admin/review/clients/sync-status?page=${page}&search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}&per_page=${perPage}`)
     _syncStatus.value = res.data ?? []
     return res
   }
 
-  async function getFixedProgress(page = 1, search = ''): Promise<any> {
-    const res: any = await apiFetch(`/admin/review/clients/fixed-progress?page=${page}&search=${encodeURIComponent(search)}`)
+  async function getFixedProgress(page = 1, search = '', perPage = 10): Promise<any> {
+    const res: any = await apiFetch(`/admin/review/clients/fixed-progress?page=${page}&search=${encodeURIComponent(search)}&per_page=${perPage}`)
     _fixedProgress.value = res.data ?? []
     return res
   }
 
-  async function getTeamWorkload(page = 1, search = ''): Promise<any> {
-    const res: any = await apiFetch(`/admin/review/team/workload?page=${page}&search=${encodeURIComponent(search)}`)
+  async function getTeamWorkload(page = 1, search = '', perPage = 10): Promise<any> {
+    const res: any = await apiFetch(`/admin/review/team/workload?page=${page}&search=${encodeURIComponent(search)}&per_page=${perPage}`)
     _workload.value = res.data ?? []
     return res
   }
 
-  async function getUnassignedClients(page = 1, search = ''): Promise<any> {
-    const res: any = await apiFetch(`/admin/review/clients/unassigned?page=${page}&search=${encodeURIComponent(search)}`)
+  async function getUnassignedClients(page = 1, search = '', perPage = 10): Promise<any> {
+    const res: any = await apiFetch(`/admin/review/clients/unassigned?page=${page}&search=${encodeURIComponent(search)}&per_page=${perPage}`)
     _unassigned.value = res.data ?? []
     return res
   }
 
-  async function getAssignedClients(page = 1, search = ''): Promise<any> {
-    return await apiFetch(`/admin/review/clients/assigned?page=${page}&search=${encodeURIComponent(search)}`)
+  async function getAssignedClients(page = 1, search = '', perPage = 10): Promise<any> {
+    return await apiFetch(`/admin/review/clients/assigned?page=${page}&search=${encodeURIComponent(search)}&per_page=${perPage}`)
   }
 
   async function assignConsultant(tenantId: number, adminId: number, departmentId: number): Promise<void> {

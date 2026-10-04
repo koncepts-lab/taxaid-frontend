@@ -24,14 +24,27 @@
         </div>
       </div>
 
-      <!-- Navigation Tabs -->
-      <div :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-gray-100'" class="flex items-center justify-between overflow-x-auto no-scrollbar rounded-[35px] p-[10px] border shadow-sm">
-        <button v-for="tab in tabs" :key="tab"
-                @click="setTab(tab)"
-                class="px-8 py-2.5 rounded-full text-[14px] transition-all cursor-pointer whitespace-nowrap"
-                :class="activeTab === tab 
-                  ? (isDark ? 'bg-[#1b5e50] text-[#fff] shadow-sm' : 'bg-[#82FFE0] text-[#0A0A0A] font-normal') 
+      <!-- Navigation: Group Tabs -->
+      <div :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-gray-100'" class="flex items-center justify-between max-[1500px]:gap-0.5 gap-1 overflow-x-auto no-scrollbar rounded-[35px] max-[1500px]:p-1.5 p-[10px] border shadow-sm">
+        <button v-for="group in tabGroups" :key="group.name"
+                @click="setGroup(group)"
+                class="flex-shrink-0 max-[1500px]:px-2.5 px-4 max-[1500px]:py-2 py-2.5 rounded-full max-[1500px]:text-[12px] text-[14px] transition-all cursor-pointer whitespace-nowrap"
+                :class="activeGroup.name === group.name
+                  ? (isDark ? 'bg-[#1b5e50] text-[#fff] shadow-sm' : 'bg-[#82FFE0] text-[#0A0A0A] font-normal')
                   : (isDark ? 'bg-transparent text-white/70' : 'bg-transparent text-[#0A0A0A] font-normal')">
+          {{ group.name }}
+        </button>
+      </div>
+
+      <!-- Navigation: Sub Tabs -->
+      <div v-if="activeGroup.tabs.length > 1" class="flex items-center gap-1 text-sm p-1.5 rounded-full border shadow-sm w-fit"
+           :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-gray-100'">
+        <button v-for="tab in activeGroup.tabs" :key="tab"
+                @click="setTab(tab)"
+                class="flex-shrink-0 py-2 px-5 rounded-full transition-colors whitespace-nowrap"
+                :class="activeTab === tab
+                  ? (isDark ? 'bg-[#1b5e50] text-white font-semibold shadow-sm' : 'bg-[#82FFE0] text-[#006A56] font-semibold shadow-sm')
+                  : (isDark ? 'text-white/70 font-medium hover:bg-white/10' : 'text-gray-700 font-medium hover:bg-gray-50 hover:text-gray-900')">
           {{ tab }}
         </button>
       </div>
@@ -60,44 +73,30 @@
               <img src="/images/icons/search.svg" class="w-5 h-5" :class="isDark ? 'invert brightness-0' : ''" alt="search" />
             </span>
             <input type="text" v-model="consultantsSearch"
-                   @input="debounceSearch('consultants', () => { consultantsPage = 1; loadConsultants() })"
+                   @input="debounceSearch('consultants', () => loadConsultants(1))"
                    placeholder="Search by consultant name..."
                    class="w-full h-[48px] pl-12 pr-4 rounded-[10px] border border-[#04C18F33] outline-none focus:border-[#00896F] transition-colors text-[14px] font-regular"
                    :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a] placeholder-[#0000004D]'" />
           </div>
-          <button @click="loadConsultants" class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
+          <button @click="() => loadConsultants()" class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
                   :class="isDark ? 'bg-black/20 border-white/10' : 'bg-white'">
             <img src="/images/icons/reload.svg" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', reloading ? 'animate-spin' : '']" alt="refresh" />
           </button>
         </div>
 
         <!-- Table -->
-        <div class="overflow-hidden rounded-[8px]">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-[#00896F] text-white">
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Consultant ID</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Consultant Name</th>
-                <th class="py-4 px-8 font-normal text-[15px] text-left border-r border-[#ffffff1A]">Open request (Fixed)</th>
-                <th class="py-4 px-8 font-normal text-[15px] text-left">Open request (Adhoc)</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-              <tr v-for="(consultant, idx) in consultantsList" :key="idx"
-                  class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ consultant.id }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ consultant.name }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ consultant.fixed }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ consultant.adhoc }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-if="consultantsLast > 1" class="flex items-center justify-end gap-2 pt-2">
-          <button @click="consultantsPage--; loadConsultants()" :disabled="consultantsPage <= 1" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">← Prev</button>
-          <span class="text-[13px] opacity-60">{{ consultantsPage }} / {{ consultantsLast }}</span>
-          <button @click="consultantsPage++; loadConsultants()" :disabled="consultantsPage >= consultantsLast" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">Next →</button>
-        </div>
+        <CommonAdminDataTable :headers="['Consultant ID', 'Consultant Name', 'Open request (Fixed)', 'Open request (Adhoc)']"
+          :loading="consultantsLoading" :row-count="consultantsList.length" :dark="isDark" empty-text="No consultants found.">
+          <tr v-for="(consultant, idx) in consultantsList" :key="idx"
+              class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ consultant.id }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ consultant.name }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ consultant.fixed }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ consultant.adhoc }}</td>
+          </tr>
+        </CommonAdminDataTable>
+        <CommonPaginationBar v-if="consultantsMeta.total > 0" :meta="consultantsMeta" :loading="consultantsLoading" :dark="isDark"
+          :per-page-options="[10, 20, 50]" @page-change="p => loadConsultants(p)" @per-page-change="p => loadConsultants(1, p)" />
       </div>
 
       <!-- Main Section: Data Sync Status -->
@@ -118,12 +117,12 @@
               <img src="/images/icons/search.svg" class="w-5 h-5" :class="isDark ? 'invert brightness-0' : ''" alt="search" />
             </span>
             <input type="text" v-model="syncSearch"
-                   @input="debounceSearch('sync', () => { syncPage = 1; loadSync() })"
+                   @input="debounceSearch('sync', () => loadSync(1))"
                    placeholder="Search by client name..."
                    class="w-full h-[48px] pl-12 pr-4 rounded-[10px] border border-[#04C18F33] outline-none focus:border-[#00896F] transition-colors text-[14px] font-regular"
                    :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a] placeholder-[#0000004D]'" />
           </div>
-          <button @click="loadSync" class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
+          <button @click="() => loadSync()" class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
                   :class="isDark ? 'bg-black/20 border-white/10' : 'bg-white'">
             <img src="/images/icons/reload.svg" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', reloading ? 'animate-spin' : '']" alt="refresh" />
           </button>
@@ -158,46 +157,38 @@
         </div>
 
         <!-- Table -->
-        <div class="overflow-hidden rounded-[8px]">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-[#00896F] text-white">
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Client ID</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Client Name</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Last Sync Date</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Sync Status</th>
-                <th class="py-4 px-8 font-normal text-[15px]">Responsible Consultant</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-              <tr v-for="(client, idx) in syncData" :key="idx" 
-                  class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ client.id }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ client.name }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">
-                  <div class="flex items-center gap-2">
-                    <span :class="client.status === 'Not Synced' ? 'text-[#C10007]' : ''">{{ client.date }}</span>
-                    <span v-if="client.daysAgo" class="px-2 py-0.5 rounded-full bg-[#FEF2F2] text-[#C10007] text-[11px] font-medium border border-[#FFA6A6]">
-                      {{ client.daysAgo }} days ago
-                    </span>
-                  </div>
-                </td>
-                <td class="py-6 px-8 text-[14px] font-regular">
-                  <span :class="client.status === 'Synced' ? 'bg-[#ECFDF5] text-[#059669] border-[#D1FAE5]' : 'bg-[#FEF2F2] text-[#C10007] border-[#FFA6A6]'"
-                        class="px-3 py-1 rounded-full text-[12px] font-medium border">
-                    {{ client.status }}
-                  </span>
-                </td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ client.consultant }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-if="syncLast > 1" class="flex items-center justify-end gap-2 pt-2">
-          <button @click="syncPage--; loadSync()" :disabled="syncPage <= 1" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">← Prev</button>
-          <span class="text-[13px] opacity-60">{{ syncPage }} / {{ syncLast }}</span>
-          <button @click="syncPage++; loadSync()" :disabled="syncPage >= syncLast" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">Next →</button>
-        </div>
+        <CommonAdminDataTable :headers="['Client ID', 'Client Name', 'Last Sync Date', 'Sync Status', 'Responsible Consultant', 'Connector']"
+          :loading="syncLoading" :row-count="syncData.length" :dark="isDark" empty-text="No clients found.">
+          <tr v-for="(client, idx) in syncData" :key="idx"
+              class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ client.id }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ client.name }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">
+              <div class="flex items-center gap-2">
+                <span :class="client.status === 'Not Synced' ? 'text-[#C10007]' : ''">{{ client.date }}</span>
+                <span v-if="client.daysAgo" class="px-2 py-0.5 rounded-full bg-[#FEF2F2] text-[#C10007] text-[11px] font-medium border border-[#FFA6A6]">
+                  {{ client.daysAgo }} days ago
+                </span>
+              </div>
+            </td>
+            <td class="py-6 px-8 text-[14px] font-regular">
+              <span :class="client.status === 'Synced' ? 'bg-[#ECFDF5] text-[#059669] border-[#D1FAE5]' : 'bg-[#FEF2F2] text-[#C10007] border-[#FFA6A6]'"
+                    class="px-3 py-1 rounded-full text-[12px] font-medium border">
+                {{ client.status }}
+              </span>
+            </td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ client.consultant }}</td>
+            <td class="py-6 px-8">
+              <button @click="openConnectorConfig(client)"
+                      class="px-4 py-2 rounded-[8px] bg-[#82FFE0] text-[#0A0A0A] text-[13px] font-medium hover:bg-[#6eddc5] transition-colors cursor-pointer"
+                      :class="isDark ? 'bg-[#1b5e50] text-white' : ''">
+                Config
+              </button>
+            </td>
+          </tr>
+        </CommonAdminDataTable>
+        <CommonPaginationBar v-if="syncMeta.total > 0" :meta="syncMeta" :loading="syncLoading" :dark="isDark"
+          :per-page-options="[10, 20, 50]" @page-change="p => loadSync(p)" @per-page-change="p => loadSync(1, p)" />
       </div>
 
       <!-- Main Section: Client fixed progress -->
@@ -218,55 +209,40 @@
               <img src="/images/icons/search.svg" class="w-5 h-5" :class="isDark ? 'invert brightness-0' : ''" alt="search" />
             </span>
             <input type="text" v-model="progressSearch"
-                   @input="debounceSearch('progress', () => { progressPage = 1; loadProgress() })"
+                   @input="debounceSearch('progress', () => loadProgress(1))"
                    placeholder="Search by consultant or client name..."
                    class="w-full h-[48px] pl-12 pr-4 rounded-[10px] border border-[#04C18F33] outline-none focus:border-[#00896F] transition-colors text-[14px] font-regular"
                    :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a] placeholder-[#0000004D]'" />
           </div>
-          <button @click="loadProgress" class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
+          <button @click="() => loadProgress()" class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
                   :class="isDark ? 'bg-black/20 border-white/10' : 'bg-white'">
             <img src="/images/icons/reload.svg" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', reloading ? 'animate-spin' : '']" alt="refresh" />
           </button>
         </div>
 
         <!-- Table -->
-        <div class="overflow-hidden rounded-[8px]">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-[#00896F] text-white">
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Consultant ID</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Consultant Name</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Client Name</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Progress Tracker</th>
-                <th class="py-4 px-8 font-normal text-[15px]">Client Delay</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-              <tr v-for="(item, idx) in clientFixedProgressData" :key="idx"
-                  class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.consultant_id }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.consultantName }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientName }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular">
-                  <div class="flex items-center gap-4">
-                    <div class="w-32 h-2 bg-gray-200 rounded-full overflow-hidden" :class="isDark ? 'bg-white/10' : ''">
-                      <div class="h-full rounded-full transition-all duration-500"
-                           :style="{ width: (item.progressValue / item.progressTotal * 100) + '%' }"
-                           :class="getProgressColor(item.progressValue, item.progressTotal)"></div>
-                    </div>
-                    <span class="text-[13px] text-[#00000099]" :class="isDark ? 'text-white/60' : ''">{{ item.progressValue }}/{{ item.progressTotal }}</span>
-                  </div>
-                </td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.delay }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-if="progressLast > 1" class="flex items-center justify-end gap-2 pt-2">
-          <button @click="progressPage--; loadProgress()" :disabled="progressPage <= 1" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">← Prev</button>
-          <span class="text-[13px] opacity-60">{{ progressPage }} / {{ progressLast }}</span>
-          <button @click="progressPage++; loadProgress()" :disabled="progressPage >= progressLast" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">Next →</button>
-        </div>
+        <CommonAdminDataTable :headers="['Consultant ID', 'Consultant Name', 'Client Name', 'Progress Tracker', 'Client Delay']"
+          :loading="progressLoading" :row-count="clientFixedProgressData.length" :dark="isDark" empty-text="No progress data found.">
+          <tr v-for="(item, idx) in clientFixedProgressData" :key="idx"
+              class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.consultant_id }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.consultantName }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientName }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular">
+              <div class="flex items-center gap-4">
+                <div class="w-32 h-2 bg-gray-200 rounded-full overflow-hidden" :class="isDark ? 'bg-white/10' : ''">
+                  <div class="h-full rounded-full transition-all duration-500"
+                       :style="{ width: (item.progressValue / item.progressTotal * 100) + '%' }"
+                       :class="getProgressColor(item.progressValue, item.progressTotal)"></div>
+                </div>
+                <span class="text-[13px] text-[#00000099]" :class="isDark ? 'text-white/60' : ''">{{ item.progressValue }}/{{ item.progressTotal }}</span>
+              </div>
+            </td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.delay }}</td>
+          </tr>
+        </CommonAdminDataTable>
+        <CommonPaginationBar v-if="progressMeta.total > 0" :meta="progressMeta" :loading="progressLoading" :dark="isDark"
+          :per-page-options="[10, 20, 50]" @page-change="p => loadProgress(p)" @per-page-change="p => loadProgress(1, p)" />
       </div>
 
       <!-- Main Section: Consultant workload -->
@@ -287,56 +263,39 @@
               <img src="/images/icons/search.svg" class="w-5 h-5" :class="isDark ? 'invert brightness-0' : ''" alt="search" />
             </span>
             <input type="text" v-model="workloadSearch"
-                   @input="debounceSearch('workload', () => { workloadPage = 1; loadWorkload() })"
+                   @input="debounceSearch('workload', () => loadWorkload(1))"
                    placeholder="Search by consultant name..."
                    class="w-full h-[48px] pl-12 pr-4 rounded-[10px] border border-[#04C18F33] outline-none focus:border-[#00896F] transition-colors text-[14px] font-regular"
                    :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a] placeholder-[#0000004D]'" />
           </div>
-          <button @click="loadWorkload" class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
+          <button @click="() => loadWorkload()" class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
                   :class="isDark ? 'bg-black/20 border-white/10' : 'bg-white'">
             <img src="/images/icons/reload.svg" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', reloading ? 'animate-spin' : '']" alt="refresh" />
           </button>
         </div>
 
         <!-- Table -->
-        <div class="overflow-hidden rounded-[8px]">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-[#00896F] text-white">
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Consultant ID</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Consultant Name</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Average productive hours (1 month)</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Client Fixed</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Client Request</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Client Analysis</th>
-                <th class="py-4 px-8 font-normal text-[15px]">View Status</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-              <tr v-for="(item, idx) in consultantWorkloadData" :key="idx"
-                  class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.id }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.name }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.avgHours }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientFixed }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientRequest }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientAnalysis }}</td>
-                <td class="py-6 px-8">
-                  <button @click="navigateTo(`/admin/review-team/manager/consultant-workload-details?admin_id=${item.id}`)"
-                          class="px-4 py-2 rounded-[8px] bg-[#82FFE0] text-[#0A0A0A] text-[13px] font-medium hover:bg-[#6eddc5] transition-colors cursor-pointer"
-                          :class="isDark ? 'bg-[#1b5e50] text-white' : ''">
-                    View Details
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-if="workloadLast > 1" class="flex items-center justify-end gap-2 pt-2">
-          <button @click="workloadPage--; loadWorkload()" :disabled="workloadPage <= 1" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">← Prev</button>
-          <span class="text-[13px] opacity-60">{{ workloadPage }} / {{ workloadLast }}</span>
-          <button @click="workloadPage++; loadWorkload()" :disabled="workloadPage >= workloadLast" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">Next →</button>
-        </div>
+        <CommonAdminDataTable :headers="['Consultant ID', 'Consultant Name', 'Average productive hours (1 month)', 'Client Fixed', 'Client Request', 'Client Analysis', 'View Status']"
+          :loading="workloadLoading" :row-count="consultantWorkloadData.length" :dark="isDark" empty-text="No workload data found.">
+          <tr v-for="(item, idx) in consultantWorkloadData" :key="idx"
+              class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.id }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.name }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.avgHours }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientFixed }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientRequest }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientAnalysis }}</td>
+            <td class="py-6 px-8">
+              <button @click="navigateTo(`/admin/review-team/manager/consultant-workload-details?admin_id=${item.id}`)"
+                      class="px-4 py-2 rounded-[8px] bg-[#82FFE0] text-[#0A0A0A] text-[13px] font-medium hover:bg-[#6eddc5] transition-colors cursor-pointer"
+                      :class="isDark ? 'bg-[#1b5e50] text-white' : ''">
+                View Details
+              </button>
+            </td>
+          </tr>
+        </CommonAdminDataTable>
+        <CommonPaginationBar v-if="workloadMeta.total > 0" :meta="workloadMeta" :loading="workloadLoading" :dark="isDark"
+          :per-page-options="[10, 20, 50]" @page-change="p => loadWorkload(p)" @per-page-change="p => loadWorkload(1, p)" />
       </div>
 
       <!-- Main Section: Assign Consultant -->
@@ -366,78 +325,71 @@
               <img src="/images/icons/search.svg" class="w-5 h-5" :class="isDark ? 'invert brightness-0' : ''" alt="search" />
             </span>
             <input type="text" v-model="unassignedSearch"
-                   @input="debounceSearch('unassigned', () => { unassignedPage = 1; loadAssignTab() })"
+                   @input="debounceSearch('unassigned', () => loadAssignTab(1))"
                    placeholder="Search by client name or email..."
                    class="w-full h-[48px] pl-12 pr-4 rounded-[10px] border border-[#04C18F33] outline-none focus:border-[#00896F] transition-colors text-[14px] font-regular"
                    :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a] placeholder-[#0000004D]'" />
           </div>
-          <button @click="loadAssignTab" class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
+          <button @click="() => loadAssignTab()" class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
                   :class="isDark ? 'bg-black/20 border-white/10' : 'bg-white'">
             <img src="/images/icons/reload.svg" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', reloading ? 'animate-spin' : '']" alt="refresh" />
           </button>
         </div>
 
         <!-- Table -->
-        <div class="overflow-visible rounded-[8px]">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-[#00896F] text-white">
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A] rounded-tl-[8px]">Client ID</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Client Name</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Implementation Completed Date</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Mobile Number</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Email</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">{{ assignFilter === 'Assigned' ? 'Consultant' : 'List of Consultant' }}</th>
-                <th class="py-4 px-8 font-normal text-[15px] rounded-tr-[8px]">Action</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-              <tr v-for="(item, idx) in assignConsultantData" :key="idx" 
-                  class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.id }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientName }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.completedDate }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.mobile }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.email }}</td>
-                <td class="py-6 px-8 relative">
-                  <!-- Custom Dropdown Trigger -->
-                  <div @click="toggleConsultantDropdown(idx)"
-                       class="w-[220px] h-[44px] px-4 rounded-[8px] border border-[#0000001A] flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
-                       :class="isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-[#F3F4F6] text-[#6B7280]'">
-                    <div class="flex flex-col overflow-hidden">
-                      <span v-if="item.selectedConsultant" class="text-[13px] font-medium leading-tight" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ item.selectedConsultant }}</span>
-                      <span v-if="!item.selectedConsultant" class="text-[13px]">Select Consultant</span>
-                    </div>
-                    <img src="/images/icons/down-select.svg" class="w-3.5 h-3.5 opacity-40 flex-shrink-0" :class="isDark ? 'invert' : ''" alt="arrow" />
-                  </div>
+        <CommonAdminDataTable :headers="['Client ID', 'Client Name', 'Implementation Completed Date', 'Contact Details', assignFilter === 'Assigned' ? 'Consultant' : 'List of Consultant', 'Action']"
+          :loading="unassignedLoading" :row-count="assignConsultantData.length" :dark="isDark" overflow-visible empty-text="No clients found.">
+          <tr v-for="(item, idx) in assignConsultantData" :key="idx"
+              class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.id }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientName }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.completedDate }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">
+              <div class="flex flex-col gap-1.5">
+                <div v-if="item.email && item.email !== '—'" class="flex items-center gap-2">
+                  <span class="truncate max-w-[180px]">{{ item.email }}</span>
+                  <CommonCopyIconButton :value="item.email" />
+                </div>
+                <div v-if="item.mobile && item.mobile !== '—'" class="flex items-center gap-2">
+                  <span>{{ item.mobile }}</span>
+                  <CommonCopyIconButton :value="item.mobile" />
+                </div>
+              </div>
+            </td>
+            <td class="py-6 px-8 relative">
+              <!-- Custom Dropdown Trigger -->
+              <div @click="toggleConsultantDropdown(idx)"
+                   class="w-[220px] h-[44px] px-4 rounded-[8px] border border-[#0000001A] flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+                   :class="isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-[#F3F4F6] text-[#6B7280]'">
+                <div class="flex flex-col overflow-hidden">
+                  <span v-if="item.selectedConsultant" class="text-[13px] font-medium leading-tight" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ item.selectedConsultant }}</span>
+                  <span v-if="!item.selectedConsultant" class="text-[13px]">Select Consultant</span>
+                </div>
+                <img src="/images/icons/down-select.svg" class="w-3.5 h-3.5 opacity-40 flex-shrink-0" :class="isDark ? 'invert' : ''" alt="arrow" />
+              </div>
 
-                  <!-- Dropdown Menu -->
-                  <div v-if="activeConsultantDropdown === idx" 
-                       class="absolute top-[80%] left-8 right-8 mt-2 bg-white rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-gray-100 p-2 z-30 flex flex-col gap-1 min-w-[220px]">
-                    <button v-for="c in consultantList"
-                            :key="c.id"
-                            @click="selectConsultant(idx, c)"
-                            class="text-left px-4 py-3 rounded-[10px] text-[14px] transition-colors cursor-pointer group"
-                            :class="item.selectedConsultant === c.name ? 'bg-[#E6FFF3] text-[#1a1a1a]' : 'text-[#1a1a1a] hover:bg-[#E6FFF3]'">
-                      <span class="font-medium">{{ c.name }}</span>
-                    </button>
-                  </div>
-                </td>
-                <td class="py-6 px-8">
-                  <button @click="doAssign(item)" :disabled="assigning || !item.selectedConsultantId || item.selectedConsultantId === item.originalConsultantId"
-                          class="px-6 py-2 rounded-[8px] bg-[#04C18F] text-white text-[13px] font-medium hover:bg-[#03a87c] transition-colors cursor-pointer shadow-sm disabled:opacity-50">
-                    {{ assignFilter === 'Assigned' ? 'Reassign' : 'Assign' }}
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-if="unassignedLast > 1" class="flex items-center justify-end gap-2 pt-2">
-          <button @click="unassignedPage--; loadAssignTab()" :disabled="unassignedPage <= 1" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">← Prev</button>
-          <span class="text-[13px] opacity-60">{{ unassignedPage }} / {{ unassignedLast }}</span>
-          <button @click="unassignedPage++; loadAssignTab()" :disabled="unassignedPage >= unassignedLast" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">Next →</button>
-        </div>
+              <!-- Dropdown Menu -->
+              <div v-if="activeConsultantDropdown === idx"
+                   class="absolute top-[80%] left-8 right-8 mt-2 bg-white rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-gray-100 p-2 z-30 flex flex-col gap-1 min-w-[220px]">
+                <button v-for="c in consultantList"
+                        :key="c.id"
+                        @click="selectConsultant(idx, c)"
+                        class="text-left px-4 py-3 rounded-[10px] text-[14px] transition-colors cursor-pointer group"
+                        :class="item.selectedConsultant === c.name ? 'bg-[#E6FFF3] text-[#1a1a1a]' : 'text-[#1a1a1a] hover:bg-[#E6FFF3]'">
+                  <span class="font-medium">{{ c.name }}</span>
+                </button>
+              </div>
+            </td>
+            <td class="py-6 px-8">
+              <button @click="doAssign(item)" :disabled="assigning || !item.selectedConsultantId || item.selectedConsultantId === item.originalConsultantId"
+                      class="px-6 py-2 rounded-[8px] bg-[#04C18F] text-white text-[13px] font-medium hover:bg-[#03a87c] transition-colors cursor-pointer shadow-sm disabled:opacity-50">
+                {{ assignFilter === 'Assigned' ? 'Reassign' : 'Assign' }}
+              </button>
+            </td>
+          </tr>
+        </CommonAdminDataTable>
+        <CommonPaginationBar v-if="unassignedMeta.total > 0" :meta="unassignedMeta" :loading="unassignedLoading" :dark="isDark"
+          :per-page-options="[10, 20, 50]" @page-change="p => loadAssignTab(p)" @per-page-change="p => loadAssignTab(1, p)" />
       </div>
 
       <!-- Main Section: Client review analysis progress -->
@@ -468,12 +420,12 @@
               <img src="/images/icons/search.svg" class="w-5 h-5" :class="isDark ? 'invert brightness-0' : ''" alt="search" />
             </span>
             <input type="text" v-model="analysisSearch"
-                   @input="debounceSearch('analysis', () => { analysisPage = 1; loadAnalysis() })"
+                   @input="debounceSearch('analysis', () => loadAnalysis(1))"
                    placeholder="Search by consultant or client name..."
                    class="w-full h-[48px] pl-12 pr-4 rounded-[10px] border border-[#04C18F33] outline-none focus:border-[#00896F] transition-colors text-[14px] font-regular"
                    :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a] placeholder-[#0000004D]'" />
           </div>
-          <button @click="loadAnalysis" class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
+          <button @click="() => loadAnalysis()" class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
                   :class="isDark ? 'bg-black/20 border-white/10' : 'bg-white'">
             <img src="/images/icons/reload.svg" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', reloading ? 'animate-spin' : '']" alt="refresh" />
           </button>
@@ -504,34 +456,19 @@
         </div>
 
         <!-- Table -->
-        <div class="overflow-hidden rounded-[8px]">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-[#00896F] text-white">
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Consultant ID</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Consultant Name</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Client Name</th>
-                <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Appointment Type</th>
-                <th class="py-4 px-8 font-normal text-[15px]">Client Delay</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-              <tr v-for="(item, idx) in clientReviewAnalysisData" :key="idx" 
-                  class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.id }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.consultantName }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientName }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.appointmentType }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.delay }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-if="analysisLast > 1" class="flex items-center justify-end gap-2 pt-2">
-          <button @click="analysisPage--; loadAnalysis()" :disabled="analysisPage <= 1" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">← Prev</button>
-          <span class="text-[13px] opacity-60">{{ analysisPage }} / {{ analysisLast }}</span>
-          <button @click="analysisPage++; loadAnalysis()" :disabled="analysisPage >= analysisLast" class="px-3 py-1.5 rounded-[8px] border text-[13px] disabled:opacity-40 cursor-pointer" :class="isDark ? 'border-white/20 text-white' : 'border-gray-200 text-[#1a1a1a]'">Next →</button>
-        </div>
+        <CommonAdminDataTable :headers="['Consultant ID', 'Consultant Name', 'Client Name', 'Appointment Type', 'Client Delay']"
+          :loading="analysisLoading" :row-count="clientReviewAnalysisData.length" :dark="isDark" empty-text="No data found.">
+          <tr v-for="(item, idx) in clientReviewAnalysisData" :key="idx"
+              class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.id }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.consultantName }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.clientName }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.appointmentType }}</td>
+            <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ item.delay }}</td>
+          </tr>
+        </CommonAdminDataTable>
+        <CommonPaginationBar v-if="analysisMeta.total > 0" :meta="analysisMeta" :loading="analysisLoading" :dark="isDark"
+          :per-page-options="[10, 20, 50]" @page-change="p => loadAnalysis(p)" @per-page-change="p => loadAnalysis(1, p)" />
       </div>
     </main>
 
@@ -550,12 +487,28 @@ const route = useRoute()
 const router = useRouter()
 const rm = useReviewManager()
 
-const tabs = ['Productivity tracker', 'Data Sync Status', 'Client fixed progress', 'Consultant workload', 'Assign Consultant', 'Client review analysis progress', 'Consultant Requests', 'User Requests']
+const tabGroups = [
+  { name: 'Productivity tracker', tabs: ['Productivity tracker'] },
+  { name: 'Data Sync Status', tabs: ['Data Sync Status'] },
+  { name: 'Client fixed progress', tabs: ['Client fixed progress'] },
+  { name: 'Consultant workload', tabs: ['Consultant workload'] },
+  { name: 'Assign Consultant', tabs: ['Assign Consultant'] },
+  { name: 'Client review analysis progress', tabs: ['Client review analysis progress'] },
+  { name: 'Consultant Requests', tabs: ['Consultant Requests'] },
+  { name: 'User Requests', tabs: ['User Requests'] },
+]
+const tabs = tabGroups.flatMap((g) => g.tabs)
 const activeTab = ref(tabs.includes(route.query.tab) ? route.query.tab : 'Productivity tracker')
+const activeGroup = computed(() => tabGroups.find((g) => g.tabs.includes(activeTab.value)) ?? tabGroups[0])
 
 function setTab(tab) {
   activeTab.value = tab
   router.replace({ query: { ...route.query, tab } })
+}
+
+function setGroup(group) {
+  if (activeGroup.value.name === group.name) return
+  setTab(group.tabs[0])
 }
 
 // -- data refs --
@@ -577,13 +530,15 @@ const productivityMetrics = computed(() => [
 
 const reloading = ref(false)
 
-// Per-tab search, page, lastPage state
-const consultantsSearch  = ref(''); const consultantsPage  = ref(1); const consultantsLast  = ref(1)
-const syncSearch         = ref(''); const syncPage         = ref(1); const syncLast         = ref(1)
-const progressSearch     = ref(''); const progressPage     = ref(1); const progressLast     = ref(1)
-const workloadSearch     = ref(''); const workloadPage     = ref(1); const workloadLast     = ref(1)
-const unassignedSearch   = ref(''); const unassignedPage   = ref(1); const unassignedLast   = ref(1)
-const analysisSearch     = ref(''); const analysisPage     = ref(1); const analysisLast     = ref(1)
+function emptyMeta() { return { current_page: 1, last_page: 1, total: 0, per_page: 10 } }
+
+// Per-tab search, loading, pagination meta state
+const consultantsSearch  = ref(''); const consultantsLoading  = ref(false); const consultantsMeta  = ref(emptyMeta())
+const syncSearch         = ref(''); const syncLoading         = ref(false); const syncMeta         = ref(emptyMeta())
+const progressSearch     = ref(''); const progressLoading     = ref(false); const progressMeta     = ref(emptyMeta())
+const workloadSearch     = ref(''); const workloadLoading     = ref(false); const workloadMeta     = ref(emptyMeta())
+const unassignedSearch   = ref(''); const unassignedLoading   = ref(false); const unassignedMeta   = ref(emptyMeta())
+const analysisSearch     = ref(''); const analysisLoading     = ref(false); const analysisMeta     = ref(emptyMeta())
 
 const searchTimers = {}
 function debounceSearch(key, fn) {
@@ -591,11 +546,13 @@ function debounceSearch(key, fn) {
   searchTimers[key] = setTimeout(fn, 400)
 }
 
-async function loadConsultants() {
+async function loadConsultants(page = consultantsMeta.value.current_page, perPage = consultantsMeta.value.per_page) {
+  consultantsLoading.value = true
   reloading.value = true
-  const res = await rm.getConsultants(consultantsPage.value, consultantsSearch.value).catch(() => ({ data: [], meta: {} }))
+  const res = await rm.getConsultants(page, consultantsSearch.value, perPage).catch(() => ({ data: [], meta: {} }))
   consultantsList.value = (res.data ?? []).map((c) => ({ ...c, fixed: c.open_fixed, adhoc: c.open_adhoc }))
-  consultantsLast.value = res.meta?.last_page ?? 1
+  consultantsMeta.value = { ...emptyMeta(), ...res.meta }
+  consultantsLoading.value = false
   reloading.value = false
 }
 
@@ -604,36 +561,44 @@ async function loadConsultantOptions() {
   consultantList.value = list.map((c) => ({ ...c, activeCount: c.open_fixed + c.open_adhoc }))
 }
 
-async function loadSync() {
+async function loadSync(page = syncMeta.value.current_page, perPage = syncMeta.value.per_page) {
+  syncLoading.value = true
   reloading.value = true
-  const res = await rm.getSyncStatus(syncPage.value, syncSearch.value, activeSyncStatus.value === 'All Statuses' ? '' : activeSyncStatus.value).catch(() => ({ data: [], meta: {} }))
+  const res = await rm.getSyncStatus(page, syncSearch.value, activeSyncStatus.value === 'All Statuses' ? '' : activeSyncStatus.value, perPage).catch(() => ({ data: [], meta: {} }))
   syncData.value = (res.data ?? []).map((c) => ({ ...c, name: c.client_name, date: c.last_sync_date, daysAgo: c.days_ago, status: c.sync_status, consultant: c.responsible_consultant }))
-  syncLast.value = res.meta?.last_page ?? 1
+  syncMeta.value = { ...emptyMeta(), ...res.meta }
+  syncLoading.value = false
   reloading.value = false
 }
 
-async function loadProgress() {
+async function loadProgress(page = progressMeta.value.current_page, perPage = progressMeta.value.per_page) {
+  progressLoading.value = true
   reloading.value = true
-  const res = await rm.getFixedProgress(progressPage.value, progressSearch.value).catch(() => ({ data: [], meta: {} }))
+  const res = await rm.getFixedProgress(page, progressSearch.value, perPage).catch(() => ({ data: [], meta: {} }))
   clientFixedProgressData.value = (res.data ?? []).map((r) => ({ ...r, consultantName: r.consultant_name, clientName: r.client_name, progressValue: r.progress_value, progressTotal: r.progress_total, delay: r.delay_days + ' days' }))
-  progressLast.value = res.meta?.last_page ?? 1
+  progressMeta.value = { ...emptyMeta(), ...res.meta }
+  progressLoading.value = false
   reloading.value = false
 }
 
-async function loadWorkload() {
+async function loadWorkload(page = workloadMeta.value.current_page, perPage = workloadMeta.value.per_page) {
+  workloadLoading.value = true
   reloading.value = true
-  const res = await rm.getTeamWorkload(workloadPage.value, workloadSearch.value).catch(() => ({ data: [], meta: {} }))
+  const res = await rm.getTeamWorkload(page, workloadSearch.value, perPage).catch(() => ({ data: [], meta: {} }))
   consultantWorkloadData.value = (res.data ?? []).map((w) => ({ ...w, avgHours: w.avg_hours, clientFixed: w.fixed_hours, clientRequest: w.request_hours, clientAnalysis: w.analysis_hours }))
-  workloadLast.value = res.meta?.last_page ?? 1
+  workloadMeta.value = { ...emptyMeta(), ...res.meta }
+  workloadLoading.value = false
   reloading.value = false
 }
 
-async function loadUnassigned() {
+async function loadUnassigned(page = unassignedMeta.value.current_page, perPage = unassignedMeta.value.per_page) {
+  unassignedLoading.value = true
   reloading.value = true
-  const res = await rm.getUnassignedClients(unassignedPage.value, unassignedSearch.value).catch(() => ({ data: [], meta: {} }))
+  const res = await rm.getUnassignedClients(page, unassignedSearch.value, perPage).catch(() => ({ data: [], meta: {} }))
   assignConsultantData.value = (res.data ?? []).map((c) => ({ ...c, clientName: c.client_name, completedDate: '—', mobile: c.phone ?? '—', selectedConsultant: null, selectedConsultantId: null, originalConsultantId: null }))
-  unassignedLast.value = res.meta?.last_page ?? 1
+  unassignedMeta.value = { ...emptyMeta(), ...res.meta }
   unassignedTotal.value = res.meta?.total ?? 0
+  unassignedLoading.value = false
   reloading.value = false
 }
 
@@ -642,32 +607,35 @@ async function refreshUnassignedTotal() {
   unassignedTotal.value = res.meta?.total ?? 0
 }
 
-async function loadAssigned() {
+async function loadAssigned(page = unassignedMeta.value.current_page, perPage = unassignedMeta.value.per_page) {
+  unassignedLoading.value = true
   reloading.value = true
-  const res = await rm.getAssignedClients(unassignedPage.value, unassignedSearch.value).catch(() => ({ data: [], meta: {} }))
+  const res = await rm.getAssignedClients(page, unassignedSearch.value, perPage).catch(() => ({ data: [], meta: {} }))
   assignConsultantData.value = (res.data ?? []).map((c) => ({ ...c, clientName: c.client_name, completedDate: '—', mobile: c.phone ?? '—', selectedConsultant: c.consultant_name, selectedConsultantId: c.consultant_id, originalConsultantId: c.consultant_id }))
-  unassignedLast.value = res.meta?.last_page ?? 1
+  unassignedMeta.value = { ...emptyMeta(), ...res.meta }
+  unassignedLoading.value = false
   reloading.value = false
 }
 
 const assignFilter = ref('Unassigned')
 
-function loadAssignTab() {
-  return assignFilter.value === 'Assigned' ? loadAssigned() : loadUnassigned()
+function loadAssignTab(page = unassignedMeta.value.current_page, perPage = unassignedMeta.value.per_page) {
+  return assignFilter.value === 'Assigned' ? loadAssigned(page, perPage) : loadUnassigned(page, perPage)
 }
 
 function setAssignFilter(f) {
   assignFilter.value = f
-  unassignedPage.value = 1
   unassignedSearch.value = ''
-  loadAssignTab()
+  loadAssignTab(1)
 }
 
-async function loadAnalysis() {
+async function loadAnalysis(page = analysisMeta.value.current_page, perPage = analysisMeta.value.per_page) {
+  analysisLoading.value = true
   reloading.value = true
-  const res = await rm.getFixedProgress(analysisPage.value, analysisSearch.value).catch(() => ({ data: [], meta: {} }))
+  const res = await rm.getFixedProgress(page, analysisSearch.value, perPage).catch(() => ({ data: [], meta: {} }))
   clientReviewAnalysisData.value = (res.data ?? []).map((r) => ({ ...r, id: r.consultant_id, consultantName: r.consultant_name, clientName: r.client_name, appointmentType: 'Client Review', delay: (r.delay_days ?? 0) + ' days' }))
-  analysisLast.value = res.meta?.last_page ?? 1
+  analysisMeta.value = { ...emptyMeta(), ...res.meta }
+  analysisLoading.value = false
   reloading.value = false
 }
 
@@ -699,8 +667,7 @@ async function doAssign(item) {
   try {
     const dept = consultantList.value.find(c => c.id === item.selectedConsultantId)
     await rm.assignConsultant(item.tenant_id, item.selectedConsultantId, dept?.department_id ?? 1)
-    unassignedPage.value = 1
-    await Promise.all([loadAssignTab(), refreshUnassignedTotal()])
+    await Promise.all([loadAssignTab(1), refreshUnassignedTotal()])
   } finally {
     assigning.value = false
   }
@@ -715,8 +682,7 @@ const showSyncStatusDropdown      = ref(false)
 function onSyncFilterChange(status) {
   activeSyncStatus.value = status
   showSyncStatusDropdown.value = false
-  syncPage.value = 1
-  loadSync()
+  loadSync(1)
 }
 
 function getProgressColor(value, total) {
@@ -728,6 +694,13 @@ function getProgressColor(value, total) {
 
 function navigateToActivityLog() {
   navigateTo('/admin/review-team/manager/activity-log')
+}
+
+function openConnectorConfig(client) {
+  navigateTo({
+    path: '/admin/connector-config',
+    query: { tenant_id: client.tenant_id, name: client.name, back: route.fullPath },
+  })
 }
 </script>
 

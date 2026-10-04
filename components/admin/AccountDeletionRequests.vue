@@ -1,80 +1,64 @@
 <template>
     <div class="space-y-6">
-        <div class="rounded-2xl border transition-all duration-300 p-8 space-y-6"
-            :class="isDark ? 'bg-[#015F4D]/20 border-[#00B794]/30 text-white' : 'bg-white border-gray-100 shadow-sm text-black'">
+        <div class="rounded-[20px] border shadow-sm p-8 pb-12 space-y-8 transition-all duration-300"
+            :class="isDark ? 'bg-[#00141080] border-white/10 text-white' : 'bg-white border-[#E5E5E5] text-black'">
 
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div class="space-y-1 text-left rtl:text-right">
-                    <h3 class="text-xl font-normal">{{ currentLang === 'ar' ? 'طلبات حذف الحساب' : 'Account Deletion Requests' }}</h3>
-                    <p class="text-base text-[#717182]">
+                    <h2 class="text-[24px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">{{ currentLang === 'ar' ? 'طلبات حذف الحساب' : 'Account Deletion Requests' }}</h2>
+                    <p class="text-[14px] text-[#00000080]" :class="isDark ? 'text-white/60' : ''">
                         {{ role === 'review'
                             ? (currentLang === 'ar' ? 'الموافقة على أو رفض طلبات حذف الحساب' : 'Approve or reject account deletion requests')
                             : (currentLang === 'ar' ? 'تنفيذ الحذف بعد موافقة المراجع' : 'Execute deletion once Review Manager has approved') }}
                     </p>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-4">
                     <select v-model="statusFilter" @change="fetchRows(1)"
-                        class="border rounded-md px-3 py-2 text-sm w-[140px]" :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-gray-200 text-gray-700'">
+                        class="h-[48px] px-4 rounded-[10px] border border-[#04C18F] text-[14px] font-regular w-[160px]"
+                        :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a]'">
                         <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                     </select>
-                    <button @click="fetchRows(page)" :disabled="loading" class="p-3 border rounded-xl transition-all"
-                        :class="[isDark ? 'bg-white/5 border-white/10 text-[#00B794]' : 'bg-white hover:bg-[#86E4CB] border-[#04C18F80] text-[#00896F]', loading ? 'opacity-50 cursor-not-allowed' : '']">
-                        <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5" :class="loading ? 'animate-spin' : ''">
+                    <button @click="fetchRows(page)" :disabled="loading"
+                        class="w-[48px] h-[48px] rounded-[10px] border border-[#04C18F33] flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0"
+                        :class="[isDark ? 'bg-black/20 border-white/10' : 'bg-white', loading ? 'opacity-50 cursor-not-allowed' : '']">
+                        <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', loading ? 'animate-spin' : '']">
                     </button>
                 </div>
             </div>
 
             <div v-if="role === 'super-admin' && eligibleForRemovalCount > 0 && statusFilter === ''"
-                class="flex items-center justify-between rounded-xl border px-5 py-3 text-sm"
+                class="flex items-center justify-between rounded-[10px] border px-5 py-3 text-sm"
                 :class="isDark ? 'bg-[#FB2C36]/10 border-[#FB2C36]/30 text-red-200' : 'bg-red-50 border-red-200 text-red-700'">
                 <span>{{ eligibleForRemovalCount }} organization{{ eligibleForRemovalCount > 1 ? 's are' : ' is' }} ready to be removed.</span>
                 <button @click="statusFilter = 'completed'; fetchRows(1)" class="font-medium underline whitespace-nowrap">View Completed</button>
             </div>
 
-            <div class="border rounded-xl overflow-hidden transition-colors" :class="isDark ? 'border-white/10' : 'border-gray-100'">
-                <div class="w-full overflow-x-auto min-h-[420px]">
-                    <table class="w-full text-left rtl:text-right border-separate border-spacing-0">
-                        <thead>
-                            <tr class="bg-[#00896F] text-white">
-                                <th v-for="h in headers" :key="h" class="px-4 py-4 text-sm font-normal tracking-wider last:border-0">{{ h }}</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
-                            <template v-if="loading">
-                                <tr v-for="n in 6" :key="'sk' + n" class="border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                                    <td v-for="c in headers.length" :key="c" class="py-4 px-4"><div class="h-4 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'" :style="{ width: skeletonWidth(c) }"></div></td>
-                                </tr>
-                            </template>
-                            <tr v-else-if="!rows.length">
-                                <td :colspan="headers.length" class="px-4 py-10 text-center text-sm text-gray-400">No requests found.</td>
-                            </tr>
-                            <tr v-else v-for="req in rows" :key="req.id" class="hover:bg-gray-50/50 transition-colors">
-                                <td class="px-4 py-5 text-sm font-medium" :class="isDark ? 'text-white' : 'text-black'">{{ req.user_name || '—' }}</td>
-                                <td class="px-4 py-5 text-sm" :class="valueClass">{{ req.user_email || '—' }}</td>
-                                <td class="px-4 py-5 text-sm" :class="valueClass">{{ req.source === 'public' ? 'Public' : 'In-app' }}</td>
-                                <td class="px-4 py-5 text-sm whitespace-nowrap" :class="valueClass">{{ formatTime(req.created_at) }}</td>
-                                <td class="px-4 py-5">
-                                    <span class="px-3 py-0.5 rounded-full text-sm capitalize" :class="statusPill(req.status)">{{ req.status }}</span>
-                                </td>
-                                <td class="px-4 py-5">
-                                    <div class="flex items-center gap-2">
-                                        <button @click="openModal(req)"
-                                            class="bg-[#00B68D] hover:bg-[#006552] text-white px-5 py-1.5 rounded-md text-xs font-bold transition-colors">
-                                            {{ (role === 'review' && req.status === 'pending') || (role === 'super-admin' && req.status === 'approved') ? 'Review' : 'View' }}
-                                        </button>
-                                        <button v-if="role === 'super-admin' && req.status === 'completed' && req.is_owner" @click="openRemoveOrg(req)"
-                                            class="px-5 py-1.5 rounded-md text-xs font-medium transition-colors bg-white border border-[#FB2C36] text-[#FB2C36] hover:bg-[#FEE2E2]">
-                                            Remove organization
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <CommonPaginationBar v-if="meta.total > 0" :meta="meta" :loading="loading"
-                    @page-change="(p) => fetchRows(p)" @per-page-change="(pp) => { perPage = pp; fetchRows(1) }" />
-            </div>
+            <CommonAdminDataTable :headers="headers" :loading="loading" :row-count="rows.length" :dark="isDark" empty-text="No requests found.">
+                <tr v-for="req in rows" :key="req.id" class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
+                    <td class="py-6 px-8 text-[14px] font-regular" :class="isDark ? 'text-white/90' : 'text-[#000000CC]'">{{ req.user_name || '—' }}</td>
+                    <td class="py-6 px-8 text-[14px] font-regular" :class="isDark ? 'text-white/90' : 'text-[#000000CC]'">{{ req.user_email || '—' }}</td>
+                    <td class="py-6 px-8 text-[14px] font-regular" :class="isDark ? 'text-white/90' : 'text-[#000000CC]'">{{ req.source === 'public' ? 'Public' : 'In-app' }}</td>
+                    <td class="py-6 px-8 text-[14px] font-regular whitespace-nowrap" :class="isDark ? 'text-white/90' : 'text-[#000000CC]'">{{ formatTime(req.created_at) }}</td>
+                    <td class="py-6 px-8">
+                        <span class="px-3 py-0.5 rounded-full text-[13px] capitalize" :class="statusPill(req.status)">{{ req.status }}</span>
+                    </td>
+                    <td class="py-6 px-8">
+                        <div class="flex items-center gap-2">
+                            <button @click="openModal(req)"
+                                class="px-5 py-2 rounded-[8px] bg-[#04C18F] text-white text-[13px] font-medium hover:bg-[#03a87c] transition-colors cursor-pointer shadow-sm">
+                                {{ (role === 'review' && req.status === 'pending') || (role === 'super-admin' && req.status === 'approved') ? 'Review' : 'View' }}
+                            </button>
+                            <button v-if="role === 'super-admin' && req.status === 'completed' && req.is_owner" @click="openRemoveOrg(req)"
+                                class="px-5 py-2 rounded-[8px] border border-[#FB2C36] text-[#FB2C36] text-[13px] font-medium hover:bg-[#FEE2E2] transition-colors cursor-pointer"
+                                :class="isDark ? 'bg-transparent' : 'bg-white'">
+                                Remove organization
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </CommonAdminDataTable>
+            <CommonPaginationBar v-if="meta.total > 0" :meta="meta" :loading="loading" :dark="isDark"
+                @page-change="(p) => fetchRows(p)" @per-page-change="(pp) => { perPage = pp; fetchRows(1) }" />
         </div>
 
         <!-- Unified request modal: Info / User Info / Feedback / Review Manager (super-admin only) — fixed height across every tab, no layout shift -->
@@ -279,11 +263,6 @@ const clientStatusOptions = [
 const statusOptions = computed(() => props.role === 'review' ? reviewStatusOptions : clientStatusOptions)
 const statusFilter = ref(props.role === 'review' ? 'pending' : 'approved')
 const eligibleForRemovalCount = ref(0)
-
-function skeletonWidth(col) {
-    const widths = ['80%', '70%', '60%', '55%', '50%', '45%']
-    return widths[(col - 1) % widths.length]
-}
 
 async function fetchRows(p = page.value) {
     loading.value = true

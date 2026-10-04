@@ -841,11 +841,17 @@
             </div>
             <div>
               <label class="block text-[14px] font-semibold text-gray-900 mb-2">Full Name *</label>
-              <input v-model="newUserForm.full_name" type="text" placeholder="Enter full name" class="w-full border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] placeholder-gray-400 shadow-sm" />
+              <input v-model="newUserForm.full_name" @blur="addUserTouched.full_name = true" type="text" placeholder="Enter full name"
+                class="w-full border rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:ring-1 placeholder-gray-400 shadow-sm"
+                :class="addUserTouched.full_name && addUserStep1Errors.full_name ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-[#A7F3D0] focus:border-[#007C65] focus:ring-[#007C65]'" />
+              <p v-if="addUserTouched.full_name && addUserStep1Errors.full_name" class="text-[13px] text-red-500 mt-1.5">{{ addUserStep1Errors.full_name }}</p>
             </div>
             <div>
               <label class="block text-[14px] font-semibold text-gray-900 mb-2">Email Address *</label>
-              <input v-model="newUserForm.email" type="email" placeholder="user@taxaid.com" class="w-full border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] placeholder-gray-400 shadow-sm" />
+              <input v-model="newUserForm.email" @blur="addUserTouched.email = true" type="email" placeholder="user@taxaid.com"
+                class="w-full border rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:ring-1 placeholder-gray-400 shadow-sm"
+                :class="addUserTouched.email && addUserStep1Errors.email ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-[#A7F3D0] focus:border-[#007C65] focus:ring-[#007C65]'" />
+              <p v-if="addUserTouched.email && addUserStep1Errors.email" class="text-[13px] text-red-500 mt-1.5">{{ addUserStep1Errors.email }}</p>
             </div>
             <div>
               <label class="block text-[14px] font-semibold text-gray-900 mb-2">Phone Number (Optional)</label>
@@ -854,45 +860,54 @@
             <div>
               <label class="block text-[14px] font-semibold text-gray-900 mb-2">User Role *</label>
               <div class="relative">
-                <select v-model="newUserForm.admin_role_id" class="w-full appearance-none border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] bg-white shadow-sm">
+                <select v-model="newUserForm.admin_role_id" @blur="addUserTouched.admin_role_id = true" @change="addUserTouched.admin_role_id = true"
+                  class="w-full appearance-none border rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:ring-1 bg-white shadow-sm"
+                  :class="addUserTouched.admin_role_id && addUserStep1Errors.admin_role_id ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-[#A7F3D0] focus:border-[#007C65] focus:ring-[#007C65]'">
                   <option :value="null" disabled>Select Role</option>
                   <option v-for="r in roles" :key="r.id" :value="r.id">{{ r.name }}</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-400"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
               </div>
-              <p class="text-[13px] text-gray-500 mt-1.5">Role determines default dashboard access and permissions</p>
+              <p v-if="addUserTouched.admin_role_id && addUserStep1Errors.admin_role_id" class="text-[13px] text-red-500 mt-1.5">{{ addUserStep1Errors.admin_role_id }}</p>
+              <p v-else class="text-[13px] text-gray-500 mt-1.5">Role determines default dashboard access and permissions</p>
             </div>
             <div>
               <label class="block text-[14px] font-semibold text-gray-900 mb-2">Department *</label>
               <div class="relative">
-                <select v-model="newUserForm.department_id" class="w-full appearance-none border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] bg-white shadow-sm">
+                <select v-model="newUserForm.department_id" @blur="addUserTouched.department_id = true" @change="addUserTouched.department_id = true"
+                  class="w-full appearance-none border rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:ring-1 bg-white shadow-sm"
+                  :class="addUserTouched.department_id && addUserStep1Errors.department_id ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-[#A7F3D0] focus:border-[#007C65] focus:ring-[#007C65]'">
                   <option :value="null" disabled>Select Department</option>
                   <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-400"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
               </div>
+              <p v-if="addUserTouched.department_id && addUserStep1Errors.department_id" class="text-[13px] text-red-500 mt-1.5">{{ addUserStep1Errors.department_id }}</p>
             </div>
             <div>
               <label class="block text-[14px] font-semibold text-gray-900 mb-2">Initial Password *</label>
               <div class="relative">
-                <input v-model="newUserForm.password" :type="showNewUserPassword ? 'text' : 'password'" placeholder="Min. 6 characters" autocomplete="new-password" class="w-full border border-[#A7F3D0] rounded-md px-3 py-2.5 pr-11 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] placeholder-gray-400 shadow-sm" />
+                <input v-model="newUserForm.password" @blur="addUserTouched.password = true" :type="showNewUserPassword ? 'text' : 'password'" placeholder="Min. 6 characters" autocomplete="new-password"
+                  class="w-full border rounded-md px-3 py-2.5 pr-11 text-[14px] text-gray-900 focus:outline-none focus:ring-1 placeholder-gray-400 shadow-sm"
+                  :class="addUserTouched.password && addUserStep1Errors.password ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-[#A7F3D0] focus:border-[#007C65] focus:ring-[#007C65]'" />
                 <button type="button" @click="showNewUserPassword = !showNewUserPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-[#007C65] transition-colors">
                   <svg v-if="!showNewUserPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                   <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
                 </button>
               </div>
-              <p class="text-[13px] text-gray-500 mt-2">User must change password on first login</p>
+              <p v-if="addUserTouched.password && addUserStep1Errors.password" class="text-[13px] text-red-500 mt-2">{{ addUserStep1Errors.password }}</p>
+              <p v-else class="text-[13px] text-gray-500 mt-2">User must change password on first login</p>
             </div>
             <div>
               <label class="block text-[14px] font-semibold text-gray-900 mb-2">Confirm Password *</label>
               <div class="relative">
-                <input v-model="newUserConfirmPassword" :type="showNewUserConfirmPassword ? 'text' : 'password'" placeholder="Re-enter password" autocomplete="new-password" class="w-full border rounded-md px-3 py-2.5 pr-11 text-[14px] text-gray-900 focus:outline-none focus:ring-1 placeholder-gray-400 shadow-sm" :class="newUserConfirmPassword && newUserConfirmPassword !== newUserForm.password ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-[#A7F3D0] focus:border-[#007C65] focus:ring-[#007C65]'" />
+                <input v-model="newUserConfirmPassword" @blur="addUserTouched.confirm_password = true" :type="showNewUserConfirmPassword ? 'text' : 'password'" placeholder="Re-enter password" autocomplete="new-password" class="w-full border rounded-md px-3 py-2.5 pr-11 text-[14px] text-gray-900 focus:outline-none focus:ring-1 placeholder-gray-400 shadow-sm" :class="addUserTouched.confirm_password && addUserStep1Errors.confirm_password ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-[#A7F3D0] focus:border-[#007C65] focus:ring-[#007C65]'" />
                 <button type="button" @click="showNewUserConfirmPassword = !showNewUserConfirmPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-[#007C65] transition-colors">
                   <svg v-if="!showNewUserConfirmPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                   <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
                 </button>
               </div>
-              <p v-if="newUserConfirmPassword && newUserConfirmPassword !== newUserForm.password" class="text-[13px] text-red-500 mt-2">Passwords do not match</p>
+              <p v-if="addUserTouched.confirm_password && addUserStep1Errors.confirm_password" class="text-[13px] text-red-500 mt-2">{{ addUserStep1Errors.confirm_password }}</p>
             </div>
             <div>
               <label class="block text-[14px] font-semibold text-gray-900 mb-2">Title (Optional)</label>
@@ -932,7 +947,8 @@
                   </div>
                 </label>
               </div>
-              <p class="text-[13px] text-gray-500 mt-3">{{ selectedDashboards.length }} systems selected</p>
+              <p v-if="!selectedDashboards.length" class="text-[13px] text-red-500 mt-3">Select at least 1 dashboard.</p>
+              <p v-else class="text-[13px] text-gray-500 mt-3">{{ selectedDashboards.length }} systems selected</p>
             </div>
           </div>
 
@@ -983,7 +999,7 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             Back
           </button>
-          <button v-if="addUserStep < 3" @click="goToNextAddUserStep" :disabled="addUserStep === 1 && newUserConfirmPassword !== newUserForm.password" :class="addUserStep === 1 ? 'w-full' : 'w-1/2'" class="bg-[#007C65] text-white py-2.5 rounded-md font-medium text-[15px] flex items-center justify-center gap-2 hover:bg-[#006A56] transition-colors shadow-sm disabled:opacity-50">
+          <button v-if="addUserStep < 3" @click="goToNextAddUserStep" :disabled="(addUserStep === 1 && !addUserStep1Valid) || (addUserStep === 2 && !addUserStep2Valid)" :class="addUserStep === 1 ? 'w-full' : 'w-1/2'" class="bg-[#007C65] text-white py-2.5 rounded-md font-medium text-[15px] flex items-center justify-center gap-2 hover:bg-[#006A56] transition-colors shadow-sm disabled:opacity-50">
             Next
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </button>
@@ -1234,6 +1250,31 @@ const newUserForm = ref({ full_name: '', email: '', phone_number: '', admin_role
 const newUserConfirmPassword = ref('')
 const showNewUserPassword = ref(false)
 const showNewUserConfirmPassword = ref(false)
+
+// ── Add User — step validation ──────────────────────────────────────────────
+const addUserTouched = ref({ full_name: false, email: false, admin_role_id: false, department_id: false, password: false, confirm_password: false })
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+const addUserStep1Errors = computed(() => {
+  const f = newUserForm.value
+  const errs = {}
+  if (!f.full_name.trim()) errs.full_name = 'Full name is required.'
+  if (!f.email.trim()) errs.email = 'Email is required.'
+  else if (!EMAIL_RE.test(f.email.trim())) errs.email = 'Enter a valid email address.'
+  if (!f.admin_role_id) errs.admin_role_id = 'Select a role.'
+  if (!f.department_id) errs.department_id = 'Select a department.'
+  if (!f.password) errs.password = 'Password is required.'
+  else if (f.password.length < 6) errs.password = 'Password must be at least 6 characters.'
+  if (!newUserConfirmPassword.value) errs.confirm_password = 'Confirm your password.'
+  else if (newUserConfirmPassword.value !== f.password) errs.confirm_password = 'Passwords do not match.'
+  return errs
+})
+const addUserStep1Valid = computed(() => Object.keys(addUserStep1Errors.value).length === 0)
+const addUserStep2Valid = computed(() => selectedDashboards.value.length > 0)
+
+function touchAllStep1() {
+  Object.keys(addUserTouched.value).forEach((k) => { addUserTouched.value[k] = true })
+}
 const editUserForm = ref({ full_name: '', email: '', phone_number: '', admin_role_id: null, department_id: null, title: '', description: '', notes: '' })
 
 // ── Computed ──────────────────────────────────────────────────────────────────
@@ -1389,7 +1430,11 @@ async function handleToggleStatus(user) {
 }
 
 function goToNextAddUserStep() {
-  if (addUserStep.value === 1 && newUserConfirmPassword.value !== newUserForm.value.password) return
+  if (addUserStep.value === 1) {
+    if (!addUserStep1Valid.value) { touchAllStep1(); return }
+  } else if (addUserStep.value === 2) {
+    if (!addUserStep2Valid.value) return
+  }
   addUserStep.value++
 }
 
@@ -1399,6 +1444,7 @@ function closeAddUserModal() {
   newUserForm.value      = { full_name: '', email: '', phone_number: '', admin_role_id: null, department_id: null, password: '', title: '', description: '', notes: '' }
   newUserConfirmPassword.value = ''
   selectedDashboards.value = []
+  addUserTouched.value = { full_name: false, email: false, admin_role_id: false, department_id: false, password: false, confirm_password: false }
 }
 
 const createUserError = ref('')
