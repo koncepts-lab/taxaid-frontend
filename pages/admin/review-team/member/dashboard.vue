@@ -884,10 +884,20 @@
           </div>
           <div class="px-7 pb-7 space-y-4">
             <div class="space-y-2">
-              <label class="text-[14px] font-medium opacity-70" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">Meet URL (optional)</label>
-              <input v-model="pendingMeetUrl" type="url" placeholder="https://meet.google.com/..."
-                     class="w-full px-4 py-3 rounded-[12px] border text-[14px] outline-none focus:ring-2 focus:ring-[#00896F]"
-                     :class="isDark ? 'bg-white/5 border-white/10 text-white placeholder-white/30' : 'bg-white border-gray-200'" />
+              <label class="text-[14px] font-medium opacity-70" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">
+                Meet URL <span class="text-red-500">*</span>
+              </label>
+              <input v-model="pendingMeetUrl" @input="validatePendingMeetUrl" type="url" placeholder="https://meet.google.com/..."
+                     class="w-full px-4 py-3 rounded-[12px] border text-[14px] outline-none focus:ring-2"
+                     :class="[
+                       pendingMeetUrlError
+                         ? 'border-red-500 focus:ring-red-400'
+                         : (isDark ? 'bg-white/5 border-white/10 focus:ring-[#00896F]' : 'bg-white border-gray-200 focus:ring-[#00896F]'),
+                       isDark ? 'text-white placeholder-white/30' : 'text-black'
+                     ]"
+                     @keyup.enter="submitConfirmAppointment" />
+              <p v-if="pendingMeetUrlError" class="text-[12px] text-red-500">{{ pendingMeetUrlError }}</p>
+              <p v-if="confirmActionError" class="text-[12px] text-red-500">{{ confirmActionError }}</p>
             </div>
             <div class="flex gap-3">
               <button @click="showMeetUrlModal = false"
@@ -1455,23 +1465,47 @@ function openAppointmentModal(req) {
 // ── Meet URL / Confirm Modal ──────────────────────────────────
 const showMeetUrlModal = ref(false)
 const pendingMeetUrl = ref('')
+const pendingMeetUrlError = ref('')
+const confirmActionError = ref('')
 const pendingConfirmId = ref(null)
 const confirmActionLoading = ref(false)
+
+function validatePendingMeetUrl() {
+  const url = pendingMeetUrl.value.trim()
+  if (!url) {
+    pendingMeetUrlError.value = 'Meet URL is required.'
+    return false
+  }
+  if (!/^https?:\/\/.+/.test(url)) {
+    pendingMeetUrlError.value = 'Enter a valid URL starting with http(s)://'
+    return false
+  }
+  if (url.length > 500) {
+    pendingMeetUrlError.value = 'Meet URL cannot exceed 500 characters.'
+    return false
+  }
+  pendingMeetUrlError.value = ''
+  return true
+}
 
 function confirmAppointment(req) {
   pendingConfirmId.value = req.id
   pendingMeetUrl.value = req.meet_url ?? ''
+  pendingMeetUrlError.value = ''
+  confirmActionError.value = ''
   showMeetUrlModal.value = true
 }
 
 async function submitConfirmAppointment() {
   if (!pendingConfirmId.value) return
+  if (!validatePendingMeetUrl()) return
   confirmActionLoading.value = true
+  confirmActionError.value = ''
   try {
-    await approveAppointment(pendingConfirmId.value, pendingMeetUrl.value)
+    await approveAppointment(pendingConfirmId.value, pendingMeetUrl.value.trim())
     showMeetUrlModal.value = false
   } catch (e) {
-    // silently handled — appointments ref updates on success
+    confirmActionError.value = e?.data?.message || 'Failed to confirm appointment.'
   } finally {
     confirmActionLoading.value = false
   }

@@ -240,6 +240,7 @@
           <p class="text-[13px] text-gray-500 mb-4">Paste the Google Meet or Teams link for this appointment. The client will see this after confirmation.</p>
           <input
             v-model="meetUrlInput"
+            @input="validateMeetUrlInput"
             type="url"
             placeholder="https://meet.google.com/..."
             class="block w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none text-gray-800 mb-1"
@@ -421,11 +422,27 @@ function openMeetUrlModal(req: AdminAppointment) {
   isMeetUrlModalOpen.value = true
 }
 
-function confirmApprove() {
+function validateMeetUrlInput() {
   const url = meetUrlInput.value.trim()
-  if (!url) { meetUrlError.value = 'Meet link is required.'; return }
-  if (!/^https?:\/\/.+/.test(url)) { meetUrlError.value = 'Enter a valid URL starting with http(s)://'; return }
-  emit('approve', selectedRequest.value!.id, url)
+  if (!url) {
+    meetUrlError.value = 'Meet link is required.'
+    return false
+  }
+  if (!/^https?:\/\/.+/.test(url)) {
+    meetUrlError.value = 'Enter a valid URL starting with http(s)://'
+    return false
+  }
+  if (url.length > 500) {
+    meetUrlError.value = 'Meet link cannot exceed 500 characters.'
+    return false
+  }
+  meetUrlError.value = ''
+  return true
+}
+
+function confirmApprove() {
+  if (!validateMeetUrlInput()) return
+  emit('approve', selectedRequest.value!.id, meetUrlInput.value.trim())
   isMeetUrlModalOpen.value = false
 }
 
