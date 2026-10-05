@@ -4,12 +4,41 @@
       <div class="mx-auto p-6 pb-20">
 
       <!-- Header -->
-      <div class="mb-6">
-        <h1 class="transition-colors duration-300 text-[#013E32]" style="font-size: 24px;">Subscription Management</h1>
-        <p class="font-normal mt-1 transition-colors duration-300 text-[#00000080]">Manage your plan, billing and payment methods</p>
+      <div class="mb-6 flex items-center gap-4">
+        <NuxtLink to="/settings/subscription" class="shrink-0 w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors" aria-label="Back to Subscription">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
+        </NuxtLink>
+        <div>
+          <h1 class="transition-colors duration-300 text-[#013E32]" style="font-size: 24px;">Subscription Management</h1>
+          <p class="font-normal mt-1 transition-colors duration-300 text-[#00000080]">Manage your plan, billing and payment methods</p>
+        </div>
       </div>
 
-      <div v-if="loading" class="text-center py-20 text-[#00000080]">Loading...</div>
+      <div v-if="loading" class="animate-pulse">
+        <div class="mb-8 h-[72px] rounded-2xl bg-gray-100"></div>
+        <div class="flex flex-col lg:flex-row gap-8">
+          <div class="flex-1 bg-white rounded-2xl border border-gray-100 p-8 shadow-sm space-y-6">
+            <div class="h-6 w-48 bg-gray-100 rounded"></div>
+            <div class="h-11 bg-gray-100 rounded-lg"></div>
+            <div class="h-11 bg-gray-100 rounded-lg"></div>
+            <div class="grid grid-cols-2 gap-6">
+              <div class="h-11 bg-gray-100 rounded-lg"></div>
+              <div class="h-11 bg-gray-100 rounded-lg"></div>
+            </div>
+            <div class="h-12 bg-gray-100 rounded-lg"></div>
+          </div>
+          <div class="w-full lg:w-96 shrink-0">
+            <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm space-y-4">
+              <div class="h-6 w-32 bg-gray-100 rounded"></div>
+              <div class="h-4 bg-gray-100 rounded"></div>
+              <div class="h-4 bg-gray-100 rounded"></div>
+              <div class="h-4 bg-gray-100 rounded w-2/3"></div>
+              <div class="h-px bg-gray-100"></div>
+              <div class="h-24 bg-gray-100 rounded-xl"></div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <template v-else-if="!plan">
         <div class="max-w-2xl mx-auto bg-white rounded-2xl border border-gray-100 p-12 shadow-sm text-center mt-8">
@@ -309,7 +338,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { loadStripe, type Stripe, type StripeElements, type StripeCardElement } from '@stripe/stripe-js'
 
 const route = useRoute()
@@ -372,6 +401,14 @@ function switchToNewCard() {
   nextTick(() => mountCardElement())
 }
 
+// #card-element only exists in the DOM once step reaches 2, so mounting must wait for that —
+// mounting eagerly in onMounted() targets a node that isn't rendered yet and silently no-ops.
+watch(step, (newStep) => {
+  if (newStep === 2 && (!savedCards.value.length || useNewCard.value)) {
+    nextTick(() => mountCardElement())
+  }
+})
+
 function goToReview() {
   if ((!selectedCard.value || useNewCard.value) && (!stripe || !cardElement)) return
   step.value = 3
@@ -395,12 +432,6 @@ onMounted(async () => {
     loading.value = false
   }
 
-  if (!plan.value) return
-
-  // No saved card at all — go straight to card entry, nothing to offer as "saved".
-  if (!savedCards.value.length) {
-    await mountCardElement()
-  }
 })
 
 async function attemptSubscribe(paymentMethodId: string) {

@@ -8,7 +8,43 @@
         <p class="font-normal mt-1 transition-colors duration-300 text-[#00000080]">Manage your plan, billing and payment methods</p>
       </div>
 
-      <div v-if="loading" class="text-center py-20 text-[#00000080]">Loading...</div>
+      <div v-if="loading" class="animate-pulse">
+        <div class="rounded-2xl p-8 mb-10 h-[124px] bg-gray-100"></div>
+
+        <div class="mb-12">
+          <div class="h-6 w-48 bg-gray-100 rounded mb-4"></div>
+          <div class="h-[66px] rounded-xl bg-gray-100 mb-8"></div>
+          <div class="grid grid-cols-3 gap-12">
+            <div v-for="i in 3" :key="i" class="h-[420px] bg-white rounded-2xl p-6 border border-gray-100 space-y-4">
+              <div class="h-6 w-32 bg-gray-100 rounded"></div>
+              <div class="h-9 w-24 bg-gray-100 rounded"></div>
+              <div class="h-4 bg-gray-100 rounded"></div>
+              <div class="h-4 bg-gray-100 rounded w-2/3"></div>
+              <div class="space-y-2 pt-2">
+                <div class="h-3 bg-gray-100 rounded"></div>
+                <div class="h-3 bg-gray-100 rounded"></div>
+                <div class="h-3 bg-gray-100 rounded w-5/6"></div>
+                <div class="h-3 bg-gray-100 rounded w-1/2"></div>
+              </div>
+              <div class="h-11 bg-gray-100 rounded-xl mt-auto"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-12">
+          <div class="h-5 w-40 bg-gray-100 rounded mb-4"></div>
+          <div class="h-28 rounded-2xl bg-gray-100 mb-4"></div>
+          <div class="h-14 rounded-2xl bg-gray-100"></div>
+        </div>
+
+        <div>
+          <div class="h-5 w-40 bg-gray-100 rounded mb-4"></div>
+          <div class="space-y-3">
+            <div class="h-16 rounded-2xl bg-gray-100"></div>
+            <div class="h-16 rounded-2xl bg-gray-100"></div>
+          </div>
+        </div>
+      </div>
 
       <template v-else>
         <!-- Trial Banner — one card for both on_trial and trial_ended, only the text (computed below) changes -->

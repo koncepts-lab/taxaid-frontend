@@ -452,6 +452,10 @@
             </div>
           </div>
 
+          <div v-if="planSubmitError" class="mb-4 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-sm text-red-600">
+            {{ planSubmitError }}
+          </div>
+
           <!-- ── STEP 1: general info + monthly ── -->
           <div v-if="wizardStep === 1" class="space-y-4">
             <div v-if="!versioningPlan">
@@ -666,11 +670,11 @@
         <div class="px-6 py-5 flex gap-4 border-t border-gray-100">
           <button v-if="wizardStep === 1" @click="cancelPlanModal" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">Cancel</button>
           <button v-else @click="wizardStep -= 1" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">Back</button>
-          <button v-if="!isTrialPlanEdit && !isDemoEdit" @click="submitPlan(true)" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">Save as Draft</button>
-          <button v-if="isTrialPlanEdit" @click="submitPlan(false)" :disabled="!wizardStepValid" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a] disabled:opacity-50">Save</button>
+          <button v-if="!isTrialPlanEdit && !isDemoEdit" @click="submitPlan(true)" :disabled="planSubmitting" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50">Save as Draft</button>
+          <button v-if="isTrialPlanEdit" @click="submitPlan(false)" :disabled="!wizardStepValid || planSubmitting" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a] disabled:opacity-50">Save</button>
           <button v-else-if="wizardStep === 1" @click="wizardStep = 2" :disabled="!wizardStepValid" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a] disabled:opacity-50">Next: Annual</button>
           <button v-else-if="wizardStep === 2" @click="wizardStep = 3" :disabled="!wizardStepValid" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a] disabled:opacity-50">Next: Checkout Summary</button>
-          <button v-else @click="submitPlan(false)" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a]">Save</button>
+          <button v-else @click="submitPlan(false)" :disabled="planSubmitting" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a] disabled:opacity-50">Save</button>
         </div>
       </div>
     </div>
@@ -968,6 +972,7 @@ async function openPlanModal() {
   isDemoEdit.value = false
   wizardStep.value = 1
   planForm.value = emptyPlanForm()
+  planSubmitError.value = ''
   await loadAllActiveDefinitions() // refresh so newly-added entitlement keys show up immediately
   planModalOpen.value = true
 }
@@ -1100,7 +1105,21 @@ function removeEntitlement(key) {
   delete planForm.value.entitlements[key]
 }
 
+const planSubmitting = ref(false)
+const planSubmitError = ref('')
 async function submitPlan(asDraft = false) {
+  if (planSubmitting.value) return
+  planSubmitting.value = true
+  planSubmitError.value = ''
+  try {
+    await submitPlanInner(asDraft)
+  } catch (e) {
+    planSubmitError.value = e?.data?.message || e?.response?._data?.message || e?.message || 'Something went wrong. Please try again.'
+  } finally {
+    planSubmitting.value = false
+  }
+}
+async function submitPlanInner(asDraft = false) {
   const payload = {
     description: planForm.value.description || null,
     tier: planForm.value.tier || null,
