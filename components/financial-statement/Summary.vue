@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full transition-all duration-500 rounded-3xl overflow-hidden"
+    <div class="w-full transition-all duration-500 rounded-3xl"
         :class="isDark ? 'bg-[#002e26]' : 'bg-white'" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
         <div v-if="activeTab === 'schedules'" class="lg:px-8 px-4 lg:pb-8 pb-4 flex flex-col lg:flex-row gap-4 transition-all duration-500">
@@ -63,8 +63,8 @@
         <div class="lg:py-6 py-4 lg:px-8 px-4 flex lg:flex-row flex-col lg:justify-between h-fit justify-center lg:items-center items-start  transition-all duration-500"
             :class="[isDark ? 'bg-[#002e26]' : 'bg-white', activeTab === 'ratios' ? 'lg:gap-0 gap-4' : '']">
             <div>
-                <p class="text-base font-medium" :class="isDark ? 'text-white' : 'text-primary-450'">{{ translatedTitle
-                }}</p>
+                <p class="text-base font-medium inline-flex items-center gap-1.5" :class="isDark ? 'text-white' : 'text-primary-450'">{{ translatedTitle
+                }} <CommonInfoTooltip :tip="tableTipKey" :light="isDark" /></p>
                 <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-black/59'">{{ t.valuesIn }}
                 </p>
             </div>
@@ -117,7 +117,7 @@
             </div>
         </div>
 
-        <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative">
+        <div class="w-full max-w-full xl:overflow-visible overflow-x-auto custom-scrollbar relative rounded-b-3xl">
             <table class="w-full text-start border-collapse min-w-[900px] lg:min-w-full table-fixed">
                 <thead class="text-white lg:sticky lg:top-0 z-20 shadow-sm" :class="isDark ? 'bg-primary-1100' : 'bg-primary-750'">
                 <tr>
@@ -198,12 +198,12 @@
                     </tr>
                 </template>
                 <tr v-else-if="error">
-                    <td colspan="7" class="px-8 py-12 text-center text-sm text-red-500">
+                    <td :colspan="columnCount" class="px-8 py-12 text-center text-sm text-red-500">
                         {{ error }}
                     </td>
                 </tr>
                 <tr v-else-if="!visibleRows.length">
-                    <td colspan="7" class="px-8 py-12 text-center text-sm"
+                    <td :colspan="columnCount" class="px-8 py-12 text-center text-sm"
                         :class="isDark ? 'text-white/50' : 'text-gray-400'">
                         {{ currentLang === 'ar' ? 'لا توجد بيانات متاحة' : 'No data available' }}
                     </td>
@@ -299,6 +299,11 @@
                         </td>
                     </tr>
                 </template>
+
+                <tr v-for="n in fillerRowsCount" :key="`filler-${n}`"
+                    :class="isDark ? 'bg-[#002e26] border-b border-white/5' : 'bg-white border-b border-gray-50'">
+                    <td :colspan="columnCount" class="lg:px-8 px-4 py-4">&nbsp;</td>
+                </tr>
             </tbody>
         </table>
         </div>
@@ -358,6 +363,18 @@ const rowHasData = (row) => {
 const visibleRows = computed(() => {
     const rows = props.data ?? []
     return showAllData.value ? rows : rows.filter(rowHasData)
+})
+
+const columnCount = computed(() => {
+    return (props.activeTab === 'ratios' && selectedRatio.value === 'All Ratios') ? 6 : 7
+})
+
+const MIN_TABLE_ROWS = 10
+const fillerRowsCount = computed(() => {
+    if (props.activeTab !== 'ratios') return 0
+    if (props.loading) return 0
+    const shownRows = props.error || !visibleRows.value.length ? 1 : visibleRows.value.length
+    return Math.max(0, MIN_TABLE_ROWS - shownRows)
 })
 
 const config = useRuntimeConfig();
@@ -428,6 +445,12 @@ const translatedTitle = computed(() => {
     if (props.activeTab === 'schedules') return t.value.titles.schedules;
     if (props.activeTab === 'balance-sheet') return t.value.titles.balanceSheet;
     return t.value.titles.profitLoss;
+});
+
+const tableTipKey = computed(() => {
+    if (props.activeTab === 'ratios') return 'financialStatement.ratios';
+    if (props.activeTab === 'schedules') return 'financialStatement.schedules';
+    return 'financialStatement.statement';
 });
 
 // COMPONENT STATE

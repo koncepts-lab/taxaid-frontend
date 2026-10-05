@@ -23,12 +23,8 @@
         </div>
         <div class="flex items-center gap-3 lg:gap-4">
           <CommonUnitToggle :on-dark="true" storage-key="indirect_expense_overhead_trends_unit" />
-          <img 
-            src="/images/icons/info-white.svg" 
-            alt="Info" 
-            class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
-          />
-          <img 
+          <CommonInfoTooltip tip="indirectExpense.overheadTrends" light />
+          <img
             src="/images/icons/expand-white.svg" 
             alt="Expand" 
             class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity hidden lg:block"

@@ -24,11 +24,7 @@
              </div>
              <div class="flex items-center gap-3 lg:gap-4">
                <CommonUnitToggle :on-dark="true" storage-key="cash_flow_scenario_unit" />
-               <img
-                 src="/images/icons/info-white.svg"
-                 alt="Info"
-                 class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
-               />
+               <CommonInfoTooltip tip="cashFlow.chart" light align="right" />
                <img
                  :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-white.svg'"
                  alt="Expand"
@@ -68,11 +64,7 @@
                 </div>
               </div>
               <CommonUnitToggle :on-dark="true" storage-key="cash_flow_scenario_unit" />
-               <img
-                src="/images/icons/info-white.svg"
-                alt="Info"
-                class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
-              />
+               <CommonInfoTooltip tip="cashFlow.chart" light align="right" />
               <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                 <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5 invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
               </button>

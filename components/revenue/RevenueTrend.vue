@@ -20,7 +20,7 @@
         </div>
         <CommonUnitToggle :on-dark="true" storage-key="revenue_trend_unit" />
         <div class="flex items-center gap-4 lg:ml-2">
-          <img src="/images/icons/info-white.svg" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
+          <CommonInfoTooltip tip="revenue.trend" light align="right" />
           <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 hover:opacity-100 transition-opacity cursor-pointer hidden lg:block" @click="isModalOpen = true" />
         </div>
       </div>
@@ -97,7 +97,7 @@
               </div>
               <CommonUnitToggle :on-dark="true" storage-key="revenue_trend_unit" />
               <div class="flex items-center gap-4 ml-2">
-                <img src="/images/icons/info-white.svg" alt="Info Icon" class="w-5 h-5 cursor-pointer hover:opacity-100" />
+                <CommonInfoTooltip tip="revenue.trend" light align="right" />
                 <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                   <img src="/images/icons/expand.svg" alt="Close Modal" class="w-[25px] h-[25px] invert" :class="[currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
                 </button>

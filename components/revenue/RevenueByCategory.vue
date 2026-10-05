@@ -8,7 +8,7 @@
       </div>
       <div class="flex items-center gap-3">
         <CommonUnitToggle :on-dark="isDark" storage-key="revenue_category_unit" />
-        <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info Icon" class="w-4 h-4 cursor-pointer hover:opacity-100" />
+        <CommonInfoTooltip tip="revenue.byCategory" :light="isDark" align="right" />
         <img :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" alt="Expand" class="w-6 h-6 cursor-pointer opacity-80 hidden lg:block" @click="isModalOpen = true" />
       </div>
     </div>
@@ -101,7 +101,7 @@
             </div>
             <div class="flex items-center gap-4">
               <CommonUnitToggle :on-dark="isDark" storage-key="revenue_category_unit" />
-              <img :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" alt="Info Icon" class="w-5 h-5 cursor-pointer hover:opacity-100" />
+              <CommonInfoTooltip tip="revenue.byCategory" :light="isDark" align="right" />
               <button @click="isModalOpen = false" class="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                 <img src="/images/icons/expand.svg" alt="Close Modal" class="w-5 h-5" :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'scale-x-[-1]' : '']" />
               </button>

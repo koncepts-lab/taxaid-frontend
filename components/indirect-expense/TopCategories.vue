@@ -9,7 +9,7 @@
       </div>
       <div class="flex items-center gap-3 lg:gap-4 shrink-0">
         <CommonUnitToggle :on-dark="true" storage-key="indirect_expense_top_categories_unit" />
-        <img src="/images/icons/info-white.svg" alt="Info" class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity" />
+        <CommonInfoTooltip tip="indirectExpense.topCategories" light />
         <img src="/images/icons/expand-white.svg" alt="Expand" class="w-6 h-6 cursor-pointer hover:opacity-100 transition-opacity" @click="isModalOpen = true" />
       </div>
     </div>

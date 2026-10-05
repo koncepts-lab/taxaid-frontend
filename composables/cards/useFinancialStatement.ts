@@ -12,6 +12,7 @@ const _ratiosRows  = ref<any[]>([])
 const _reportInfo  = ref({ current: '', previous: '' })
 const _loading     = ref(false)
 const _error       = ref<string | null>(null)
+let _requestSeq    = 0
 
 // Gap-day snapshot notice for the Balance Sheet tab — same pattern as
 // useAccountsReceivable/useAccountsPayable's snapshot_date fallback.
@@ -57,6 +58,7 @@ const fmtVariance = (v: any) => {
 }
 
 async function fetchPLData() {
+  const reqId = ++_requestSeq
   _loading.value = true
   _error.value = null
   try {
@@ -66,6 +68,7 @@ async function fetchPLData() {
       payload.custom_to   = fsFilters.value.custom_to
     }
     const res: any = await useApi('/financial-analysis/pl-maingroup-totals', { method: 'POST', body: payload })
+    if (reqId !== _requestSeq) return
     if (res?.status === 'success') {
       useState('cardPeriod').value = res.period ?? null
       useState('cardToday').value = res.today ?? null
@@ -93,14 +96,16 @@ async function fetchPLData() {
       _error.value = res?.message ?? 'Failed to load the Profit & Loss report.'
     }
   } catch (e: any) {
+    if (reqId !== _requestSeq) return
     console.error('Failed to fetch P&L data', e)
     _error.value = e?.data?.message ?? 'Failed to load the Profit & Loss report.'
   } finally {
-    _loading.value = false
+    if (reqId === _requestSeq) _loading.value = false
   }
 }
 
 async function fetchBSData() {
+  const reqId = ++_requestSeq
   _loading.value = true
   _error.value = null
   try {
@@ -110,6 +115,7 @@ async function fetchBSData() {
       payload.custom_to   = fsFilters.value.custom_to
     }
     const res: any = await useApi('/financial-analysis/bs-maingroup-totals', { method: 'POST', body: payload })
+    if (reqId !== _requestSeq) return
     if (res?.status === 'success') {
       useState('cardPeriod').value = res.period ?? null
       useState('cardToday').value = res.today ?? null
@@ -135,14 +141,16 @@ async function fetchBSData() {
       _error.value = res?.message ?? 'Failed to load the Balance Sheet report.'
     }
   } catch (e: any) {
+    if (reqId !== _requestSeq) return
     console.error('Failed to fetch BS data', e)
     _error.value = e?.data?.message ?? 'Failed to load the Balance Sheet report.'
   } finally {
-    _loading.value = false
+    if (reqId === _requestSeq) _loading.value = false
   }
 }
 
 async function fetchRatiosData() {
+  const reqId = ++_requestSeq
   _loading.value = true
   _error.value = null
   try {
@@ -155,6 +163,7 @@ async function fetchRatiosData() {
       payload.ratio_type = fsSelectedRatioType.value
     }
     const res: any = await useApi('/financial-ratios/comparative-report', { method: 'POST', body: payload })
+    if (reqId !== _requestSeq) return
     if (res?.success) {
       _ratiosRows.value = (res.report || []).map((row: any) => {
         let progressVal = 0
@@ -189,10 +198,11 @@ async function fetchRatiosData() {
       _error.value = res?.message ?? 'Failed to load the Ratios report.'
     }
   } catch (e: any) {
+    if (reqId !== _requestSeq) return
     console.error('Failed to fetch Ratios data', e)
     _error.value = e?.data?.message ?? 'Failed to load the Ratios report.'
   } finally {
-    _loading.value = false
+    if (reqId === _requestSeq) _loading.value = false
   }
 }
 

@@ -23,12 +23,8 @@
         </div>
         <div class="flex items-center gap-3 lg:gap-4">
           <CommonUnitToggle :on-dark="isDark" storage-key="indirect_expense_overhead_vs_revenue_unit" />
-          <img 
-            :src="isDark ? '/images/icons/info-white.svg' : '/images/icons/info.svg'" 
-            alt="Info" 
-            class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
-          />
-          <img 
+          <CommonInfoTooltip tip="indirectExpense.overheadVsRevenue" :light="isDark" />
+          <img
             :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-dark.svg'" 
             alt="Expand" 
             class="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity hidden lg:block"

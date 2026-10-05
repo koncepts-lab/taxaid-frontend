@@ -27,3 +27,5 @@ logs
 .gemini
 .claude
 
+.localdata/
+
