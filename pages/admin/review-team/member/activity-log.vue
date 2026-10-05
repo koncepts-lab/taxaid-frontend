@@ -100,54 +100,25 @@
         </div>
 
         <div class="px-5 pb-8 flex-1">
-          <div class="overflow-hidden rounded-[4px]">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-[#00896F] text-white">
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-[#ffffff1A] whitespace-nowrap">Time In</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-[#ffffff1A] whitespace-nowrap">Time Out</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-[#ffffff1A] whitespace-nowrap">Type of Appointment</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-[#ffffff1A] whitespace-nowrap">Client Id</th>
-                  <th class="py-4 px-6 font-normal text-[14px] whitespace-nowrap">Client Name</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-[#F0F0F0]'">
-                <tr v-if="logs.length === 0">
-                  <td colspan="5" class="py-16 text-center text-[14px] opacity-40">No activities logged for this day.</td>
-                </tr>
-                <tr v-for="(log, i) in logs" :key="log.id || i" class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/30'">
-                  <td class="py-5 px-6 text-[14px] font-normal" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ log.timeIn }}</td>
-                  <td class="py-5 px-6 text-[14px] font-normal" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ log.timeOut }}</td>
-                  <td class="py-5 px-6 text-[14px] font-normal">
-                    <span class="px-4 py-1.5 rounded-full bg-[#f3f4f6b3] text-black text-[12px] font-medium"
-                          :class="isDark ? 'bg-white/10 text-white/90' : ''">
-                      {{ log.type }}
-                    </span>
-                  </td>
-                  <td class="py-5 px-6 text-[14px] font-normal" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ log.clientId }}</td>
-                  <td class="py-5 px-6 text-[14px] font-normal" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ log.clientName }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <CommonAdminDataTable :headers="['Time In', 'Time Out', 'Type of Appointment', 'Client Id', 'Client Name']"
+            :loading="loading" :row-count="logs.length" :dark="isDark" empty-text="No activities logged for this day.">
+            <tr v-for="(log, i) in logs" :key="log.id || i" class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
+              <td class="py-6 px-8 text-[14px] font-normal" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ log.timeIn }}</td>
+              <td class="py-6 px-8 text-[14px] font-normal" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ log.timeOut }}</td>
+              <td class="py-6 px-8 text-[14px] font-normal">
+                <span class="px-4 py-1.5 rounded-full bg-[#f3f4f6b3] text-black text-[12px] font-medium"
+                      :class="isDark ? 'bg-white/10 text-white/90' : ''">
+                  {{ log.type }}
+                </span>
+              </td>
+              <td class="py-6 px-8 text-[14px] font-normal" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ log.clientId }}</td>
+              <td class="py-6 px-8 text-[14px] font-normal" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ log.clientName }}</td>
+            </tr>
+          </CommonAdminDataTable>
 
           <!-- Activity Log Pagination -->
-          <div v-if="dailyLogsMeta && dailyLogsMeta.total > 0" class="flex items-center justify-between pt-4">
-            <span class="text-[13px] opacity-50" :class="isDark ? 'text-white/50' : 'text-[#6B7280]'">{{ dailyLogsMeta.from }}–{{ dailyLogsMeta.to }} of {{ dailyLogsMeta.total }}</span>
-            <div class="flex items-center gap-2">
-              <button @click="loadLogs(dailyLogsMeta.current_page - 1)" :disabled="dailyLogsMeta.current_page === 1"
-                      class="w-8 h-8 flex items-center justify-center rounded-[8px] border cursor-pointer transition-all hover:opacity-80 disabled:opacity-30"
-                      :class="isDark ? 'border-white/10' : 'border-gray-200'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-              </button>
-              <span class="text-[13px] px-2" :class="isDark ? 'text-white/60' : 'text-[#6B7280]'">{{ dailyLogsMeta.current_page }} / {{ dailyLogsMeta.last_page }}</span>
-              <button @click="loadLogs(dailyLogsMeta.current_page + 1)" :disabled="dailyLogsMeta.current_page === dailyLogsMeta.last_page"
-                      class="w-8 h-8 flex items-center justify-center rounded-[8px] border cursor-pointer transition-all hover:opacity-80 disabled:opacity-30"
-                      :class="isDark ? 'border-white/10' : 'border-gray-200'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-              </button>
-            </div>
-          </div>
+          <CommonPaginationBar v-if="dailyLogsMeta && dailyLogsMeta.total > 0" :meta="dailyLogsMeta" :loading="loading" :dark="isDark"
+            :per-page-options="[10, 20, 50]" @page-change="p => loadLogs(p)" @per-page-change="p => loadLogs(1, p)" />
 
           <!-- Total Hours Summary Bar -->
           <div class="mt-8 mx-1">
@@ -192,10 +163,10 @@ const activeDateLabel = computed(() => {
   return activeDate.value.toLocaleDateString('en-US', { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric' })
 })
 
-async function loadLogs(page = 1) {
+async function loadLogs(page = 1, perPage = 10) {
   loading.value = true
   try {
-    const result = await fetchDailyLogs(activeDateStr.value, page)
+    const result = await fetchDailyLogs(activeDateStr.value, page, perPage)
     dailyStats.value = result.stats
     logs.value = result.logs
   } catch (e) {

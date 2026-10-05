@@ -38,17 +38,21 @@ const _loading      = ref(false)
 const _error        = ref<string | null>(null)
 const _search       = ref('')
 const _statusFilter = ref('')
+const _sort         = ref<'newest' | 'oldest'>('newest')
 const _page         = ref(1)
+const _perPage      = ref(10)
 
 export function useAdminAppointments() {
-  async function fetchAppointments(page = 1): Promise<void> {
+  async function fetchAppointments(page = 1, perPage = _perPage.value): Promise<void> {
     _page.value    = page
+    _perPage.value = perPage
     _loading.value = true
     _error.value   = null
     try {
       const params = new URLSearchParams()
       params.set('page', String(page))
-      params.set('per_page', '10')
+      params.set('per_page', String(perPage))
+      params.set('sort', _sort.value)
       if (_search.value)       params.set('search', _search.value)
       if (_statusFilter.value) params.set('status', _statusFilter.value)
       const res: any = await useAdminApi(`/admin/appointments?${params.toString()}`)
@@ -109,6 +113,7 @@ export function useAdminAppointments() {
     error:              _error,
     search:             _search,
     statusFilter:       _statusFilter,
+    sort:               _sort,
     fetchAppointments,
     approveAppointment,
     rescheduleAppointment,

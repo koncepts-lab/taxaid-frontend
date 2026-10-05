@@ -406,12 +406,28 @@
                      class="flex-1 bg-transparent border-none outline-none text-[14px]"
                      :class="isDark ? 'text-white placeholder-white/30' : 'text-[#0A0A0A] placeholder-[#0A0A0A]/40'" />
             </div>
-            <!-- Refresh Button -->
-            <button @click="requestSearch = ''; requestStatusFilter = ''; fetchAppointments(1)"
+            <!-- Refresh Button: resets filters and reloads -->
+            <button @click="resetRequestPoolFilters" title="Reset filters and reload"
                     class="w-10 h-10 flex items-center justify-center rounded-[10px] border cursor-pointer transition-all hover:opacity-80"
                     :class="isDark ? 'bg-white/5 border-white/20' : 'bg-white border-[#04C18F]'">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" :class="isDark ? 'text-white/50' : 'text-[#04C18F]'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" :class="[isDark ? 'text-white/50' : 'text-[#04C18F]', appointmentsLoading ? 'animate-spin' : '']" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </button>
+            <!-- Sort Dropdown -->
+            <div class="relative max-w-[180px]">
+              <div @click="showRequestSortDd = !showRequestSortDd"
+                   class="flex items-center gap-2 px-4 py-2.5 rounded-[10px] cursor-pointer text-[14px] border w-full max-w-[180px] justify-between"
+                   :class="isDark ? 'bg-white/5 border-white/20 text-white' : 'bg-white border-[#04C18F80] text-[#0A0A0A]'">
+                <span>{{ requestSort === 'oldest' ? 'Oldest first' : 'Newest first' }}</span>
+                <img src="/images/icons/down-select.svg" class="w-2.5 h-2.5 transition-transform" :class="[showRequestSortDd ? 'rotate-180' : '', isDark ? 'invert' : '']" alt="v" />
+              </div>
+              <div v-if="showRequestSortDd" class="absolute z-50 right-0 top-full mt-1.5 py-2 rounded-[12px] shadow-lg w-full max-w-[180px]"
+                   :class="isDark ? 'bg-[#1a2e2a] text-white' : 'bg-white text-[#0A0A0A]'">
+                <div v-for="s in [{ v: 'newest', label: 'Newest first' }, { v: 'oldest', label: 'Oldest first' }]" :key="s.v"
+                     @click="setRequestSort(s.v)"
+                     class="px-5 py-2.5 text-[14px] cursor-pointer"
+                     :class="isDark ? 'hover:bg-white/5' : 'hover:bg-[#E6FAF5]'">{{ s.label }}</div>
+              </div>
+            </div>
             <!-- Status Filter Dropdown -->
             <div class="relative max-w-[300px]">
               <div @click="showRequestStatusDd = !showRequestStatusDd"
@@ -426,7 +442,7 @@
               <div v-if="showRequestStatusDd" class="absolute z-50 right-0 top-full mt-1.5 py-2 rounded-[12px] shadow-lg w-full max-w-[300px]"
                    :class="isDark ? 'bg-[#1a2e2a] text-white' : 'bg-white text-[#0A0A0A]'">
                 <div v-for="s in ['All Statuses', 'Pending', 'Rescheduled', 'Scheduled', 'Completed']" :key="s"
-                     @click="requestStatusFilter = s === 'All Statuses' ? '' : s; showRequestStatusDd = false"
+                     @click="setRequestStatus(s)"
                      class="px-5 py-2.5 text-[14px] cursor-pointer"
                      :class="isDark ? 'hover:bg-white/5' : 'hover:bg-[#E6FAF5]'">{{ s }}</div>
               </div>
@@ -434,102 +450,71 @@
           </div>
 
           <!-- Table -->
-          <div class="overflow-hidden rounded-[8px] border" :class="isDark ? 'border-white/10' : 'border-[#E5E5E5]'">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-[#00896F] text-white">
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Client ID</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Client Name</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Proposed Date &amp; Time</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Rescheduled Date &amp; Time</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Status</th>
-                  <th class="py-4 px-6 font-normal text-[14px] whitespace-nowrap">Action</th>
-                </tr>
-              </thead>
-              <tbody :class="isDark ? 'bg-transparent' : 'bg-white'">
-                <tr v-for="(req, i) in filteredRequestPool" :key="req.id || i"
-                    class="transition-colors"
-                    :class="isDark ? 'border-b border-white/5 hover:bg-white/5' : 'border-b border-gray-100 hover:bg-gray-50'">
-                  <td class="py-4 px-6 text-[14px]">{{ req.clientId }}</td>
-                  <td class="py-4 px-6 text-[14px]">{{ req.clientName }}</td>
-                  <td class="py-4 px-6 text-[14px]">{{ req.proposedDate }}</td>
-                  <td class="py-4 px-6 text-[14px]" :class="req.rescheduledDate !== '-' ? 'text-[#FB2C36]' : 'opacity-40'">{{ req.rescheduledDate }}</td>
-                  <td class="py-4 px-6">
-                    <span class="px-3 py-1 rounded-full text-[12px] font-medium"
-                          :class="{
-                            'bg-[#FFF3CD] text-[#92400E]': req.status === 'Pending',
-                            'bg-[#FFE4E6] text-[#9F1239]': req.status === 'Rescheduled',
-                            'bg-[#DBEAFE] text-[#1E40AF]': req.status === 'Scheduled',
-                            'bg-[#D1FAE5] text-[#065F46]': req.status === 'Completed',
-                          }">
-                      {{ req.status }}
+          <CommonAdminDataTable :headers="['Client ID', 'Client Name', 'Proposed Date & Time', 'Rescheduled Date & Time', 'Status', 'Action']"
+            :loading="appointmentsLoading" :row-count="requestPoolRows.length" :dark="isDark" empty-text="No records found.">
+            <tr v-for="(req, i) in requestPoolRows" :key="req.id || i"
+                class="transition-colors"
+                :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
+              <td class="py-6 px-8 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#000000CC]'">{{ req.clientId }}</td>
+              <td class="py-6 px-8 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#000000CC]'">{{ req.clientName }}</td>
+              <td class="py-6 px-8 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#000000CC]'">{{ req.proposedDate }}</td>
+              <td class="py-6 px-8 text-[14px]" :class="req.rescheduledDate !== '-' ? 'text-[#FB2C36]' : 'opacity-40'">{{ req.rescheduledDate }}</td>
+              <td class="py-6 px-8">
+                <span class="px-3 py-1 rounded-full text-[12px] font-medium"
+                      :class="{
+                        'bg-[#FFF3CD] text-[#92400E]': req.status === 'Pending',
+                        'bg-[#FFE4E6] text-[#9F1239]': req.status === 'Rescheduled',
+                        'bg-[#DBEAFE] text-[#1E40AF]': req.status === 'Scheduled',
+                        'bg-[#D1FAE5] text-[#065F46]': req.status === 'Completed',
+                      }">
+                  {{ req.status }}
+                </span>
+              </td>
+              <td class="py-6 px-8">
+                <div class="flex items-center gap-2">
+                  <button @click="openAppointmentModal(req)"
+                          class="w-8 h-8 flex items-center justify-center rounded-[8px] border cursor-pointer transition-all hover:opacity-80"
+                          :class="isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                  </button>
+                  <!-- Rescheduled / Pending: Reschedule + Confirm -->
+                  <template v-if="req.status === 'Rescheduled' || req.status === 'Pending'">
+                    <button @click="openRescheduleModal(req)"
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] border text-[13px] cursor-pointer transition-all hover:opacity-80"
+                            :class="isDark ? 'border-white/10 text-white/70 hover:bg-white/5' : 'border-gray-200 text-[#717182] hover:bg-gray-50'">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                      Reschedule
+                    </button>
+                    <button @click="confirmAppointment(req)"
+                            class="flex items-center gap-1.5 px-4 py-1.5 rounded-[8px] bg-[#00896F] text-white text-[13px] cursor-pointer transition-all hover:opacity-90 active:scale-[0.98]">
+                      Confirm
+                    </button>
+                  </template>
+                  <!-- Scheduled: Session Timer -->
+                  <template v-else-if="req.status === 'Scheduled'">
+                    <SessionTimerRow
+                      :appointment="req._raw"
+                      :any-running="currentActivityRunning"
+                      @start="startSession(req.id)"
+                      @pause="pauseSession(req.id)"
+                      @stop="stopSession(req.id)"
+                      @complete="completeAppointment(req.id)"
+                    />
+                  </template>
+                  <!-- Completed -->
+                  <template v-else-if="req.status === 'Completed'">
+                    <span class="flex items-center gap-1.5 text-[13px] font-semibold text-[#00896F]">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      Appointment Completed
                     </span>
-                  </td>
-                  <td class="py-4 px-6">
-                    <div class="flex items-center gap-2">
-                      <button @click="openAppointmentModal(req)"
-                              class="w-8 h-8 flex items-center justify-center rounded-[8px] border cursor-pointer transition-all hover:opacity-80"
-                              :class="isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                      </button>
-                      <!-- Rescheduled / Pending: Reschedule + Confirm -->
-                      <template v-if="req.status === 'Rescheduled' || req.status === 'Pending'">
-                        <button @click="openRescheduleModal(req)"
-                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] border text-[13px] cursor-pointer transition-all hover:opacity-80"
-                                :class="isDark ? 'border-white/10 text-white/70 hover:bg-white/5' : 'border-gray-200 text-[#717182] hover:bg-gray-50'">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                          Reschedule
-                        </button>
-                        <button @click="confirmAppointment(req)"
-                                class="flex items-center gap-1.5 px-4 py-1.5 rounded-[8px] bg-[#00896F] text-white text-[13px] cursor-pointer transition-all hover:opacity-90 active:scale-[0.98]">
-                          Confirm
-                        </button>
-                      </template>
-                      <!-- Scheduled: Session Timer -->
-                      <template v-else-if="req.status === 'Scheduled'">
-                        <SessionTimerRow
-                          :appointment="req._raw"
-                          :any-running="currentActivityRunning"
-                          @start="startSession(req.id)"
-                          @pause="pauseSession(req.id)"
-                          @stop="stopSession(req.id)"
-                          @complete="completeAppointment(req.id)"
-                        />
-                      </template>
-                      <!-- Completed -->
-                      <template v-else-if="req.status === 'Completed'">
-                        <span class="flex items-center gap-1.5 text-[13px] font-semibold text-[#00896F]">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                          Appointment Completed
-                        </span>
-                      </template>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="filteredRequestPool.length === 0">
-                  <td colspan="6" class="py-16 text-center text-[14px] opacity-40">No records found.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                  </template>
+                </div>
+              </td>
+            </tr>
+          </CommonAdminDataTable>
 
-          <!-- Pagination -->
-          <div v-if="appointmentsMeta && appointmentsMeta.last_page > 1" class="flex items-center justify-between pt-2">
-            <span class="text-[13px] opacity-50">{{ appointmentsMeta.from }}–{{ appointmentsMeta.to }} of {{ appointmentsMeta.total }}</span>
-            <div class="flex items-center gap-2">
-              <button @click="fetchAppointments(appointmentsMeta.current_page - 1)" :disabled="appointmentsMeta.current_page === 1"
-                      class="w-8 h-8 flex items-center justify-center rounded-[8px] border cursor-pointer transition-all hover:opacity-80 disabled:opacity-30"
-                      :class="isDark ? 'border-white/10' : 'border-gray-200'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-              </button>
-              <span class="text-[13px] px-2">{{ appointmentsMeta.current_page }} / {{ appointmentsMeta.last_page }}</span>
-              <button @click="fetchAppointments(appointmentsMeta.current_page + 1)" :disabled="appointmentsMeta.current_page === appointmentsMeta.last_page"
-                      class="w-8 h-8 flex items-center justify-center rounded-[8px] border cursor-pointer transition-all hover:opacity-80 disabled:opacity-30"
-                      :class="isDark ? 'border-white/10' : 'border-gray-200'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-              </button>
-            </div>
-          </div>
+          <CommonPaginationBar v-if="appointmentsMeta && appointmentsMeta.total > 0" :meta="appointmentsMeta" :loading="appointmentsLoading" :dark="isDark"
+            :per-page-options="[10, 20, 50]" @page-change="p => fetchAppointments(p)" @per-page-change="p => fetchAppointments(1, p)" />
         </div>
 
         <!-- Client Fixed Summary -->
@@ -549,11 +534,11 @@
                      class="flex-1 bg-transparent border-none outline-none text-[14px]"
                      :class="isDark ? 'text-white placeholder-white/30' : 'text-[#0A0A0A] placeholder-[#0A0A0A]/40'" />
             </div>
-            <!-- Refresh Button -->
-            <button @click="summarySearch = ''; summaryStatusFilter = ''; loadReviews(1)"
+            <!-- Refresh Button: resets filters and reloads -->
+            <button @click="resetClientSummaryFilters" title="Reset filters and reload"
                     class="w-10 h-10 flex items-center justify-center rounded-[10px] border cursor-pointer transition-all hover:opacity-80"
                     :class="isDark ? 'bg-white/5 border-white/20' : 'bg-white border-[#04C18F]'">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" :class="isDark ? 'text-white/50' : 'text-[#04C18F]'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" :class="[isDark ? 'text-white/50' : 'text-[#04C18F]', reviewsLoading ? 'animate-spin' : '']" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </button>
             <!-- Status Filter -->
             <div class="relative max-w-[300px]">
@@ -569,7 +554,7 @@
               <div v-if="showSummaryStatusDd" class="absolute z-50 right-0 top-full mt-1.5 py-2 rounded-[12px] shadow-lg w-full max-w-[300px]"
                    :class="isDark ? 'bg-[#1a2e2a] text-white' : 'bg-white text-[#0A0A0A]'">
                 <div v-for="s in ['All Statuses', 'Ongoing', 'Planned', 'Completed']" :key="s"
-                     @click="summaryStatusFilter = s === 'All Statuses' ? '' : s; showSummaryStatusDd = false"
+                     @click="setSummaryStatus(s)"
                      class="px-5 py-2.5 text-[14px] cursor-pointer"
                      :class="isDark ? 'hover:bg-white/5' : 'hover:bg-[#E6FAF5]'">{{ s }}</div>
               </div>
@@ -577,98 +562,66 @@
           </div>
 
           <!-- Table -->
-          <div class="overflow-hidden rounded-[8px] border" :class="isDark ? 'border-white/10' : 'border-[#E5E5E5]'">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-[#00896F] text-white">
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Client ID</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Client Name</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Client Fixed Review</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Status</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Scheduled Date</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Reschedule</th>
-                  <th class="py-4 px-6 font-normal text-[14px] whitespace-nowrap text-right">Project Details</th>
-                </tr>
-              </thead>
-              <tbody :class="isDark ? 'bg-transparent' : 'bg-white'">
-                <tr v-for="(s, i) in filteredClientSummary" :key="i"
-                    class="transition-colors"
-                    :class="isDark ? 'border-b border-white/5 hover:bg-white/5' : 'border-b border-gray-100 hover:bg-gray-50'">
-                  <td class="py-4 px-6 text-[14px]">{{ s.clientId }}</td>
-                  <td class="py-4 px-6 text-[14px]">{{ s.clientName }}</td>
-                  <td class="py-5 px-6">
-                    <div class="space-y-1.5">
-                      <p class="text-[13px]" :class="isDark ? 'text-white/70' : 'text-[#717182]'">
-                        Review {{ s.reviewCurrent }}/{{ s.reviewTotal }} &nbsp;·&nbsp; Steps {{ s.stepsCurrent }}/{{ s.stepsTotal }}
-                      </p>
-                      <div class="flex items-center gap-3">
-                        <div class="flex-1 h-2 rounded-full overflow-hidden" :class="isDark ? 'bg-white/10' : 'bg-[#E5E5E5]'">
-                          <div class="h-full rounded-full transition-all duration-500"
-                               :style="{ width: s.percent + '%' }"
-                               :class="{
-                                 'bg-[#3B82F6]': s.status === 'Ongoing',
-                                 'bg-[#F59E0B]': s.status === 'Planned',
-                                 'bg-[#00896F]': s.status === 'Completed',
-                               }"></div>
-                        </div>
-                        <span class="text-[13px] font-medium w-10 text-right" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ s.percent }}%</span>
-                      </div>
+          <CommonAdminDataTable :headers="['Client ID', 'Client Name', 'Client Fixed Review', 'Status', 'Scheduled Date', 'Reschedule', 'Project Details']"
+            :loading="reviewsLoading" :row-count="filteredClientSummary.length" :dark="isDark" empty-text="No records found.">
+            <tr v-for="(s, i) in filteredClientSummary" :key="i"
+                class="transition-colors"
+                :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
+              <td class="py-6 px-8 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#000000CC]'">{{ s.clientId }}</td>
+              <td class="py-6 px-8 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#000000CC]'">{{ s.clientName }}</td>
+              <td class="py-6 px-8">
+                <div class="space-y-1.5">
+                  <p class="text-[13px]" :class="isDark ? 'text-white/70' : 'text-[#717182]'">
+                    Review {{ s.reviewCurrent }}/{{ s.reviewTotal }} &nbsp;·&nbsp; Steps {{ s.stepsCurrent }}/{{ s.stepsTotal }}
+                  </p>
+                  <div class="flex items-center gap-3">
+                    <div class="flex-1 h-2 rounded-full overflow-hidden" :class="isDark ? 'bg-white/10' : 'bg-[#E5E5E5]'">
+                      <div class="h-full rounded-full transition-all duration-500"
+                           :style="{ width: s.percent + '%' }"
+                           :class="{
+                             'bg-[#3B82F6]': s.status === 'Ongoing',
+                             'bg-[#F59E0B]': s.status === 'Planned',
+                             'bg-[#00896F]': s.status === 'Completed',
+                           }"></div>
                     </div>
-                  </td>
-                  <td class="py-4 px-6">
-                    <span class="px-3 py-1 rounded-full text-[12px] font-medium"
-                          :class="{
-                            'bg-[#DBEAFE] text-[#1E40AF]': s.status === 'Ongoing',
-                            'bg-[#FEF3C7] text-[#92400E]': s.status === 'Planned',
-                            'bg-[#D1FAE5] text-[#065F46]': s.status === 'Completed',
-                          }">{{ s.status }}</span>
-                  </td>
-                  <td class="py-4 px-6 text-[14px] whitespace-nowrap">
-                    <div>{{ s.scheduledLabel }}</div>
-                    <div v-if="s.hasMeetUrl" class="text-[12px] opacity-60">Meet link added</div>
-                  </td>
-                  <td class="py-4 px-6">
-                    <button @click="openScheduleModal(s.raw)"
-                            :disabled="!s.canReschedule"
-                            class="px-3 py-1.5 rounded-md border text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                            :class="isDark ? 'border-white/20 text-white hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
-                      Reschedule
-                    </button>
-                  </td>
-                  <td class="py-4 px-6 text-right">
-                    <NuxtLink :to="`/admin/review-team/member/${s.tenantId}`"
-                              class="flex items-center justify-end gap-1 text-[13px] font-medium transition-colors hover:opacity-80"
-                              :class="isDark ? 'text-[#10FFD4]' : 'text-[#00896F]'">
-                      Project Details
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                    </NuxtLink>
-                  </td>
-                </tr>
-                <tr v-if="filteredClientSummary.length === 0">
-                  <td colspan="7"class="py-16 text-center text-[14px] opacity-40">No records found.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                    <span class="text-[13px] font-medium w-10 text-right" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ s.percent }}%</span>
+                  </div>
+                </div>
+              </td>
+              <td class="py-6 px-8">
+                <span class="px-3 py-1 rounded-full text-[12px] font-medium"
+                      :class="{
+                        'bg-[#DBEAFE] text-[#1E40AF]': s.status === 'Ongoing',
+                        'bg-[#FEF3C7] text-[#92400E]': s.status === 'Planned',
+                        'bg-[#D1FAE5] text-[#065F46]': s.status === 'Completed',
+                      }">{{ s.status }}</span>
+              </td>
+              <td class="py-6 px-8 text-[14px] whitespace-nowrap" :class="isDark ? 'text-white/90' : 'text-[#000000CC]'">
+                <div>{{ s.scheduledLabel }}</div>
+                <div v-if="s.hasMeetUrl" class="text-[12px] opacity-60">Meet link added</div>
+              </td>
+              <td class="py-6 px-8">
+                <button @click="openScheduleModal(s.raw)"
+                        :disabled="!s.canReschedule"
+                        class="px-3 py-1.5 rounded-md border text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                        :class="isDark ? 'border-white/20 text-white hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
+                  Reschedule
+                </button>
+              </td>
+              <td class="py-6 px-8 text-right">
+                <NuxtLink :to="`/admin/review-team/member/${s.tenantId}`"
+                          class="flex items-center justify-end gap-1 text-[13px] font-medium transition-colors hover:opacity-80"
+                          :class="isDark ? 'text-[#10FFD4]' : 'text-[#00896F]'">
+                  Project Details
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </NuxtLink>
+              </td>
+            </tr>
+          </CommonAdminDataTable>
 
           <!-- Client Fixed Summary Pagination -->
-          <div v-if="reviewsMeta && reviewsMeta.total > 0" class="flex items-center justify-between pt-2">
-            <span class="text-[13px] opacity-50">{{ reviewsMeta.from }}–{{ reviewsMeta.to }} of {{ reviewsMeta.total }}</span>
-            <div class="flex items-center gap-2">
-              <button @click="loadReviews(reviewsMeta.current_page - 1)" :disabled="reviewsMeta.current_page === 1"
-                      class="w-8 h-8 flex items-center justify-center rounded-[8px] border cursor-pointer transition-all hover:opacity-80 disabled:opacity-30"
-                      :class="isDark ? 'border-white/10' : 'border-gray-200'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-              </button>
-              <span class="text-[13px] px-2">{{ reviewsMeta.current_page }} / {{ reviewsMeta.last_page }}</span>
-              <button @click="loadReviews(reviewsMeta.current_page + 1)" :disabled="reviewsMeta.current_page === reviewsMeta.last_page"
-                      class="w-8 h-8 flex items-center justify-center rounded-[8px] border cursor-pointer transition-all hover:opacity-80 disabled:opacity-30"
-                      :class="isDark ? 'border-white/10' : 'border-gray-200'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-              </button>
-            </div>
-          </div>
-
+          <CommonPaginationBar v-if="reviewsMeta && reviewsMeta.total > 0" :meta="reviewsMeta" :loading="reviewsLoading" :dark="isDark"
+            :per-page-options="[10, 20, 50]" @page-change="p => loadReviews(p)" @per-page-change="p => loadReviews(1)" />
         </div>
       </div>
 
@@ -714,69 +667,38 @@
           </div>
 
           <!-- Table -->
-          <div class="overflow-hidden rounded-[8px] border" :class="isDark ? 'border-white/10' : 'border-[#E5E5E5]'">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-[#00896F] text-white">
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Client ID</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Client Name</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Date of Appointment</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Type of Appointment</th>
-                  <th class="py-4 px-6 font-normal text-[14px] border-r border-white/10 whitespace-nowrap">Progress Indicator</th>
-                  <th class="py-4 px-6 font-normal text-[14px] whitespace-nowrap">Notes</th>
-                </tr>
-              </thead>
-              <tbody :class="isDark ? 'bg-transparent' : 'bg-white'">
-                <tr v-for="(p, i) in filteredMasterlist" :key="i"
-                    class="transition-colors border-b"
-                    :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50'">
-                  <td class="py-4 px-6 text-[14px]">{{ p.clientId }}</td>
-                  <td class="py-4 px-6 text-[14px]">{{ p.clientName }}</td>
-                  <td class="py-4 px-6 text-[14px]">{{ p.date }}</td>
-                  <td class="py-4 px-6 text-[14px]">{{ p.type }}</td>
-                  <td class="py-4 px-6">
-                    <div v-if="p.current !== null && p.current !== undefined" class="flex items-center gap-3">
-                      <div class="w-24 h-2 rounded-full overflow-hidden" :class="isDark ? 'bg-white/10' : 'bg-[#E5E5E5]'">
-                        <div class="h-full rounded-full transition-all duration-500"
-                             :style="{ width: (p.current / p.total * 100) + '%' }"
-                             :class="getProgressColor(p.current, p.total)"></div>
-                      </div>
-                      <span class="text-[14px] font-semibold" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ p.current }}/{{ p.total }}</span>
-                    </div>
-                    <span v-else class="opacity-40">-</span>
-                  </td>
-                  <td class="py-4 px-6 min-w-[250px]">
-                    <div class="px-3 py-2 rounded-[8px] border text-[12px] transition-all"
-                         :class="isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-[#F3F4F6] border-transparent text-[#717182] hover:bg-gray-100'">
-                      {{ p.notes || '—' }}
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="filteredMasterlist.length === 0">
-                  <td colspan="6" class="py-16 text-center text-[14px] opacity-40">No records found.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <CommonAdminDataTable :headers="['Client ID', 'Client Name', 'Date of Appointment', 'Type of Appointment', 'Progress Indicator', 'Notes']"
+            :loading="masterlistLoading" :row-count="filteredMasterlist.length" :dark="isDark" empty-text="No records found.">
+            <tr v-for="(p, i) in filteredMasterlist" :key="i"
+                class="transition-colors"
+                :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50/50'">
+              <td class="py-6 px-8 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#000000CC]'">{{ p.clientId }}</td>
+              <td class="py-6 px-8 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#000000CC]'">{{ p.clientName }}</td>
+              <td class="py-6 px-8 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#000000CC]'">{{ p.date }}</td>
+              <td class="py-6 px-8 text-[14px]" :class="isDark ? 'text-white/90' : 'text-[#000000CC]'">{{ p.type }}</td>
+              <td class="py-6 px-8">
+                <div v-if="p.current !== null && p.current !== undefined" class="flex items-center gap-3">
+                  <div class="w-24 h-2 rounded-full overflow-hidden" :class="isDark ? 'bg-white/10' : 'bg-[#E5E5E5]'">
+                    <div class="h-full rounded-full transition-all duration-500"
+                         :style="{ width: (p.current / p.total * 100) + '%' }"
+                         :class="getProgressColor(p.current, p.total)"></div>
+                  </div>
+                  <span class="text-[14px] font-semibold" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">{{ p.current }}/{{ p.total }}</span>
+                </div>
+                <span v-else class="opacity-40">-</span>
+              </td>
+              <td class="py-6 px-8 min-w-[250px]">
+                <div class="px-3 py-2 rounded-[8px] border text-[12px] transition-all"
+                     :class="isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-[#F3F4F6] border-transparent text-[#717182] hover:bg-gray-100'">
+                  {{ p.notes || '—' }}
+                </div>
+              </td>
+            </tr>
+          </CommonAdminDataTable>
 
           <!-- Masterlist Pagination -->
-          <div v-if="masterlistCurrentMeta && masterlistCurrentMeta.last_page > 1" class="flex items-center justify-between pt-2">
-            <span class="text-[13px] opacity-50" :class="isDark ? 'text-white/50' : 'text-[#6B7280]'">{{ masterlistCurrentMeta.from }}–{{ masterlistCurrentMeta.to }} of {{ masterlistCurrentMeta.total }}</span>
-            <div class="flex items-center gap-2">
-              <button @click="masterlistPrev" :disabled="masterlistCurrentMeta.current_page === 1"
-                      class="w-8 h-8 flex items-center justify-center rounded-[8px] border cursor-pointer transition-all hover:opacity-80 disabled:opacity-30"
-                      :class="isDark ? 'border-white/10' : 'border-gray-200'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-              </button>
-              <span class="text-[13px] px-2" :class="isDark ? 'text-white/60' : 'text-[#6B7280]'">{{ masterlistCurrentMeta.current_page }} / {{ masterlistCurrentMeta.last_page }}</span>
-              <button @click="masterlistNext" :disabled="masterlistCurrentMeta.current_page === masterlistCurrentMeta.last_page"
-                      class="w-8 h-8 flex items-center justify-center rounded-[8px] border cursor-pointer transition-all hover:opacity-80 disabled:opacity-30"
-                      :class="isDark ? 'border-white/10' : 'border-gray-200'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-              </button>
-            </div>
-          </div>
-
+          <CommonPaginationBar v-if="masterlistCurrentMeta && masterlistCurrentMeta.total > 0" :meta="masterlistCurrentMeta" :loading="masterlistLoading" :dark="isDark"
+            :per-page-options="[10, 20, 50]" @page-change="p => loadMasterlistTab(p)" @per-page-change="p => loadMasterlistTab(1)" />
         </div>
       </div>
 
@@ -1051,11 +973,13 @@ const {
 
 const {
   appointments, meta: appointmentsMeta, loading: appointmentsLoading,
+  search: requestSearch, statusFilter: requestStatusFilter, sort: requestSort,
   fetchAppointments, approveAppointment, rescheduleAppointment, completeAppointment,
   startSession, pauseSession, stopSession
 } = useAdminAppointments()
+requestStatusFilter.value = 'Pending'
 
-const { reviews, meta: reviewsMeta, fetchReviews } = useAdminMonthlyReviews()
+const { reviews, meta: reviewsMeta, loading: reviewsLoading, fetchReviews } = useAdminMonthlyReviews()
 const summaryPage = ref(1)
 
 // ── Current month ─────────────────────────────────────────────
@@ -1079,13 +1003,11 @@ const tabKeyReverseMap = {
 const subtabKeyMap = {
   'Client Fixed': 'fixed',
   'Client Review': 'review',
-  'Client Analysis': 'analysis',
   'All Appointments': 'all',
 }
 const subtabKeyReverseMap = {
   'fixed': 'Client Fixed',
   'review': 'Client Review',
-  'analysis': 'Client Analysis',
   'all': 'All Appointments',
 }
 
@@ -1383,18 +1305,35 @@ const mappedAppointments = computed(() =>
 )
 
 // ── Client Management ─────────────────────────────────────────
-const requestSearch = ref('')
-const requestStatusFilter = ref('')
 const showRequestStatusDd = ref(false)
+const showRequestSortDd = ref(false)
 
-const filteredRequestPool = computed(() => {
-  return mappedAppointments.value.filter(r => {
-    const q = requestSearch.value.toLowerCase()
-    const matchSearch = !q || r.clientId.toLowerCase().includes(q) || r.clientName.toLowerCase().includes(q)
-    const matchStatus = !requestStatusFilter.value || r.status === requestStatusFilter.value
-    return matchSearch && matchStatus
-  })
+const requestPoolRows = computed(() => mappedAppointments.value)
+
+const requestSearchTimer = ref(null)
+watch(requestSearch, () => {
+  clearTimeout(requestSearchTimer.value)
+  requestSearchTimer.value = setTimeout(() => fetchAppointments(1), 400)
 })
+
+function setRequestStatus(s) {
+  requestStatusFilter.value = s === 'All Statuses' ? '' : s
+  showRequestStatusDd.value = false
+  fetchAppointments(1)
+}
+
+function setRequestSort(s) {
+  requestSort.value = s
+  showRequestSortDd.value = false
+  fetchAppointments(1)
+}
+
+function resetRequestPoolFilters() {
+  requestSearch.value = ''
+  requestStatusFilter.value = 'Pending'
+  requestSort.value = 'newest'
+  fetchAppointments(1)
+}
 
 const summarySearch = ref('')
 const summaryStatusFilter = ref('')
@@ -1402,10 +1341,26 @@ const showSummaryStatusDd = ref(false)
 
 function loadReviews(page = 1) {
   summaryPage.value = page
-  fetchReviews(currentMonth, summarySearch.value || undefined, page)
+  fetchReviews(currentMonth, summarySearch.value || undefined, page, summaryStatusFilter.value === 'All Statuses' ? '' : summaryStatusFilter.value)
 }
 
-watch(summarySearch, () => loadReviews(1))
+const summarySearchTimer = ref(null)
+watch(summarySearch, () => {
+  clearTimeout(summarySearchTimer.value)
+  summarySearchTimer.value = setTimeout(() => loadReviews(1), 400)
+})
+
+function setSummaryStatus(s) {
+  summaryStatusFilter.value = s === 'All Statuses' ? '' : s
+  showSummaryStatusDd.value = false
+  loadReviews(1)
+}
+
+function resetClientSummaryFilters() {
+  summarySearch.value = ''
+  summaryStatusFilter.value = ''
+  loadReviews(1)
+}
 
 function reviewStatusLabel(r) {
   if (r.status === 'completed') return 'Completed'
@@ -1444,14 +1399,7 @@ const mappedReviews = computed(() =>
   }))
 )
 
-const filteredClientSummary = computed(() =>
-  mappedReviews.value.filter(s => {
-    const q = summarySearch.value.toLowerCase()
-    const matchSearch = !q || s.clientId.toLowerCase().includes(q) || s.clientName.toLowerCase().includes(q)
-    const matchStatus = !summaryStatusFilter.value || s.status === summaryStatusFilter.value
-    return matchSearch && matchStatus
-  })
-)
+const filteredClientSummary = computed(() => mappedReviews.value)
 
 // ── Appointment Details Modal ─────────────────────────────────
 const showAppointmentModal = ref(false)
@@ -1593,20 +1541,19 @@ async function submitReschedule() {
 }
 
 // ── Masterlist ────────────────────────────────────────────────
-// Mirrors admin ReviewDashboard.vue exactly:
-//   Client Fixed   → monthly reviews (fetchReviews)
-//   Client Review  → appointment summaries per client (/admin/appointments/client-summary)
-//   Client Analysis → same appointment summaries (same endpoint, same data)
-//   All Appointments → MERGED monthly reviews + appointment summaries (like admin allRows)
+// 3 tabs, each with its own real backend-paginated source:
+//   Client Fixed     → monthly reviews (fetchReviews)
+//   Client Review    → appointment summaries per client (/admin/appointments/client-summary)
+//   All Appointments → backend UNION of both (/admin/appointments/masterlist-all)
 
-const masterTabKeys = ['Client Fixed', 'Client Review', 'Client Analysis', 'All Appointments']
-const activeMasterTab = ref(subtabKeyReverseMap[route.query.subtab] ?? 'Client Fixed')
+const masterTabKeys = ['Client Fixed', 'Client Review', 'All Appointments']
+const activeMasterTab = ref(masterTabKeys.includes(subtabKeyReverseMap[route.query.subtab]) ? subtabKeyReverseMap[route.query.subtab] : 'Client Fixed')
 const masterSearch = ref('')
 const masterlistLoading = ref(false)
 
 const mlFixedPage = ref(1)
 
-// Client Review / Client Analysis — appointment summaries per client (same as admin)
+// Client Review — appointment summaries per client
 const mlReviewRows = ref([])
 const mlReviewMeta = ref(null)
 const mlReviewPage = ref(1)
@@ -1622,63 +1569,61 @@ async function fetchClientReview(page = 1, perPage = 10) {
   } catch {}
 }
 
+// All Appointments — real backend-paginated UNION of Client Fixed + Client Review
+const mlAllRows = ref([])
+const mlAllMeta = ref(null)
+const mlAllPage = ref(1)
+
+async function fetchMasterlistAll(page = 1, perPage = 10) {
+  try {
+    const params = new URLSearchParams({ month: currentMonth, page: String(page), per_page: String(perPage) })
+    if (masterSearch.value) params.set('search', masterSearch.value)
+    const res = await useAdminApi(`/admin/appointments/masterlist-all?${params.toString()}`)
+    mlAllRows.value = res.data ?? []
+    mlAllMeta.value = res.meta ?? null
+    mlAllPage.value = page
+  } catch {}
+}
+
 const masterlistCurrentMeta = computed(() => {
   if (activeMasterTab.value === 'Client Fixed') return reviewsMeta.value
-  if (activeMasterTab.value === 'Client Review' || activeMasterTab.value === 'Client Analysis') return mlReviewMeta.value
-  return null // All Appointments is a merged view — no single meta
+  if (activeMasterTab.value === 'Client Review') return mlReviewMeta.value
+  return mlAllMeta.value
 })
+
+function loadMasterlistTab(page = 1, perPage = 10) {
+  if (activeMasterTab.value === 'Client Fixed') {
+    mlFixedPage.value = page
+    fetchReviews(currentMonth, masterSearch.value || undefined, page, undefined, perPage)
+  } else if (activeMasterTab.value === 'Client Review') {
+    fetchClientReview(page, perPage)
+  } else {
+    fetchMasterlistAll(page, perPage)
+  }
+}
 
 async function refreshMasterlist() {
   masterlistLoading.value = true
   try {
-    // Same as admin onMounted: load both datasets upfront with large perPage for the merged All view
-    await Promise.all([
-      fetchReviews(currentMonth, masterSearch.value || undefined, mlFixedPage.value),
-      fetchClientReview(mlReviewPage.value, 1000),
-    ])
+    await loadMasterlistTab(1)
   } finally {
     masterlistLoading.value = false
   }
 }
 
-function masterlistPrev() {
-  const meta = masterlistCurrentMeta.value
-  if (!meta || meta.current_page <= 1) return
-  const page = meta.current_page - 1
-  if (activeMasterTab.value === 'Client Fixed') {
-    mlFixedPage.value = page
-    fetchReviews(currentMonth, masterSearch.value || undefined, page)
-  } else {
-    fetchClientReview(page, 10)
-  }
-}
-
-function masterlistNext() {
-  const meta = masterlistCurrentMeta.value
-  if (!meta || meta.current_page >= meta.last_page) return
-  const page = meta.current_page + 1
-  if (activeMasterTab.value === 'Client Fixed') {
-    mlFixedPage.value = page
-    fetchReviews(currentMonth, masterSearch.value || undefined, page)
-  } else {
-    fetchClientReview(page, 10)
-  }
-}
-
+const masterSearchTimer = ref(null)
 watch(masterSearch, () => {
-  mlFixedPage.value = 1
-  mlReviewPage.value = 1
-  refreshMasterlist()
+  clearTimeout(masterSearchTimer.value)
+  masterSearchTimer.value = setTimeout(() => refreshMasterlist(), 400)
 })
 
 const masterTabs = computed(() => {
   const fixedCount = reviewsMeta.value?.total ?? reviews.value.length
   const reviewCount = mlReviewMeta.value?.total ?? mlReviewRows.value.length
-  const allCount = fixedCount + reviewCount
+  const allCount = mlAllMeta.value?.total ?? (fixedCount + reviewCount)
   return [
     `Client Fixed (${fixedCount})`,
     `Client Review (${reviewCount})`,
-    `Client Analysis (0)`,
     `All Appointments (${allCount})`,
   ]
 })
@@ -1689,15 +1634,14 @@ function masterTabKey(tabWithCount) {
 
 function setMasterTab(tabWithCount) {
   const key = masterTabKey(tabWithCount)
-  if (key) {
+  if (key && key !== activeMasterTab.value) {
     activeMasterTab.value = key
     router.replace({ query: { ...route.query, subtab: subtabKeyMap[key] } })
+    loadMasterlistTab(1)
   }
 }
 
 const filteredMasterlist = computed(() => {
-  const q = masterSearch.value.toLowerCase()
-
   const mapFixed = r => ({
     clientId: clientCode(r.license_id, r.tenant_id),
     clientName: r.client_name,
@@ -1718,22 +1662,19 @@ const filteredMasterlist = computed(() => {
     notes: `${r.total} appointment${r.total !== 1 ? 's' : ''}`,
   })
 
-  if (activeMasterTab.value === 'Client Fixed') {
-    return reviews.value.map(mapFixed)
-  }
-  if (activeMasterTab.value === 'Client Review') {
-    return mlReviewRows.value.map(mapReview)
-  }
-  if (activeMasterTab.value === 'Client Analysis') {
-    return []
-  }
-  // All Appointments: merged, sorted by client name (same as admin allRows)
-  const merged = [
-    ...reviews.value.map(mapFixed),
-    ...mlReviewRows.value.map(mapReview),
-  ].sort((a, b) => a.clientName.localeCompare(b.clientName))
-  if (!q) return merged
-  return merged.filter(r => r.clientName.toLowerCase().includes(q) || r.clientId.toLowerCase().includes(q))
+  const mapAll = r => ({
+    clientId: clientCode(r.license_id, r.tenant_id),
+    clientName: r.client_name,
+    date: r.date ?? '-',
+    type: r.type,
+    current: r.current,
+    total: r.total,
+    notes: r.type === 'Client Review' ? `${r.total} appointment${r.total !== 1 ? 's' : ''}` : '',
+  })
+
+  if (activeMasterTab.value === 'Client Fixed') return reviews.value.map(mapFixed)
+  if (activeMasterTab.value === 'Client Review') return mlReviewRows.value.map(mapReview)
+  return mlAllRows.value.map(mapAll)
 })
 
 function getProgressColor(current, total) {

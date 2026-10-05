@@ -110,8 +110,8 @@ export function useActivityTracking() {
     }
   }
 
-  async function fetchDailyLogs(date: string, page = 1): Promise<{ session: WorkSession | null; stats: DailyStats | null; logs: any[] }> {
-    const res: any = await useAdminApi(`/admin/activity/daily?date=${date}&page=${page}&per_page=10`)
+  async function fetchDailyLogs(date: string, page = 1, perPage = 10): Promise<{ session: WorkSession | null; stats: DailyStats | null; logs: any[] }> {
+    const res: any = await useAdminApi(`/admin/activity/daily?date=${date}&page=${page}&per_page=${perPage}`)
     _dailyLogsMeta.value = res.data?.logs_meta ?? null
     return {
       session: res.data?.session ?? null,

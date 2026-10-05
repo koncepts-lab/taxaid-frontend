@@ -35,15 +35,16 @@ const _loading  = ref(false)
 const _error    = ref<string | null>(null)
 
 export function useAdminMonthlyReviews() {
-  async function fetchReviews(month: string, search?: string, page?: number): Promise<void> {
+  async function fetchReviews(month: string, search?: string, page?: number, status?: string, perPage = 10): Promise<void> {
     _loading.value = true
     _error.value   = null
     try {
       const params = new URLSearchParams({ month })
       if (search)            params.set('search', search)
+      if (status)            params.set('status', status)
       if (page !== undefined) {
         params.set('page', String(page))
-        params.set('per_page', '10')
+        params.set('per_page', String(perPage))
       }
       const res: any = await useAdminApi(`/admin/monthly-reviews?${params.toString()}`)
       if (page !== undefined) {
