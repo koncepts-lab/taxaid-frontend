@@ -7,7 +7,7 @@
        <!-- Title -->
       <div class="mb-4 lg:mb-2">
         <h2 class="text-[16px] font-regular text-white">{{ currentLang === 'ar' ? 'التدفق الداخلي مقابل التدفق الخارجي' : 'Inflow vs Outflow' }}</h2>
-        <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white' : 'text-[#FFFFFF5C]'">{{ valuesNote(true) }}</p>
+        <p class="text-[12px] font-regular mt-1" :class="isDark ? 'text-white' : 'text-[#FFFFFF5C]'">{{ valuesNote(unit === 'millions') }}</p>
       </div>
 
       <!-- Legend & Expand Icon -->
@@ -23,14 +23,15 @@
                </div>
              </div>
              <div class="flex items-center gap-3 lg:gap-4">
-               <img 
-                 src="/images/icons/info-white.svg" 
-                 alt="Info" 
+               <CommonUnitToggle :on-dark="true" storage-key="cash_flow_inflow_outflow_unit" />
+               <img
+                 src="/images/icons/info-white.svg"
+                 alt="Info"
                  class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
                />
-               <img 
-                 :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-white.svg'" 
-                 alt="Expand" 
+               <img
+                 :src="isDark ? '/images/icons/expand-white.svg' : '/images/icons/expand-white.svg'"
+                 alt="Expand"
                  class="w-6 h-6 cursor-pointer hover:opacity-100 hidden lg:block"
                  @click="isModalOpen = true"
                />
@@ -41,7 +42,7 @@
     <!-- Chart Area -->
     <div class="flex-1 min-h-[300px] lg:min-h-0 mt-0 lg:mt-0">
       <ClientOnly>
-        <apexchart width="100%" height="100%" type="bar" :options="chartOptions" :series="chartSeries"></apexchart>
+        <CommonApexBarChart :key="chartKey" width="100%" height="100%" type="bar" :options="chartOptions" :series="chartSeries" />
       </ClientOnly>
     </div>
 
@@ -53,7 +54,7 @@
           <div class="flex justify-between items-center py-6 px-8 border-b border-white/10">
             <div class="flex flex-col">
               <h2 class="text-lg font-regular text-white">{{ currentLang === 'ar' ? 'التدفق الداخلي مقابل التدفق الخارجي' : 'Inflow vs Outflow' }}</h2>
-              <p class="text-xs font-regular mt-1" :class="isDark ? 'text-white' : 'text-[#FFFFFF5C]'">{{ valuesNote(true) }}</p>
+              <p class="text-xs font-regular mt-1" :class="isDark ? 'text-white' : 'text-[#FFFFFF5C]'">{{ valuesNote(unit === 'millions') }}</p>
             </div>
             <div class="flex items-center gap-6">
               <div class="flex items-center gap-4 text-sm font-medium">
@@ -66,9 +67,10 @@
                   <span class="text-white font-regular">{{ currentLang === 'ar' ? 'التدفق الداخلي' : 'Inflow' }}</span>
                 </div>
               </div>
-               <img 
-                src="/images/icons/info-white.svg" 
-                alt="Info" 
+              <CommonUnitToggle :on-dark="true" storage-key="cash_flow_inflow_outflow_unit" />
+               <img
+                src="/images/icons/info-white.svg"
+                alt="Info"
                 class="w-4 h-4 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
               />
               <button @click="isModalOpen = false" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
@@ -76,11 +78,11 @@
               </button>
             </div>
           </div>
-          
+
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10 min-h-[350px]">
             <ClientOnly>
-              <apexchart width="100%" height="100%" type="bar" :options="chartOptions" :series="chartSeries"></apexchart>
+              <CommonApexBarChart :key="chartKey" width="100%" height="100%" type="bar" :options="chartOptions" :series="chartSeries" />
             </ClientOnly>
           </div>
         </div>
@@ -94,17 +96,24 @@ import { computed, ref } from 'vue';
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
 const { code: currencyCode, valuesNote } = useCurrency()
+const { unit, fmt, axisFmt, axisFor, plotter } = useChartHelper('cash_flow_inflow_outflow_unit')
 const isModalOpen = ref(false)
 
 const { inflowOutflow } = useCashFlow()
 
+const rawSeries = computed(() => inflowOutflow.value?.series ?? [])
+const peak = computed(() => Math.max(0, ...rawSeries.value.flatMap(s => s.dataRaw ?? [])))
+
 const chartSeries = computed(() => {
-  const dataSeries = inflowOutflow.value?.series ?? []
-  return dataSeries.map(s => ({
+  const plot = plotter(peak.value)
+  return rawSeries.value.map(s => ({
     name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
-    data: s.data
+    data: (s.dataRaw ?? []).map(plot)
   }))
 })
+
+// CommonApexBarChart only redraws when options/series change identity, so tie a key to unit so toggling forces that
+const chartKey = computed(() => JSON.stringify([unit.value, inflowOutflow.value?.categories, rawSeries.value.map(s => s.dataRaw)]))
 
 const chartOptions = computed(() => ({
   chart: {
@@ -135,7 +144,7 @@ const chartOptions = computed(() => ({
       fontWeight: 400
     },
     formatter: function (val: number) {
-      return val.toFixed(1) + 'M'
+      return val === 0 ? '0' : axisFmt(val)
     }
   },
   legend: { show: false },
@@ -155,13 +164,13 @@ const chartOptions = computed(() => ({
   },
   yaxis: {
     min: 0,
-    max: 5,
-    tickAmount: 5,
+    max: axisFor(peak.value).max,
+    tickAmount: axisFor(peak.value).ticks,
     labels: {
-      formatter: (value: number) => value.toFixed(0) + 'M',
+      formatter: (value: number) => value === 0 ? '0' : axisFmt(value),
       style: { colors: '#FFFFFF', fontSize: '13px', fontWeight: 500 }
     },
-    axisBorder: { 
+    axisBorder: {
       show: true,
       color: 'rgba(255, 255, 255, 0.3)',
       width: 1,
@@ -189,8 +198,8 @@ const chartOptions = computed(() => ({
       
       return '<div class="px-4 py-3 rounded-lg shadow-xl border-none" style="min-width: 180px; background: #ffffff;">' +
         '<div class="font-semibold mb-2 text-[13px]" style="color: #1A1A1A;">' + month + '</div>' +
-        '<div class="text-[12px] mb-1" style="color: #1A1A1A;">' + inflowLabel + '<span class="font-semibold">' + currencyCode.value + ' ' + inflowValue.toFixed(1) + 'M</span></div>' +
-        '<div class="text-[12px] mb-1" style="color: #1A1A1A;">' + outflowLabel + '<span class="font-semibold">' + currencyCode.value + ' ' + outflowValue.toFixed(1) + 'M</span></div>' +
+        '<div class="text-[12px] mb-1" style="color: #1A1A1A;">' + inflowLabel + '<span class="font-semibold">' + currencyCode.value + ' ' + fmt(inflowValue) + '</span></div>' +
+        '<div class="text-[12px] mb-1" style="color: #1A1A1A;">' + outflowLabel + '<span class="font-semibold">' + currencyCode.value + ' ' + fmt(outflowValue) + '</span></div>' +
         '<div class="text-[12px]" style="color: #1A1A1A;">' + netCashflowLabel + '<span class="font-semibold text-[#00A176]">+' + netPercentage + '%</span></div>' +
         '</div>'
     }
@@ -224,7 +233,7 @@ const chartOptions = computed(() => ({
         },
         yaxis: {
           labels: {
-            formatter: (value: number) => Math.abs(value).toFixed(0) + 'M',
+            formatter: (value: number) => value === 0 ? '0' : axisFmt(Math.abs(value)),
             style: {
               fontSize: '11px',
               colors: '#FFFFFF'

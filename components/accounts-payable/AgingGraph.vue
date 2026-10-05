@@ -42,7 +42,7 @@
     </div>
     <div v-else-if="hasData" class="flex-1 w-full min-h-[320px] relative z-10">
       <ClientOnly>
-        <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
+        <CommonApexBarChart :key="chartKey" type="line" height="100%" :options="chartOptions" :series="series" />
       </ClientOnly>
     </div>
     <div v-else class="absolute inset-0 z-20 flex items-center justify-center">
@@ -105,7 +105,7 @@
               </div>
             </div>
             <ClientOnly v-else>
-              <apexchart type="line" height="100%" :options="chartOptions" :series="series" />
+              <CommonApexBarChart :key="chartKey" type="line" height="100%" :options="chartOptions" :series="series" />
             </ClientOnly>
           </div>
         </div>
@@ -181,6 +181,9 @@ const rawSeries = computed(() => {
 
 const barPeak = computed(() => Math.max(0, ...rawSeries.value.previous, ...rawSeries.value.current))
 const axis = computed(() => axisFor(barPeak.value))
+
+// CommonApexBarChart only redraws when options/series change identity, so tie a key to unit so toggling forces that
+const chartKey = computed(() => JSON.stringify([unit.value, rawSeries.value.previous, rawSeries.value.current]))
 
 const series = computed(() => {
   const plot = plotter(barPeak.value)

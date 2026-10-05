@@ -177,8 +177,8 @@ export const useCashFlow = () => {
     const d  = rawData.value
     return {
       series: [
-        { name: 'Real Scenario',        nameAr: 'سيناريو حقيقي',    data: ms.map(m => toM(d['Incoming']?.monthly_totals?.[m] ?? 0)) },
-        { name: 'Hypothetical Scenario', nameAr: 'سيناريو افتراضي', data: ms.map(m => toM(d['Outgoing']?.monthly_totals?.[m] ?? 0)) },
+        { name: 'Real Scenario',        nameAr: 'سيناريو حقيقي',    data: ms.map(m => toM(d['Incoming']?.monthly_totals?.[m] ?? 0)), dataRaw: ms.map(m => d['Incoming']?.monthly_totals?.[m] ?? 0) },
+        { name: 'Hypothetical Scenario', nameAr: 'سيناريو افتراضي', data: ms.map(m => toM(d['Outgoing']?.monthly_totals?.[m] ?? 0)), dataRaw: ms.map(m => d['Outgoing']?.monthly_totals?.[m] ?? 0) },
       ],
       categories:   ms,
       categoriesAr: ms,
@@ -193,8 +193,8 @@ export const useCashFlow = () => {
     const d  = rawData.value
     return {
       series: [
-        { name: 'Outflow', nameAr: 'التدفق الخارجي', data: ms.map(m => toM(d['Outgoing']?.monthly_totals?.[m] ?? 0)) },
-        { name: 'Inflow',  nameAr: 'التدفق الداخلي', data: ms.map(m => toM(d['Incoming']?.monthly_totals?.[m] ?? 0)) },
+        { name: 'Outflow', nameAr: 'التدفق الخارجي', data: ms.map(m => toM(d['Outgoing']?.monthly_totals?.[m] ?? 0)), dataRaw: ms.map(m => d['Outgoing']?.monthly_totals?.[m] ?? 0) },
+        { name: 'Inflow',  nameAr: 'التدفق الداخلي', data: ms.map(m => toM(d['Incoming']?.monthly_totals?.[m] ?? 0)), dataRaw: ms.map(m => d['Incoming']?.monthly_totals?.[m] ?? 0) },
       ],
       categories:   ms,
       categoriesAr: ms,

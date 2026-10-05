@@ -54,7 +54,7 @@
     <!-- Chart Area -->
     <div v-else class="flex-1 min-h-[300px] mt-6">
       <ClientOnly>
-        <apexchart width="100%" height="100%" type="bar" :options="chartOptions" :series="chartSeries"></apexchart>
+        <CommonApexBarChart :key="chartKey" width="100%" height="100%" type="bar" :options="chartOptions" :series="chartSeries" />
       </ClientOnly>
     </div>
 
@@ -93,7 +93,7 @@
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10 min-h-[350px]">
             <ClientOnly>
-              <apexchart width="100%" height="100%" type="bar" :options="chartOptions" :series="chartSeries"></apexchart>
+              <CommonApexBarChart :key="chartKey" width="100%" height="100%" type="bar" :options="chartOptions" :series="chartSeries" />
             </ClientOnly>
           </div>
         </div>
@@ -104,14 +104,13 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { formatToMillions, formatStandardNumber } from '~/utils/formatters'
 import { useCurrency } from '~/composables/common/useCurrency'
 import { useChartHelper } from '~/composables/common/useChartHelper'
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 const { valuesNote, code: currencyCode } = useCurrency()
-const { unit } = useChartHelper('indirect_expense_overhead_vs_revenue_unit')
+const { unit, fmt, axisFmt, axisFor, plotter } = useChartHelper('indirect_expense_overhead_vs_revenue_unit')
 const isModalOpen = ref(false)
 
 const props = defineProps({
@@ -129,36 +128,32 @@ const chartCategories = computed(() => {
   return props.data.map((item: any) => item.month_year || item.month_short || '')
 })
 
+const rawOverhead = computed(() => props.data.map((item: any) => Number(item['indirect expenses']) || 0))
+const rawRevenue = computed(() => props.data.map((item: any) => Number(item.revenue) || 0))
+const peak = computed(() => Math.max(0, ...rawOverhead.value, ...rawRevenue.value))
+
 const chartSeries = computed(() => {
-  const isMil = unit.value === 'millions'
+  const plot = plotter(peak.value)
   return [
     {
       name: currentLang.value === 'ar' ? 'النفقات العامة' : 'Overhead',
-      data: props.data.map((item: any) => {
-        const val = Number(item['indirect expenses']) || 0
-        return isMil ? parseFloat((val / 1_000_000).toFixed(2)) : val
-      })
+      data: rawOverhead.value.map(plot)
     },
     {
       name: currentLang.value === 'ar' ? 'الإيرادات' : 'Revenue',
-      data: props.data.map((item: any) => {
-        const val = Number(item.revenue) || 0
-        return isMil ? parseFloat((val / 1_000_000).toFixed(2)) : val
-      })
+      data: rawRevenue.value.map(plot)
     }
   ]
 })
 
 const rawData = computed(() => props.data)
 
-const yMax = computed(() => {
-  const allVals = chartSeries.value.flatMap(s => s.data)
-  const max = Math.max(...allVals, 0)
-  return max > 0 ? (unit.value === 'millions' ? Math.ceil(max * 1.15) : Math.ceil(max * 1.1)) : 10
-})
+const axis = computed(() => axisFor(peak.value))
+
+// CommonApexBarChart only redraws when options/series change identity, so tie a key to unit so toggling forces that
+const chartKey = computed(() => JSON.stringify([unit.value, rawOverhead.value, rawRevenue.value]))
 
 const chartOptions = computed(() => {
-  const isMil = unit.value === 'millions'
   return {
     chart: {
       type: 'bar',
@@ -177,10 +172,7 @@ const chartOptions = computed(() => {
     },
     dataLabels: {
       enabled: true,
-      formatter: (val: number) => {
-        if (!val) return '0'
-        return isMil ? val + 'M' : formatStandardNumber(val, 0)
-      },
+      formatter: (val: number) => (!val ? '0' : axisFmt(val)),
       offsetY: -20,
       style: {
         fontSize: '10px',
@@ -203,13 +195,10 @@ const chartOptions = computed(() => {
     },
     yaxis: {
       min: 0,
-      max: yMax.value,
-      tickAmount: 5,
+      max: axis.value.max,
+      tickAmount: axis.value.ticks,
       labels: {
-        formatter: (value: number) => {
-          if (isMil) return value.toFixed(1) + 'M'
-          return formatStandardNumber(value, 0)
-        },
+        formatter: (value: number) => value === 0 ? '0' : axisFmt(value),
         style: { colors: isDark.value ? '#FFFFFFBF' : '#333333BF', fontSize: '13px', fontWeight: 400 }
       }
     },
@@ -224,12 +213,8 @@ const chartOptions = computed(() => {
         const monthName = chartCategories.value[dataPointIndex]
         const raw = rawData.value[dataPointIndex] as any
         
-        const overhead = isMil
-          ? formatToMillions(raw?.['indirect expenses'] ?? 0, 2) + ' M'
-          : formatStandardNumber(raw?.['indirect expenses'] ?? 0, 2)
-        const revenue = isMil
-          ? formatToMillions(raw?.revenue ?? 0, 2) + ' M'
-          : formatStandardNumber(raw?.revenue ?? 0, 2)
+        const overhead = fmt(raw?.['indirect expenses'] ?? 0)
+        const revenue = fmt(raw?.revenue ?? 0)
         const ratio = raw?.expense_to_revenue_ratio ?? '0%'
         
         const revenueLabel = currentLang.value === 'ar' ? 'الإيرادات: ' : 'Revenue: '

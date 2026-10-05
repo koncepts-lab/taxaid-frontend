@@ -46,7 +46,8 @@
         </div>
       </div>
       <ClientOnly v-else>
-        <apexchart
+        <CommonApexBarChart
+          :key="chartKey"
           type="line"
           height="100%"
           :options="chartOptions"
@@ -102,7 +103,8 @@
               </div>
             </div>
             <ClientOnly v-else>
-              <apexchart
+              <CommonApexBarChart
+                :key="chartKey"
                 type="line"
                 height="100%"
                 :options="chartOptions"
@@ -144,6 +146,9 @@ const rawPrevious = computed(() => props.agingData?.previousYearRaw ?? [])
 const rawCurrent = computed(() => props.agingData?.currentYearRaw ?? [])
 const barPeak = computed(() => Math.max(0, ...rawPrevious.value, ...rawCurrent.value))
 const axis = computed(() => axisFor(barPeak.value))
+
+// CommonApexBarChart only redraws when options/series change identity, so tie a key to unit so toggling forces that
+const chartKey = computed(() => JSON.stringify([unit.value, rawPrevious.value, rawCurrent.value]))
 
 const series = computed(() => {
   const plot = plotter(barPeak.value)

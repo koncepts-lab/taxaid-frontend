@@ -34,7 +34,8 @@
         </div>
       </div>
       <ClientOnly v-else>
-        <apexchart
+        <CommonApexBarChart
+          :key="chartKey"
           type="line"
           height="100%"
           :options="chartOptions"
@@ -78,7 +79,8 @@
               </div>
             </div>
             <ClientOnly v-else>
-              <apexchart
+              <CommonApexBarChart
+                :key="chartKey"
                 type="line"
                 height="100%"
                 :options="chartOptions"
@@ -109,6 +111,9 @@ const isModalOpen = ref(false)
 
 const rawBalance = computed(() => props.data?.arBalanceRaw ?? (props.data?.arBalance ?? []).map(v => Number(v) * 1_000_000))
 const axis = computed(() => axisFor(Math.max(0, ...rawBalance.value)))
+
+// CommonApexBarChart only redraws when options/series change identity, so tie a key to unit so toggling forces that
+const chartKey = computed(() => JSON.stringify([unit.value, rawBalance.value]))
 
 const series = computed(() => [
   {

@@ -4,7 +4,7 @@ const raw = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFr
 
 // Shared chart helpers: Short/Full switch (kept per session under storageKey), axis fitting and small-bar visibility.
 export const useChartHelper = (storageKey = 'chart_unit') => {
-  const unit = useState<'millions' | 'actual'>(`chartUnit:${storageKey}`, () => 'millions')
+  const unit = useState<'millions' | 'actual'>(`chartUnit:${storageKey}`, () => 'actual')
 
   onMounted(() => {
     try {
@@ -20,13 +20,13 @@ export const useChartHelper = (storageKey = 'chart_unit') => {
 
   const fmt = (value: any) => {
     const v = Number(value) || 0
-    if (unit.value === 'millions' && Math.abs(v) >= 100000) return `${million.format(v / 1_000_000)}M`
+    if (unit.value === 'millions') return `${million.format(v / 1_000_000)}M`
     return raw.format(v)
   }
 
   const axisFmt = (value: any) => {
     const v = Number(value) || 0
-    if (unit.value === 'millions' && Math.abs(v) >= 100000) return `${million.format(v / 1_000_000)}M`
+    if (unit.value === 'millions') return `${million.format(v / 1_000_000)}M`
     return whole.format(v)
   }
 

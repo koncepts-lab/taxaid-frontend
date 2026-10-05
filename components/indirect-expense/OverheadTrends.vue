@@ -54,7 +54,7 @@
     <!-- Chart Area -->
     <div v-else class="flex-1 min-h-[300px] mt-6">
       <ClientOnly>
-        <apexchart width="100%" height="100%" type="line" :options="chartOptions" :series="chartSeries"></apexchart>
+        <CommonApexBarChart :key="chartKey" width="100%" height="100%" type="line" :options="chartOptions" :series="chartSeries" />
       </ClientOnly>
     </div>
 
@@ -93,7 +93,7 @@
           <!-- Modal Body (Chart) -->
           <div class="flex-1 w-full p-8 relative z-10 min-h-[350px]">
             <ClientOnly>
-              <apexchart width="100%" height="100%" type="line" :options="chartOptions" :series="chartSeries"></apexchart>
+              <CommonApexBarChart :key="chartKey" width="100%" height="100%" type="line" :options="chartOptions" :series="chartSeries" />
             </ClientOnly>
           </div>
         </div>
@@ -104,14 +104,13 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { formatToMillions, formatStandardNumber } from '~/utils/formatters'
 import { useCurrency } from '~/composables/common/useCurrency'
 import { useChartHelper } from '~/composables/common/useChartHelper'
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
 const { valuesNote, code: currencyCode } = useCurrency()
-const { unit } = useChartHelper('indirect_expense_overhead_trends_unit')
+const { unit, fmt, axisFmt, axisFor, plotter } = useChartHelper('indirect_expense_overhead_trends_unit')
 const isModalOpen = ref(false)
 
 const props = defineProps({
@@ -129,36 +128,32 @@ const chartCategories = computed(() => {
   return props.data.map((item: any) => item.month_year || item.month_short || '')
 })
 
+const rawCurrent = computed(() => props.data.map((item: any) => Number(item.current_year) || 0))
+const rawPrevious = computed(() => props.data.map((item: any) => Number(item.previous_year) || 0))
+const peak = computed(() => Math.max(0, ...rawCurrent.value, ...rawPrevious.value))
+
 const chartSeries = computed(() => {
-  const isMil = unit.value === 'millions'
+  const plot = plotter(peak.value)
   return [
     {
       name: currentLang.value === 'ar' ? 'السنة الحالية' : 'Current Year',
-      data: props.data.map((item: any) => {
-        const val = Number(item.current_year) || 0
-        return isMil ? parseFloat((val / 1_000_000).toFixed(2)) : val
-      })
+      data: rawCurrent.value.map(plot)
     },
     {
       name: currentLang.value === 'ar' ? 'السنة السابقة' : 'Previous Year',
-      data: props.data.map((item: any) => {
-        const val = Number(item.previous_year) || 0
-        return isMil ? parseFloat((val / 1_000_000).toFixed(2)) : val
-      })
+      data: rawPrevious.value.map(plot)
     }
   ]
 })
 
 const rawData = computed(() => props.data)
 
-const yMax = computed(() => {
-  const allVals = chartSeries.value.flatMap(s => s.data)
-  const max = Math.max(...allVals, 0)
-  return max > 0 ? (unit.value === 'millions' ? Math.ceil(max * 1.15) : Math.ceil(max * 1.1)) : 10
-})
+const axis = computed(() => axisFor(peak.value))
+
+// CommonApexBarChart only redraws when options/series change identity, so tie a key to unit so toggling forces that
+const chartKey = computed(() => JSON.stringify([unit.value, rawCurrent.value, rawPrevious.value]))
 
 const chartOptions = computed(() => {
-  const isMil = unit.value === 'millions'
   return {
     chart: {
       type: 'line',
@@ -185,13 +180,10 @@ const chartOptions = computed(() => {
     },
     yaxis: {
       min: 0,
-      max: yMax.value,
-      tickAmount: 5,
+      max: axis.value.max,
+      tickAmount: axis.value.ticks,
       labels: {
-        formatter: (value: number) => {
-          if (isMil) return value.toFixed(1) + ' M'
-          return formatStandardNumber(value, 0)
-        },
+        formatter: (value: number) => value === 0 ? '0' : axisFmt(value),
         style: { colors: '#FFFFFFBF', fontSize: '13px', fontWeight: 400 }
       },
       axisBorder: { show: false }
@@ -214,12 +206,8 @@ const chartOptions = computed(() => {
         const monthName = chartCategories.value[dataPointIndex]
         const raw = rawData.value[dataPointIndex] as any
         
-        const currentYearVal = isMil
-          ? formatToMillions(raw?.current_year ?? 0, 2) + ' M'
-          : formatStandardNumber(raw?.current_year ?? 0, 2)
-        const previousYearVal = isMil
-          ? formatToMillions(raw?.previous_year ?? 0, 2) + ' M'
-          : formatStandardNumber(raw?.previous_year ?? 0, 2)
+        const currentYearVal = fmt(raw?.current_year ?? 0)
+        const previousYearVal = fmt(raw?.previous_year ?? 0)
         const variancePercent = raw?.variance_percent ?? '0%'
         
         const currentLabel = currentLang.value === 'ar' ? 'السنة الحالية: ' : 'Current Year: '

@@ -222,10 +222,9 @@ const note = computed(() => valuesNote(unit.value === 'millions'))
 const whole = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 })
 const million = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 })
 
-// Short mode rounds only from 100,000 up; smaller values stay exact. Full mode is always the whole number.
 const fmt = (value) => {
   const v = Number(value) || 0
-  if (unit.value === 'millions' && Math.abs(v) >= 100000) return `${million.format(v / 1_000_000)}M`
+  if (unit.value === 'millions') return `${million.format(v / 1_000_000)}M`
   return whole.format(v)
 }
 
