@@ -5,7 +5,7 @@
                 class="fixed inset-0 z-[1100] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-black/60 backdrop-blur-sm"
                 :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="$emit('close')">
 
-                <div class="w-full max-w-full lg:max-w-[75vw] transition-all duration-300 transform scale-100 shadow-2xl overflow-hidden rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar flex flex-col md:max-h-[78vh]"
+                <div class="w-full max-w-full lg:max-w-[75vw] h-[92vh] transition-all duration-300 transform scale-100 shadow-2xl overflow-hidden rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 no-scrollbar flex flex-col md:h-[78vh]"
                     :class="isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white'">
 
                     <!-- Header -->
@@ -23,7 +23,7 @@
                     </div>
 
                     <!-- Body (Scrollable Table Container) -->
-                    <div class="px-5 md:px-8 pb-5 md:pb-8 flex-1 overflow-hidden flex flex-col">
+                    <div class="px-5 md:px-8 pb-5 md:pb-8 flex-1 min-h-0 overflow-hidden flex flex-col">
                         <div class="overflow-auto rounded-[20px] border custom-scrollbar flex-1 relative"
                             :class="isDark ? 'border-white/10' : 'border-gray-200'">
                             <table class="w-full text-left rtl:text-right border-collapse min-w-[1200px]">
@@ -31,16 +31,24 @@
                                     <tr class="bg-[#008864] text-white">
                                         <th class="px-6 py-5 text-[14px] font-normal w-20">SI.NO</th>
                                         <th v-for="col in columns" :key="col.key"
-                                            class="px-4 py-5 text-[14px] font-normal">
+                                            class="px-4 py-5 text-[14px] font-normal"
+                                            :class="col.numeric ? 'text-right rtl:text-left' : ''">
                                             {{ currentLang === 'ar' ? col.labelAr : col.label }}
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="(row, index) in data" :key="index" class="border-b transition-colors"
+                                    <tr v-if="!data || !data.length">
+                                        <td :colspan="(columns?.length ?? 0) + 1" class="px-6 py-16 text-center text-sm"
+                                            :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                                            {{ currentLang === 'ar' ? 'لا توجد بيانات متاحة' : 'No data available' }}
+                                        </td>
+                                    </tr>
+                                    <tr v-else v-for="(row, index) in data" :key="index" class="border-b transition-colors"
                                         :class="isDark ? 'border-white/5 hover:bg-white/5 text-white/80' : 'border-gray-100 hover:bg-gray-50 text-gray-700'">
                                         <td class="px-6 py-4 text-[14px] opacity-50">{{ index + 1 }}</td>
-                                        <td v-for="col in columns" :key="col.key" class="px-4 py-4 text-[14px]">
+                                        <td v-for="col in columns" :key="col.key" class="px-4 py-4 text-[14px]"
+                                            :class="col.numeric ? 'text-right rtl:text-left' : ''">
                                             {{ row[col.key] ?? '-' }}
                                         </td>
                                     </tr>
@@ -51,7 +59,8 @@
                                     <tr :class="['font-bold', isDark ? 'bg-[#013E32] text-white' : 'bg-[#61FFD6] text-[#013E32]']">
                                         <td class="px-6 py-4"></td>
                                         <td v-for="(col, index) in columns" :key="'foot-' + col.key"
-                                            class="px-4 py-4 text-[14px]">
+                                            class="px-4 py-4 text-[14px]"
+                                            :class="col.numeric ? 'text-right rtl:text-left' : ''">
                                             <span v-if="index === 0">
                                                 {{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}
                                             </span>

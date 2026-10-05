@@ -5,7 +5,7 @@
                 class="fixed inset-0 z-[1200] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-black/60 backdrop-blur-sm"
                 :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="$emit('close')">
 
-                <div class="w-full max-w-[75vw]  transition-all duration-300 transform scale-100 shadow-2xl overflow-hidden flex flex-col max-h-[78vh] rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar"
+                <div class="w-full max-w-[75vw] h-[78vh] transition-all duration-300 transform scale-100 shadow-2xl overflow-hidden flex flex-col rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 no-scrollbar"
                     :class="isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white'">
 
                     <div class="flex justify-between items-center p-8 "
@@ -22,12 +22,12 @@
                         </button>
                     </div>
 
-                    <div class="p-6 flex-1 overflow-hidden flex flex-col">
+                    <div class="p-6 flex-1 min-h-0 overflow-hidden flex flex-col">
                         <div v-if="loading" class="space-y-3 py-2">
                             <div class="skeleton h-10 w-full rounded-lg"></div>
                             <div v-for="n in 9" :key="n" class="skeleton h-8 w-full rounded"></div>
                         </div>
-                        <div v-else class="overflow-auto rounded-[20px] border budget-scroll flex-1 relative shadow-inner"
+                        <div v-else class="overflow-auto rounded-[20px] border budget-scroll flex-1 min-h-0 relative shadow-inner"
                             :class="isDark ? 'border-white/10 bg-[#001a16]' : 'border-gray-200 bg-gray-50/30'">
 
                             <table class="w-full text-left border-collapse">
@@ -36,7 +36,7 @@
                                         <th v-if="showSiNo" class="px-4 py-5 text-sm font-semibold w-40">SI.NO</th>
                                         <th v-for="col in columns" :key="col.key"
                                             class="px-3 py-5 text-sm font-semibold whitespace-nowrap" :class="[
-                                                col.key !== 'name' && col.key !== 'mainGroup' ? 'text-left' : ''
+                                                isNumericCol(col.key) ? 'text-right rtl:text-left' : 'text-left rtl:text-right'
                                             ]">
                                             {{ currentLang === 'ar' ? col.labelAr : col.label }}
                                         </th>
@@ -44,6 +44,12 @@
                                 </thead>
 
                                 <tbody>
+                                    <tr v-if="!data || !data.length">
+                                        <td :colspan="(columns?.length ?? 0) + (showSiNo ? 1 : 0)" class="px-6 py-16 text-center text-sm"
+                                            :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                                            {{ currentLang === 'ar' ? 'لا توجد بيانات متاحة' : 'No data available' }}
+                                        </td>
+                                    </tr>
                                     <template v-for="(row, index) in data" :key="index">
                                     <tr class="transition-colors" :class="[
                                         row.type === 'header' ? (isDark ? 'bg-[#61FFD6]/10' : 'bg-[#C2F9E9]') : '',
@@ -64,7 +70,9 @@
                                                     row.type === 'net-row' ? (isDark ? 'bg-[#023b31]' : 'bg-primary-1200') :
                                                         !row.type ? (isDark ? '' : 'bg-white') : '',
 
-                                                (['header', 'total-row', 'net-row'].includes(row.type) || col.fontBold) ? 'font-medium' : 'font-normal'
+                                                (['header', 'total-row', 'net-row'].includes(row.type) || col.fontBold) ? 'font-medium' : 'font-normal',
+
+                                                isNumericCol(col.key) ? 'text-right rtl:text-left' : 'text-left rtl:text-right'
                                             ]">
                                             <span v-if="col.key === 'name' && hasSubgroups(row)" class="inline-flex items-center gap-1.5">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -83,7 +91,7 @@
                                         <td v-if="showSiNo"></td>
                                         <td v-for="col in columns" :key="col.key"
                                             class="px-3 py-2.5 text-sm whitespace-nowrap"
-                                            :class="isDark ? 'text-white/60' : 'text-gray-600'">
+                                            :class="[isDark ? 'text-white/60' : 'text-gray-600', isNumericCol(col.key) ? 'text-right rtl:text-left' : 'text-left rtl:text-right']">
                                             <span v-if="col.key === 'name'" class="pl-6 inline-flex items-center gap-1.5">
                                                 {{ sub[col.key] || '' }}
                                                 <span v-if="sub.isUnmapped" title="Not found in this tenant's TB mapping"
@@ -137,8 +145,11 @@ const toggleRow = (name) => {
     expandedRows.value = next
 }
 
+const TEXT_COLUMNS = ['name', 'mainGroup', 'subGroup', 'empNo']
+const isNumericCol = (colKey) => !TEXT_COLUMNS.includes(colKey)
+
 const formatCellValue = (val, colKey) => {
-    if (['name', 'mainGroup', 'subGroup', 'empNo'].includes(colKey)) return val || ''
+    if (TEXT_COLUMNS.includes(colKey)) return val || ''
     return formatCurrency(val)
 }
 

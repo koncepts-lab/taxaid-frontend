@@ -40,18 +40,18 @@
                 <thead>
                     <tr class="bg-[#008864] text-white">
                         <th class="px-6 py-5 text-sm font-medium w-[15%]"></th>
-                        <th class="px-4 py-5 text-sm font-medium text-center">Actual (AED) Invoiced</th>
-                        <th class="px-4 py-5 text-sm font-medium text-center">Income (100%) AED</th>
-                        <th class="px-4 py-5 text-sm font-medium text-center">
+                        <th class="px-4 py-5 text-sm font-medium text-right">Actual ({{ currencyCode }}) Invoiced</th>
+                        <th class="px-4 py-5 text-sm font-medium text-right">Income (100%) {{ currencyCode }}</th>
+                        <th class="px-4 py-5 text-sm font-medium text-right">
                             Forecasted Income<br>
-                            <span>(less than 100% but >= 90%) AED</span>
+                            <span>(less than 100% but >= 90%) {{ currencyCode }}</span>
                         </th>
-                        <th class="px-4 py-5 text-sm font-medium text-center">
+                        <th class="px-4 py-5 text-sm font-medium text-right">
                             Income After Including<br>
                             <span>Possible Income</span>
                         </th>
-                        <th class="px-4 py-5 text-sm font-medium text-center">Budget 2025 AED</th>
-                        <th class="px-4 py-5 text-sm font-medium text-center">
+                        <th class="px-4 py-5 text-sm font-medium text-right">Budget 2025 {{ currencyCode }}</th>
+                        <th class="px-4 py-5 text-sm font-medium text-right">
                             Difference<br>
                             <span>(income 100% vs budget)</span>
                         </th>
@@ -63,23 +63,23 @@
                     <!-- Year Row Skeleton -->
                     <tr class="text-white font-medium bg-[#014235]">
                         <td class="px-6 py-3 border-white/10"><div class="h-4 bg-white/20 rounded w-16 animate-pulse"></div></td>
-                        <td class="px-4 py-3 text-center text-sm">AED</td>
-                        <td class="px-4 py-3 text-center text-sm">AED</td>
-                        <td class="px-4 py-3 text-center text-sm">AED</td>
-                        <td class="px-4 py-3 text-center text-sm">AED</td>
-                        <td class="px-4 py-3 text-center text-sm">AED</td>
-                        <td class="px-4 py-3 text-center text-sm">AED</td>
+                        <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                        <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                        <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                        <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                        <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                        <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
                     </tr>
                     <!-- Quarter & Month Rows Skeleton -->
                     <template v-for="q in 4" :key="'skeleton-q-'+q">
                         <tr :class="['font-medium border-b border-[#84D7C5]/30', isDark ? 'bg-[#013e32] text-white' : 'bg-[#C2F9E9] text-[#013E32]']">
                             <td class="px-6 py-3 border-[#84D7C5]"><div class="h-4 bg-[#013E32]/20 rounded w-20 animate-pulse"></div></td>
-                            <td class="px-4 py-3 text-center text-sm">AED</td>
-                            <td class="px-4 py-3 text-center text-sm">AED</td>
-                            <td class="px-4 py-3 text-center text-sm">AED</td>
-                            <td class="px-4 py-3 text-center text-sm">AED</td>
-                            <td class="px-4 py-3 text-center text-sm">AED</td>
-                            <td class="px-4 py-3 text-center text-sm">AED</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
                         </tr>
                         <tr v-for="m in 3" :key="'skeleton-m-'+q+'-'+m" class="border-b transition-colors animate-pulse"
                             :class="isDark ? 'border-white/5' : 'border-gray-100'">
@@ -103,38 +103,38 @@
                 <tbody v-else v-for="year in data" :key="year.id">
                     <tr class="text-white font-medium bg-[#014235]">
                         <td class="px-6 py-3 border-white/10">{{ year.label }}</td>
-                        <td class="px-4 py-3 text-center text-sm">AED</td>
-                        <td class="px-4 py-3 text-center text-sm">AED</td>
-                        <td class="px-4 py-3 text-center text-sm">AED</td>
-                        <td class="px-4 py-3 text-center text-sm">AED</td>
-                        <td class="px-4 py-3 text-center text-sm">AED</td>
-                        <td class="px-4 py-3 text-center text-sm">AED</td>
+                        <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                        <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                        <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                        <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                        <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                        <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
                     </tr>
 
                     <template v-for="quarter in year.quarters" :key="quarter.id">
                         <tr :class="['font-medium border-b border-[#84D7C5]/30', isDark ? 'bg-[#013e32] text-white' : 'bg-[#C2F9E9] text-[#013E32]']">
                             <td class="px-6 py-3 border-[#84D7C5]">{{ quarter.label }}</td>
-                            <td class="px-4 py-3 text-center text-sm">AED</td>
-                            <td class="px-4 py-3 text-center text-sm">AED</td>
-                            <td class="px-4 py-3 text-center text-sm">AED</td>
-                            <td class="px-4 py-3 text-center text-sm">AED</td>
-                            <td class="px-4 py-3 text-center text-sm">AED</td>
-                            <td class="px-4 py-3 text-center text-sm">AED</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
                         </tr>
 
                         <tr v-for="month in quarter.months" :key="month.label" class="transition-colors"
                             :class="[
                                 month.is_total
-                                    ? (isDark ? 'bg-white/[0.06] font-medium text-white border-0' : 'bg-[#F2F4F7] font-medium text-gray-800 border-0')
+                                    ? (isDark ? 'bg-[#013e32] font-medium text-white border-0' : 'bg-[#8FE0C4] font-medium text-[#013E32] border-0')
                                     : (isDark ? 'border-b border-white/5 hover:bg-white/5 text-white/80' : 'border-b border-gray-100 hover:bg-gray-50 text-gray-700')
                             ]">
                             <td class="px-6 py-3" :class="month.is_total ? 'border-0' : (isDark ? 'border-white/5' : 'border-gray-100')">{{ month.label }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ formatCurrency(month.actual) }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ formatCurrency(month.income) }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ formatCurrency(month.forecast) }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ formatCurrency(month.possible) }}</td>
-                            <td class="px-4 py-3 text-center text-sm">{{ formatCurrency(month.budget) }}</td>
-                            <td class="px-4 py-3 text-center text-sm font-medium"
+                            <td class="px-4 py-3 text-right text-sm">{{ formatCurrency(month.actual) }}</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ formatCurrency(month.income) }}</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ formatCurrency(month.forecast) }}</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ formatCurrency(month.possible) }}</td>
+                            <td class="px-4 py-3 text-right text-sm">{{ formatCurrency(month.budget) }}</td>
+                            <td class="px-4 py-3 text-right text-sm font-medium"
                                 :class="month.diff !== null && parseFloat(month.diff) < 0 ? 'text-red-500' : 'text-green-600'">
                                 {{ formatCurrency(month.diff) }}
                             </td>
@@ -155,6 +155,7 @@ defineProps({
 const emit = defineEmits(['open-sales-report'])
 
 const { data, loading, error, activeMode, changeMode, detailedRows, fetchDetailedReport } = useSalesForecast()
+const { code: currencyCode } = useCurrency()
 
 const openDetailedReport = async () => {
   await fetchDetailedReport()

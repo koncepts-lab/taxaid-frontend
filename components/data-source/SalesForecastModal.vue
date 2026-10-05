@@ -7,7 +7,7 @@
                 @click.self="$emit('close')">
 
                 <!-- Modal Card -->
-                <div class="w-full max-w-[1200px] bg-white transition-all duration-300 transform scale-100 shadow-2xl flex flex-col h-fit max-h-[78vh]"
+                <div class="w-full max-w-[1200px] h-[78vh] bg-white transition-all duration-300 transform scale-100 shadow-2xl flex flex-col"
                     style="border-radius: 12px; padding: 40px;">
 
                     <!-- Top Header Section -->
@@ -26,9 +26,9 @@
                     </div>
 
                     <!-- Table Container -->
-                    <div class="overflow-x-auto rounded-xl border border-gray-200">
+                    <div class="overflow-auto rounded-xl border border-gray-200 flex-1 min-h-0">
                         <table class="w-full text-left border-collapse">
-                            <thead>
+                            <thead class="sticky top-0 z-10">
                                 <!-- Teal Header Bar exactly like the image -->
                                 <tr class="bg-[#008864] text-white">
                                     <th class="px-6 py-4 text-[16px] font-medium leading-relaxed">
@@ -44,23 +44,28 @@
                                         {{ currentLang === 'ar' ? 'التاريخ' : 'Date' }}
                                     </th>
                                     <th class="px-6 py-4 text-[16px] font-medium leading-relaxed text-right">
-                                        {{ currentLang === 'ar' ? 'درهم' : 'AED' }}
+                                        {{ currencyCode }}
                                     </th>
                                 </tr>
                             </thead>
 
                             <tbody class="divide-y divide-gray-100">
-                                <tr v-for="(row, index) in data" :key="index"
+                                <tr v-if="!data || !data.length">
+                                    <td colspan="5" class="px-6 py-16 text-center text-sm text-gray-400">
+                                        {{ currentLang === 'ar' ? 'لا توجد بيانات متاحة' : 'No data available' }}
+                                    </td>
+                                </tr>
+                                <tr v-else v-for="(row, index) in data" :key="index"
                                     class="transition-colors hover:bg-gray-50">
 
                                     <td class="px-6 py-4 text-[15px] text-gray-800">{{ row.projectName }}</td>
                                     <td class="px-6 py-4 text-[15px] text-gray-800">{{ row.customer }}</td>
                                     <td class="px-6 py-4 text-[15px] text-gray-800">{{ row.possibility }}</td>
-                                    <td class="px-6 py-4 text-[15px] text-gray-800">{{ row.date }}</td>
+                                    <td class="px-6 py-4 text-[15px] text-gray-800">{{ formatDisplayDate(row.date) }}</td>
 
-                                    <!-- AED Column with right alignment -->
+                                    <!-- Amount column with right alignment -->
                                     <td class="px-6 py-4 text-[15px] text-gray-800 text-right font-medium">
-                                        <span class="mr-2">AED</span>{{ row.amount }}
+                                        <span class="mr-2">{{ currencyCode }}</span>{{ row.amount }}
                                     </td>
                                 </tr>
                             </tbody>
@@ -81,6 +86,8 @@ defineProps({
 });
 
 defineEmits(['close']);
+
+const { code: currencyCode } = useCurrency()
 </script>
 
 <style scoped>

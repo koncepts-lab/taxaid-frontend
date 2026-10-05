@@ -106,7 +106,7 @@
               @close="isDeleteModalOpen = false" @confirm="executeDelete" />
             <div class="space-y-8">
               <!-- Accounts Receivable (live API) -->
-              <DataSourceAR v-if="activeSubTab === 'accounts-receivable'"
+              <DataSourceArAp v-if="activeSubTab === 'accounts-receivable'"
                 type="AR"
                 :arRows="arRows"
                 :arTotals="arTotals"
@@ -118,7 +118,7 @@
                 :activeMode="toLabel(dataModes.ar)"
                 @change-mode="(m) => handleModeChange('ar', m)" />
               <!-- Accounts Payable (live API) -->
-              <DataSourceAR v-if="activeSubTab === 'accounts-payable'"
+              <DataSourceArAp v-if="activeSubTab === 'accounts-payable'"
                 type="AP"
                 :arRows="apRows"
                 :arTotals="apTotals"
@@ -696,9 +696,9 @@ const {
 const ccContractColumns = [
   { label: 'Project Name', labelAr: 'اسم المشروع',   key: 'projectName' },
   { label: 'Status',       labelAr: 'الحالة',          key: 'status'      },
-  { label: 'Value',        labelAr: 'القيمة',           key: 'value'       },
-  { label: 'Variation',    labelAr: 'الفارق',           key: 'variation'   },
-  { label: 'Final Value',  labelAr: 'القيمة النهائية',  key: 'finalValue'  },
+  { label: 'Value',        labelAr: 'القيمة',           key: 'value',      numeric: true },
+  { label: 'Variation',    labelAr: 'الفارق',           key: 'variation',  numeric: true },
+  { label: 'Final Value',  labelAr: 'القيمة النهائية',  key: 'finalValue', numeric: true },
 ]
 
 const isModalOpen = ref(false)

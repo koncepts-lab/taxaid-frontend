@@ -24,7 +24,7 @@
                     </button>
                 </div>
 
-                <button @click="isModalOpen = true"
+                <button @click="openDetailedReport"
                     class="flex items-center gap-2 px-5 py-2.5 bg-[#68E4C4] hover:bg-[#52c9ac] text-[#013E32] rounded-xl text-sm font-medium transition-all whitespace-nowrap shadow-sm">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
@@ -52,12 +52,12 @@
                     <tr class="bg-[#008864] text-white">
                         <th class="px-6 py-4 text-[14px] font-normal w-20">{{ currentLang === 'ar' ? 'رقم' : 'Sl.No' }}</th>
                         <th class="px-4 py-4 text-[14px] font-normal">{{ currentLang === 'ar' ? 'العميل' : 'Customer' }}</th>
-                        <th class="px-4 py-4 text-[14px] font-normal">{{ currentLang === 'ar' ? 'المبلغ (AED)' : 'Amount (AED)' }}</th>
-                        <th class="px-4 py-4 text-[14px] font-normal">{{ currentLang === 'ar' ? 'غير مستحق' : 'Not Due' }}</th>
-                        <th class="px-4 py-4 text-[14px] font-normal">&lt;0 - 30&gt;</th>
-                        <th class="px-4 py-4 text-[14px] font-normal">&lt;31 - 90&gt;</th>
-                        <th class="px-4 py-4 text-[14px] font-normal">&lt;91 - 180&gt;</th>
-                        <th class="px-4 py-4 text-[14px] font-normal">&gt; 180</th>
+                        <th class="px-4 py-4 text-[14px] font-normal text-right rtl:text-left">{{ currentLang === 'ar' ? `المبلغ (${currencyCode})` : `Amount (${currencyCode})` }}</th>
+                        <th class="px-4 py-4 text-[14px] font-normal text-right rtl:text-left">{{ currentLang === 'ar' ? 'غير مستحق' : 'Not Due' }}</th>
+                        <th class="px-4 py-4 text-[14px] font-normal text-right rtl:text-left">&lt;0 - 30&gt;</th>
+                        <th class="px-4 py-4 text-[14px] font-normal text-right rtl:text-left">&lt;31 - 90&gt;</th>
+                        <th class="px-4 py-4 text-[14px] font-normal text-right rtl:text-left">&lt;91 - 180&gt;</th>
+                        <th class="px-4 py-4 text-[14px] font-normal text-right rtl:text-left">&gt; 180</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -83,12 +83,12 @@
                         :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50/50'">
                         <td class="px-6 py-4 text-sm" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ (currentPage - 1) * perPage + index + 1 }}</td>
                         <td class="px-4 py-4 text-sm font-medium" :class="isDark ? 'text-white' : 'text-[#0A0A0A]'">{{ row.customer }}</td>
-                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.amount) }}</td>
-                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.not_due) }}</td>
-                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.age_0_30) }}</td>
-                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.age_31_90) }}</td>
-                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.age_91_180) }}</td>
-                        <td class="px-4 py-4 text-sm" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.age_gt_180) }}</td>
+                        <td class="px-4 py-4 text-sm text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.amount) }}</td>
+                        <td class="px-4 py-4 text-sm text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.not_due) }}</td>
+                        <td class="px-4 py-4 text-sm text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.age_0_30) }}</td>
+                        <td class="px-4 py-4 text-sm text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.age_31_90) }}</td>
+                        <td class="px-4 py-4 text-sm text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.age_91_180) }}</td>
+                        <td class="px-4 py-4 text-sm text-right rtl:text-left" :class="isDark ? 'text-white/80' : 'text-[#0A0A0A]'">{{ formatNumber(row.age_gt_180) }}</td>
                     </tr>
                     <tr v-for="n in padRows" :key="'pad-' + n" class="h-[53px]"><td colspan="8"></td></tr>
                     </template>
@@ -96,12 +96,12 @@
                 <tfoot>
                     <tr class="bg-[#68E4C4] font-medium text-[#013E32]">
                         <td class="px-6 py-4 rounded-bl-[15px]" colspan="2">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-                        <td class="px-4 py-4"><div v-if="loading" class="skeleton h-4 w-20 rounded"></div><template v-else>{{ formatNumber(arTotals.amount) }}</template></td>
-                        <td class="px-4 py-4"><div v-if="loading" class="skeleton h-4 w-20 rounded"></div><template v-else>{{ formatNumber(arTotals.not_due) }}</template></td>
-                        <td class="px-4 py-4"><div v-if="loading" class="skeleton h-4 w-20 rounded"></div><template v-else>{{ formatNumber(arTotals.age_0_30) }}</template></td>
-                        <td class="px-4 py-4"><div v-if="loading" class="skeleton h-4 w-20 rounded"></div><template v-else>{{ formatNumber(arTotals.age_31_90) }}</template></td>
-                        <td class="px-4 py-4"><div v-if="loading" class="skeleton h-4 w-20 rounded"></div><template v-else>{{ formatNumber(arTotals.age_91_180) }}</template></td>
-                        <td class="px-4 py-4 rounded-br-[15px]"><div v-if="loading" class="skeleton h-4 w-20 rounded"></div><template v-else>{{ formatNumber(arTotals.age_gt_180) }}</template></td>
+                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto"></div><template v-else>{{ formatNumber(arTotals.amount) }}</template></td>
+                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto"></div><template v-else>{{ formatNumber(arTotals.not_due) }}</template></td>
+                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto"></div><template v-else>{{ formatNumber(arTotals.age_0_30) }}</template></td>
+                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto"></div><template v-else>{{ formatNumber(arTotals.age_31_90) }}</template></td>
+                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto"></div><template v-else>{{ formatNumber(arTotals.age_91_180) }}</template></td>
+                        <td class="px-4 py-4 rounded-br-[15px] text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto"></div><template v-else>{{ formatNumber(arTotals.age_gt_180) }}</template></td>
                     </tr>
                 </tfoot>
             </table>
@@ -119,7 +119,7 @@
                     class="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4"
                     :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="isModalOpen = false">
 
-                    <div class="w-full bg-white flex flex-col transition-all duration-500 shadow-2xl max-h-[78vh] rounded-t-4xl sm:h-auto sm:max-w-[90vw] sm:max-h-[78vh] sm:min-h-[40vh] sm:rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 overflow-y-auto no-scrollbar"
+                    <div class="w-full h-[78vh] bg-white flex flex-col transition-all duration-500 shadow-2xl rounded-t-4xl sm:max-w-[90vw] sm:h-[78vh] sm:rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 no-scrollbar"
                         :class="isDark ? 'bg-[#01261f] border-t sm:border border-white/10' : 'bg-white border-none'">
 
                         <!-- Mobile Drag Handle (Visual only) -->
@@ -140,45 +140,56 @@
                             </button>
                         </div>
 
-                        <div class="w-full flex-1 flex flex-col min-h-0 overflow-x-auto overflow-y-auto no-scrollbar px-4 sm:px-6 pb-4 sm:pb-6">
-                            <div class="rounded-[20px] border overflow-y-auto"
+                        <div class="w-full flex-1 flex flex-col min-h-0 overflow-x-auto no-scrollbar px-4 sm:px-6 pb-4 sm:pb-6">
+                            <div class="rounded-t-[20px] border border-b-0 overflow-y-auto flex-1 min-h-0"
                                 :class="isDark ? 'border-white/10' : 'border-gray-200'">
                             <table class="w-full text-left rtl:text-right border-collapse min-w-[1200px]">
-                                <thead>
+                                <thead class="sticky top-0 z-20">
                                     <tr class="bg-[#008864] text-white">
                                         <th class="px-6 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ? 'العميل' : 'Customer' }}</th>
                                         <th class="px-4 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ? 'الفاتورة' : 'Invoice' }}</th>
                                         <th class="px-4 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ? 'تاريخ الفاتورة' : 'Date of Invoice' }}</th>
                                         <th class="px-4 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ? 'أيام الائتمان' : 'Credit days' }}</th>
                                         <th class="px-4 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ? 'تاريخ الاستحقاق' : 'Due date of Invoice' }}</th>
-                                        <th class="px-4 py-5 text-[15px] font-medium">30-Jun-25</th>
+                                        <th class="px-4 py-5 text-[15px] font-medium">{{ currentLang === 'ar' ? 'أيام التأخير' : 'Overdue Days' }}</th>
                                         <th class="px-6 py-5 text-[15px] font-medium text-right rtl:text-left">{{ currentLang === 'ar' ? 'المبلغ' : 'Amount' }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="i in 11" :key="i" class="border-b transition-colors"
+                                    <template v-if="detailLoading">
+                                        <tr v-for="n in 6" :key="'sk-' + n" class="border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
+                                            <td colspan="7" class="px-6 py-4"><div class="skeleton h-4 w-full rounded"></div></td>
+                                        </tr>
+                                    </template>
+                                    <tr v-else-if="detailError">
+                                        <td colspan="7" class="px-6 py-6 text-center text-sm text-red-500">{{ detailError }}</td>
+                                    </tr>
+                                    <tr v-else-if="!detailRows.length">
+                                        <td colspan="7" class="px-6 py-6 text-center text-sm" :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                                            {{ currentLang === 'ar' ? 'لا توجد بيانات متاحة' : 'No data available' }}
+                                        </td>
+                                    </tr>
+                                    <tr v-else v-for="row in detailRows" :key="row.id" class="border-b transition-colors"
                                         :class="isDark ? 'border-white/5 hover:bg-white/5 text-white/80' : 'border-gray-100 hover:bg-gray-50 text-gray-700'">
-                                        <td class="px-6 py-4 text-[15px]">AI Dhabi Contracting LLC</td>
-                                        <td class="px-4 py-4 text-[15px]">1876</td>
-                                        <td class="px-4 py-4 text-[15px]">11-Jun-25</td>
-                                        <td class="px-4 py-4 text-[15px]">0</td>
-                                        <td class="px-4 py-4 text-[15px]">11-Jun-25</td>
-                                        <td class="px-4 py-4 text-[15px]">19 Days</td>
-                                        <td class="px-6 py-4 text-[15px] text-right rtl:text-left font-medium">1,250,000</td>
+                                        <td class="px-6 py-4 text-[15px]">{{ row.customer }}</td>
+                                        <td class="px-4 py-4 text-[15px]">{{ row.invoice_number }}</td>
+                                        <td class="px-4 py-4 text-[15px]">{{ formatDisplayDate(row.date_of_invoice) }}</td>
+                                        <td class="px-4 py-4 text-[15px]">{{ row.credit_days }}</td>
+                                        <td class="px-4 py-4 text-[15px]">{{ formatDisplayDate(row.due_date) }}</td>
+                                        <td class="px-4 py-4 text-[15px]">{{ row.overdue_days ?? '-' }}</td>
+                                        <td class="px-6 py-4 text-[15px] text-right rtl:text-left font-medium">{{ formatNumber(row.amount) }}</td>
                                     </tr>
                                 </tbody>
-                                <tfoot>
-                                    <tr class="bg-[#68E4C4] font-bold text-[#013E32]">
-                                        <td class="px-6 py-5 rounded-bl-[20px]">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-                                        <td colspan="5"></td>
-                                        <td class="px-6 py-5 text-right rtl:text-left rounded-br-[20px]">8,96,000</td>
-                                    </tr>
-                                </tfoot>
                             </table>
+                            </div>
+                            <div class="shrink-0 min-w-[1200px] border rounded-b-[20px] bg-[#68E4C4] font-bold text-[#013E32] flex items-center justify-between px-6 py-5"
+                                :class="isDark ? 'border-white/10' : 'border-gray-200'">
+                                <span>{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</span>
+                                <span class="text-right rtl:text-left">{{ formatNumber(detailTotal) }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
             </Transition>
         </Teleport>
     </div>
@@ -186,6 +197,7 @@
 
 <script setup>
 const { isTaxaid } = usePermissions()
+const { code: currencyCode } = useCurrency()
 import { ref, computed } from 'vue'
 
 const isModalOpen = ref(false)
@@ -250,6 +262,33 @@ const paginatedRows = computed(() => {
 const padRows = computed(() => (dataRows.value.length ? Math.max(perPage.value - paginatedRows.value.length, 0) : 0));
 const pageStart = computed(() => totalItems.value === 0 ? 0 : (currentPage.value - 1) * perPage.value + 1);
 const pageEnd = computed(() => Math.min(currentPage.value * perPage.value, totalItems.value));
+
+// Detailed report modal — per-invoice rows (distinct from the aging-bucket summary above)
+const detailRows = ref([])
+const detailLoading = ref(false)
+const detailError = ref(null)
+const detailEndpoint = computed(() => props.type === 'AP' ? 'data-source/accounts-payable' : 'data-source/accounts-receivable')
+
+const fetchDetailRows = async () => {
+    detailLoading.value = true
+    detailError.value = null
+    try {
+        const result = await useApi(detailEndpoint.value)
+        detailRows.value = Array.isArray(result?.data) ? result.data : []
+    } catch (e) {
+        detailError.value = e?.message ?? 'Failed to fetch detailed report'
+        detailRows.value = []
+    } finally {
+        detailLoading.value = false
+    }
+}
+
+const openDetailedReport = () => {
+    isModalOpen.value = true
+    fetchDetailRows()
+}
+
+const detailTotal = computed(() => detailRows.value.reduce((sum, r) => sum + (Number(r.amount) || 0), 0))
 
 const visiblePages = computed(() => {
     const maxVisible = 5;

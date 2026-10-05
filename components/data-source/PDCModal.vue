@@ -5,7 +5,7 @@
                 class="fixed inset-0 z-[1100] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-black/60 backdrop-blur-sm"
                 :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="$emit('close')">
 
-                <div class="w-full max-w-[95vw] bg-white transition-all duration-300 shadow-2xl overflow-hidden"
+                <div class="w-full max-w-[95vw] h-[78vh] bg-white transition-all duration-300 shadow-2xl overflow-hidden flex flex-col"
                     :class="isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white'" style="border-radius: 28px;">
 
                     <div class="flex justify-between items-center p-8 "
@@ -22,8 +22,8 @@
                         </button>
                     </div>
 
-                    <div class="p-8">
-                        <div class="overflow-x-auto rounded-[20px] border max-h-[78vh] no-scrollbar"
+                    <div class="p-8 flex-1 min-h-0 flex flex-col overflow-hidden">
+                        <div class="overflow-auto rounded-[20px] border no-scrollbar flex-1 min-h-0"
                             :class="isDark ? 'border-white/10' : 'border-gray-200'">
                             <table class="w-full text-left rtl:text-right border-collapse min-w-[1200px]">
                                 <thead class="sticky top-0 z-10">
@@ -35,15 +35,21 @@
                                         <th class="px-4 py-5 text-sm font-semibold">Cheque No.</th>
                                         <th class="px-4 py-5 text-sm font-semibold">Party Name</th>
                                         <th class="px-6 py-5 text-sm font-semibold text-right rtl:text-left">Amount
-                                            (AED)</th>
+                                            ({{ currencyCode }})</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="(row, index) in data" :key="index" class="border-b transition-colors"
+                                    <tr v-if="!data || !data.length">
+                                        <td colspan="7" class="px-6 py-16 text-center text-sm"
+                                            :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                                            No data available
+                                        </td>
+                                    </tr>
+                                    <tr v-else v-for="(row, index) in data" :key="index" class="border-b transition-colors"
                                         :class="isDark ? 'border-white/5 hover:bg-white/5 text-white/80' : 'border-gray-100 hover:bg-gray-50 text-gray-700'">
                                         <td class="px-6 py-4 text-sm">{{ index + 1 }}</td>
-                                        <td class="px-4 py-4 text-sm">{{ row.issueDate }}</td>
-                                        <td class="px-4 py-4 text-sm">{{ row.chequeDate }}</td>
+                                        <td class="px-4 py-4 text-sm">{{ formatDisplayDate(row.issueDate) }}</td>
+                                        <td class="px-4 py-4 text-sm">{{ formatDisplayDate(row.chequeDate) }}</td>
                                         <td class="px-4 py-4 text-sm">{{ row.bankName }}</td>
                                         <td class="px-4 py-4 text-sm">{{ row.chequeNo }}</td>
                                         <td class="px-4 py-4 text-sm">{{ row.partyName }}</td>
@@ -81,4 +87,6 @@ defineProps({
     currentLang: String
 })
 defineEmits(['close'])
+
+const { code: currencyCode } = useCurrency()
 </script>
