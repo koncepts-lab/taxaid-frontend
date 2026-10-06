@@ -26,6 +26,7 @@
                         :showReload="true"
                         :showExport="true"
                         :periods="revenuePeriods"
+                        :max-range-months="12"
                         @reload="fetchAll"
                         @selected-date="handleDateSelected"
                         @export="exportOpen = true"

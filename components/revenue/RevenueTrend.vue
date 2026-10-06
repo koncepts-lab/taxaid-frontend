@@ -4,7 +4,7 @@
     <!-- Header -->
     <div class="flex flex-col lg:flex-row lg:justify-between items-start gap-4 lg:gap-0 mb-6 w-full z-10">
       <div class="flex flex-col">
-        <h2 class="text-[16px] font-regular leading-tight">{{ currentLang === 'ar' ? 'آخر 6 أشهر إلى السنة السابقة' : 'Last 6 months to Previous year' }}</h2>
+        <h2 class="text-[16px] font-regular leading-tight">{{ trendTitle }}</h2>
         <p class="text-[12px] opacity-70 font-regular mt-1">{{ valuesNote(unit === 'millions') }}</p>
       </div>
       <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 lg:gap-6 w-full lg:w-auto justify-between lg:justify-end">
@@ -80,7 +80,7 @@
           <!-- Modal Header -->
           <div class="flex justify-between items-start py-6 px-8 border-b border-white/10 w-full z-10">
             <div class="flex flex-col">
-              <h2 class="text-lg font-regular leading-tight text-white">{{ currentLang === 'ar' ? 'آخر 6 أشهر إلى السنة السابقة' : 'Last 6 months to Previous year' }}</h2>
+              <h2 class="text-lg font-regular leading-tight text-white">{{ trendTitle }}</h2>
               <p class="text-xs opacity-70 font-regular mt-1 text-white">{{ valuesNote(unit === 'millions') }}</p>
             </div>
             <div class="flex items-center gap-6">
@@ -174,6 +174,13 @@ const fmt = (value: any) => {
 const { loading, error, trendData, fetchAll: fetchTrendData } = useRevenue()
 
 const categories = computed(() => trendData.value?.categories ?? [])
+
+const trendTitle = computed(() => {
+  const n = categories.value.length || 6
+  return currentLang.value === 'ar'
+    ? `آخر ${n} أشهر إلى السنة السابقة`
+    : `Last ${n} months to Previous year`
+})
 
 const rawPrev = computed(() => {
   if (trendData.value?.previousYearRaw?.length) return trendData.value.previousYearRaw

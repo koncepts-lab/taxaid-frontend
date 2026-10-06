@@ -95,7 +95,7 @@ export const useRevenue = () => {
     const apiData: any[] = trendRaw.value?.data ?? []
     if (!apiData.length) return { categories: [], series: [], previousYearRaw: [], currentYearRaw: [] }
     return {
-      categories: apiData.map((item: any) => item.month_short),
+      categories: apiData.map((item: any) => item.month_year),
       previousYearRaw: apiData.map((item: any) => Number(item.previous_year ?? 0)),
       currentYearRaw:  apiData.map((item: any) => Number(item.current_year ?? 0)),
       series: [

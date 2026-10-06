@@ -137,7 +137,7 @@
                                                     :class="isDark ? 'border-white/10' : 'border-gray-100'">
                                                     <VDatePicker v-model="range.end" :is-dark="isDark"
                                                         :locale="currentLang === 'ar' ? 'ar' : 'en'" color="teal"
-                                                        borderless :min-date="range.start || minDate" :max-date="today"
+                                                        borderless :min-date="range.start || minDate" :max-date="rangeEndMaxDate"
                                                         :initial-page="currMonthPage"
                                                         @update:model-value="emitRangeChange" />
                                                 </div>
@@ -233,7 +233,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
-import { format, subMonths, startOfYear, startOfQuarter, subQuarters, subYears } from 'date-fns'
+import { format, subMonths, addMonths, startOfYear, startOfQuarter, subQuarters, subYears, subDays } from 'date-fns'
 import { DatePicker as VDatePicker } from 'v-calendar'
 import 'v-calendar/dist/style.css'
 
@@ -262,7 +262,8 @@ const props = defineProps({
     defaultRangeStart: { type: String, default: null },
     defaultRangeEnd: { type: String, default: null },
     defaultDate: { type: String, default: null },
-    minDate: { type: [Date, String], default: null }
+    minDate: { type: [Date, String], default: null },
+    maxRangeMonths: { type: Number, default: 12 }
 })
 
 const { can } = usePermissions()
@@ -312,6 +313,19 @@ const today = serverToday
 const baseToday = () => serverToday.value ?? orgTodayDate()
 
 const range = ref({ start: null, end: null })
+
+const rangeEndMaxDate = computed(() => {
+    const t = baseToday()
+    if (!range.value.start) return t
+    const capped = subDays(addMonths(new Date(range.value.start), props.maxRangeMonths), 1)
+    return capped < t ? capped : t
+})
+
+watch(() => range.value.start, (start) => {
+    if (start && range.value.end && new Date(range.value.end) > rangeEndMaxDate.value) {
+        range.value.end = null
+    }
+})
 const singleDate = ref(null)
 const dateDropdownRef = ref(null)
 const exportDropdownRef = ref(null)
