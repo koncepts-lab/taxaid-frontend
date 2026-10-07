@@ -21,7 +21,7 @@
         </div>
       </div>
 
-      <AdminClientConnector v-if="tenantId" :key="'connector-' + tenantId" :tenant-id="tenantId" />
+      <AdminClientConnector v-if="tenantId" :key="'connector-' + tenantId" :tenant-id="tenantId" :license-id="licenseId" />
       <p v-else class="text-[14px] opacity-50">No tenant selected.</p>
     </main>
 
@@ -37,6 +37,7 @@ const router = useRouter()
 
 const tenantId = computed(() => Number(route.query.tenant_id) || null)
 const clientName = computed(() => route.query.name ? String(route.query.name) : '')
+const licenseId = computed(() => route.query.license_id ? String(route.query.license_id) : null)
 
 function goBack() {
   if (route.query.back) {

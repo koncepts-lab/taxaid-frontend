@@ -10,7 +10,17 @@
                     {{ currentLang === 'ar' ? 'التدفقات النقدية' : 'Cashflow' }}
                 </th>
                 <th v-for="month in months" :key="month" :class="isCompressed ? 'px-4 py-4' : 'px-6 py-5'" class="font-medium text-right rtl:text-left text-[14px]">
-                    {{ month }}
+                    <span class="inline-flex items-center gap-1 justify-end">
+                        {{ month }}
+                        <span v-if="fallbackMonths.includes(month)" class="group relative inline-flex">
+                            <svg class="w-3.5 h-3.5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M12 16v-4m0-4h.01"/></svg>
+                            <span class="absolute bottom-full mb-2 ltr:right-0 rtl:left-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap">
+                                <span class="bg-[#013e32] text-white text-[11px] font-medium px-3 py-1.5 rounded-lg shadow-lg block">
+                                    {{ currentLang === 'ar' ? 'هذه بيانات العام السابق، حيث لم يتم رفع موازنة لهذا الشهر بعد' : "This is last year's data, as no budget has been uploaded for this month yet" }}
+                                </span>
+                            </span>
+                        </span>
+                    </span>
                 </th>
             </tr>
         </thead>
@@ -238,7 +248,7 @@ const props = defineProps({
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { summary, sections } = useCashFlow()
+const { summary, sections, fallbackMonths } = useCashFlow()
 
 const months          = computed(() => summary.value?.months          ?? [])
 const openingBalance  = computed(() => summary.value?.openingBalance  ?? [])

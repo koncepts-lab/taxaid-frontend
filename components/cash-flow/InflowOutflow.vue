@@ -91,7 +91,7 @@ const { code: currencyCode, valuesNote } = useCurrency()
 const { unit, fmt, axisFmt, axisFor, plotter } = useChartHelper('cash_flow_inflow_outflow_unit')
 const isModalOpen = ref(false)
 
-const { inflowOutflow } = useCashFlow()
+const { inflowOutflow, fallbackMonths } = useCashFlow()
 
 const rawSeries = computed(() => inflowOutflow.value?.series ?? [])
 const peak = computed(() => Math.max(0, ...rawSeries.value.flatMap(s => s.dataRaw ?? [])))
@@ -179,17 +179,21 @@ const chartOptions = computed(() => ({
   tooltip: {
     custom: function({series, seriesIndex, dataPointIndex, w}: any) {
       const month = w.globals.labels[dataPointIndex];
+      const rawMonth = inflowOutflow.value?.categories?.[dataPointIndex] ?? '';
+      const isFallback = fallbackMonths.value.includes(rawMonth);
       const inflowValue = series[1][dataPointIndex];
       const outflowValue = series[0][dataPointIndex];
       const netCashflow = inflowValue - outflowValue;
       const netPercentage = ((netCashflow / outflowValue) * 100).toFixed(1);
-      
+
       const inflowLabel = currentLang.value === 'ar' ? 'التدفق الداخلي: ' : 'Inflow: ';
       const outflowLabel = currentLang.value === 'ar' ? 'التدفق الخارجي: ' : 'Outflow: ';
       const netCashflowLabel = currentLang.value === 'ar' ? 'صافي التدفق النقدي: ' : 'Net Cashflow: ';
-      
+      const fallbackNote = currentLang.value === 'ar' ? 'هذه بيانات العام السابق، حيث لم يتم رفع موازنة لهذا الشهر بعد' : 'This is last year\'s data, as no budget has been uploaded for this month yet';
+
       return '<div class="px-4 py-3 rounded-lg shadow-xl border-none" style="min-width: 180px; background: #ffffff;">' +
         '<div class="font-semibold mb-2 text-[13px]" style="color: #1A1A1A;">' + month + '</div>' +
+        (isFallback ? '<div class="text-[11px] mb-2 font-medium" style="color: #FF7B5F;">ⓘ ' + fallbackNote + '</div>' : '') +
         '<div class="text-[12px] mb-1" style="color: #1A1A1A;">' + inflowLabel + '<span class="font-semibold">' + currencyCode.value + ' ' + fmt(inflowValue) + '</span></div>' +
         '<div class="text-[12px] mb-1" style="color: #1A1A1A;">' + outflowLabel + '<span class="font-semibold">' + currencyCode.value + ' ' + fmt(outflowValue) + '</span></div>' +
         '<div class="text-[12px]" style="color: #1A1A1A;">' + netCashflowLabel + '<span class="font-semibold text-[#00A176]">+' + netPercentage + '%</span></div>' +

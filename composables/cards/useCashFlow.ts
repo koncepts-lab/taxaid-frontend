@@ -1,10 +1,12 @@
 export const useCashFlow = () => {
   const rawData    = useState<any>('cashflow_raw',      () => null)
+  const fyLabelRaw = useState<string>('cashflow_fy_label', () => '')
   const loading    = useState<boolean>('cashflow_loading', () => false)
   const error      = useState<string | null>('cashflow_error', () => null)
   const period     = useState<number>('cashflow_period',   () => 3)
   const scenario   = useState<string>('cashflow_scenario', () => '100% Scenario')
   const activeDate = useState<string | null>('cashflow_date', () => null)
+  const showLastYearFallback = useState<boolean>('cashflow_show_last_year_fallback', () => true)
 
   const fetchProjection = async () => {
     loading.value = true
@@ -14,11 +16,13 @@ export const useCashFlow = () => {
       if (activeDate.value) params.set('date', activeDate.value)
       params.set('period',   String(period.value))
       params.set('scenario', scenario.value)
+      params.set('show_last_year_fallback', showLastYearFallback.value ? '1' : '0')
 
       const res = await useApi(`/cash-flow/projection?${params.toString()}`) as any
       useState('cardPeriod').value = res.period ?? null
       useState('cardToday').value = res.today ?? null
       rawData.value = res.data ?? null
+      fyLabelRaw.value = res.fy_label ?? ''
     } catch (err: any) {
       error.value = err?.data?.message ?? 'Failed to fetch cash flow data'
     } finally {
@@ -63,6 +67,17 @@ export const useCashFlow = () => {
   const months = computed((): string[] => {
     if (!rawData.value) return []
     return Object.keys(rawData.value['Opening Cash Balance']?.monthly_totals ?? {})
+  })
+
+  const fyLabel = computed(() => {
+    const years = months.value
+      .map(m => parseInt(m.split('-')[1], 10))
+      .filter(y => !isNaN(y))
+    if (!years.length) return fyLabelRaw.value
+
+    const min = Math.min(...years)
+    const max = Math.max(...years)
+    return min === max ? String(min) : `${min}-${String(max).slice(-2)}`
   })
 
   // ── CashFlowSummary ───────────────────────────────────────────────────────
@@ -169,6 +184,13 @@ export const useCashFlow = () => {
     }
   })
 
+  const fallbackMonths = computed((): string[] => {
+    if (!rawData.value) return []
+    const incoming = Object.keys(rawData.value['Incoming']?.fallback_months ?? {})
+    const outgoing = Object.keys(rawData.value['Outgoing']?.fallback_months ?? {})
+    return Array.from(new Set([...incoming, ...outgoing]))
+  })
+
   // ── CashFlowChart (line: Incoming = Real, Outgoing = Hypothetical) ────────
 
   const scenarioChart = computed(() => {
@@ -207,6 +229,9 @@ export const useCashFlow = () => {
     period,
     scenario,
     activeDate,
+    fyLabel,
+    fallbackMonths,
+    showLastYearFallback,
     fetchProjection,
     customerDetail,
     customerDetailLoading,

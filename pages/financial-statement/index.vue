@@ -54,7 +54,7 @@
                         <FinancialStatementSummary :data="activeTabData.rows" :is-compressed="isChatOpen"
                             :filters="filters" :active-tab="activeTab" @ask-akeel="handleInfo"
                             @ratio-change="(val) => { selectedRatioType = val; fetchTabData('ratios'); }"
-                            :loading="loading" :error="error"
+                            :loading="activeTabData.loading" :error="activeTabData.error"
                             :report-info="reportInfo" />
                     </div>
                 </div>
@@ -109,7 +109,11 @@ watch(activeTab, (val) => {
     router.replace({ query: { ...route.query, tab: val } })
 })
 
-const { filters, selectedRatioType, plRows, bsRows, ratiosRows, reportInfo, loading, error, fetchTabData, bsSnapshotDate, bsRequestedDate, bsSnapshotNotice } = useFinancialStatement()
+const {
+    filters, selectedRatioType, plRows, bsRows, ratiosRows, reportInfo, fetchTabData,
+    bsSnapshotDate, bsRequestedDate, bsSnapshotNotice,
+    plLoading, plError, bsLoading, bsError, ratiosLoading, ratiosError,
+} = useFinancialStatement()
 
 onMounted(() => {
   useLocation().syncSessionLocation()
@@ -117,13 +121,13 @@ onMounted(() => {
 })
 
 const dashboardData = computed(() => ({
-    'profit-loss':   { rows: plRows.value },
-    'balance-sheet': { rows: bsRows.value },
-    'ratios':        { rows: ratiosRows.value },
-    'schedules':     { rows: [] }
+    'profit-loss':   { rows: plRows.value,     loading: plLoading.value,     error: plError.value },
+    'balance-sheet': { rows: bsRows.value,     loading: bsLoading.value,     error: bsError.value },
+    'ratios':        { rows: ratiosRows.value, loading: ratiosLoading.value, error: ratiosError.value },
+    'schedules':     { rows: [], loading: false, error: null }
 }))
 
-const activeTabData = computed(() => dashboardData.value[activeTab.value] || { rows: [] })
+const activeTabData = computed(() => dashboardData.value[activeTab.value] || { rows: [], loading: false, error: null })
 
 const handleInfo = () => { isChatOpen.value = true }
 

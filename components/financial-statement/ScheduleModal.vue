@@ -6,9 +6,9 @@
                 class="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
 
                 <!-- Main Panel -->
-                <div class="w-full bg-white flex flex-col transition-all duration-500 shadow-2xl
-                 max-h-[78vh] rounded-t-4xl 
-                 sm:h-auto sm:max-w-6xl sm:max-h-[78vh] sm:min-h-[40vh] sm:rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar"
+                <div class="w-full bg-white flex flex-col transition-all duration-500 shadow-2xl overflow-hidden
+                 h-[78vh] rounded-t-4xl
+                 sm:max-w-6xl sm:h-[78vh] sm:rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0"
                     :class="[isDark ? 'bg-[#002e26] border-t sm:border border-white/10' : 'bg-white border-none']">
                     <!-- Mobile Drag Handle (Visual only) -->
                     <div class="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
@@ -82,7 +82,7 @@
                                 </div>
 
                                 <!-- ── Scrollable Body ── -->
-                                <div class="overflow-y-auto custom-scrollbar flex-1 max-h-[78vh]">
+                                <div class="overflow-y-auto custom-scrollbar flex-1 min-h-0">
                                     <table class="w-full text-sm table-fixed">
                                         <colgroup>
                                             <col style="width: 25%">
@@ -97,7 +97,7 @@
                                                 <!-- Main Row -->
                                                 <tr :class="[
                                                     item.isTotal
-                                                        ? (isDark ? 'bg-[#00C9A7]/20 font-bold' : 'bg-[#64E9D1] font-bold')
+                                                        ? (isDark ? 'bg-[#00C9A7]/20 font-bold sticky bottom-0 z-20' : 'bg-[#64E9D1] font-bold sticky bottom-0 z-20')
                                                         : (isDark ? 'border-b border-white/5' : 'border-b border-gray-50 hover:bg-gray-50/50')
                                                 ]" class="transition-colors">
                                                     <td class="lg:ps-8 ps-4 py-4 text-start">

@@ -699,7 +699,7 @@ function navigateToActivityLog() {
 function openConnectorConfig(client) {
   navigateTo({
     path: '/admin/connector-config',
-    query: { tenant_id: client.tenant_id, name: client.name, back: route.fullPath },
+    query: { tenant_id: client.tenant_id, name: client.name, license_id: client.id, back: route.fullPath },
   })
 }
 </script>

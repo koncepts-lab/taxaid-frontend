@@ -10,15 +10,26 @@ const _plRows      = ref<any[]>([])
 const _bsRows      = ref<any[]>([])
 const _ratiosRows  = ref<any[]>([])
 const _reportInfo  = ref({ current: '', previous: '' })
-const _loading     = ref(false)
-const _error       = ref<string | null>(null)
-let _requestSeq    = 0
+
+// Loading/error are per-tab — the Ratios fetch fires in the background on
+// mount regardless of the active tab, and a shared flag let its failure
+// bleed into whichever tab the user was actually looking at.
+const _plLoading     = ref(false)
+const _plError       = ref<string | null>(null)
+const _bsLoading     = ref(false)
+const _bsError       = ref<string | null>(null)
+const _ratiosLoading = ref(false)
+const _ratiosError   = ref<string | null>(null)
+let _plReqSeq      = 0
+let _bsReqSeq      = 0
+let _ratiosReqSeq  = 0
 
 // Gap-day snapshot notice for the Balance Sheet tab — same pattern as
 // useAccountsReceivable/useAccountsPayable's snapshot_date fallback.
 const _bsSnapshotDate   = ref<string | null>(null)
 const _bsRequestedDate  = ref<string | null>(null)
 const _bsSnapshotNotice = ref(false)
+
 
 const scheduleMap: Record<string, string | null> = {
   'Revenue':                     '01',
@@ -58,9 +69,11 @@ const fmtVariance = (v: any) => {
 }
 
 async function fetchPLData() {
-  const reqId = ++_requestSeq
-  _loading.value = true
-  _error.value = null
+  const reqId = ++_plReqSeq
+  _plLoading.value = true
+  _plError.value = null
+  const cardPeriod = useState('cardPeriod')
+  const cardToday  = useState('cardToday')
   try {
     const payload: any = { range_option: fsFilters.value.range_option }
     if (fsFilters.value.range_option === 'Custom Dates') {
@@ -68,10 +81,10 @@ async function fetchPLData() {
       payload.custom_to   = fsFilters.value.custom_to
     }
     const res: any = await useApi('/financial-analysis/pl-maingroup-totals', { method: 'POST', body: payload })
-    if (reqId !== _requestSeq) return
+    if (reqId !== _plReqSeq) return
     if (res?.status === 'success') {
-      useState('cardPeriod').value = res.period ?? null
-      useState('cardToday').value = res.today ?? null
+      cardPeriod.value = res.period ?? null
+      cardToday.value  = res.today ?? null
       try {
         if (res.info) {
           _reportInfo.value = {
@@ -93,21 +106,23 @@ async function fetchPLData() {
         schedule:  scheduleMap[row.label] ?? '-',
       }))
     } else {
-      _error.value = res?.message ?? 'Failed to load the Profit & Loss report.'
+      _plError.value = res?.message ?? 'Failed to load the Profit & Loss report.'
     }
   } catch (e: any) {
-    if (reqId !== _requestSeq) return
+    if (reqId !== _plReqSeq) return
     console.error('Failed to fetch P&L data', e)
-    _error.value = e?.data?.message ?? 'Failed to load the Profit & Loss report.'
+    _plError.value = e?.data?.message ?? 'Failed to load the Profit & Loss report.'
   } finally {
-    if (reqId === _requestSeq) _loading.value = false
+    if (reqId === _plReqSeq) _plLoading.value = false
   }
 }
 
 async function fetchBSData() {
-  const reqId = ++_requestSeq
-  _loading.value = true
-  _error.value = null
+  const reqId = ++_bsReqSeq
+  _bsLoading.value = true
+  _bsError.value = null
+  const cardPeriod = useState('cardPeriod')
+  const cardToday  = useState('cardToday')
   try {
     const payload: any = { range_option: fsFilters.value.range_option }
     if (fsFilters.value.range_option === 'Custom Dates') {
@@ -115,10 +130,10 @@ async function fetchBSData() {
       payload.custom_to   = fsFilters.value.custom_to
     }
     const res: any = await useApi('/financial-analysis/bs-maingroup-totals', { method: 'POST', body: payload })
-    if (reqId !== _requestSeq) return
+    if (reqId !== _bsReqSeq) return
     if (res?.status === 'success') {
-      useState('cardPeriod').value = res.period ?? null
-      useState('cardToday').value = res.today ?? null
+      cardPeriod.value = res.period ?? null
+      cardToday.value  = res.today ?? null
       const requested = res.info?.requested_date ?? null
       const snapshot  = res.info?.snapshot_date  ?? null
       _bsRequestedDate.value  = requested
@@ -138,21 +153,21 @@ async function fetchBSData() {
         schedule:  scheduleMapBS[row.label] ?? '-',
       }))
     } else {
-      _error.value = res?.message ?? 'Failed to load the Balance Sheet report.'
+      _bsError.value = res?.message ?? 'Failed to load the Balance Sheet report.'
     }
   } catch (e: any) {
-    if (reqId !== _requestSeq) return
+    if (reqId !== _bsReqSeq) return
     console.error('Failed to fetch BS data', e)
-    _error.value = e?.data?.message ?? 'Failed to load the Balance Sheet report.'
+    _bsError.value = e?.data?.message ?? 'Failed to load the Balance Sheet report.'
   } finally {
-    if (reqId === _requestSeq) _loading.value = false
+    if (reqId === _bsReqSeq) _bsLoading.value = false
   }
 }
 
 async function fetchRatiosData() {
-  const reqId = ++_requestSeq
-  _loading.value = true
-  _error.value = null
+  const reqId = ++_ratiosReqSeq
+  _ratiosLoading.value = true
+  _ratiosError.value = null
   try {
     const payload: any = { range_option: fsFilters.value.range_option }
     if (fsFilters.value.range_option === 'Custom Dates') {
@@ -163,7 +178,7 @@ async function fetchRatiosData() {
       payload.ratio_type = fsSelectedRatioType.value
     }
     const res: any = await useApi('/financial-ratios/comparative-report', { method: 'POST', body: payload })
-    if (reqId !== _requestSeq) return
+    if (reqId !== _ratiosReqSeq) return
     if (res?.success) {
       _ratiosRows.value = (res.report || []).map((row: any) => {
         let progressVal = 0
@@ -195,14 +210,14 @@ async function fetchRatiosData() {
         }
       })
     } else {
-      _error.value = res?.message ?? 'Failed to load the Ratios report.'
+      _ratiosError.value = res?.message ?? 'Failed to load the Ratios report.'
     }
   } catch (e: any) {
-    if (reqId !== _requestSeq) return
+    if (reqId !== _ratiosReqSeq) return
     console.error('Failed to fetch Ratios data', e)
-    _error.value = e?.data?.message ?? 'Failed to load the Ratios report.'
+    _ratiosError.value = e?.data?.message ?? 'Failed to load the Ratios report.'
   } finally {
-    if (reqId === _requestSeq) _loading.value = false
+    if (reqId === _ratiosReqSeq) _ratiosLoading.value = false
   }
 }
 
@@ -223,8 +238,12 @@ export function useFinancialStatement() {
     bsSnapshotDate:    _bsSnapshotDate,
     bsRequestedDate:   _bsRequestedDate,
     bsSnapshotNotice:  _bsSnapshotNotice,
-    loading:           _loading,
-    error:             _error,
+    plLoading:         _plLoading,
+    plError:           _plError,
+    bsLoading:         _bsLoading,
+    bsError:           _bsError,
+    ratiosLoading:     _ratiosLoading,
+    ratiosError:       _ratiosError,
     fetchTabData,
   }
 }

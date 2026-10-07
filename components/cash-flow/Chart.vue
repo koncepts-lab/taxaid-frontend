@@ -6,7 +6,7 @@
       
        <!-- Title -->
       <div class="mb-4 lg:mb-2">
-        <h2 class="text-[16px] font-regular text-white">{{ currentLang === 'ar' ? 'التدفق النقدي بناءً على السيناريو (2025-26)' : 'Cash flow based on Scenario (2025-26)' }}</h2>
+        <h2 class="text-[16px] font-regular text-white">{{ currentLang === 'ar' ? `التدفق النقدي بناءً على السيناريو (${fyLabel})` : `Cash flow based on Scenario (${fyLabel})` }}</h2>
         <p class="text-[12px] font-regular mt-1 text-[#FFFFFFCF]">{{ valuesNote(unit === 'millions') }}</p>
       </div>
 
@@ -49,7 +49,7 @@
           <!-- Modal Header -->
           <div class="flex justify-between items-center py-6 px-8 border-b border-white/10">
             <div class="flex flex-col">
-              <h2 class="text-lg font-regular text-white">{{ currentLang === 'ar' ? 'التدفق النقدي بناءً على السيناريو (2025-26)' : 'Cash flow based on Scenario (2025-26)' }}</h2>
+              <h2 class="text-lg font-regular text-white">{{ currentLang === 'ar' ? `التدفق النقدي بناءً على السيناريو (${fyLabel})` : `Cash flow based on Scenario (${fyLabel})` }}</h2>
               <p class="text-xs font-regular mt-1 text-[#FFFFFFCF]">{{ valuesNote(unit === 'millions') }}</p>
             </div>
             <div class="flex items-center gap-6">
@@ -91,7 +91,7 @@ const { code: currencyCode, valuesNote } = useCurrency()
 const { unit, fmt, axisFmt, axisFor, plotter } = useChartHelper('cash_flow_scenario_unit')
 const isModalOpen = ref(false)
 
-const { scenarioChart } = useCashFlow()
+const { scenarioChart, fyLabel, fallbackMonths } = useCashFlow()
 
 const rawSeries = computed(() => scenarioChart.value?.series ?? [])
 const peak = computed(() => Math.max(0, ...rawSeries.value.flatMap(s => s.dataRaw ?? [])))
@@ -165,6 +165,8 @@ const chartOptions = computed(() => ({
         ? (scenarioChart.value?.categoriesAr || [])
         : (scenarioChart.value?.categories || []);
       const monthName = categories[dataPointIndex] ?? '';
+      const rawMonth = scenarioChart.value?.categories?.[dataPointIndex] ?? '';
+      const isFallback = fallbackMonths.value.includes(rawMonth);
 
       const realVal = rawSeries.value[0]?.dataRaw?.[dataPointIndex] ?? 0;
       const hypoVal = rawSeries.value[1]?.dataRaw?.[dataPointIndex] ?? 0;
@@ -173,9 +175,11 @@ const chartOptions = computed(() => ({
       const realLabel = currentLang.value === 'ar' ? 'سيناريو حقيقي: ' : 'Real Scenario: ';
       const hypoLabel = currentLang.value === 'ar' ? 'سيناريو افتراضي: ' : 'Hypothetical Scenario: ';
       const changeLabel = currentLang.value === 'ar' ? 'التغير: ' : 'Change: ';
+      const fallbackNote = currentLang.value === 'ar' ? 'هذه بيانات العام السابق، حيث لم يتم رفع موازنة لهذا الشهر بعد' : 'This is last year\'s data, as no budget has been uploaded for this month yet';
 
       return '<div class="px-5 py-4 rounded-xl shadow-xl border-none" style="min-width: 200px; background: #ffffff;">' +
         '<div class="font-bold mb-2 text-[16px]" style="color: #1A1A1A;">' + monthName + '</div>' +
+        (isFallback ? '<div class="text-[12px] mb-2 font-medium" style="color: #FF7B5F;">ⓘ ' + fallbackNote + '</div>' : '') +
         '<div class="text-[14px] mb-1" style="color: #1A1A1A;">' + realLabel + '<span class="font-medium"> ' + currencyCode.value + ' ' + fmt(realVal) + '</span></div>' +
         '<div class="text-[14px] mb-1" style="color: #1A1A1A;">' + hypoLabel + '<span class="font-medium"> ' + currencyCode.value + ' ' + fmt(hypoVal) + '</span></div>' +
         '<div class="text-[14px]" style="color: #1A1A1A;">' + changeLabel + '<span class="font-bold text-[#FF7B5F]"> ' + changePct + '%</span></div>' +

@@ -19,7 +19,8 @@
           class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">{{ st.label }}</button>
       </div>
 
-      <AdminClientConnector v-if="tenantSubtab === 'connector'" :key="'connector-' + selectedTenantId" :tenant-id="selectedTenantId" />
+      <AdminClientConnector v-if="tenantSubtab === 'connector'" :key="'connector-' + selectedTenantId" :tenant-id="selectedTenantId"
+        :license-id="orgTenants.find((x) => x.id === selectedTenantId)?.license_id ?? null" />
       <AdminClientAkeel v-else :key="'ai-' + selectedTenantId" scope="tenant" :tenant-id="selectedTenantId" :tenants="orgTenants" :label="orgTenants.find((x) => x.id === selectedTenantId)?.name ?? ''" />
     </div>
 

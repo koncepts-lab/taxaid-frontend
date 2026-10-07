@@ -197,12 +197,7 @@
                         </td>
                     </tr>
                 </template>
-                <tr v-else-if="error">
-                    <td :colspan="columnCount" class="px-8 py-12 text-center text-sm text-red-500">
-                        {{ error }}
-                    </td>
-                </tr>
-                <tr v-else-if="!visibleRows.length">
+                <tr v-else-if="error || !visibleRows.length">
                     <td :colspan="columnCount" class="px-8 py-12 text-center text-sm"
                         :class="isDark ? 'text-white/50' : 'text-gray-400'">
                         {{ currentLang === 'ar' ? 'لا توجد بيانات متاحة' : 'No data available' }}
@@ -215,7 +210,9 @@
                             :class="isDark ? 'text-white/80' : 'text-primary-950'">{{ row.label }}</td>
                     </tr>
                     <tr v-else :class="[
-                        row.isSummary ? (isDark ? 'bg-[#003d30] font-medium' : 'bg-primary-800 font-medium') : (isDark ? 'bg-[#002e26] border-b border-white/5' : 'bg-white border-b border-gray-50')
+                        (row.label === 'Total Assets' || row.label === 'Total Liabilities & Shareholders Equity')
+                            ? (isDark ? 'bg-[#013e32] text-white font-medium' : 'bg-[#C2F9E9] text-[#013E32] font-medium')
+                            : row.isSummary ? (isDark ? 'bg-[#003d30] font-medium' : 'bg-primary-800 font-medium') : (isDark ? 'bg-[#002e26] border-b border-white/5' : 'bg-white border-b border-gray-50')
                     ]" class="transition-all duration-500">
 
                         <template v-if="activeTab === 'ratios'">
@@ -236,19 +233,18 @@
                                 {{ row.label }}
                             </td>
                             <td class="text-center">
-                                <CommonTooltip :text="currentLang === 'ar' ? 'عرض الجدول' : 'View Schedule'"
-                                    position="top">
+                                <span v-if="row.isSummary" class="text-sm"
+                                    :class="isDark ? 'text-white/80' : 'text-black/80'">{{ row.metric }}</span>
 
-                                    <span v-if="row.isSummary" class="text-sm"
-                                        :class="isDark ? 'text-white/80' : 'text-black/80'">{{ row.metric }}</span>
-
+                                <CommonTooltip v-else-if="row.schedule && row.schedule !== '-'"
+                                    :text="currentLang === 'ar' ? 'عرض الجدول' : 'View Schedule'" position="top">
                                     <button @click="handleSchedule(row)"
-                                        v-else-if="row.schedule && row.schedule !== '-'"
                                         class="text-[#029F80] text-sm font-medium underline underline-offset-4 cursor-pointer">
                                         {{ row.schedule }}
                                     </button>
-                                    <span v-else class="text-[#029F80]">-</span>
                                 </CommonTooltip>
+
+                                <span v-else class="text-[#029F80]">-</span>
                             </td>
                         </template>
 

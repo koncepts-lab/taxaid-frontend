@@ -156,25 +156,29 @@
       </div>
     </div>
 
-    <!-- Backup -->
-    <div class="bg-white border border-gray-200 rounded-[16px] shadow-sm p-6">
-      <h2 class="text-[16px] font-medium text-[#101828] mb-1">System Backup</h2>
-      <p class="text-[13px] text-[#4A5565] mb-4">Export this client's data as a ZIP of CSV or JSON files.</p>
-      <div class="flex flex-wrap items-center gap-4">
-        <button @click="handleBackup('csv')" :disabled="backupBusy"
-          class="px-4 py-2.5 border border-[#6FDBBF] rounded-lg text-sm font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60">
-          Export Backup (Excel)
-        </button>
-        <button @click="handleBackup('json')" :disabled="backupBusy"
-          class="px-4 py-2.5 border border-[#6FDBBF] rounded-lg text-sm font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60">
-          Export Backup (JSON)
-        </button>
-        <span v-if="backupBusy" class="text-[13px] text-[#4A5565]">Preparing backup ({{ latestBackup?.status ?? 'queued' }})... download starts automatically.</span>
-        <button v-else-if="latestBackup?.status === 'ready'" @click="downloadBackup(props.tenantId, latestBackup.id)"
-          class="text-[13px] text-[#00896F] font-medium underline underline-offset-2">
-          Download last backup ({{ latestBackup.format.toUpperCase() }})
-        </button>
+    <!-- Backup + TaxAid Connector activation (Super Admin / Review Manager) -->
+    <div class="grid gap-6" :class="licenseId ? 'md:grid-cols-2' : ''">
+      <div class="bg-white border border-gray-200 rounded-[16px] shadow-sm p-6">
+        <h2 class="text-[16px] font-medium text-[#101828] mb-1">System Backup</h2>
+        <p class="text-[13px] text-[#4A5565] mb-4">Export this client's data as a ZIP of CSV or JSON files.</p>
+        <div class="flex flex-wrap items-center gap-4">
+          <button @click="handleBackup('csv')" :disabled="backupBusy"
+            class="px-4 py-2.5 border border-[#6FDBBF] rounded-lg text-sm font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60">
+            Export Backup (Excel)
+          </button>
+          <button @click="handleBackup('json')" :disabled="backupBusy"
+            class="px-4 py-2.5 border border-[#6FDBBF] rounded-lg text-sm font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60">
+            Export Backup (JSON)
+          </button>
+          <span v-if="backupBusy" class="text-[13px] text-[#4A5565]">Preparing backup ({{ latestBackup?.status ?? 'queued' }})... download starts automatically.</span>
+          <button v-else-if="latestBackup?.status === 'ready'" @click="downloadBackup(props.tenantId, latestBackup.id)"
+            class="text-[13px] text-[#00896F] font-medium underline underline-offset-2">
+            Download last backup ({{ latestBackup.format.toUpperCase() }})
+          </button>
+        </div>
       </div>
+
+      <AdminConnectorActivationCard v-if="licenseId" :client-id="licenseId" />
     </div>
 
     <p v-if="message" class="text-[13px] px-1" :class="messageOk ? 'text-[#00896F]' : 'text-red-500'">{{ message }}</p>
@@ -188,6 +192,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 const props = defineProps({
   tenantId: { type: Number, required: true },
+  licenseId: { type: String, default: null },
 })
 
 const {
