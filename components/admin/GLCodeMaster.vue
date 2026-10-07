@@ -364,7 +364,11 @@
                     </div>
 
                     <div class="w-full lg:w-2/5 space-y-8">
-                        <h3 class="text-lg font-bold text-gray-900">Add New Entries</h3>
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-gray-900">Add New Entries</h3>
+                            <button @click="openBulkModal()"
+                                class="text-xs font-medium text-[#00896F] hover:underline whitespace-nowrap">Bulk Import</button>
+                        </div>
 
                         <div v-if="errorMsg && !pendingConfirm"
                             class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">
@@ -405,6 +409,80 @@
 
         <DataSourceSettingsDeleteModal :isOpen="isDeleteModalOpen" :isDark="isDark" :currentLang="currentLang"
             @close="isDeleteModalOpen = false" @confirm="confirmDelete" />
+
+        <!-- Bulk Import Modal -->
+        <div v-if="bulk.open" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+            @click.self="closeBulkModal">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+                <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-gray-900">
+                        Bulk Import {{ bulk.type === 'mg' ? 'Main Groups' : 'Subgroups' }}
+                        <span v-if="mode === 'tenant' && selectedTenant" class="text-sm font-normal text-gray-500">— {{ selectedTenant.name }}</span>
+                    </h3>
+                    <button @click="closeBulkModal" class="text-gray-400 hover:text-gray-600">&times;</button>
+                </div>
+
+                <div class="p-6 overflow-y-auto flex-1 space-y-5">
+                    <!-- Step 1: paste -->
+                    <div v-if="!bulk.items.length" class="space-y-4">
+                        <div class="flex bg-[#F3F4F6] p-1 rounded-full w-fit">
+                            <button @click="bulk.type = 'mg'"
+                                class="px-5 py-1 rounded-full text-sm font-medium transition-all"
+                                :class="bulk.type === 'mg' ? 'bg-white text-black shadow-sm' : 'text-gray-500'">Main Group</button>
+                            <button @click="bulk.type = 'sg'"
+                                class="px-5 py-1 rounded-full text-sm font-medium transition-all"
+                                :class="bulk.type === 'sg' ? 'bg-white text-black shadow-sm' : 'text-gray-500'">Subgroup</button>
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-800">Paste comma-separated values</label>
+                            <textarea v-model="bulk.raw" rows="6" placeholder="e.g. Current Asset, Current Liability, Liability, Indirect Income, Non Current Liabilities"
+                                class="w-full mt-2 bg-[#F3F4F6] border-none rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-[#00896F] text-black resize-none"></textarea>
+                        </div>
+                        <p v-if="bulk.error" class="text-sm text-red-600">{{ bulk.error }}</p>
+                    </div>
+
+                    <!-- Step 2: review -->
+                    <div v-else class="space-y-3">
+                        <p class="text-sm text-[#717182]">Items that already exist can't be re-added — their checkbox is disabled. "Similar" items are unchecked by default; check them to add anyway.</p>
+                        <div class="border border-gray-100 rounded-xl divide-y divide-gray-100 max-h-[50vh] overflow-y-auto">
+                            <label v-for="(it, i) in bulk.items" :key="i"
+                                class="flex items-center gap-3 px-4 py-3"
+                                :class="isExactMatch(it) ? 'opacity-60' : 'cursor-pointer hover:bg-gray-50'">
+                                <input type="checkbox" v-model="it.selected" :disabled="isExactMatch(it)" class="accent-[#00896F] w-4 h-4" />
+                                <div class="flex-1 min-w-0">
+                                    <span class="text-sm text-gray-900">{{ it.value }}</span>
+                                    <p v-if="it.status !== 'new'" class="text-xs text-gray-400 truncate">
+                                        <template v-if="it.status === 'exists_general'">Already exists in the general list as "{{ it.matched_value }}"</template>
+                                        <template v-else-if="it.status === 'exists_tenant'">Already exists in this tenant's list as "{{ it.matched_value }}"</template>
+                                        <template v-else-if="it.status === 'similar'">Similar to existing "{{ it.matched_value }}"</template>
+                                    </p>
+                                </div>
+                                <span class="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded shrink-0"
+                                    :class="it.status === 'new' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'">
+                                    {{ it.status === 'new' ? 'New' : it.status === 'similar' ? 'Similar' : 'Exists' }}
+                                </span>
+                            </label>
+                        </div>
+                        <p v-if="bulk.resultMsg" class="text-sm" :class="bulk.resultError ? 'text-red-600' : 'text-emerald-600'">{{ bulk.resultMsg }}</p>
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
+                    <button @click="closeBulkModal" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cancel</button>
+                    <button v-if="!bulk.items.length" @click="previewBulk" :disabled="bulk.loading || !bulk.raw.trim()"
+                        class="bg-[#FFF085] hover:bg-[#FACC15] disabled:opacity-50 text-gray-800 px-6 py-2 rounded-lg text-sm font-medium">
+                        {{ bulk.loading ? 'Checking...' : 'Preview' }}
+                    </button>
+                    <template v-else>
+                        <button @click="bulk.items = []" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">&larr; Back</button>
+                        <button @click="confirmBulk" :disabled="bulk.loading || !bulk.items.some(i => i.selected)"
+                            class="bg-[#FFF085] hover:bg-[#FACC15] disabled:opacity-50 text-gray-800 px-6 py-2 rounded-lg text-sm font-medium">
+                            {{ bulk.loading ? 'Importing...' : `Import Selected (${bulk.items.filter(i => i.selected).length})` }}
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -420,6 +498,8 @@ const {
     deleteMainGroup, deleteSubGroup,
     getGroupsForTenant,
     getTenantsWithCustomMappings,
+    previewBulkGroups,
+    createBulkGroups,
 } = useImplementation()
 
 // --- Sub-tab -----------------------------------------------------------------
@@ -650,6 +730,83 @@ const addItem = async (kind, confirm = false, value = null) => {
         clearFeedback()
     } catch (e) {
         handleApiError(e, { action: 'add', kind, value })
+    }
+}
+
+// --- Bulk Import -----------------------------------------------------------------
+const bulk = reactive({
+    open: false, type: 'mg', raw: '', items: [], loading: false, error: '', resultMsg: '', resultError: false,
+})
+
+const isExactMatch = (it) => it.status === 'exists_general' || it.status === 'exists_tenant'
+
+function openBulkModal() {
+    bulk.open = true
+    bulk.raw = ''
+    bulk.items = []
+    bulk.error = ''
+    bulk.resultMsg = ''
+}
+
+function closeBulkModal() {
+    bulk.open = false
+}
+
+async function previewBulk() {
+    bulk.error = ''
+    bulk.resultMsg = ''
+    if (!bulk.raw.trim()) return
+
+    const tenantId = mode.value === 'tenant' ? selectedTenant.value?.id ?? null : null
+    const type = bulk.type === 'mg' ? 'main_group' : 'sub_group'
+
+    bulk.loading = true
+    try {
+        const data = await previewBulkGroups(type, bulk.raw, tenantId)
+        bulk.items = data.map(it => ({ ...it, selected: it.status === 'new' }))
+        if (!bulk.items.length) bulk.error = 'No valid values found in the pasted text.'
+    } catch (e) {
+        bulk.error = e?.data?.message ?? 'Something went wrong. Please try again.'
+    } finally {
+        bulk.loading = false
+    }
+}
+
+async function confirmBulk() {
+    const selectedValues = bulk.items.filter(i => i.selected).map(i => i.value)
+    if (!selectedValues.length) return
+
+    const tenantId = mode.value === 'tenant' ? selectedTenant.value?.id ?? null : null
+    const type = bulk.type === 'mg' ? 'main_group' : 'sub_group'
+
+    bulk.loading = true
+    bulk.resultMsg = ''
+    bulk.resultError = false
+    try {
+        const result = await createBulkGroups(type, selectedValues, tenantId)
+
+        if (mode.value === 'tenant') {
+            const state = bulk.type === 'mg' ? tenantMain : tenantSub
+            state.items.unshift(...result.created)
+            state.meta.total += result.created.length
+        } else {
+            const list = bulk.type === 'mg' ? mainGroupItems : subGroupItems
+            list.value.push(...result.created)
+        }
+
+        bulk.resultMsg = `${result.created.length} entry(ies) added` +
+            (result.skipped.length ? `, ${result.skipped.length} skipped (already existed by the time of import).` : '.')
+
+        if (result.skipped.length) {
+            bulk.items = bulk.items.filter(i => result.skipped.some(s => s.value === i.value))
+        } else {
+            setTimeout(closeBulkModal, 1200)
+        }
+    } catch (e) {
+        bulk.resultError = true
+        bulk.resultMsg = e?.data?.message ?? 'Import failed. Please try again.'
+    } finally {
+        bulk.loading = false
     }
 }
 

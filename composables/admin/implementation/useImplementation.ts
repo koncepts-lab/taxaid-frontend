@@ -277,6 +277,17 @@ export function useImplementation() {
     await apiFetch(`/admin/gl/sub-groups/${id}`, { method: 'DELETE' })
   }
 
+  // Bulk add: comma-separated paste -> preview (dup/similar check) -> confirmed create.
+  async function previewBulkGroups(type: 'main_group' | 'sub_group', values: string, tenantId: number | null = null): Promise<any[]> {
+    const res: any = await apiFetch('/admin/gl/bulk-preview', { method: 'POST', body: { type, values, tenant_id: tenantId } })
+    return res.data ?? []
+  }
+
+  async function createBulkGroups(type: 'main_group' | 'sub_group', values: string[], tenantId: number | null = null): Promise<any> {
+    const res: any = await apiFetch('/admin/gl/bulk-store', { method: 'POST', body: { type, values, tenant_id: tenantId } })
+    return res.data
+  }
+
   return {
     getPool,
     getConsultants,
@@ -315,5 +326,7 @@ export function useImplementation() {
     deleteMainGroup, deleteSubGroup,
     getGroupsForTenant,
     getTenantsWithCustomMappings,
+    previewBulkGroups,
+    createBulkGroups,
   }
 }
