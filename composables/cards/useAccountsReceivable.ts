@@ -23,6 +23,7 @@ const _agingGraph         = ref<any>({})
 const _historicalMovement = ref<any>({})
 const _loading            = ref(false)
 const _error              = ref<string | null>(null)
+const _hasMailSettings    = ref(true)
 
 // Hybrid gap-day fallback: the backend answers with the latest upload
 // snapshot on or before the requested date. When they differ we snap
@@ -54,6 +55,7 @@ async function fetchAll() {
     }
 
     _goLiveDate.value = summaryRes?.go_live_date ?? null
+    _hasMailSettings.value = summaryRes?.has_mail_settings ?? true
     useState('cardPeriod').value = summaryRes?.period ?? null
     useState('cardToday').value = summaryRes?.today ?? null
 
@@ -214,6 +216,7 @@ export function useAccountsReceivablePage() {
     requestedDate:      _requestedDate,
     snapshotNotice:     _snapshotNotice,
     goLiveDate:         _goLiveDate,
+    hasMailSettings:    _hasMailSettings,
     fetchAll,
     sendReminders,
     fetchCustomerInvoicesBatch,

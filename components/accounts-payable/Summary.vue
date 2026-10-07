@@ -91,18 +91,27 @@
                         </span>
                       </div>
                     </div>
-                    <button @click="handleHoldForReview(group)"
-                      :disabled="sendingKey !== null || groupSelectedCount(group) === 0 || !!holdBlockedTip"
-                      :title="holdBlockedTip"
-                      class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-2.5 rounded-xl flex items-center gap-3 text-[14px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                      <svg v-if="sendingKey === group.customer" class="animate-spin shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
-                      <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                      </svg>
-                      {{ currentLang === 'ar' ? `مراجعة معلقة (${groupSelectedCount(group)})` : `Hold for Review (${groupSelectedCount(group)})` }}
-                    </button>
+                    <div class="flex flex-col items-end gap-1">
+                      <button @click="handleHoldForReview(group)"
+                        :disabled="sendingKey !== null || groupSelectedCount(group) === 0 || !!holdBlockedTip"
+                        :title="holdBlockedTip"
+                        class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-2.5 rounded-xl flex items-center gap-3 text-[14px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg v-if="sendingKey === group.customer" class="animate-spin shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
+                        <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        {{ currentLang === 'ar' ? `مراجعة معلقة (${groupSelectedCount(group)})` : `Hold for Review (${groupSelectedCount(group)})` }}
+                      </button>
+                      <span v-if="holdBlockedTip" class="text-[12px] text-amber-700">
+                        {{ holdBlockedTip }}
+                        <a v-if="!hasMailSettings && canOpenCompanySettings" href="/settings/company-settings" target="_blank"
+                          class="underline hover:text-amber-900">
+                          {{ currentLang === 'ar' ? 'افتح الإعدادات' : 'Open settings' }}
+                        </a>
+                      </span>
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -274,16 +283,25 @@
                               </span>
                             </div>
                           </div>
-                          <button @click="handleHoldForReview(group)" :disabled="sendingKey !== null || groupSelectedCount(group) === 0 || !!holdBlockedTip" :title="holdBlockedTip"
-                            class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-2.5 rounded-xl flex items-center gap-3 text-[14px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            <svg v-if="sendingKey === group.customer" class="animate-spin shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
-                            <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path
-                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                            {{ currentLang === 'ar' ? `مراجعة معلقة (${groupSelectedCount(group)})` : `Hold for Review (${groupSelectedCount(group)})` }}
-                          </button>
+                          <div class="flex flex-col items-end gap-1">
+                            <button @click="handleHoldForReview(group)" :disabled="sendingKey !== null || groupSelectedCount(group) === 0 || !!holdBlockedTip" :title="holdBlockedTip"
+                              class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-2.5 rounded-xl flex items-center gap-3 text-[14px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                              <svg v-if="sendingKey === group.customer" class="animate-spin shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
+                              <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                              </svg>
+                              {{ currentLang === 'ar' ? `مراجعة معلقة (${groupSelectedCount(group)})` : `Hold for Review (${groupSelectedCount(group)})` }}
+                            </button>
+                            <span v-if="holdBlockedTip" class="text-[12px] text-amber-700">
+                              {{ holdBlockedTip }}
+                              <a v-if="!hasMailSettings && canOpenCompanySettings" href="/settings/company-settings" target="_blank"
+                                class="underline hover:text-amber-900">
+                                {{ currentLang === 'ar' ? 'افتح الإعدادات' : 'Open settings' }}
+                              </a>
+                            </span>
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -414,6 +432,7 @@ const { valuesNote } = useCurrency()
 const { holdForReview, hasInternalEmails, hasMailSettings, fetchCustomerInvoicesBatch } = useAccountsPayablePage()
 const PRELOAD_CUSTOMERS = 10
 const { can } = usePermissions()
+const canOpenCompanySettings = computed(() => can('company_settings.access'))
 
 const setupTip = (needsMail) => {
   const ar = currentLang.value === 'ar'

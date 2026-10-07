@@ -92,7 +92,7 @@
                     </div>
                     <div class="flex flex-col items-end gap-1">
                       <button @click="handleSendReminders(group)"
-                        :disabled="sendingKey !== null || groupSelectedCount(group) === 0 || !hasEmail(group)"
+                        :disabled="sendingKey !== null || groupSelectedCount(group) === 0 || !hasMailSettings || !hasEmail(group)"
                         :title="emailTooltip(group)"
                         class="bg-[#005A48] hover:bg-[#004A3B] text-white px-5 py-2.5 rounded-xl flex items-center gap-3 text-[14px] font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         <svg v-if="sendingKey === group.label" class="animate-spin shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
@@ -101,8 +101,15 @@
                         </svg>
                         {{ currentLang === 'ar' ? `إرسال تذكير (${groupSelectedCount(group)})` : `Send Reminder (${groupSelectedCount(group)})` }}
                       </button>
-                      <span v-if="!hasEmail(group)" class="text-[12px] text-amber-700">
+                      <span v-if="!hasMailSettings" class="text-[12px] text-amber-700">
+                        {{ mailSetupTip() }}
+                      </span>
+                      <span v-else-if="!hasEmail(group)" class="text-[12px] text-amber-700">
                         {{ currentLang === 'ar' ? 'لم تتم إضافة بريد لهذا العميل' : "Email for this client isn't added" }}
+                        <a v-if="canOpenCustomers" href="/data-source?tab=contacts&sub=customers" target="_blank"
+                          class="underline hover:text-amber-900">
+                          {{ currentLang === 'ar' ? 'إضافته هنا' : 'Add it here' }}
+                        </a>
                       </span>
                     </div>
                   </div>
@@ -414,7 +421,9 @@ const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const { valuesNote } = useCurrency()
 
-const { sendReminders, fetchCustomerInvoicesBatch } = useAccountsReceivablePage()
+const { sendReminders, fetchCustomerInvoicesBatch, hasMailSettings } = useAccountsReceivablePage()
+const { can, contactSubTabs } = usePermissions()
+const canOpenCustomers = computed(() => contactSubTabs.value.customers)
 const PRELOAD_CUSTOMERS = 10
 
 const expandedGroups = ref([])
@@ -573,7 +582,14 @@ const toggleGroupSelectAll = (group) => {
 // fetched when the group was expanded (no separate /customers lookup).
 const hasEmail = (group) => !!invoiceHasEmail.value[group?.label]
 
+const mailSetupTip = () => {
+  const ar = currentLang.value === 'ar'
+  if (can('company_settings.access')) return ar ? 'لم يتم إعداد بريد الشركة. أضفه من إعدادات الشركة.' : 'Company mail is not set up. Go to Company Settings to add it.'
+  return ar ? 'لم يتم إعداد بريد الشركة. اطلب من المسؤول (مستخدم لديه صلاحية إعدادات الشركة) إضافته.' : 'Company mail is not set up. Ask your admin (a user with Company Settings access) to add it.'
+}
+
 const emailTooltip = (group) => {
+  if (!hasMailSettings.value) return mailSetupTip()
   if (hasEmail(group)) return ''
   return currentLang.value === 'ar'
     ? 'لم تتم إضافة بريد إلكتروني لهذا العميل — أضفه في جهات الاتصال'
@@ -610,6 +626,11 @@ const flashStatus = (type, message) => {
 const handleSendReminders = async (group) => {
   const selected = getInvoices(group).filter(i => i.selected)
   if (!selected.length) return
+
+  if (!hasMailSettings.value) {
+    flashStatus('error', mailSetupTip())
+    return
+  }
 
   if (!hasEmail(group)) {
     flashStatus('error', currentLang.value === 'ar'
