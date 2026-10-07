@@ -93,18 +93,15 @@
                                             <col style="width: 15%">
                                         </colgroup>
                                         <tbody :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
-                                            <template v-for="(item, idx) in data" :key="idx">
+                                            <template v-for="(item, idx) in bodyRows" :key="idx">
                                                 <!-- Main Row -->
-                                                <tr :class="[
-                                                    item.isTotal
-                                                        ? (isDark ? 'bg-[#00C9A7]/20 font-bold sticky bottom-0 z-20' : 'bg-[#64E9D1] font-bold sticky bottom-0 z-20')
-                                                        : (isDark ? 'border-b border-white/5' : 'border-b border-gray-50 hover:bg-gray-50/50')
-                                                ]" class="transition-colors">
+                                                <tr :class="[isDark ? 'border-b border-white/5' : 'border-b border-gray-50 hover:bg-gray-50/50']"
+                                                    class="transition-colors">
                                                     <td class="lg:ps-8 ps-4 py-4 text-start">
                                                         <div class="flex items-center gap-4">
                                                             <span :class="[isDark ? 'text-white/80' : 'text-gray-700']">{{
                                                                 item.subgroup }}</span>
-                                                            <button v-if="!item.isTotal" @click="handleLedgerList(item)"
+                                                            <button @click="handleLedgerList(item)"
                                                                 class="p-1">
                                                                 <svg class="w-2.5 h-2.5 text-gray-400 transition-transform duration-200"
                                                                     :class="{ 'rotate-180': expandedRows.includes(item.subgroup) }"
@@ -229,6 +226,63 @@
                                         </tbody>
                                     </table>
                                 </div>
+
+                                <!-- ── Fixed Total Row (always pinned to bottom) ── -->
+                                <div v-if="totalRow" class="shrink-0">
+                                    <table class="w-full text-sm table-fixed">
+                                        <colgroup>
+                                            <col style="width: 25%">
+                                            <col style="width: 15%">
+                                            <col style="width: 15%">
+                                            <col style="width: 15%">
+                                            <col style="width: 15%">
+                                            <col style="width: 15%">
+                                        </colgroup>
+                                        <tbody>
+                                            <tr :class="isDark ? 'bg-[#00C9A7]/20 font-bold' : 'bg-[#64E9D1] font-bold'">
+                                                <td class="lg:ps-8 ps-4 py-4 text-start">
+                                                    <span :class="[isDark ? 'text-white/80' : 'text-gray-700']">{{ totalRow.subgroup }}</span>
+                                                </td>
+                                                <td class="px-4 py-4 text-center"
+                                                    :class="isDark ? 'text-white/60' : 'text-gray-600'">{{
+                                                        formatNumber(totalRow.current_year) }}</td>
+                                                <td class="px-4 py-4 text-center"
+                                                    :class="isDark ? 'text-white/60' : 'text-gray-600'">{{
+                                                        formatNumber(totalRow.previous_year) }}</td>
+                                                <td class="px-4 py-4 text-center"
+                                                    :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ totalRow.budget ?
+                                                        formatNumber(totalRow.budget) : '-' }}</td>
+                                                <td class="px-4 py-4 text-center">
+                                                    <span
+                                                        :class="[totalRow.variance < 0 ? 'bg-red-100 text-red-600' : 'bg-[#E6F9F4] text-[#029F80]', 'px-3 py-1 rounded-full text-[11px] font-bold']">
+                                                        {{ totalRow.variance_percent }}
+                                                    </span>
+                                                </td>
+                                                <td class="pe-8 py-2">
+                                                    <div class="flex justify-center items-center">
+                                                        <div v-if="totalRow.ytg_percent !== null" class="w-[65px] h-[32px] relative">
+                                                            <svg class="w-full h-full" viewBox="0 0 36 22">
+                                                                <circle cx="18" cy="18" r="15" fill="none"
+                                                                    :stroke="isDark ? '#ffffff1a' : '#f1f1f1'"
+                                                                    stroke-width="3" stroke-dasharray="47.1 94.2"
+                                                                    transform="rotate(-180 18 18)" stroke-linecap="round" />
+                                                                <circle cx="18" cy="18" r="15" fill="none" :stroke="getProgressColor(totalRow.ytg_percent)"
+                                                                    stroke-width="3.5" stroke-dasharray="47.1 94.2"
+                                                                    :stroke-dashoffset="Math.max(0, 47.1 - (Math.min(parseFloat(totalRow.ytg_percent), 100) / 100) * 47.1)"
+                                                                    transform="rotate(-180 18 18)" stroke-linecap="round" />
+                                                            </svg>
+                                                            <span
+                                                                class="absolute bottom-0 inset-x-0 flex items-center justify-center text-[10px] font-bold"
+                                                                :class="isDark ? 'text-white' : 'text-black'">{{
+                                                                    totalRow.ytg_percent }}</span>
+                                                        </div>
+                                                        <div v-else class="text-gray-400 text-xs">-</div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </template>
                         </div>
                     </div>
@@ -242,7 +296,7 @@
         :customFrom="props.customFrom" :customTo="props.customTo" @close="isLedgerReportOpen = false" />
 </template>
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import FinancialStatementLedgerModal from './LedgerModal.vue';
 const config = useRuntimeConfig();
 const baseUrl = config.public.apiBase;
@@ -262,6 +316,9 @@ const props = defineProps({
 });
 
 defineEmits(['close']);
+
+const bodyRows = computed(() => (props.data || []).filter(item => !item.isTotal));
+const totalRow = computed(() => (props.data || []).find(item => item.isTotal) || null);
 
 // --- New Reactive State ---
 const expandedRows = ref([]);      // Tracks which subgroups are open

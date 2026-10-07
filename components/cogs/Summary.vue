@@ -192,9 +192,9 @@
       <div v-if="isModalOpen"
         class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
         :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-        <div class="w-full min-h-[50vh] max-h-[78vh] rounded-xl shadow-2xl flex flex-col overflow-hidden"
+        <div class="w-full h-[78vh] rounded-xl shadow-2xl flex flex-col overflow-hidden"
           :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff]'" style="max-width: 1500px; margin: 0 15px;">
-          <div class="flex justify-between items-center py-6 px-8 border-b"
+          <div class="flex justify-between items-center py-6 px-8 border-b shrink-0"
             :class="isDark ? 'border-white/5' : 'border-gray-100'">
             <div>
               <p class="text-lg font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">
@@ -212,10 +212,18 @@
             </button>
           </div>
 
-          <div class="overflow-y-auto w-full no-scrollbar flex-1 relative"
-            :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff]'">
-            <table class="w-full text-left rtl:text-right border-collapse relative">
-              <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+          <!-- ── Fixed Table Column Headers ── -->
+          <div class="shrink-0 overflow-x-auto no-scrollbar">
+            <table class="w-full text-left rtl:text-right border-collapse table-fixed min-w-[1100px]">
+              <colgroup>
+                <col style="width: 28%;" />
+                <col style="width: 15%;" />
+                <col style="width: 15%;" />
+                <col style="width: 14%;" />
+                <col style="width: 14%;" />
+                <col style="width: 14%;" />
+              </colgroup>
+              <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
                 <tr>
                   <th class="lg:px-8 px-4 py-5 font-medium text-[14px] text-left rtl:text-right"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'تكلفة المبيعات' : 'COGS' }} <CommonInfoTooltip tip="cogsSummary.cogs" light /></span></th>
                   <th class="lg:px-6 px-4 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ? 'السنة الحالية' : 'Current Year' }} <CommonInfoTooltip tip="cogsSummary.currentYear" light align="right" /></span></th>
@@ -225,6 +233,21 @@
                   <th class="lg:px-6 px-4 py-5 font-medium text-center text-[14px]"><span class="inline-flex items-center justify-center gap-1.5">{{ currentLang === 'ar' ? 'السنة للذهاب' : 'Year to Go' }} <CommonInfoTooltip tip="cogsSummary.ytg" light /></span></th>
                 </tr>
               </thead>
+            </table>
+          </div>
+
+          <!-- ── Scrollable Body ── -->
+          <div class="overflow-auto w-full custom-scrollbar flex-1 min-h-0"
+            :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff]'">
+            <table class="w-full text-left rtl:text-right border-collapse table-fixed min-w-[1100px]">
+              <colgroup>
+                <col style="width: 28%;" />
+                <col style="width: 15%;" />
+                <col style="width: 15%;" />
+                <col style="width: 14%;" />
+                <col style="width: 14%;" />
+                <col style="width: 14%;" />
+              </colgroup>
               <tbody>
                 <template v-if="loading">
                   <tr v-for="n in 6" :key="'modal-cogs-sk-' + n" class="border-b animate-pulse" :class="isDark ? 'border-white/5' : 'border-[#F2F2F2]'">
@@ -319,8 +342,22 @@
                   </template>
                 </template></template>
               </tbody>
-              <tfoot class="sticky bottom-0 z-10">
-                <tr v-if="summaryTotal" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
+            </table>
+          </div>
+
+          <!-- ── Fixed Total Row (always pinned to bottom) ── -->
+          <div v-if="summaryTotal" class="shrink-0 overflow-x-auto no-scrollbar">
+            <table class="w-full text-left rtl:text-right border-collapse table-fixed min-w-[1100px]">
+              <colgroup>
+                <col style="width: 28%;" />
+                <col style="width: 15%;" />
+                <col style="width: 15%;" />
+                <col style="width: 14%;" />
+                <col style="width: 14%;" />
+                <col style="width: 14%;" />
+              </colgroup>
+              <tbody>
+                <tr :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
                   <td class="lg:px-8 px-4 py-5 font-semibold text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
                     currentLang === 'ar' ? 'إجمالي تكلفة المبيعات' : 'Total COGS' }}</td>
                   <td class="px-6 py-5 text-right rtl:text-left font-semibold text-[14px] tabular-nums"
@@ -349,7 +386,7 @@
                     </div>
                   </td>
                 </tr>
-              </tfoot>
+              </tbody>
             </table>
           </div>
         </div>
