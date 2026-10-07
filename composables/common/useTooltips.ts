@@ -9,23 +9,34 @@ export const useTooltips = () => {
 
   if (!fetchPromise) {
     fetchPromise = (async () => {
-      if (import.meta.client) {
-        const cached = sessionStorage.getItem(STORAGE_KEY)
-        if (cached) {
-          const parsed = JSON.parse(atob(cached))
-          tooltips.value = parsed
-          return parsed
+      try {
+        if (import.meta.client) {
+          const cached = sessionStorage.getItem(STORAGE_KEY)
+          if (cached) {
+            try {
+              const parsed = JSON.parse(cached)
+              tooltips.value = parsed
+              return parsed
+            } catch {
+              sessionStorage.removeItem(STORAGE_KEY)
+            }
+          }
         }
+
+        const data = await $fetch<TooltipData>('/api/tooltips')
+        tooltips.value = data
+
+        if (import.meta.client) {
+          try {
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+          } catch {}
+        }
+
+        return data
+      } catch (e) {
+        console.error('Failed to load tooltips', e)
+        return {}
       }
-
-      const data = await $fetch<TooltipData>('/api/tooltips')
-      tooltips.value = data
-
-      if (import.meta.client) {
-        sessionStorage.setItem(STORAGE_KEY, btoa(JSON.stringify(data)))
-      }
-
-      return data
     })()
   } else {
     fetchPromise.then((data) => {
