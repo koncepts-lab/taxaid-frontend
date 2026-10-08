@@ -98,9 +98,10 @@ const peak = computed(() => Math.max(0, ...rawSeries.value.flatMap(s => s.dataRa
 
 const chartSeries = computed(() => {
   const plot = plotter(peak.value)
-  return rawSeries.value.map(s => ({
+  return rawSeries.value.map((s, idx) => ({
     name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
-    data: (s.dataRaw ?? []).map(plot)
+    data: (s.dataRaw ?? []).map(plot),
+    dataLabels: { offsetX: idx === 0 ? -12 : 12 }
   }))
 })
 
@@ -118,7 +119,7 @@ const chartOptions = computed(() => ({
   plotOptions: {
     bar: {
       horizontal: false,
-      columnWidth: '50%',
+      columnWidth: isModalOpen.value ? '75%' : '70%',
       borderRadius: 5,
       borderRadiusApplication: 'end',
       borderRadiusWhenStacked: 'last',
@@ -129,7 +130,7 @@ const chartOptions = computed(() => ({
   },
   dataLabels: {
     enabled: true,
-    offsetY: -30,
+    offsetY: -40,
     style: {
       fontSize: '12px',
       colors: ['#00B793CF'],
@@ -175,6 +176,7 @@ const chartOptions = computed(() => ({
     strokeDashArray: 0,
     xaxis: { lines: { show: false } },
     yaxis: { lines: { show: true } },
+    padding: { top: 20, right: 20, bottom: 0, left: 10 }
   },
   tooltip: {
     custom: function({series, seriesIndex, dataPointIndex, w}: any) {
@@ -214,7 +216,7 @@ const chartOptions = computed(() => ({
           }
         },
         dataLabels: {
-          offsetY: 0,
+          offsetY: -40,
           style: {
             fontSize: '9px'
           }
