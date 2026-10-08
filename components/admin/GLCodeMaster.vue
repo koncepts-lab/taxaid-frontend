@@ -1,5 +1,6 @@
 <template>
-    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm py-8 px-6 flex flex-col gap-8">
+    <div class="rounded-2xl border shadow-sm py-8 px-6 flex flex-col gap-8"
+        :class="isDark ? 'gl-dark bg-[#00141080] border-white/10' : 'bg-white border-gray-100'">
         <!-- Sub-tabs: General vocabulary vs per-tenant custom extras -->
         <div class="flex bg-[#F3F4F6] p-1 rounded-full w-fit">
             <button @click="mode = 'general'"
@@ -834,5 +835,62 @@ table {
 
 .group-hover\/cell\:opacity-100 {
     transition: opacity 0.2s ease;
+}
+
+/* Dark-mode overrides: this component hardcodes a light palette throughout,
+   so repaint it under .gl-dark instead of rebinding every class individually. */
+.gl-dark :deep(.bg-\[\#F3F4F6\]),
+.gl-dark :deep(.bg-gray-100),
+.gl-dark :deep(.bg-gray-200\/70) {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.gl-dark :deep(.bg-gray-50) {
+    background-color: #0a2420 !important;
+}
+
+.gl-dark :deep(.bg-white) {
+    background-color: #001410 !important;
+}
+
+.gl-dark :deep(.text-black),
+.gl-dark :deep(.text-gray-900),
+.gl-dark :deep(.text-gray-800) {
+    color: #ffffff !important;
+}
+
+.gl-dark :deep(.text-gray-700),
+.gl-dark :deep(.text-gray-600) {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.gl-dark :deep(.text-gray-500),
+.gl-dark :deep(.text-gray-400) {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.gl-dark :deep(.text-gray-300) {
+    color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.gl-dark :deep(.border-gray-100),
+.gl-dark :deep(.border-gray-50) {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.gl-dark :deep(.divide-gray-100 > * + *),
+.gl-dark :deep(.divide-gray-50 > * + *) {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.gl-dark :deep(.hover\:bg-gray-50:hover),
+.gl-dark :deep(.hover\:bg-gray-100:hover),
+.gl-dark :deep(.hover\:bg-\[\#F3FDFA\]:hover) {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.gl-dark :deep(input::placeholder),
+.gl-dark :deep(textarea::placeholder) {
+    color: rgba(255, 255, 255, 0.35) !important;
 }
 </style>

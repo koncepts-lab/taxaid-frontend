@@ -296,7 +296,7 @@
         :customFrom="props.customFrom" :customTo="props.customTo" @close="isLedgerReportOpen = false" />
 </template>
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import FinancialStatementLedgerModal from './LedgerModal.vue';
 const config = useRuntimeConfig();
 const baseUrl = config.public.apiBase;
@@ -304,8 +304,11 @@ const currentLang = useState('currentLang', () => 'en')
 const props = defineProps({
     isOpen: Boolean,
     loading: Boolean,
-    data: Array,
+    data: Array,                 // page 1 rows, ledgers embedded inline per row
+    totalRowData: { type: Object, default: null },
+    pagination: { type: Object, default: null },
     title: String,
+    mainGroup: String,           // same value as title — passed explicitly for background page-fetch calls
     isDark: Boolean,
     schedule: String,
     activeTab: String,
@@ -317,8 +320,13 @@ const props = defineProps({
 
 defineEmits(['close']);
 
-const bodyRows = computed(() => (props.data || []).filter(item => !item.isTotal));
-const totalRow = computed(() => (props.data || []).find(item => item.isTotal) || null);
+const allRows = ref([]);
+const totalRowLocal = ref(null);
+const currentPage = ref(1);
+const totalPages = ref(1);
+
+const bodyRows = computed(() => allRows.value.filter(item => !item.isTotal));
+const totalRow = computed(() => totalRowLocal.value || allRows.value.find(item => item.isTotal) || null);
 
 // --- New Reactive State ---
 const expandedRows = ref([]);      // Tracks which subgroups are open
@@ -383,19 +391,15 @@ const openGlReport = async (ledger) => {
 const handleLedgerList = async (item) => {
     const key = item.subgroup;
 
-    // 1. Toggle Collapse: If already open, remove from array and close
     if (expandedRows.value.includes(key)) {
         expandedRows.value = expandedRows.value.filter(i => i !== key);
         return;
     }
 
-    // 2. Add to expanded rows
     expandedRows.value.push(key);
 
-    // 3. Prevent duplicate API calls if data already exists
     if (ledgerDataMap.value[key]) return;
 
-    // 4. API Call Logic
     try {
         rowLoading.value[key] = true;
 
@@ -412,8 +416,6 @@ const handleLedgerList = async (item) => {
             }
         });
 
-
-        // Assuming your API returns { data: [...] }
         ledgerDataMap.value[key] = response.data || [];
     } catch (error) {
         console.error("Failed to fetch ledger details:", error);
@@ -421,4 +423,66 @@ const handleLedgerList = async (item) => {
         rowLoading.value[key] = false;
     }
 };
+
+const applyPageRows = (rows) => {
+    for (const row of (rows || [])) {
+        allRows.value.push(row);
+        if (row.ledgers) {
+            ledgerDataMap.value[row.subgroup] = row.ledgers;
+        }
+    }
+};
+
+const fetchRemainingPages = async () => {
+    const isBalanceSheet = props.activeTab === 'balance-sheet';
+    const endpoint = isBalanceSheet ? '/financial-analysis/bs-subgroup-totals' : '/financial-analysis/pl-subgroup-totals';
+
+    while (currentPage.value < totalPages.value) {
+        const nextPage = currentPage.value + 1;
+        try {
+            const response = await useApi(endpoint, {
+                method: 'POST',
+                body: {
+                    main_group: props.mainGroup || props.title,
+                    range_option: mapRangeOption(props.rangeOption),
+                    custom_from: props.customFrom,
+                    custom_to: props.customTo,
+                    page: nextPage,
+                    per_page: 10
+                }
+            });
+
+            if (response.status !== 'success') break;
+
+            applyPageRows(response.data);
+            currentPage.value = nextPage;
+            totalPages.value = response.pagination?.total_pages ?? totalPages.value;
+            if (response.total_row) totalRowLocal.value = response.total_row;
+        } catch (error) {
+            console.error("Failed to auto-load next schedule page:", error);
+            break;
+        }
+    }
+};
+
+watch(
+    () => [props.isOpen, props.loading, props.data],
+    ([isOpen, loading]) => {
+        if (!isOpen || loading) return;
+
+        allRows.value = [];
+        ledgerDataMap.value = {};
+        expandedRows.value = [];
+        totalRowLocal.value = props.totalRowData || null;
+        currentPage.value = props.pagination?.page || 1;
+        totalPages.value = props.pagination?.total_pages || 1;
+
+        applyPageRows(props.data);
+
+        if (totalPages.value > currentPage.value) {
+            fetchRemainingPages();
+        }
+    },
+    { immediate: true }
+);
 </script>

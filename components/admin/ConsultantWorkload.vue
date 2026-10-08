@@ -27,10 +27,11 @@
         </div>
 
         <!-- Main Data Table -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto min-h-[440px]">
+        <div class="rounded-2xl shadow-sm border overflow-x-auto min-h-[440px] transition-colors"
+            :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-gray-100'">
             <table class="w-full text-left border-collapse min-w-[600px]">
                 <thead>
-                    <tr class="text-[#1A1A1A] font-medium text-sm border-b border-gray-50">
+                    <tr class="font-medium text-sm border-b" :class="isDark ? 'text-white border-white/10' : 'text-[#1A1A1A] border-gray-50'">
                         <th class="px-6 py-5 font-medium">Consultant Name</th>
                         <th class="px-6 py-5 text-center font-medium">New</th>
                         <th class="px-6 py-5 text-center font-medium">Ongoing</th>
@@ -38,26 +39,27 @@
                         <th class="px-6 py-5 font-medium">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-50">
+                <tbody :class="isDark ? 'divide-y divide-white/10' : 'divide-y divide-gray-50'">
                     <template v-if="loading">
                         <tr v-for="n in workloadMeta.per_page" :key="'sk'+n" class="h-[68px]">
                             <td v-for="c in 5" :key="c" class="px-6 py-5">
-                                <div class="h-4 rounded bg-gray-100 animate-pulse" style="width: 70%"></div>
+                                <div class="h-4 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'" style="width: 70%"></div>
                             </td>
                         </tr>
                     </template>
                     <tr v-else-if="!consultants.length">
-                        <td colspan="5" class="px-6 py-10 text-center text-sm text-gray-400">No consultants found.</td>
+                        <td colspan="5" class="px-6 py-10 text-center text-sm" :class="isDark ? 'text-white/40' : 'text-gray-400'">No consultants found.</td>
                     </tr>
                     <tr v-else v-for="consultant in consultants" :key="consultant.name"
-                        class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-5 text-sm text-gray-700">{{ consultant.name }}</td>
-                        <td class="px-6 py-5 text-sm text-center text-gray-700">{{ consultant.new }}</td>
-                        <td class="px-6 py-5 text-sm text-center text-gray-700">{{ consultant.ongoing }}</td>
-                        <td class="px-6 py-5 text-sm text-center text-gray-700">{{ consultant.critical }}</td>
+                        class="transition-colors" :class="isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'">
+                        <td class="px-6 py-5 text-sm" :class="isDark ? 'text-white/90' : 'text-gray-700'">{{ consultant.name }}</td>
+                        <td class="px-6 py-5 text-sm text-center" :class="isDark ? 'text-white/90' : 'text-gray-700'">{{ consultant.new }}</td>
+                        <td class="px-6 py-5 text-sm text-center" :class="isDark ? 'text-white/90' : 'text-gray-700'">{{ consultant.ongoing }}</td>
+                        <td class="px-6 py-5 text-sm text-center" :class="isDark ? 'text-white/90' : 'text-gray-700'">{{ consultant.critical }}</td>
                         <td class="px-6 py-5">
                             <button @click="openModal(consultant)"
-                                class="bg-[#FFF085] hover:bg-[#FDE047] text-black border border-black/10 text-xs font-medium px-4 py-2 rounded-lg transition-colors">
+                                class="border text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+                                :class="isDark ? 'bg-[#FFF085]/90 hover:bg-[#FDE047] text-black border-black/10' : 'bg-[#FFF085] hover:bg-[#FDE047] text-black border-black/10'">
                                 View details
                             </button>
                         </td>
@@ -66,7 +68,7 @@
             </table>
         </div>
 
-        <CommonPaginationBar v-if="workloadMeta.total > 10" :meta="workloadMeta" :loading="loading"
+        <CommonPaginationBar v-if="workloadMeta.total > 10" :meta="workloadMeta" :loading="loading" :dark="isDark"
             :per-page-options="[10, 20, 50]"
             @page-change="p => loadWorkload(p)" @per-page-change="p => loadWorkload(1, p)" />
 
@@ -74,13 +76,14 @@
         <div v-if="showModal"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
             <div
-                class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                class="w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 transition-colors"
+                :class="isDark ? 'bg-[#001410] border border-white/10' : 'bg-white'">
                 <!-- Modal Header -->
                 <div class="flex items-center justify-between px-8 py-6">
-                    <h2 class="text-xl font-semibold text-gray-900">
+                    <h2 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
                         Consultant Workload Details - {{ selectedConsultant?.name }}
                     </h2>
-                    <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <button @click="showModal = false" class="transition-colors" :class="isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12" />
@@ -93,27 +96,27 @@
                     <div class="rounded-lg overflow-hidden">
                         <div class="overflow-y-auto min-h-[520px]" style="max-height: 520px">
                             <table class="w-full text-left border-collapse">
-                                <thead class="sticky top-0 bg-white z-10">
-                                    <tr class="text-[#1A1A1A] font-medium text-sm border-b border-gray-100">
+                                <thead class="sticky top-0 z-10" :class="isDark ? 'bg-[#001410]' : 'bg-white'">
+                                    <tr class="font-medium text-sm border-b" :class="isDark ? 'text-white border-white/10' : 'text-[#1A1A1A] border-gray-100'">
                                         <th class="px-6 py-4 w-1/2">Project Name</th>
                                         <th class="px-6 py-4 text-center">New</th>
                                         <th class="px-6 py-4 text-center">Ongoing</th>
                                         <th class="px-6 py-4 text-center">Critical</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-gray-100">
+                                <tbody :class="isDark ? 'divide-y divide-white/10' : 'divide-y divide-gray-100'">
                                     <template v-if="detailsLoading">
                                         <tr v-for="n in detailsMeta.per_page" :key="'sk'+n" class="h-[56px]">
                                             <td v-for="c in 4" :key="c" class="px-6 py-4">
-                                                <div class="h-4 rounded bg-gray-100 animate-pulse" style="width: 60%"></div>
+                                                <div class="h-4 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'" style="width: 60%"></div>
                                             </td>
                                         </tr>
                                     </template>
                                     <tr v-else-if="!projectDetails.length">
-                                        <td colspan="4" class="px-6 py-10 text-center text-sm text-gray-400">No projects assigned.</td>
+                                        <td colspan="4" class="px-6 py-10 text-center text-sm" :class="isDark ? 'text-white/40' : 'text-gray-400'">No projects assigned.</td>
                                     </tr>
                                     <tr v-else v-for="project in projectDetails" :key="project.id" class="text-sm">
-                                        <td class="px-6 py-4 text-gray-700 font-medium">{{ project.name }}</td>
+                                        <td class="px-6 py-4 font-medium" :class="isDark ? 'text-white/90' : 'text-gray-700'">{{ project.name }}</td>
 
                                         <!-- New Column -->
                                         <td class="px-6 py-4 text-center">
@@ -146,7 +149,7 @@
                             </table>
                         </div>
 
-                        <CommonPaginationBar v-if="detailsMeta.total > 20" class="px-6 pt-4" :meta="detailsMeta" :loading="detailsLoading"
+                        <CommonPaginationBar v-if="detailsMeta.total > 20" class="px-6 pt-4" :meta="detailsMeta" :loading="detailsLoading" :dark="isDark"
                             :per-page-options="[20, 50, 100]"
                             @page-change="p => loadDetailsPage(p)" @per-page-change="p => loadDetailsPage(1, p)" />
                     </div>
