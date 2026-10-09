@@ -34,7 +34,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="!labels.length" class="flex-1 flex items-center justify-center py-12">
+    <div v-else-if="!labels.length || !series.some(v => v)" class="flex-1 flex items-center justify-center py-12">
       <p class="text-sm font-medium text-white/60">{{ currentLang === 'ar' ? 'لا توجد بيانات متاحة' : 'No data available' }}</p>
     </div>
 

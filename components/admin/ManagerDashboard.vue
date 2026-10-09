@@ -1,20 +1,23 @@
 <template>
     <div class="p-8 space-y-6">
         <!-- Main Navigation Tabs -->
-        <div class="flex bg-white p-1.5 rounded-full shadow-sm w-fit border border-gray-100">
+        <div class="flex p-1.5 rounded-full shadow-sm w-fit border transition-colors"
+            :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-gray-100'">
             <button v-for="tab in tabs" :key="tab.id" @click="setTab(tab.id)"
                 class="px-12 py-1.5 rounded-full text-sm font-normal transition-all duration-300"
-                :class="activeTab === tab.id ? 'bg-[#68FFD6] text-black shadow-sm' : 'text-black hover:text-gray-800'">
+                :class="activeTab === tab.id
+                    ? (isDark ? 'bg-[#1b5e50] text-white shadow-sm' : 'bg-[#68FFD6] text-black shadow-sm')
+                    : (isDark ? 'text-white/70 hover:text-white' : 'text-black hover:text-gray-800')">
                 {{ currentLang === 'ar' ? tab.labelAr : tab.label }}
             </button>
         </div>
 
         <div class="mt-8">
             <!-- Dynamic Title Section -->
-            <h1 class="text-2xl font-semibold text-black mb-1">
+            <h1 class="text-2xl font-semibold mb-1" :class="isDark ? 'text-[#10FFD4]' : 'text-black'">
                 {{ currentLang === 'ar' ? currentTabConfig.titleAr : currentTabConfig.title }}
             </h1>
-            <p class="text-sm text-[#717182] mb-8">
+            <p class="text-sm mb-8" :class="isDark ? 'text-white/60' : 'text-[#717182]'">
                 {{ currentLang === 'ar' ? currentTabConfig.subAr : currentTabConfig.sub }}
             </p>
 
@@ -28,8 +31,8 @@
 
             <AdminConsultantRequests v-else-if="activeTab === 'requests'" :isDark="isDark" :currentLang="currentLang" />
 
-            <div v-else
-                class="bg-white p-20 rounded-3xl border border-dashed border-gray-200 text-center text-gray-400">
+            <div v-else class="p-20 rounded-3xl border border-dashed text-center transition-colors"
+                :class="isDark ? 'bg-[#00141080] border-white/10 text-white/40' : 'bg-white border-gray-200 text-gray-400'">
                 {{ activeTab }} Content Coming Soon
             </div>
         </div>

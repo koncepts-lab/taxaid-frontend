@@ -312,7 +312,8 @@
             <span class="font-medium">PY:</span> {{ reportInfo.previous }}
         </div>
         <FinancialStatementScheduleModal :isOpen="isScheduleModalOpen" :loading="isScheduleLoading"
-            :data="scheduleDetails" :title="selectedMainGroup" :isDark="isDark" @close="isScheduleModalOpen = false"
+            :data="scheduleDetails" :totalRowData="scheduleTotalRow" :pagination="schedulePagination"
+            :title="selectedMainGroup" :mainGroup="selectedMainGroup" :isDark="isDark" @close="isScheduleModalOpen = false"
             :schedule="selectedSchedule" :activeTab="props.activeTab" :rangeOption="props.filters.range_option" :customFrom="props.filters.custom_from" :customTo="props.filters.custom_to" />
         <FinancialStatementModal :isOpen="isModalOpen" :isDark="isDark" :currentLang="currentLang"
             :title="translatedTitle" :t="t" :data="visibleRows" :activeTab="activeTab" :selectedRatio="selectedRatio"
@@ -474,6 +475,8 @@ const handleInfoClick = () => {
 const isScheduleModalOpen = ref(false);
 const isScheduleLoading = ref(false);
 const scheduleDetails = ref([]);
+const scheduleTotalRow = ref(null);
+const schedulePagination = ref(null);
 const selectedMainGroup = ref('');
 const selectedSchedule = ref('');
 
@@ -490,9 +493,8 @@ const handleSchedule = async (row) => {
     isScheduleLoading.value = true;
 
     try {
-
-        const endpoint = props.activeTab === 'balance-sheet' 
-            ? '/financial-analysis/bs-subgroup-totals' 
+        const endpoint = props.activeTab === 'balance-sheet'
+            ? '/financial-analysis/bs-subgroup-totals'
             : '/financial-analysis/pl-subgroup-totals';
 
         const result = await useApi(endpoint, {
@@ -501,14 +503,16 @@ const handleSchedule = async (row) => {
                 "main_group": row.label,
                 "range_option": mapRangeOption(props.filters.range_option),
                 "custom_from": props.filters.custom_from,
-                "custom_to": props.filters.custom_to
+                "custom_to": props.filters.custom_to,
+                "page": 1,
+                "per_page": 10
             }
         });
 
         if (result.status === "success") {
-            // Using result.data as per your Postman screenshot
-
             scheduleDetails.value = result.data;
+            scheduleTotalRow.value = result.total_row || null;
+            schedulePagination.value = result.pagination || null;
         }
     } catch (error) {
         console.error("API Error:", error);

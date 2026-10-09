@@ -43,7 +43,7 @@
         </div>
       </div>
 
-      <div v-else-if="!loading && !error" class="flex-1 w-full relative">
+      <div v-else-if="!loading && !error" class="flex-1 w-full relative" ref="chartWrap">
         <ClientOnly>
           <apexchart
             :key="chartKey"
@@ -119,7 +119,7 @@
               </div>
             </div>
 
-            <div v-else-if="!loading && !error" class="flex-1 w-full relative">
+            <div v-else-if="!loading && !error" class="flex-1 w-full relative" ref="modalChartWrap">
               <ClientOnly>
                 <apexchart
                   :key="chartKey + '-modal'"
@@ -171,7 +171,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 
 const props = defineProps({
   data: Object,
@@ -182,6 +182,51 @@ const props = defineProps({
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 const isModalOpen = ref(false)
+
+const chartWrap = ref(null)
+const modalChartWrap = ref(null)
+
+// Bridges x-axis label hover to the bar tooltip: ApexCharts only triggers
+// its tooltip on bar/plot hover, not on the axis label text below it.
+function wireLabelHover(root) {
+  if (!root) return
+  const labels = root.querySelectorAll('.apexcharts-xaxis-texts-g .apexcharts-xaxis-label')
+  const seriesGroups = root.querySelectorAll('.apexcharts-bar-series')
+  if (!labels.length || !seriesGroups.length) return
+
+  labels.forEach((label, idx) => {
+    if (label.dataset.hoverWired) return
+    label.dataset.hoverWired = 'true'
+    label.style.cursor = 'pointer'
+
+    const bars = Array.from(seriesGroups).map(g => g.querySelectorAll('.apexcharts-bar-area')[idx]).filter(Boolean)
+    if (!bars.length) return
+
+    const fire = (type) => {
+      bars.forEach(bar => {
+        const rect = bar.getBoundingClientRect()
+        bar.dispatchEvent(new MouseEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          clientX: rect.left + rect.width / 2,
+          clientY: rect.top + rect.height / 2
+        }))
+      })
+    }
+
+    label.addEventListener('mouseenter', () => fire('mousemove'))
+    label.addEventListener('mouseleave', () => fire('mouseleave'))
+  })
+}
+
+function rewireHover() {
+  nextTick(() => {
+    setTimeout(() => {
+      wireLabelHover(chartWrap.value)
+      wireLabelHover(modalChartWrap.value)
+    }, 50)
+  })
+}
 
 const { valuesNote } = useCurrency()
 const { unit } = useChartHelper('revenue_category_unit')
@@ -204,7 +249,9 @@ const fmtYAxis = (value) => {
 }
 
 const page = ref(0)
-const pageSize = 5
+const pageSize = computed(() => isModalOpen.value ? 10 : 4)
+
+watch(isModalOpen, () => { page.value = 0 })
 
 // TEMP: pads category data for carousel testing — remove once confirmed, revert to the plain computeds below.
 const TEST_EXTRA_CATEGORIES = 9
@@ -228,7 +275,7 @@ const rawCurr = computed(() => {
 })
 
 const totalPairs = computed(() => rawCategories.value.length)
-const totalPages = computed(() => Math.max(1, Math.ceil(totalPairs.value / pageSize)))
+const totalPages = computed(() => Math.max(1, Math.ceil(totalPairs.value / pageSize.value)))
 
 const prevPage = () => {
   if (page.value > 0) page.value--
@@ -239,18 +286,18 @@ const nextPage = () => {
 }
 
 const pagedCategories = computed(() => {
-  const start = page.value * pageSize
-  return rawCategories.value.slice(start, start + pageSize)
+  const start = page.value * pageSize.value
+  return rawCategories.value.slice(start, start + pageSize.value)
 })
 
 const pagedPrevRaw = computed(() => {
-  const start = page.value * pageSize
-  return rawPrev.value.slice(start, start + pageSize)
+  const start = page.value * pageSize.value
+  return rawPrev.value.slice(start, start + pageSize.value)
 })
 
 const pagedCurrRaw = computed(() => {
-  const start = page.value * pageSize
-  return rawCurr.value.slice(start, start + pageSize)
+  const start = page.value * pageSize.value
+  return rawCurr.value.slice(start, start + pageSize.value)
 })
 
 const peak = computed(() => Math.max(0, ...pagedPrevRaw.value, ...pagedCurrRaw.value))
@@ -260,11 +307,13 @@ const plot = (value) => (value > 0 && value < minVisible.value ? minVisible.valu
 const series = computed(() => [
   {
     name: currentLang.value === 'ar' ? 'السنة السابقة' : 'Previous Year',
-    data: pagedPrevRaw.value.map(plot)
+    data: pagedPrevRaw.value.map(plot),
+    dataLabels: { offsetX: -12 }
   },
   {
     name: currentLang.value === 'ar' ? 'السنة الحالية' : 'Current Year',
-    data: pagedCurrRaw.value.map(plot)
+    data: pagedCurrRaw.value.map(plot),
+    dataLabels: { offsetX: 12 }
   }
 ])
 
@@ -289,6 +338,9 @@ const chartKey = computed(() => JSON.stringify([
   pagedCurrRaw.value
 ]))
 
+watch([chartKey, isModalOpen], rewireHover)
+onMounted(rewireHover)
+
 const chartOptions = computed(() => ({
   chart: {
     type: 'bar',
@@ -301,7 +353,7 @@ const chartOptions = computed(() => ({
   plotOptions: {
     bar: {
       horizontal: false,
-      columnWidth: '50%',
+      columnWidth: isModalOpen.value ? '75%' : (pagedCategories.value.length <= 2 ? '85%' : '70%'),
       borderRadius: 5,
       borderRadiusApplication: 'end',
       dataLabels: {
@@ -311,7 +363,7 @@ const chartOptions = computed(() => ({
   },
   dataLabels: {
     enabled: true,
-    offsetY: -22,
+    offsetY: -30,
     style: {
       fontSize: '10px',
       colors: ['#46867E'],

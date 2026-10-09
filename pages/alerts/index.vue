@@ -11,9 +11,7 @@
                     <!-- Mobile Status Pill Layout (Removed) -->
 
                     <!-- Loading state -->
-                    <div v-if="loading" class="flex items-center justify-center py-16">
-                        <div class="w-8 h-8 border-4 border-[#008864] border-t-transparent rounded-full animate-spin"></div>
-                    </div>
+                    <AlertsSkeleton v-if="loading" :type="activeStatus" />
 
                     <!-- Error state -->
                     <div v-else-if="error" class="mt-6 p-4 rounded-xl bg-red-50 text-red-600 text-sm">
@@ -25,7 +23,13 @@
                             v-model:activeIndex="activeIndex"
                             :categories="enrichedCategories"
                         />
+                        <div v-if="!filteredData.length" class="mt-6 py-16 flex items-center justify-center rounded-2xl" :class="isDark ? 'bg-white/5' : 'bg-gray-50'">
+                            <p class="text-sm font-medium" :class="isDark ? 'text-white/50' : 'text-gray-500'">
+                                {{ currentLang === 'ar' ? 'لا توجد تنبيهات' : 'No alerts found' }}
+                            </p>
+                        </div>
                         <AlertsSummary
+                            v-else
                             :type="activeStatus"
                             :data="filteredData"
                             :isDark="isDark"

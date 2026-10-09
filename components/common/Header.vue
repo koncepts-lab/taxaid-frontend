@@ -181,7 +181,7 @@
               class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
             <div v-else class="w-14 h-14 rounded-full border-2 border-white shadow-sm bg-white"></div>
             <div class="flex-1">
-              <h4 class="font-medium text-[#013E32] text-sm leading-tight break-all">{{ identity?.name || '' }}</h4>
+              <h4 class="font-medium text-sm leading-tight break-all" style="color: #013E32 !important;">{{ identity?.name || '' }}</h4>
               <p class="text-sm text-[#013E32]/70 font-medium break-all">{{ identityContact }}</p>
               <NuxtLink to="/profile" class="text-[#00B68D] text-sm font-medium  mt-1 inline-block">View
                 Profile</NuxtLink>
@@ -369,7 +369,7 @@
               class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
             <div v-else class="w-14 h-14 rounded-full border-2 border-white shadow-sm bg-white"></div>
             <div class="flex-1">
-              <h4 class="font-medium text-[#013E32] text-sm leading-tight break-all">{{ identity?.name || '' }}</h4>
+              <h4 class="font-medium text-sm leading-tight break-all" style="color: #013E32 !important;">{{ identity?.name || '' }}</h4>
               <p class="text-sm text-[#013E32]/70 font-medium break-all">{{ identityContact }}</p>
               <NuxtLink to="/profile" class="text-[#00B68D] text-sm font-medium  mt-1 inline-block">View
                 Profile</NuxtLink>

@@ -37,9 +37,6 @@
     </NuxtLayout>
 </template>
 <script setup>
-import { ref } from 'vue'
-
-// You might need to import or provide isDark and currentLang
-const isDark = ref(false)
+const { isDark } = useTheme()
 const currentLang = ref('en')
 </script>

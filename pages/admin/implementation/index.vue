@@ -24,6 +24,8 @@ import { ref } from 'vue'
 // Role can be: 'member', 'lead', or 'manager'
 const userRole = ref('lead')
 const selectedProject = ref(null)
+const { isDark } = useTheme()
+const currentLang = ref('en')
 
 const handleGoToProject = (project) => {
     selectedProject.value = project
