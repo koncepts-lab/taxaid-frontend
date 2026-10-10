@@ -9,7 +9,7 @@ export function useCogs() {
   const customFrom  = useState<string | null>('cogs_custom_from', () => null)
   const customTo    = useState<string | null>('cogs_custom_to',   () => null)
 
-  async function fetchAll(lang = 'en') {
+  async function fetchAll(lang = 'en', clearCache = false) {
     _loading.value = true
     _error.value   = null
 
@@ -22,6 +22,7 @@ export function useCogs() {
         breakdownBody.custom_from = customFrom.value
         breakdownBody.custom_to   = customTo.value
       }
+      if (clearCache) breakdownBody.clear_cache = clearCache === 'all' ? 'all' : 'true'
       const breakdownRes: any = await useApi('/cogs-analysis/breakdown', {
         method: 'POST',
         body: breakdownBody,
@@ -37,6 +38,7 @@ export function useCogs() {
       if (backendRange === 'Custom Dates' && customTo.value) {
         trendBody.custom_from = customTo.value
       }
+      if (clearCache) trendBody.clear_cache = clearCache === 'all' ? 'all' : 'true'
       const trendRes: any = await useApi('/cogs-analysis/trend-chart', {
         method: 'POST',
         body: trendBody,
@@ -50,6 +52,7 @@ export function useCogs() {
       if (backendRange === 'Custom Dates' && customTo.value) {
         revenueBody.custom_from = customTo.value
       }
+      if (clearCache) revenueBody.clear_cache = clearCache === 'all' ? 'all' : 'true'
       const revenueRes: any = await useApi('/cogs-analysis/revenue-vs-cogs/trend-chart', {
         method: 'POST',
         body: revenueBody,

@@ -68,7 +68,7 @@ const fmtVariance = (v: any) => {
   return `${val.toFixed(2)}%`
 }
 
-async function fetchPLData() {
+async function fetchPLData(clearCache = false) {
   const reqId = ++_plReqSeq
   _plLoading.value = true
   _plError.value = null
@@ -80,6 +80,7 @@ async function fetchPLData() {
       payload.custom_from = fsFilters.value.custom_from
       payload.custom_to   = fsFilters.value.custom_to
     }
+    if (clearCache) payload.clear_cache = clearCache === 'all' ? 'all' : 'true'
     const res: any = await useApi('/financial-analysis/pl-maingroup-totals', { method: 'POST', body: payload })
     if (reqId !== _plReqSeq) return
     if (res?.status === 'success') {
@@ -117,7 +118,7 @@ async function fetchPLData() {
   }
 }
 
-async function fetchBSData() {
+async function fetchBSData(clearCache = false) {
   const reqId = ++_bsReqSeq
   _bsLoading.value = true
   _bsError.value = null
@@ -129,6 +130,7 @@ async function fetchBSData() {
       payload.custom_from = fsFilters.value.custom_from
       payload.custom_to   = fsFilters.value.custom_to
     }
+    if (clearCache) payload.clear_cache = clearCache === 'all' ? 'all' : 'true'
     const res: any = await useApi('/financial-analysis/bs-maingroup-totals', { method: 'POST', body: payload })
     if (reqId !== _bsReqSeq) return
     if (res?.status === 'success') {
@@ -164,7 +166,7 @@ async function fetchBSData() {
   }
 }
 
-async function fetchRatiosData() {
+async function fetchRatiosData(clearCache = false) {
   const reqId = ++_ratiosReqSeq
   _ratiosLoading.value = true
   _ratiosError.value = null
@@ -177,6 +179,7 @@ async function fetchRatiosData() {
     if (fsSelectedRatioType.value && fsSelectedRatioType.value !== 'All Ratios') {
       payload.ratio_type = fsSelectedRatioType.value
     }
+    if (clearCache) payload.clear_cache = clearCache === 'all' ? 'all' : 'true'
     const res: any = await useApi('/financial-ratios/comparative-report', { method: 'POST', body: payload })
     if (reqId !== _ratiosReqSeq) return
     if (res?.success) {
@@ -221,10 +224,10 @@ async function fetchRatiosData() {
   }
 }
 
-export async function fetchTabData(tabId: string) {
-  if (tabId === 'profit-loss')    return fetchPLData()
-  if (tabId === 'balance-sheet')  return fetchBSData()
-  if (tabId === 'ratios')         return fetchRatiosData()
+export async function fetchTabData(tabId: string, clearCache = false) {
+  if (tabId === 'profit-loss')    return fetchPLData(clearCache)
+  if (tabId === 'balance-sheet')  return fetchBSData(clearCache)
+  if (tabId === 'ratios')         return fetchRatiosData(clearCache)
 }
 
 export function useFinancialStatement() {

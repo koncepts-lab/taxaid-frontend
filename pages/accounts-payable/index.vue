@@ -134,7 +134,7 @@ const handleDateChange = (period) => {
   fetchAll(currentLang.value)
 }
 
-const handleReload = () => fetchAll(currentLang.value)
+const handleReload = () => fetchAll(currentLang.value, trackReloadClick('accounts-payable'))
 
 const firstLoad = ref(true)
 const showSkeleton = computed(() => loading.value || firstLoad.value)

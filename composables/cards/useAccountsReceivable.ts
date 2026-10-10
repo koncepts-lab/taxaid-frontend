@@ -33,7 +33,7 @@ const _requestedDate  = ref<string | null>(null)
 const _snapshotNotice = ref(false)
 const _goLiveDate     = ref<string | null>(null)
 
-async function fetchAll() {
+async function fetchAll(clearCache = false) {
   _loading.value = true
   _error.value   = null
   let date = arActiveDate.value
@@ -42,6 +42,8 @@ async function fetchAll() {
     const parts: string[] = []
     if (date) parts.push(`date=${date}`)
     if (useStrict && strict) parts.push('strict_date=1')
+    // Reload button passes clearCache=true — per-key cache wipe, all param variants.
+    if (clearCache) parts.push(`clear_cache=${clearCache === 'all' ? 'all' : 'true'}`)
     return parts.length ? `${path}?${parts.join('&')}` : path
   }
 

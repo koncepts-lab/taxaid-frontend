@@ -100,7 +100,7 @@ onMounted(async () => {
   }
 
   try {
-    const res = await $fetch('/reset-password/validate', {
+    const res = await $fetch('/partner/reset-password/validate', {
       baseURL: config.public.apiBase,
       params: { token },
     })
@@ -130,7 +130,7 @@ async function handleReset() {
 
   submitting.value = true
   try {
-    await $fetch('/reset-password', {
+    await $fetch('/partner/reset-password', {
       baseURL: config.public.apiBase,
       method: 'POST',
       body: {
