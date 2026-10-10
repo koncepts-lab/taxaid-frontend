@@ -27,7 +27,7 @@
                         :showExport="true"
                         :periods="revenuePeriods"
                         :max-range-months="12"
-                        @reload="fetchAll"
+                        @reload="() => fetchAll(trackReloadClick('revenue'))"
                         @selected-date="handleDateSelected"
                         @export="exportOpen = true"
                         @one-click-summary="handleOneClickSummary"

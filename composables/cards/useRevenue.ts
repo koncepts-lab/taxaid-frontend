@@ -9,7 +9,7 @@ export const useRevenue = () => {
   const trendRaw        = useState<any>('revenue_trend',         () => null)
   const topCustomersRaw = useState<any>('revenue_top_customers', () => null)
 
-  const fetchAll = async () => {
+  const fetchAll = async (clearCache = false) => {
     loading.value = true
     error.value   = null
     try {
@@ -18,6 +18,8 @@ export const useRevenue = () => {
       const body: Record<string, any> = { range_option: backendRangeOption, include_ledgers: true }
       if (customFrom.value) body.custom_from = customFrom.value
       if (customTo.value)   body.custom_to   = customTo.value
+      // Reload button passes clearCache=true — per-key cache wipe, all param variants.
+      if (clearCache) body.clear_cache = clearCache === 'all' ? 'all' : 'true'
 
       const [breakdown, trend, topCustomers] = await Promise.all([
         useApi('revenue-analysis/breakdown',       { method: 'POST', body }) as any,

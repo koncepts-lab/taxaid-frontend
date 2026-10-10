@@ -45,6 +45,17 @@ const { isDark } = useTheme()
 const mounted = ref(false)
 const { exportError } = useExport()
 
+if (typeof sessionStorage !== 'undefined') {
+  const tries = Number(sessionStorage.getItem('reload_tries') || '0') + 1
+  if (tries >= 5) {
+    sessionStorage.setItem('clear_cache', '1')
+    sessionStorage.setItem('reload_tries', '0')
+    setTimeout(() => sessionStorage.removeItem('clear_cache'), 3000)
+  } else {
+    sessionStorage.setItem('reload_tries', String(tries))
+  }
+}
+
 onMounted(() => {
   mounted.value = true
 })

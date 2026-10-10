@@ -29,7 +29,7 @@
                         :showPeriodToggle="true"
                         :projectionPeriod="period"
                         :periods="cashFlowPeriods"
-                        @reload="fetchProjection"
+                        @reload="() => fetchProjection(trackReloadClick('cash-flow'))"
                         @selected-date="handleDateSelected"
                         @period-change="handlePeriodChange"
                         @export="exportOpen = true"

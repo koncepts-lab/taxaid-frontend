@@ -5,11 +5,16 @@ export const useCostCenterChart = () => {
 
   const chartRaw = useState<any>('cc_chart_raw', () => null)
 
-  const fetchChart = async () => {
+  const fetchChart = async (clearCache = false) => {
     loading.value = true
     error.value   = null
     try {
-      const res = await useApi(activeDate.value ? `cost-center/revenue-by-totalexpenses?date=${activeDate.value}` : 'cost-center/revenue-by-totalexpenses') as any
+      // Reload button passes clearCache=true — per-key cache wipe, all param variants.
+      const qs: string[] = []
+      if (activeDate.value) qs.push(`date=${activeDate.value}`)
+      if (clearCache) qs.push(`clear_cache=${clearCache === 'all' ? 'all' : 'true'}`)
+      const path = qs.length ? `cost-center/revenue-by-totalexpenses?${qs.join('&')}` : 'cost-center/revenue-by-totalexpenses'
+      const res = await useApi(path) as any
       useState('cardPeriod').value = res?.period ?? null
       useState('cardToday').value = res?.today ?? null
       if (!activeDate.value && res?.as_of_date) {

@@ -32,16 +32,18 @@ const _goLiveDate     = ref<string | null>(null)
 const _hasInternalEmails = ref(true)
 const _hasMailSettings = ref(true)
 
-async function fetchAll(lang = 'en') {
+async function fetchAll(lang = 'en', clearCache = false) {
   _loading.value = true
   _error.value   = null
   let date = apActiveDate.value
   const dateParam = () => (date ? { date } : {})
   const strict = ENABLE_SNAPSHOT_FALLBACK ? {} : { strict_date: 1 }
+  // Reload button passes clearCache=true — per-key cache wipe, all param variants.
+  const clearParam = () => (clearCache ? { clear_cache: clearCache === 'all' ? 'all' : 'true' } : {})
 
   try {
     // 1. Summary table (/ap-report)
-    const summaryRes: any = await useApi('/ap-report', { params: { ...dateParam(), ...strict } })
+    const summaryRes: any = await useApi('/ap-report', { params: { ...dateParam(), ...strict, ...clearParam() } })
 
     if (!date && summaryRes?.requested_date) {
       date = summaryRes.requested_date
@@ -70,19 +72,19 @@ async function fetchAll(lang = 'en') {
     }
 
     // 2. Aging graph (/ap-report/aging)
-    const agingRes: any = await useApi('/ap-report/aging', { params: { ...dateParam(), lang, ...strict } })
+    const agingRes: any = await useApi('/ap-report/aging', { params: { ...dateParam(), lang, ...strict, ...clearParam() } })
     if (agingRes?.status === 'success') {
       _agingData.value = agingRes.payload || {}
     }
 
     // 3. Top vendors (/ap-report/top-eight)
-    const topRes: any = await useApi('/ap-report/top-eight', { params: { ...dateParam(), ...strict } })
+    const topRes: any = await useApi('/ap-report/top-eight', { params: { ...dateParam(), ...strict, ...clearParam() } })
     if (topRes?.status === 'success') {
       _topCustomers.value = topRes.payload || null
     }
 
     // 4. Historical movement (/ap-report/timeline)
-    const timelineRes: any = await useApi('/ap-report/timeline', { params: { ...dateParam() } })
+    const timelineRes: any = await useApi('/ap-report/timeline', { params: { ...dateParam(), ...clearParam() } })
     if (timelineRes?.status === 'success' && timelineRes.payload) {
       const ranges = timelineRes.payload.ranges || []
       _timelineData.value = {

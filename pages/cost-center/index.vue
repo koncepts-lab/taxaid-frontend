@@ -21,7 +21,7 @@
             :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
             :periods="costCenterPeriods"
             @export="exportOpen = true"
-            @selected-date="handleDateChange" @reload="fetchData" @one-click-summary="handleOneClickSummary" />
+            @selected-date="handleDateChange" @reload="() => fetchData(trackReloadClick('cost-center'))" @one-click-summary="handleOneClickSummary" />
           <div class="my-8">
             <CostCenterSummary ref="summaryRef" />
           </div>
@@ -93,12 +93,12 @@ const costCenterPeriods = [
   { en: 'Custom Date', ar: 'تاريخ مخصص' },    // ✅ maps to ?date=dd-MM-yyyy
 ]
 
-const fetchData = async () => {
+const fetchData = async (clearCache = false) => {
   if (headerRef.value) headerRef.value.resetToDefault()
   ccDate.value = ''
   await Promise.all([
     summaryRef.value?.fetchSummaryData(''),
-    fetchChart()
+    fetchChart(clearCache)
   ])
 }
 

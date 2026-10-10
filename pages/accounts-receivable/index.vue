@@ -131,7 +131,7 @@ const handleDateChange = (period) => {
   fetchAll()
 }
 
-const handleReload = () => fetchAll()
+const handleReload = () => fetchAll(trackReloadClick('accounts-receivable'))
 
 const firstLoad = ref(true)
 const showSkeleton = computed(() => loading.value || firstLoad.value)

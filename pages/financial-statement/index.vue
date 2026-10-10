@@ -18,7 +18,7 @@
                         :subtitle="{ en: 'Income, balance sheet, and financial ratios overview.', ar: 'نظرة عامة على الدخل والميزانية العمومية والنسب المالية.' }"
                         :periods="customPeriods"
                         @selected-date="handleDateUpdate"
-                        @reload="fetchTabData(activeTab)"
+                        @reload="fetchTabData(activeTab, trackReloadClick('financial-statement'))"
                         @export="exportOpen = true"
                         @one-click-summary="handleOneClickSummary" />
 

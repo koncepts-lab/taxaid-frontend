@@ -8,7 +8,7 @@ export const useCashFlow = () => {
   const activeDate = useState<string | null>('cashflow_date', () => null)
   const showLastYearFallback = useState<boolean>('cashflow_show_last_year_fallback', () => true)
 
-  const fetchProjection = async () => {
+  const fetchProjection = async (clearCache = false) => {
     loading.value = true
     error.value   = null
     try {
@@ -17,6 +17,8 @@ export const useCashFlow = () => {
       params.set('period',   String(period.value))
       params.set('scenario', scenario.value)
       params.set('show_last_year_fallback', showLastYearFallback.value ? '1' : '0')
+      // Reload button passes clearCache=true — per-key cache wipe, all param variants.
+      if (clearCache) params.set('clear_cache', clearCache === 'all' ? 'all' : 'true')
 
       const res = await useApi(`/cash-flow/projection?${params.toString()}`) as any
       useState('cardPeriod').value = res.period ?? null

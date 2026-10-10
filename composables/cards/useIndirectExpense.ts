@@ -9,7 +9,7 @@ export function useIndirectExpense() {
   const customFrom  = useState<string | null>('ie_custom_from', () => null)
   const customTo    = useState<string | null>('ie_custom_to',   () => null)
 
-  async function fetchAll(lang = 'en') {
+  async function fetchAll(lang = 'en', clearCache = false) {
     _loading.value = true
     _error.value   = null
 
@@ -22,6 +22,7 @@ export function useIndirectExpense() {
         breakdownBody.custom_from = customFrom.value
         breakdownBody.custom_to   = customTo.value
       }
+      if (clearCache) breakdownBody.clear_cache = clearCache === 'all' ? 'all' : 'true'
       const breakdownRes: any = await useApi('/indirectexpenses-analysis/breakdown', {
         method: 'POST',
         body: breakdownBody,
@@ -37,6 +38,7 @@ export function useIndirectExpense() {
       if (backendRange === 'Custom Dates' && customTo.value) {
         trendBody.custom_from = customTo.value
       }
+      if (clearCache) trendBody.clear_cache = clearCache === 'all' ? 'all' : 'true'
       const trendRes: any = await useApi('/indirectexpenses-analysis/trend-chart', {
         method: 'POST',
         body: trendBody,
@@ -50,6 +52,7 @@ export function useIndirectExpense() {
       if (backendRange === 'Custom Dates' && customTo.value) {
         evrBody.custom_from = customTo.value
       }
+      if (clearCache) evrBody.clear_cache = clearCache === 'all' ? 'all' : 'true'
       const evrRes: any = await useApi('/indirectexpenses-analysis/expense-vs-revenue/trend-chart', {
         method: 'POST',
         body: evrBody,

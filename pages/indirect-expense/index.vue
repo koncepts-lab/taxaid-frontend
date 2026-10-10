@@ -128,7 +128,7 @@ const handleDateChange = (periodData) => {
     fetchAll(currentLang.value)
 }
 
-const handleReload = () => fetchAll(currentLang.value)
+const handleReload = () => fetchAll(currentLang.value, trackReloadClick('indirect-expense'))
 
 const { openOneClickSummary } = useAkeel()
 const handleOneClickSummary = () => openOneClickSummary('INDIRECT_EXPENSE', 'onclick_indirect_expense')
