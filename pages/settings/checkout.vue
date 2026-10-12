@@ -100,11 +100,12 @@
 
               <div class="space-y-6">
                 <div>
-                  <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">Company Name</label>
+                  <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">Company Name <span class="text-red-500">*</span></label>
                   <input v-model="billing.company_name" type="text"
                     class="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]"
-                    :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white text-gray-900'"
-                    :style="!isDark ? { borderColor: '#A2E8D6' } : {}" />
+                    :class="[isDark ? 'bg-white/5 text-white' : 'bg-white text-gray-900', billingErrors.company_name ? 'border-red-500 ring-1 ring-red-500' : (isDark ? 'border-white/10' : '')]"
+                    :style="!isDark && !billingErrors.company_name ? { borderColor: '#A2E8D6' } : {}" />
+                  <p v-if="billingErrors.company_name" class="text-xs text-red-500 mt-1">{{ billingErrors.company_name }}</p>
                 </div>
 
                 <div>
@@ -116,20 +117,22 @@
                 </div>
 
                 <div>
-                  <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">Street Address</label>
+                  <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">Street Address <span class="text-red-500">*</span></label>
                   <input v-model="billing.street_address" type="text"
                     class="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]"
-                    :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white text-gray-900'"
-                    :style="!isDark ? { borderColor: '#A2E8D6' } : {}" />
+                    :class="[isDark ? 'bg-white/5 text-white' : 'bg-white text-gray-900', billingErrors.street_address ? 'border-red-500 ring-1 ring-red-500' : (isDark ? 'border-white/10' : '')]"
+                    :style="!isDark && !billingErrors.street_address ? { borderColor: '#A2E8D6' } : {}" />
+                  <p v-if="billingErrors.street_address" class="text-xs text-red-500 mt-1">{{ billingErrors.street_address }}</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">City</label>
+                    <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">City <span class="text-red-500">*</span></label>
                     <input v-model="billing.city" type="text"
                       class="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]"
-                      :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white text-gray-900'"
-                      :style="!isDark ? { borderColor: '#A2E8D6' } : {}" />
+                      :class="[isDark ? 'bg-white/5 text-white' : 'bg-white text-gray-900', billingErrors.city ? 'border-red-500 ring-1 ring-red-500' : (isDark ? 'border-white/10' : '')]"
+                      :style="!isDark && !billingErrors.city ? { borderColor: '#A2E8D6' } : {}" />
+                    <p v-if="billingErrors.city" class="text-xs text-red-500 mt-1">{{ billingErrors.city }}</p>
                   </div>
                   <div>
                     <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">State</label>
@@ -149,15 +152,16 @@
                       :style="!isDark ? { borderColor: '#A2E8D6' } : {}" />
                   </div>
                   <div>
-                    <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">Country</label>
+                    <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">Country <span class="text-red-500">*</span></label>
                     <input v-model="billing.country" type="text"
                       class="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]"
-                      :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white text-gray-900'"
-                      :style="!isDark ? { borderColor: '#A2E8D6' } : {}" />
+                      :class="[isDark ? 'bg-white/5 text-white' : 'bg-white text-gray-900', billingErrors.country ? 'border-red-500 ring-1 ring-red-500' : (isDark ? 'border-white/10' : '')]"
+                      :style="!isDark && !billingErrors.country ? { borderColor: '#A2E8D6' } : {}" />
+                    <p v-if="billingErrors.country" class="text-xs text-red-500 mt-1">{{ billingErrors.country }}</p>
                   </div>
                 </div>
 
-                <button @click="step = 2" type="button" class="w-full mt-4 bg-[#00896F] text-white py-3.5 rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm">
+                <button @click="continueToPayment" type="button" class="w-full mt-4 bg-[#00896F] text-white py-3.5 rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm">
                   Continue to Payment
                 </button>
               </div>
@@ -165,42 +169,70 @@
 
             <!-- Step 2: Payment Method -->
             <div v-else-if="step === 2" class="rounded-2xl border p-8 shadow-sm transition-colors" :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border-gray-100'">
-              <h2 class="text-[20px] font-medium mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">Payment Details</h2>
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h2 class="text-[20px] font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">Payment Details</h2>
+                  <p class="text-[14px] mt-1" :class="isDark ? 'text-white/60' : 'text-gray-500'">
+                    {{ savedCards.length ? 'Choose a saved card or enter new card details' : 'Enter your card details to subscribe' }}
+                  </p>
+                </div>
+                <button
+                  v-if="savedCards.length && !useNewCard"
+                  type="button"
+                  @click="switchToNewCard"
+                  class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors"
+                  :class="isDark ? 'bg-white/10 text-white hover:bg-white/15' : 'bg-[#E6F8F3] text-[#00896F] hover:bg-[#D1F2E8]'"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                  Add New Card
+                </button>
+                <button
+                  v-else-if="savedCards.length && useNewCard"
+                  type="button"
+                  @click="switchToSavedCards"
+                  class="text-sm font-medium text-[#00896F] hover:underline"
+                >
+                  Back to saved cards
+                </button>
+              </div>
 
-              <!-- Saved cards, offered first — skips re-entering card details entirely -->
-              <template v-if="savedCards.length && !useNewCard">
-                <p class="text-[14px] mb-6" :class="isDark ? 'text-white/60' : 'text-gray-500'">Choose a saved card, or add a different one</p>
-                <div class="space-y-3 mb-4">
-                  <div
-                    v-for="card in savedCards"
-                    :key="card.id"
-                    @click="selectedCardId = card.id"
-                    :class="['border rounded-2xl p-6 flex items-center justify-between cursor-pointer transition-colors', selectedCardId === card.id ? (isDark ? 'border-[#04C18F] bg-teal-950/40' : 'border-[#04C18F]') : (isDark ? 'border-white/10 bg-[#002e26] hover:border-white/20' : 'border-gray-200 hover:border-gray-300')]"
-                    :style="!isDark && selectedCardId === card.id ? 'background: linear-gradient(90deg, #F0FDFA 0%, #F0FDF4 100%);' : ''"
-                  >
-                    <div class="flex items-center gap-4">
-                      <div class="w-12 h-8 rounded flex items-center justify-center shrink-0" :class="isDark ? 'bg-teal-500/20 text-[#04C18F]' : 'bg-[#DCFCE7] text-[#00A63E]'">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
-                      </div>
-                      <div>
-                        <p class="text-[14px] font-medium capitalize" :class="isDark ? 'text-white' : 'text-gray-900'">{{ card.card_brand }} •••• {{ card.card_last4 }}</p>
-                        <p class="text-[12px]" :class="isDark ? 'text-white/50' : 'text-gray-500'">Expires {{ String(card.card_exp_month).padStart(2, '0') }}/{{ card.card_exp_year }}</p>
-                      </div>
+              <!-- Saved cards list -->
+              <div v-if="savedCards.length && !useNewCard" class="space-y-3 mb-6">
+                <div
+                  v-for="card in savedCards"
+                  :key="card.id"
+                  @click="selectedCardId = card.id; cardError = ''"
+                  :class="['border rounded-2xl p-6 flex items-center justify-between cursor-pointer transition-colors', selectedCardId === card.id ? (isDark ? 'border-[#04C18F] bg-teal-950/40' : 'border-[#04C18F]') : (isDark ? 'border-white/10 bg-[#002e26] hover:border-white/20' : 'border-gray-200 hover:border-gray-300')]"
+                  :style="!isDark && selectedCardId === card.id ? 'background: linear-gradient(90deg, #F0FDFA 0%, #F0FDF4 100%);' : ''"
+                >
+                  <div class="flex items-center gap-4">
+                    <div class="w-12 h-8 rounded flex items-center justify-center shrink-0" :class="isDark ? 'bg-teal-500/20 text-[#04C18F]' : 'bg-[#DCFCE7] text-[#00A63E]'">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
                     </div>
-                    <div :class="['w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0', selectedCardId === card.id ? 'border-[#04C18F]' : (isDark ? 'border-white/20' : 'border-gray-300')]">
-                      <div v-if="selectedCardId === card.id" class="w-2.5 h-2.5 rounded-full bg-[#04C18F]"></div>
+                    <div>
+                      <p class="text-[14px] font-medium capitalize" :class="isDark ? 'text-white' : 'text-gray-900'">{{ card.card_brand }} •••• {{ card.card_last4 }}</p>
+                      <p class="text-[12px]" :class="isDark ? 'text-white/50' : 'text-gray-500'">Expires {{ String(card.card_exp_month).padStart(2, '0') }}/{{ card.card_exp_year }}</p>
                     </div>
                   </div>
+                  <div :class="['w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0', selectedCardId === card.id ? 'border-[#04C18F]' : (isDark ? 'border-white/20' : 'border-gray-300')]">
+                    <div v-if="selectedCardId === card.id" class="w-2.5 h-2.5 rounded-full bg-[#04C18F]"></div>
+                  </div>
                 </div>
-                <button type="button" @click="switchToNewCard" class="text-sm text-[#00896F] font-medium hover:underline mb-2">Use a different card</button>
-              </template>
 
-              <!-- New card entry -->
-              <template v-else>
-                <p class="text-[14px] mb-8" :class="isDark ? 'text-white/60' : 'text-gray-500'">Enter your card details to subscribe</p>
+                <div
+                  @click="switchToNewCard"
+                  class="border-2 border-dashed rounded-2xl p-5 flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                  :class="isDark ? 'border-white/10 hover:border-white/25 text-white/70 hover:text-white' : 'border-gray-200 hover:border-[#00896F] text-gray-600 hover:text-[#00896F]'"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                  <span class="text-sm font-medium">Add a new card</span>
+                </div>
+              </div>
+
+              <!-- New card input -->
+              <div v-show="!savedCards.length || useNewCard" class="mb-4">
                 <div id="card-element" class="border rounded-lg px-4 py-3.5" :class="isDark ? 'bg-white/5 border-white/10' : 'bg-white'" :style="!isDark ? { borderColor: '#A2E8D6' } : {}"></div>
-                <button v-if="savedCards.length" type="button" @click="useNewCard = false" class="text-sm text-[#00896F] font-medium hover:underline mt-2">Use saved card instead</button>
-              </template>
+              </div>
 
               <p v-if="cardError" class="text-sm text-red-500 mt-2">{{ cardError }}</p>
 
@@ -386,6 +418,32 @@ const useNewCard = ref(false)
 const selectedCard = computed(() => savedCards.value.find((c: any) => c.id === selectedCardId.value) || null)
 const isFirstPayment = ref(true)
 const billing = ref<any>({ company_name: '', tax_id: '', street_address: '', city: '', state: '', zip_code: '', country: '' })
+const billingErrors = ref<Record<string, string>>({})
+
+const isCardComplete = ref(false)
+const isCardEmpty = ref(true)
+
+const continueToPayment = () => {
+  billingErrors.value = {}
+  if (!billing.value.company_name?.trim()) {
+    billingErrors.value.company_name = 'Company Name is required'
+  }
+  if (!billing.value.street_address?.trim()) {
+    billingErrors.value.street_address = 'Street Address is required'
+  }
+  if (!billing.value.city?.trim()) {
+    billingErrors.value.city = 'City is required'
+  }
+  if (!billing.value.country?.trim()) {
+    billingErrors.value.country = 'Country is required'
+  }
+
+  if (Object.keys(billingErrors.value).length > 0) {
+    return
+  }
+
+  step.value = 2
+}
 
 const priceField = computed(() => cycle === 'monthly' ? 'monthly_price' : 'annual_price')
 const currency = computed(() => plan.value?.current_version?.currency || 'AED')
@@ -408,7 +466,18 @@ let elements: StripeElements | null = null
 let cardElement: StripeCardElement | null = null
 
 async function mountCardElement() {
-  if (cardElement) return // already mounted
+  await nextTick()
+  const el = document.getElementById('card-element')
+  if (!el) return
+
+  if (cardElement) {
+    try {
+      cardElement.unmount()
+      cardElement.destroy()
+    } catch {}
+    cardElement = null
+  }
+
   const config = useRuntimeConfig()
   if (!stripe) stripe = await loadStripe(config.public.stripePublishableKey as string)
   if (!stripe) return
@@ -416,20 +485,28 @@ async function mountCardElement() {
   elements = stripe.elements()
   cardElement = elements.create('card', { style: { base: { fontSize: '14px' } } })
 
-  await nextTick()
   cardElement.mount('#card-element')
   cardElement.on('change', (event) => {
+    isCardComplete.value = !!event.complete
+    isCardEmpty.value = !!event.empty
     cardError.value = event.error?.message || ''
   })
 }
 
 function switchToNewCard() {
   useNewCard.value = true
+  cardError.value = ''
   nextTick(() => mountCardElement())
 }
 
-// #card-element only exists in the DOM once step reaches 2, so mounting must wait for that —
-// mounting eagerly in onMounted() targets a node that isn't rendered yet and silently no-ops.
+function switchToSavedCards() {
+  useNewCard.value = false
+  cardError.value = ''
+  if (!selectedCardId.value && savedCards.value.length) {
+    selectedCardId.value = (savedCards.value.find((pm: any) => pm.is_default) || savedCards.value[0] || null)?.id ?? null
+  }
+}
+
 watch(step, (newStep) => {
   if (newStep === 2 && (!savedCards.value.length || useNewCard.value)) {
     nextTick(() => mountCardElement())
@@ -437,7 +514,21 @@ watch(step, (newStep) => {
 })
 
 function goToReview() {
-  if ((!selectedCard.value || useNewCard.value) && (!stripe || !cardElement)) return
+  cardError.value = ''
+  const isUsingSaved = savedCards.value.length > 0 && !useNewCard.value
+
+  if (isUsingSaved) {
+    if (!selectedCardId.value || !selectedCard.value) {
+      cardError.value = 'Please select a payment method.'
+      return
+    }
+  } else {
+    if (!cardElement || isCardEmpty.value || !isCardComplete.value) {
+      cardError.value = cardError.value || 'Please enter valid and complete card details.'
+      return
+    }
+  }
+
   step.value = 3
 }
 
