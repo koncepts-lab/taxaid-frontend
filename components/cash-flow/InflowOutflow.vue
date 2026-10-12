@@ -98,10 +98,11 @@ const peak = computed(() => Math.max(0, ...rawSeries.value.flatMap(s => s.dataRa
 
 const chartSeries = computed(() => {
   const plot = plotter(peak.value)
+  const shift = unit.value === 'normal' ? 16 : 10
   return rawSeries.value.map((s, idx) => ({
     name: currentLang.value === 'ar' ? (s.nameAr || s.name) : s.name,
     data: (s.dataRaw ?? []).map(plot),
-    dataLabels: { offsetX: idx === 0 ? -12 : 12 }
+    dataLabels: { offsetX: idx === 0 ? -shift : shift }
   }))
 })
 
@@ -119,7 +120,7 @@ const chartOptions = computed(() => ({
   plotOptions: {
     bar: {
       horizontal: false,
-      columnWidth: isModalOpen.value ? '75%' : '70%',
+      columnWidth: '70%',
       borderRadius: 5,
       borderRadiusApplication: 'end',
       borderRadiusWhenStacked: 'last',
@@ -130,11 +131,11 @@ const chartOptions = computed(() => ({
   },
   dataLabels: {
     enabled: true,
-    offsetY: -40,
+    offsetY: -35,
     style: {
-      fontSize: '12px',
+      fontSize: '9.5px',
       colors: ['#00B793CF'],
-      fontWeight: 400
+      fontWeight: 500
     },
     formatter: function (val: number) {
       return val === 0 ? '0' : axisFmt(val)
@@ -160,6 +161,7 @@ const chartOptions = computed(() => ({
     max: axisFor(peak.value).max,
     tickAmount: axisFor(peak.value).ticks,
     labels: {
+      minWidth: 75,
       formatter: (value: number) => value === 0 ? '0' : axisFmt(value),
       style: { colors: '#FFFFFF', fontSize: '13px', fontWeight: 500 }
     },
@@ -176,7 +178,7 @@ const chartOptions = computed(() => ({
     strokeDashArray: 0,
     xaxis: { lines: { show: false } },
     yaxis: { lines: { show: true } },
-    padding: { top: 20, right: 20, bottom: 0, left: 10 }
+    padding: { top: 35, right: 20, bottom: 0, left: 15 }
   },
   tooltip: {
     custom: function({series, seriesIndex, dataPointIndex, w}: any) {

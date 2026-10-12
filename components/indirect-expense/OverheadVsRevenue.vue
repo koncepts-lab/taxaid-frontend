@@ -130,14 +130,17 @@ const peak = computed(() => Math.max(0, ...rawOverhead.value, ...rawRevenue.valu
 
 const chartSeries = computed(() => {
   const plot = plotter(peak.value)
+  const shift = unit.value === 'normal' ? 16 : 10
   return [
     {
       name: currentLang.value === 'ar' ? 'النفقات العامة' : 'Overhead',
-      data: rawOverhead.value.map(plot)
+      data: rawOverhead.value.map(plot),
+      dataLabels: { offsetX: -shift }
     },
     {
       name: currentLang.value === 'ar' ? 'الإيرادات' : 'Revenue',
-      data: rawRevenue.value.map(plot)
+      data: rawRevenue.value.map(plot),
+      dataLabels: { offsetX: shift }
     }
   ]
 })
@@ -161,7 +164,7 @@ const chartOptions = computed(() => {
     plotOptions: {
       bar: {
         horizontal: false,
-        columnWidth: '55%',
+        columnWidth: '70%',
         borderRadius: 4,
         dataLabels: { position: 'top' }
       }
@@ -169,9 +172,10 @@ const chartOptions = computed(() => {
     dataLabels: {
       enabled: true,
       formatter: (val: number) => (!val ? '0' : axisFmt(val)),
-      offsetY: -20,
+      offsetY: -30,
       style: {
-        fontSize: '10px',
+        fontSize: '9.5px',
+        fontWeight: 500,
         colors: [isDark.value ? '#ffffff80' : '#33333380']
       }
     },
@@ -194,6 +198,7 @@ const chartOptions = computed(() => {
       max: axis.value.max,
       tickAmount: axis.value.ticks,
       labels: {
+        minWidth: 75,
         formatter: (value: number) => value === 0 ? '0' : axisFmt(value),
         style: { colors: isDark.value ? '#FFFFFFBF' : '#333333BF', fontSize: '13px', fontWeight: 400 }
       }
@@ -203,6 +208,7 @@ const chartOptions = computed(() => {
       strokeDashArray: 0,
       xaxis: { lines: { show: false } },
       yaxis: { lines: { show: true } },
+      padding: { top: 35, right: 20, bottom: 0, left: 15 }
     },
     tooltip: {
       custom: function({ dataPointIndex }: any) {
