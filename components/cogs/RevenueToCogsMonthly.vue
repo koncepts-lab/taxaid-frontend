@@ -117,16 +117,17 @@ const months = computed(() => {
 
 const series = computed(() => {
   if (props.data && props.data.length > 0) {
+    const shift = unit.value === 'normal' ? 16 : 10
     return [
       {
         name: 'COGS',
         data: props.data.map(item => Number(item.cogs) || 0),
-        dataLabels: { offsetX: -12 }
+        dataLabels: { offsetX: -shift }
       },
       {
         name: 'Revenue',
         data: props.data.map(item => Number(item.revenue) || 0),
-        dataLabels: { offsetX: 12 }
+        dataLabels: { offsetX: shift }
       }
     ]
   }
@@ -149,7 +150,7 @@ const chartOptions = computed(() => {
     },
     plotOptions: {
       bar: {
-        columnWidth: '45%',
+        columnWidth: '70%',
         borderRadius: 4,
         borderRadiusApplication: 'end',
         dataLabels: {
@@ -162,7 +163,8 @@ const chartOptions = computed(() => {
       enabled: true,
       offsetY: -30,
       style: {
-        fontSize: '10px',
+        fontSize: '9.5px',
+        fontWeight: 500,
         colors: [isDark.value ? '#FFFFFF' : '#005A48']
       },
       formatter: (val) => axisFmt(val)
@@ -196,6 +198,7 @@ const chartOptions = computed(() => {
       },
       axisTicks: { show: false },
       labels: {
+        minWidth: 75,
         style: {
           fontSize: '12px',
           colors: isDark.value ? '#FFFFFFBF' : '#00000099'
@@ -209,7 +212,7 @@ const chartOptions = computed(() => {
       strokeDashArray: 0,
       xaxis: { lines: { show: false } },
       yaxis: { lines: { show: true } },
-      padding: { top: 20, right: 20, bottom: 0, left: 10 }
+      padding: { top: 35, right: 20, bottom: 0, left: 15 }
     },
     states: {
       hover: {

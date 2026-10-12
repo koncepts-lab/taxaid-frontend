@@ -236,10 +236,13 @@ const peak = computed(() => Math.max(0, ...rawCost.value, ...rawRevenue.value))
 const minVisible = computed(() => peak.value * 0.025)
 const plot = (value) => (value > 0 && value < minVisible.value ? minVisible.value : value)
 
-const series = computed(() => [
-  { name: 'Cost', data: rawCost.value.map(plot) },
-  { name: 'Revenue', data: rawRevenue.value.map(plot) }
-])
+const series = computed(() => {
+  const shift = unit.value === 'normal' ? 16 : 10
+  return [
+    { name: 'Cost', data: rawCost.value.map(plot), dataLabels: { offsetX: -shift } },
+    { name: 'Revenue', data: rawRevenue.value.map(plot), dataLabels: { offsetX: shift } }
+  ]
+})
 
 // Axis top comes from the data, rounded up to a clean step, with headroom for the bar labels.
 const axis = computed(() => {
@@ -267,12 +270,11 @@ const chartOptions = computed(() => ({
   },
   plotOptions: {
     bar: {
-      columnWidth: '55%',
+      columnWidth: '70%',
       borderRadius: 4,
       borderRadiusApplication: 'end',
       dataLabels: {
-        position: 'top',
-        orientation: windowWidth.value < 768 ? 'vertical' : 'horizontal'
+        position: 'top'
       },
     }
   },
@@ -281,7 +283,8 @@ const chartOptions = computed(() => ({
     enabled: true,
     offsetY: -35,
     style: {
-      fontSize: '11px',
+      fontSize: '9.5px',
+      fontWeight: 500,
       colors: ['#FB7554', '#03D8B0']
     },
     formatter: (val, { seriesIndex, dataPointIndex }) => {
@@ -318,6 +321,7 @@ const chartOptions = computed(() => ({
     },
     axisTicks: { show: false },
     labels: {
+      minWidth: 75,
       style: {
         fontSize: '12px',
         colors: '#FFFFFFBF'
@@ -331,7 +335,7 @@ const chartOptions = computed(() => ({
     strokeDashArray: 0,
     xaxis: { lines: { show: false } },
     yaxis: { lines: { show: true } },
-    padding: { top: 40, right: 20, bottom: 0, left: 10 }
+    padding: { top: 35, right: 20, bottom: 0, left: 15 }
   },
   states: {
     hover: { filter: { type: 'none' } },
