@@ -24,7 +24,7 @@
                     </div>
                 </div>
                 <div class="flex-shrink-0">
-                    <img :src="stat.icon" :alt="stat.label" class="w-10 h-10" />
+                    <img :src="stat.icon" :alt="stat.label" class="w-10 h-10 transition-all" :class="isDark ? 'brightness-0 invert opacity-90' : ''" />
                 </div>
             </div>
         </div>

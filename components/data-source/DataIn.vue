@@ -1,7 +1,8 @@
 <template>
     <!-- Existing Documents Upload Grid (budget excluded) -->
-    <div class="space-y-6 bg-white p-6 rounded-xl transition-all duration-300">
-        <h2 class="text-lg text-black">{{ userType === 'client' ? 'Uploaded Documents' :
+    <div class="space-y-6 p-6 rounded-xl transition-all duration-300"
+        :class="isDark ? 'bg-[#002e26]' : 'bg-white shadow-sm'">
+        <h2 class="text-lg" :class="isDark ? 'text-white' : 'text-black'">{{ userType === 'client' ? 'Uploaded Documents' :
             'Upload Documents' }}</h2>
         <div v-if="userType === 'admin'"
             class="p-4 rounded-xl border flex items-center gap-3 transition-all duration-300"
@@ -18,7 +19,7 @@
         <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div v-for="i in 12" :key="'skeleton-'+i"
                 class="rounded-[20px] p-6 border relative animate-pulse"
-                :class="isDark ? 'bg-[#015F4D]/20 border-[#00B794]/30' : 'border-[#04C18F80] bg-[#00FFBC1F] shadow-sm'">
+                :class="isDark ? 'bg-white/5 border-white/10' : 'border-[#04C18F80] bg-[#00FFBC1F] shadow-sm'">
                 <div class="flex justify-between items-start mb-6">
                     <div class="h-7 rounded w-1/2" :class="isDark ? 'bg-white/10' : 'bg-[#008169]/10'"></div>
                 </div>
@@ -204,9 +205,9 @@
         </div>
     </div>
 
-    <!-- Budget Upload Section -->
-    <div class="space-y-6 bg-white p-6 rounded-xl border transition-all duration-300">
-        <h2 class="text-lg text-black">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</h2>
+    <div class="space-y-6 p-6 rounded-xl transition-all duration-300"
+        :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border border-gray-100 shadow-sm'">
+        <h2 class="text-lg" :class="isDark ? 'text-white' : 'text-black'">{{ currentLang === 'ar' ? 'الميزانية' : 'Budget' }}</h2>
 
         <!-- Tab row -->
         <div class="flex flex-wrap gap-2">

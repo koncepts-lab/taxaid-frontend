@@ -136,7 +136,7 @@ export function useDashboard() {
     if (!d?.labels?.length) return null
     return {
       labels: d.labels,
-      labelsAr: d.labels,
+      labelsAr: d.labelsAr ?? d.labels,
       series: d.series,
     }
   })

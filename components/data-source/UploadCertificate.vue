@@ -1,23 +1,27 @@
 <template>
-    <div class="p-6 space-y-6 bg-gray-50/30 min-h-screen">
+    <div class="p-6 space-y-6 min-h-screen" :class="isDark ? 'bg-transparent' : 'bg-gray-50/30'">
 
-        <div class="bg-[#FFFBEB] border border-[#FEF3C7] rounded-xl p-4 flex items-start gap-3">
-            <div class="w-5 h-5 rounded-full border border-[#B45309] flex items-center justify-center shrink-0 mt-0.5">
-                <span class="text-[#B45309] text-xs font-bold">i</span>
+        <div class="rounded-xl p-4 flex items-start gap-3 border transition-all duration-300"
+            :class="isDark ? 'bg-[#002e26] border-amber-500/30' : 'bg-[#FFFBEB] border-[#FEF3C7]'">
+            <div class="w-5 h-5 rounded-full border flex items-center justify-center shrink-0 mt-0.5"
+                :class="isDark ? 'border-amber-400 text-amber-400' : 'border-[#B45309] text-[#B45309]'">
+                <span class="text-xs font-bold">i</span>
             </div>
-            <p class="text-sm text-[#B45309] leading-relaxed">
+            <p class="text-sm leading-relaxed"
+                :class="isDark ? 'text-amber-200/90' : 'text-[#B45309]'">
                 Upload certificates for VAT returns, Corporate Tax (CT) returns, and other compliance documents. These
                 certificates ensure secure authentication for tax filing and regulatory compliance.
             </p>
         </div>
 
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+        <div class="rounded-2xl shadow-sm p-8 transition-all duration-300"
+            :class="isDark ? 'bg-[#002e26] border border-white/5' : 'bg-white border border-gray-100'">
             <div class="flex items-center gap-3 mb-1">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    class="text-gray-700">
+                    :class="isDark ? 'text-white/70' : 'text-gray-700'">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
                 </svg>
-                <h2 class="text-lg font-normal text-gray-900">Upload New Certificate</h2>
+                <h2 class="text-lg font-normal" :class="isDark ? 'text-white' : 'text-gray-900'">Upload New Certificate</h2>
             </div>
             <p class="text-base text-[#717182] mb-8">
                 Upload certificate files (.pdf) for compliance and authentication
@@ -26,12 +30,15 @@
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
                 <!-- Certificate Type Dropdown -->
                 <div class="md:col-span-4 space-y-2">
-                    <label class="text-base font-normal text-black">Certificate Type</label>
+                    <label class="text-base font-normal" :class="isDark ? 'text-white' : 'text-black'">Certificate Type</label>
                     <div class="relative mt-2" ref="dropdownRef">
                         <button type="button" @click="isOpen = !isOpen"
-                            class="w-full flex items-center justify-between p-2.5 bg-white border rounded-lg text-sm transition-all outline-none"
-                            :class="isOpen ? 'border-[#008169] ring-1 ring-[#008169]' : 'border-gray-200'">
-                            <span :class="form.type ? 'text-black' : 'text-gray-400'">
+                            class="w-full flex items-center justify-between p-2.5 border rounded-lg text-sm transition-all outline-none"
+                            :class="[
+                                isDark ? 'bg-black/20 text-white' : 'bg-white text-black',
+                                isOpen ? 'border-[#008169] ring-1 ring-[#008169]' : isDark ? 'border-white/10' : 'border-gray-200'
+                            ]">
+                            <span :class="form.type ? (isDark ? 'text-white' : 'text-black') : 'text-gray-400'">
                                 {{ form.type || 'Select type' }}
                             </span>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -43,11 +50,12 @@
 
                         <transition name="fade-slide">
                             <div v-if="isOpen"
-                                class="absolute z-20 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] p-2">
+                                class="absolute z-20 w-full mt-2 rounded-2xl shadow-xl p-2 border"
+                                :class="isDark ? 'bg-[#00251E] border-white/10 text-white' : 'bg-white border-gray-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)]'">
                                 <div v-for="option in types" :key="option"
                                     @click="selectOption(option)"
                                     class="px-4 py-2.5 text-sm rounded-xl cursor-pointer transition-colors"
-                                    :class="form.type === option ? 'bg-[#E6FDF9] text-[#008169] font-medium' : 'text-gray-700 hover:bg-[#E6FDF9] hover:text-[#008169]'">
+                                    :class="form.type === option ? (isDark ? 'bg-[#008169]/30 text-[#00C9A2] font-medium' : 'bg-[#E6FDF9] text-[#008169] font-medium') : (isDark ? 'text-white/80 hover:bg-white/10' : 'text-gray-700 hover:bg-[#E6FDF9] hover:text-[#008169]')">
                                     {{ option }}
                                 </div>
                             </div>
@@ -57,14 +65,16 @@
 
                 <!-- File Input -->
                 <div class="md:col-span-4 space-y-2">
-                    <label class="text-base font-normal text-black">Certificate File</label>
-                    <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden h-[42px] mt-2">
+                    <label class="text-base font-normal" :class="isDark ? 'text-white' : 'text-black'">Certificate File</label>
+                    <div class="flex items-center border rounded-lg overflow-hidden h-[42px] mt-2"
+                        :class="isDark ? 'border-white/10 bg-black/20' : 'border-gray-200 bg-white'">
                         <label
-                            class="bg-white px-4 py-2 text-base font-semibold text-gray-900 border-gray-200 cursor-pointer hover:bg-gray-50">
+                            class="px-4 py-2 text-base font-semibold cursor-pointer transition-colors"
+                            :class="isDark ? 'bg-white/10 text-white hover:bg-white/15' : 'bg-white text-gray-900 border-gray-200 hover:bg-gray-50'">
                             Choose File
                             <input ref="fileInputRef" type="file" class="hidden" accept=".pdf" @change="handleFileChange" />
                         </label>
-                        <span class="px-4 text-base text-gray-500 truncate">
+                        <span class="px-4 text-base truncate" :class="isDark ? 'text-white/70' : 'text-gray-500'">
                             {{ form.fileName || 'No file chosen' }}
                         </span>
                     </div>
@@ -91,12 +101,13 @@
         </div>
 
         <!-- Uploaded Certificates List -->
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+        <div class="rounded-2xl shadow-sm p-8 transition-all duration-300"
+            :class="isDark ? 'bg-[#002e26] border border-white/5' : 'bg-white border border-gray-100'">
             <div class="flex items-center gap-3 mb-1">
-                <img src="/images/icons/Upload-Certificate.svg" class="w-5 h-5 transition-all" alt="Upload Certificate">
-                <h2 class="text-lg font-normal text-black">Uploaded Certificates</h2>
+                <img src="/images/icons/Upload-Certificate.svg" class="w-5 h-5 transition-all" :class="{ 'invert brightness-200': isDark }" alt="Upload Certificate">
+                <h2 class="text-lg font-normal" :class="isDark ? 'text-white' : 'text-black'">Uploaded Certificates</h2>
             </div>
-            <p class="text-base text-[#717182] mb-8">Manage your API certificates and authentication keys</p>
+            <p class="text-base mb-8" :class="isDark ? 'text-white/60' : 'text-[#717182]'">Manage your API certificates and authentication keys</p>
 
             <!-- Loading -->
             <div v-if="loading" class="flex justify-center py-8">
@@ -112,10 +123,11 @@
             <!-- List -->
             <div v-else class="space-y-4">
                 <div v-for="cert in certificates" :key="cert.id"
-                    class="flex flex-col md:flex-row items-start md:items-center justify-between p-5 border border-gray-100 rounded-xl hover:border-[#00816940] hover:bg-gray-50/30 transition-all">
+                    class="flex flex-col md:flex-row items-start md:items-center justify-between p-5 rounded-xl transition-all border"
+                    :class="isDark ? 'border-white/10 hover:border-[#00816940] hover:bg-white/5' : 'border-gray-100 hover:border-[#00816940] hover:bg-gray-50/30'">
 
                     <div class="flex items-center gap-4 flex-1">
-                        <div class="bg-white rounded-xl text-[#008169]">
+                        <div class="rounded-xl text-[#008169] p-1.5" :class="isDark ? 'bg-white/10' : 'bg-white'">
                             <svg width="32" height="32" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M11.0565 1.47534H4.41687C4.02555 1.47534 3.65026 1.63079 3.37356 1.9075C3.09686 2.1842 2.94141 2.55949 2.94141 2.95081V14.7545C2.94141 15.1458 3.09686 15.5211 3.37356 15.7978C3.65026 16.0745 4.02555 16.23 4.41687 16.23H13.2697C13.661 16.23 14.0363 16.0745 14.313 15.7978C14.5897 15.5211 14.7451 15.1458 14.7451 14.7545V5.16401L11.0565 1.47534Z"
                                     stroke="currentColor" stroke-width="1.47547" stroke-linecap="round" stroke-linejoin="round" />
@@ -128,12 +140,12 @@
 
                         <div class="space-y-1">
                             <div class="flex items-center gap-2">
-                                <h4 class="font-normal text-lg text-gray-900">{{ cert.file_name }}</h4>
+                                <h4 class="font-normal text-lg" :class="isDark ? 'text-white' : 'text-gray-900'">{{ cert.file_name }}</h4>
                                 <span class="px-2 py-0.5 bg-[#00483A] text-white text-sm font-normal rounded-[9px] uppercase tracking-wider">
                                     {{ cert.tag }}
                                 </span>
                             </div>
-                            <div class="flex flex-wrap gap-x-6 gap-y-1 text-base text-[#6A7282]">
+                            <div class="flex flex-wrap gap-x-6 gap-y-1 text-base" :class="isDark ? 'text-white/60' : 'text-[#6A7282]'">
                                 <p>Uploaded: <span>{{ cert.upload_date }}</span></p>
                                 <p v-if="cert.expires_at">Expires: <span>{{ cert.expires_at }}</span></p>
                             </div>
@@ -147,7 +159,7 @@
                         </div>
 
                         <button @click="handlePreview(cert)"
-                            class="text-gray-600 hover:text-gray-900 transition-colors">
+                            :class="isDark ? 'text-white/70 hover:text-white' : 'text-gray-600 hover:text-gray-900'" class="transition-colors">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                                 <circle cx="12" cy="12" r="3" />
@@ -155,7 +167,7 @@
                         </button>
 
                         <button @click="downloadCertificate(cert.certificate_type, cert.file_name)"
-                            class="text-gray-600 hover:text-gray-900 transition-colors">
+                            :class="isDark ? 'text-white/70 hover:text-white' : 'text-gray-600 hover:text-gray-900'" class="transition-colors">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                             </svg>
@@ -206,6 +218,8 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
+
+const { isDark } = useTheme()
 
 const {
     certificates, types, loading, uploading, error,

@@ -203,7 +203,7 @@ const props = defineProps({
 })
 
 const labels = computed(() => props.data?.categories || [])
-const labelsAr = computed(() => props.data?.categories || [])
+const labelsAr = computed(() => props.data?.categories_ar || props.data?.categories || [])
 const series = computed(() => props.data?.percentages || [])
 const rawCurrentYear = computed(() => props.data?.current_year || [])
 

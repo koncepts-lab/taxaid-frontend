@@ -249,7 +249,7 @@ const fmtYAxis = (value) => {
 }
 
 const page = ref(0)
-const pageSize = computed(() => isModalOpen.value ? 10 : 4)
+const pageSize = computed(() => isModalOpen.value ? 8 : 4)
 
 watch(isModalOpen, () => { page.value = 0 })
 
@@ -353,7 +353,7 @@ const chartOptions = computed(() => ({
   plotOptions: {
     bar: {
       horizontal: false,
-      columnWidth: isModalOpen.value ? '75%' : (pagedCategories.value.length <= 2 ? '85%' : '70%'),
+      columnWidth: isModalOpen.value ? '80%' : (pagedCategories.value.length <= 2 ? '90%' : '95%'),
       borderRadius: 5,
       borderRadiusApplication: 'end',
       dataLabels: {
@@ -487,6 +487,16 @@ const chartOptions = computed(() => ({
     }
   },
   responsive: [
+    ...(!isModalOpen.value ? [{
+      breakpoint: 1540,
+      options: {
+        dataLabels: {
+          style: {
+            fontSize: '9px'
+          }
+        }
+      }
+    }] : []),
     {
       breakpoint: 600,
       options: {

@@ -23,8 +23,8 @@
                             v-model:activeIndex="activeIndex"
                             :categories="enrichedCategories"
                         />
-                        <div v-if="!filteredData.length" class="mt-6 py-16 flex items-center justify-center rounded-2xl" :class="isDark ? 'bg-white/5' : 'bg-gray-50'">
-                            <p class="text-sm font-medium" :class="isDark ? 'text-white/50' : 'text-gray-500'">
+                        <div v-if="!filteredData.length" class="mt-6 py-16 flex items-center justify-center rounded-2xl" :class="isDark ? 'bg-[#002E26] border border-[#03D8B0]/20' : 'bg-gray-50'">
+                            <p class="text-sm font-medium" :class="isDark ? 'text-white/60' : 'text-gray-500'">
                                 {{ currentLang === 'ar' ? 'لا توجد تنبيهات' : 'No alerts found' }}
                             </p>
                         </div>

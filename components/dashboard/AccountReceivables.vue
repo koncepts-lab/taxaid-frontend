@@ -41,7 +41,7 @@
 
     <!-- Chart Container -->
     <div class="h-[180px] w-full mt-4 flex gap-3">
-      <div class="h-full flex-1 relative pl-12 pr-4">
+      <div class="h-full flex-1 relative" :class="currentLang === 'ar' ? 'pr-12 pl-4' : 'pl-12 pr-4'">
         <!-- Y-Axis Labels (dynamic from data max) -->
         <div class="absolute flex flex-col justify-between text-[12px] font-Regular top-0 bottom-8 transition-colors duration-300"
           :class="[currentLang === 'ar' ? 'right-0 items-end' : 'left-0 items-start', isDark ? 'text-white/60' : 'text-[#00000080]']">

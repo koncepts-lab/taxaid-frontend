@@ -121,7 +121,7 @@ const budgetSections = [
 
 <template>
     <div class="content-area rounded-[20px] lg:p-8 p-4 transition-all duration-300"
-        :class="isDark ? 'bg-[#015F4D]/20 border border-[#00B794]/30' : 'bg-white border border-gray-100 shadow-sm'">
+        :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border border-gray-100 shadow-sm'">
 
         <div class="mb-10 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
             <div>

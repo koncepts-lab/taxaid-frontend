@@ -3,7 +3,7 @@
     <!-- Main Container: Logic for RTL and Dark Mode -->
     <div v-else :dir="currentLang === 'ar' ? 'rtl' : 'ltr'"
         class="p-6 space-y-6 rounded-2xl transition-all duration-300 min-h-screen"
-        :class="isDark ? 'bg-[#015F4D]/20 border border-[#00B794]/30 text-white' : 'bg-white text-black'">
+        :class="isDark ? 'bg-[#002e26] border border-white/5 text-white' : 'bg-white text-black shadow-sm'">
 
         <!-- 1. Header Section -->
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -115,7 +115,7 @@
         </div>
 
         <!-- Add New Entry modal (customers / vendor / internal-email) -->
-        <DataSourceAddEntryModal v-model:open="isAddEntryOpen" :type="type" :currentLang="currentLang" @saved="onEntrySaved" />
+        <DataSourceAddEntryModal v-model:open="isAddEntryOpen" :type="type" :currentLang="currentLang" :isDark="isDark" @saved="onEntrySaved" />
 
         <!-- Row-save error banner -->
         <div v-if="saveError" class="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
@@ -135,7 +135,7 @@
                     <!-- Fixed Grid using Inline Style for Design Accuracy -->
                     <div class="flex-1 grid gap-4 text-[13px] font-medium items-center"
                         :style="{ gridTemplateColumns: currentConfig.gridCols }">
-                        <div class="text-center">{{ currentLang === 'ar' ? '#' : 'ID' }}</div>
+                        <div v-if="!isHideCounter" class="text-center">{{ currentLang === 'ar' ? '#' : 'ID' }}</div>
                         <div v-for="h in translatedHeaders" :key="h">{{ h }}</div>
                     </div>
                 </div>
@@ -143,10 +143,10 @@
                 <!-- Loading State: skeleton rows -->
                 <div v-if="loading" class="flex-1 overflow-hidden divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-50'">
                     <div v-for="n in perPage" :key="n" class="flex items-center px-4 h-[64px]">
-                        <div v-if="canWrite || !isApiType" class="w-10 shrink-0"><div class="skeleton h-4 w-4 rounded"></div></div>
+                        <div v-if="canWrite || !isApiType" class="w-10 shrink-0"><div class="skeleton h-4 w-4 rounded" :class="{ dark: isDark }"></div></div>
                         <div class="flex-1 grid gap-4 items-center" :style="{ gridTemplateColumns: currentConfig.gridCols }">
-                            <div class="flex justify-center"><div class="skeleton h-3 w-5 rounded"></div></div>
-                            <div v-for="(h, hIdx) in currentConfig.headers" :key="hIdx"><div class="skeleton h-10 w-full rounded-lg"></div></div>
+                            <div v-if="!isHideCounter" class="flex justify-center"><div class="skeleton h-3 w-5 rounded" :class="{ dark: isDark }"></div></div>
+                            <div v-for="(h, hIdx) in currentConfig.headers" :key="hIdx"><div class="skeleton h-10 w-full rounded-lg" :class="{ dark: isDark }"></div></div>
                         </div>
                     </div>
                 </div>
@@ -186,7 +186,7 @@
                 </div>
 
                 <!-- State 2: Populated Table -->
-                <div v-else class="flex-1 overflow-hidden divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-50'">
+                <div v-else class="flex-1 divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-50'">
                     <div v-if="!pagedRows.length" class="h-full flex items-center justify-center text-sm" :class="isDark ? 'text-white/50' : 'text-[#717182]'">
                         {{ currentLang === 'ar' ? 'لا توجد نتائج' : 'No results found.' }}
                     </div>
@@ -202,22 +202,39 @@
                         </div>
                         <div class="flex-1 grid gap-4 items-center"
                             :style="{ gridTemplateColumns: currentConfig.gridCols }">
-                            <div class="text-center text-xs text-gray-400 font-medium">{{ (page - 1) * perPage + idx + 1 }}</div>
-                            <div v-for="(h, hIdx) in currentConfig.headers" :key="hIdx">
+                            <div v-if="!isHideCounter" class="text-center text-xs text-gray-400 font-medium">{{ (page - 1) * perPage + idx + 1 }}</div>
+                            <div v-for="(h, hIdx) in currentConfig.headers" :key="hIdx" class="relative group/cell">
                                 <div v-if="h === 'Status'"
                                     class="px-3 py-1 rounded-full text-[10px] w-fit font-bold uppercase border"
                                     :class="(row.status || 'Active') === 'Active' ? 'bg-[#DCFCE7] text-[#166534] border-[#BBF7D0]' : 'bg-[#FEF9C3] text-[#854D0E] border-[#FDE047]'">
                                     {{ row.status || 'Active' }}
                                 </div>
-                                <input v-else type="text" placeholder="-"
-                                    :value="getFieldValue(row, h)"
-                                    @input="row.isNew && setFieldValue(row, h, $event.target.value)"
-                                    :readonly="!row.isNew"
-                                    class="w-full h-10 border rounded-lg px-3 text-sm outline-none transition-all"
-                                    :class="[
-                                        isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-[#F9FAFB] border-[#F3F4F6] text-black focus:border-[#00896F]',
-                                        !row.isNew ? 'cursor-default' : ''
-                                    ]" />
+                                <template v-else>
+                                    <div v-if="h === 'Contact Person' && isCompact && !row.isNew" class="flex items-center gap-2 w-full">
+                                        <span class="text-sm truncate flex-1" :class="isDark ? 'text-white' : 'text-gray-900'">
+                                            {{ getFieldValue(row, h) || '-' }}
+                                        </span>
+                                        <button type="button" @click.stop="openContactModal(row)"
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-all shadow-sm active:scale-95"
+                                            :class="isDark ? 'bg-teal-600/30 text-teal-200 border border-teal-500/40 hover:bg-teal-600/45' : 'bg-[#E6FDF9] text-[#00896F] border border-[#00896F]/30 hover:bg-[#CFF7ED]'">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                                            </svg>
+                                            <span>{{ currentLang === 'ar' ? 'جهة الاتصال' : 'Contact' }}</span>
+                                        </button>
+                                    </div>
+                                    <div v-else class="relative w-full flex items-center">
+                                        <input type="text" placeholder="-"
+                                            :value="getFieldValue(row, h)"
+                                            @input="row.isNew && setFieldValue(row, h, $event.target.value)"
+                                            :readonly="!row.isNew"
+                                            class="w-full h-10 border rounded-lg px-3 text-sm outline-none transition-all"
+                                            :class="[
+                                                isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-[#F9FAFB] border-[#F3F4F6] text-black focus:border-[#00896F]',
+                                                !row.isNew ? 'cursor-default' : ''
+                                            ]" />
+                                    </div>
+                                </template>
                             </div>
                         </div>
                         <!-- Save / Cancel for unsaved new rows -->
@@ -240,6 +257,93 @@
             <CommonPaginationBar v-if="isApiType ? serverMeta.total > 10 : rows.length > 10" :meta="pageMeta" :loading="loading"
                 @page-change="(p) => onPageChange(p)" @per-page-change="(pp) => { perPage = pp; onPageChange(1) }" />
         </div>
+
+        <!-- Contact Details Modal (matching Implementation Manager modal) -->
+        <Teleport to="body">
+            <Transition name="fade">
+                <div v-if="contactModalRow" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+                    :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="closeContactModal">
+                    <div class="rounded-2xl shadow-xl w-[420px] max-w-full flex flex-col border transition-all"
+                        :class="isDark ? 'bg-[#002e26] border-teal-800/40 text-white' : 'bg-white border-gray-100 text-gray-900'">
+                        <div class="px-6 py-4 border-b flex items-center justify-between"
+                            :class="isDark ? 'border-white/10' : 'border-gray-100'">
+                            <div>
+                                <h3 class="text-[16px] font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+                                    {{ currentLang === 'ar' ? 'تفاصيل الاتصال' : 'Contact Details' }}
+                                </h3>
+                                <p class="text-xs mt-0.5 truncate max-w-[280px]" :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                                    {{ contactModalRow?.name || contactModalRow?.contact_person || (type === 'vendor' ? 'Vendor' : 'Customer') }}
+                                </p>
+                            </div>
+                            <button @click="closeContactModal" class="transition-colors" :class="isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </div>
+                        <div class="p-6 space-y-4 text-sm">
+                            <!-- Contact Person (if available) -->
+                            <div v-if="contactModalRow?.contact_person">
+                                <p class="text-xs mb-1" :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                                    {{ currentLang === 'ar' ? 'الشخص المسؤول' : 'Contact Person' }}
+                                </p>
+                                <span class="font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+                                    {{ contactModalRow.contact_person }}
+                                </span>
+                            </div>
+
+                            <!-- Mobile / Phone Number -->
+                            <div>
+                                <p class="text-xs mb-1" :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                                    {{ currentLang === 'ar' ? 'رقم الهاتف' : 'Phone Number' }}
+                                </p>
+                                <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl border"
+                                    :class="isDark ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-100'">
+                                    <span class="font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+                                        {{ contactModalRow?.phone_number && contactModalRow.phone_number !== '-' ? contactModalRow.phone_number : (currentLang === 'ar' ? 'غير متوفر' : 'Not available') }}
+                                    </span>
+                                    <button v-if="contactModalRow?.phone_number && contactModalRow.phone_number !== '-'"
+                                        @click="copyToClipboard(contactModalRow.phone_number, 'modal-phone')"
+                                        class="p-1 rounded transition-colors"
+                                        :class="isDark ? 'text-teal-400 hover:bg-white/10' : 'text-[#00896F] hover:bg-[#E6FDF9]'"
+                                        :title="copiedKey === 'modal-phone' ? (currentLang === 'ar' ? 'تم النسخ' : 'Copied!') : (currentLang === 'ar' ? 'نسخ' : 'Copy')">
+                                        <svg v-if="copiedKey === 'modal-phone'" class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                        <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Email Address -->
+                            <div>
+                                <p class="text-xs mb-1" :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                                    {{ currentLang === 'ar' ? 'البريد الإلكتروني' : 'Email Address' }}
+                                </p>
+                                <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl border"
+                                    :class="isDark ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-100'">
+                                    <span class="font-medium truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
+                                        {{ contactModalRow?.email && contactModalRow.email !== '-' ? contactModalRow.email : (currentLang === 'ar' ? 'غير متوفر' : 'Not available') }}
+                                    </span>
+                                    <button v-if="contactModalRow?.email && contactModalRow.email !== '-'"
+                                        @click="copyToClipboard(contactModalRow.email, 'modal-email')"
+                                        class="p-1 rounded shrink-0 transition-colors"
+                                        :class="isDark ? 'text-teal-400 hover:bg-white/10' : 'text-[#00896F] hover:bg-[#E6FDF9]'"
+                                        :title="copiedKey === 'modal-email' ? (currentLang === 'ar' ? 'تم النسخ' : 'Copied!') : (currentLang === 'ar' ? 'نسخ' : 'Copy')">
+                                        <svg v-if="copiedKey === 'modal-email'" class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                        <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
 
         <!-- 4. Import Modal -->
         <Teleport to="body">
@@ -357,7 +461,7 @@ const props = defineProps({
 })
 
 // --- 1. COLUMN AND HEADER CONFIGURATION ---
-const configs = {
+const baseConfigs = {
     'inter-company': {
         title: 'Inter Company Transactions', titleAr: 'معاملات الشركات الشقيقة',
         sub: 'Track transactions between related entities', subAr: 'تتبع المعاملات بين الكيانات ذات الصلة',
@@ -369,10 +473,14 @@ const configs = {
     'vendor': {
         title: 'Vendor Directory', titleAr: 'دليل جهات الاتصال',
         sub: 'Manage all business vendors and their details', subAr: 'إدارة جميع جهات الاتصال التجارية وتفاصيلها',
-        headers: ['Vendor ID', 'Name', 'Tax ID', 'Contact Person', 'Email', 'Phone', 'Credit Limit (AED)', 'Outstanding (AED)', 'Status'],
-        headersAr: ['معرف المورد', 'الاسم', 'الرقم الضريبي', 'الشخص المسؤول', 'البريد', 'الهاتف', 'الحد الائتماني', 'المبالغ المستحقة', 'الحالة'],
-        gridCols: '50px minmax(110px, 0.9fr) minmax(160px, 1.5fr) minmax(120px, 1fr) minmax(140px, 1.2fr) minmax(180px, 1.7fr) minmax(120px, 1fr) minmax(120px, 1fr) minmax(130px, 1fr) 100px',
-        minWidth: '1450px'
+        headersFull: ['Vendor ID', 'Name', 'Tax ID', 'Contact Person', 'Email', 'Phone', 'Credit Limit (AED)', 'Outstanding (AED)', 'Status'],
+        headersArFull: ['معرف المورد', 'الاسم', 'الرقم الضريبي', 'الشخص المسؤول', 'البريد', 'الهاتف', 'الحد الائتماني', 'المبالغ المستحقة', 'الحالة'],
+        gridColsFull: '45px minmax(95px, 0.8fr) minmax(130px, 1.3fr) minmax(105px, 0.9fr) minmax(115px, 1fr) minmax(145px, 1.3fr) minmax(105px, 0.9fr) minmax(105px, 0.9fr) minmax(110px, 1fr) 85px',
+        headersCompact: ['ID', 'Name', 'Tax ID', 'Contact Person', 'Credit Limit (AED)', 'Outstanding (AED)', 'Status'],
+        headersArCompact: ['المعرف', 'الاسم', 'الرقم الضريبي', 'الشخص المسؤول', 'الحد الائتماني', 'المبالغ المستحقة', 'الحالة'],
+        gridColsCompact: '45px minmax(85px, 0.8fr) minmax(130px, 1.3fr) minmax(105px, 0.9fr) minmax(170px, 1.5fr) minmax(115px, 1fr) minmax(115px, 1fr) 85px',
+        gridColsNoCounter: 'minmax(85px, 0.8fr) minmax(130px, 1.3fr) minmax(105px, 0.9fr) minmax(170px, 1.5fr) minmax(115px, 1fr) minmax(115px, 1fr) 85px',
+        minWidth: '850px'
     },
     'internal-email': {
         title: 'Internal Email Directory', titleAr: 'دليل البريد الداخلي',
@@ -385,22 +493,26 @@ const configs = {
     'customers': {
         title: 'Customer Management', titleAr: 'إدارة العملاء',
         sub: 'Manage customer accounts and credit information', subAr: 'إدارة حسابات العملاء ومعلومات الائتمان',
-        headers: ['Customer ID', 'Name', 'Tax ID', 'Contact Person', 'Email', 'Phone', 'Credit Limit (AED)', 'Outstanding (AED)', 'Status'],
-        headersAr: ['معرف العميل', 'الاسم', 'الرقم الضريبي', 'الشخص المسؤول', 'البريد', 'الهاتف', 'الحد الائتماني', 'المبالغ المستحقة', 'الحالة'],
-        gridCols: '50px minmax(110px, 0.9fr) minmax(160px, 1.5fr) minmax(120px, 1fr) minmax(140px, 1.2fr) minmax(180px, 1.7fr) minmax(120px, 1fr) minmax(120px, 1fr) minmax(130px, 1fr) 100px',
-        minWidth: '1450px'
+        headersFull: ['Customer ID', 'Name', 'Tax ID', 'Contact Person', 'Email', 'Phone', 'Credit Limit (AED)', 'Outstanding (AED)', 'Status'],
+        headersArFull: ['معرف العميل', 'الاسم', 'الرقم الضريبي', 'الشخص المسؤول', 'البريد', 'الهاتف', 'الحد الائتماني', 'المبالغ المستحقة', 'الحالة'],
+        gridColsFull: '45px minmax(95px, 0.8fr) minmax(130px, 1.3fr) minmax(105px, 0.9fr) minmax(115px, 1fr) minmax(145px, 1.3fr) minmax(105px, 0.9fr) minmax(105px, 0.9fr) minmax(110px, 1fr) 85px',
+        headersCompact: ['ID', 'Name', 'Tax ID', 'Contact Person', 'Credit Limit (AED)', 'Outstanding (AED)', 'Status'],
+        headersArCompact: ['المعرف', 'الاسم', 'الرقم الضريبي', 'الشخص المسؤول', 'الحد الائتماني', 'المبالغ المستحقة', 'الحالة'],
+        gridColsCompact: '45px minmax(85px, 0.8fr) minmax(130px, 1.3fr) minmax(105px, 0.9fr) minmax(170px, 1.5fr) minmax(115px, 1fr) minmax(115px, 1fr) 85px',
+        gridColsNoCounter: 'minmax(85px, 0.8fr) minmax(130px, 1.3fr) minmax(105px, 0.9fr) minmax(170px, 1.5fr) minmax(115px, 1fr) minmax(115px, 1fr) 85px',
+        minWidth: '850px'
     }
 }
 
 // Maps each column header to the API field key for that type
 const fieldMap = {
     'vendor': {
-        'Vendor ID': 'identity', 'Name': 'name', 'Tax ID': 'tax_id', 'Contact Person': 'contact_person',
+        'ID': 'identity', 'Vendor ID': 'identity', 'Name': 'name', 'Tax ID': 'tax_id', 'Contact Person': 'contact_person',
         'Email': 'email', 'Phone': 'phone_number', 'Credit Limit (AED)': 'credit_limit',
         'Outstanding (AED)': 'outstanding',
     },
     'customers': {
-        'Customer ID': 'identity', 'Name': 'name', 'Tax ID': 'tax_id', 'Contact Person': 'contact_person',
+        'ID': 'identity', 'Customer ID': 'identity', 'Name': 'name', 'Tax ID': 'tax_id', 'Contact Person': 'contact_person',
         'Email': 'email', 'Phone': 'phone_number', 'Credit Limit (AED)': 'credit_limit',
         'Outstanding (AED)': 'outstanding',
     },
@@ -489,7 +601,40 @@ const showTable = computed(() => {
 })
 
 // --- 4. COMPUTED ---
-const currentConfig = computed(() => configs[props.type] || configs['inter-company'])
+const isCompact = computed(() => ['vendor', 'customers'].includes(props.type) && windowWidth.value <= 1600)
+const isHideCounter = computed(() => ['vendor', 'customers'].includes(props.type) && windowWidth.value <= 1300)
+
+const currentConfig = computed(() => {
+    const base = baseConfigs[props.type] || baseConfigs['inter-company']
+    if (['vendor', 'customers'].includes(props.type)) {
+        if (isHideCounter.value) {
+            return {
+                title: base.title, titleAr: base.titleAr, sub: base.sub, subAr: base.subAr,
+                headers: base.headersCompact,
+                headersAr: base.headersArCompact,
+                gridCols: base.gridColsNoCounter,
+                minWidth: '850px'
+            }
+        } else if (isCompact.value) {
+            return {
+                title: base.title, titleAr: base.titleAr, sub: base.sub, subAr: base.subAr,
+                headers: base.headersCompact,
+                headersAr: base.headersArCompact,
+                gridCols: base.gridColsCompact,
+                minWidth: base.minWidth
+            }
+        } else {
+            return {
+                title: base.title, titleAr: base.titleAr, sub: base.sub, subAr: base.subAr,
+                headers: base.headersFull,
+                headersAr: base.headersArFull,
+                gridCols: base.gridColsFull,
+                minWidth: '1160px'
+            }
+        }
+    }
+    return base
+})
 const translatedHeaders = computed(() => props.currentLang === 'ar' ? currentConfig.value.headersAr : currentConfig.value.headers)
 const selectedCount = computed(() => rows.value.filter(r => r.selected).length)
 
@@ -531,7 +676,45 @@ watch(() => props.type, () => {
     loadData()
 })
 
-onMounted(loadData)
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1920)
+const copiedKey = ref(null)
+const contactModalRow = ref(null)
+
+const onResize = () => {
+    windowWidth.value = window.innerWidth
+}
+
+const openContactModal = (row) => {
+    contactModalRow.value = row
+}
+
+const closeContactModal = () => {
+    contactModalRow.value = null
+}
+
+const copyToClipboard = async (text, key) => {
+    if (!text || text === '-') return
+    try {
+        await navigator.clipboard.writeText(text)
+        copiedKey.value = key
+        setTimeout(() => {
+            if (copiedKey.value === key) copiedKey.value = null
+        }, 1500)
+    } catch {}
+}
+
+onMounted(() => {
+    loadData()
+    if (typeof window !== 'undefined') {
+        window.addEventListener('resize', onResize)
+    }
+})
+
+onUnmounted(() => {
+    if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', onResize)
+    }
+})
 
 // --- 6. ICONS ---
 const IconAbove = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11.3 7.3L8 4 4.7 7.3M11.3 12L8 8.7 4.7 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`
@@ -665,6 +848,10 @@ onUnmounted(() => window.removeEventListener('click', handleClickOutside))
     background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
     background-size: 400% 100%;
     animation: ic-shimmer 1.4s ease infinite;
+}
+.skeleton.dark {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.12) 37%, rgba(255, 255, 255, 0.05) 63%);
+    background-size: 400% 100%;
 }
 @keyframes ic-shimmer {
     0% { background-position: 100% 50%; }

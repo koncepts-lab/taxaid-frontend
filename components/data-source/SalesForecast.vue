@@ -1,6 +1,6 @@
 <template>
     <div class="content-area rounded-[20px] lg:p-8 p-4 transition-all duration-300"
-        :class="isDark ? 'bg-[#015F4D]/20 border border-[#00B794]/30' : 'bg-white border border-gray-100 shadow-sm'">
+        :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border border-gray-100 shadow-sm'">
 
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
             <div>
@@ -25,7 +25,8 @@
                 </div>
 
                 <button @click="openDetailedReport"
-                    class="flex items-center gap-2 px-5 py-2.5 bg-[#68E4C4] hover:bg-[#52c9ac] text-[#013E32] rounded-xl text-sm font-medium transition-all whitespace-nowrap shadow-sm">
+                    class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap shadow-sm"
+                    :class="isDark ? 'bg-[#008169] hover:bg-[#006b56] text-white' : 'bg-[#68E4C4] hover:bg-[#52c9ac] text-[#013E32]'">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
                     </svg>
@@ -73,7 +74,7 @@
                     <!-- Quarter & Month Rows Skeleton -->
                     <template v-for="q in 4" :key="'skeleton-q-'+q">
                         <tr :class="['font-medium border-b border-[#84D7C5]/30', isDark ? 'bg-[#013e32] text-white' : 'bg-[#C2F9E9] text-[#013E32]']">
-                            <td class="px-6 py-3 border-[#84D7C5]"><div class="h-4 bg-[#013E32]/20 rounded w-20 animate-pulse"></div></td>
+                            <td class="px-6 py-3 border-[#84D7C5]"><div class="h-4 rounded w-20 animate-pulse" :class="isDark ? 'bg-white/20' : 'bg-[#013E32]/20'"></div></td>
                             <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
                             <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>
                             <td class="px-4 py-3 text-right text-sm">{{ currencyCode }}</td>

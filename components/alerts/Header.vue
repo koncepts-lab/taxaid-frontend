@@ -16,7 +16,7 @@
                 class="flex items-center justify-between px-4 py-2 border rounded-xl transition-all min-w-[280px] group"
                 :class="[
                     isDark
-                        ? 'bg-[#1A1A1A] border-[#00B794] text-white'
+                        ? 'bg-[#002E26] border-[#03D8B0]/30 text-white'
                         : 'bg-white/50 border-[#00B794] text-black'
                 ]">
                 <span class="text-sm font-medium">{{ selectedLabel }}</span>
@@ -30,7 +30,7 @@
             <Transition name="dropdown">
                 <div v-if="isOpen"
                     class="absolute mt-2 w-full min-w-[220px] rounded-2xl shadow-xl z-50 py-2 px-2 border" :class="[
-                        isDark ? 'bg-[#1A1A1A] border-white/10 shadow-black/50' : 'bg-white border-gray-100',
+                        isDark ? 'bg-[#002E26] border-[#03D8B0]/20 shadow-black/50' : 'bg-white border-gray-100',
                         currentLang === 'ar' ? 'right-0' : 'left-0'
                     ]">
                     <div v-for="option in periodOptions" :key="option.id" class="relative">
@@ -47,7 +47,7 @@
 
                         <div v-if="option.id === 'custom' && selected === 'custom' && showPicker"
                             class="absolute top-0 z-[70] shadow-2xl rounded-xl border p-2" :class="[
-                                isDark ? 'bg-[#1A1A1A] border-white/10' : 'bg-white border-gray-200',
+                                isDark ? 'bg-[#002E26] border-[#03D8B0]/20' : 'bg-white border-gray-200',
                                 currentLang === 'ar'
                                     ? 'lg:left-full lg:mr-2 right-0'
                                     : 'lg:right-full lg:ml-2 right-0',
@@ -57,7 +57,7 @@
                             <ClientOnly>
                                 <VDatePicker v-model="selectedDate" :is-dark="isDark"
                                     :locale="currentLang === 'ar' ? 'ar' : 'en'" color="teal"
-                                    @update:model-value="onDateChange" />
+                                    @update-model-value="onDateChange" />
 
                                 <template #fallback>
                                     <div class="p-4 text-center text-xs text-gray-400">Loading...</div>
@@ -72,15 +72,17 @@
         
         <!-- Mobile Pill Layout -->
         <div class="mt-4 md:hidden relative" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-            <div class="w-full bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 rounded-full p-1.5 flex gap-1 shadow-sm overflow-x-auto no-scrollbar">
+            <div class="w-full border rounded-full p-1.5 flex gap-1 shadow-sm overflow-x-auto no-scrollbar"
+                :class="isDark ? 'bg-[#002E26] border-[#03D8B0]/20' : 'bg-white border-gray-200'">
                 <button v-for="option in periodOptions" :key="'mob-'+option.id" @click="handleSelect(option)"
                     class="flex-1 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all"
-                    :class="selected === option.id ? 'bg-[#013E32] text-white shadow-md' : 'text-gray-700 dark:text-white/70 hover:bg-gray-100 dark:hover:bg-white/10'">
+                    :class="selected === option.id ? 'bg-[#013E32] text-white shadow-md' : (isDark ? 'text-white/70 hover:bg-white/10' : 'text-gray-700 hover:bg-gray-100')">
                     {{ currentLang === 'ar' ? option.labelAr : option.label }}
                 </button>
             </div>
             
-            <div v-if="selected === 'custom' && showPicker" class="absolute top-full mt-2 z-[70] shadow-2xl rounded-xl border p-2 bg-white dark:bg-[#1A1A1A] border-gray-200 dark:border-white/10 flex justify-center w-full">
+            <div v-if="selected === 'custom' && showPicker" class="absolute top-full mt-2 z-[70] shadow-2xl rounded-xl border p-2 flex justify-center w-full"
+                :class="isDark ? 'bg-[#002E26] border-[#03D8B0]/20' : 'bg-white border-gray-200'">
                 <ClientOnly>
                     <VDatePicker v-model="selectedDate" :is-dark="isDark"
                         :locale="currentLang === 'ar' ? 'ar' : 'en'" color="teal"
