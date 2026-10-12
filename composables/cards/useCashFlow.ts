@@ -205,7 +205,7 @@ export const useCashFlow = () => {
         { name: 'Hypothetical Scenario', nameAr: 'سيناريو افتراضي', data: ms.map(m => toM(d['Outgoing']?.monthly_totals?.[m] ?? 0)), dataRaw: ms.map(m => d['Outgoing']?.monthly_totals?.[m] ?? 0) },
       ],
       categories:   ms,
-      categoriesAr: ms,
+      categoriesAr: translateMonthLabels(ms),
     }
   })
 
@@ -221,7 +221,7 @@ export const useCashFlow = () => {
         { name: 'Inflow',  nameAr: 'التدفق الداخلي', data: ms.map(m => toM(d['Incoming']?.monthly_totals?.[m] ?? 0)), dataRaw: ms.map(m => d['Incoming']?.monthly_totals?.[m] ?? 0) },
       ],
       categories:   ms,
-      categoriesAr: ms,
+      categoriesAr: translateMonthLabels(ms),
     }
   })
 

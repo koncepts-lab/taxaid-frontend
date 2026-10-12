@@ -1,30 +1,33 @@
 <template>
     <Teleport to="body">
     <Transition name="fade">
-        <div v-if="open" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4"
+        <div v-if="open" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
             :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="close">
-            <div class="bg-white rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 w-full max-w-lg shadow-2xl relative max-h-[92vh] overflow-y-auto no-scrollbar">
+            <div class="rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 w-full max-w-lg shadow-2xl relative max-h-[92vh] overflow-y-auto no-scrollbar border transition-colors"
+                :class="isDark ? 'bg-[#002e26] border-teal-800/40 text-white' : 'bg-white border-gray-100 text-gray-900'">
                 <div class="p-8 space-y-4">
                     <div class="flex items-center justify-between">
-                        <h2 class="text-lg font-semibold text-gray-900">
+                        <h2 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
                             {{ entry ? (currentLang === 'ar' ? 'تعديل الإدخال' : 'Edit Entry') : (currentLang === 'ar' ? 'إضافة إدخال جديد' : 'Add New Entry') }}
                         </h2>
-                        <button @click="close" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <button @click="close" class="transition-colors" :class="isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
                         </button>
                     </div>
 
                     <!-- ID (auto-generated, readonly) -->
                     <div v-if="!isInternal">
-                        <label class="text-xs text-gray-500">{{ idLabel }}</label>
+                        <label class="text-xs mb-1 block" :class="isDark ? 'text-white/50' : 'text-gray-500'">{{ idLabel }}</label>
                         <input type="text" :value="form.identity" readonly
-                            class="w-full h-11 border border-[#04C18F80] rounded-xl px-4 text-sm bg-[#F3FDFA] text-gray-700 outline-none" />
+                            class="w-full h-11 border rounded-xl px-4 text-sm outline-none cursor-default"
+                            :class="isDark ? 'bg-white/5 border-white/10 text-white/80' : 'bg-[#F3FDFA] border-[#04C18F80] text-gray-700'" />
                     </div>
 
                     <!-- Employee (internal only) -->
                     <div v-if="isInternal">
                         <input type="text" v-model="form.employee_name" :placeholder="currentLang === 'ar' ? 'الموظف' : 'Employee'"
-                            class="w-full h-11 border border-[#04C18F80] rounded-xl px-4 text-sm outline-none focus:border-[#00896F] bg-white text-gray-900 placeholder:text-gray-400" />
+                            class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all"
+                            :class="isDark ? 'bg-white/5 border-white/15 text-white placeholder:text-white/40 focus:border-[#00896F]' : 'bg-white border-[#04C18F80] text-gray-900 placeholder:text-gray-400 focus:border-[#00896F]'" />
                     </div>
 
                     <!-- Department (internal only) -->
@@ -36,46 +39,56 @@
                     <div v-if="!isInternal" class="relative" ref="nameRef">
                         <input type="text" v-model="form.name" :placeholder="nameLabel"
                             @focus="nameOpen = true" @input="nameOpen = true"
-                            class="w-full h-11 border border-[#04C18F80] rounded-xl px-4 pr-9 text-sm outline-none focus:border-[#00896F] bg-white text-gray-900 placeholder:text-gray-400" />
+                            class="w-full h-11 border rounded-xl px-4 pr-9 text-sm outline-none transition-all"
+                            :class="isDark ? 'bg-white/5 border-white/15 text-white placeholder:text-white/40 focus:border-[#00896F]' : 'bg-white border-[#04C18F80] text-gray-900 placeholder:text-gray-400 focus:border-[#00896F]'" />
                         <svg class="absolute top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" :class="currentLang === 'ar' ? 'left-3' : 'right-3'"
                             width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
                         <div v-if="nameOpen && filteredCandidates.length"
-                            class="absolute z-20 mt-1 w-full bg-white border border-gray-100 rounded-xl shadow-xl p-1 max-h-56 overflow-auto">
+                            class="absolute z-20 mt-1 w-full border rounded-xl shadow-xl p-1 max-h-56 overflow-auto"
+                            :class="isDark ? 'bg-[#002e26] border-white/15' : 'bg-white border-gray-100'">
                             <button v-for="c in filteredCandidates" :key="c" type="button" @mousedown.prevent="form.name = c; nameOpen = false"
-                                class="w-full text-left rtl:text-right px-4 py-2 text-sm rounded-lg hover:bg-[#E6FDF9] text-gray-900">{{ c }}</button>
+                                class="w-full text-left rtl:text-right px-4 py-2 text-sm rounded-lg transition-colors"
+                                :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-[#E6FDF9] text-gray-900'">{{ c }}</button>
                         </div>
-                        <p v-if="candidatesLoading" class="text-[11px] text-gray-400 mt-1">{{ currentLang === 'ar' ? 'جار التحميل...' : 'Loading names…' }}</p>
+                        <p v-if="candidatesLoading" class="text-[11px] mt-1" :class="isDark ? 'text-white/40' : 'text-gray-400'">{{ currentLang === 'ar' ? 'جار التحميل...' : 'Loading names…' }}</p>
                     </div>
 
                     <!-- Tax ID -->
                     <input v-if="!isInternal" type="text" v-model="form.tax_id" :placeholder="currentLang === 'ar' ? 'الرقم الضريبي' : 'Tax ID'"
-                        class="w-full h-11 border border-[#04C18F80] rounded-xl px-4 text-sm outline-none focus:border-[#00896F] bg-white text-gray-900 placeholder:text-gray-400" />
+                        class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all"
+                        :class="isDark ? 'bg-white/5 border-white/15 text-white placeholder:text-white/40 focus:border-[#00896F]' : 'bg-white border-[#04C18F80] text-gray-900 placeholder:text-gray-400 focus:border-[#00896F]'" />
 
                     <!-- Contact Person -->
                     <input v-if="!isInternal" type="text" v-model="form.contact_person" :placeholder="currentLang === 'ar' ? 'الشخص المسؤول' : 'Contact Person'"
-                        class="w-full h-11 border border-[#04C18F80] rounded-xl px-4 text-sm outline-none focus:border-[#00896F] bg-white text-gray-900 placeholder:text-gray-400" />
+                        class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all"
+                        :class="isDark ? 'bg-white/5 border-white/15 text-white placeholder:text-white/40 focus:border-[#00896F]' : 'bg-white border-[#04C18F80] text-gray-900 placeholder:text-gray-400 focus:border-[#00896F]'" />
 
                     <!-- Vendor order (Figma): Credit Limit before Phone/Email -->
                     <input v-if="type === 'vendor'" type="number" min="0" v-model="form.credit_limit" :placeholder="currentLang === 'ar' ? 'الحد الائتماني' : 'Credit Limit'"
-                        class="w-full h-11 border border-[#04C18F80] rounded-xl px-4 text-sm outline-none focus:border-[#00896F] bg-white text-gray-900 placeholder:text-gray-400" />
+                        class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all"
+                        :class="isDark ? 'bg-white/5 border-white/15 text-white placeholder:text-white/40 focus:border-[#00896F]' : 'bg-white border-[#04C18F80] text-gray-900 placeholder:text-gray-400 focus:border-[#00896F]'" />
 
                     <!-- Email (customer order: before phone) -->
                     <input v-if="type === 'customers'" type="email" v-model="form.email"
                         :placeholder="(currentLang === 'ar' ? 'بريد العميل *' : 'Customer Email *')"
-                        class="w-full h-11 border border-[#04C18F80] rounded-xl px-4 text-sm outline-none focus:border-[#00896F] bg-white text-gray-900 placeholder:text-gray-400 placeholder:text-gray-400" />
+                        class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all"
+                        :class="isDark ? 'bg-white/5 border-white/15 text-white placeholder:text-white/40 focus:border-[#00896F]' : 'bg-white border-[#04C18F80] text-gray-900 placeholder:text-gray-400 focus:border-[#00896F]'" />
 
                     <!-- Phone -->
                     <input type="text" v-model="form.phone_number" :placeholder="currentLang === 'ar' ? 'رقم الهاتف' : 'Phone Number'"
-                        class="w-full h-11 border border-[#04C18F80] rounded-xl px-4 text-sm outline-none focus:border-[#00896F] bg-white text-gray-900 placeholder:text-gray-400" />
+                        class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all"
+                        :class="isDark ? 'bg-white/5 border-white/15 text-white placeholder:text-white/40 focus:border-[#00896F]' : 'bg-white border-[#04C18F80] text-gray-900 placeholder:text-gray-400 focus:border-[#00896F]'" />
 
                     <!-- Email (vendor order: last) / internal email -->
                     <input v-if="type === 'vendor' || isInternal" type="email" v-model="form.email"
                         :placeholder="isInternal ? (currentLang === 'ar' ? 'البريد الإلكتروني *' : 'Email *') : (currentLang === 'ar' ? 'بريد المورد *' : 'Vendor Email *')"
-                        class="w-full h-11 border border-[#04C18F80] rounded-xl px-4 text-sm outline-none focus:border-[#00896F] bg-white text-gray-900 placeholder:text-gray-400" />
+                        class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all"
+                        :class="isDark ? 'bg-white/5 border-white/15 text-white placeholder:text-white/40 focus:border-[#00896F]' : 'bg-white border-[#04C18F80] text-gray-900 placeholder:text-gray-400 focus:border-[#00896F]'" />
 
                     <!-- Credit Limit (customer order: last) -->
                     <input v-if="type === 'customers'" type="number" min="0" v-model="form.credit_limit" :placeholder="currentLang === 'ar' ? 'الحد الائتماني' : 'Credit Limit'"
-                        class="w-full h-11 border border-[#04C18F80] rounded-xl px-4 text-sm outline-none focus:border-[#00896F] bg-white text-gray-900 placeholder:text-gray-400" />
+                        class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all"
+                        :class="isDark ? 'bg-white/5 border-white/15 text-white placeholder:text-white/40 focus:border-[#00896F]' : 'bg-white border-[#04C18F80] text-gray-900 placeholder:text-gray-400 focus:border-[#00896F]'" />
 
                     <p v-if="errorMsg" class="text-sm text-red-500">{{ errorMsg }}</p>
 
@@ -86,7 +99,8 @@
                             {{ saving ? '...' : (currentLang === 'ar' ? 'تأكيد' : 'Confirm') }}
                         </button>
                         <button @click="close"
-                            class="flex-1 flex items-center justify-center gap-2 h-11 border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 transition-all">
+                            class="flex-1 flex items-center justify-center gap-2 h-11 border rounded-xl text-sm font-medium transition-all"
+                            :class="isDark ? 'border-white/15 text-white/70 hover:bg-white/5' : 'border-gray-200 text-gray-600 hover:bg-gray-50'">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
                             {{ currentLang === 'ar' ? 'إلغاء' : 'Cancel' }}
                         </button>
@@ -107,6 +121,7 @@ const props = defineProps({
     open:        Boolean,
     type:        { type: String, default: 'customers' }, // customers | vendor | internal-email
     currentLang: { type: String, default: 'en' },
+    isDark:      Boolean,
     entry:       { type: Object, default: null },
 })
 const emit = defineEmits(['update:open', 'saved'])

@@ -1,6 +1,6 @@
 <template>
     <div class="content-area rounded-[20px] lg:p-8 p-4 transition-all duration-300"
-        :class="isDark ? 'bg-[#015F4D]/20 border border-[#00B794]/30' : 'bg-white border border-gray-100 shadow-sm'">
+        :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border border-gray-100 shadow-sm'">
 
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
             <div>
@@ -25,7 +25,8 @@
                 </div>
 
                 <button @click="openDetailedReport"
-                    class="flex items-center gap-2 px-5 py-2.5 bg-[#68E4C4] hover:bg-[#52c9ac] text-[#013E32] rounded-xl text-sm font-medium transition-all whitespace-nowrap shadow-sm">
+                    class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap shadow-sm"
+                    :class="isDark ? 'bg-[#008169] hover:bg-[#006b56] text-white' : 'bg-[#68E4C4] hover:bg-[#52c9ac] text-[#013E32]'">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
                     </svg>
@@ -64,9 +65,9 @@
                     <!-- Loading: skeleton rows -->
                     <template v-if="loading">
                         <tr v-for="n in perPage" :key="'sk-' + n" class="border-b h-[53px]" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                            <td class="px-6 py-4"><div class="skeleton h-4 w-6 rounded"></div></td>
-                            <td class="px-4 py-4"><div class="skeleton h-4 w-40 rounded"></div></td>
-                            <td v-for="c in 6" :key="c" class="px-4 py-4"><div class="skeleton h-4 w-20 rounded"></div></td>
+                            <td class="px-6 py-4"><div class="skeleton h-4 w-6 rounded" :class="{ dark: isDark }"></div></td>
+                            <td class="px-4 py-4"><div class="skeleton h-4 w-40 rounded" :class="{ dark: isDark }"></div></td>
+                            <td v-for="c in 6" :key="c" class="px-4 py-4"><div class="skeleton h-4 w-20 rounded" :class="{ dark: isDark }"></div></td>
                         </tr>
                     </template>
 
@@ -96,12 +97,12 @@
                 <tfoot>
                     <tr class="bg-[#68E4C4] font-medium text-[#013E32]">
                         <td class="px-6 py-4 rounded-bl-[15px]" colspan="2">{{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto"></div><template v-else>{{ formatNumber(arTotals.amount) }}</template></td>
-                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto"></div><template v-else>{{ formatNumber(arTotals.not_due) }}</template></td>
-                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto"></div><template v-else>{{ formatNumber(arTotals.age_0_30) }}</template></td>
-                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto"></div><template v-else>{{ formatNumber(arTotals.age_31_90) }}</template></td>
-                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto"></div><template v-else>{{ formatNumber(arTotals.age_91_180) }}</template></td>
-                        <td class="px-4 py-4 rounded-br-[15px] text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto"></div><template v-else>{{ formatNumber(arTotals.age_gt_180) }}</template></td>
+                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto" :class="{ dark: isDark }"></div><template v-else>{{ formatNumber(arTotals.amount) }}</template></td>
+                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto" :class="{ dark: isDark }"></div><template v-else>{{ formatNumber(arTotals.not_due) }}</template></td>
+                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto" :class="{ dark: isDark }"></div><template v-else>{{ formatNumber(arTotals.age_0_30) }}</template></td>
+                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto" :class="{ dark: isDark }"></div><template v-else>{{ formatNumber(arTotals.age_31_90) }}</template></td>
+                        <td class="px-4 py-4 text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto" :class="{ dark: isDark }"></div><template v-else>{{ formatNumber(arTotals.age_91_180) }}</template></td>
+                        <td class="px-4 py-4 rounded-br-[15px] text-right rtl:text-left"><div v-if="loading" class="skeleton h-4 w-20 rounded ml-auto" :class="{ dark: isDark }"></div><template v-else>{{ formatNumber(arTotals.age_gt_180) }}</template></td>
                     </tr>
                 </tfoot>
             </table>
@@ -158,7 +159,7 @@
                                 <tbody>
                                     <template v-if="detailLoading">
                                         <tr v-for="n in 6" :key="'sk-' + n" class="border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                                            <td colspan="7" class="px-6 py-4"><div class="skeleton h-4 w-full rounded"></div></td>
+                                            <td colspan="7" class="px-6 py-4"><div class="skeleton h-4 w-full rounded" :class="{ dark: isDark }"></div></td>
                                         </tr>
                                     </template>
                                     <tr v-else-if="detailError">
@@ -322,6 +323,10 @@ watch(() => props.arRows, () => {
     background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
     background-size: 400% 100%;
     animation: ar-shimmer 1.4s ease infinite;
+}
+.skeleton.dark {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.12) 37%, rgba(255, 255, 255, 0.05) 63%);
+    background-size: 400% 100%;
 }
 @keyframes ar-shimmer {
     0% { background-position: 100% 50%; }

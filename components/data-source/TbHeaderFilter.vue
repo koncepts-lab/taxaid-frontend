@@ -16,31 +16,21 @@
   <Teleport to="body">
     <div v-if="isOpen" class="fixed inset-0 z-[9998]" @click="close" />
     <div v-if="isOpen" ref="panelRef" :style="panelStyle"
-      class="fixed z-[9999] w-64 rounded-xl border shadow-2xl overflow-hidden text-sm"
-      :class="isDark ? 'bg-[#1a1a1a] border-white/10 text-white/90' : 'bg-white border-gray-200 text-gray-800'"
+      class="fixed z-[9999] w-64 max-h-[380px] flex flex-col rounded-xl border shadow-2xl overflow-hidden text-sm"
+      :class="isDark ? 'bg-[#002E26] border-[#03D8B0]/20 text-white' : 'bg-white border-gray-200 text-gray-800'"
       :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
       <!-- Search -->
-      <div class="p-2 border-b flex items-center gap-2" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+      <div class="p-2 border-b flex-shrink-0" :class="isDark ? 'border-[#03D8B0]/15' : 'border-gray-100'">
         <input v-model="search" type="text"
           :placeholder="currentLang === 'ar' ? 'بحث...' : 'Search...'"
-          class="flex-1 px-3 py-1.5 rounded-lg border text-sm outline-none focus:ring-1 focus:ring-[#00B794]"
-          :class="isDark ? 'bg-[#0d0d0d] border-white/10 placeholder-white/30' : 'bg-white border-gray-200'" />
-        <button @click="handleRefresh" :disabled="refreshing"
-          :title="currentLang === 'ar' ? 'تحديث القائمة' : 'Refresh list'"
-          class="w-8 h-8 flex items-center justify-center rounded-lg border flex-shrink-0 disabled:opacity-40"
-          :class="isDark ? 'border-white/15 text-white/70 hover:bg-white/5' : 'border-gray-200 text-gray-600 hover:bg-gray-50'">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            :class="refreshing ? 'animate-spin' : ''">
-            <path d="M23 4v6h-6M1 20v-6h6" />
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-          </svg>
-        </button>
+          class="w-full px-3 py-1.5 rounded-lg border text-sm outline-none focus:ring-1 focus:ring-[#00B794]"
+          :class="isDark ? 'bg-[#00211b] border-[#03D8B0]/20 text-white placeholder-white/40' : 'bg-white border-gray-200'" />
       </div>
 
       <!-- Select all -->
-      <label class="flex items-center gap-2 px-3 py-2 cursor-pointer border-b font-medium"
-        :class="isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-100 hover:bg-[#E0FCF6]'">
+      <label class="flex items-center gap-2 px-3 py-2 cursor-pointer border-b font-medium flex-shrink-0"
+        :class="isDark ? 'border-[#03D8B0]/15 hover:bg-white/5' : 'border-gray-100 hover:bg-[#E0FCF6]'">
         <input type="checkbox" :checked="allVisibleChecked" :indeterminate="someVisibleChecked"
           @change="toggleAll" class="accent-[#00B794] w-4 h-4" />
         <span>{{ currentLang === 'ar' ? 'تحديد الكل' : 'Select All' }}</span>
@@ -48,13 +38,13 @@
       </label>
 
       <!-- Value checkboxes -->
-      <div class="max-h-52 overflow-y-auto py-1">
+      <div class="flex-1 overflow-y-auto py-1 min-h-[100px] max-h-52">
         <!-- Checked rows keep the hover tint so selections stay visible in long lists -->
         <label v-for="opt in visibleOptions" :key="opt"
           class="flex items-center gap-2 px-3 py-1.5 cursor-pointer"
           :class="checked.has(opt)
-            ? (isDark ? 'bg-white/10 text-white' : 'bg-[#E0FCF6] text-[#00655B] font-medium')
-            : (isDark ? 'hover:bg-white/5' : 'hover:bg-[#E0FCF6]')">
+            ? (isDark ? 'bg-[#00B794]/20 text-[#00FFBC] font-medium' : 'bg-[#E0FCF6] text-[#00655B] font-medium')
+            : (isDark ? 'hover:bg-white/5 text-white/80' : 'hover:bg-[#E0FCF6]')">
           <input type="checkbox" :checked="checked.has(opt)" @change="toggleOne(opt)"
             class="accent-[#00B794] w-4 h-4 flex-shrink-0" />
           <span class="truncate" :class="opt === '(blank)' ? 'italic opacity-60' : ''">
@@ -67,16 +57,18 @@
       </div>
 
       <!-- Actions -->
-      <div class="flex gap-2 p-2 border-t" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+      <div class="flex gap-2 p-2 border-t flex-shrink-0" :class="isDark ? 'border-[#03D8B0]/15 bg-[#002E26]' : 'border-gray-100 bg-white'">
         <button @click="clear"
-          class="flex-1 py-1.5 rounded-lg border text-sm transition-colors"
-          :class="isDark ? 'border-white/15 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'">
-          {{ currentLang === 'ar' ? 'مسح' : 'Clear' }}
+          class="flex-1 py-1.5 rounded-lg border text-sm font-medium transition-all active:scale-[0.98]"
+          :class="isDark
+            ? (canClear ? 'border-[#00B794] text-[#00FFBC] bg-[#00B794]/15 hover:bg-[#00B794]/25' : 'border-white/20 text-white/70 hover:bg-white/5')
+            : (canClear ? 'border-[#00B794] text-[#00896F] bg-[#00B794]/10 hover:bg-[#00B794]/20' : 'border-gray-300 text-gray-700 hover:bg-gray-100')">
+          {{ currentLang === 'ar' ? 'إعادة تعيين' : 'Reset' }}
         </button>
         <!-- Excel behavior: nothing checked = nothing to show — disable Apply
              instead of silently falling back to "no filter" -->
         <button @click="apply" :disabled="checked.size === 0"
-          class="flex-1 py-1.5 rounded-lg bg-[#00B794] text-white text-sm hover:bg-[#00a385] transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#00B794]">
+          class="flex-1 py-1.5 rounded-lg bg-[#00B794] text-white text-sm font-medium hover:bg-[#00a385] transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#00B794]">
           {{ currentLang === 'ar' ? 'تطبيق' : 'Apply' }}
         </button>
       </div>
@@ -134,7 +126,10 @@ const toggle = () => {
   if (r) {
     const panelW = 256
     const left = Math.min(Math.max(8, r.left), window.innerWidth - panelW - 8)
-    const top  = Math.min(r.bottom + 6, window.innerHeight - 380)
+    const availableBelow = window.innerHeight - r.bottom
+    const top = availableBelow < 390 && r.top > 390
+      ? Math.max(8, r.top - 390)
+      : Math.min(r.bottom + 6, window.innerHeight - 390)
     panelStyle.value = { top: `${Math.max(8, top)}px`, left: `${left}px` }
   }
   isOpen.value = true
@@ -164,6 +159,10 @@ const toggleAll = () => {
   checked.value = next
 }
 
+const canClear = computed(() => {
+  return active.value || checked.value.size < props.options.length
+})
+
 const apply = () => {
   // Everything checked = no constraint; emit [] so no orphaned params linger
   const values = checked.value.size >= props.options.length ? [] : [...checked.value]
@@ -171,8 +170,8 @@ const apply = () => {
   close()
 }
 const clear = () => {
-  emit('apply', props.column, [])
-  close()
+  checked.value = new Set(props.options)
+  search.value = ''
 }
 
 // Options can refresh after a mapping save — drop checked values that no

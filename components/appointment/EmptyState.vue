@@ -1,6 +1,6 @@
 <template>
     <div class="flex-1 flex flex-col items-center justify-center p-12 text-center rounded-3xl border transition-all"
-        :class="isDark ? 'bg-[#001410] border-[#03D8B0]/20' : 'bg-white border-gray-100 shadow-sm'">
+        :class="isDark ? 'bg-[#002E26] border-[#03D8B0]/20' : 'bg-white border-gray-100 shadow-sm'">
         <div class="w-[80px] h-[80px] mb-6 rounded-full bg-[#8DF3DFE8] flex items-center justify-center animate-pulse">
             <svg class="w-10 h-10 text-[#00B995]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />

@@ -82,7 +82,7 @@ export const useRevenue = () => {
     if (!chart) return null
     return {
       categories:   chart.categories ?? [],
-      categoriesAr: chart.categories ?? [],
+      categoriesAr: chart.categories_ar ?? chart.categories ?? [],
       previousYearRaw: chart.previous_year ?? [],
       currentYearRaw:  chart.current_year ?? [],
       series: [
@@ -98,6 +98,7 @@ export const useRevenue = () => {
     if (!apiData.length) return { categories: [], series: [], previousYearRaw: [], currentYearRaw: [] }
     return {
       categories: apiData.map((item: any) => item.month_year),
+      categoriesAr: translateMonthLabels(apiData.map((item: any) => item.month_year)),
       previousYearRaw: apiData.map((item: any) => Number(item.previous_year ?? 0)),
       currentYearRaw:  apiData.map((item: any) => Number(item.current_year ?? 0)),
       series: [

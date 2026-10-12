@@ -1,6 +1,6 @@
 <template>
     <div class="w-full overflow-hidden rounded-[16px] border transition-all"
-        :class="isDark ? 'bg-[#001410] border-[#03D8B0]/20' : 'bg-white border-gray-100 shadow-sm'">
+        :class="isDark ? 'bg-[#002E26] border-[#03D8B0]/20' : 'bg-white border-gray-100 shadow-sm'">
         <div class="h-[560px] overflow-y-auto">
         <table class="w-full text-left border-collapse">
             <thead class="sticky top-0 z-10">
@@ -142,6 +142,30 @@ const STATUS_LABELS = {
 }
 const statusLabel = (status) => STATUS_LABELS[status] ?? status
 
-const getTypeStyle = (type) => typeStyles.value[type] ?? { bg: '#F3F4F6', text: '#6B7280' }
-const getStatusStyle = (status) => statusStyles.value[status] ?? { bg: '#F3F4F6', text: '#6B7280' }
+const darkStatusStyles = {
+    pending:        { bg: 'rgba(217, 119, 6, 0.22)',   text: '#FBBF24' },
+    scheduled:      { bg: 'rgba(59, 130, 246, 0.22)',  text: '#60A5FA' },
+    rescheduled:    { bg: 'rgba(249, 115, 22, 0.22)',  text: '#FB923C' },
+    extra_hours:    { bg: 'rgba(249, 115, 22, 0.22)',  text: '#FB923C' },
+    cancelled:      { bg: 'rgba(239, 68, 68, 0.22)',   text: '#F87171' },
+    completed:      { bg: 'rgba(1, 142, 113, 0.26)',   text: '#34D399' },
+    monthly_review: { bg: 'rgba(124, 58, 237, 0.26)',  text: '#C4B5FD' },
+}
+
+const darkTypeStyles = {
+    'Implementation Feedback': { bg: 'rgba(59, 130, 246, 0.22)',  text: '#60A5FA' },
+    'Initial Usability':       { bg: 'rgba(217, 119, 6, 0.22)',   text: '#FBBF24' },
+    'Feature Suggestion':      { bg: 'rgba(1, 142, 113, 0.26)',   text: '#34D399' },
+    'Monthly Review':          { bg: 'rgba(124, 58, 237, 0.26)',  text: '#C4B5FD' },
+}
+
+const getTypeStyle = (type) => {
+    if (isDark.value && darkTypeStyles[type]) return darkTypeStyles[type]
+    return typeStyles.value[type] ?? { bg: '#F3F4F6', text: '#6B7280' }
+}
+
+const getStatusStyle = (status) => {
+    if (isDark.value && darkStatusStyles[status]) return darkStatusStyles[status]
+    return statusStyles.value[status] ?? { bg: '#F3F4F6', text: '#6B7280' }
+}
 </script>

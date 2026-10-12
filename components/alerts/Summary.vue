@@ -2,6 +2,7 @@
     <!-- Root container with dynamic key for animation and height limits -->
     <div :key="type"
         class="relative z-10 mt-6 overflow-x-auto w-full max-w-full custom-scrollbar rounded-2xl transition-all duration-500"
+        :class="isDark ? 'bg-[#002E26] border border-[#03D8B0]/20' : ''"
         :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
         <table class="w-full text-left rtl:text-right border-collapse min-w-[1000px] table-fixed">
@@ -20,7 +21,7 @@
             <!-- Table Body -->
             <tbody>
                 <tr v-for="(row, idx) in data" :key="idx"
-                    class="border-b-[0.3px]   !opacity-80 last:border-0 transition-colors duration-300 border-white/60"
+                    class="border-b-[0.3px] last:border-0 transition-colors duration-300"
                     :class="[config.borderColor, config.tableBg]">
 
                     <!-- Index -->
@@ -147,23 +148,23 @@ const config = computed(() => {
     const themes = {
         all: {
             headerBg: 'bg-[#008864]',
-            tableBg: isD ? 'bg-[#00261f]/50' : 'bg-[#9ae3d1]',
-            borderColor: isD ? 'border-[#00261f]' : ''
+            tableBg: isD ? 'bg-[#002E26]' : 'bg-[#9ae3d1]',
+            borderColor: isD ? 'border-white/10' : ''
         },
         pending: {
             headerBg: 'bg-[#A68426]',
             tableBg: isD ? 'bg-[#2b2610]' : 'bg-[#f2ebc4]',
-            borderColor: isD ? 'border-[#00261f]' : ''
+            borderColor: isD ? 'border-white/10' : ''
         },
         resolved: {
             headerBg: 'bg-[#0F5225]',
             tableBg: isD ? 'bg-[#0a2113]' : 'bg-[#bce8d1]',
-            borderColor: isD ? 'border-[#00261f]    ' : ''
+            borderColor: isD ? 'border-white/10' : ''
         },
         ignored: {
             headerBg: 'bg-[#4D4D4D]',
             tableBg: isD ? 'bg-[#1a1a1a]' : 'bg-[#d9dedd]',
-            borderColor: isD ? 'border-[#00261f]' : ''
+            borderColor: isD ? 'border-white/10' : ''
         }
     };
     return themes[props.type] || themes.all;

@@ -1,6 +1,6 @@
 <template>
     <div class="content-area rounded-[20px] lg:p-8 p-4 transition-all duration-300"
-        :class="isDark ? 'bg-[#015F4D]/20 border border-[#00B794]/30' : 'bg-white border border-gray-100 shadow-sm'">
+        :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border border-gray-100 shadow-sm'">
 
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-4">
             <h2 class="text-lg font-normal transition-colors duration-300"
@@ -27,7 +27,7 @@
                     <h3 class="text-base font-medium mb-1" :class="isDark ? 'text-white' : 'text-[#0A0A0A]'">
                         {{ currentLang === 'ar' ? card.titleAr : card.title }}
                     </h3>
-                    <div v-if="card.pending" class="skeleton h-4 w-44 rounded mt-1"></div>
+                    <div v-if="card.pending" class="skeleton h-4 w-44 rounded mt-1" :class="{ dark: isDark }"></div>
                     <p v-else-if="card.subtext" class="text-sm text-[#6A7282] font-normal">
                         {{ card.subtext }}
                     </p>
@@ -86,6 +86,10 @@ const reportCards = computed(() => [
     background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
     background-size: 400% 100%;
     animation: ds-shimmer 1.4s ease infinite;
+}
+.skeleton.dark {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.12) 37%, rgba(255, 255, 255, 0.05) 63%);
+    background-size: 400% 100%;
 }
 @keyframes ds-shimmer {
     0% { background-position: 100% 50%; }

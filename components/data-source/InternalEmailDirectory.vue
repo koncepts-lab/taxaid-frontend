@@ -1,7 +1,7 @@
 <template>
     <div :dir="currentLang === 'ar' ? 'rtl' : 'ltr'"
         class="p-6 space-y-6 rounded-2xl transition-all duration-300"
-        :class="isDark ? 'bg-[#015F4D]/20 border border-[#00B794]/30 text-white' : 'bg-white text-black'">
+        :class="isDark ? 'bg-[#002e26] border border-white/5 text-white' : 'bg-white text-black shadow-sm'">
 
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div :class="currentLang === 'ar' ? 'text-right' : 'text-left'">
@@ -40,12 +40,12 @@
 
                 <template v-if="loading">
                     <div v-for="n in ROWS" :key="n" class="grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1fr)_100px_100px] h-[60px] items-center shrink-0 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
-                        <div class="px-6"><div class="skeleton h-4 w-32 rounded"></div></div>
-                        <div class="px-4"><div class="skeleton h-6 w-24 rounded-full"></div></div>
-                        <div class="px-4"><div class="skeleton h-4 w-44 rounded"></div></div>
-                        <div class="px-4"><div class="skeleton h-4 w-24 rounded"></div></div>
-                        <div class="px-4"><div class="skeleton h-5 w-14 rounded-full"></div></div>
-                        <div class="px-4 flex justify-center"><div class="skeleton h-7 w-14 rounded-md"></div></div>
+                        <div class="px-6"><div class="skeleton h-4 w-32 rounded" :class="{ dark: isDark }"></div></div>
+                        <div class="px-4"><div class="skeleton h-6 w-24 rounded-full" :class="{ dark: isDark }"></div></div>
+                        <div class="px-4"><div class="skeleton h-4 w-44 rounded" :class="{ dark: isDark }"></div></div>
+                        <div class="px-4"><div class="skeleton h-4 w-24 rounded" :class="{ dark: isDark }"></div></div>
+                        <div class="px-4"><div class="skeleton h-5 w-14 rounded-full" :class="{ dark: isDark }"></div></div>
+                        <div class="px-4 flex justify-center"><div class="skeleton h-7 w-14 rounded-md" :class="{ dark: isDark }"></div></div>
                     </div>
                 </template>
 
@@ -185,6 +185,10 @@ onBeforeUnmount(() => clearTimeout(timer))
     background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
     background-size: 400% 100%;
     animation: idir-shimmer 1.4s ease infinite;
+}
+.skeleton.dark {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.12) 37%, rgba(255, 255, 255, 0.05) 63%);
+    background-size: 400% 100%;
 }
 @keyframes idir-shimmer {
     0% { background-position: 100% 50%; }

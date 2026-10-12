@@ -20,10 +20,11 @@
       </main>
     </div>
   </div>
-  <div v-else class="flex h-screen bg-[#F3F4F6] items-center justify-center">
+  <div v-else class="flex h-screen items-center justify-center transition-colors duration-300"
+    :class="isDark ? 'dark-mode-bg text-white' : 'bg-[#F3F4F6] text-gray-600'">
     <div class="text-center">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00B794] mx-auto"></div>
-      <p class="mt-4 text-gray-600">Loading...</p>
+      <p class="mt-4" :class="isDark ? 'text-white/70' : 'text-gray-600'">Loading...</p>
     </div>
   </div>
   <CommonErrorPopupModal

@@ -24,8 +24,8 @@
 
                     <div class="p-6 flex-1 min-h-0 overflow-hidden flex flex-col">
                         <div v-if="loading" class="space-y-3 py-2">
-                            <div class="skeleton h-10 w-full rounded-lg"></div>
-                            <div v-for="n in 9" :key="n" class="skeleton h-8 w-full rounded"></div>
+                            <div class="skeleton h-10 w-full rounded-lg" :class="{ dark: isDark }"></div>
+                            <div v-for="n in 9" :key="n" class="skeleton h-8 w-full rounded" :class="{ dark: isDark }"></div>
                         </div>
                         <div v-else class="overflow-auto rounded-[20px] border budget-scroll flex-1 min-h-0 relative shadow-inner"
                             :class="isDark ? 'border-white/10 bg-[#001a16]' : 'border-gray-200 bg-gray-50/30'">
@@ -161,6 +161,10 @@ watch(() => props.isOpen, (open) => { if (!open) expandedRows.value = new Set() 
     background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
     background-size: 400% 100%;
     animation: ds-shimmer 1.4s ease infinite;
+}
+.skeleton.dark {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.12) 37%, rgba(255, 255, 255, 0.05) 63%);
+    background-size: 400% 100%;
 }
 @keyframes ds-shimmer {
     0% { background-position: 100% 50%; }

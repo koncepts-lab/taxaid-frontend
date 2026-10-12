@@ -1,9 +1,10 @@
 <template>
     <div class="space-y-6">
-        <div ref="cardRef" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div ref="cardRef" class="rounded-2xl shadow-sm overflow-hidden transition-all duration-300"
+            :class="isDark ? 'bg-[#002e26] border border-white/5' : 'bg-white border border-gray-100'">
             <div class="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 class="text-lg font-normal text-black">
+                    <h2 class="text-lg font-normal" :class="isDark ? 'text-white' : 'text-black'">
                         {{ currentLang === 'ar' ? 'تخطيط ميزان المراجعة' : 'Trial Balance Mapping' }}
                     </h2>
                     <p class="text-base mt-1" :class="isDark ? 'text-[#c2c2c2]' : 'text-[#717182]'">
@@ -31,7 +32,8 @@
                         {{ currentLang === 'ar' ? 'استيراد ملف Excel' : 'Upload Mapping' }}
                     </button>
                     <button @click="isReportModalOpen = true"
-                        class="flex items-center gap-2 px-6 py-2 bg-[#68E4C4] hover:bg-[#34D399] text-[#064E3B] rounded-xl font-normal text-base transition-all active:scale-95 shadow-sm">
+                        class="flex items-center gap-2 px-6 py-2 rounded-xl font-normal text-base transition-all active:scale-95 shadow-sm"
+                        :class="isDark ? 'bg-[#008169] hover:bg-[#006b56] text-white' : 'bg-[#68E4C4] hover:bg-[#34D399] text-[#064E3B]'">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
                         </svg>
@@ -111,11 +113,11 @@
                     </thead>
                     <tbody>
                         <template v-if="tbLoading">
-                            <tr v-for="i in localPerPage" :key="'skeleton-'+i" class="animate-pulse border-b border-gray-50 last:border-0">
-                                <td class="p-2"><div class="h-[42px] bg-gray-100 rounded-lg w-full"></div></td>
-                                <td class="p-2"><div class="h-[42px] bg-gray-100 rounded-lg w-full"></div></td>
-                                <td class="p-2"><div class="h-[42px] bg-gray-100 rounded-lg w-full"></div></td>
-                                <td class="p-2"><div class="h-5 bg-gray-100 rounded w-3/4 ml-2"></div></td>
+                            <tr v-for="i in localPerPage" :key="'skeleton-'+i" class="animate-pulse border-b" :class="isDark ? 'border-white/5' : 'border-gray-50 last:border-0'">
+                                <td class="p-2"><div class="h-[42px] rounded-lg w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div></td>
+                                <td class="p-2"><div class="h-[42px] rounded-lg w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div></td>
+                                <td class="p-2"><div class="h-[42px] rounded-lg w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div></td>
+                                <td class="p-2"><div class="h-5 rounded w-3/4 ml-2" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div></td>
                             </tr>
                         </template>
                         <template v-else-if="mappingData.length === 0">
@@ -206,9 +208,10 @@
 
         <!-- 2. Bottom Grid: Configuration and Integrity -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div class="rounded-2xl shadow-sm p-6 transition-all duration-300"
+                :class="isDark ? 'bg-[#002e26] border border-white/5' : 'bg-white border border-gray-100'">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-normal text-gray-800">Configuration Details</h3>
+                    <h3 class="text-lg font-normal" :class="isDark ? 'text-white' : 'text-gray-800'">Configuration Details</h3>
                     <div v-if="isAdminMode" class="flex items-center gap-2">
                         <!-- Saving locks the table backend-side; Lock Table = save & lock.
                              When locked, the same slot becomes Unlock (POST /configuration-settings/unlock). -->
@@ -298,9 +301,10 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div class="rounded-2xl shadow-sm p-6 transition-all duration-300"
+                :class="isDark ? 'bg-[#002e26] border border-white/5' : 'bg-white border border-gray-100'">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-normal text-black">Integrity Check</h3>
+                    <h3 class="text-lg font-normal" :class="isDark ? 'text-white' : 'text-black'">Integrity Check</h3>
                     <button v-if="isAdminMode" @click="handleRunCheck" :disabled="integrityLoading"
                         class="px-6 py-1.5 border border-[#00B793CC] text-[#00896F] bg-[#86E4CB1A] rounded-lg text-sm font-medium hover:bg-[#F0FDFA] transition-all disabled:opacity-50">
                         {{ integrityLoading ? 'Checking...' : 'Run Check' }}
@@ -408,17 +412,19 @@
         <Transition name="fade">
             <div v-if="isReportModalOpen"
                 class="fixed inset-0 z-[1200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                <div class="bg-white rounded-2xl w-full max-w-7xl shadow-2xl flex flex-col relative p-8 max-h-[78vh]">
+                <div class="rounded-2xl w-full max-w-7xl shadow-2xl flex flex-col relative p-8 max-h-[78vh] border transition-colors"
+                    :class="isDark ? 'bg-[#002e26] border-white/10 text-white' : 'bg-white border-gray-100 text-gray-900'">
 
                     <button @click="isReportModalOpen = false"
-                        class="absolute top-8 right-8 text-gray-400 hover:text-gray-600 transition-colors">
+                        class="absolute top-8 right-8 transition-colors"
+                        :class="isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M18 6L6 18M6 6l12 12" />
                         </svg>
                     </button>
 
                     <div class="flex items-center justify-between gap-4 mb-4 px-2 pr-14">
-                        <h3 class="text-2xl font-semibold text-gray-900">
+                        <h3 class="text-2xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
                             {{ currentLang === 'ar' ? 'ميزان المراجعة - تقرير مفصل' : 'Trial Balance - Detailed Report' }}
                         </h3>
                         <button @click="handleDownload" :disabled="downloading"
@@ -436,17 +442,20 @@
 
                     <!-- Modal badges -->
                     <div class="px-2 mb-4 flex items-center gap-3">
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm border border-[#22C55E] bg-white text-[#166534]">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm border"
+                            :class="isDark ? 'border-[#22C55E]/50 bg-emerald-950/40 text-emerald-300' : 'border-[#22C55E] bg-white text-[#166534]'">
                             <span class="w-2 h-2 rounded-full bg-[#22C55E] inline-block flex-shrink-0"></span>
                             {{ currentLang === 'ar' ? 'تم التخطيط' : 'Mapped' }}: {{ tbMeta.mapped_count }}
                         </span>
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm border border-[#EF4444] bg-white text-[#991B1B]">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm border"
+                            :class="isDark ? 'border-[#EF4444]/50 bg-red-950/40 text-red-300' : 'border-[#EF4444] bg-white text-[#991B1B]'">
                             <span class="w-2 h-2 rounded-full bg-[#EF4444] inline-block flex-shrink-0"></span>
                             {{ currentLang === 'ar' ? 'غير مخطط' : 'Not Mapped' }}: {{ tbMeta.unmapped_count }}
                         </span>
                     </div>
 
-                    <div class="overflow-y-auto flex-1 border border-gray-100 rounded-2xl">
+                    <div class="overflow-y-auto flex-1 rounded-2xl border"
+                        :class="isDark ? 'border-white/10' : 'border-gray-100'">
                         <table class="w-full border-separate border-spacing-0">
                             <thead class="bg-[#00896F] text-white sticky top-0">
                                 <tr>
@@ -482,27 +491,29 @@
                             </thead>
                             <tbody>
                                 <template v-if="tbLoading">
-                                    <tr v-for="i in localPerPage" :key="'modal-skeleton-'+i" class="animate-pulse border-b border-gray-50 last:border-0">
-                                        <td class="px-6 py-3"><div class="h-5 bg-gray-100 rounded w-full"></div></td>
-                                        <td class="px-6 py-3"><div class="h-5 bg-gray-100 rounded w-full"></div></td>
-                                        <td class="px-6 py-3"><div class="h-5 bg-gray-100 rounded w-full"></div></td>
-                                        <td class="px-6 py-3"><div class="h-5 bg-gray-100 rounded w-3/4"></div></td>
+                                    <tr v-for="i in localPerPage" :key="'modal-skeleton-'+i" class="animate-pulse border-b" :class="isDark ? 'border-white/5' : 'border-gray-50 last:border-0'">
+                                        <td class="px-6 py-3"><div class="h-5 rounded w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div></td>
+                                        <td class="px-6 py-3"><div class="h-5 rounded w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div></td>
+                                        <td class="px-6 py-3"><div class="h-5 rounded w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div></td>
+                                        <td class="px-6 py-3"><div class="h-5 rounded w-3/4" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div></td>
                                     </tr>
                                 </template>
                                 <template v-else-if="mappingData.length === 0">
                                     <tr>
-                                        <td colspan="4" class="text-center py-10 text-gray-400 text-sm">
+                                        <td colspan="4" class="text-center py-10 text-sm" :class="isDark ? 'text-white/40' : 'text-gray-400'">
                                             {{ currentLang === 'ar' ? 'لا توجد بيانات' : 'No data available' }}
                                         </td>
                                     </tr>
                                 </template>
                                 <template v-else>
                                     <tr v-for="(item, idx) in mappingData" :key="idx"
-                                        :class="item.fsCode ? 'bg-[#F0FDF4]' : 'bg-[#FFF1F2]'">
-                                        <td class="px-6 py-3 text-sm text-gray-900 font-medium">{{ item.fsCode || '—' }}</td>
-                                        <td class="px-6 py-3 text-sm text-gray-600">{{ item.mainGroup || '—' }}</td>
-                                        <td class="px-6 py-3 text-sm text-gray-600">{{ item.subGroup || '—' }}</td>
-                                        <td class="px-6 py-3 text-sm text-gray-700">{{ item.ledger }}</td>
+                                        :class="isDark
+                                            ? (item.fsCode ? 'bg-white/[0.03] hover:bg-white/[0.06]' : 'bg-red-500/[0.08] hover:bg-red-500/[0.12]')
+                                            : (item.fsCode ? 'bg-[#F0FDF4]' : 'bg-[#FFF1F2]')">
+                                        <td class="px-6 py-3 text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ item.fsCode || '—' }}</td>
+                                        <td class="px-6 py-3 text-sm" :class="isDark ? 'text-white/80' : 'text-gray-600'">{{ item.mainGroup || '—' }}</td>
+                                        <td class="px-6 py-3 text-sm" :class="isDark ? 'text-white/80' : 'text-gray-600'">{{ item.subGroup || '—' }}</td>
+                                        <td class="px-6 py-3 text-sm" :class="isDark ? 'text-white/90' : 'text-gray-700'">{{ item.ledger }}</td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -511,32 +522,34 @@
 
                     <!-- Modal pagination footer -->
                     <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
-                        <span class="text-sm text-gray-500">
+                        <span class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-500'">
                             Showing {{ pageStart }}–{{ pageEnd }} of {{ tbMeta.total }} results
                         </span>
                         <div class="flex items-center gap-1.5">
                             <button @click="goToPage(tbMeta.current_page - 1)"
                                 :disabled="tbMeta.current_page <= 1 || tbLoading"
-                                class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                                class="px-3 py-1.5 rounded-lg border text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                :class="isDark ? 'border-white/10 text-white/80 bg-white/5 hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
                                 Previous
                             </button>
                             <button v-for="p in visiblePages" :key="p"
                                 @click="goToPage(p)"
                                 :class="p === tbMeta.current_page
                                     ? 'bg-[#00896F] text-white border-[#00896F]'
-                                    : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+                                    : (isDark ? 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50')"
                                 class="w-8 h-8 flex items-center justify-center rounded-lg border text-sm font-medium transition-all">
                                 {{ p }}
                             </button>
                             <button @click="goToPage(tbMeta.current_page + 1)"
                                 :disabled="tbMeta.current_page >= tbMeta.last_page || tbLoading"
-                                class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                                class="px-3 py-1.5 rounded-lg border text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                :class="isDark ? 'border-white/10 text-white/80 bg-white/5 hover:bg-white/10' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'">
                                 Next
                             </button>
-                            <span class="ml-3 text-sm text-gray-500 whitespace-nowrap">
+                            <span class="ml-3 text-sm whitespace-nowrap" :class="isDark ? 'text-white/60' : 'text-gray-500'">
                                 {{ currentLang === 'ar' ? 'صفوف لكل صفحة:' : 'Rows per page:' }}
                             </span>
-                            <CommonSelectDropdown class="w-20" mode="select" size="xs" :clearable="false" :options="perPageOptions" :model-value="localPerPage" @update:model-value="v => { localPerPage = v; handlePerPageChange() }" />
+                            <CommonSelectDropdown class="w-20" mode="select" size="xs" :clearable="false" :isDark="isDark" :options="perPageOptions" :model-value="localPerPage" @update:model-value="v => { localPerPage = v; handlePerPageChange() }" />
                         </div>
                     </div>
 

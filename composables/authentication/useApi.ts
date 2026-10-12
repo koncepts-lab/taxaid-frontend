@@ -1,6 +1,7 @@
 export const useApi = async (url: string, options: any = {}) => {
   const config = useRuntimeConfig()
   const token = useCookie('auth_token')
+  const currentLang = useState('currentLang', () => 'en')
 
   const { raw, ...rest } = options
   const method = (rest.method || 'GET').toUpperCase()
@@ -12,6 +13,18 @@ export const useApi = async (url: string, options: any = {}) => {
       if (rest.params) rest.params = { ...rest.params, clear_cache: 'all' }
     } else if (!isFormData) {
       rest.body = { ...(rest.body || {}), clear_cache: 'all' }
+    }
+  }
+
+  // Auto-append lang=ar to every request when the UI is in Arabic, so
+  // individual composables don't each need to set it manually. A caller's
+  // own explicit `lang` (query/params/body) takes precedence.
+  if (currentLang.value === 'ar' && !isFormData) {
+    if (method === 'GET') {
+      rest.query = { lang: 'ar', ...(rest.query || {}) }
+      if (rest.params) rest.params = { lang: 'ar', ...rest.params }
+    } else {
+      rest.body = { lang: 'ar', ...(rest.body || {}) }
     }
   }
 

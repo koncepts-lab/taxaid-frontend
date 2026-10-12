@@ -1,6 +1,6 @@
 <template>
     <div class="w-full rounded-[20px] border overflow-hidden transition-all"
-        :class="isDark ? 'bg-[#001410] border-[#03D8B0]/20' : 'bg-white border-gray-100 shadow-sm'">
+        :class="isDark ? 'bg-[#002E26] border-[#03D8B0]/20' : 'bg-white border-gray-100 shadow-sm'">
 
         <!-- Calendar Header -->
         <div class="flex items-center justify-between px-8 py-5 border-b"
@@ -57,7 +57,7 @@
             <!-- Leading empty cells -->
             <div v-for="n in startOffset" :key="'empty-' + n"
                 class="min-h-[120px] border-b border-r last:border-r-0 p-2"
-                :class="isDark ? 'border-[#03D8B0]/05 bg-transparent' : 'border-gray-50 bg-gray-50/30'">
+                :class="isDark ? 'border-[#03D8B0]/15 bg-transparent' : 'border-gray-50 bg-gray-50/30'">
             </div>
 
             <!-- Day Cells -->
@@ -66,8 +66,8 @@
                 :class="[
                     (day + startOffset) % 7 === 0 ? 'border-r-0' : '',
                     isToday(day)
-                        ? (isDark ? 'bg-[#00FFBC]/5 border-[#00FFBC]/30' : 'bg-[#E6FFF8] border-[#04C18F]/40')
-                        : (isDark ? 'border-[#03D8B0]/05 hover:bg-white/[0.02]' : 'border-gray-50 hover:bg-gray-50/60'),
+                        ? (isDark ? 'bg-[#00FFBC]/10 border-[#00FFBC]/40' : 'bg-[#E6FFF8] border-[#04C18F]/40')
+                        : (isDark ? 'border-[#03D8B0]/15 hover:bg-white/[0.03]' : 'border-gray-50 hover:bg-gray-50/60'),
                 ]">
 
                 <!-- Date Number -->
@@ -75,7 +75,7 @@
                     :class="[
                         isToday(day)
                             ? (isDark ? 'bg-[#00FFBC] text-[#013e32]' : 'bg-[#016A56] text-white')
-                            : (isDark ? 'text-white/50' : 'text-gray-500')
+                            : (isDark ? 'text-white/70' : 'text-gray-500')
                     ]">
                     {{ day }}
                 </span>
@@ -98,7 +98,7 @@
             <!-- Trailing empty cells to complete grid -->
             <div v-for="n in trailingCells" :key="'trail-' + n"
                 class="min-h-[120px] border-b border-r last:border-r-0 p-2"
-                :class="isDark ? 'border-[#03D8B0]/05' : 'border-gray-50 bg-gray-50/30'">
+                :class="isDark ? 'border-[#03D8B0]/15' : 'border-gray-50 bg-gray-50/30'">
             </div>
         </div>
     </div>
@@ -261,7 +261,24 @@ const barStatus = (appt) => {
     return BASE_PENDING_STATUSES.includes(appt.status) ? 'pending' : appt.status
 }
 
-const pillStyle = (appt) => ({ background: getStatusBg(barStatus(appt)), color: getStatusText(barStatus(appt)) })
+const darkPillStyles = {
+    pending:        { bg: 'rgba(217, 119, 6, 0.22)',   text: '#FBBF24' },
+    scheduled:      { bg: 'rgba(59, 130, 246, 0.22)',  text: '#60A5FA' },
+    rescheduled:    { bg: 'rgba(249, 115, 22, 0.22)',  text: '#FB923C' },
+    extra_hours:    { bg: 'rgba(249, 115, 22, 0.22)',  text: '#FB923C' },
+    cancelled:      { bg: 'rgba(239, 68, 68, 0.22)',   text: '#F87171' },
+    completed:      { bg: 'rgba(1, 142, 113, 0.26)',   text: '#34D399' },
+    monthly_review: { bg: 'rgba(124, 58, 237, 0.26)',  text: '#C4B5FD' },
+}
+
+const pillStyle = (appt) => {
+    const status = barStatus(appt)
+    if (isDark.value) {
+        const dark = darkPillStyles[status]
+        if (dark) return { background: dark.bg, color: dark.text }
+    }
+    return { background: getStatusBg(status), color: getStatusText(status) }
+}
 
 const pillLabel = (appt) => appt._monthly_review
     ? (currentLang.value === 'ar' ? 'المراجعة الشهرية' : 'Monthly Review')

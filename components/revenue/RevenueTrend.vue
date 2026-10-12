@@ -173,7 +173,7 @@ const fmt = (value: any) => {
 
 const { loading, error, trendData, fetchAll: fetchTrendData } = useRevenue()
 
-const categories = computed(() => trendData.value?.categories ?? [])
+const categories = computed(() => (currentLang.value === 'ar' ? trendData.value?.categoriesAr : trendData.value?.categories) ?? [])
 
 const trendTitle = computed(() => {
   const n = categories.value.length || 6

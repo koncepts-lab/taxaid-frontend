@@ -1,6 +1,6 @@
 <template>
     <div class="mt-8 transition-all duration-500 w-full max-w-full rounded-2xl border p-6"
-        :class="isDark ? 'bg-[#015F4D]/20 border-[#00B794]/30' : 'bg-white border-gray-100 shadow-sm'">
+        :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border-gray-100 shadow-sm'">
         <h3 class="text-lg font-medium mb-4" :class="isDark ? 'text-white' : 'text-[#013E32]'">
             {{ currentLang === 'ar' ? 'سجل التغييرات' : 'Change log' }}
         </h3>
