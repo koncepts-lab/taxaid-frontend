@@ -3,8 +3,11 @@
     <div class="p-6 pb-2">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex items-center gap-4">
-          <div class="w-10 h-10 bg-[#E8FCF2] rounded-[10px] flex items-center justify-center text-[#00835D] shrink-0">
-            <img src="/images/icons/Notifications.svg" alt="" class="w-5 h-5" />
+          <div class="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0"
+            :class="isDark ? 'bg-teal-950 text-[#00B68D]' : 'bg-[#E8FCF2] text-[#00835D]'">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c0 4.97-4.03 9-9 9 4.97 0 9 4.03 9 9 0-4.97 4.03-9 9-9-4.97 0-9-4.03-9-9z" />
+            </svg>
           </div>
           <h2 class="text-[18px] font-normal" :class="isDark ? 'text-white' : 'text-[#101828]'">AI Alert Settings</h2>
         </div>

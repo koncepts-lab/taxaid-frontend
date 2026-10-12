@@ -5,51 +5,55 @@
 
       <!-- Header -->
       <div class="mb-6 flex items-center gap-4">
-        <NuxtLink to="/settings/subscription" class="shrink-0 w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors" aria-label="Back to Subscription">
+        <NuxtLink to="/settings/subscription" class="shrink-0 w-9 h-9 rounded-full border flex items-center justify-center transition-colors"
+          :class="isDark ? 'border-white/10 text-white hover:bg-white/10' : 'border-gray-200 text-gray-500 hover:bg-gray-50'" aria-label="Back to Subscription">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
         </NuxtLink>
         <div>
-          <h1 class="transition-colors duration-300 text-[#013E32]" style="font-size: 24px;">Subscription Management</h1>
-          <p class="font-normal mt-1 transition-colors duration-300 text-[#00000080]">Manage your plan, billing and payment methods</p>
+          <h1 class="transition-colors duration-300 text-[24px]" :class="isDark ? 'text-white' : 'text-[#013E32]'">Subscription Management</h1>
+          <p class="font-normal mt-1 transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">Manage your plan, billing and payment methods</p>
         </div>
       </div>
 
       <div v-if="loading" class="animate-pulse">
-        <div class="mb-8 h-[72px] rounded-2xl bg-gray-100"></div>
+        <div class="mb-8 h-[72px] rounded-2xl" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
         <div class="flex flex-col lg:flex-row gap-8">
-          <div class="flex-1 bg-white rounded-2xl border border-gray-100 p-8 shadow-sm space-y-6">
-            <div class="h-6 w-48 bg-gray-100 rounded"></div>
-            <div class="h-11 bg-gray-100 rounded-lg"></div>
-            <div class="h-11 bg-gray-100 rounded-lg"></div>
+          <div class="flex-1 rounded-2xl border p-8 shadow-sm space-y-6" :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border-gray-100'">
+            <div class="h-6 w-48 rounded" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
+            <div class="h-11 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
+            <div class="h-11 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
             <div class="grid grid-cols-2 gap-6">
-              <div class="h-11 bg-gray-100 rounded-lg"></div>
-              <div class="h-11 bg-gray-100 rounded-lg"></div>
+              <div class="h-11 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
+              <div class="h-11 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
             </div>
-            <div class="h-12 bg-gray-100 rounded-lg"></div>
+            <div class="h-12 rounded-lg" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
           </div>
           <div class="w-full lg:w-96 shrink-0">
-            <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm space-y-4">
-              <div class="h-6 w-32 bg-gray-100 rounded"></div>
-              <div class="h-4 bg-gray-100 rounded"></div>
-              <div class="h-4 bg-gray-100 rounded"></div>
-              <div class="h-4 bg-gray-100 rounded w-2/3"></div>
-              <div class="h-px bg-gray-100"></div>
-              <div class="h-24 bg-gray-100 rounded-xl"></div>
+            <div class="rounded-2xl border p-8 shadow-sm space-y-4" :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border-gray-100'">
+              <div class="h-6 w-32 rounded" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
+              <div class="h-4 rounded" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
+              <div class="h-4 rounded" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
+              <div class="h-4 rounded w-2/3" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
+              <div class="h-px" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
+              <div class="h-24 rounded-xl" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
             </div>
           </div>
         </div>
       </div>
 
       <template v-else-if="!plan">
-        <div class="max-w-2xl mx-auto bg-white rounded-2xl border border-gray-100 p-12 shadow-sm text-center mt-8">
-          <p class="text-[16px] text-[#667085] mb-6">Plan not found.</p>
+        <div class="max-w-2xl mx-auto rounded-2xl border p-12 shadow-sm text-center mt-8 transition-all"
+          :class="isDark ? 'bg-[#002e26] border-white/5 text-white' : 'bg-white border-gray-100'">
+          <p class="text-[16px] mb-6" :class="isDark ? 'text-white/60' : 'text-[#667085]'">Plan not found.</p>
           <NuxtLink to="/settings/subscription" class="bg-[#00896F] text-white px-6 py-3 rounded-lg text-[15px] font-medium hover:bg-[#00705a] transition-colors">Back to Subscription</NuxtLink>
         </div>
       </template>
 
       <template v-else>
         <!-- Progress Tracker -->
-        <div v-if="!success" class="mb-8 p-5 rounded-2xl border" style="background: linear-gradient(90deg, #ECFDF5 0%, #D1F4E6 100%); border-color: #A2E8D6;">
+        <div v-if="!success" class="mb-8 p-5 rounded-2xl border transition-all duration-300"
+          :class="isDark ? 'bg-[#002e26] border-white/5' : 'border-[#A2E8D6]'"
+          :style="!isDark ? { background: 'linear-gradient(90deg, #ECFDF5 0%, #D1F4E6 100%)' } : {}">
           <div class="flex items-center max-w-2xl mx-auto px-4">
             <!-- Step 1: Billing Info -->
             <div class="flex items-center gap-3">
@@ -60,25 +64,25 @@
               <span class="text-sm font-medium text-[#00896F]">Billing Info</span>
             </div>
 
-            <div :class="['flex-1 h-[2px] mx-4', step >= 2 ? 'bg-[#00896F]' : 'bg-gray-200']"></div>
+            <div :class="['flex-1 h-[2px] mx-4', step >= 2 ? 'bg-[#00896F]' : (isDark ? 'bg-white/20' : 'bg-gray-200')]"></div>
 
             <!-- Step 2: Payment -->
             <div :class="['flex items-center gap-3', step < 2 ? 'opacity-50' : '']">
-              <div :class="['w-10 h-10 rounded-full flex items-center justify-center', step >= 2 ? 'bg-[#00896F] text-white shadow-sm' : 'bg-white border-2 border-gray-200 text-gray-400']">
+              <div :class="['w-10 h-10 rounded-full flex items-center justify-center', step >= 2 ? 'bg-[#00896F] text-white shadow-sm' : (isDark ? 'bg-white/5 border-2 border-white/20 text-white/40' : 'bg-white border-2 border-gray-200 text-gray-400')]">
                 <svg v-if="step >= 3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
                 <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg>
               </div>
-              <span :class="['text-sm font-medium', step >= 2 ? 'text-[#00896F]' : 'text-gray-500']">Payment</span>
+              <span :class="['text-sm font-medium', step >= 2 ? 'text-[#00896F]' : (isDark ? 'text-white/50' : 'text-gray-500')]">Payment</span>
             </div>
 
-            <div :class="['flex-1 h-[2px] mx-4', step >= 3 ? 'bg-[#00896F]' : 'bg-gray-200']"></div>
+            <div :class="['flex-1 h-[2px] mx-4', step >= 3 ? 'bg-[#00896F]' : (isDark ? 'bg-white/20' : 'bg-gray-200')]"></div>
 
             <!-- Step 3: Confirm -->
             <div :class="['flex items-center gap-3', step < 3 ? 'opacity-50' : '']">
-              <div :class="['w-10 h-10 rounded-full flex items-center justify-center', step >= 3 ? 'bg-[#00896F] text-white shadow-sm' : 'bg-white border-2 border-gray-200 text-gray-400']">
+              <div :class="['w-10 h-10 rounded-full flex items-center justify-center', step >= 3 ? 'bg-[#00896F] text-white shadow-sm' : (isDark ? 'bg-white/5 border-2 border-white/20 text-white/40' : 'bg-white border-2 border-gray-200 text-gray-400')]">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
               </div>
-              <span :class="['text-sm font-medium', step >= 3 ? 'text-[#00896F]' : 'text-gray-500']">Confirm</span>
+              <span :class="['text-sm font-medium', step >= 3 ? 'text-[#00896F]' : (isDark ? 'text-white/50' : 'text-gray-500')]">Confirm</span>
             </div>
           </div>
         </div>
@@ -90,78 +94,100 @@
           <div class="flex-1">
 
             <!-- Step 1: Billing Information -->
-            <div v-if="step === 1" class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-              <h2 class="text-[20px] font-medium text-gray-900 mb-8">Billing Information</h2>
+            <div v-if="step === 1" class="rounded-2xl border p-8 shadow-sm transition-all duration-300"
+              :class="isDark ? 'bg-[#002e26] border-white/5 text-white' : 'bg-white border-gray-100'">
+              <h2 class="text-[20px] font-medium mb-8" :class="isDark ? 'text-white' : 'text-gray-900'">Billing Information</h2>
 
               <div class="space-y-6">
                 <div>
-                  <label class="block text-[14px] text-gray-900 mb-2">Company Name</label>
-                  <input v-model="billing.company_name" type="text" class="w-full bg-white border rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]" style="border-color: #A2E8D6;" />
+                  <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">Company Name</label>
+                  <input v-model="billing.company_name" type="text"
+                    class="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]"
+                    :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white text-gray-900'"
+                    :style="!isDark ? { borderColor: '#A2E8D6' } : {}" />
                 </div>
 
                 <div>
-                  <label class="block text-[14px] text-gray-900 mb-2">Tax ID / EIN</label>
-                  <input v-model="billing.tax_id" type="text" placeholder="XX-XXXXXXX" class="w-full bg-white border rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]" style="border-color: #A2E8D6;" />
+                  <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">Tax ID / EIN</label>
+                  <input v-model="billing.tax_id" type="text" placeholder="XX-XXXXXXX"
+                    class="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]"
+                    :class="isDark ? 'bg-white/5 border-white/10 text-white placeholder-white/30' : 'bg-white text-gray-900 placeholder-gray-400'"
+                    :style="!isDark ? { borderColor: '#A2E8D6' } : {}" />
                 </div>
 
                 <div>
-                  <label class="block text-[14px] text-gray-900 mb-2">Street Address</label>
-                  <input v-model="billing.street_address" type="text" class="w-full bg-white border rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]" style="border-color: #A2E8D6;" />
+                  <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">Street Address</label>
+                  <input v-model="billing.street_address" type="text"
+                    class="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]"
+                    :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white text-gray-900'"
+                    :style="!isDark ? { borderColor: '#A2E8D6' } : {}" />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label class="block text-[14px] text-gray-900 mb-2">City</label>
-                    <input v-model="billing.city" type="text" class="w-full bg-white border rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]" style="border-color: #A2E8D6;" />
+                    <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">City</label>
+                    <input v-model="billing.city" type="text"
+                      class="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]"
+                      :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white text-gray-900'"
+                      :style="!isDark ? { borderColor: '#A2E8D6' } : {}" />
                   </div>
                   <div>
-                    <label class="block text-[14px] text-gray-900 mb-2">State</label>
-                    <input v-model="billing.state" type="text" class="w-full bg-white border rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]" style="border-color: #A2E8D6;" />
+                    <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">State</label>
+                    <input v-model="billing.state" type="text"
+                      class="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]"
+                      :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white text-gray-900'"
+                      :style="!isDark ? { borderColor: '#A2E8D6' } : {}" />
                   </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label class="block text-[14px] text-gray-900 mb-2">ZIP Code</label>
-                    <input v-model="billing.zip_code" type="text" class="w-full bg-white border rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]" style="border-color: #A2E8D6;" />
+                    <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">ZIP Code</label>
+                    <input v-model="billing.zip_code" type="text"
+                      class="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]"
+                      :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white text-gray-900'"
+                      :style="!isDark ? { borderColor: '#A2E8D6' } : {}" />
                   </div>
                   <div>
-                    <label class="block text-[14px] text-gray-900 mb-2">Country</label>
-                    <input v-model="billing.country" type="text" class="w-full bg-white border rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]" style="border-color: #A2E8D6;" />
+                    <label class="block text-[14px] mb-2" :class="isDark ? 'text-white/80' : 'text-gray-900'">Country</label>
+                    <input v-model="billing.country" type="text"
+                      class="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F]"
+                      :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white text-gray-900'"
+                      :style="!isDark ? { borderColor: '#A2E8D6' } : {}" />
                   </div>
                 </div>
 
-                <button @click="step = 2" type="button" class="w-full mt-4 bg-[#00896F] text-white py-3.5 rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors">
+                <button @click="step = 2" type="button" class="w-full mt-4 bg-[#00896F] text-white py-3.5 rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm">
                   Continue to Payment
                 </button>
               </div>
             </div>
 
             <!-- Step 2: Payment Method -->
-            <div v-else-if="step === 2" class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-              <h2 class="text-[20px] font-medium text-gray-900 mb-2">Payment Details</h2>
+            <div v-else-if="step === 2" class="rounded-2xl border p-8 shadow-sm transition-colors" :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border-gray-100'">
+              <h2 class="text-[20px] font-medium mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">Payment Details</h2>
 
               <!-- Saved cards, offered first — skips re-entering card details entirely -->
               <template v-if="savedCards.length && !useNewCard">
-                <p class="text-[14px] text-gray-500 mb-6">Choose a saved card, or add a different one</p>
+                <p class="text-[14px] mb-6" :class="isDark ? 'text-white/60' : 'text-gray-500'">Choose a saved card, or add a different one</p>
                 <div class="space-y-3 mb-4">
                   <div
                     v-for="card in savedCards"
                     :key="card.id"
                     @click="selectedCardId = card.id"
-                    :class="['border rounded-2xl p-6 flex items-center justify-between cursor-pointer transition-colors', selectedCardId === card.id ? 'border-[#04C18F]' : 'border-gray-200']"
-                    :style="selectedCardId === card.id ? 'background: linear-gradient(90deg, #F0FDFA 0%, #F0FDF4 100%);' : ''"
+                    :class="['border rounded-2xl p-6 flex items-center justify-between cursor-pointer transition-colors', selectedCardId === card.id ? (isDark ? 'border-[#04C18F] bg-teal-950/40' : 'border-[#04C18F]') : (isDark ? 'border-white/10 bg-[#002e26] hover:border-white/20' : 'border-gray-200 hover:border-gray-300')]"
+                    :style="!isDark && selectedCardId === card.id ? 'background: linear-gradient(90deg, #F0FDFA 0%, #F0FDF4 100%);' : ''"
                   >
                     <div class="flex items-center gap-4">
-                      <div class="w-12 h-8 bg-[#DCFCE7] rounded flex items-center justify-center text-[#00A63E]">
+                      <div class="w-12 h-8 rounded flex items-center justify-center shrink-0" :class="isDark ? 'bg-teal-500/20 text-[#04C18F]' : 'bg-[#DCFCE7] text-[#00A63E]'">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
                       </div>
                       <div>
-                        <p class="text-[14px] font-medium text-gray-900 capitalize">{{ card.card_brand }} •••• {{ card.card_last4 }}</p>
-                        <p class="text-[12px] text-gray-500">Expires {{ String(card.card_exp_month).padStart(2, '0') }}/{{ card.card_exp_year }}</p>
+                        <p class="text-[14px] font-medium capitalize" :class="isDark ? 'text-white' : 'text-gray-900'">{{ card.card_brand }} •••• {{ card.card_last4 }}</p>
+                        <p class="text-[12px]" :class="isDark ? 'text-white/50' : 'text-gray-500'">Expires {{ String(card.card_exp_month).padStart(2, '0') }}/{{ card.card_exp_year }}</p>
                       </div>
                     </div>
-                    <div :class="['w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0', selectedCardId === card.id ? 'border-[#04C18F]' : 'border-gray-300']">
+                    <div :class="['w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0', selectedCardId === card.id ? 'border-[#04C18F]' : (isDark ? 'border-white/20' : 'border-gray-300')]">
                       <div v-if="selectedCardId === card.id" class="w-2.5 h-2.5 rounded-full bg-[#04C18F]"></div>
                     </div>
                   </div>
@@ -171,20 +197,20 @@
 
               <!-- New card entry -->
               <template v-else>
-                <p class="text-[14px] text-gray-500 mb-8">Enter your card details to subscribe</p>
-                <div id="card-element" class="border rounded-lg px-4 py-3.5" style="border-color: #A2E8D6;"></div>
+                <p class="text-[14px] mb-8" :class="isDark ? 'text-white/60' : 'text-gray-500'">Enter your card details to subscribe</p>
+                <div id="card-element" class="border rounded-lg px-4 py-3.5" :class="isDark ? 'bg-white/5 border-white/10' : 'bg-white'" :style="!isDark ? { borderColor: '#A2E8D6' } : {}"></div>
                 <button v-if="savedCards.length" type="button" @click="useNewCard = false" class="text-sm text-[#00896F] font-medium hover:underline mt-2">Use saved card instead</button>
               </template>
 
               <p v-if="cardError" class="text-sm text-red-500 mt-2">{{ cardError }}</p>
 
-              <div class="bg-[#EBFAF6] border border-[#04C18F80] rounded-lg p-4 flex gap-3 mt-6">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-[#00896F] shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
-                <p class="text-sm text-[#00896F]">Your payment information is encrypted and processed securely by Stripe. TaxAid never stores your card number.</p>
+              <div class="border rounded-lg p-4 flex gap-3 mt-6" :class="isDark ? 'bg-teal-950/30 border-teal-500/20' : 'bg-[#EBFAF6] border-[#04C18F80]'">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-[#04C18F] shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+                <p class="text-sm" :class="isDark ? 'text-teal-200/90' : 'text-[#00896F]'">Your payment information is encrypted and processed securely by Stripe. TaxAid never stores your card number.</p>
               </div>
 
               <div class="flex gap-4 pt-8">
-                <button @click="step = 1" type="button" class="w-1/3 bg-white border border-gray-200 text-gray-700 py-3.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+                <button @click="step = 1" type="button" class="w-1/3 border py-3.5 rounded-lg text-sm font-medium transition-colors" :class="isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'">
                   Back
                 </button>
                 <button @click="goToReview" type="button" class="flex-1 bg-[#00896F] text-white py-3.5 rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors">
@@ -194,40 +220,40 @@
             </div>
 
             <!-- Step 3: Review & Confirm -->
-            <div v-else class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-              <h2 class="text-[20px] font-medium text-gray-900 mb-6">Review & Confirm</h2>
+            <div v-else class="rounded-2xl border p-8 shadow-sm transition-colors" :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border-gray-100'">
+              <h2 class="text-[20px] font-medium mb-6" :class="isDark ? 'text-white' : 'text-gray-900'">Review & Confirm</h2>
 
               <div class="space-y-6 mb-8">
                 <div>
-                  <p class="text-sm text-gray-900 mb-3">Billing Information</p>
-                  <div class="rounded-xl p-5" style="background-color: #F0FDFA;">
-                    <p class="text-[16px] text-gray-900 font-medium mb-1">{{ billing.company_name || '—' }}</p>
-                    <p v-if="billing.tax_id" class="text-sm text-gray-600 mb-1">{{ billing.tax_id }}</p>
-                    <p v-if="billing.street_address" class="text-sm text-gray-600 mb-1">{{ billing.street_address }}</p>
-                    <p v-if="billing.city || billing.state || billing.zip_code" class="text-sm text-gray-600 mb-1">{{ [billing.city, billing.state, billing.zip_code].filter(Boolean).join(', ') }}</p>
-                    <p v-if="billing.country" class="text-sm text-gray-600">{{ billing.country }}</p>
+                  <p class="text-sm mb-3 font-medium" :class="isDark ? 'text-white/80' : 'text-gray-900'">Billing Information</p>
+                  <div class="rounded-xl p-5 border" :class="isDark ? 'bg-white/[0.03] border-white/5' : 'bg-[#F0FDFA] border-transparent'">
+                    <p class="text-[16px] font-medium mb-1" :class="isDark ? 'text-white' : 'text-gray-900'">{{ billing.company_name || '—' }}</p>
+                    <p v-if="billing.tax_id" class="text-sm mb-1" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ billing.tax_id }}</p>
+                    <p v-if="billing.street_address" class="text-sm mb-1" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ billing.street_address }}</p>
+                    <p v-if="billing.city || billing.state || billing.zip_code" class="text-sm mb-1" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ [billing.city, billing.state, billing.zip_code].filter(Boolean).join(', ') }}</p>
+                    <p v-if="billing.country" class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ billing.country }}</p>
                   </div>
                 </div>
 
                 <div>
-                  <p class="text-sm text-gray-900 mb-3">Payment Method</p>
-                  <div class="rounded-xl p-5 flex items-center gap-4" style="background-color: #F0FDFA;">
-                    <div class="w-12 h-8 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-900 shrink-0">
+                  <p class="text-sm mb-3 font-medium" :class="isDark ? 'text-white/80' : 'text-gray-900'">Payment Method</p>
+                  <div class="rounded-xl p-5 flex items-center gap-4 border" :class="isDark ? 'bg-white/[0.03] border-white/5' : 'bg-[#F0FDFA] border-transparent'">
+                    <div class="w-12 h-8 rounded flex items-center justify-center shrink-0 border" :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-gray-200 text-gray-900'">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg>
                     </div>
                     <div v-if="selectedCard && !useNewCard">
-                      <p class="text-[14px] text-gray-900 font-medium capitalize">{{ selectedCard.card_brand }} •••• {{ selectedCard.card_last4 }}</p>
-                      <p class="text-[12px] text-gray-600">Expires {{ String(selectedCard.card_exp_month).padStart(2, '0') }}/{{ selectedCard.card_exp_year }}</p>
+                      <p class="text-[14px] font-medium capitalize" :class="isDark ? 'text-white' : 'text-gray-900'">{{ selectedCard.card_brand }} •••• {{ selectedCard.card_last4 }}</p>
+                      <p class="text-[12px]" :class="isDark ? 'text-white/50' : 'text-gray-600'">Expires {{ String(selectedCard.card_exp_month).padStart(2, '0') }}/{{ selectedCard.card_exp_year }}</p>
                     </div>
-                    <p v-else class="text-[14px] text-gray-900 font-medium">New card</p>
+                    <p v-else class="text-[14px] font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">New card</p>
                   </div>
                 </div>
               </div>
 
               <p v-if="cardError" class="text-sm text-red-500 mb-4">{{ cardError }}</p>
 
-              <div class="flex gap-4 pt-4 border-t border-gray-100">
-                <button @click="step = 2" type="button" class="flex-1 bg-white border py-3.5 rounded-lg text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors" style="border-color: #A2E8D6;">
+              <div class="flex gap-4 pt-4 border-t" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+                <button @click="step = 2" type="button" class="flex-1 border py-3.5 rounded-lg text-sm font-medium transition-colors" :class="isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white text-gray-900 hover:bg-gray-50'" :style="!isDark ? { borderColor: '#A2E8D6' } : {}">
                   Back
                 </button>
                 <button @click="submit" :disabled="submitting" type="button" class="flex-1 bg-[#00896F] text-white py-3.5 rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors disabled:opacity-50">
@@ -239,17 +265,17 @@
 
           <!-- Right Column: Order Summary -->
           <div class="w-full lg:w-96 shrink-0">
-            <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm sticky top-6">
-              <h3 class="text-[20px] font-medium text-gray-900 mb-8">Order Summary</h3>
+            <div class="rounded-2xl border p-8 shadow-sm sticky top-6 transition-colors" :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border-gray-100'">
+              <h3 class="text-[20px] font-medium mb-8" :class="isDark ? 'text-white' : 'text-gray-900'">Order Summary</h3>
 
               <div class="space-y-4 mb-6">
                 <div class="flex justify-between text-[14px]">
-                  <span class="text-gray-600">{{ plan.name }} Plan</span>
-                  <span class="text-gray-900 font-medium">{{ plan.is_trial ? 'FREE' : `${currency} ${price.toFixed(2)}` }}</span>
+                  <span :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ plan.name }} Plan</span>
+                  <span class="font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ plan.is_trial ? 'FREE' : `${currency} ${price.toFixed(2)}` }}</span>
                 </div>
                 <div class="flex justify-between text-[14px]">
-                  <span class="text-gray-600">Billing Period</span>
-                  <span class="text-gray-900 font-medium">{{ cycle === 'monthly' ? 'Monthly' : 'Yearly' }}</span>
+                  <span :class="isDark ? 'text-white/60' : 'text-gray-600'">Billing Period</span>
+                  <span class="font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ cycle === 'monthly' ? 'Monthly' : 'Yearly' }}</span>
                 </div>
                 <div v-for="(d, i) in applicableDiscounts" :key="'d'+i" class="flex justify-between text-[14px]">
                   <span class="text-[#04C18F]">Discount ({{ d.name }})</span>
@@ -258,39 +284,39 @@
               </div>
 
               <template v-if="!plan.is_trial && (applicableDiscounts.length || planTaxes.length)">
-                <div class="border-t border-gray-100 pt-4 space-y-2 mb-4">
+                <div class="border-t pt-4 space-y-2 mb-4" :class="isDark ? 'border-white/10' : 'border-gray-100'">
                   <div class="flex justify-between text-[14px]">
-                    <span class="text-gray-600">Subtotal</span>
-                    <span class="text-gray-900 font-medium">{{ currency }} {{ afterDiscount.toFixed(2) }}</span>
+                    <span :class="isDark ? 'text-white/60' : 'text-gray-600'">Subtotal</span>
+                    <span class="font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ currency }} {{ afterDiscount.toFixed(2) }}</span>
                   </div>
                   <div v-for="(t, i) in planTaxes" :key="'t'+i" class="flex justify-between text-[14px]">
-                    <span class="text-gray-600">{{ t.name }} {{ t.is_percent ? `(${t.amount}%)` : '' }}</span>
-                    <span class="text-gray-900 font-medium">{{ currency }} {{ taxValue(t).toFixed(2) }}</span>
+                    <span :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ t.name }} {{ t.is_percent ? `(${t.amount}%)` : '' }}</span>
+                    <span class="font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ currency }} {{ taxValue(t).toFixed(2) }}</span>
                   </div>
                 </div>
               </template>
 
-              <div class="border-t border-gray-100 pt-6 mb-8">
+              <div class="border-t pt-6 mb-8" :class="isDark ? 'border-white/10' : 'border-gray-100'">
                 <div class="flex justify-between items-end">
-                  <span class="text-[16px] text-gray-900 font-medium">Total Due Today</span>
-                  <span class="text-[24px] text-gray-900 font-medium">{{ displayPrice }}</span>
+                  <span class="text-[16px] font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">Total Due Today</span>
+                  <span class="text-[24px] font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ displayPrice }}</span>
                 </div>
               </div>
 
-              <div class="bg-[#F9FAFB] rounded-xl p-5">
-                <h4 class="text-[14px] font-medium text-gray-900 mb-4">What's included:</h4>
+              <div class="rounded-xl p-5 border" :class="isDark ? 'bg-white/[0.03] border-white/5' : 'bg-[#F9FAFB] border-transparent'">
+                <h4 class="text-[14px] font-medium mb-4" :class="isDark ? 'text-white' : 'text-gray-900'">What's included:</h4>
                 <ul v-if="checkoutIncluded.length" class="space-y-2">
-                  <li v-for="(line, i) in checkoutIncluded" :key="i" class="flex items-start gap-2 text-[13px] text-gray-600">
-                    <span class="w-1 h-1 rounded-full mt-1.5 shrink-0 bg-black"></span>
+                  <li v-for="(line, i) in checkoutIncluded" :key="i" class="flex items-start gap-2 text-[13px]" :class="isDark ? 'text-white/70' : 'text-gray-600'">
+                    <span class="w-1 h-1 rounded-full mt-1.5 shrink-0" :class="isDark ? 'bg-white/70' : 'bg-black'"></span>
                     {{ line }}
                   </li>
                 </ul>
                 <ul v-else class="space-y-3">
-                  <li v-for="group in features" :key="group.title" class="text-[13px] text-gray-600">
-                    <p class="font-medium text-gray-900 mb-1">{{ group.title }}</p>
+                  <li v-for="group in features" :key="group.title" class="text-[13px]" :class="isDark ? 'text-white/70' : 'text-gray-600'">
+                    <p class="font-medium mb-1" :class="isDark ? 'text-white' : 'text-gray-900'">{{ group.title }}</p>
                     <ul class="space-y-2 mb-2">
                       <li v-for="(point, i) in group.points" :key="i" class="flex items-start gap-2">
-                        <span class="w-1 h-1 rounded-full mt-1.5 shrink-0 bg-black"></span>
+                        <span class="w-1 h-1 rounded-full mt-1.5 shrink-0" :class="isDark ? 'bg-white/70' : 'bg-black'"></span>
                         {{ point.label }}
                       </li>
                     </ul>
@@ -304,25 +330,25 @@
       </template>
 
       <!-- Success -->
-      <div v-if="success" class="max-w-2xl mx-auto bg-white rounded-2xl border border-gray-100 p-12 shadow-sm text-center mt-8">
-        <div class="w-24 h-24 bg-[#E6FBF2] rounded-full flex items-center justify-center mx-auto mb-6">
+      <div v-if="success" class="max-w-2xl mx-auto rounded-2xl border p-12 shadow-sm text-center mt-8 transition-colors" :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border-gray-100'">
+        <div class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6" :class="isDark ? 'bg-teal-500/20' : 'bg-[#E6FBF2]'">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-10 h-10 text-[#00C950]"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
         </div>
-        <h2 class="text-[30px] font-medium text-[#000000] mb-2">Payment Successful!</h2>
-        <p class="text-[16px] text-[#667085] mb-10">Your subscription to the <span class="font-bold">{{ plan?.name }}</span> plan has been activated.</p>
+        <h2 class="text-[30px] font-medium mb-2" :class="isDark ? 'text-white' : 'text-[#000000]'">Payment Successful!</h2>
+        <p class="text-[16px] mb-10" :class="isDark ? 'text-white/60' : 'text-[#667085]'">Your subscription to the <span class="font-bold">{{ plan?.name }}</span> plan has been activated.</p>
 
-        <div class="bg-[#F4FBF9] rounded-xl p-6 text-left mb-10">
-          <div class="flex justify-between py-4 border-b border-[#E6F5F0]">
-            <span class="text-[16px] text-gray-900">Plan</span>
-            <span class="text-[16px] text-gray-900">{{ plan?.name }}</span>
+        <div class="rounded-xl p-6 text-left mb-10 border" :class="isDark ? 'bg-white/[0.03] border-white/5' : 'bg-[#F4FBF9] border-transparent'">
+          <div class="flex justify-between py-4 border-b" :class="isDark ? 'border-white/10' : 'border-[#E6F5F0]'">
+            <span class="text-[16px]" :class="isDark ? 'text-white/70' : 'text-gray-900'">Plan</span>
+            <span class="text-[16px] font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ plan?.name }}</span>
           </div>
-          <div class="flex justify-between py-4 border-b border-[#E6F5F0]">
-            <span class="text-[16px] text-gray-900">Billing Cycle</span>
-            <span class="text-[16px] text-gray-900">{{ cycle === 'monthly' ? 'Monthly' : 'Yearly' }}</span>
+          <div class="flex justify-between py-4 border-b" :class="isDark ? 'border-white/10' : 'border-[#E6F5F0]'">
+            <span class="text-[16px]" :class="isDark ? 'text-white/70' : 'text-gray-900'">Billing Cycle</span>
+            <span class="text-[16px] font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ cycle === 'monthly' ? 'Monthly' : 'Yearly' }}</span>
           </div>
           <div class="flex justify-between pt-6 pb-2 items-center">
-            <span class="text-[18px] text-gray-900">Total</span>
-            <span class="text-[28px] text-gray-900 font-medium">{{ displayPrice }}</span>
+            <span class="text-[18px]" :class="isDark ? 'text-white/70' : 'text-gray-900'">Total</span>
+            <span class="text-[28px] font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ displayPrice }}</span>
           </div>
         </div>
 
@@ -341,6 +367,7 @@
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { loadStripe, type Stripe, type StripeElements, type StripeCardElement } from '@stripe/stripe-js'
 
+const { isDark } = useTheme()
 const route = useRoute()
 const { getPlans, createSetupIntent, subscribe, getPaymentMethods, getBillingInfo, saveBillingInfo, addPaymentMethod } = usePayment()
 

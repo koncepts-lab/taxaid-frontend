@@ -173,84 +173,25 @@
         </div>
 
         <div
-          class="absolute top-[110%] right-0 mt-2 w-[380px] bg-white rounded-[2rem] shadow-[0_10px_40px_rgba(0,0,0,0.1)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[60] p-5 border border-teal-50 text-left"
+          class="absolute top-[110%] right-0 mt-2 w-[380px] rounded-[2rem] shadow-[0_10px_40px_rgba(0,0,0,0.2)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[60] p-5 border text-left"
+          :class="isDark ? 'bg-[#01261f] border-white/10 text-white' : 'bg-white border-teal-50 text-gray-900'"
           :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
-          <div class="bg-[#E6F9F4] p-2 rounded-2xl flex items-center gap-4 mb-5">
+          <div class="p-2 rounded-2xl flex items-center gap-4 mb-5 border transition-colors"
+            :class="isDark ? 'bg-[#002e26] border-white/10' : 'bg-[#E6F9F4] border-transparent'">
             <img v-if="pictureUrl" :src="pictureUrl"
               class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
-            <div v-else class="w-14 h-14 rounded-full border-2 border-white shadow-sm bg-white"></div>
+            <div v-else class="w-14 h-14 rounded-full border-2 border-white shadow-sm"
+              :class="isDark ? 'bg-white/10' : 'bg-white'"></div>
             <div class="flex-1">
-              <h4 class="font-medium text-sm leading-tight break-all" style="color: #013E32 !important;">{{ identity?.name || '' }}</h4>
-              <p class="text-sm text-[#013E32]/70 font-medium break-all">{{ identityContact }}</p>
-              <NuxtLink to="/profile" class="text-[#00B68D] text-sm font-medium  mt-1 inline-block">View
-                Profile</NuxtLink>
+              <h4 class="font-medium text-sm leading-tight break-all" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ identity?.name || '' }}</h4>
+              <p class="text-sm font-medium break-all" :class="isDark ? 'text-white/60' : 'text-[#013E32]/70'">{{ identityContact }}</p>
+              <NuxtLink to="/profile" class="text-[#00B68D] text-sm font-medium mt-1 inline-block hover:underline">View Profile</NuxtLink>
             </div>
           </div>
 
-          <!--
-          <div class="flex justify-between items-center mb-3">
-            <span class="font-normal text-sm text-[#013E32]">{{ currentLang === 'ar' ? 'اختيار الشركات' :
-              'Select Companies'
-              }}</span>
-            <button @click="toggleAllCompanies" class="text-[#00B68D] text-sm font-normal">{{ currentLang === 'ar' ?
-              'تحديد الكل' : 'Select all'
-              }}</button>
-          </div>
-
-          <div class="bg-[#EEF4FF] p-3 rounded-xl flex gap-3 mb-4">
-            <div class="mt-0.5">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-blue-600">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                <path d="M12 16V12M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              </svg>
-            </div>
-            <p class="text-[13px] text-blue-800 leading-snug">
-              {{ currentLang === 'ar' ? 'اختر شركات متعددة لعرض البيانات المالية الموحدة.' :
-                'Select multiple companies to view consolidated financial data.' }}
-            </p>
-          </div>
-
-          <div class="flex flex-col gap-3 mb-6">
-            <div v-for="company in companies" :key="company.id" @click="toggleCompany(company.id)"
-              class="flex items-center gap-3 p-3 rounded-2xl border-2 transition-all cursor-pointer"
-              :class="company.selected ? 'border-[#00B68D] bg-[#F7FFFD]' : 'border-gray-100 hover:border-teal-100'">
-              <div
-                class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100">
-                <img :src="company.logo" class="w-8 h-8 object-contain" />
-              </div>
-              <span class="flex-1 font-normal text-[#013E32] text-sm">{{ company.name }}</span>
-
-              <div class="w-6 h-6 rounded flex items-center justify-center transition-colors"
-                :class="company.selected ? 'bg-[#00B68D]' : 'border-2 border-gray-300'">
-                <svg v-if="company.selected" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white"
-                  stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </div>
-            </div>
-          </div>
-          -->
-
-          <div class="border-t border-gray-100 pt-4 flex flex-col gap-8">
-            <!--
-            <button class="flex items-center gap-3 text-[#013E32] text-sm font-normal group/btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                class="group-hover/btn:text-[#00B68D]">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke-linecap="round"
-                  stroke-linejoin="round" />
-              </svg>
-              {{ currentLang === 'ar' ? 'تصدير البيانات' : 'Export Data' }}
-            </button>
-            <NuxtLink to="/taxaid-partnership-login" class="flex items-center gap-3 text-[#013E32] text-sm font-normal group/btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                class="group-hover/btn:text-[#00B68D]">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
-              </svg>
-              {{ currentLang === 'ar' ? 'التبديل إلى لوحة الشركاء' : 'Switch to Partnership' }}
-            </NuxtLink>
-            -->
-            <button @click="onLogoutClick" class="flex items-center gap-3 text-sm font-normal group/btn" :class="isDark ? 'text-white' : 'text-[#013E32]'">
+          <div class="border-t pt-4 flex flex-col gap-8" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+            <button @click="onLogoutClick" class="flex items-center gap-3 text-sm font-normal group/btn" :class="isDark ? 'text-white hover:text-red-400' : 'text-[#013E32] hover:text-red-600'">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 class="group-hover/btn:text-red-500">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-linecap="round"
@@ -260,10 +201,10 @@
             </button>
           </div>
 
-          <div class="mt-6 pt-4 border-t border-gray-100 flex justify-center items-center gap-4 text-xs text-gray-400">
-            <NuxtLink to="/legal/privacy">{{ currentLang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' }}</NuxtLink>
-            <span class="h-3 w-px bg-gray-300"></span>
-            <NuxtLink to="/legal/terms">{{ currentLang === 'ar' ? 'شروط الخدمة' : 'Terms of Service' }}</NuxtLink>
+          <div class="mt-6 pt-4 border-t flex justify-center items-center gap-4 text-xs" :class="isDark ? 'border-white/10 text-white/50' : 'border-gray-100 text-gray-400'">
+            <NuxtLink to="/legal/privacy" class="hover:underline">{{ currentLang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' }}</NuxtLink>
+            <span class="h-3 w-px" :class="isDark ? 'bg-white/20' : 'bg-gray-300'"></span>
+            <NuxtLink to="/legal/terms" class="hover:underline">{{ currentLang === 'ar' ? 'شروط الخدمة' : 'Terms of Service' }}</NuxtLink>
           </div>
         </div>
       </div>

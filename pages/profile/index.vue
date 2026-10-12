@@ -174,62 +174,62 @@
     </div>
 
     <!-- 2. Basic Information -->
-    <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-      <h3 class="text-lg font-medium text-gray-900 mb-6">Basic Information</h3>
+    <div class="rounded-2xl p-6 border shadow-sm transition-colors" :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border-gray-100'">
+      <h3 class="text-lg font-medium mb-6" :class="isDark ? 'text-white' : 'text-gray-900'">Basic Information</h3>
       <!-- Read-Only View -->
       <div v-if="!isEditing" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div :class="['border rounded-xl p-4 flex items-center gap-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
-          <div class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0">
+        <div :class="['border rounded-xl p-4 flex items-center gap-4 transition-colors', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="isDark ? 'bg-teal-500/20 text-[#04C18F]' : 'bg-[#E6F6F2] text-[#00896F]'">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
           </div>
           <div class="flex-1">
-            <p class="text-xs text-gray-500 mb-0.5">First Name</p>
-            <p class="text-sm font-medium text-gray-900">{{ profile.firstName }}</p>
+            <p class="text-xs mb-0.5" :class="isDark ? 'text-white/50' : 'text-gray-500'">First Name</p>
+            <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ profile.firstName }}</p>
           </div>
         </div>
-        <div :class="['border rounded-xl p-4 flex items-center gap-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
-          <div class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0">
+        <div :class="['border rounded-xl p-4 flex items-center gap-4 transition-colors', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="isDark ? 'bg-teal-500/20 text-[#04C18F]' : 'bg-[#E6F6F2] text-[#00896F]'">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
           </div>
           <div class="flex-1">
-            <p class="text-xs text-gray-500 mb-0.5">Last Name</p>
-            <p class="text-sm font-medium text-gray-900">{{ profile.lastName }}</p>
+            <p class="text-xs mb-0.5" :class="isDark ? 'text-white/50' : 'text-gray-500'">Last Name</p>
+            <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ profile.lastName }}</p>
           </div>
         </div>
-        <div :class="['border rounded-xl p-4 flex items-center gap-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
-          <div class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0">
+        <div :class="['border rounded-xl p-4 flex items-center gap-4 transition-colors', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="isDark ? 'bg-teal-500/20 text-[#04C18F]' : 'bg-[#E6F6F2] text-[#00896F]'">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
           </div>
           <div class="flex-1">
-            <p class="text-xs text-gray-500 mb-0.5">Email</p>
-            <p class="text-sm font-medium text-gray-900">{{ profile.email }}</p>
+            <p class="text-xs mb-0.5" :class="isDark ? 'text-white/50' : 'text-gray-500'">Email</p>
+            <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ profile.email }}</p>
           </div>
         </div>
-        <div :class="['border rounded-xl p-4 flex items-center gap-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
-          <div class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0">
+        <div :class="['border rounded-xl p-4 flex items-center gap-4 transition-colors', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="isDark ? 'bg-teal-500/20 text-[#04C18F]' : 'bg-[#E6F6F2] text-[#00896F]'">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.896-1.596-5.48-4.18-7.076-7.076l1.293-.97c.362-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" /></svg>
           </div>
           <div class="flex-1">
-            <p class="text-xs text-gray-500 mb-0.5">Phone</p>
-            <p class="text-sm font-medium text-gray-900">{{ profile.phone }}</p>
+            <p class="text-xs mb-0.5" :class="isDark ? 'text-white/50' : 'text-gray-500'">Phone</p>
+            <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ profile.phone }}</p>
           </div>
         </div>
-        <div :class="['border rounded-xl p-4 flex items-center gap-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
-          <div class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0">
+        <div :class="['border rounded-xl p-4 flex items-center gap-4 transition-colors', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="isDark ? 'bg-teal-500/20 text-[#04C18F]' : 'bg-[#E6F6F2] text-[#00896F]'">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" /></svg>
           </div>
           <div class="flex-1">
-            <p class="text-xs text-gray-500 mb-0.5">Company</p>
-            <p class="text-sm font-medium text-gray-900">{{ profile.companyName }}</p>
+            <p class="text-xs mb-0.5" :class="isDark ? 'text-white/50' : 'text-gray-500'">Company</p>
+            <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ profile.companyName }}</p>
           </div>
         </div>
-        <div :class="['border rounded-xl p-4 flex items-center gap-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
-          <div class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0">
+        <div :class="['border rounded-xl p-4 flex items-center gap-4 transition-colors', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="isDark ? 'bg-teal-500/20 text-[#04C18F]' : 'bg-[#E6F6F2] text-[#00896F]'">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" /></svg>
           </div>
           <div class="flex-1">
-            <p class="text-xs text-gray-500 mb-0.5">Company Nickname</p>
-            <p class="text-sm font-medium text-gray-900">{{ profile.companyNickname }}</p>
+            <p class="text-xs mb-0.5" :class="isDark ? 'text-white/50' : 'text-gray-500'">Company Nickname</p>
+            <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ profile.companyNickname }}</p>
           </div>
         </div>
       </div>
@@ -358,57 +358,57 @@
     </div>
 
     <!-- 3. Contact Information (Address) -->
-    <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-      <h3 class="text-lg font-medium text-gray-900 mb-6">Contact Information</h3>
+    <div class="rounded-2xl p-6 border shadow-sm transition-colors" :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border-gray-100'">
+      <h3 class="text-lg font-medium mb-6" :class="isDark ? 'text-white' : 'text-gray-900'">Contact Information</h3>
       
       <div class="space-y-6">
         <div>
-          <h4 v-if="!isEditing || !canEditCompany" class="text-sm text-gray-500 mb-4">Permanent Address</h4>
+          <h4 v-if="!isEditing || !canEditCompany" class="text-sm mb-4" :class="isDark ? 'text-white/60' : 'text-gray-500'">Permanent Address</h4>
           
-          <div v-if="!isEditing || !canEditCompany" :class="['border rounded-xl p-4 flex items-start gap-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
-            <div class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0 mt-1">
+          <div v-if="!isEditing || !canEditCompany" :class="['border rounded-xl p-4 flex items-start gap-4 transition-colors', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-1" :class="isDark ? 'bg-teal-500/20 text-[#04C18F]' : 'bg-[#E6F6F2] text-[#00896F]'">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
             </div>
             
             <div class="flex-1 py-1">
-              <p class="text-sm font-medium text-gray-900 mb-1">{{ profile.permanentAddress.street }}</p>
-              <p class="text-sm text-gray-600">{{ profile.permanentAddress.city }} {{ profile.permanentAddress.state }} {{ profile.permanentAddress.zip }}</p>
+              <p class="text-sm font-medium mb-1" :class="isDark ? 'text-white' : 'text-gray-900'">{{ profile.permanentAddress.street }}</p>
+              <p class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ profile.permanentAddress.city }} {{ profile.permanentAddress.state }} {{ profile.permanentAddress.zip }}</p>
             </div>
           </div>
 
-          <div v-else :class="['border rounded-xl p-4 space-y-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
-            <h4 class="text-sm text-gray-900 font-medium mb-2">Permanent Address</h4>
+          <div v-else :class="['border rounded-xl p-4 space-y-4 transition-colors', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
+            <h4 class="text-sm font-medium mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">Permanent Address</h4>
             <div>
-              <label class="block text-xs text-gray-700 mb-1">Street Address</label>
+              <label class="block text-xs mb-1" :class="isDark ? 'text-white/70' : 'text-gray-700'">Street Address</label>
               <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2" :class="isDark ? 'text-white/40' : 'text-gray-500'">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
                 </span>
-                <input v-model="profile.permanentAddress.street" :disabled="!canEditCompany" class="w-full pl-9 h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+                <input v-model="profile.permanentAddress.street" :disabled="!canEditCompany" class="w-full pl-9 h-[40px] border border-[#04C18F] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" :class="isDark ? 'bg-white/5 text-white placeholder-white/30' : 'bg-white text-[#000] placeholder-[#ccc]'" />
               </div>
             </div>
             <div class="flex flex-col md:flex-row gap-4">
               <div class="w-full md:flex-1">
-                <label class="block text-xs text-gray-700 mb-1">City</label>
+                <label class="block text-xs mb-1" :class="isDark ? 'text-white/70' : 'text-gray-700'">City</label>
                 <div class="relative">
-                  <input v-model="profile.permanentAddress.city" :disabled="!canEditCompany" placeholder="City" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" />
-                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                  <input v-model="profile.permanentAddress.city" :disabled="!canEditCompany" placeholder="City" class="w-full h-[40px] border border-[#04C18F] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" :class="isDark ? 'bg-white/5 text-white placeholder-white/30' : 'bg-white text-[#000] placeholder-[#ccc]'" />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" :class="isDark ? 'text-white/40' : 'text-gray-400'">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
                   </span>
                 </div>
               </div>
               <div class="w-full md:w-1/3">
-                <label class="block text-xs text-gray-700 mb-1">State</label>
+                <label class="block text-xs mb-1" :class="isDark ? 'text-white/70' : 'text-gray-700'">State</label>
                 <div class="relative">
-                  <input v-model="profile.permanentAddress.state" :disabled="!canEditCompany" placeholder="State" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" />
-                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                  <input v-model="profile.permanentAddress.state" :disabled="!canEditCompany" placeholder="State" class="w-full h-[40px] border border-[#04C18F] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F] pr-8 cursor-pointer" :class="isDark ? 'bg-white/5 text-white placeholder-white/30' : 'bg-white text-[#000] placeholder-[#ccc]'" />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" :class="isDark ? 'text-white/40' : 'text-gray-400'">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
                   </span>
                 </div>
               </div>
               <div class="w-full md:w-1/3">
-                <label class="block text-xs text-gray-700 mb-1">Z!P Code</label>
-                <input v-model="profile.permanentAddress.zip" :disabled="!canEditCompany" class="w-full h-[40px] bg-white border border-[#04C18F] placeholder-[#ccc] text-[#000] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" />
+                <label class="block text-xs mb-1" :class="isDark ? 'text-white/70' : 'text-gray-700'">ZIP Code</label>
+                <input v-model="profile.permanentAddress.zip" :disabled="!canEditCompany" class="w-full h-[40px] border border-[#04C18F] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00896F]" :class="isDark ? 'bg-white/5 text-white placeholder-white/30' : 'bg-white text-[#000] placeholder-[#ccc]'" />
               </div>
             </div>
           </div>
@@ -416,7 +416,7 @@
 
         <div v-if="isEditing || profile.communicationAddresses.some(a => a.street || a.city || a.state || a.zip)">
           <div class="flex justify-between items-center mb-4">
-            <h4 class="text-sm text-gray-500">Communication Address</h4>
+            <h4 class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-500'">Communication Address</h4>
             <button v-if="isEditing && profile.communicationAddresses.length < 4 && canEditCompany" @click="addCommunicationAddress" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
               Add Address
@@ -424,15 +424,15 @@
           </div>
           
           <div class="space-y-3">
-            <div v-for="(addr, index) in profile.communicationAddresses.filter(a => !isEditing ? (a.street || a.city || a.state || a.zip) : true)" :key="index" :class="['border rounded-xl p-4 flex items-start gap-4', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
-              <div v-if="!isEditing || !canEditCompany" class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0 mt-1">
+            <div v-for="(addr, index) in profile.communicationAddresses.filter(a => !isEditing ? (a.street || a.city || a.state || a.zip) : true)" :key="index" :class="['border rounded-xl p-4 flex items-start gap-4 transition-colors', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
+              <div v-if="!isEditing || !canEditCompany" class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-1" :class="isDark ? 'bg-teal-500/20 text-[#04C18F]' : 'bg-[#E6F6F2] text-[#00896F]'">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
               </div>
               
               <div v-if="!isEditing || !canEditCompany" class="flex-1 py-1">
-                <p class="text-xs text-gray-500 mb-0.5">{{ addr.label }}</p>
-                <p class="text-sm font-medium text-gray-900 mb-1">{{ addr.street }}</p>
-                <p class="text-sm text-gray-600">{{ addr.city }}, {{ addr.state }} {{ addr.zip }}</p>
+                <p class="text-xs mb-0.5" :class="isDark ? 'text-white/50' : 'text-gray-500'">{{ addr.label }}</p>
+                <p class="text-sm font-medium mb-1" :class="isDark ? 'text-white' : 'text-gray-900'">{{ addr.street }}</p>
+                <p class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ addr.city }}, {{ addr.state }} {{ addr.zip }}</p>
               </div>
               
               <div v-else class="flex-1 space-y-4 py-1">
@@ -490,30 +490,30 @@
     </div>
 
     <!-- 4. Related Entities -->
-    <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+    <div class="rounded-2xl p-6 border shadow-sm transition-colors" :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border-gray-100'">
       <div class="flex justify-between items-center mb-6">
-        <h3 class="text-lg font-medium text-gray-900">Related Entities</h3>
+        <h3 class="text-lg font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">Related Entities</h3>
         <button v-if="isEditing && profile.relatedEntities.length < 4 && canEditCompany" @click="openEntityModal()" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
           Add Entity
         </button>
       </div>
       <div class="space-y-3">
-        <div v-for="(entity, index) in profile.relatedEntities" :key="index" :class="['border rounded-xl p-4 flex items-center justify-between gap-4 transition-all', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']" style="word-wrap: anywhere;">
+        <div v-for="(entity, index) in profile.relatedEntities" :key="index" :class="['border rounded-xl p-4 flex items-center justify-between gap-4 transition-all', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#EBFAF680] border-[#E9F3F0]']" style="word-wrap: anywhere;">
           <div class="flex items-center gap-4">
-            <div class="w-10 h-10 rounded-full bg-[#E6F6F2] flex items-center justify-center text-[#00896F] shrink-0">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="isDark ? 'bg-teal-500/20 text-[#04C18F]' : 'bg-[#E6F6F2] text-[#00896F]'">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" /></svg>
             </div>
             <div>
-              <p class="text-sm font-medium text-gray-900">{{ entity.name }}</p>
-              <p class="text-sm text-gray-600">{{ entity.type }} • EIN: {{ entity.ein }}</p>
+              <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ entity.name }}</p>
+              <p class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ entity.type }} • EIN: {{ entity.ein }}</p>
             </div>
           </div>
           <div v-if="isEditing && canEditCompany" class="flex gap-2">
-            <button @click="openEntityModal(index)" class="text-gray-500 hover:text-[#00896F] p-1.5 rounded-md hover:bg-[#E6F6F2] transition-colors">
+            <button @click="openEntityModal(index)" class="p-1.5 rounded-md transition-colors" :class="isDark ? 'text-white/60 hover:text-[#04C18F] hover:bg-white/5' : 'text-gray-500 hover:text-[#00896F] hover:bg-[#E6F6F2]'">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
             </button>
-            <button @click="deleteEntity(index)" class="text-gray-500 hover:text-red-500 p-1.5 rounded-md hover:bg-red-50 transition-colors">
+            <button @click="deleteEntity(index)" class="p-1.5 rounded-md transition-colors" :class="isDark ? 'text-white/60 hover:text-red-400 hover:bg-white/5' : 'text-gray-500 hover:text-red-500 hover:bg-red-50'">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
             </button>
           </div>
@@ -522,9 +522,9 @@
     </div>
 
     <!-- 5. Key Contacts -->
-    <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+    <div class="rounded-2xl p-6 border shadow-sm transition-colors" :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border-gray-100'">
       <div class="flex justify-between items-center mb-6">
-        <h3 class="text-lg font-medium text-gray-900">Key Contacts</h3>
+        <h3 class="text-lg font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">Key Contacts</h3>
         <button v-if="isEditing && profile.keyContacts.length < 10 && canEditCompany" @click="openContactModal()" class="text-xs bg-[#00896F] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#00705a] transition-colors flex items-center gap-1.5 shadow-sm">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
           Add Contact
@@ -532,22 +532,22 @@
       </div>
       <!-- Fixed height = 5 rows visible; more contacts scroll instead of growing the page -->
       <div class="space-y-3 max-h-[440px] overflow-y-auto pr-1">
-        <div v-for="(contact, index) in profile.keyContacts" :key="index" :class="['border rounded-xl p-4 flex items-center justify-between gap-4 transition-all', isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-[#EBFAF680] border-[#E9F3F0]']" style="word-wrap: anywhere;">
+        <div v-for="(contact, index) in profile.keyContacts" :key="index" :class="['border rounded-xl p-4 flex items-center justify-between gap-4 transition-all', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#EBFAF680] border-[#E9F3F0]']" style="word-wrap: anywhere;">
           <div class="flex items-center gap-4">
             <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0" style="background: linear-gradient(180deg, #013E32 0%, #007760 100%);">
                {{ profile.firstName?.substring(0, 2).toUpperCase() || 'NA' }}
             </div>
             <div>
-              <p class="text-sm font-medium text-gray-900">{{ contact.name }}</p>
-              <p class="text-sm text-gray-600">{{ contact.role }}</p>
-              <p class="text-xs text-gray-500">{{ contact.email }} • {{ contact.phone }}</p>
+              <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ contact.name }}</p>
+              <p class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ contact.role }}</p>
+              <p class="text-xs" :class="isDark ? 'text-white/50' : 'text-gray-500'">{{ contact.email }} • {{ contact.phone }}</p>
             </div>
           </div>
           <div v-if="isEditing && canEditCompany" class="flex gap-2">
-            <button @click="openContactModal(index)" class="text-gray-500 hover:text-[#00896F] p-1.5 rounded-md hover:bg-[#E6F6F2] transition-colors">
+            <button @click="openContactModal(index)" class="p-1.5 rounded-md transition-colors" :class="isDark ? 'text-white/60 hover:text-[#04C18F] hover:bg-white/5' : 'text-gray-500 hover:text-[#00896F] hover:bg-[#E6F6F2]'">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
             </button>
-            <button @click="deleteContact(index)" class="text-gray-500 hover:text-red-500 p-1.5 rounded-md hover:bg-red-50 transition-colors">
+            <button @click="deleteContact(index)" class="p-1.5 rounded-md transition-colors" :class="isDark ? 'text-white/60 hover:text-red-400 hover:bg-white/5' : 'text-gray-500 hover:text-red-500 hover:bg-red-50'">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
             </button>
           </div>

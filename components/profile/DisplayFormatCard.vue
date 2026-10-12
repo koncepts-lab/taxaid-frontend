@@ -1,6 +1,6 @@
 <template>
-  <div class="mt-6 rounded-2xl border p-6"
-       :class="isDark ? 'bg-[#11111180] border-[#535353]' : 'bg-white border-[#E9F3F0]'">
+  <div class="mt-6 rounded-2xl border p-6 transition-colors"
+       :class="isDark ? 'bg-[#002e26] border-white/5' : 'bg-white border-[#E9F3F0]'">
     <h3 class="text-[16px] font-medium mb-1" :class="isDark ? 'text-white' : 'text-[#013E32]'">
       {{ currentLang === 'ar' ? 'تنسيق التاريخ والوقت' : 'Date & time format' }}
     </h3>
@@ -15,10 +15,10 @@
       </div>
       <div>
         <label class="block text-[13px] font-medium mb-1" :class="isDark ? 'text-white/80' : 'text-[#111]'">{{ currentLang === 'ar' ? 'الوقت' : 'Time' }}</label>
-        <div class="flex rounded-full border border-[#04C18F33] overflow-hidden text-sm">
+        <div class="flex rounded-full border overflow-hidden text-sm" :class="isDark ? 'border-white/10 bg-white/5' : 'border-[#04C18F33] bg-gray-50'">
           <button v-for="h in [12, 24]" :key="h" type="button" @click="setHours(h)"
                   class="px-4 py-1.5 transition-colors cursor-pointer"
-                  :class="hours === h ? 'bg-[#82FFE0] text-[#0A0A0A]' : (isDark ? 'text-white/70' : 'text-gray-500')">{{ h }}h</button>
+                  :class="hours === h ? 'bg-[#00896F] text-white font-medium shadow-sm' : (isDark ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-gray-900')">{{ h }}h</button>
         </div>
       </div>
       <p class="text-sm pb-1.5" :class="isDark ? 'text-[#6FDBBF]' : 'text-[#00896F]'">

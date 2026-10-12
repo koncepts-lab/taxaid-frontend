@@ -13,24 +13,70 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
+const displayFormatCookie = useCookie('display_format')
 
-const lastSync = ref('')
+const nowInZone = ref(readCurrentTime())
+let timer = null
+
+function readCurrentTime() {
+  try {
+    const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
+      timeZone: orgZone(),
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(new Date()).map(p => [p.type, p.value]))
+
+    if (parts.year && parts.month && parts.day && parts.hour && parts.minute) {
+      return {
+        date: `${parts.year}-${parts.month}-${parts.day}`,
+        time: `${parts.hour}:${parts.minute}`,
+      }
+    }
+  } catch {}
+
+  const d = new Date()
+  const pad = (n) => String(n).padStart(2, '0')
+  return {
+    date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+    time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+  }
+}
 
 onMounted(() => {
-  const now = new Date()
-  const options = { 
-    day: '2-digit', 
-    month: 'short', 
-    year: 'numeric', 
-    hour: '2-digit', 
-    minute: '2-digit',
-    hour12: true,
-    timeZoneName: 'short'
-  }
-  lastSync.value = now.toLocaleDateString(currentLang.value === 'ar' ? 'ar-EG' : 'en-US', options)
+  nowInZone.value = readCurrentTime()
+  timer = setInterval(() => {
+    nowInZone.value = readCurrentTime()
+  }, 15000)
+})
+
+onBeforeUnmount(() => {
+  if (timer) clearInterval(timer)
+})
+
+const timezoneCookie = useCookie('timezone')
+
+const lastSync = computed(() => {
+  try {
+    void displayFormatCookie?.value
+    void timezoneCookie?.value
+    const d = formatDisplayDate(nowInZone.value?.date)
+    const t = formatDisplayTime(nowInZone.value?.time)
+    const zone = orgZone()
+    const tzLabel = zoneOffsetLabel(zone)
+    const suffix = tzLabel ? ` ${tzLabel}` : ''
+
+    if (d && t) return `${d}, ${t}${suffix}`
+    if (d) return `${d}${suffix}`
+  } catch {}
+
+  return new Date().toLocaleString()
 })
 </script>
