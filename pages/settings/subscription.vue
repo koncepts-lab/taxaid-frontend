@@ -100,52 +100,70 @@
           </div>
 
           <!-- Pricing Cards (Responsive Grid + Carousel) -->
-          <div v-if="visiblePlans.length" class="pt-4 pb-2">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <div v-for="plan in visiblePlans" :key="plan.id"
-                class="h-full rounded-2xl p-6 flex flex-col shadow-sm relative transition-all duration-300"
-                :class="[
-                  isDark ? 'bg-[#002e26]' : 'bg-white',
-                  isCurrentPlan(plan) ? 'border-2 border-[#04C18F] shadow-lg z-10' : (isDark ? 'border border-white/5' : 'border border-gray-200')
-                ]">
-                <div v-if="plan.is_popular || isCurrentPlan(plan)" class="absolute -top-3 left-6 flex gap-2">
-                  <span v-if="plan.is_popular" class="bg-[#04C18F] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">Most Popular</span>
-                  <span v-if="isCurrentPlan(plan)" class="bg-[#E6F8F3] text-[#00896F] border border-[#04C18F] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">Current Plan</span>
-                </div>
+          <div v-if="visiblePlans.length" class="pt-2 pb-2">
+            <div
+              class="overflow-hidden pt-4 pb-2 -mt-4"
+              @touchstart="onTouchStart"
+              @touchmove="onTouchMove"
+              @touchend="onTouchEnd"
+            >
+              <div
+                class="flex transition-transform duration-300 ease-out items-stretch -mx-4"
+                :style="carouselTrackStyle"
+              >
+                <div
+                  v-for="plan in sortedPlans"
+                  :key="plan.id"
+                  class="px-4 shrink-0 flex flex-col"
+                  :style="cardWidthStyle"
+                >
+                  <div
+                    class="h-full max-h-[88vh] rounded-2xl p-6 flex flex-col shadow-sm relative transition-all duration-300"
+                    :class="[
+                      isDark ? 'bg-[#002e26]' : 'bg-white',
+                      isCurrentPlan(plan) ? 'border-2 border-[#04C18F] shadow-lg z-10' : (isDark ? 'border border-white/5' : 'border border-gray-200')
+                    ]"
+                  >
+                    <div v-if="plan.is_popular || isCurrentPlan(plan)" class="absolute -top-3 left-6 flex gap-2">
+                      <span v-if="plan.is_popular" class="bg-[#04C18F] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">Most Popular</span>
+                      <span v-if="isCurrentPlan(plan)" class="bg-[#E6F8F3] text-[#00896F] border border-[#04C18F] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">Current Plan</span>
+                    </div>
 
-                <h4 :class="['text-[24px] font-normal mb-3', isDark ? 'text-white' : 'text-gray-900', (plan.is_popular || isCurrentPlan(plan)) ? 'mt-10' : '']">{{ plan.name }}</h4>
-                <div class="mb-4">
-                  <span v-if="plan.is_trial" class="text-[36px] font-regular" :class="isDark ? 'text-white' : 'text-black'">FREE</span>
-                  <template v-else>
-                    <span class="text-[36px] font-regular" :class="isDark ? 'text-white' : 'text-black'">{{ currency }} {{ planPrice(plan) }}</span>
-                    <span class="text-[16px]" :class="isDark ? 'text-white/70' : 'text-[#000000CC]'">{{ billingCycle === 'monthly' ? ' /month' : ' /year' }}</span>
-                  </template>
-                </div>
-                <p v-if="!plan.is_trial && billingCycle === 'yearly' && annualMonthlyEquivalent(plan)" class="text-[14px] text-[#04C18F] mb-3 font-medium">{{ currency }} {{ annualMonthlyEquivalent(plan) }}/mo when billed annually</p>
-                <p class="text-[16px] mb-6" :class="isDark ? 'text-white/70' : 'text-[#000000CC]'">{{ plan.description }}</p>
+                    <h4 :class="['text-[24px] font-normal mb-3', isDark ? 'text-white' : 'text-gray-900', (plan.is_popular || isCurrentPlan(plan)) ? 'mt-10' : '']">{{ plan.name }}</h4>
+                    <div class="mb-4">
+                      <span v-if="plan.is_trial" class="text-[36px] font-regular" :class="isDark ? 'text-white' : 'text-black'">FREE</span>
+                      <template v-else>
+                        <span class="text-[36px] font-regular" :class="isDark ? 'text-white' : 'text-black'">{{ currency }} {{ planPrice(plan) }}</span>
+                        <span class="text-[16px]" :class="isDark ? 'text-white/70' : 'text-[#000000CC]'">{{ billingCycle === 'monthly' ? ' /month' : ' /year' }}</span>
+                      </template>
+                    </div>
+                    <p v-if="!plan.is_trial && billingCycle === 'yearly' && annualMonthlyEquivalent(plan)" class="text-[14px] text-[#04C18F] mb-3 font-medium">{{ currency }} {{ annualMonthlyEquivalent(plan) }}/mo when billed annually</p>
+                    <p class="text-[16px] mb-6" :class="isDark ? 'text-white/70' : 'text-[#000000CC]'">{{ plan.description }}</p>
 
-                <ul class="space-y-4 mb-8 flex-1">
-                  <li v-for="group in planFeatures(plan)" :key="group.title">
-                    <p class="text-[13px] font-medium text-[#00896F] mb-2">{{ group.title }}</p>
-                    <ul class="space-y-3 mb-3">
-                      <li v-for="(point, i) in group.points" :key="i" class="text-[14px] flex items-start gap-3" :class="isDark ? 'text-white/90' : 'text-[#000000]'">
-                        <svg v-if="point.included === false" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-red-400 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
-                        <svg v-else-if="point.included === true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-[#04C18F] shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
-                        <span v-else class="w-5 h-5 shrink-0 flex items-center justify-center"><span class="w-1.5 h-1.5 rounded-full" :class="isDark ? 'bg-white/50' : 'bg-[#000000CC]'"></span></span>
-                        {{ point.label }}
+                    <ul class="space-y-4 mb-6 flex-1 overflow-y-auto pr-2">
+                      <li v-for="group in planFeatures(plan)" :key="group.title">
+                        <p class="text-[13px] font-medium text-[#00896F] mb-2">{{ group.title }}</p>
+                        <ul class="space-y-3 mb-3">
+                          <li v-for="(point, i) in group.points" :key="i" class="text-[14px] flex items-start gap-3" :class="isDark ? 'text-white/90' : 'text-[#000000]'">
+                            <svg v-if="point.included === false" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-red-400 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                            <svg v-else-if="point.included === true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-[#04C18F] shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
+                            <span v-else class="w-5 h-5 shrink-0 flex items-center justify-center"><span class="w-1.5 h-1.5 rounded-full" :class="isDark ? 'bg-white/50' : 'bg-[#000000CC]'"></span></span>
+                            {{ point.label }}
+                          </li>
+                        </ul>
                       </li>
                     </ul>
-                  </li>
-                </ul>
 
-                <button v-if="isCurrentPlan(plan)" class="w-full border py-3 rounded-xl text-sm font-medium cursor-default"
-                  :class="isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-white border-gray-200 text-gray-400'">
-                  Current Plan
-                </button>
-                <NuxtLink v-else :to="`/settings/checkout?plan_id=${plan.id}&cycle=${billingCycle}`" class="w-full bg-[#00896F] text-white py-3 rounded-xl text-sm font-medium hover:bg-[#00705a] flex items-center justify-center gap-2 transition-colors">
-                  {{ subscription && Number(plan.current_version?.[priceField]) < Number(subscription.plan_amount_aed) ? 'Downgrade' : subscription ? 'Upgrade' : 'Choose Plan' }}
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
-                </NuxtLink>
+                    <button v-if="isCurrentPlan(plan)" class="w-full border py-3 rounded-xl text-sm font-medium cursor-default mt-auto shrink-0"
+                      :class="isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-white border-gray-200 text-gray-400'">
+                      Current Plan
+                    </button>
+                    <NuxtLink v-else :to="`/settings/checkout?plan_id=${plan.id}&cycle=${billingCycle}`" class="w-full bg-[#00896F] text-white py-3 rounded-xl text-sm font-medium hover:bg-[#00705a] flex items-center justify-center gap-2 transition-colors mt-auto shrink-0">
+                      {{ subscription && Number(plan.current_version?.[priceField]) < Number(subscription.plan_amount_aed) ? 'Downgrade' : subscription ? 'Upgrade' : 'Choose Plan' }}
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
+                    </NuxtLink>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -153,13 +171,32 @@
             <div v-if="maxPlanPages > 1" class="flex items-center justify-center gap-4 mt-8">
               <button @click="prevPlanPage"
                 class="w-10 h-10 rounded-full flex items-center justify-center border transition-all hover:scale-105 active:scale-95 shadow-sm"
-                :class="isDark ? 'border-white/20 text-white bg-white/10 hover:bg-white/20' : 'border-gray-300 text-gray-800 bg-white hover:bg-gray-100'">
+                :class="isDark ? 'border-white/20 text-white bg-white/10 hover:bg-white/20' : 'border-gray-300 text-gray-800 bg-white hover:bg-gray-100'"
+                aria-label="Previous plan">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
               </button>
-              <span class="text-sm font-semibold tracking-wider px-2" :class="isDark ? 'text-white' : 'text-gray-700'">{{ planPage + 1 }} / {{ maxPlanPages }}</span>
+              
+              <!-- Indicator bubbles / dots -->
+              <div class="flex items-center gap-2 px-2">
+                <button
+                  v-for="idx in maxPlanPages"
+                  :key="idx"
+                  @click="planPage = idx - 1"
+                  type="button"
+                  :aria-label="`Go to plan ${idx}`"
+                  class="transition-all duration-300 rounded-full"
+                  :class="[
+                    planPage === (idx - 1)
+                      ? 'w-6 h-2 bg-[#00896F]'
+                      : (isDark ? 'w-2 h-2 bg-white/25 hover:bg-white/40' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400')
+                  ]"
+                ></button>
+              </div>
+
               <button @click="nextPlanPage"
                 class="w-10 h-10 rounded-full flex items-center justify-center border transition-all hover:scale-105 active:scale-95 shadow-sm"
-                :class="isDark ? 'border-white/20 text-white bg-white/10 hover:bg-white/20' : 'border-gray-300 text-gray-800 bg-white hover:bg-gray-100'">
+                :class="isDark ? 'border-white/20 text-white bg-white/10 hover:bg-white/20' : 'border-gray-300 text-gray-800 bg-white hover:bg-gray-100'"
+                aria-label="Next plan">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
               </button>
             </div>
@@ -326,6 +363,19 @@ const orgSubscriptionStatus = ref<any>(null) // { id, status: org active/inactiv
 const invoices = ref<any[]>([])
 const paymentMethods = ref<any[]>([])
 
+const priceField = computed(() => billingCycle.value === 'monthly' ? 'monthly_price' : 'annual_price')
+const isTrial = computed(() => subscription.value && !subscription.value.stripe_subscription_id)
+
+const sortedPlans = computed(() => {
+  const list = [...plans.value]
+  if (isTrial.value && subscription.value?.plan && !list.some(p => p.id === subscription.value.plan.id)) {
+    list.push(subscription.value.plan)
+  }
+  return list.sort((a, b) => Number(a.current_version?.[priceField.value] ?? 0) - Number(b.current_version?.[priceField.value] ?? 0))
+})
+
+const visiblePlans = computed(() => sortedPlans.value)
+
 const planPage = ref(0)
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1200)
 const onResize = () => { windowWidth.value = window.innerWidth }
@@ -338,23 +388,25 @@ const plansPerPage = computed(() => {
   return 3
 })
 
-const maxPlanPages = computed(() => Math.max(1, Math.ceil(sortedPlans.value.length / plansPerPage.value)))
-
-const visiblePlans = computed(() => {
-  if (sortedPlans.value.length <= 3 && windowWidth.value >= 1024) {
-    return sortedPlans.value
-  }
-  const start = planPage.value * plansPerPage.value
-  return sortedPlans.value.slice(start, start + plansPerPage.value)
+const maxPlanPages = computed(() => {
+  if (!sortedPlans.value.length) return 1
+  return Math.max(1, sortedPlans.value.length - plansPerPage.value + 1)
 })
 
-watch(plansPerPage, () => {
+const cardWidthPercent = computed(() => 100 / plansPerPage.value)
+const cardWidthStyle = computed(() => ({ width: `${cardWidthPercent.value}%` }))
+const carouselTrackStyle = computed(() => ({
+  transform: `translateX(-${planPage.value * cardWidthPercent.value}%)`
+}))
+
+watch([plansPerPage, () => sortedPlans.value.length], () => {
   if (planPage.value >= maxPlanPages.value) {
     planPage.value = Math.max(0, maxPlanPages.value - 1)
   }
 })
 
 const prevPlanPage = () => {
+  if (maxPlanPages.value <= 1) return
   if (planPage.value <= 0) {
     planPage.value = maxPlanPages.value - 1
   } else {
@@ -363,11 +415,36 @@ const prevPlanPage = () => {
 }
 
 const nextPlanPage = () => {
+  if (maxPlanPages.value <= 1) return
   if (planPage.value >= maxPlanPages.value - 1) {
     planPage.value = 0
   } else {
     planPage.value++
   }
+}
+
+let touchStartX = 0
+let touchEndX = 0
+
+const onTouchStart = (e: TouchEvent) => {
+  touchStartX = e.changedTouches[0].screenX
+}
+
+const onTouchMove = (e: TouchEvent) => {
+  touchEndX = e.changedTouches[0].screenX
+}
+
+const onTouchEnd = () => {
+  const diff = touchStartX - touchEndX
+  if (Math.abs(diff) > 50) {
+    if (diff > 0) {
+      nextPlanPage()
+    } else {
+      prevPlanPage()
+    }
+  }
+  touchStartX = 0
+  touchEndX = 0
 }
 
 const isUpdatePaymentModalOpen = ref(false)
@@ -378,8 +455,6 @@ const defaultPaymentMethod = computed(() => paymentMethods.value.find(pm => pm.i
 const otherPaymentMethods = computed(() => paymentMethods.value.filter(pm => !pm.is_default))
 
 const currency = computed(() => subscription.value?.plan?.current_version?.currency || plans.value[0]?.current_version?.currency || 'AED')
-const priceField = computed(() => billingCycle.value === 'monthly' ? 'monthly_price' : 'annual_price')
-const isTrial = computed(() => subscription.value && !subscription.value.stripe_subscription_id)
 
 const trialDaysLeft = computed(() => {
   if (!subscription.value?.end_date) return 0
@@ -419,16 +494,6 @@ const planFeatures = (plan: any) => {
 }
 
 const isCurrentPlan = (plan: any) => subscription.value?.plan_id === plan.id
-
-// Trial plans are excluded from GET /payment/plans (not selectable by anyone else) — but the
-// user currently on one needs to see their own card, so merge it in from the subscription payload.
-const sortedPlans = computed(() => {
-  const list = [...plans.value]
-  if (isTrial.value && subscription.value?.plan && !list.some(p => p.id === subscription.value.plan.id)) {
-    list.push(subscription.value.plan)
-  }
-  return list.sort((a, b) => Number(a.current_version?.[priceField.value] ?? 0) - Number(b.current_version?.[priceField.value] ?? 0))
-})
 
 // Derived, not stored — savings only shown when annual genuinely beats monthly*12.
 const annualSavingsPercent = (plan: any) => {
