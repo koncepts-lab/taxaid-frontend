@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full transition-all duration-500 rounded-3xl">
+    <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl">
         <div class="sticky top-0 z-20 py-5 lg:px-8 px-4 flex justify-between items-center rounded-t-3xl" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
             <div>
                 <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص التدفقات النقدية' : 'Cashflow Summary' }}</p>
