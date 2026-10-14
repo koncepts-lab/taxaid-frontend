@@ -257,7 +257,7 @@ const handleModeChange = async (module, label) => {
   if (!ok) return
   if (module === 'ar') refreshArAging()
   if (module === 'ap') refreshApAging()
-  // cost_center: persisted only — its actuals are connector-fed in both modes
+  if (module === 'cost_center') fetchDataInConfig()
 }
 
 // ── Trial Balance (live API) ───────────────────────────────────────────────

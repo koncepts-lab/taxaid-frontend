@@ -135,6 +135,11 @@
 
                 <div v-if="userType === 'client'"></div>
 
+                <div v-else-if="card.locked" class="p-4 rounded-xl border border-dashed text-center"
+                    :class="isDark ? 'border-white/15 text-white/40' : 'border-[#04C18F80] text-[#64748B]'">
+                    <p class="text-sm">{{ card.lockReason || (currentLang === 'ar' ? 'مقفل' : 'Locked') }}</p>
+                </div>
+
                 <div v-else class="space-y-3">
                     <div v-if="MAPPING_CARD_LABELS.includes(card.label) && !card.isUploaded" class="mt-4 flex flex-col justify-end h-full">
                         <p class="text-[13px] text-center my-8" :class="isDark ? 'text-white/50' : 'text-[#64748B]'">
@@ -766,6 +771,7 @@ const openUploadModal = async (card) => {
         mappingModalCostCenterOptions.value = []
         mappingModalMeta.value = { current_page: 1, last_page: 1, total: 0, per_page: 20 }
         mappingModalConfig.value = { title: card.label, subtitle: '', alertMessage: '', data: [] }
+        mappingModalLoadingRows.value = true
 
         if (card.id === 'cc_mapping') {
             mappingModalType.value = 'cost_center'

@@ -4,6 +4,7 @@ export const useCostCenter = () => {
     { label: 'Main Group',  labelAr: 'المجموعة الرئيسية', key: 'mainGroup' },
     { label: 'Sub Group',   labelAr: 'المجموعة الفرعية',  key: 'subGroup'  },
     { label: 'Ledger Name', labelAr: 'اسم الحساب',    key: 'ledgerName' },
+    { label: 'Cost Center', labelAr: 'مركز التكلفة',  key: 'costCenter' },
   ]
 
   const mappingData = ref<any[]>([])
@@ -14,12 +15,13 @@ export const useCostCenter = () => {
     loading.value = true
     error.value   = null
     try {
-      const result = await useApi('/data-source/cost-center/pl-grouped-report-ledgers') as any
+      const result = await useApi('/data-source/cost-center/mappings') as any
       mappingData.value = (result?.data ?? []).map((row: any) => ({
         fsCode:     row.fs_code    ?? '',
         mainGroup:  row.main_group ?? '',
         subGroup:   row.subgroup   ?? '',
         ledgerName: row.ledger_name ?? '',
+        costCenter: row.cost_center ?? '',
       }))
     } catch (e: any) {
       error.value = e?.data?.message ?? 'Failed to load cost center mapping.'

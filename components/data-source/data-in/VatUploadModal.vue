@@ -2,13 +2,15 @@
     <Teleport to="body">
         <Transition name="fade">
             <div v-if="isOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                <div class="bg-white rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar w-full max-w-xl overflow-hidden shadow-2xl transition-all max-h-[78vh] overflow-y-auto">
+                <div class="rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar w-full max-w-xl overflow-hidden shadow-2xl transition-all"
+                    :class="effectiveDark ? 'bg-[#002e26] border border-white/10 text-white' : 'bg-white text-gray-900'">
                 <!-- Header -->
                 <div class="flex items-center justify-between p-6 pb-2">
-                    <h3 class="text-xl font-semibold text-gray-900">
+                    <h3 class="text-xl font-semibold" :class="effectiveDark ? 'text-white' : 'text-gray-900'">
                         {{ currentLang === 'ar' ? 'رفع إقرار ضريبة القيمة المضافة' : 'Upload VAT Return' }}
                     </h3>
-                    <button @click="closeModal" class="text-gray-900 hover:text-gray-600 transition-colors">
+                    <button @click="closeModal" class="transition-colors cursor-pointer"
+                        :class="effectiveDark ? 'text-white/60 hover:text-white' : 'text-gray-900 hover:text-gray-600'">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M18 6L6 18M6 6l12 12" />
@@ -19,14 +21,15 @@
                 <div class="p-6">
                     <Transition name="fade">
                         <div v-if="errorMessage"
-                            class="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3 text-red-600">
+                            class="mb-4 p-3 rounded-xl flex items-center gap-3 text-sm font-medium"
+                            :class="effectiveDark ? 'bg-red-500/15 border border-red-500/30 text-red-200' : 'bg-red-50 border border-red-200 text-red-600'">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <circle cx="12" cy="12" r="10" />
                                 <line x1="12" y1="8" x2="12" y2="12" />
                                 <line x1="12" y1="16" x2="12.01" y2="16" />
                             </svg>
-                            <span class="text-sm font-medium">{{ errorMessage }}</span>
+                            <span>{{ errorMessage }}</span>
                         </div>
                     </Transition>
                     <input type="file" ref="fileInput" class="hidden" accept=".pdf" @change="handleFileSelect" />
@@ -34,11 +37,12 @@
                     <!-- Drop Zone -->
                     <div class="border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-all cursor-pointer mb-5"
                         :class="[
-                            isDragging ? 'border-[#008169] bg-[#E6FDF9]' : 'border-[#04C18F80] bg-[#E6FDF9]/30',
-                            selectedFile ? 'border-solid bg-[#000000]' : ''
+                            effectiveDark
+                                ? (isDragging ? 'border-[#008169] bg-[#008169]/20' : (selectedFile ? 'border-solid border-[#04C18F80] bg-white/5' : 'border-white/15 bg-white/5 hover:bg-white/10 hover:border-[#04C18F80]'))
+                                : (isDragging ? 'border-[#008169] bg-[#E6FDF9]' : (selectedFile ? 'border-solid border-[#04C18F80] bg-[#E6FDF9]/50' : 'border-[#04C18F80] bg-[#E6FDF9]/30'))
                         ]" @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
                         @drop.prevent="handleDrop" @click="triggerPicker">
-                        <div class="mb-3" :class="selectedFile ? 'text-[#008169]' : 'text-[#04C18F33]'">
+                        <div class="mb-3" :class="selectedFile ? 'text-[#008169]' : (effectiveDark ? 'text-white/40' : 'text-[#04C18F33]')">
                             <svg v-if="!selectedFile" width="40" height="40" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="1.5">
                                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"
@@ -52,7 +56,7 @@
                         </div>
 
                         <div class="text-center">
-                            <p class="text-gray-600 mb-1 font-medium text-sm">
+                            <p class="mb-1 font-medium text-sm" :class="effectiveDark ? 'text-white' : 'text-gray-600'">
                                 <template v-if="!selectedFile">
                                     {{ currentLang === 'ar' ? 'انقر للتحميل أو سحب وإفلات' :
                                         'Click to upload or drag and drop' }}
@@ -61,7 +65,7 @@
                                     {{ selectedFile.name }}
                                 </template>
                             </p>
-                            <p class="text-sm font-medium text-gray-600">
+                            <p class="text-sm font-medium" :class="effectiveDark ? 'text-white/60' : 'text-gray-600'">
                                 <template v-if="!selectedFile">
                                     {{ currentLang === 'ar' ? 'ملفات PDF فقط' : 'PDF files only' }}
                                 </template>
@@ -75,32 +79,36 @@
                     <!-- VAT figures -->
                     <div class="grid grid-cols-2 gap-4 mt-2">
                         <div>
-                            <label class="text-sm font-semibold text-gray-800 mb-1 block">Period From</label>
+                            <label class="text-sm font-semibold mb-1 block" :class="effectiveDark ? 'text-white/90' : 'text-gray-800'">Period From</label>
                             <CommonDateField v-model="form.period_from" allow-future />
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-800 mb-1 block">Period To</label>
+                            <label class="text-sm font-semibold mb-1 block" :class="effectiveDark ? 'text-white/90' : 'text-gray-800'">Period To</label>
                             <CommonDateField v-model="form.period_to" allow-future />
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-800 mb-1 block">Standard Rated Supplies</label>
+                            <label class="text-sm font-semibold mb-1 block" :class="effectiveDark ? 'text-white/90' : 'text-gray-800'">Standard Rated Supplies</label>
                             <input v-model.number="form.standard_rated_supplies" type="number" step="0.01"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-base text-gray-900 focus:outline-none focus:border-[#008169]" />
+                                class="w-full border rounded-xl px-3 py-2 text-base focus:outline-none focus:border-[#008169]"
+                                :class="effectiveDark ? 'bg-black/20 border-white/10 text-white' : 'border-gray-200 text-gray-900 bg-white'" />
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-800 mb-1 block">Zero Rated Supplies</label>
+                            <label class="text-sm font-semibold mb-1 block" :class="effectiveDark ? 'text-white/90' : 'text-gray-800'">Zero Rated Supplies</label>
                             <input v-model.number="form.zero_rated_supplies" type="number" step="0.01"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-base text-gray-900 focus:outline-none focus:border-[#008169]" />
+                                class="w-full border rounded-xl px-3 py-2 text-base focus:outline-none focus:border-[#008169]"
+                                :class="effectiveDark ? 'bg-black/20 border-white/10 text-white' : 'border-gray-200 text-gray-900 bg-white'" />
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-800 mb-1 block">Exempted Supplies</label>
+                            <label class="text-sm font-semibold mb-1 block" :class="effectiveDark ? 'text-white/90' : 'text-gray-800'">Exempted Supplies</label>
                             <input v-model.number="form.exempted_supplies" type="number" step="0.01"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-base text-gray-900 focus:outline-none focus:border-[#008169]" />
+                                class="w-full border rounded-xl px-3 py-2 text-base focus:outline-none focus:border-[#008169]"
+                                :class="effectiveDark ? 'bg-black/20 border-white/10 text-white' : 'border-gray-200 text-gray-900 bg-white'" />
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-800 mb-1 block">Standard Rated Expenses</label>
+                            <label class="text-sm font-semibold mb-1 block" :class="effectiveDark ? 'text-white/90' : 'text-gray-800'">Standard Rated Expenses</label>
                             <input v-model.number="form.standard_rated_expenses" type="number" step="0.01"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-base text-gray-900 focus:outline-none focus:border-[#008169]" />
+                                class="w-full border rounded-xl px-3 py-2 text-base focus:outline-none focus:border-[#008169]"
+                                :class="effectiveDark ? 'bg-black/20 border-white/10 text-white' : 'border-gray-200 text-gray-900 bg-white'" />
                         </div>
                     </div>
                 </div>
@@ -108,11 +116,12 @@
                 <!-- Footer Buttons -->
                 <div class="flex items-center justify-end gap-3 p-6 pt-2">
                     <button @click="closeModal"
-                        class="px-8 py-2.5 border border-gray-200 text-gray-600 rounded-xl font-medium hover:bg-gray-50 transition-all">
+                        class="px-8 py-2.5 border rounded-xl font-medium transition-all cursor-pointer"
+                        :class="effectiveDark ? 'border-white/10 text-white/70 hover:bg-white/10 hover:text-white' : 'border-gray-200 text-gray-600 hover:bg-gray-50'">
                         {{ currentLang === 'ar' ? 'إلغاء' : 'Cancel' }}
                     </button>
                     <button @click="handleUpload"
-                        class="px-10 py-2.5 bg-[#008169] text-white rounded-xl font-medium hover:bg-[#006b56] transition-all shadow-md active:scale-95">
+                        class="px-10 py-2.5 bg-[#008169] text-white rounded-xl font-medium hover:bg-[#006b56] transition-all shadow-md active:scale-95 cursor-pointer">
                         {{ currentLang === 'ar' ? 'رفع' : 'Upload' }}
                     </button>
                 </div>
@@ -127,8 +136,12 @@ import { ref, reactive, computed } from 'vue'
 
 const props = defineProps({
     isOpen: Boolean,
+    isDark: { type: Boolean, default: undefined },
     currentLang: String
 })
+
+const { isDark: themeDark } = useTheme()
+const effectiveDark = computed(() => props.isDark !== undefined ? props.isDark : themeDark.value)
 
 const emit = defineEmits(['close', 'upload'])
 

@@ -364,7 +364,9 @@ export const useDataIn = () => {
 
   // ── Data-in sample download ────────────────────────────────────────────────
   const downloadSample = async (id: string): Promise<void> => {
-    const blob      = await useApi(`/data-source/data-in/sample/${id}`, { responseType: 'blob' }) as Blob
+    const item     = items.value.find(i => i.id === id)
+    const endpoint = item?.sampleUrl ? item.sampleUrl.replace(/^\/api/, '') : `/data-source/data-in/sample/${id}`
+    const blob      = await useApi(endpoint, { responseType: 'blob' }) as Blob
     const objectUrl = URL.createObjectURL(blob)
     const anchor    = document.createElement('a')
     anchor.href     = objectUrl

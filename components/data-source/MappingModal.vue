@@ -3,9 +3,9 @@
         <Transition name="fade">
             <div v-if="isOpen"
                 class="fixed inset-0 z-[1100] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-black/60 backdrop-blur-sm"
-                :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="$emit('close')">
+                :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
-                <div class="w-full max-w-6xl bg-white transition-all duration-300 transform scale-100 shadow-2xl overflow-hidden rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar flex flex-col h-[90vh]"
+                <div class="w-full max-w-6xl bg-white transition-all duration-300 transform scale-100 shadow-2xl overflow-hidden rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 overflow-y-auto no-scrollbar flex flex-col h-[90vh]"
                     :class="isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white'">
 
                     <!-- Header -->
@@ -71,11 +71,14 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-if="loadingRows">
-                                    <td :colspan="columnCount" class="py-16 text-center text-sm" :class="isDark ? 'text-white/50' : 'text-gray-400'">
-                                        {{ currentLang === 'ar' ? 'جارٍ التحميل...' : 'Loading ledger data...' }}
-                                    </td>
-                                </tr>
+                                <template v-if="loadingRows">
+                                    <tr v-for="n in skeletonRowCount" :key="`skeleton-${n}`"
+                                        class="border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
+                                        <td v-for="c in columnCount" :key="c" class="px-6 py-4">
+                                            <div class="h-4 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                                        </td>
+                                    </tr>
+                                </template>
                                 <tr v-else-if="!rows.length">
                                     <td :colspan="columnCount" class="py-16 text-center text-sm" :class="isDark ? 'text-white/50' : 'text-gray-400'">
                                         {{ currentLang === 'ar' ? 'لا توجد بيانات دفتر أستاذ متاحة. يرجى رفع ميزان المراجعة أولاً.' : 'No ledger data available. Upload a trial balance first.' }}
@@ -179,6 +182,9 @@ const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', '
 
 // 4 fixed columns (FS Code / Main Group / Sub group / Ledger) + type-specific columns
 const columnCount = computed(() => 4 + (props.type === 'prepaid' ? 1 + months.length : 1))
+
+// Fills the fixed-height table area with skeleton rows while loading, matching the per-page row count
+const skeletonRowCount = computed(() => Math.max(1, props.meta?.per_page ?? 10))
 
 const rows = ref([])
 
