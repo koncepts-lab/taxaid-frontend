@@ -41,7 +41,7 @@
               </div>
             </div>
 
-            <div class="w-full overflow-hidden rounded-3xl animate-pulse" :class="isDark ? 'bg-[#00141080]' : 'bg-white shadow-sm'">
+            <div class="w-full overflow-hidden rounded-3xl animate-pulse" :class="isDark ? 'bg-[#002e26]' : 'bg-white shadow-sm'">
               <div class="py-5 px-8 flex justify-between items-center">
                 <div>
                   <div class="h-[16px] w-44 rounded" :class="skBar" />
