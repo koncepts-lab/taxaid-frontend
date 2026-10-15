@@ -101,6 +101,7 @@ const BUDGET_VARIANCE_IDS = Object.keys(BUDGET_STATEMENT_TYPE_MAP)
 const COST_CENTER_TYPE_MAP: Record<string, string> = {
   cc_master: 'master',
   cc_budget: 'budget',
+  cc_mapping: 'mapping',
 }
 const COST_CENTER_VARIANCE_IDS = Object.keys(COST_CENTER_TYPE_MAP)
 
@@ -258,12 +259,13 @@ export const useDataIn = () => {
     }
   }
 
-  const confirmUpload = async (id: string, tempPath: string): Promise<void> => {
+  const confirmUpload = async (id: string, tempPath: string, excludedLedgers?: string[]): Promise<void> => {
     if (!VARIANCE_UPLOAD_IDS.includes(id)) throw new Error(`Unknown data-in id: ${id}`)
 
     confirming.value = true
     try {
-      const payload: Record<string, string> = { mode: 'confirm', temp_path: tempPath }
+      const payload: Record<string, any> = { mode: 'confirm', temp_path: tempPath }
+      if (excludedLedgers?.length) payload.excluded_ledgers = excludedLedgers
       if (isBudgetVarianceId(id)) {
         payload.type = 'budget'
         payload.statement_type = BUDGET_STATEMENT_TYPE_MAP[id]
@@ -364,11 +366,26 @@ export const useDataIn = () => {
 
   // ── Data-in sample download ────────────────────────────────────────────────
   const downloadSample = async (id: string): Promise<void> => {
-    const blob      = await useApi(`/data-source/data-in/sample/${id}`, { responseType: 'blob' }) as Blob
+    const item     = items.value.find(i => i.id === id)
+    const endpoint = item?.sampleUrl ? item.sampleUrl.replace(/^\/api/, '') : `/data-source/data-in/sample/${id}`
+    const blob      = await useApi(endpoint, { responseType: 'blob' }) as Blob
     const objectUrl = URL.createObjectURL(blob)
     const anchor    = document.createElement('a')
     anchor.href     = objectUrl
     anchor.download = `${id}_Template.xlsx`
+    document.body.appendChild(anchor)
+    anchor.click()
+    document.body.removeChild(anchor)
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
+  }
+
+  const downloadMappingTemplate = async (filled: boolean): Promise<void> => {
+    const endpoint = `/data-source/cost-center/mapping-import/template${filled ? '?filled=1' : ''}`
+    const blob = await useApi(endpoint, { responseType: 'blob' }) as Blob
+    const objectUrl = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = objectUrl
+    anchor.download = filled ? 'Cost_Center_Mapping_Filled_Template.xlsx' : 'Cost_Center_Mapping_Template.xlsx'
     document.body.appendChild(anchor)
     anchor.click()
     document.body.removeChild(anchor)
@@ -498,8 +515,9 @@ export const useDataIn = () => {
   }
 
   // ── Cost Center Mapping ────────────────────────────────────────────────────
-  const fetchCostCenterMappingLedgers = async (page = 1, perPage = 20): Promise<MappingPage> => {
-    const res = await useApi(`/data-source/cost-center/pl-grouped-report-ledgers?page=${page}&per_page=${perPage}`) as any
+  const fetchCostCenterMappingLedgers = async (page = 1, perPage = 20, mapped?: boolean): Promise<MappingPage> => {
+    const mappedParam = mapped === undefined ? '' : `&mapped=${mapped ? 1 : 0}`
+    const res = await useApi(`/data-source/cost-center/pl-grouped-report-ledgers?page=${page}&per_page=${perPage}${mappedParam}`) as any
     return { data: res?.data ?? [], meta: res?.meta ?? { current_page: 1, last_page: 1, total: 0, per_page: perPage } }
   }
 
@@ -542,7 +560,7 @@ export const useDataIn = () => {
   return {
     // data-in
     items, loading, error, uploadingId,
-    fetchConfig, uploadFile, downloadSample, removeItem,
+    fetchConfig, uploadFile, downloadSample, downloadMappingTemplate, removeItem,
     // preview/confirm variance flow (AR/AP + Budget + Cost Center + PDC)
     supportsVariancePreview, isBudgetVarianceId, isCostCenterVarianceId, isPdcVarianceId, previewing, previewError, confirming,
     previewUpload, confirmUpload, cancelPreview,

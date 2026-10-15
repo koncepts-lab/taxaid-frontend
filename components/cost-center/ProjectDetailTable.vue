@@ -1,6 +1,6 @@
 <template>
   <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl"
-    :class="isDark ? 'bg-[#00141080]' : 'bg-white shadow-sm'">
+    :class="isDark ? 'bg-[#002e26]' : 'bg-white shadow-sm'">
 
     <div class="py-5 px-8 flex justify-between items-center">
       <div>
@@ -113,7 +113,7 @@
             </button>
           </div>
 
-          <div class="overflow-y-auto w-full no-scrollbar flex-1 relative bg-white dark:bg-[#00141080]">
+          <div class="overflow-y-auto w-full no-scrollbar flex-1 relative" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
             <table class="w-full text-left rtl:text-right border-collapse relative">
               <thead class="text-white sticky top-0 z-10" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
                 <tr>
@@ -123,7 +123,7 @@
                   <th class="px-6 py-5 font-medium text-center text-[14px]">{{ currentLang === 'ar' ? 'المتبقي من السنة' : 'Year to Go' }}</th>
                 </tr>
               </thead>
-              <tbody :class="isDark ? 'bg-[#00141080]' : 'bg-white'">
+              <tbody :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
                 <template v-for="(item, idx) in tableData" :key="'modal-' + idx">
                   <tr class="transition-all duration-500 border-b"
                     :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#F2F2F2] hover:bg-gray-50'">

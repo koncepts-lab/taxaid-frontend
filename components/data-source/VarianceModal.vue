@@ -13,6 +13,7 @@ const props = defineProps({
   changes: { type: Array, default: () => [] },
   // non-fatal shape warnings (e.g. non-numeric cells) — informational, doesn't block confirm
   warnings: { type: Array, default: () => [] },
+  extraWidth: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['close', 'confirm']);
@@ -21,9 +22,10 @@ const close = () => emit('close');
 const confirm = () => emit('confirm');
 
 const totalDiff = computed(() => props.summary.changed);
+const checkedCount = computed(() => props.changes.filter(r => r.checked).length);
 
-// Budget rows carry `change`/`field`/`current_value`/`new_value`; AR/AP rows carry `type`/`invoiceNumber`/flat fields.
 const isBudgetShape = computed(() => props.changes.length > 0 && props.changes[0].change !== undefined);
+const isMappingShape = computed(() => props.changes.length > 0 && props.changes[0].ledger_name !== undefined);
 
 // Only the keys that actually differ (or every key, for added/removed rows where one side is '-').
 const diffEntries = (row) => {
@@ -44,13 +46,13 @@ const diffEntries = (row) => {
   <Teleport to="body">
     <Transition name="fade">
       <div v-if="isOpen"
-          class="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           @click.self="close">
 
-        <div class="w-full max-w-4xl transition-all duration-300 shadow-2xl rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar flex flex-col"
-            :class="isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white'">
+        <div class="w-full transition-all duration-300 shadow-2xl rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-hidden flex flex-col"
+            :class="[extraWidth ? 'max-w-6xl' : 'max-w-4xl', isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white']">
 
-          <div class="flex justify-between items-start mb-6 p-6 pb-0">
+          <div class="flex justify-between items-start mb-6 p-6 pb-0 w-full">
             <div>
               <h2 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ title }}</h2>
               <p class="text-[15px] font-medium mt-1" :class="isDark ? 'text-white/80' : 'text-gray-800'">Review before saving</p>
@@ -63,7 +65,7 @@ const diffEntries = (row) => {
             </button>
           </div>
 
-      <div class="px-6 flex-1 overflow-y-auto">
+      <div class="px-6 shrink-0">
         <div v-if="warnings.length" class="bg-[#FFF8E6] border border-[#FEEFC3] rounded-lg p-3 mb-4">
           <p class="text-[13px] text-[#B45309] font-bold mb-1">{{ warnings.length }} data warning{{ warnings.length === 1 ? '' : 's' }} — review before confirming:</p>
           <ul class="text-[12px] text-[#B45309] list-disc list-inside space-y-0.5">
@@ -71,7 +73,7 @@ const diffEntries = (row) => {
           </ul>
         </div>
 
-        <div class="bg-[#FFF8E6] border border-[#FEEFC3] rounded-lg p-3 flex items-start gap-2 mb-4">
+        <div v-if="!isMappingShape" class="bg-[#FFF8E6] border border-[#FEEFC3] rounded-lg p-3 flex items-start gap-2 mb-4">
           <svg class="text-[#D97706] mt-0.5 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
@@ -82,19 +84,23 @@ const diffEntries = (row) => {
           </p>
         </div>
 
-        <div class="flex gap-3 mb-4">
+        <div class="flex gap-3 mb-4 flex-wrap">
           <span v-if="summary.changed" class="px-3 py-1 bg-[#FEF3C7] text-[#D97706] text-[13px] font-medium rounded-full">{{ summary.changed }} Changed</span>
           <span v-if="summary.added" class="px-3 py-1 bg-[#D1FAE5] text-[#059669] text-[13px] font-medium rounded-full">{{ summary.added }} Added</span>
           <span v-if="summary.removed" class="px-3 py-1 bg-[#FECACA] text-[#B91C1C] text-[13px] font-medium rounded-full">{{ summary.removed }} Removed</span>
+          <span v-if="summary.unchanged" class="px-3 py-1 bg-gray-100 text-gray-500 text-[13px] font-medium rounded-full">{{ summary.unchanged }} Unchanged</span>
+          <span v-if="summary.invalid" class="px-3 py-1 bg-[#FECACA] text-[#B91C1C] text-[13px] font-medium rounded-full">{{ summary.invalid }} Flagged — locked, map manually</span>
         </div>
+      </div>
 
+      <div class="px-6 flex-1 min-h-0 overflow-y-auto">
         <div v-if="changes.length === 0" class="text-center py-10 text-[14px]" :class="isDark ? 'text-white/50' : 'text-gray-500'">
           No differences — nothing will change.
         </div>
 
         <div v-else-if="isBudgetShape" class="rounded-lg overflow-hidden border border-gray-200 mb-6" :class="isDark ? 'border-white/10' : ''">
           <table class="w-full text-left border-collapse">
-            <thead>
+            <thead class="sticky top-0 z-10">
               <tr class="bg-[#00896A] text-white">
                 <th class="px-4 py-3 text-[13px] font-medium">Field</th>
                 <th class="px-4 py-3 text-[13px] font-medium">Change</th>
@@ -107,14 +113,48 @@ const diffEntries = (row) => {
                     'bg-[#D1FAE5]': row.change === 'Added',
                     'bg-[#FECACA]': row.change === 'Removed',
                   }">
-                <td class="px-4 py-4 text-[13px] font-medium border-b border-black/5 align-top text-gray-900">{{ row.field }}</td>
-                <td class="px-4 py-4 text-[13px] border-b border-black/5 align-top text-gray-800">
+                <td class="px-4 py-4 text-[13px] font-medium border-b border-black/5 align-top !text-gray-900">{{ row.field }}</td>
+                <td class="px-4 py-4 text-[13px] border-b border-black/5 align-top !text-gray-800">
                   <div v-for="entry in diffEntries(row)" :key="entry.key" class="mb-1 last:mb-0">
-                    <span class="text-gray-500">{{ entry.key }}:</span>
-                    <span v-if="entry.from !== null" class="text-gray-600 ml-1">{{ entry.from }}</span>
-                    <span v-if="entry.from !== null && entry.to !== null" class="mx-1">→</span>
-                    <span v-if="entry.to !== null" class="text-gray-900 font-medium">{{ entry.to }}</span>
+                    <span class="!text-gray-500">{{ entry.key }}:</span>
+                    <span v-if="entry.from !== null" class="!text-gray-600 ml-1">{{ entry.from }}</span>
+                    <span v-if="entry.from !== null && entry.to !== null" class="mx-1 !text-gray-700">→</span>
+                    <span v-if="entry.to !== null" class="!text-gray-900 font-medium">{{ entry.to }}</span>
                   </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div v-else-if="isMappingShape" class="rounded-lg overflow-x-auto border border-gray-200 mb-6" :class="isDark ? 'border-white/10' : ''">
+          <table class="w-full text-left border-collapse table-fixed">
+            <thead class="sticky top-0 z-10">
+              <tr class="bg-[#00896A] text-white">
+                <th class="px-4 py-3 text-[13px] font-medium w-[6%]"></th>
+                <th class="px-4 py-3 text-[13px] font-medium w-[26%]">Ledger</th>
+                <th class="px-4 py-3 text-[13px] font-medium w-[16%]">Main Group</th>
+                <th class="px-4 py-3 text-[13px] font-medium w-[18%]">Subgroup</th>
+                <th class="px-4 py-3 text-[13px] font-medium w-[14%]">Cost Center</th>
+                <th class="px-4 py-3 text-[13px] font-medium w-[20%]">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, idx) in changes" :key="idx" class="border-b" :class="isDark ? 'border-white/5' : 'border-black/5'">
+                <td class="px-4 py-3">
+                  <input type="checkbox" v-model="row.checked" :disabled="row.locked"
+                    class="w-4 h-4 rounded accent-[#00896A] disabled:opacity-40 disabled:cursor-not-allowed" />
+                </td>
+                <td class="px-4 py-3 text-[13px] break-words" :class="isDark ? 'text-white/80' : 'text-gray-800'">{{ row.ledger_name }}</td>
+                <td class="px-4 py-3 text-[13px] break-words" :class="isDark ? 'text-white/80' : 'text-gray-800'">{{ row.main_group }}</td>
+                <td class="px-4 py-3 text-[13px] break-words" :class="isDark ? 'text-white/80' : 'text-gray-800'">{{ row.subgroup }}</td>
+                <td class="px-4 py-3 text-[13px] break-words" :class="isDark ? 'text-white/80' : 'text-gray-800'">{{ row.cost_center }}</td>
+                <td class="px-4 py-3 text-[13px] align-top">
+                  <span v-if="row.status === 'invalid'" class="px-2 py-1 rounded-full text-[12px] bg-[#FECACA] text-[#B91C1C]">Flagged</span>
+                  <span v-else-if="row.status === 'added'" class="px-2 py-1 rounded-full text-[12px] bg-[#D1FAE5] text-[#059669]">Added</span>
+                  <span v-else-if="row.status === 'changed'" class="px-2 py-1 rounded-full text-[12px] bg-[#FEF3C7] text-[#D97706]">Changed</span>
+                  <span v-else class="px-2 py-1 rounded-full text-[12px] bg-gray-100 text-gray-500">Unchanged</span>
+                  <p v-if="row.reason" class="text-[11px] mt-1 text-[#B91C1C] whitespace-normal break-words">{{ row.reason }}</p>
                 </td>
               </tr>
             </tbody>
@@ -123,7 +163,7 @@ const diffEntries = (row) => {
 
         <div v-else class="rounded-lg overflow-hidden border border-gray-200 mb-6" :class="isDark ? 'border-white/10' : ''">
           <table class="w-full text-left border-collapse">
-            <thead>
+            <thead class="sticky top-0 z-10">
               <tr class="bg-[#00896A] text-white">
                 <th class="px-4 py-3 text-[13px] font-medium">Invoice #</th>
                 <th class="px-4 py-3 text-[13px] font-medium">Customer</th>
@@ -138,26 +178,26 @@ const diffEntries = (row) => {
                     'bg-[#D1FAE5]': row.type === 'added',
                     'bg-[#FECACA]': row.type === 'removed',
                   }">
-                <td class="px-4 py-4 text-[13px] font-medium border-b border-black/5 align-top text-gray-900">{{ row.invoiceNumber }}</td>
-                <td class="px-4 py-4 text-[13px] border-b border-black/5 align-top text-gray-800">{{ row.customer }}</td>
+                <td class="px-4 py-4 text-[13px] font-medium border-b border-black/5 align-top !text-gray-900">{{ row.invoiceNumber }}</td>
+                <td class="px-4 py-4 text-[13px] border-b border-black/5 align-top !text-gray-800">{{ row.customer }}</td>
 
                 <td class="px-4 py-4 text-[13px] border-b border-black/5 text-center">
                   <div class="flex flex-col items-center gap-1">
-                    <span v-if="row.amountFrom !== null" class="text-gray-600">{{ row.amountFrom }}</span>
-                    <svg v-if="row.type === 'changed'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500">
+                    <span v-if="row.amountFrom !== null" class="!text-gray-600">{{ row.amountFrom }}</span>
+                    <svg v-if="row.type === 'changed'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="!text-gray-500">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                     </svg>
-                    <span v-if="row.amountTo !== null" class="text-gray-900 font-medium">{{ row.amountTo }}</span>
+                    <span v-if="row.amountTo !== null" class="!text-gray-900 font-medium">{{ row.amountTo }}</span>
                   </div>
                 </td>
 
                 <td class="px-4 py-4 text-[13px] border-b border-black/5 text-center">
                   <div class="flex flex-col items-center gap-1">
-                    <span v-if="row.statusFrom" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-[12px] whitespace-nowrap">{{ row.statusFrom }}</span>
-                    <svg v-if="row.type === 'changed'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500">
+                    <span v-if="row.statusFrom" class="px-3 py-1 bg-gray-200 !text-gray-700 rounded-full text-[12px] whitespace-nowrap">{{ row.statusFrom }}</span>
+                    <svg v-if="row.type === 'changed'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="!text-gray-500">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                     </svg>
-                    <span v-if="row.statusTo" class="px-3 py-1 bg-[#A7F3D0] text-[#065F46] rounded-full text-[12px] whitespace-nowrap">{{ row.statusTo }}</span>
+                    <span v-if="row.statusTo" class="px-3 py-1 bg-[#A7F3D0] !text-[#065F46] rounded-full text-[12px] whitespace-nowrap">{{ row.statusTo }}</span>
                   </div>
                 </td>
               </tr>
@@ -165,16 +205,19 @@ const diffEntries = (row) => {
           </table>
         </div>
 
+      </div>
+
+      <div v-if="!isMappingShape" class="px-6 pt-3 shrink-0">
         <p class="text-[13px]" :class="isDark ? 'text-white/60' : 'text-gray-600'">Once confirmed, this action cannot be undone.</p>
       </div>
 
-      <div class="p-6 border-t flex justify-end gap-3 mt-2" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+      <div class="p-6 border-t flex justify-end gap-3 mt-2 shrink-0" :class="isDark ? 'border-white/10' : 'border-gray-100'">
         <button @click="close" :disabled="confirming" class="px-5 py-2.5 rounded-lg border text-[14px] font-medium transition-colors disabled:opacity-50"
                 :class="isDark ? 'border-white/20 text-white hover:bg-white/5' : 'border-gray-200 text-gray-700 hover:bg-gray-50'">
           Cancel
         </button>
-        <button @click="confirm" :disabled="confirming" class="px-5 py-2.5 bg-[#00896A] text-white rounded-lg text-[14px] font-medium hover:bg-[#007056] transition-colors disabled:opacity-50">
-          {{ confirming ? 'Saving...' : 'Confirm & Save' }}
+        <button @click="confirm" :disabled="confirming || (isMappingShape && checkedCount === 0)" class="px-5 py-2.5 bg-[#00896A] text-white rounded-lg text-[14px] font-medium hover:bg-[#007056] transition-colors disabled:opacity-50">
+          {{ confirming ? 'Saving...' : (isMappingShape ? `Confirm (${checkedCount})` : 'Confirm & Save') }}
         </button>
       </div>
 

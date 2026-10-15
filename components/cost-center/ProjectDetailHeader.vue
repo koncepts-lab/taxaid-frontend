@@ -7,7 +7,7 @@
                 <button @click="handleBack"
                     class="p-2 -ml-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
                     <img src="/images/icons/back.svg" class="w-6 h-6"
-                        :class="[isDark ? 'invert' : '', currentLang === 'ar' ? 'rotate-180' : '']" />
+                        :class="[isDark ? 'brightness-0 invert' : '', currentLang === 'ar' ? 'rotate-180' : '']" />
                 </button>
                 <div>
                     <h1 v-if="title" class="text-2xl font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">

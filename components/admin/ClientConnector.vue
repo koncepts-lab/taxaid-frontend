@@ -2,16 +2,19 @@
   <div class="space-y-6 mt-4">
 
     <!-- Status strip -->
-    <div class="bg-[#E0F9F3] border border-[#6FDBBF] rounded-[16px] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="border rounded-[16px] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4"
+      :class="isDark ? 'bg-[#002E26] border-teal-950/40 text-white' : 'bg-[#E0F9F3] border-[#6FDBBF] text-[#101828]'">
       <div>
-        <h2 class="text-[16px] font-medium text-[#101828]">Last Sync</h2>
-        <p class="text-[14px] mt-0.5 text-[#4A5565]">{{ lastSyncText }}</p>
-        <p v-if="schedule?.device_name" class="text-[13px] mt-0.5 text-[#4A5565]">Device: {{ schedule.device_name }}</p>
-        <p v-if="schedule?.last_status_reason" class="text-[13px] mt-0.5 text-amber-600">{{ schedule.last_status_reason }}</p>
+        <h2 class="text-[16px] font-medium" :class="isDark ? 'text-white' : 'text-[#101828]'">Last Sync</h2>
+        <p class="text-[14px] mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#4A5565]'">{{ lastSyncText }}</p>
+        <p v-if="schedule?.device_name" class="text-[13px] mt-0.5" :class="isDark ? 'text-white/60' : 'text-[#4A5565]'">Device: {{ schedule.device_name }}</p>
+        <p v-if="schedule?.last_status_reason" class="text-[13px] mt-0.5 text-amber-500">{{ schedule.last_status_reason }}</p>
       </div>
       <div class="flex items-center gap-3">
         <span v-if="schedule" class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[13px] font-medium"
-          :class="schedule.connector_online ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-gray-100 text-gray-500'">
+          :class="schedule.connector_online
+            ? (isDark ? 'bg-emerald-900/40 text-emerald-300' : 'bg-[#D1FAE5] text-[#065F46]')
+            : (isDark ? 'bg-white/10 text-white/60' : 'bg-gray-100 text-gray-500')">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
           {{ schedule.connector_online ? 'Connector Online' : 'Connector Offline' }}
         </span>
@@ -23,17 +26,18 @@
     </div>
 
     <!-- Schedule -->
-    <div class="bg-white border border-gray-200 rounded-[16px] shadow-sm p-6">
-      <h2 class="text-[16px] font-medium text-[#101828] mb-4">Sync Schedule</h2>
-      <p class="text-[13px] text-[#4A5565] -mt-2 mb-4">Daily sync runs the current year only — use Force Sync below for previous years.</p>
+    <div class="border rounded-[16px] shadow-sm p-6"
+      :class="isDark ? 'bg-[#002E26] border-teal-950/40 text-white' : 'bg-white border-gray-200 text-[#101828]'">
+      <h2 class="text-[16px] font-medium mb-4" :class="isDark ? 'text-white' : 'text-[#101828]'">Sync Schedule</h2>
+      <p class="text-[13px] -mt-2 mb-4" :class="isDark ? 'text-white/60' : 'text-[#4A5565]'">Daily sync runs the current year only — use Force Sync below for previous years.</p>
       <div class="flex flex-wrap items-end gap-6">
         <div v-if="schedule?.is_grouped">
-          <label class="block text-[14px] font-medium text-[#101828] mb-2">Scheduled Sync Time (group-managed)</label>
-          <p class="text-sm text-gray-700">
+          <label class="block text-[14px] font-medium mb-2" :class="isDark ? 'text-white' : 'text-[#101828]'">Scheduled Sync Time (group-managed)</label>
+          <p class="text-sm" :class="isDark ? 'text-white/80' : 'text-gray-700'">
             Cycle 1: {{ schedule.group_sync_time }} • Cycle 2 (catch-up): {{ schedule.group_cycle_2_time }}
           </p>
         </div>
-        <label class="flex items-center gap-2 text-sm text-gray-700 pb-2">
+        <label class="flex items-center gap-2 text-sm pb-2" :class="isDark ? 'text-white/80' : 'text-gray-700'">
           <input type="checkbox" v-model="form.enabled" class="accent-[#00896F]" /> Auto-sync enabled
         </label>
         <button @click="saveSchedule" :disabled="busy"
@@ -44,11 +48,12 @@
     </div>
 
     <!-- Force sync with years + stop -->
-    <div class="bg-white border border-gray-200 rounded-[16px] shadow-sm p-6">
-      <h2 class="text-[16px] font-medium text-[#101828] mb-1">Force Sync (Year Selection)</h2>
-      <p class="text-[13px] text-[#4A5565] mb-4">Trigger an immediate sync for the selected years, or stop a running one.</p>
+    <div class="border rounded-[16px] shadow-sm p-6"
+      :class="isDark ? 'bg-[#002E26] border-teal-950/40 text-white' : 'bg-white border-gray-200 text-[#101828]'">
+      <h2 class="text-[16px] font-medium mb-1" :class="isDark ? 'text-white' : 'text-[#101828]'">Force Sync (Year Selection)</h2>
+      <p class="text-[13px] mb-4" :class="isDark ? 'text-white/60' : 'text-[#4A5565]'">Trigger an immediate sync for the selected years, or stop a running one.</p>
       <div class="flex flex-wrap items-center gap-4">
-        <label v-for="y in allYears" :key="y" class="flex items-center gap-1.5 text-sm text-gray-700">
+        <label v-for="y in allYears" :key="y" class="flex items-center gap-1.5 text-sm" :class="isDark ? 'text-white/80' : 'text-gray-700'">
           <input type="checkbox" v-model="forceYears" :value="y" class="accent-[#00896F]" /> {{ y }}
         </label>
         <button @click="handleAdminSyncNow" :disabled="busy || !forceYears.length"
@@ -56,51 +61,57 @@
           Start Force Sync
         </button>
         <button @click="handleStopSync" :disabled="busy"
-          class="px-5 py-2.5 border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-60">
+          class="px-5 py-2.5 border rounded-lg text-sm font-medium transition-colors disabled:opacity-60"
+          :class="isDark ? 'border-red-400/50 text-red-300 hover:bg-red-500/10' : 'border-red-300 text-red-600 hover:bg-red-50'">
           Stop Sync
         </button>
       </div>
     </div>
 
     <!-- Remote tools -->
-    <div class="bg-white border border-gray-200 rounded-[16px] shadow-sm p-6">
-      <h2 class="text-[16px] font-medium text-[#101828] mb-4">Remote Tools</h2>
+    <div class="border rounded-[16px] shadow-sm p-6"
+      :class="isDark ? 'bg-[#002E26] border-teal-950/40 text-white' : 'bg-white border-gray-200 text-[#101828]'">
+      <h2 class="text-[16px] font-medium mb-4" :class="isDark ? 'text-white' : 'text-[#101828]'">Remote Tools</h2>
       <div class="flex flex-wrap items-center gap-4">
         <button @click="handleOpenSettings" :disabled="busy"
-          class="px-4 py-2.5 border border-[#6FDBBF] rounded-lg text-sm font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60">
+          class="px-4 py-2.5 border rounded-lg text-sm font-medium transition-colors disabled:opacity-60"
+          :class="isDark ? 'border-[#6FDBBF] text-[#6FDBBF] hover:bg-white/10' : 'border-[#6FDBBF] text-[#013E32] hover:bg-gray-50'">
           Open Connector Settings
         </button>
-        <select v-model="logType" class="px-4 py-2.5 rounded-lg border border-[#04C18F80] outline-none text-gray-700 text-sm bg-white">
-          <option v-for="t in ['all','auto_sync','tally_debug','activation','ui','errors']" :key="t" :value="t">{{ t }}</option>
-        </select>
+        <CommonSelectDropdown mode="select" size="sm" class="w-36" v-model="logType" :options="['all','auto_sync','tally_debug','activation','ui','errors']" :clearable="false" />
         <button @click="handleRequestLogs" :disabled="busy"
-          class="px-4 py-2.5 border border-[#6FDBBF] rounded-lg text-sm font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60">
+          class="px-4 py-2.5 border rounded-lg text-sm font-medium transition-colors disabled:opacity-60"
+          :class="isDark ? 'border-[#6FDBBF] text-[#6FDBBF] hover:bg-white/10' : 'border-[#6FDBBF] text-[#013E32] hover:bg-gray-50'">
           Request Logs
         </button>
         <button v-if="logRequestId" @click="handleDownloadLogs"
-          class="text-[13px] text-[#00896F] font-medium underline underline-offset-2">
+          class="text-[13px] font-medium underline underline-offset-2"
+          :class="isDark ? 'text-[#04C18F]' : 'text-[#00896F]'">
           Download logs ({{ logRequestId.slice(0, 8) }}…)
         </button>
       </div>
     </div>
 
     <!-- Sync history -->
-    <div class="bg-white border border-gray-200 rounded-[16px] shadow-sm p-6">
+    <div class="border rounded-[16px] shadow-sm p-6"
+      :class="isDark ? 'bg-[#002E26] border-teal-950/40 text-white' : 'bg-white border-gray-200 text-[#101828]'">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-[16px] font-medium text-[#101828]">Sync History</h2>
+        <h2 class="text-[16px] font-medium" :class="isDark ? 'text-white' : 'text-[#101828]'">Sync History</h2>
         <button @click="loadHistory(historyMeta.current_page || 1)" :disabled="historyLoading"
-          class="px-3 py-1.5 border border-[#6FDBBF] rounded-lg text-xs font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60">
+          class="px-3 py-1.5 border rounded-lg text-xs font-medium transition-colors disabled:opacity-60"
+          :class="isDark ? 'border-[#6FDBBF] text-[#6FDBBF] hover:bg-white/10' : 'border-[#6FDBBF] text-[#013E32] hover:bg-gray-50'">
           Refresh
         </button>
       </div>
       <div class="space-y-3 h-[320px] overflow-y-auto pr-1">
-        <div v-if="!history.length" class="py-6 text-center text-gray-400 text-sm">No syncs yet.</div>
-        <div v-for="h in history" :key="h.id" class="flex items-center justify-between p-3 border border-[#6FDBBF] rounded-lg text-sm">
+        <div v-if="!history.length" class="py-6 text-center text-sm" :class="isDark ? 'text-white/40' : 'text-gray-400'">No syncs yet.</div>
+        <div v-for="h in history" :key="h.id" class="flex items-center justify-between p-3 border rounded-lg text-sm"
+          :class="isDark ? 'border-white/10 bg-white/[0.02]' : 'border-[#6FDBBF]'">
           <div>
-            <span class="font-medium text-[#101828]">{{ new Date(h.created_at).toLocaleString() }}</span>
-            <span class="text-[#4A5565]"> — {{ h.financial_year ?? '—' }}</span>
+            <span class="font-medium" :class="isDark ? 'text-white' : 'text-[#101828]'">{{ new Date(h.created_at).toLocaleString() }}</span>
+            <span :class="isDark ? 'text-white/60' : 'text-[#4A5565]'"> — {{ h.financial_year ?? '—' }}</span>
           </div>
-          <div class="text-[#4A5565]">{{ h.rows_added }} added • {{ h.rows_changed }} changed • {{ h.rows_removed }} removed</div>
+          <div :class="isDark ? 'text-white/60' : 'text-[#4A5565]'">{{ h.rows_added }} added • {{ h.rows_changed }} changed • {{ h.rows_removed }} removed</div>
         </div>
       </div>
       <CommonPaginationBar v-if="historyMeta.total > 0" :meta="historyMeta" :loading="historyLoading"
@@ -108,22 +119,24 @@
     </div>
 
     <!-- Company period -->
-    <div class="bg-white border border-gray-200 rounded-[16px] shadow-sm p-6">
+    <div class="border rounded-[16px] shadow-sm p-6"
+      :class="isDark ? 'bg-[#002E26] border-teal-950/40 text-white' : 'bg-white border-gray-200 text-[#101828]'">
       <div class="flex items-center justify-between mb-1">
-        <h2 class="text-[16px] font-medium text-[#101828]">Company Period</h2>
+        <h2 class="text-[16px] font-medium" :class="isDark ? 'text-white' : 'text-[#101828]'">Company Period</h2>
         <button v-if="!periodUnlocked" @click="periodUnlocked = true"
-          class="px-3 py-1.5 border border-[#6FDBBF] rounded-lg text-xs font-medium text-[#013E32] hover:bg-gray-50 transition-colors">
+          class="px-3 py-1.5 border rounded-lg text-xs font-medium transition-colors"
+          :class="isDark ? 'border-[#6FDBBF] text-[#6FDBBF] hover:bg-white/10' : 'border-[#6FDBBF] text-[#013E32] hover:bg-gray-50'">
           Unlock to Edit
         </button>
       </div>
-      <p class="text-[13px] text-[#4A5565] mb-4">Set once from the initial sync — correct it here if the consultant got it wrong. Never changed automatically after that.</p>
+      <p class="text-[13px] mb-4" :class="isDark ? 'text-white/60' : 'text-[#4A5565]'">Set once from the initial sync — correct it here if the consultant got it wrong. Never changed automatically after that.</p>
       <div class="flex flex-wrap items-end gap-4">
         <div>
-          <label class="block text-[13px] text-[#4A5565] mb-1">From</label>
+          <label class="block text-[13px] mb-1" :class="isDark ? 'text-white/60' : 'text-[#4A5565]'">From</label>
           <CommonDateField class="w-48" v-model="periodForm.from_date" :disabled="!periodUnlocked" allow-future />
         </div>
         <div>
-          <label class="block text-[13px] text-[#4A5565] mb-1">To</label>
+          <label class="block text-[13px] mb-1" :class="isDark ? 'text-white/60' : 'text-[#4A5565]'">To</label>
           <CommonDateField class="w-48" v-model="periodForm.to_date" :disabled="!periodUnlocked" allow-future />
         </div>
         <button v-if="periodUnlocked" @click="handleSavePeriod" :disabled="busy"
@@ -131,18 +144,19 @@
           Save Period
         </button>
         <button v-if="periodUnlocked" @click="periodUnlocked = false"
-          class="px-5 py-2.5 border border-gray-300 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+          class="px-5 py-2.5 border rounded-lg text-sm font-medium transition-colors"
+          :class="isDark ? 'border-white/20 text-white/70 hover:bg-white/10' : 'border-gray-300 text-gray-600 hover:bg-gray-50'">
           Cancel
         </button>
       </div>
 
-      <div class="mt-4 pt-4 border-t border-gray-100">
-        <p class="text-[13px] text-[#4A5565] mb-3">
+      <div class="mt-4 pt-4 border-t" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+        <p class="text-[13px] mb-3" :class="isDark ? 'text-white/60' : 'text-[#4A5565]'">
           Report Schedules — captured for later; Force Sync and admin Sync Now always run a full sync regardless of this. Only the daily auto-sync will respect it once the connector supports it.
         </p>
         <div class="space-y-3">
           <div v-for="report in reportScheduleList" :key="report.key" class="flex items-center justify-between max-w-sm">
-            <span class="text-[14px] font-medium text-[#00896F]">{{ report.label }}</span>
+            <span class="text-[14px] font-medium" :class="isDark ? 'text-[#04C18F]' : 'text-[#00896F]'">{{ report.label }}</span>
             <AdminConnectorFullSyncDayPicker
               v-if="periodUnlocked"
               :frequency="periodForm.report_schedules[report.key]?.frequency ?? 'daily'"
@@ -150,7 +164,7 @@
               @update:frequency="v => setReportSchedule(report.key, v, periodForm.report_schedules[report.key]?.day)"
               @update:day="v => setReportSchedule(report.key, periodForm.report_schedules[report.key]?.frequency ?? 'daily', v)"
             />
-            <span v-else class="text-[13px] text-gray-500 capitalize">{{ periodForm.report_schedules[report.key]?.frequency ?? 'daily' }}</span>
+            <span v-else class="text-[13px] capitalize" :class="isDark ? 'text-white/60' : 'text-gray-500'">{{ periodForm.report_schedules[report.key]?.frequency ?? 'daily' }}</span>
           </div>
         </div>
       </div>
@@ -158,21 +172,25 @@
 
     <!-- Backup + TaxAid Connector activation (Super Admin / Review Manager) -->
     <div class="grid gap-6" :class="licenseId ? 'md:grid-cols-2' : ''">
-      <div class="bg-white border border-gray-200 rounded-[16px] shadow-sm p-6">
-        <h2 class="text-[16px] font-medium text-[#101828] mb-1">System Backup</h2>
-        <p class="text-[13px] text-[#4A5565] mb-4">Export this client's data as a ZIP of CSV or JSON files.</p>
+      <div class="border rounded-[16px] shadow-sm p-6"
+        :class="isDark ? 'bg-[#002E26] border-teal-950/40 text-white' : 'bg-white border-gray-200 text-[#101828]'">
+        <h2 class="text-[16px] font-medium mb-1" :class="isDark ? 'text-white' : 'text-[#101828]'">System Backup</h2>
+        <p class="text-[13px] mb-4" :class="isDark ? 'text-white/60' : 'text-[#4A5565]'">Export this client's data as a ZIP of CSV or JSON files.</p>
         <div class="flex flex-wrap items-center gap-4">
           <button @click="handleBackup('csv')" :disabled="backupBusy"
-            class="px-4 py-2.5 border border-[#6FDBBF] rounded-lg text-sm font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60">
+            class="px-4 py-2.5 border rounded-lg text-sm font-medium transition-colors disabled:opacity-60"
+            :class="isDark ? 'border-[#6FDBBF] text-[#6FDBBF] hover:bg-white/10' : 'border-[#6FDBBF] text-[#013E32] hover:bg-gray-50'">
             Export Backup (Excel)
           </button>
           <button @click="handleBackup('json')" :disabled="backupBusy"
-            class="px-4 py-2.5 border border-[#6FDBBF] rounded-lg text-sm font-medium text-[#013E32] hover:bg-gray-50 transition-colors disabled:opacity-60">
+            class="px-4 py-2.5 border rounded-lg text-sm font-medium transition-colors disabled:opacity-60"
+            :class="isDark ? 'border-[#6FDBBF] text-[#6FDBBF] hover:bg-white/10' : 'border-[#6FDBBF] text-[#013E32] hover:bg-gray-50'">
             Export Backup (JSON)
           </button>
-          <span v-if="backupBusy" class="text-[13px] text-[#4A5565]">Preparing backup ({{ latestBackup?.status ?? 'queued' }})... download starts automatically.</span>
+          <span v-if="backupBusy" class="text-[13px]" :class="isDark ? 'text-white/60' : 'text-[#4A5565]'">Preparing backup ({{ latestBackup?.status ?? 'queued' }})... download starts automatically.</span>
           <button v-else-if="latestBackup?.status === 'ready'" @click="downloadBackup(props.tenantId, latestBackup.id)"
-            class="text-[13px] text-[#00896F] font-medium underline underline-offset-2">
+            class="text-[13px] font-medium underline underline-offset-2"
+            :class="isDark ? 'text-[#04C18F]' : 'text-[#00896F]'">
             Download last backup ({{ latestBackup.format.toUpperCase() }})
           </button>
         </div>
@@ -194,6 +212,8 @@ const props = defineProps({
   tenantId: { type: Number, required: true },
   licenseId: { type: String, default: null },
 })
+
+const { isDark } = useTheme()
 
 const {
   getSchedule, setSchedule, syncNow, adminSyncNow, stopSync,
