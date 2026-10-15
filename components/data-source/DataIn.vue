@@ -375,15 +375,21 @@
         :meta="mappingModalMeta"
         :is-dark="isDark"
         :current-lang="currentLang"
+        :template-downloading="mappingTemplateDownloading"
+        :template-error="mappingTemplateError"
         @close="isMappingModalOpen = false"
         @update="handleMappingUpdate"
         @change-page="changeMappingPage"
         @change-per-page="changeMappingPerPage"
+        @open-upload="handleOpenMappingUpload"
+        @download-template="handleDownloadMappingTemplate"
+        @filter-mapped="handleFilterMapped"
     />
 
     <DataSourceUploadModal
         :is-open="isModalOpen"
         :current-lang="currentLang"
+        :title="activeUploadTarget?.id === 'cc_mapping' ? (currentLang === 'ar' ? 'رفع تخطيط مركز التكلفة' : 'Upload Cost Center Mapping') : undefined"
         @close="isModalOpen = false"
         @upload="handleModalUpload"
     />
@@ -397,6 +403,7 @@
         :changes="variancePreview?.changes ?? []"
         :warnings="variancePreview?.warnings ?? []"
         :confirming="props.confirming"
+        :extra-width="varianceTargetId === 'cc_mapping'"
         @close="handleVarianceClose"
         @confirm="handleVarianceConfirm"
     />
@@ -723,18 +730,46 @@ const toModalRow = (r) => ({
     mainGroup: r.main_group ?? '',
     subGroup: r.subgroup ?? r.sub_group ?? '',
     ledger: r.ledger_name ?? '',
+    costCenter: r.cost_center ?? '',
     valueInBudget: r.value_in_budget ?? '',
     months: Object.fromEntries(MONTH_KEYS.map(m => [m, r[m] ?? ''])),
 })
 
+const handleOpenMappingUpload = () => {
+    activeUploadTarget.value = { type: 'datain', id: 'cc_mapping' }
+    isModalOpen.value = true
+}
+
+const mappingTemplateDownloading = ref(false)
+const mappingTemplateError = ref('')
+
+const handleDownloadMappingTemplate = async (key) => {
+    mappingTemplateError.value = ''
+    mappingTemplateDownloading.value = true
+    try {
+        await downloadMappingTemplate(key === 'filled')
+    } catch (err) {
+        mappingTemplateError.value = err?.message ?? 'Failed to download template.'
+    } finally {
+        mappingTemplateDownloading.value = false
+    }
+}
+
 // Shared paginated fetch for all 3 mapping cards — keeps rows/meta in sync
+const mappingModalMappedFilter = ref(undefined)
+
+const handleFilterMapped = (mapped) => {
+    mappingModalMappedFilter.value = mapped
+    loadMappingPage(1)
+}
+
 const loadMappingPage = async (page = 1) => {
     mappingModalLoadingRows.value = true
     mappingModalError.value = ''
     mappingModalSuccess.value = ''
     try {
         if (mappingModalCardId.value === 'cc_mapping') {
-            const { data, meta } = await fetchCostCenterMappingLedgers(page, mappingModalMeta.value.per_page)
+            const { data, meta } = await fetchCostCenterMappingLedgers(page, mappingModalMeta.value.per_page, mappingModalMappedFilter.value)
             mappingModalConfig.value.data = data.map(toModalRow)
             mappingModalMeta.value = meta
         } else if (mappingModalCardId.value === 'prepaid') {
@@ -909,6 +944,7 @@ const varianceModalTitle = computed(() => {
     if (varianceTargetId.value === 'ap') return 'Account Payable Variance'
     if (varianceTargetId.value === 'cc_master') return 'Cost Center Master Variance'
     if (varianceTargetId.value === 'cc_budget') return 'Cost Center Budget Variance'
+    if (varianceTargetId.value === 'cc_mapping') return 'Cost Center Mapping Variance'
     if (varianceTargetId.value === 'pdcin') return 'PDC In Variance'
     if (varianceTargetId.value === 'pdcout') return 'PDC Out Variance'
     if (varianceTargetId.value === 'forecast') return 'Sales Forecast Variance'
@@ -955,7 +991,10 @@ const handleModalUpload = async (file) => {
 const handleVarianceConfirm = async () => {
     if (!variancePreview.value || !varianceTargetId.value) return
     try {
-        await props.confirmUpload(varianceTargetId.value, variancePreview.value.temp_path)
+        const excludedLedgers = varianceTargetId.value === 'cc_mapping'
+            ? (variancePreview.value.changes ?? []).filter(r => !r.locked && !r.checked).map(r => r.ledger_name)
+            : undefined
+        await props.confirmUpload(varianceTargetId.value, variancePreview.value.temp_path, excludedLedgers)
         if (isBudgetTabId(varianceTargetId.value)) {
             budgetStatuses.value[varianceTargetId.value] = {
                 isUploaded: true,
@@ -964,6 +1003,9 @@ const handleVarianceConfirm = async () => {
             }
         } else {
             emit('uploaded', varianceTargetId.value)
+        }
+        if (varianceTargetId.value === 'cc_mapping' && mappingModalCardId.value === 'cc_mapping') {
+            await loadMappingPage(mappingModalMeta.value.current_page)
         }
         isVarianceModalOpen.value = false
         variancePreview.value = null
@@ -1019,6 +1061,7 @@ const {
     fetchBudgetStatuses,
     uploadVat,
     fetchVatFileUrl,
+    downloadMappingTemplate,
 } = useDataIn()
 
 onMounted(() => fetchBudgetStatuses())
