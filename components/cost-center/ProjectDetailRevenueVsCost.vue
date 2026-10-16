@@ -265,20 +265,22 @@ const chartOptions = computed(() => ({
       const varianceSign = varianceValue >= 0 ? '+' : ''
 
       return `
-        <div class="px-5 py-4 bg-[#E2FFF3] rounded-xl shadow-2xl border-none" style="min-width: 200px;">
-          <div class="font-semibold mb-3 text-[#000] text-[15px]">${category}</div>
-          <div class="text-[#333] text-[13px] mb-1.5 flex justify-between gap-4">
-            <span>Actual:</span> <span class="font-bold text-[#FF7B5F]">${currency.value} ${fmt(actual)}</span>
-          </div>
-          <div class="text-[#333] text-[13px] mb-1.5 flex justify-between gap-4">
-            <span>Budget:</span> <span class="font-bold text-[#00A176]">${currency.value} ${fmt(budget)}</span>
-          </div>
-          <div class="text-[14px] pt-1 border-t border-black/5 mt-1 flex justify-between gap-4">
-            <span>Variance:</span> <span class="font-bold text-[#00A176]">${variancePercent === null ? '—' : varianceSign + variancePercent + '%'}</span>
-          </div>
+        <div class="custom-tooltip shadow-xl rounded-2xl" style="background:#D9FBF2; padding: 12px 16px; border:none; color:#1A1A1A;">
+          <div style="font-size:12px; margin-bottom:8px; font-weight:500;">${category}</div>
+          <div style="font-size:11px; margin-bottom:4px;">Actual: ${currency.value} ${fmt(actual)}</div>
+          <div style="font-size:11px; margin-bottom:4px;">Budget: ${currency.value} ${fmt(budget)}</div>
+          <div style="font-size:11px; color:#00A176;">Variance: ${variancePercent === null ? '—' : varianceSign + variancePercent + '%'}</div>
         </div>
       `
     }
   }
 }))
 </script>
+
+<style scoped>
+:deep(.apexcharts-tooltip) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+</style>

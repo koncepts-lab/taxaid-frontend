@@ -11,7 +11,8 @@
           <CostCenterProjectDetailHeader ref="headerRef" @reload="fetchData"
             @export-excel="handleExport" @selected-date="handleDateChange"
             :title="data?.cost_center ? { en: data.cost_center, ar: data.cost_center } : null"
-            :selected-date="selectedDate" :max-date="maxDate" :period="data?.period" />
+            :selected-date="selectedDate" :max-date="maxDate" :period="data?.period" month-year-only
+            :min-month="data?.data_start ? data.data_start.slice(0, 7) : ''" />
 
           <!-- Gap-period snapshot notice: shown when the requested date has no
                cost center data and the latest earlier period is displayed -->
@@ -27,7 +28,7 @@
 
           <!-- Skeleton (mirrors the summary cards, table and chart below) -->
           <template v-if="loading">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-if="knownMode !== 'direct'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div v-for="i in 3" :key="i" class="p-6 rounded-2xl border animate-pulse"
                 :class="isDark ? 'bg-[#002B21] border-white/5' : 'bg-white border-[#03D8B0]/40 shadow-sm'">
                 <div class="flex items-center gap-2 mb-3">
@@ -91,7 +92,7 @@
           </template>
 
           <template v-else>
-            <CostCenterProjectDetailSummaryCards :summary-data="data?.contract_summary" />
+            <CostCenterProjectDetailSummaryCards v-if="data?.mode !== 'direct'" :summary-data="data?.contract_summary" />
             <CostCenterProjectDetailTable ref="tableRef" :data="data" />
             <div class="h-[500px]">
               <CostCenterProjectDetailRevenueVsCost :data="data" />
@@ -181,6 +182,7 @@ const data = ref({})
 const loading = ref(true)
 const selectedDate = ref(route.query.date || '')
 const costCenterId = computed(() => decodeURIComponent(route.params.id))
+const knownMode = computed(() => data.value?.mode || (typeof route.query.mode === 'string' ? route.query.mode : ''))
 const snapshotNotice = computed(() => {
   return !!(data.value?.snapshot_date && data.value?.requested_date && data.value.snapshot_date !== data.value.requested_date)
 })

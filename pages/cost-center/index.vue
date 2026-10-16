@@ -19,7 +19,8 @@
 
                     <CommonDashboardHeader ref="headerRef" :title="{ en: 'Cost Center Analysis', ar: 'تحليل مركز التكلفة' }"
             :subtitle="{ en: 'Track Overheads and Optimize Operational Costs', ar: 'تتبع النفقات العامة وتحسين التكاليف التشغيلية' }"
-            :periods="costCenterPeriods"
+            :periods="costCenterPeriods" month-year-only
+            :min-month="summaryRef?.dataStart ? summaryRef.dataStart.slice(0, 7) : ''"
             @export="exportOpen = true"
             @selected-date="handleDateChange" @reload="() => fetchData(trackReloadClick('cost-center'))" @one-click-summary="handleOneClickSummary" />
           <div class="my-8">

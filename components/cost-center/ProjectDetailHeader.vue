@@ -29,8 +29,10 @@
             <!-- ACTION BUTTONS SECTION -->
             <div class="flex lg:flex-row flex-col lg:items-center items-start gap-3">
                 <div class="flex gap-4">
-                    <!-- Date Filter Dropdown -->
-                    <div v-if="showDateFilter" class="relative">
+                    <!-- Date Filter -->
+                    <CommonDateField v-if="showDateFilter && monthYearOnly" month v-model="pickedMonthValue"
+                        :min-month="minMonth" size="md" />
+                    <div v-else-if="showDateFilter" class="relative">
                         <button @click="showDateDropdown = !showDateDropdown"
                             class="flex items-center space-x-2 rtl:space-x-reverse px-4 h-[40px] rounded-lg border transition-all"
                             :class="isDark ? 'bg-[#002E26] border-[#03D8B0] text-white' : 'bg-white border-[#03D8B0] text-black hover:bg-teal-50'">
@@ -112,6 +114,8 @@ const props = defineProps({
     subtitle: { type: Object, default: () => ({ en: 'Detailed performance breakdown', ar: 'تحليل مفصل للأداء والتفاصيل المالية' }) },
     oneclickreview: { type: Boolean, default: true },
     showDateFilter: { type: Boolean, default: true },
+    monthYearOnly: { type: Boolean, default: false },
+    minMonth: { type: String, default: '' },
     showReload: { type: Boolean, default: true },
     showExport: { type: Boolean, default: true },
     periods: {
@@ -177,6 +181,20 @@ const pickDate = (value) => {
     emit('selected-date', { custom_from: format(value, 'dd-MM-yyyy') })
 }
 
+const toMonthValue = (value) => {
+    const d = parseDmy(value) || props.maxDate || new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+const pickedMonthValue = ref(toMonthValue(props.selectedDate))
+watch(() => props.selectedDate, (value) => { pickedMonthValue.value = toMonthValue(value) })
+watch(pickedMonthValue, (value) => {
+    if (!value) return
+    const [y, m] = value.split('-')
+    const lastDay = new Date(Number(y), Number(m), 0).getDate()
+    emit('selected-date', { custom_from: `${String(lastDay).padStart(2, '0')}-${m}-${y}` })
+})
+
 const handleReload = () => {
     resetToDefault()
     emit('reload')
@@ -184,6 +202,7 @@ const handleReload = () => {
 
 const resetToDefault = () => {
     pickedDate.value = null
+    pickedMonthValue.value = toMonthValue('')
     showDateDropdown.value = false
     showExportDropdown.value = false
 }

@@ -47,7 +47,9 @@
                     </button>
 
                     <!-- Date Filter -->
-                    <div v-if="showDateFilter" class="relative" ref="dateDropdownRef">
+                    <CommonDateField v-if="showDateFilter && monthYearOnly" month v-model="pickedMonthValue"
+                        :min-month="minMonth" size="md" />
+                    <div v-else-if="showDateFilter" class="relative" ref="dateDropdownRef">
                         <button @click="showDateDropdown = !showDateDropdown; if(showDateDropdown) showExportDropdown = false"
                             class="flex items-center space-x-2 rtl:space-x-reverse px-4 h-[40px] rounded-lg border transition-colors"
                             :class="isDark ? 'bg-[#002E26] border-[#03D8B0] text-white' : 'bg-white border-[#03D8B0] text-black hover:bg-teal-50'">
@@ -242,6 +244,8 @@ const props = defineProps({
     subtitle: { type: Object, default: () => ({ en: 'Detailed performance breakdown', ar: 'تحليل مفصل للأداء والتفاصيل المالية' }) },
     oneclickreview: { type: Boolean, default: true },
     showDateFilter: { type: Boolean, default: true },
+    monthYearOnly: { type: Boolean, default: false },
+    minMonth: { type: String, default: '' },
     showReload: { type: Boolean, default: true },
     showExport: { type: Boolean, default: true },
     periods: {
@@ -367,6 +371,7 @@ const resetToDefault = () => {
     }
     range.value = { start: null, end: null }
     singleDate.value = null
+    pickedMonthValue.value = toMonthValue('')
     showDateDropdown.value = false
     showExportDropdown.value = false
 }
@@ -445,6 +450,25 @@ const handleSingleChange = (val) => {
         setTimeout(() => { showDateDropdown.value = false; }, 600);
     }
 };
+
+const toMonthValue = (value) => {
+    const m = String(value || '').match(/^(\d{2})-(\d{2})-(\d{4})$/)
+    const d = m ? new Date(+m[3], +m[2] - 1, +m[1]) : (baseToday() || new Date())
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+const pickedMonthValue = ref(toMonthValue(props.defaultDate))
+watch(pickedMonthValue, (value) => {
+    if (!value) return
+    const [y, m] = value.split('-')
+    const lastDay = new Date(Number(y), Number(m), 0).getDate()
+    emit('selected-date', {
+        en: 'Custom Date',
+        ar: 'تاريخ مخصص',
+        custom_from: `${String(lastDay).padStart(2, '0')}-${m}-${y}`,
+        custom_to: null
+    })
+})
 
 const handleClickOutside = (event) => {
     if (dateDropdownRef.value && !dateDropdownRef.value.contains(event.target)) {
