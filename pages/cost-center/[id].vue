@@ -11,7 +11,8 @@
           <CostCenterProjectDetailHeader ref="headerRef" @reload="fetchData"
             @export-excel="handleExport" @selected-date="handleDateChange"
             :title="data?.cost_center ? { en: data.cost_center, ar: data.cost_center } : null"
-            :selected-date="selectedDate" :max-date="maxDate" :period="data?.period" month-year-only />
+            :selected-date="selectedDate" :max-date="maxDate" :period="data?.period" month-year-only
+            :min-month="data?.data_start ? data.data_start.slice(0, 7) : ''" />
 
           <!-- Gap-period snapshot notice: shown when the requested date has no
                cost center data and the latest earlier period is displayed -->

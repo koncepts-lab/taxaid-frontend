@@ -231,6 +231,7 @@ const isLoading = ref(true)
 
 const tableData = ref([])
 const summaryTotal = ref(null)
+const dataStart = ref('')
 
 const onRowEnter = (e) => {
   hoveredRowRect.value = e.currentTarget.getBoundingClientRect()
@@ -282,6 +283,7 @@ const fetchSummaryData = async (dateStr = selectedDate.value) => {
     }
 
     if (response?.mode) ccMode.value = response.mode
+    if (response?.data_start) dataStart.value = response.data_start
 
     if (response.status === 'success' && response.data) {
       const rawData = [...response.data]
@@ -301,7 +303,8 @@ const fetchSummaryData = async (dateStr = selectedDate.value) => {
 defineExpose({
   fetchSummaryData,
   tableData,
-  summaryTotal
+  summaryTotal,
+  dataStart
 })
 
 onMounted(() => {

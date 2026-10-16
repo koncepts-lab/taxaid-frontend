@@ -54,8 +54,8 @@
 
           <template v-else>
             <div class="flex items-center justify-between px-1 pb-2">
-              <button type="button" @click="pickerYear--" :aria-label="isAr ? 'السنة السابقة' : 'Previous year'"
-                class="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer"
+              <button type="button" @click="pickerYear--" :disabled="minYear !== null && pickerYear <= minYear" :aria-label="isAr ? 'السنة السابقة' : 'Previous year'"
+                class="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                 :class="dk ? 'text-white hover:bg-white/10' : 'text-[#013e32] hover:bg-[#E6FFF5]'">
                 <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
               </button>
@@ -112,6 +112,7 @@ const props = defineProps({
   placeholderTo: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
   allowFuture: { type: Boolean, default: false },
+  minMonth: { type: String, default: '' },
   invalid: { type: Boolean, default: false },
   size: { type: String, default: 'md' },
   dark: { type: Boolean, default: undefined },
@@ -188,6 +189,11 @@ const startOfThisMonth = () => {
   return new Date(now.getFullYear(), now.getMonth(), 1)
 }
 
+const minMonthDate = computed(() => {
+  const m = /^(\d{4})-(\d{1,2})$/.exec(props.minMonth || '')
+  return m ? new Date(Number(m[1]), Number(m[2]) - 1, 1) : null
+})
+
 const inBounds = (key, date) => {
   if (!props.allowFuture) {
     if (props.month) {
@@ -198,6 +204,7 @@ const inBounds = (key, date) => {
       if (date > end) return false
     }
   }
+  if (props.month && minMonthDate.value && date < minMonthDate.value) return false
   if (!props.range) return true
   if (key === 'from') {
     const to = parseAny(props.to)
@@ -318,7 +325,12 @@ const panelClasses = computed(() => [
 const monthLabel = (m) => new Date(2000, m - 1, 1)
   .toLocaleDateString(isAr.value ? 'ar-AE-u-nu-latn' : 'en-GB', { month: 'short' })
 
-const monthDisabled = (m) => !props.allowFuture && new Date(pickerYear.value, m - 1, 1) > startOfThisMonth()
+const monthDisabled = (m) => {
+  const d = new Date(pickerYear.value, m - 1, 1)
+  if (!props.allowFuture && d > startOfThisMonth()) return true
+  if (minMonthDate.value && d < minMonthDate.value) return true
+  return false
+}
 
 const monthClasses = (m) => {
   const selected = singleValue.value
@@ -341,7 +353,8 @@ const pickYear = (y) => {
   yearGridOpen.value = false
 }
 
-const yearDisabled = (y) => !props.allowFuture && y > currentYear
+const minYear = computed(() => minMonthDate.value ? minMonthDate.value.getFullYear() : null)
+const yearDisabled = (y) => (!props.allowFuture && y > currentYear) || (minYear.value !== null && y < minYear.value)
 
 const yearClasses = (y) => {
   if (y === pickerYear.value) return dk.value ? 'bg-[#00FFBC]/20 text-[#00FFBC] font-semibold' : 'bg-[#D6F5ED] text-[#013e32] font-semibold'

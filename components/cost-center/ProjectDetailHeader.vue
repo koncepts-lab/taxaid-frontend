@@ -31,7 +31,7 @@
                 <div class="flex gap-4">
                     <!-- Date Filter -->
                     <CommonDateField v-if="showDateFilter && monthYearOnly" month v-model="pickedMonthValue"
-                        allow-future size="md" />
+                        :min-month="minMonth" size="md" />
                     <div v-else-if="showDateFilter" class="relative">
                         <button @click="showDateDropdown = !showDateDropdown"
                             class="flex items-center space-x-2 rtl:space-x-reverse px-4 h-[40px] rounded-lg border transition-all"
@@ -115,6 +115,7 @@ const props = defineProps({
     oneclickreview: { type: Boolean, default: true },
     showDateFilter: { type: Boolean, default: true },
     monthYearOnly: { type: Boolean, default: false },
+    minMonth: { type: String, default: '' },
     showReload: { type: Boolean, default: true },
     showExport: { type: Boolean, default: true },
     periods: {

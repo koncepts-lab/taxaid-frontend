@@ -48,7 +48,7 @@
 
                     <!-- Date Filter -->
                     <CommonDateField v-if="showDateFilter && monthYearOnly" month v-model="pickedMonthValue"
-                        allow-future size="md" />
+                        :min-month="minMonth" size="md" />
                     <div v-else-if="showDateFilter" class="relative" ref="dateDropdownRef">
                         <button @click="showDateDropdown = !showDateDropdown; if(showDateDropdown) showExportDropdown = false"
                             class="flex items-center space-x-2 rtl:space-x-reverse px-4 h-[40px] rounded-lg border transition-colors"
@@ -245,6 +245,7 @@ const props = defineProps({
     oneclickreview: { type: Boolean, default: true },
     showDateFilter: { type: Boolean, default: true },
     monthYearOnly: { type: Boolean, default: false },
+    minMonth: { type: String, default: '' },
     showReload: { type: Boolean, default: true },
     showExport: { type: Boolean, default: true },
     periods: {
