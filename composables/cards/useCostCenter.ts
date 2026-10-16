@@ -30,22 +30,14 @@ export const useCostCenterChart = () => {
   }
 
   // ── Overall Revenue vs Cost chart ─────────────────────────────────────────
+  // Full list, sorted by the backend — the component pages this 8-at-a-time
+  // and assigns A-H letters per page.
   const overallRevenueVsCost = computed(() => {
     const data: any[] = chartRaw.value ?? []
     if (!data.length) return null
 
-    const letters = ['A','B','C','D','E','F','G','H','I','J']
-    const mappingFullNames: Record<string, string> = {}
-
-    data.forEach((item, i) => {
-      if (i < letters.length) mappingFullNames[letters[i]] = item.project_name
-    })
-
     return {
-      categories:       data.map((_, i) => letters[i] ?? String(i + 1)),
-      mappingFullNames,
-      revenueData:      data.map(item => parseFloat((item.revenue      / 1_000_000).toFixed(2))),
-      costData:         data.map(item => parseFloat((item.total_expenses / 1_000_000).toFixed(2))),
+      projectNames:     data.map(item => item.project_name),
       revenueRaw:       data.map(item => Number(item.revenue ?? 0)),
       costRaw:          data.map(item => Number(item.total_expenses ?? 0)),
     }

@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-[29rem] transition-all duration-500 rounded-3xl flex flex-col overflow-hidden"
+  <div class="w-full h-[29rem] min-[1700px]:h-[35rem] transition-all duration-500 rounded-3xl flex flex-col overflow-hidden"
     :class="isDark ? 'bg-[#002e26]' : 'bg-white shadow-sm'">
 
     <div class="py-5 lg:px-8 px-4 flex justify-between items-center shrink-0">

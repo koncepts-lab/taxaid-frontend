@@ -49,49 +49,28 @@
       </ClientOnly>
     </div>
 
-    <!-- Sub Legend mapping (A - J) -->
+    <!-- Sub Legend mapping (A - J), driven by the real cost center names -->
     <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-y-4 gap-x-2 text-[13px] text-white/90 w-full px-0 md:px-8 mt-2 relative z-10">
-      <div class="flex items-center gap-1.5 whitespace-nowrap">
-        <span class="text-[#03D8B0] font-semibold">A</span>
-        <span class="opacity-80">- {{ currentLang === 'ar' ? 'سكني' : 'Residential Project' }}</span>
+      <div v-for="letter in categories" :key="letter" class="flex items-center gap-1.5 whitespace-nowrap">
+        <span class="text-[#03D8B0] font-semibold">{{ letter }}</span>
+        <span class="opacity-80">- {{ mappingFullNames[letter] }}</span>
       </div>
-      <div class="flex items-center gap-1.5 whitespace-nowrap">
-        <span class="text-[#03D8B0] font-semibold">B</span>
-        <span class="opacity-80">- {{ currentLang === 'ar' ? 'بنية تحتية' : 'Infrastructure' }}</span>
-      </div>
-      <div class="flex items-center gap-1.5 whitespace-nowrap">
-        <span class="text-[#03D8B0] font-semibold">C</span>
-        <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجاري' : 'Commercial' }}</span>
-      </div>
-      <div class="flex items-center gap-1.5 whitespace-nowrap">
-        <span class="text-[#03D8B0] font-semibold">D</span>
-        <span class="opacity-80">- {{ currentLang === 'ar' ? 'لوجستيات' : 'Prime Logistics' }}</span>
-      </div>
-      <div class="flex items-center gap-1.5 whitespace-nowrap">
-        <span class="text-[#03D8B0] font-semibold">E</span>
-        <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجارة الإمارات' : 'Emirates Trading' }}</span>
-      </div>
+    </div>
 
-      <div class="flex items-center gap-1.5 whitespace-nowrap">
-        <span class="text-[#03D8B0] font-semibold">F</span>
-        <span class="opacity-80">- {{ currentLang === 'ar' ? 'ألفا تك' : 'Alpha Tech' }}</span>
-      </div>
-      <div class="flex items-center gap-1.5 whitespace-nowrap">
-        <span class="text-[#03D8B0] font-semibold">G</span>
-        <span class="opacity-80">- {{ currentLang === 'ar' ? 'مينا للتجزئة' : 'Mena Retail' }}</span>
-      </div>
-      <div class="flex items-center gap-1.5 whitespace-nowrap">
-        <span class="text-[#03D8B0] font-semibold">H</span>
-        <span class="opacity-80">- {{ currentLang === 'ar' ? 'كريسنت' : 'Crescent' }}</span>
-      </div>
-      <div class="flex items-center gap-1.5 whitespace-nowrap">
-        <span class="text-[#03D8B0] font-semibold">I</span>
-        <span class="opacity-80">- {{ currentLang === 'ar' ? 'فيرتكس كورب' : 'Vertex Corp' }}</span>
-      </div>
-      <div class="flex items-center gap-1.5 whitespace-nowrap">
-        <span class="text-[#03D8B0] font-semibold">J</span>
-        <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجارة فيرتكس' : 'Vertex Trading' }}</span>
-      </div>
+    <!-- Pagination Controls -->
+    <div v-if="totalPages > 1" class="flex items-center justify-end gap-1.5 mt-3 px-0 md:px-8 text-xs select-none relative z-10 text-white/80">
+      <button type="button" @click="prevPage" :disabled="page === 0"
+        class="flex items-center justify-center w-7 h-7 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed bg-white/10 hover:bg-white/20">
+        <svg class="w-3.5 h-3.5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <button type="button" @click="nextPage" :disabled="page >= totalPages - 1"
+        class="flex items-center justify-center w-7 h-7 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed bg-white/10 hover:bg-white/20">
+        <svg class="w-3.5 h-3.5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
     </div>
 
     <!-- Modal -->
@@ -140,49 +119,28 @@
                   />
                 </ClientOnly>
             </div>
-            <!-- Sub Legend mapping (A - J) -->
+            <!-- Sub Legend mapping (A - J), driven by the real cost center names -->
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-y-4 gap-x-2 text-[13px] text-white/90 w-full px-0 md:px-8 mt-2 relative z-10">
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">A</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'سكني' : 'Residential Project' }}</span>
+                <div v-for="letter in categories" :key="letter" class="flex items-center gap-1.5 whitespace-nowrap">
+                  <span class="text-[#03D8B0] font-semibold">{{ letter }}</span>
+                  <span class="opacity-80">- {{ mappingFullNames[letter] }}</span>
                 </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">B</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'بنية تحتية' : 'Infrastructure' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">C</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجاري' : 'Commercial' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">D</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'لوجستيات' : 'Prime Logistics' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">E</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجارة الإمارات' : 'Emirates Trading' }}</span>
-                </div>
+            </div>
 
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">F</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'ألفا تك' : 'Alpha Tech' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">G</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'مينا للتجزئة' : 'Mena Retail' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">H</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'كريسنت' : 'Crescent' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">I</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'فيرتكس كورب' : 'Vertex Corp' }}</span>
-                </div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap">
-                  <span class="text-[#03D8B0] font-semibold">J</span>
-                  <span class="opacity-80">- {{ currentLang === 'ar' ? 'تجارة فيرتكس' : 'Vertex Trading' }}</span>
-                </div>
+            <!-- Pagination Controls -->
+            <div v-if="totalPages > 1" class="flex items-center justify-end gap-1.5 mt-3 px-0 md:px-8 text-xs select-none relative z-10 text-white/80">
+              <button type="button" @click="prevPage" :disabled="page === 0"
+                class="flex items-center justify-center w-7 h-7 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed bg-white/10 hover:bg-white/20">
+                <svg class="w-3.5 h-3.5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button type="button" @click="nextPage" :disabled="page >= totalPages - 1"
+                class="flex items-center justify-center w-7 h-7 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed bg-white/10 hover:bg-white/20">
+                <svg class="w-3.5 h-3.5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -192,7 +150,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
@@ -211,8 +169,25 @@ onMounted(() => {
   fetchChart()
 })
 
-const categories = computed(() => overallRevenueVsCost.value?.categories ?? [])
-const mappingFullNames = computed(() => overallRevenueVsCost.value?.mappingFullNames ?? {})
+const projectNames = computed(() => overallRevenueVsCost.value?.projectNames ?? [])
+const allRevenueRaw = computed(() => overallRevenueVsCost.value?.revenueRaw ?? [])
+const allCostRaw = computed(() => overallRevenueVsCost.value?.costRaw ?? [])
+
+const pageSize = 8
+const page = ref(0)
+const totalPages = computed(() => Math.max(1, Math.ceil(projectNames.value.length / pageSize)))
+watch(projectNames, () => { page.value = 0 })
+const prevPage = () => { if (page.value > 0) page.value-- }
+const nextPage = () => { if (page.value < totalPages.value - 1) page.value++ }
+
+const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+const categories = computed(() => projectNames.value.slice(page.value * pageSize, page.value * pageSize + pageSize).map((_, i) => letters[i]))
+const mappingFullNames = computed(() => {
+  const start = page.value * pageSize
+  const map = {}
+  projectNames.value.slice(start, start + pageSize).forEach((name, i) => { map[letters[i]] = name })
+  return map
+})
 
 const { code: currency, valuesNote } = useCurrency()
 
@@ -228,8 +203,8 @@ const fmt = (value) => {
   return whole.format(v)
 }
 
-const rawCost = computed(() => overallRevenueVsCost.value?.costRaw ?? [])
-const rawRevenue = computed(() => overallRevenueVsCost.value?.revenueRaw ?? [])
+const rawCost = computed(() => allCostRaw.value.slice(page.value * pageSize, page.value * pageSize + pageSize))
+const rawRevenue = computed(() => allRevenueRaw.value.slice(page.value * pageSize, page.value * pageSize + pageSize))
 const peak = computed(() => Math.max(0, ...rawCost.value, ...rawRevenue.value))
 
 // Positive bars too small to see get a minimum height; labels and the tooltip still show the real value.
