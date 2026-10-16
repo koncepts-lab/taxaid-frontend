@@ -32,24 +32,47 @@
         @keydown.esc.stop.prevent="closeAndFocus"
         :class="panelClasses">
         <div v-if="month" class="w-[264px] select-none">
-          <div class="flex items-center justify-between px-1 pb-2">
-            <button type="button" @click="pickerYear--" :aria-label="isAr ? 'السنة السابقة' : 'Previous year'"
+          <div v-if="yearGridOpen" class="flex items-center justify-between px-1 pb-2">
+            <button type="button" @click="yearGridStart -= 12" :aria-label="isAr ? 'السنوات السابقة' : 'Previous years'"
               class="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer"
               :class="dk ? 'text-white hover:bg-white/10' : 'text-[#013e32] hover:bg-[#E6FFF5]'">
               <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
             </button>
-            <span class="text-sm font-semibold" :class="dk ? 'text-white' : 'text-[#013e32]'">{{ pickerYear }}</span>
-            <button type="button" @click="pickerYear++" :disabled="!allowFuture && pickerYear >= currentYear" :aria-label="isAr ? 'السنة التالية' : 'Next year'"
-              class="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+            <span class="text-sm font-semibold" :class="dk ? 'text-white' : 'text-[#013e32]'">{{ yearGridStart }} - {{ yearGridStart + 11 }}</span>
+            <button type="button" @click="yearGridStart += 12" :aria-label="isAr ? 'السنوات التالية' : 'Next years'"
+              class="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer"
               :class="dk ? 'text-white hover:bg-white/10' : 'text-[#013e32] hover:bg-[#E6FFF5]'">
               <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
             </button>
           </div>
-          <div class="grid grid-cols-3 gap-1.5">
-            <button v-for="m in 12" :key="m" type="button" :disabled="monthDisabled(m)" @click="pickMonth(m)"
+          <div v-if="yearGridOpen" class="grid grid-cols-3 gap-1.5">
+            <button v-for="y in 12" :key="y" type="button" :disabled="yearDisabled(yearGridStart + y - 1)"
+              @click="pickYear(yearGridStart + y - 1)"
               class="h-10 rounded-[9px] text-sm cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              :class="monthClasses(m)">{{ monthLabel(m) }}</button>
+              :class="yearClasses(yearGridStart + y - 1)">{{ yearGridStart + y - 1 }}</button>
           </div>
+
+          <template v-else>
+            <div class="flex items-center justify-between px-1 pb-2">
+              <button type="button" @click="pickerYear--" :aria-label="isAr ? 'السنة السابقة' : 'Previous year'"
+                class="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer"
+                :class="dk ? 'text-white hover:bg-white/10' : 'text-[#013e32] hover:bg-[#E6FFF5]'">
+                <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+              </button>
+              <button type="button" @click="openYearGrid" class="text-sm font-semibold px-2 py-1 rounded-lg cursor-pointer"
+                :class="dk ? 'text-white hover:bg-white/10' : 'text-[#013e32] hover:bg-[#E6FFF5]'">{{ pickerYear }}</button>
+              <button type="button" @click="pickerYear++" :disabled="!allowFuture && pickerYear >= currentYear" :aria-label="isAr ? 'السنة التالية' : 'Next year'"
+                class="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                :class="dk ? 'text-white hover:bg-white/10' : 'text-[#013e32] hover:bg-[#E6FFF5]'">
+                <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5">
+              <button v-for="m in 12" :key="m" type="button" :disabled="monthDisabled(m)" @click="pickMonth(m)"
+                class="h-10 rounded-[9px] text-sm cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                :class="monthClasses(m)">{{ monthLabel(m) }}</button>
+            </div>
+          </template>
         </div>
         <VDatePicker v-else-if="range" v-model.range="rangeValue" :columns="columns" :is-dark="dk"
           :locale="isAr ? 'ar' : 'en'" color="teal" borderless transparent :max-date="maxDate"
@@ -305,6 +328,26 @@ const monthClasses = (m) => {
   return dk.value ? 'text-white hover:bg-white/10' : 'text-[#013e32] hover:bg-[#E6FFF5]'
 }
 
+const yearGridOpen = ref(false)
+const yearGridStart = ref(currentYear - 6)
+
+const openYearGrid = () => {
+  yearGridStart.value = pickerYear.value - (((pickerYear.value % 12) + 12) % 12 || 12) + 1
+  yearGridOpen.value = true
+}
+
+const pickYear = (y) => {
+  pickerYear.value = y
+  yearGridOpen.value = false
+}
+
+const yearDisabled = (y) => !props.allowFuture && y > currentYear
+
+const yearClasses = (y) => {
+  if (y === pickerYear.value) return dk.value ? 'bg-[#00FFBC]/20 text-[#00FFBC] font-semibold' : 'bg-[#D6F5ED] text-[#013e32] font-semibold'
+  return dk.value ? 'text-white hover:bg-white/10' : 'text-[#013e32] hover:bg-[#E6FFF5]'
+}
+
 const positionPanel = () => {
   const rect = fieldRef.value?.getBoundingClientRect()
   if (!rect) return
@@ -322,7 +365,7 @@ const positionPanel = () => {
   }
 }
 
-const close = () => { open.value = false }
+const close = () => { open.value = false; yearGridOpen.value = false }
 const closeAndFocus = () => {
   close()
   nextTick(() => iconRef.value?.focus())

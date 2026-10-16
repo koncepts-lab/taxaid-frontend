@@ -17,14 +17,17 @@
     </div>
 
     <div class="flex-1 overflow-y-auto">
-    <table class="w-full text-left rtl:text-right border-collapse ">
+    <table class="w-full text-left rtl:text-right border-collapse table-fixed">
+      <colgroup>
+        <col class="w-[28%]" /><col class="w-[16%]" /><col class="w-[16%]" /><col class="w-[16%]" /><col class="w-[14%]" /><col class="w-[10%]" />
+      </colgroup>
       <thead class="text-white sticky top-0 " :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
         <tr>
           <th class="px-8 py-5 font-medium text-left rtl:text-right text-[14px]"><span class="inline-flex items-center gap-1.5">{{ currentLang === 'ar' ? 'التفاصيل' : 'Particulars' }} <CommonInfoTooltip tip="costCenterSummary.particulars" light /></span></th>
           <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ? 'الإيرادات' :
             'Revenue' }} <CommonInfoTooltip tip="costCenterSummary.revenue" light align="right" /></span></th>
           <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ?
-            'تكلفة المبيعات' : 'COGS' }} <CommonInfoTooltip tip="costCenterSummary.cogs" light align="right" /></span></th>
+            'تكلفة المبيعات' : 'Direct Expense' }} <CommonInfoTooltip tip="costCenterSummary.cogs" light align="right" /></span></th>
           <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ?
             'المصروفات غير المباشرة' : 'Indirect Exp.' }} <CommonInfoTooltip tip="costCenterSummary.indirect" light align="right" /></span></th>
           <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ? 'الربح' :
@@ -75,7 +78,10 @@
     </table>
     </div>
 
-    <table v-if="summaryTotal && !isLoading" class="w-full text-left rtl:text-right border-collapse shrink-0">
+    <table v-if="summaryTotal && !isLoading" class="w-full text-left rtl:text-right border-collapse table-fixed shrink-0">
+      <colgroup>
+        <col class="w-[28%]" /><col class="w-[16%]" /><col class="w-[16%]" /><col class="w-[16%]" /><col class="w-[14%]" /><col class="w-[10%]" />
+      </colgroup>
       <tfoot>
         <tr :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#70FDDA]'" class="transition-all duration-500">
           <td class="px-8 py-5 font-normal text-[14px] text-left rtl:text-right" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
@@ -130,7 +136,7 @@
                   <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ?
                     'الإيرادات' : 'Revenue' }} <CommonInfoTooltip tip="costCenterSummary.revenue" light align="right" /></span></th>
                   <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ?
-                    'تكلفة المبيعات' : 'COGS' }} <CommonInfoTooltip tip="costCenterSummary.cogs" light align="right" /></span></th>
+                    'تكلفة المبيعات' : 'Direct Expense' }} <CommonInfoTooltip tip="costCenterSummary.cogs" light align="right" /></span></th>
                   <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ?
                     'المصروفات غير المباشرة' : 'Indirect Exp.' }} <CommonInfoTooltip tip="costCenterSummary.indirect" light align="right" /></span></th>
                   <th class="px-6 py-5 font-medium text-right rtl:text-left text-[14px]"><span class="inline-flex items-center justify-end rtl:justify-start gap-1.5 w-full">{{ currentLang === 'ar' ?
@@ -235,11 +241,15 @@ const onRowLeave = () => {
 }
 
 const selectedDate = ref('')
+const ccMode = ref('')
 
 const goToDetail = (item) => {
   router.push({
     path: `/cost-center/${item.id}`,
-    query: selectedDate.value ? { date: selectedDate.value } : {}
+    query: {
+      ...(selectedDate.value ? { date: selectedDate.value } : {}),
+      ...(ccMode.value ? { mode: ccMode.value } : {}),
+    }
   })
 }
 
@@ -270,6 +280,8 @@ const fetchSummaryData = async (dateStr = selectedDate.value) => {
       const [y, m, d] = String(response.to_date).split('-')
       selectedDate.value = `${d}-${m}-${y}`
     }
+
+    if (response?.mode) ccMode.value = response.mode
 
     if (response.status === 'success' && response.data) {
       const rawData = [...response.data]
