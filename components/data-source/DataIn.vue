@@ -100,6 +100,7 @@
                         <p class="text-[11px] opacity-60 mt-0.5" :class="isDark ? 'text-white' : 'text-gray-500'">{{
                             card.uploadDate }}</p>
                     </div>
+                    <!-- TODO: gate to taxaid-only once client-side preview access is scoped -->
                     <button v-if="PREVIEWABLE_CARD_IDS.includes(card.id)" @click.stop="openPreview(card)"
                         :title="currentLang === 'ar' ? 'معاينة البيانات' : 'Preview data'"
                         class="p-2 rounded-lg border border-[#008169]/30 text-[#008169] hover:bg-[#00B794]/10 transition-all shrink-0">
@@ -125,6 +126,7 @@
                         <p class="text-[11px] opacity-60 mt-0.5" :class="isDark ? 'text-white' : 'text-gray-500'">{{
                             card.uploadDate }}</p>
                     </div>
+                    <!-- TODO: gate to taxaid-only once client-side preview access is scoped -->
                     <button v-if="PREVIEWABLE_CARD_IDS.includes(card.id)" @click.stop="openPreview(card)"
                         :title="currentLang === 'ar' ? 'معاينة البيانات' : 'Preview data'"
                         class="p-2 rounded-lg border border-[#008169]/30 text-[#008169] hover:bg-[#00B794]/10 transition-all shrink-0">
@@ -331,7 +333,8 @@
                 </div>
 
                 <!-- Upload tabs: Preview (when already uploaded) + Download Sample + Add (IC) -->
-                <div v-else-if="isTaxaid" class="space-y-3">
+                <div v-else class="space-y-3">
+                    <!-- TODO: gate to taxaid-only once client-side preview access is scoped -->
                     <button v-if="budgetStatuses[activeBudgetTab]?.isUploaded" @click="openPreview(activeBudgetTabData, 'budget')"
                         class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-sm font-medium hover:bg-[#00B794]/5 transition-all">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -340,22 +343,24 @@
                         </svg>
                         {{ currentLang === 'ar' ? 'معاينة' : 'Preview' }}
                     </button>
-                    <button @click="handleBudgetDownloadSample(activeBudgetTab)"
-                        class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-sm font-medium hover:bg-[#00B794]/5 transition-all">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        {{ currentLang === 'ar' ? 'تحميل نموذج' : 'Download Sample' }}
-                    </button>
-                    <button @click="openBudgetUploadInput(activeBudgetTab)"
-                        :disabled="budgetUploadingId === activeBudgetTab"
-                        class="w-full flex items-center justify-center gap-3 py-3 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 cursor-pointer">
-                        <span class="text-lg font-light">{{ budgetUploadingId === activeBudgetTab ? '…' : '+' }}</span>
-                        {{ budgetUploadingId === activeBudgetTab
-                            ? (currentLang === 'ar' ? 'جارٍ الرفع...' : 'Uploading...')
-                            : (currentLang === 'ar' ? 'إضافة (IC)' : 'Add (IC)') }}
-                    </button>
+                    <template v-if="isTaxaid">
+                        <button @click="handleBudgetDownloadSample(activeBudgetTab)"
+                            class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-sm font-medium hover:bg-[#00B794]/5 transition-all">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            {{ currentLang === 'ar' ? 'تحميل نموذج' : 'Download Sample' }}
+                        </button>
+                        <button @click="openBudgetUploadInput(activeBudgetTab)"
+                            :disabled="budgetUploadingId === activeBudgetTab"
+                            class="w-full flex items-center justify-center gap-3 py-3 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 cursor-pointer">
+                            <span class="text-lg font-light">{{ budgetUploadingId === activeBudgetTab ? '…' : '+' }}</span>
+                            {{ budgetUploadingId === activeBudgetTab
+                                ? (currentLang === 'ar' ? 'جارٍ الرفع...' : 'Uploading...')
+                                : (currentLang === 'ar' ? 'إضافة (IC)' : 'Add (IC)') }}
+                        </button>
+                    </template>
                 </div>
             </div>
 
@@ -537,7 +542,7 @@
                         <h3 class="text-base font-semibold truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
                             {{ previewTitle }}
                         </h3>
-                        <div class="flex items-center gap-2 shrink-0">
+                        <div class="flex items-center gap-4 shrink-0">
                             <button @click="downloadPreviewFile" :disabled="previewDownloading"
                                 class="flex items-center gap-2 px-4 py-2 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 disabled:opacity-50">
                                 <svg v-if="previewDownloading" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin">
@@ -596,35 +601,36 @@
     <!-- BS / P&L detailed report modal -->
     <Teleport to="body">
         <Transition name="modal-fade">
-            <div v-if="viewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-                <div class="absolute inset-0 bg-black/40" @click="viewModalOpen = false" />
-                <div class="relative bg-white rounded-2xl shadow-xl w-full max-h-[78vh] flex flex-col overflow-hidden transition-all duration-300"
-                    :class="showMonthly ? 'max-w-[90vw]' : 'max-w-lg'">
+            <div v-if="viewModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="viewModalOpen = false" />
+                <div class="relative rounded-2xl shadow-xl w-full max-h-[78vh] flex flex-col overflow-hidden transition-all duration-300"
+                    :class="[isDark ? 'bg-[#002e26]' : 'bg-white', showMonthly ? 'max-w-[90vw]' : 'max-w-lg']">
                     <!-- Header -->
-                    <div class="flex items-start justify-between p-6 pb-4 border-b border-gray-100">
+                    <div class="flex items-start justify-between p-6 pb-4 border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'">
                         <div>
-                            <h2 class="text-lg font-semibold text-gray-900">
+                            <h2 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
                                 {{ viewModalType === 'bs' ? (currentLang === 'ar' ? 'الميزانية العمومية' : 'Balance Sheet') : (currentLang === 'ar' ? 'الأرباح والخسائر' : 'Profit & Loss') }}
                             </h2>
-                            <p class="text-sm text-gray-500 mt-1">
+                            <p class="text-sm mt-1" :class="isDark ? 'text-white/60' : 'text-gray-500'">
                                 {{ viewModalType === 'bs'
                                     ? (currentLang === 'ar' ? 'ملخص المركز المالي - الأصول والالتزامات وحقوق الملكية' : 'Financial position summary — assets, liabilities and equity as per uploaded data')
                                     : (currentLang === 'ar' ? 'الدخل والمصروفات وصافي الربحية من بيانات الميزانية' : 'Income, expenses and net profitability overview from uploaded budget data') }}
                             </p>
                         </div>
                         <div class="flex items-center gap-2 ml-auto pl-4 shrink-0">
-                            <span class="text-xs text-gray-500 whitespace-nowrap">
+                            <span class="text-xs whitespace-nowrap" :class="isDark ? 'text-white/60' : 'text-gray-500'">
                                 {{ currentLang === 'ar' ? 'عرض شهري' : 'Monthly view' }}
                             </span>
                             <button type="button" role="switch" :aria-checked="showMonthly"
                                 @click="showMonthly = !showMonthly"
                                 class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-300 focus:outline-none"
-                                :class="showMonthly ? 'bg-[#008169]' : 'bg-gray-300'">
+                                :class="showMonthly ? 'bg-[#008169]' : (isDark ? 'bg-white/20' : 'bg-gray-300')">
                                 <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300"
                                     :class="showMonthly ? 'translate-x-6' : 'translate-x-1'"></span>
                             </button>
                         </div>
-                        <button @click="viewModalOpen = false" class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors ml-4">
+                        <button @click="viewModalOpen = false" class="p-1 rounded-lg transition-colors ml-4"
+                            :class="isDark ? 'text-white/50 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                             </svg>
@@ -650,14 +656,14 @@
                             <tbody>
                                 <template v-for="(row, idx) in viewModalRows" :key="idx">
                                     <!-- Section header row (is_gap acts as section divider with label) -->
-                                    <tr v-if="row.is_section" class="bg-[#CCFFF4]">
+                                    <tr v-if="row.is_section" :class="isDark ? 'bg-[#00B794]/20' : 'bg-[#CCFFF4]'">
                                         <td :colspan="showMonthly ? viewModalHeaders.length + 2 : 2"
-                                            class="px-6 py-2.5 font-medium text-[#013E32]">{{ row.particulars }}</td>
+                                            class="px-6 py-2.5 font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ row.particulars }}</td>
                                     </tr>
                                     <!-- Normal or summary row -->
-                                    <tr v-else :class="[row.is_summary ? 'font-semibold text-[#013E32]' : 'text-gray-700 hover:bg-gray-50', hasViewSubgroups(row) ? 'cursor-pointer' : '']"
+                                    <tr v-else :class="[row.is_summary ? 'font-semibold' : '', row.is_summary ? (isDark ? 'text-white' : 'text-[#013E32]') : (isDark ? 'text-white/80 hover:bg-white/5' : 'text-gray-700 hover:bg-gray-50'), hasViewSubgroups(row) ? 'cursor-pointer' : '']"
                                         @click="hasViewSubgroups(row) && toggleViewRow(row.particulars)">
-                                        <td class="px-6 py-3 border-b border-gray-50 whitespace-nowrap">
+                                        <td class="px-6 py-3 border-b whitespace-nowrap" :class="isDark ? 'border-white/5' : 'border-gray-50'">
                                             <span v-if="hasViewSubgroups(row)" class="inline-flex items-center gap-1.5">
                                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
                                                     class="transition-transform shrink-0" :class="expandedViewRows.has(row.particulars) ? 'rotate-90' : ''">
@@ -669,18 +675,18 @@
                                         </td>
                                         <template v-if="showMonthly">
                                             <td v-for="(h, i) in viewModalHeaders" :key="i"
-                                                class="px-4 py-3 border-b border-gray-50 text-right tabular-nums whitespace-nowrap">
+                                                class="px-4 py-3 border-b text-right tabular-nums whitespace-nowrap" :class="isDark ? 'border-white/5' : 'border-gray-50'">
                                                 {{ (row.months[i] ?? 0).toLocaleString() }}
                                             </td>
                                         </template>
-                                        <td class="px-6 py-3 border-b border-gray-50 text-right tabular-nums whitespace-nowrap">
+                                        <td class="px-6 py-3 border-b text-right tabular-nums whitespace-nowrap" :class="isDark ? 'border-white/5' : 'border-gray-50'">
                                             {{ row.total !== null ? formatStandardNumber(row.total) : '—' }}
                                         </td>
                                     </tr>
 
                                     <tr v-for="(sub, sIndex) in (hasViewSubgroups(row) && expandedViewRows.has(row.particulars) ? row.subgroups : [])"
-                                        :key="`${idx}-sub-${sIndex}`" class="bg-gray-50/60">
-                                        <td class="px-6 py-2 border-b border-gray-50 whitespace-nowrap text-gray-500 text-xs">
+                                        :key="`${idx}-sub-${sIndex}`" :class="isDark ? 'bg-white/5' : 'bg-gray-50/60'">
+                                        <td class="px-6 py-2 border-b whitespace-nowrap text-xs" :class="isDark ? 'border-white/5 text-white/50' : 'border-gray-50 text-gray-500'">
                                             <span class="pl-5 inline-flex items-center gap-1.5">
                                                 {{ sub.subgroup }}
                                                 <span v-if="sub.is_unmapped" title="Not found in this tenant's TB mapping"
@@ -689,18 +695,18 @@
                                         </td>
                                         <template v-if="showMonthly">
                                             <td v-for="(h, i) in viewModalHeaders" :key="i"
-                                                class="px-4 py-2 border-b border-gray-50 text-right tabular-nums whitespace-nowrap text-gray-500 text-xs">
+                                                class="px-4 py-2 border-b text-right tabular-nums whitespace-nowrap text-xs" :class="isDark ? 'border-white/5 text-white/50' : 'border-gray-50 text-gray-500'">
                                                 {{ (sub.months[i] ?? 0).toLocaleString() }}
                                             </td>
                                         </template>
-                                        <td class="px-6 py-2 border-b border-gray-50 text-right tabular-nums whitespace-nowrap text-gray-500 text-xs">
+                                        <td class="px-6 py-2 border-b text-right tabular-nums whitespace-nowrap text-xs" :class="isDark ? 'border-white/5 text-white/50' : 'border-gray-50 text-gray-500'">
                                             {{ formatStandardNumber(sub.total) }}
                                         </td>
                                     </tr>
                                 </template>
                             </tbody>
                         </table>
-                        <div v-if="!viewModalRows.length" class="py-12 text-center text-gray-400 text-sm">
+                        <div v-if="!viewModalRows.length" class="py-12 text-center text-sm" :class="isDark ? 'text-white/40' : 'text-gray-400'">
                             {{ currentLang === 'ar' ? 'لا توجد بيانات. قم بالمزامنة أولاً.' : 'No data available. Sync from Schedules first.' }}
                         </div>
                     </div>
