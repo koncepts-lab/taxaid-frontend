@@ -137,6 +137,12 @@ export interface MappingPage {
   meta: MappingMeta
 }
 
+export interface PreviewPage {
+  columns: string[]
+  data: any[][]
+  meta: MappingMeta
+}
+
 // ── Composable ─────────────────────────────────────────────────────────────────
 
 export const useDataIn = () => {
@@ -557,6 +563,65 @@ export const useDataIn = () => {
     await useApi('/data-source/opening-balance/store', { method: 'POST', body: { balances } })
   }
 
+  // ── Preview + Excel download ────────────────────────────────────────────────
+  const dataPreviewLoading = ref(false)
+  const dataPreviewError   = ref<string | null>(null)
+
+  const emptyPreviewPage = (perPage: number): PreviewPage => ({
+    columns: [],
+    data: [],
+    meta: { current_page: 1, last_page: 1, total: 0, per_page: perPage },
+  })
+
+  const fetchDataInPreview = async (cardId: string, page = 1, perPage = 20): Promise<PreviewPage> => {
+    dataPreviewLoading.value = true
+    dataPreviewError.value   = null
+    try {
+      const res = await useApi(`/data-source/data-in/${cardId}/view?page=${page}&per_page=${perPage}`) as any
+      return { columns: res?.columns ?? [], data: res?.data ?? [], meta: res?.meta ?? emptyPreviewPage(perPage).meta }
+    } catch (err: any) {
+      dataPreviewError.value = err?.data?.message ?? err?.message ?? 'Failed to load preview'
+      return emptyPreviewPage(perPage)
+    } finally {
+      dataPreviewLoading.value = false
+    }
+  }
+
+  const fetchBudgetPreview = async (categoryId: string, year?: number, page = 1, perPage = 20): Promise<PreviewPage> => {
+    dataPreviewLoading.value = true
+    dataPreviewError.value   = null
+    const y = year ?? new Date().getFullYear()
+    try {
+      const res = await useApi(`/data-source/budget/${categoryId}/view?year=${y}&page=${page}&per_page=${perPage}`) as any
+      return { columns: res?.columns ?? [], data: res?.data ?? [], meta: res?.meta ?? emptyPreviewPage(perPage).meta }
+    } catch (err: any) {
+      dataPreviewError.value = err?.data?.message ?? err?.message ?? 'Failed to load preview'
+      return emptyPreviewPage(perPage)
+    } finally {
+      dataPreviewLoading.value = false
+    }
+  }
+
+  const downloadFile = async (endpoint: string, filename: string): Promise<void> => {
+    const blob      = await useApi(endpoint, { responseType: 'blob' }) as Blob
+    const objectUrl = URL.createObjectURL(blob)
+    const anchor    = document.createElement('a')
+    anchor.href     = objectUrl
+    anchor.download = filename
+    document.body.appendChild(anchor)
+    anchor.click()
+    document.body.removeChild(anchor)
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
+  }
+
+  const downloadDataInPreview = (cardId: string) =>
+    downloadFile(`/data-source/data-in/${cardId}/download`, `${cardId}_${new Date().toISOString().slice(0, 10)}.xlsx`)
+
+  const downloadBudgetPreview = (categoryId: string, year?: number) => {
+    const y = year ?? new Date().getFullYear()
+    return downloadFile(`/data-source/budget/${categoryId}/download?year=${y}`, `${categoryId}_budget_${y}.xlsx`)
+  }
+
   return {
     // data-in
     items, loading, error, uploadingId,
@@ -574,5 +639,8 @@ export const useDataIn = () => {
     fetchCostCenterMappingLedgers, fetchCostCenterOptions, saveCostCenterMappings,
     fetchPrepaidLedgers, savePrepaidAdjustments,
     fetchOpeningBalanceLedgers, saveOpeningBalances,
+    // preview + Excel download
+    dataPreviewLoading, dataPreviewError,
+    fetchDataInPreview, fetchBudgetPreview, downloadDataInPreview, downloadBudgetPreview,
   }
 }

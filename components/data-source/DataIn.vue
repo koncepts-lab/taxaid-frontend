@@ -100,6 +100,14 @@
                         <p class="text-[11px] opacity-60 mt-0.5" :class="isDark ? 'text-white' : 'text-gray-500'">{{
                             card.uploadDate }}</p>
                     </div>
+                    <button v-if="PREVIEWABLE_CARD_IDS.includes(card.id)" @click.stop="openPreview(card)"
+                        :title="currentLang === 'ar' ? 'معاينة البيانات' : 'Preview data'"
+                        class="p-2 rounded-lg border border-[#008169]/30 text-[#008169] hover:bg-[#00B794]/10 transition-all shrink-0">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </button>
                 </div>
 
                 <div v-else-if="card.isUploaded" class="p-4 rounded-xl border mb-6 flex items-start gap-3 transition-colors"
@@ -117,6 +125,14 @@
                         <p class="text-[11px] opacity-60 mt-0.5" :class="isDark ? 'text-white' : 'text-gray-500'">{{
                             card.uploadDate }}</p>
                     </div>
+                    <button v-if="PREVIEWABLE_CARD_IDS.includes(card.id)" @click.stop="openPreview(card)"
+                        :title="currentLang === 'ar' ? 'معاينة البيانات' : 'Preview data'"
+                        class="p-2 rounded-lg border border-[#008169]/30 text-[#008169] hover:bg-[#00B794]/10 transition-all shrink-0">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </button>
                 </div>
 
                 <div v-else-if="!MAPPING_CARD_LABELS.includes(card.label)"
@@ -314,8 +330,16 @@
                     </button>
                 </div>
 
-                <!-- Upload tabs: Download Sample + Add (IC) -->
+                <!-- Upload tabs: Preview (when already uploaded) + Download Sample + Add (IC) -->
                 <div v-else-if="isTaxaid" class="space-y-3">
+                    <button v-if="budgetStatuses[activeBudgetTab]?.isUploaded" @click="openPreview(activeBudgetTabData, 'budget')"
+                        class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-sm font-medium hover:bg-[#00B794]/5 transition-all">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        {{ currentLang === 'ar' ? 'معاينة' : 'Preview' }}
+                    </button>
                     <button @click="handleBudgetDownloadSample(activeBudgetTab)"
                         class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-sm font-medium hover:bg-[#00B794]/5 transition-all">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -502,6 +526,73 @@
         </Transition>
     </Teleport>
 
+    <!-- Data-In / Budget saved-data preview modal -->
+    <Teleport to="body">
+        <Transition name="modal-fade">
+            <div v-if="previewOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                @click.self="closePreview">
+                <div class="rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl"
+                    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
+                    <div class="flex items-center justify-between p-4 border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+                        <h3 class="text-base font-semibold truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
+                            {{ previewTitle }}
+                        </h3>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button @click="downloadPreviewFile" :disabled="previewDownloading"
+                                class="flex items-center gap-2 px-4 py-2 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 disabled:opacity-50">
+                                <svg v-if="previewDownloading" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin">
+                                    <circle cx="12" cy="12" r="9" stroke-opacity="0.3" />
+                                    <path d="M21 12a9 9 0 00-9-9" stroke-linecap="round" />
+                                </svg>
+                                <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                {{ currentLang === 'ar' ? 'تنزيل Excel' : 'Download Excel' }}
+                            </button>
+                            <button @click="closePreview" class="transition-colors" :class="isDark ? 'text-white/70 hover:text-white' : 'text-gray-900 hover:text-gray-600'">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 6L6 18M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 min-h-0 overflow-auto">
+                        <div v-if="dataPreviewLoading" class="p-4 space-y-3 animate-pulse">
+                            <div class="h-8 rounded-lg w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
+                            <div v-for="i in 8" :key="'preview-skeleton-'+i" class="h-6 rounded-lg w-full" :class="isDark ? 'bg-white/5' : 'bg-gray-50'"></div>
+                        </div>
+                        <div v-else-if="!previewRows.length" class="h-full flex items-center justify-center text-sm" :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                            {{ currentLang === 'ar' ? 'لا توجد بيانات محفوظة' : 'No saved data' }}
+                        </div>
+                        <table v-else class="w-full text-sm">
+                            <thead class="sticky top-0 z-20">
+                                <tr class="bg-[#008169] text-white">
+                                    <th v-for="col in previewColumns" :key="col"
+                                        class="text-left px-4 py-2.5 text-sm font-medium whitespace-nowrap">
+                                        {{ col }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(row, idx) in previewRows" :key="idx" class="border-b"
+                                    :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-gray-50 hover:bg-gray-50'">
+                                    <td v-for="(cell, cidx) in row" :key="cidx" class="px-4 py-2.5 whitespace-nowrap"
+                                        :class="isDark ? 'text-white/90' : 'text-gray-800'">
+                                        {{ cell }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <CommonPaginationBar v-if="previewRows.length" :meta="previewMeta" :loading="dataPreviewLoading" :dark="isDark"
+                        @page-change="changePreviewPage" @per-page-change="changePreviewPerPage" />
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
+
     <!-- BS / P&L detailed report modal -->
     <Teleport to="body">
         <Transition name="modal-fade">
@@ -662,7 +753,59 @@ const {
     fetchCostCenterMappingLedgers, fetchCostCenterOptions, saveCostCenterMappings,
     fetchPrepaidLedgers, savePrepaidAdjustments,
     fetchOpeningBalanceLedgers, saveOpeningBalances,
+    dataPreviewLoading, fetchDataInPreview, fetchBudgetPreview, downloadDataInPreview, downloadBudgetPreview,
 } = useDataIn()
+
+const PREVIEWABLE_CARD_IDS = ['ar', 'ap', 'pdcin', 'pdcout', 'forecast', 'cc_master', 'cc_budget', 'prepaid', 'opening_bal']
+
+const previewOpen = ref(false)
+const previewTitle = ref('')
+const previewColumns = ref([])
+const previewRows = ref([])
+const previewMeta = ref({ current_page: 1, last_page: 1, total: 0, per_page: 20 })
+const previewTarget = ref(null) // { kind: 'data-in' | 'budget', id }
+
+const loadPreviewPage = async (page = 1) => {
+    if (!previewTarget.value) return
+    const { kind, id } = previewTarget.value
+    const result = kind === 'budget'
+        ? await fetchBudgetPreview(id, new Date().getFullYear(), page, previewMeta.value.per_page)
+        : await fetchDataInPreview(id, page, previewMeta.value.per_page)
+    previewColumns.value = result.columns
+    previewRows.value = result.data
+    previewMeta.value = result.meta
+}
+
+const openPreview = async (card, kind = 'data-in') => {
+    previewTarget.value = { kind, id: card.id }
+    previewTitle.value = props.currentLang === 'ar' ? card.labelAr : card.label
+    previewMeta.value = { current_page: 1, last_page: 1, total: 0, per_page: 20 }
+    previewOpen.value = true
+    await loadPreviewPage(1)
+}
+
+const closePreview = () => {
+    previewOpen.value = false
+    previewTarget.value = null
+}
+
+const changePreviewPage = (page) => loadPreviewPage(page)
+const changePreviewPerPage = (perPage) => {
+    previewMeta.value = { ...previewMeta.value, per_page: perPage }
+    loadPreviewPage(1)
+}
+
+const previewDownloading = ref(false)
+const downloadPreviewFile = async () => {
+    if (!previewTarget.value || previewDownloading.value) return
+    previewDownloading.value = true
+    try {
+        const { kind, id } = previewTarget.value
+        kind === 'budget' ? await downloadBudgetPreview(id, new Date().getFullYear()) : await downloadDataInPreview(id)
+    } finally {
+        previewDownloading.value = false
+    }
+}
 
 // ── Existing upload card logic ────────────────────────────────────────────────
 
