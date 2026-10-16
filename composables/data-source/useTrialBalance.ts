@@ -208,6 +208,15 @@ export function useTrialBalance() {
         }))
         // Saving auto-locks the table backend-side; only POST /configuration-settings/unlock releases it
         configLocked.value = !!res.meta?.is_locked
+
+        const overall = res.meta?.integrity_overall
+        if (overall) {
+          integrityData.value = [
+            { label: 'Trial balance',   isValid: !!overall.trial_balance },
+            { label: 'Balance Sheet',   isValid: !!overall.balance_sheet },
+            { label: 'Profit and loss', isValid: !!overall.profit_and_loss },
+          ]
+        }
       }
     } else {
       console.error('useTrialBalance: configuration-settings failed', (configResult as PromiseRejectedResult).reason)
