@@ -1,6 +1,6 @@
 <template>
     <!-- Inline swap (fullscreen modal only): detail view replaces the table, with a back button -->
-    <div v-if="isModal && detailView" class="w-full flex flex-col h-full">
+    <div v-if="isModal && detailView" class="w-full flex-1 min-h-0 flex flex-col h-full">
         <div class="shrink-0 flex items-center gap-3 px-4 lg:px-8 py-4 border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'">
             <button @click="detailView = null" class="p-1.5 rounded-lg transition-colors flex-shrink-0" :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-black/5 text-[#013e32]'">
                 <svg class="w-5 h-5" :class="currentLang === 'ar' ? 'scale-x-[-1]' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -12,7 +12,8 @@
         <CashFlowDetailSections :type="detailView" @open-invoices="openInvoices" />
     </div>
 
-    <table v-else class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px] table-fixed">
+    <div v-else class="w-full" :class="isModal ? 'flex-1 min-h-0 h-full overflow-auto custom-scrollbar rounded-b-xl' : ''">
+    <table class="w-full text-left rtl:text-right border-collapse lg:min-w-full min-w-[1100px] table-fixed">
         <colgroup>
             <col style="width: 28%;" />
             <col v-for="month in months" :key="`col-${month}`" :style="`width: ${72 / months.length}%;`" />
@@ -127,7 +128,7 @@
             </tr>
 
             <!-- Closing -->
-            <tr class="transition-all duration-500" :class="isDark ? 'bg-[#1F6F4D] text-white' : 'bg-[#68E4C4] text-black'">
+            <tr class="transition-all duration-500" :class="[isDark ? 'bg-[#1F6F4D] text-white' : 'bg-[#68E4C4] text-black', isModal ? 'sticky bottom-0 z-10' : '']">
                 <td :class="[cellPad, 'font-medium text-[14px] rounded-bl-3xl rtl:rounded-bl-none rtl:rounded-br-3xl']">
                     {{ currentLang === 'ar' ? 'الإغلاق' : 'Closing' }}
                 </td>
@@ -137,6 +138,7 @@
             </tr>
         </tbody>
     </table>
+    </div>
 
     <CashFlowDetailModal v-model:open="detailModalOpen" :type="detailType" @open-invoices="openInvoices" />
     <CashFlowInvoiceModal v-model:open="invoiceModalOpen" :customer="invoiceCustomer" :type="invoiceType" />
@@ -198,3 +200,10 @@ const openInvoices = (row) => {
     invoiceModalOpen.value = true
 }
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.15); border-radius: 10px; }
+:deep(.dark) .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.15); }
+</style>

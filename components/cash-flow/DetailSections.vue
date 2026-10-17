@@ -1,6 +1,6 @@
 <template>
     <div class="w-full flex-1 flex flex-col min-h-0 overflow-x-auto overflow-y-hidden no-scrollbar">
-        <div class="min-w-[900px] flex flex-col flex-1 h-full">
+        <div class="min-w-[900px] flex flex-col flex-1 min-h-0 h-full">
             <!-- ── Fixed Column Headers ── -->
             <div class="shrink-0 sticky top-0 z-10" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
                 <table class="w-full text-sm table-fixed">

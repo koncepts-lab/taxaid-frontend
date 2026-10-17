@@ -2,8 +2,8 @@
     <div class="flex flex-col xl:flex-row gap-6 mb-8 items-stretch xl:items-end w-full"> 
         <!-- Cash in Hand Card -->
         <div class="w-full xl:flex-1 rounded-[25px] p-6 relative overflow-hidden transition-all duration-300 group hover:shadow-lg"
-            :class="isDark ? 'bg-[#003A2ECC]' : 'bg-[#fff] text-black'">
-            
+            :class="isDark ? 'bg-[#002e26]' : 'bg-[#fff] text-black'">
+
             <div class="flex justify-between items-start mb-2">
                 <div class="flex items-center gap-2">
                     <img src="/images/icons/Cash-in-Hand.svg" alt="Cash" class="w-[15px] h-auto object-contain" :class="{ 'invert brightness-0 invert-[1]': isDark }" />
@@ -27,8 +27,8 @@
         </div>
 
         <div class="w-full xl:flex-1 p-6 relative overflow-hidden transition-all duration-300 group hover:shadow-lg"
-            :class="[isDark ? 'bg-[#003A2ECC]' : 'bg-[#fff] text-black', isCompressed ? 'rounded-[15px]' : 'rounded-3xl']">
-            
+            :class="[isDark ? 'bg-[#002e26]' : 'bg-[#fff] text-black', isCompressed ? 'rounded-[15px]' : 'rounded-3xl']">
+
             <div class="flex justify-between items-start mb-2">
                 <div class="flex items-center gap-2">
                     <img src="/images/icons/AR-in-30-Days.svg" alt="Cash" class="w-[25px] h-auto object-contain" :class="{ 'invert brightness-0 invert-[1]': isDark }" />
@@ -56,7 +56,7 @@
              <div class="relative">
                 <button @click="showScenarioDropdown = !showScenarioDropdown"
                     class="w-full flex items-center justify-between border rounded-[10px] px-6 py-4 transition-all duration-300 hover:shadow-md"
-                    :class="isDark ? 'bg-[#003A2ECC] text-white border-[#04C18F]' : 'bg-white text-black border-[#00D9A4]'">
+                    :class="isDark ? 'bg-[#002e26] text-white border-[#04C18F]' : 'bg-white text-black border-[#00D9A4]'">
                     <span class="text-sm font-normal">{{ selectedScenario }}</span>
                     <svg class="w-5 h-5 transition-transform duration-300" 
                         :class="[showScenarioDropdown ? 'rotate-180' : '', isDark ? 'text-white' : 'text-black']" 
