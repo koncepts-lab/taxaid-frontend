@@ -1,15 +1,48 @@
 <template>
     <!-- Inline swap (fullscreen modal only): detail view replaces the table, with a back button -->
     <div v-if="isModal && detailView" class="w-full flex-1 min-h-0 flex flex-col h-full">
-        <div class="shrink-0 flex items-center gap-3 px-4 lg:px-8 py-4 border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'">
-            <button @click="detailView = null" class="p-1.5 rounded-lg transition-colors flex-shrink-0" :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-black/5 text-[#013e32]'">
-                <svg class="w-5 h-5" :class="currentLang === 'ar' ? 'scale-x-[-1]' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-            </button>
-            <h3 class="text-[16px] font-semibold" :class="isDark ? 'text-white' : 'text-[#013e32]'">
-                {{ detailView === 'incoming' ? (currentLang === 'ar' ? 'الواردة' : 'Incoming') : (currentLang === 'ar' ? 'الصادرة' : 'Outgoing') }}
-            </h3>
+        <div class="shrink-0 flex items-center justify-between px-4 lg:px-8 py-3.5 border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+            <div class="flex items-center gap-3">
+                <button @click="handleDetailBack" class="p-1.5 rounded-lg transition-colors flex-shrink-0 cursor-pointer" :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-black/5 text-[#013e32]'">
+                    <svg class="w-5 h-5" :class="currentLang === 'ar' ? 'scale-x-[-1]' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                </button>
+                <div class="flex items-center gap-2">
+                    <h3 class="text-[16px] font-semibold" :class="isDark ? 'text-white' : 'text-[#013e32]'">
+                        {{ detailView === 'incoming' ? (currentLang === 'ar' ? 'الواردة' : 'Incoming') : (currentLang === 'ar' ? 'الصادرة' : 'Outgoing') }}
+                    </h3>
+                    <span v-if="detailActiveKey && activeSectionTitle" class="text-xs font-semibold px-2 py-0.5 rounded-md"
+                        :class="isDark ? 'bg-[#00FFBC]/20 text-[#00FFBC]' : 'bg-[#008864]/10 text-[#008864]'">
+                        {{ currentLang === 'ar' ? activeSectionTitle.ar : activeSectionTitle.en }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-1 p-1 rounded-xl"
+                :class="isDark ? 'bg-black/40 border border-white/10' : 'bg-gray-100 border border-gray-200'">
+                <button @click="detailViewMode = 'drilldown'"
+                    class="p-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center"
+                    :title="currentLang === 'ar' ? 'الانتقال بالداخل' : 'Drill-down mode'"
+                    :class="detailViewMode === 'drilldown' ? (isDark ? 'bg-[#008864] text-white shadow-sm' : 'bg-white text-[#008864] shadow-sm') : (isDark ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-black')">
+                    <svg class="w-4 h-4" :class="currentLang === 'ar' ? 'scale-x-[-1]' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+                <button @click="detailViewMode = 'accordion'"
+                    class="p-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center"
+                    :title="currentLang === 'ar' ? 'توسيع مضمن' : 'Expand mode'"
+                    :class="detailViewMode === 'accordion' ? (isDark ? 'bg-[#008864] text-white shadow-sm' : 'bg-white text-[#008864] shadow-sm') : (isDark ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-black')">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+            </div>
         </div>
-        <CashFlowDetailSections :type="detailView" @open-invoices="openInvoices" />
+        <CashFlowDetailSections
+            :type="detailView"
+            :hide-header-bar="true"
+            v-model:model-view-mode="detailViewMode"
+            v-model:model-active-key="detailActiveKey"
+            @open-invoices="openInvoices" />
     </div>
 
     <div v-else class="w-full" :class="isModal ? 'flex-1 min-h-0 h-full overflow-auto custom-scrollbar rounded-b-xl' : ''">
@@ -20,10 +53,10 @@
         </colgroup>
         <thead class="text-white z-20 shadow-sm" :class="[isDark ? 'bg-[#002B21]' : 'bg-[#008864]', isModal ? 'sticky top-0' : 'lg:sticky lg:top-[82px]']">
             <tr class="transition-all duration-500">
-                <th :class="isCompressed ? 'px-8 py-4' : 'px-8 py-5'" class="font-medium text-[14px]">
+                <th :class="isModal ? 'px-8 py-3.5' : (isCompressed ? 'px-8 py-4' : 'px-8 py-5')" class="font-medium text-[14px]">
                     {{ currentLang === 'ar' ? 'التدفقات النقدية' : 'Cashflow' }}
                 </th>
-                <th v-for="month in months" :key="month" :class="isCompressed ? 'px-4 py-4' : 'px-6 py-5'" class="font-medium text-right rtl:text-left text-[14px]">
+                <th v-for="month in months" :key="month" :class="isModal ? 'px-4 py-3.5' : (isCompressed ? 'px-4 py-4' : 'px-6 py-5')" class="font-medium text-right rtl:text-left text-[14px]">
                     <span class="inline-flex items-center gap-1 justify-end">
                         {{ month }}
                         <span v-if="fallbackMonths.includes(month)" class="group relative inline-flex">
@@ -126,17 +159,18 @@
                     {{ value }}
                 </td>
             </tr>
-
+        </tbody>
+        <tfoot :class="isModal ? 'sticky bottom-0 z-10' : ''">
             <!-- Closing -->
-            <tr class="transition-all duration-500" :class="[isDark ? 'bg-[#1F6F4D] text-white' : 'bg-[#68E4C4] text-black', isModal ? 'sticky bottom-0 z-10' : '']">
-                <td :class="[cellPad, 'font-medium text-[14px] rounded-bl-3xl rtl:rounded-bl-none rtl:rounded-br-3xl']">
+            <tr class="transition-all duration-500" :class="isDark ? 'bg-[#1F6F4D] text-white' : 'bg-[#68E4C4] text-black'">
+                <td :class="[cellPad, 'font-medium text-[14px]', isModal ? '' : 'rounded-bl-3xl rtl:rounded-bl-none rtl:rounded-br-3xl']">
                     {{ currentLang === 'ar' ? 'الإغلاق' : 'Closing' }}
                 </td>
-                <td v-for="(value, idx) in closing" :key="idx" :class="[cellPadX, 'text-right rtl:text-left font-medium text-[14px]', idx === closing.length - 1 ? 'rounded-br-3xl rtl:rounded-br-none rtl:rounded-bl-3xl' : '']">
+                <td v-for="(value, idx) in closing" :key="idx" :class="[cellPadX, 'text-right rtl:text-left font-medium text-[14px]', !isModal && idx === closing.length - 1 ? 'rounded-br-3xl rtl:rounded-br-none rtl:rounded-bl-3xl' : '']">
                     {{ value }}
                 </td>
             </tr>
-        </tbody>
+        </tfoot>
     </table>
     </div>
 
@@ -176,18 +210,36 @@ const closing         = computed(() => summary.value?.closing         ?? [])
 const detailView = ref(null)
 const detailModalOpen = ref(false)
 const detailType = ref('incoming')
+const detailViewMode = ref('accordion')
+const detailActiveKey = ref(null)
+
+const { sections: allSections } = useCashFlow()
+const currentSections = computed(() => (detailView.value === 'incoming' ? allSections.value?.incoming : allSections.value?.outgoing) ?? [])
+const activeSectionTitle = computed(() => {
+    if (!detailActiveKey.value) return null
+    return currentSections.value.find(s => s.key === detailActiveKey.value)?.title || null
+})
+
+const handleDetailBack = () => {
+    if (detailActiveKey.value) {
+        detailActiveKey.value = null
+    } else {
+        detailView.value = null
+    }
+}
 
 const openDetail = (type) => {
     if (props.isModal) {
         detailView.value = type
+        detailActiveKey.value = null
     } else {
         detailType.value = type
         detailModalOpen.value = true
     }
 }
 
-const cellPad  = computed(() => props.isCompressed ? 'px-8 py-4' : 'px-8 py-5')
-const cellPadX = computed(() => props.isCompressed ? 'px-4' : 'px-6')
+const cellPad  = computed(() => props.isModal ? 'px-8 py-3.5' : (props.isCompressed ? 'px-8 py-4' : 'px-8 py-5'))
+const cellPadX = computed(() => props.isCompressed || props.isModal ? 'px-4' : 'px-6')
 
 // ⓘ invoice details modal (AR/AP customer rows only)
 const invoiceModalOpen = ref(false)
