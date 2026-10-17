@@ -42,7 +42,7 @@
 
                     <!-- Date -->
                     <td class="py-2 px-4 text-sm" :class="isDark ? 'text-white/80' : 'text-black'">
-                        {{ row.date }}
+                        {{ formatDisplayDate(row.date) }}
                     </td>
 
                     <!-- Status Pill -->
@@ -81,7 +81,7 @@
                             </button>
 
                             <!-- Resolve Button: always occupies space to keep layout consistent -->
-                            <button
+                            <button v-if="canAct"
                                 :class="(row.status === 'Awaiting Action' && !row.isAutoResolve)
                                     ? 'bg-[#765E00] hover:bg-[#5E4B00] text-white shadow-sm'
                                     : 'invisible pointer-events-none'"
@@ -101,6 +101,8 @@
 import { computed } from 'vue';
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
+const { can } = usePermissions()
+const canAct = computed(() => can('data_source.financial_all'))
 
 const props = defineProps({
     type: { type: String, default: 'all' },

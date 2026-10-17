@@ -34,7 +34,7 @@
                         <h3 class="text-base font-normal mb-2" :class="isDark ? 'text-[#FFD700]' : 'text-white'">{{
                             alert.title }}</h3>
                         <p class="text-sm mb-4" :class="isDark ? 'text-white/80' : 'text-white/80'">{{ alert.description
-                            || 'Alert details requiring attention.' }}</p>
+                            ? formatEmbeddedNumbers(alert.description) : 'Alert details requiring attention.' }}</p>
                         <span
                             class="inline-block px-3 py-1 rounded-lg border border-white/50 text-xs font-normal   tracking-wider">
                             {{ alert.module }} Module

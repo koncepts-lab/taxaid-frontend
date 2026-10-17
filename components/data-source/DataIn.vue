@@ -71,7 +71,7 @@
                                 {{ ret.label }}<span v-if="ret.fileName" class="font-normal opacity-70"> — {{ ret.fileName }}</span>
                             </p>
                             <p class="text-[11px] opacity-60 mt-0.5" :class="isDark ? 'text-white' : 'text-gray-500'">
-                                {{ ret.uploadDate }}
+                                {{ formatDisplayDate(ret.uploadDate) }}
                             </p>
                         </div>
                         <button v-if="ret.hasFile" @click.stop="previewVatCertificate(ret)"
@@ -98,7 +98,7 @@
                             {{ mappingStatusText(card) }}
                         </p>
                         <p class="text-[11px] opacity-60 mt-0.5" :class="isDark ? 'text-white' : 'text-gray-500'">{{
-                            card.uploadDate }}</p>
+                            formatDisplayDate(card.uploadDate) }}</p>
                     </div>
                     <!-- TODO: gate to taxaid-only once client-side preview access is scoped -->
                     <button v-if="PREVIEWABLE_CARD_IDS.includes(card.id)" @click.stop="openPreview(card)"
@@ -124,7 +124,7 @@
                         <p class="text-sm font-medium truncate" :class="isDark ? 'text-white/90' : 'text-gray-800'">{{
                             card.fileName || (currentLang === 'ar' ? 'مستند تم تحميله' : 'Uploaded document') }}</p>
                         <p class="text-[11px] opacity-60 mt-0.5" :class="isDark ? 'text-white' : 'text-gray-500'">{{
-                            card.uploadDate }}</p>
+                            formatDisplayDate(card.uploadDate) }}</p>
                     </div>
                     <!-- TODO: gate to taxaid-only once client-side preview access is scoped -->
                     <button v-if="PREVIEWABLE_CARD_IDS.includes(card.id)" @click.stop="openPreview(card)"
@@ -151,12 +151,12 @@
                     </p>
                 </div>
 
-                <div v-if="userType === 'client'"></div>
-
-                <div v-else-if="card.locked" class="p-4 rounded-xl border border-dashed text-center"
+                <div v-if="card.locked" class="p-4 rounded-xl border border-dashed text-center"
                     :class="isDark ? 'border-white/15 text-white/40' : 'border-[#04C18F80] text-[#64748B]'">
                     <p class="text-sm">{{ card.lockReason || (currentLang === 'ar' ? 'مقفل' : 'Locked') }}</p>
                 </div>
+
+                <div v-else-if="userType === 'client'"></div>
 
                 <div v-else class="space-y-3">
                     <div v-if="MAPPING_CARD_LABELS.includes(card.label) && !card.isUploaded" class="mt-4 flex flex-col justify-end h-full">
@@ -299,7 +299,7 @@
                         </p>
                         <p class="text-[11px] opacity-60 mt-0.5"
                             :class="isDark ? 'text-white' : 'text-gray-500'">
-                            {{ budgetStatuses[activeBudgetTab]?.uploadDate }}
+                            {{ formatDisplayDate(budgetStatuses[activeBudgetTab]?.uploadDate) }}
                         </p>
                     </div>
                 </div>
@@ -584,7 +584,7 @@
                                     :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-gray-50 hover:bg-gray-50'">
                                     <td v-for="(cell, cidx) in row" :key="cidx" class="px-4 py-2.5 whitespace-nowrap"
                                         :class="isDark ? 'text-white/90' : 'text-gray-800'">
-                                        {{ cell }}
+                                        {{ formatPreviewCell(previewColumns[cidx], cell) }}
                                     </td>
                                 </tr>
                             </tbody>
@@ -1026,6 +1026,21 @@ const vatCheckResult = ref(null)
 const fmtAed = (v) => v === null || v === undefined
     ? '—'
     : Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+const PREVIEW_DATE_COL = /date/i
+const PREVIEW_NON_AMOUNT_NUMERIC_COL = /^sl no$|credit days|cheque number|possibility/i
+
+const formatPreviewCell = (col, cell) => {
+    if (cell === null || cell === undefined || cell === '') return '—'
+    if (PREVIEW_DATE_COL.test(col ?? '')) {
+        const formatted = formatDisplayDate(cell)
+        return formatted || cell
+    }
+    if (!PREVIEW_NON_AMOUNT_NUMERIC_COL.test(col ?? '') && cell !== true && cell !== false && !isNaN(Number(cell)) && String(cell).trim() !== '') {
+        return formatStandardNumber(cell)
+    }
+    return cell
+}
 
 // VAT certificate inline preview
 const vatPreviewOpen = ref(false)

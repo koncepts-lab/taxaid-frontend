@@ -298,7 +298,7 @@ export const useDataIn = () => {
         throw new Error(body?.message ?? `Confirm failed (${res.status})`)
       }
       if (isBudgetVarianceId(id)) {
-        budgetStatuses.value[id] = { isUploaded: true, fileName: null, uploadDate: new Date().toLocaleDateString() }
+        budgetStatuses.value[id] = { isUploaded: true, fileName: null, uploadDate: localIsoDate() }
       } else {
         await refreshItem(id)
       }
@@ -441,7 +441,7 @@ export const useDataIn = () => {
         budgetError.value = body?.message ?? `Upload failed for ${id} (${res.status})`
         throw new Error(budgetError.value ?? `Upload failed for ${id}`)
       }
-      budgetStatuses.value[id] = { isUploaded: true, fileName: file.name, uploadDate: new Date().toLocaleDateString() }
+      budgetStatuses.value[id] = { isUploaded: true, fileName: file.name, uploadDate: localIsoDate() }
     } catch (err: any) {
       if (!budgetError.value) budgetError.value = err?.message ?? `Upload failed for ${id}`
       throw err
@@ -479,7 +479,7 @@ export const useDataIn = () => {
       budgetStatuses.value[id] = {
         isUploaded: true,
         fileName:   budgetStatuses.value[id]?.fileName ?? null,
-        uploadDate: new Date().toLocaleDateString(),
+        uploadDate: localIsoDate(),
       }
     } catch (err: any) {
       budgetError.value = err?.data?.message ?? err?.message ?? `Sync failed for ${id}`

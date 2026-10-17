@@ -18,15 +18,13 @@
                         <div class="flex items-center gap-4">
                             <div class="relative">
                                 <img src="/images/akeel.webp"
-                                    class="w-12 h-12 rounded-full border border-white/20 object-cover" alt="Akeel" />
-                                <span class="absolute bottom-0 right-0 w-3 h-3 bg-[#03D8B0] border-2 rounded-full"
-                                    :style="{ borderColor: isDark ? '#01261f' : '#013E32' }"></span>
+                                    class="w-12 h-12 rounded-full border border-white/20 object-cover object-top" alt="Akeel" />
                             </div>
                             <div>
                                 <h3 class="text-lg font-semibold leading-tight">Akeel</h3>
                                 <div class="flex items-center gap-1.5 opacity-90 text-xs">
-                                    <span class="w-1.5 h-1.5 bg-[#03D8B0] rounded-full"></span>
-                                    {{ currentLang === 'ar' ? 'متصل الآن' : 'Online' }}
+                                    <span class="w-1.5 h-1.5 rounded-full" :class="status === 1 ? 'bg-[#03D8B0]' : 'bg-red-400'"></span>
+                                    {{ statusLabel }}
                                 </div>
                             </div>
                         </div>
@@ -56,14 +54,14 @@
                     <div class="p-5 flex items-center gap-3 shrink-0 transition-colors duration-300"
                         :class="[isDark ? 'bg-[#001a16] border-white/10' : 'bg-white border-gray-100', !error && 'border-t']">
 
-                        <button class="p-2 transition-colors"
+                        <!-- <button class="p-2 transition-colors"
                             :class="isDark ? 'text-white/40 hover:text-white/70' : 'text-gray-400 hover:text-gray-600'">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path
                                     d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13" />
                             </svg>
-                        </button>
+                        </button> -->
 
                         <div class="flex-1 relative">
                             <input v-model="chatInput" type="text" :disabled="sending || locked"
@@ -90,7 +88,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 
 const props = defineProps({
     isOpen: Boolean,
@@ -102,7 +100,12 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 const chatInput = ref('');
 
-const { messages, sending, sendingStatusText, sendingStatusDisplay, activeChatId, error, errorVariant, locked, createChat, sendMessage } = useAkeel()
+const { messages, status, sending, sendingStatusText, sendingStatusDisplay, activeChatId, error, errorVariant, locked, createChat, sendMessage } = useAkeel()
+
+const statusLabel = computed(() => {
+  if (props.currentLang === 'ar') return status.value === 1 ? 'متصل الآن' : 'غير متصل'
+  return status.value === 1 ? 'Online' : 'Offline'
+})
 
 // A fresh alert-context conversation each time the modal opens for a new alert —
 // not the same shared chat as the sidebar/full-page widgets.
@@ -112,7 +115,7 @@ watch(() => props.isOpen, async (open) => {
     messages.value = []
     const domains = props.alert?.module ? [String(props.alert.module).toUpperCase()] : []
     await createChat()
-    await sendMessage(`Tell me about this alert: "${props.alert?.title}"`, domains)
+    await sendMessage('', domains, undefined, true, props.alert?.id)
 })
 
 const handleSend = async () => {
