@@ -209,9 +209,6 @@ export function useDashboard() {
   // ── Tax Queries (TaxQueries.vue) ──────────────────────────────────────────
   const taxQueries = computed(() => raw.value?.tax_queries ?? null)
 
-  // Initial full-page load: instantly paints whatever was cached from the
-  // last visit (no skeleton, no remount), then always revalidates against
-  // the real API in the background and swaps in-place only if it changed.
   const { run: fetchDashboardCached, loading: swrLoading } = useStaleWhileRevalidate('dashboard', {
     fetchers: {
       full: async () => {
@@ -227,12 +224,20 @@ export function useDashboard() {
 
   async function fetchSummaryCached() {
     error.value = null
+    let hasCache = false
+    try {
+      const userId = localStorage.getItem('auth_user_id') ?? 'anon'
+      hasCache = !!sessionStorage.getItem(`swr:${userId}:dashboard`)
+    } catch {}
+    if (!hasCache) loading.value = true
     try {
       await fetchDashboardCached()
     } catch (err: any) {
       error.value = err?.data?.message ?? 'Failed to load dashboard data'
       // eslint-disable-next-line no-console
       console.error('[useDashboard] fetchSummaryCached failed:', err)
+    } finally {
+      loading.value = false
     }
   }
 
