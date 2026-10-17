@@ -111,3 +111,24 @@ export const formatCurrency = (
   }).format(num);
 };
 
+/**
+ * Inserts thousands separators into every number inside a free-text string.
+ * Example: "AR Report: 321000, Difference: 421580.75" -> "AR Report: 321,000, Difference: 421,580.75"
+ */
+export const formatEmbeddedNumbers = (text: string | null | undefined): string => {
+  if (!text) return "";
+
+  return String(text).replace(/-?\d+(\.\d+)?/g, (match) => {
+    const [intPart, decPart] = match.split(".");
+    const sign = intPart.startsWith("-") ? "-" : "";
+    const digits = sign ? intPart.slice(1) : intPart;
+
+    if (!decPart && digits.length === 4) {
+      const n = Number(digits);
+      if (n >= 1900 && n <= 2099) return match;
+    }
+
+    const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return sign + grouped + (decPart ? "." + decPart : "");
+  });
+};

@@ -98,7 +98,7 @@
               </button>
 
               <div v-if="group._expanded" class="mt-3 flex flex-wrap gap-2">
-                <label v-for="role in assignableRoles" :key="role"
+                <label v-for="role in Object.keys(group.roles)" :key="role"
                   class="flex items-center gap-1.5 border border-gray-200 rounded-full px-3 py-1.5 text-[12px] cursor-pointer"
                   :class="group.roles[role] ? (isDark ? 'bg-teal-900/50 border-[#00B68D] text-[#7DF5D4]' : 'bg-[#E8FCF2] border-[#00835D] text-[#00835D]') : (isDark ? 'text-white/60 border-white/20' : 'text-gray-500')">
                   <input type="checkbox" :checked="group.roles[role]"
@@ -132,7 +132,6 @@ const getAiAlertGroups = props.personal ? getUserGroups : getAdminGroups
 const selectedDomain = ref('')
 const domainOptions = ref([])
 const groups = ref([])
-const assignableRoles = ref([])
 const loading = ref(true)
 
 const { roleLabel } = useRoleLabel()
@@ -147,7 +146,6 @@ async function load() {
   try {
     const res = await getAiAlertGroups(selectedDomain.value)
     domainOptions.value = res?.domain_options ?? []
-    assignableRoles.value = res?.assignable_roles ?? []
 
     // First load has no domain selected yet, so the response is unfiltered (all domains) —
     // pick the default domain and filter what's already in hand instead of a second round-trip.
