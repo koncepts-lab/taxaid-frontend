@@ -112,6 +112,27 @@ export const formatCurrency = (
 };
 
 /**
+ * Formats a money value with no decimals: full thousands-separated number
+ * below 1M (e.g. 60475 -> "60,475"), compact "M" suffix at/above 1M
+ * (e.g. 1500000 -> "2M").
+ */
+export const formatSmartCurrency = (value: number | string | null | undefined): string => {
+  const num = cleanNumber(value);
+  if (isNaN(num)) return "0";
+
+  if (Math.abs(num) >= 1_000_000) {
+    return new Intl.NumberFormat("en-US", {
+      notation: "compact",
+      maximumFractionDigits: 0,
+    }).format(num);
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 0,
+  }).format(num);
+};
+
+/**
  * Inserts thousands separators into every number inside a free-text string.
  * Example: "AR Report: 321000, Difference: 421580.75" -> "AR Report: 321,000, Difference: 421,580.75"
  */

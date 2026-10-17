@@ -1,11 +1,11 @@
 <template>
-  <div class="revenue-gauge-card rounded-[20px] p-8 text-white h-full flex flex-col items-center justify-between relative overflow-hidden group cursor-pointer transition-all duration-300 shadow-md"
+  <div ref="cardRef" class="revenue-gauge-card rounded-[20px] p-8 text-white h-full flex flex-col items-center justify-between relative overflow-hidden group cursor-pointer transition-all duration-300 shadow-md"
     :class="{ 'dark-mode': isDark }">
     <!-- Header -->
     <div class="w-full flex items-center justify-between mb-4">
       <div class="flex flex-col">
         <h2 class="text-[16px] font-normal leading-tight">{{ currentLang === 'ar' ? 'الهدف ، العام الماضي والحالي' : 'Target , Previous Year and Current' }}</h2>
-        <p class="text-[12px] opacity-70 font-normal mt-1">{{ valuesNote(true) }}</p>
+        <p class="text-[12px] opacity-70 font-normal mt-1">{{ valuesNote(false) }}</p>
       </div>
       <div class="flex items-center gap-3">
         <CommonInfoTooltip tip="revenue.gauge" light align="right" />
@@ -55,14 +55,19 @@
             />
           </g>
 
-          <!-- Paths from Dashboard -->
+          <!-- Background Tracks (unfilled gauge) -->
+          <path :d="trackB1" stroke="rgba(255,255,255,0.12)" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
+          <path :d="trackB2" stroke="rgba(255,255,255,0.12)" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
+          <path :d="trackB3" stroke="rgba(255,255,255,0.12)" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
+
+          <!-- Filled Segments -->
           <path :d="segLastYearPath" :stroke="colors.lastYear" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
           <path :d="segCurrentPath" :stroke="colors.currentYear" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
-          <path :d="segBalancePath" :stroke="colors.balance" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
+          <path :d="segBalancePath" :stroke="colors.currentYear" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
 
           <!-- Marker -->
           <circle
-            v-if="currentYearPct > 0"
+            v-if="showMarker"
             :cx="marker.x"
             :cy="marker.y"
             r="9"
@@ -79,7 +84,7 @@
         <!-- Center Value -->
         <div class="absolute inset-0 flex flex-col items-center justify-center translate-y-2">
           <span class="leading-none text-[43px] font-semibold mt-[0px] block">
-            {{ Math.round(currentYearPct) }}%
+            {{ animatedPct }}%
           </span>
           <span class="text-[12px] font-light mt-3 tracking-widest block">
             {{ currentLang === 'ar' ? 'تم تحقيق الهدف' : 'Target Achieved' }}
@@ -104,8 +109,7 @@
             <span class="text-[12px] lg:whitespace-nowrap whitespace-normal font-light lg:text-center text-left">{{ currentLang === 'ar' ? 'العام الماضي' : 'Previous Year' }} ({{ lastYearPct }}%)</span>
           </div>
           <div class="text-[14px] lg:text-[18px] font-medium lg:text-center text-left">
-            <template v-if="currentLang === 'ar'">{{ formatToMillions(props.data?.previousValue || 0) }} مليون {{ currencyCode === 'AED' ? 'د.إ' : currencyCode }}</template>
-            <template v-else>{{ currencyCode }} {{ formatToMillions(props.data?.previousValue || 0) }}M</template>
+            {{ currencyCode }} {{ formatStandardNumber(props.data?.previousValue || 0, 0) }}
           </div>
         </div>
         <div class="flex flex-col items-center lg:text-center">
@@ -114,8 +118,7 @@
             <span class="text-[12px] font-light lg:whitespace-nowrap whitespace-normal lg:text-center text-left">{{ currentLang === 'ar' ? 'الحالي' : 'Current' }} ({{ Math.round(currentYearPct) }}%)</span>
           </div>
           <div class="text-[14px] lg:text-[18px] font-medium lg:text-center text-left">
-            <template v-if="currentLang === 'ar'">{{ formatToMillions(currentYearAchieved) }} مليون {{ currencyCode === 'AED' ? 'د.إ' : currencyCode }}</template>
-            <template v-else>{{ currencyCode }} {{ formatToMillions(currentYearAchieved) }}M</template>
+            {{ currencyCode }} {{ formatStandardNumber(currentYearAchieved, 0) }}
           </div>
         </div>
         <div class="flex flex-col items-center lg:text-center">
@@ -124,8 +127,7 @@
             <span class="text-[12px] font-light lg:whitespace-nowrap whitespace-normal lg:text-center text-left">{{ currentLang === 'ar' ? 'المستهدف' : 'Target' }} (100%)</span>
           </div>
           <div class="text-[14px] lg:text-[18px] font-medium lg:text-center text-left">
-            <template v-if="currentLang === 'ar'">{{ formatToMillions(currentYearTarget) }} مليون {{ currencyCode === 'AED' ? 'د.إ' : currencyCode }}</template>
-            <template v-else>{{ currencyCode }} {{ formatToMillions(currentYearTarget) }}M</template>
+            {{ currencyCode }} {{ formatStandardNumber(currentYearTarget, 0) }}
           </div>
         </div>
       </template>
@@ -139,7 +141,7 @@
           <div class="flex justify-between items-center py-6 px-8 border-b border-white/10">
             <div class="flex flex-col">
               <h2 class="text-lg font-normal leading-tight text-white">{{ currentLang === 'ar' ? 'الهدف ، العام الماضي والحالي' : 'Target , Previous Year and Current' }}</h2>
-              <p class="text-xs opacity-70 font-normal mt-1 text-white">{{ valuesNote(true) }}</p>
+              <p class="text-xs opacity-70 font-normal mt-1 text-white">{{ valuesNote(false) }}</p>
             </div>
             <div class="flex items-center gap-4">
               <CommonInfoTooltip tip="revenue.gauge" light align="right" />
@@ -166,14 +168,19 @@
                   />
                 </g>
 
-                <!-- Paths from Dashboard -->
+                <!-- Background Tracks (unfilled gauge) -->
+                <path :d="trackB1" stroke="rgba(255,255,255,0.12)" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
+                <path :d="trackB2" stroke="rgba(255,255,255,0.12)" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
+                <path :d="trackB3" stroke="rgba(255,255,255,0.12)" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
+
+                <!-- Filled Segments -->
                 <path :d="segLastYearPath" :stroke="colors.lastYear" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
                 <path :d="segCurrentPath" :stroke="colors.currentYear" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
-                <path :d="segBalancePath" :stroke="colors.balance" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
+                <path :d="segBalancePath" :stroke="colors.currentYear" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
 
                 <!-- Marker -->
                 <circle
-                  v-if="currentYearPct > 0"
+                  v-if="showMarker"
                   :cx="marker.x"
                   :cy="marker.y"
                   r="9"
@@ -190,7 +197,7 @@
               <!-- Center Value -->
               <div class="absolute inset-0 flex flex-col items-center justify-center translate-y-2 text-white">
                 <span class="leading-none text-[50px] font-semibold mt-[0px] block">
-                  {{ Math.round(currentYearPct) }}%
+                  {{ animatedPct }}%
                 </span>
                 <span class="text-[14px] font-light mt-3 tracking-widest block">
                   {{ currentLang === 'ar' ? 'تم تحقيق الهدف' : 'Target Achieved' }}
@@ -206,8 +213,7 @@
                   <span class="text-[14px] opacity-70 whitespace-nowrap">{{ currentLang === 'ar' ? 'العام الماضي' : 'Previous Year' }} ({{ lastYearPct }}%)</span>
                 </div>
                 <div class="text-[20px] font-bold">
-                  <template v-if="currentLang === 'ar'">{{ formatToMillions(props.data?.previousValue || 0) }} مليون {{ currencyCode === 'AED' ? 'د.إ' : currencyCode }}</template>
-                  <template v-else>{{ currencyCode }} {{ formatToMillions(props.data?.previousValue || 0) }}M</template>
+                  {{ currencyCode }} {{ formatStandardNumber(props.data?.previousValue || 0, 0) }}
                 </div>
               </div>
               <div class="flex flex-col items-center text-center">
@@ -216,8 +222,7 @@
                   <span class="text-[14px] opacity-70 whitespace-nowrap">{{ currentLang === 'ar' ? 'الحالي' : 'Current' }} ({{ Math.round(currentYearPct) }}%)</span>
                 </div>
                 <div class="text-[20px] font-bold">
-                  <template v-if="currentLang === 'ar'">{{ formatToMillions(currentYearAchieved) }} مليون {{ currencyCode === 'AED' ? 'د.إ' : currencyCode }}</template>
-                  <template v-else>{{ currencyCode }} {{ formatToMillions(currentYearAchieved) }}M</template>
+                  {{ currencyCode }} {{ formatStandardNumber(currentYearAchieved, 0) }}
                 </div>
               </div>
               <div class="flex flex-col items-center text-center">
@@ -226,8 +231,7 @@
                   <span class="text-[14px] opacity-70 whitespace-nowrap">{{ currentLang === 'ar' ? 'المستهدف' : 'Target' }} (100%)</span>
                 </div>
                 <div class="text-[20px] font-bold">
-                  <template v-if="currentLang === 'ar'">{{ formatToMillions(currentYearTarget) }} مليون {{ currencyCode === 'AED' ? 'د.إ' : currencyCode }}</template>
-                  <template v-else>{{ currencyCode }} {{ formatToMillions(currentYearTarget) }}M</template>
+                  {{ currencyCode }} {{ formatStandardNumber(currentYearTarget, 0) }}
                 </div>
               </div>
             </div>
@@ -239,7 +243,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, watch, onMounted, onBeforeUnmount } from "vue";
+import { formatStandardNumber } from "~/utils/formatters";
 
 const props = defineProps({
   data: Object,
@@ -265,9 +270,13 @@ const cx = 200;   const cy = 180;  const r = 170;
 const strokeW = 18; const startDeg = -180; const endDeg = 0;
 const gapDeg = 9; const lastYearSpanDeg = 30;
 
+const cardRef = ref<HTMLElement | null>(null);
 const animProgress = ref(0);
+let hasAnimated = false;
+let observer: IntersectionObserver | null = null;
 
-onMounted(() => {
+const triggerAnimation = () => {
+  animProgress.value = 0;
   let startTimestamp: number | null = null;
   const duration = 1200;
   const animate = (timestamp: number) => {
@@ -279,11 +288,74 @@ onMounted(() => {
     }
   };
   requestAnimationFrame(animate);
+};
+
+onMounted(() => {
+  if (typeof IntersectionObserver !== 'undefined' && cardRef.value) {
+    observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          hasAnimated = true;
+          triggerAnimation();
+        }
+      });
+    }, { threshold: 0.2 });
+    observer.observe(cardRef.value);
+  } else {
+    triggerAnimation();
+  }
 });
+
+onBeforeUnmount(() => {
+  if (observer) {
+    observer.disconnect();
+    observer = null;
+  }
+});
+
+watch(isModalOpen, (open) => {
+  if (open) {
+    triggerAnimation();
+  }
+});
+
+watch(() => props.data, (newVal) => {
+  if (newVal && hasAnimated) {
+    triggerAnimation();
+  }
+}, { deep: true });
+
+// Single gauge 0-100%: 3 visual segments (b1: 0-30%, b2: 30-70%, b3: 70-100%)
+const b1Start = startDeg;
+const b1End   = startDeg + 48; // span 48 deg (~30% of arc)
+const b2Start = b1End + gapDeg;
+const b2End   = b2Start + 56;  // span 56 deg (~38% of arc)
+const b3Start = b2End + gapDeg;
+const b3End   = endDeg;        // span 49 deg (~32% of arc)
+
+// Total active arc span (excluding the 2 cosmetic gaps)
+const totalActiveSpan = (b1End - b1Start) + (b2End - b2Start) + (b3End - b3Start);
 
 // No budget configured for the period (target=0) shows 0%, not a false 100%.
 const currentYearPct = computed(() => currentYearTarget.value > 0 ? Math.min(100, (currentYearAchieved.value / currentYearTarget.value) * 100) : 0);
-const remainingSpan = computed(() => (endDeg - startDeg) - lastYearSpanDeg - (gapDeg * 2));
+const animatedPct = computed(() => Math.round(currentYearPct.value * (animProgress.value / 100)));
+
+// Map any 0-100 percentage to an angle, clipping through the gaps so it never stops inside a gap
+const pctToAngle = (p: number) => {
+  const travel = (p / 100) * totalActiveSpan;
+  const span1 = b1End - b1Start;
+  const span2 = b2End - b2Start;
+
+  if (travel <= span1) {
+    return b1Start + travel;
+  }
+  const rem2 = travel - span1;
+  if (rem2 <= span2) {
+    return b2Start + rem2;
+  }
+  const rem3 = rem2 - span2;
+  return Math.min(b3End, b3Start + rem3);
+};
 
 const polarToCartesian = (angleDeg: number, radius = r) => {
   const a = (angleDeg * Math.PI) / 180;
@@ -296,34 +368,33 @@ const arcPath = (a0: number, a1: number) => {
   return `M ${p0.x} ${p0.y} A ${r} ${r} 0 0 1 ${p1.x} ${p1.y}`;
 };
 
-const displayLimitDeg = computed(() => startDeg + (animProgress.value / 100) * (endDeg - startDeg));
+// Filled paths for each segment based on animatedPct
+const fillAngle = computed(() => pctToAngle(animatedPct.value));
 
 const segLastYearPath = computed(() => {
-  const a0 = startDeg;
-  const a1 = startDeg + lastYearSpanDeg;
-  return arcPath(a0, Math.min(a1, displayLimitDeg.value));
-});
-
-const segCurrent = computed(() => {
-  const a0 = startDeg + lastYearSpanDeg + gapDeg;
-  return { a0, a1: a0 + (currentYearPct.value / 100) * remainingSpan.value };
+  if (fillAngle.value <= b1Start) return "M 0 0";
+  return arcPath(b1Start, Math.min(b1End, fillAngle.value));
 });
 
 const segCurrentPath = computed(() => {
-  const { a0, a1 } = segCurrent.value;
-  if (displayLimitDeg.value <= a0) return "M 0 0";
-  return arcPath(a0, Math.min(a1, displayLimitDeg.value));
+  if (fillAngle.value < b2Start) return "M 0 0";
+  return arcPath(b2Start, Math.min(b2End, fillAngle.value));
 });
 
 const segBalancePath = computed(() => {
-  const a0 = segCurrent.value.a1 + gapDeg;
-  const a1 = endDeg;
-  if (displayLimitDeg.value <= a0) return "M 0 0";
-  return arcPath(a0, Math.min(a1, displayLimitDeg.value));
+  if (fillAngle.value < b3Start) return "M 0 0";
+  return arcPath(b3Start, Math.min(b3End, fillAngle.value));
 });
+
+// Background unfilled track segments so the entire gauge structure is visible
+const trackB1 = computed(() => arcPath(b1Start, b1End));
+const trackB2 = computed(() => arcPath(b2Start, b2End));
+const trackB3 = computed(() => arcPath(b3Start, b3End));
+
+const showMarker = computed(() => animatedPct.value > 0);
+
 const marker = computed(() => {
-  const targetA = segCurrent.value.a1;
-  return polarToCartesian(targetA);
+  return polarToCartesian(fillAngle.value);
 });
 
 const tickPoints = computed(() => {
@@ -344,7 +415,7 @@ const tickPoints = computed(() => {
 }
 
 .revenue-gauge-card.dark-mode {
-  background: #015A49E5 !important;
+  background: #002e26 !important;
 }
 
 path {

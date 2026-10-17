@@ -233,8 +233,8 @@ const grossProfit = computed(() => {
   if (!total) return null
 
   return {
-    label: total.particulars,
-    labelAr: total.particulars,
+    label: 'Net Profit',
+    labelAr: 'صافي الربح',
     actual: formatStandardNumber(total.actual ?? 0, 2),
     budget: formatStandardNumber(total.budget ?? 0, 2),
     progress: parseFloat(String(total.year_to_go || '0').replace('%', '')) || 0,
