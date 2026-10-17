@@ -128,7 +128,7 @@ const dashboardAlerts = ref({
   sales_forecast_variance: null,
 })
 
-const { fetchSummary, loading } = useDashboard()
+const { fetchSummary, fetchSummaryCached, loading } = useDashboard()
 const cardHeights = {
   revenue: 'h-[542px]',
   cash_flow: 'h-[250px]',
@@ -188,7 +188,7 @@ onMounted(() => {
   onUnmounted(() => window.removeEventListener('resize', updateIsMobile));
 
   fetchDashboardAlerts()
-  fetchSummary()
+  fetchSummaryCached()
   useLocation().syncSessionLocation()
   useNotificationSettings().syncWebPush()
 })

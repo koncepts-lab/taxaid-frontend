@@ -209,12 +209,41 @@ export function useDashboard() {
   // ── Tax Queries (TaxQueries.vue) ──────────────────────────────────────────
   const taxQueries = computed(() => raw.value?.tax_queries ?? null)
 
+  // Initial full-page load: instantly paints whatever was cached from the
+  // last visit (no skeleton, no remount), then always revalidates against
+  // the real API in the background and swaps in-place only if it changed.
+  const { run: fetchDashboardCached, loading: swrLoading } = useStaleWhileRevalidate('dashboard', {
+    fetchers: {
+      full: async () => {
+        const params = new URLSearchParams()
+        if (date.value) params.set('date', date.value)
+        params.set('cashflow_period', String(cashflowPeriod.value))
+        const res: any = await useApi(`/dashboard?${params.toString()}`)
+        return res?.data ?? {}
+      },
+    },
+    apply: (_key, data) => applyData(data),
+  })
+
+  async function fetchSummaryCached() {
+    error.value = null
+    try {
+      await fetchDashboardCached()
+    } catch (err: any) {
+      error.value = err?.data?.message ?? 'Failed to load dashboard data'
+      // eslint-disable-next-line no-console
+      console.error('[useDashboard] fetchSummaryCached failed:', err)
+    }
+  }
+
   return {
     loading,
+    swrLoading,
     error,
     date,
     cashflowPeriod,
     fetchSummary,
+    fetchSummaryCached,
     revenue,
     cashflow,
     financialStatements,

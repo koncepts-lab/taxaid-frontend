@@ -32,16 +32,15 @@
           <!-- Subtle Background Circle for effect -->
           <div class="absolute inset-0 rounded-full opacity-50" :class="isDark ? 'bg-[#005B48]' : 'bg-gray-50'"></div>
           
-          <svg viewBox="-110 -110 220 220" class="w-full h-full transform -rotate-42 transition-all duration-700 ease-out" :style="{ opacity: animProgress / 100 }">
+          <svg viewBox="-110 -110 220 220" class="w-full h-full transform -rotate-42 transition-all duration-700 ease-out">
             <g v-for="(slice, index) in computedSlices" :key="index">
-              <path 
-                :d="slice.path" 
-                :fill="slice.color"
-                class="transition-all duration-300"
+              <path
+                :d="slice.path"
+                :fill="index < revealedCount ? slice.color : placeholderColor"
+                class="transition-[fill] duration-500 ease-out"
               />
-              <!-- Slices under 10% are too thin to fit the label — legend carries it -->
               <text
-                v-if="animProgress > 50 && series[index] >= 10"
+                v-if="index < revealedCount && series[index] >= 10"
                 :x="slice.textPos.x" 
                 :y="slice.textPos.y" 
                 fill="white" 
@@ -61,7 +60,7 @@
        <div class="flex flex-col gap-1 justify-center w-full max-w-[50%]">
           <div v-for="(label, index) in labels" :key="index" class="flex items-center gap-2">
              <span class="w-[10px] h-[10px] rounded-full shrink-0" :style="{ backgroundColor: colors[index] }"></span>
-             <span class="text-[14px] font-normal transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? labelsAr[index] : label }} ({{ series[index] }}%)</span>
+             <span class="text-[14px] font-normal transition-colors duration-300" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ currentLang === 'ar' ? labelsAr[index] : label }} ({{ Math.round(series[index] * 10) / 10 }}%)</span>
           </div>
        </div>
     </div>
@@ -84,30 +83,23 @@ const labelsAr = computed(() => indirectExpense.value?.labelsAr ?? [])
 const series   = computed(() => indirectExpense.value?.series   ?? [])
 const colors   = computed(() => indirectExpense.value?.colors   ?? ['#004D41', '#00966C', '#FFB100', '#D29600', '#FF7E5B'])
 
-const animProgress = ref(0);
+const revealedCount = ref(0);
+const placeholderColor = computed(() => (isDark.value ? '#0A4A3D' : '#E5E7EB'));
 
 onMounted(() => {
-  let startTimestamp: number | null = null;
-  const duration = 1500;
-  const animate = (timestamp: number) => {
-    if (!startTimestamp) startTimestamp = timestamp;
-    const progress = timestamp - startTimestamp;
-    animProgress.value = Math.min(100, (progress / duration) * 100);
-    if (progress < duration) {
-      requestAnimationFrame(animate);
-    }
-  };
-  requestAnimationFrame(animate);
+  const STAGGER_MS = 180;
+  series.value.forEach((_: number, index: number) => {
+    setTimeout(() => { revealedCount.value = index + 1; }, STAGGER_MS * (index + 1));
+  });
 });
-// Different radii for irregular look
-const radii = [100, 96, 88, 80, 72];
+
+const PIE_RADIUS = 100;
 
 const computedSlices = computed(() => {
   let currentAngle = 90;
   return series.value.map((val: number, index: number) => {
-    const value = val * (animProgress.value / 100);
-    const angle = (value / 100) * 360;
-    const r = radii[index] || 100;
+    const angle = (val / 100) * 360;
+    const r = PIE_RADIUS;
     const startAngle = currentAngle;
     const endAngle = currentAngle + angle;
     const startRad = (startAngle * Math.PI) / 180;
@@ -121,7 +113,7 @@ const computedSlices = computed(() => {
     const tr = r * 0.65;
     const textPos = { x: tr * Math.cos(textRad), y: tr * Math.sin(textRad) };
     currentAngle += angle;
-    return { path, textPos, color: colors.value[index], value };
+    return { path, textPos, color: colors.value[index], value: Math.round(val * 10) / 10 };
   });
 });
 </script>

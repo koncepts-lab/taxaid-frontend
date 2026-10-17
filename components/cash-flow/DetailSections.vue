@@ -66,7 +66,7 @@
                         <template v-for="section in displayedSections" :key="section.key">
                             <tr :class="[isDark ? 'bg-[#1D5E54]' : 'bg-[#68E4C4]', 'transition-colors cursor-pointer select-none']"
                                 @click="handleSectionHeaderClick(section.key)">
-                                <td :colspan="months.length + 1" class="px-8 py-3 font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-black'">
+                                <td class="px-8 py-3 font-medium text-[13px]" :class="isDark ? 'text-white' : 'text-black'">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-2">
                                             <span>{{ currentLang === 'ar' ? section.title.ar : section.title.en }}</span>
@@ -86,6 +86,11 @@
                                             </svg>
                                         </button>
                                     </div>
+                                </td>
+                                <td v-for="(val, idx) in getSectionTotals(section)" :key="idx"
+                                    class="px-6 py-3 text-right rtl:text-left font-semibold text-[13px] tabular-nums"
+                                    :class="isDark ? 'text-white' : 'text-black'">
+                                    {{ val }}
                                 </td>
                             </tr>
 
@@ -199,6 +204,18 @@ const shouldShowRows = (key) => {
         return activeSectionKey.value === key
     }
     return expandedSections.value.includes(key)
+}
+
+const getSectionTotals = (section) => {
+    if (!section?.rows?.length || !months.value?.length) return months.value.map(() => '0')
+    return months.value.map((_, idx) => {
+        const sum = section.rows.reduce((acc, row) => {
+            const raw = String(row.values?.[idx] || '0').replace(/,/g, '').trim()
+            const num = parseFloat(raw)
+            return acc + (isNaN(num) ? 0 : num)
+        }, 0)
+        return Math.round(sum).toLocaleString('en-US')
+    })
 }
 </script>
 

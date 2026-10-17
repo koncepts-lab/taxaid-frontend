@@ -301,7 +301,7 @@ const chartOptions = computed(() => ({
       const curYearValue = Number(series[1][dataPointIndex] || 0)
       const preYearValue = Number(series[0][dataPointIndex] || 0)
       
-      const diff = preYearValue - curYearValue
+      const diff = curYearValue - preYearValue
       const variance = preYearValue !== 0 ? ((diff / preYearValue) * 100).toFixed(1) : '0.0'
       
       const curLabel = currentLang.value === 'ar' ? 'السنة الحالية:' : 'Current Year:'
