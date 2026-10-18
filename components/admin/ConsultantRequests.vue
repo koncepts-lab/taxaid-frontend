@@ -28,8 +28,8 @@
 
                 <div class="relative w-[220px]">
                     <button @click.stop="filterOpen = !filterOpen"
-                        class="w-full h-[48px] px-4 rounded-[10px] border border-[#04C18F] flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
-                        :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a]'">
+                        class="w-full h-[48px] px-4 rounded-[10px] border border-[#04C18F] flex items-center justify-between transition-colors cursor-pointer"
+                        :class="isDark ? 'bg-black/20 border-white/10 text-white hover:bg-white/5' : 'bg-white text-[#1a1a1a] hover:bg-gray-50'">
                         <span class="text-[14px] font-regular flex-1 text-center">{{ statusLabel }}</span>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="3" class="transition-transform opacity-40" :class="{ 'rotate-180': filterOpen }">
@@ -37,10 +37,13 @@
                         </svg>
                     </button>
                     <div v-if="filterOpen"
-                        class="absolute top-full left-0 right-0 mt-2 bg-white rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-gray-100 p-2 z-20 flex flex-col gap-1">
+                        class="absolute top-full left-0 right-0 mt-2 rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] border p-2 z-20 flex flex-col gap-1"
+                        :class="isDark ? 'bg-[#001410] border-white/10' : 'bg-white border-gray-100'">
                         <button v-for="opt in statusOptions" :key="opt.value" @click.stop="selectStatus(opt.value)"
                             class="text-left px-4 py-2.5 rounded-[10px] text-[15px] transition-colors cursor-pointer"
-                            :class="statusFilter === opt.value ? 'bg-[#E6FFF3] text-[#1a1a1a]' : 'text-[#1a1a1a] hover:bg-gray-50'">
+                            :class="statusFilter === opt.value
+                                ? (isDark ? 'bg-[#1a957e] text-white' : 'bg-[#E6FFF3] text-[#1a1a1a]')
+                                : (isDark ? 'text-white hover:bg-white/5' : 'text-[#1a1a1a] hover:bg-gray-50')">
                             {{ opt.label }}
                         </button>
                     </div>
@@ -107,13 +110,15 @@
                                 <span class="font-semibold text-gray-800">{{ activeReq?.client_name || '-' }}</span>
                                 (ID <span class="font-semibold text-gray-800">{{ activeReq?.client_id }}</span>)
                             </p>
-                            <div v-if="activeReq?.request_note" class="p-3 bg-[#F3F4F6] rounded-xl text-sm text-gray-700 mb-4">
-                                <span class="font-semibold text-gray-500 text-xs block mb-1">Consultant note</span>
+                            <div v-if="activeReq?.request_note" class="p-3 rounded-xl text-sm mb-4"
+                                :class="isDark ? 'bg-[#226257] text-white/90' : 'bg-[#F3F4F6] text-gray-700'">
+                                <span class="font-semibold text-xs block mb-1" :class="isDark ? 'text-white/60' : 'text-gray-500'">Consultant note</span>
                                 {{ activeReq.request_note }}
                             </div>
                             <textarea v-model="rejectNote" rows="2" maxlength="500"
                                 placeholder="Reject note (required to reject)..."
-                                class="w-full bg-[#F3F4F6] border-none rounded-xl px-4 py-3 text-sm text-black outline-none placeholder:text-[#717182] focus:bg-white focus:ring-1 focus:ring-[#00896F] mb-4"></textarea>
+                                class="w-full border-none rounded-xl px-4 py-3 text-sm outline-none placeholder:text-[#717182] focus:ring-1 focus:ring-[#00896F] mb-4"
+                                :class="isDark ? 'bg-[#226257] text-white placeholder:text-white/40' : 'bg-[#F3F4F6] text-black focus:bg-white'"></textarea>
                             <p v-if="modalError" class="text-sm text-[#B91C1C] mb-3 text-center">{{ modalError }}</p>
                             <div class="flex gap-3 justify-center">
                                 <button @click="closeReview" class="px-5 py-2 border border-gray-200 rounded-md text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
@@ -139,14 +144,16 @@
                             <p class="text-sm text-gray-500 text-center mb-4">Share these with the consultant. They can also see them on the project page.</p>
                             <div class="space-y-3 mb-6">
                                 <div class="flex items-center gap-2">
-                                    <div class="flex-1 bg-[#F3F4F6] rounded-xl px-4 py-3 text-sm text-black font-mono break-all">{{ approvedCreds.username }}</div>
+                                    <div class="flex-1 rounded-xl px-4 py-3 text-sm font-mono break-all"
+                                        :class="isDark ? 'bg-[#226257] text-white' : 'bg-[#F3F4F6] text-black'">{{ approvedCreds.username }}</div>
                                     <button @click="copyText(approvedCreds.username, 'user')"
                                         class="bg-white border border-[#00896F] text-[#00896F] hover:bg-[#E6FDF9] px-4 py-2.5 rounded-lg text-xs font-medium whitespace-nowrap">
                                         {{ copied === 'user' ? 'Copied!' : 'Copy' }}
                                     </button>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <div class="flex-1 bg-[#F3F4F6] rounded-xl px-4 py-3 text-sm text-black font-mono break-all">{{ approvedCreds.password }}</div>
+                                    <div class="flex-1 rounded-xl px-4 py-3 text-sm font-mono break-all"
+                                        :class="isDark ? 'bg-[#226257] text-white' : 'bg-[#F3F4F6] text-black'">{{ approvedCreds.password }}</div>
                                     <button @click="copyText(approvedCreds.password, 'pass')"
                                         class="bg-white border border-[#00896F] text-[#00896F] hover:bg-[#E6FDF9] px-4 py-2.5 rounded-lg text-xs font-medium whitespace-nowrap">
                                         {{ copied === 'pass' ? 'Copied!' : 'Copy' }}
@@ -253,8 +260,9 @@
                                 <span class="text-sm text-gray-500">{{ activeReq?.status === 'terminated' ? 'Terminated' : 'Expired' }}</span>
                                 <span class="text-sm text-gray-800">{{ formatTime(activeReq?.expired_at) }}</span>
                             </div>
-                            <div v-if="activeReq?.request_note" class="p-3 bg-[#F3F4F6] rounded-xl text-sm text-gray-700">
-                                <span class="font-semibold text-gray-500 text-xs block mb-1">Consultant note</span>
+                            <div v-if="activeReq?.request_note" class="p-3 rounded-xl text-sm"
+                                :class="isDark ? 'bg-[#226257] text-white/90' : 'bg-[#F3F4F6] text-gray-700'">
+                                <span class="font-semibold text-xs block mb-1" :class="isDark ? 'text-white/60' : 'text-gray-500'">Consultant note</span>
                                 {{ activeReq.request_note }}
                             </div>
                             <div v-if="activeReq?.reject_note" class="p-3 bg-[#FEE2E2] rounded-xl text-sm text-[#B91C1C]">
@@ -263,14 +271,16 @@
                             </div>
                             <template v-if="['approved', 'active'].includes(activeReq?.status)">
                                 <div class="flex items-center gap-2">
-                                    <div class="flex-1 bg-[#F3F4F6] rounded-xl px-4 py-3 text-sm text-black font-mono break-all">{{ activeReq?.username }}</div>
+                                    <div class="flex-1 rounded-xl px-4 py-3 text-sm font-mono break-all"
+                                        :class="isDark ? 'bg-[#226257] text-white' : 'bg-[#F3F4F6] text-black'">{{ activeReq?.username }}</div>
                                     <button @click="copyText(activeReq?.username, 'user')"
                                         class="bg-white border border-[#00896F] text-[#00896F] hover:bg-[#E6FDF9] px-4 py-2.5 rounded-lg text-xs font-medium whitespace-nowrap">
                                         {{ copied === 'user' ? 'Copied!' : 'Copy' }}
                                     </button>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <div class="flex-1 bg-[#F3F4F6] rounded-xl px-4 py-3 text-sm text-black font-mono break-all">{{ activeReq?.password }}</div>
+                                    <div class="flex-1 rounded-xl px-4 py-3 text-sm font-mono break-all"
+                                        :class="isDark ? 'bg-[#226257] text-white' : 'bg-[#F3F4F6] text-black'">{{ activeReq?.password }}</div>
                                     <button @click="copyText(activeReq?.password, 'pass')"
                                         class="bg-white border border-[#00896F] text-[#00896F] hover:bg-[#E6FDF9] px-4 py-2.5 rounded-lg text-xs font-medium whitespace-nowrap">
                                         {{ copied === 'pass' ? 'Copied!' : 'Copy' }}

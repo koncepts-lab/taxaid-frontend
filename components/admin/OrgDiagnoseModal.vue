@@ -7,7 +7,7 @@
             <h3 class="text-[18px] font-semibold" :class="isDark ? 'text-white' : 'text-[#013E32]'">Organization health check</h3>
             <p class="text-[13px] mt-0.5" :class="muted">
               {{ report?.organization?.name ?? orgName }}
-              <span class="ml-1 px-2 py-0.5 rounded-full text-[11px] font-medium" :class="chip">ID: {{ orgId }}</span>
+              <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap shrink-0" :class="chip">ID: {{ orgId }}</span>
             </p>
           </div>
           <div class="flex items-center gap-2">

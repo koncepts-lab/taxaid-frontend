@@ -53,7 +53,7 @@
                 @mouseenter="showAiTip($event, t)" @mouseleave="aiTip = null" @click="showAiTip($event, t)">Chat: {{ aiShort(t, 'chat') }} · Alerts: {{ aiShort(t, 'alerts') }}</span>
             </div>
             <div class="px-4">
-              <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-medium capitalize" :class="statusClass(t.status)">{{ t.status }}</span>
+              <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-medium capitalize whitespace-nowrap shrink-0" :class="statusClass(t.status)">{{ t.status }}</span>
             </div>
             <div class="px-4 flex justify-center gap-2">
               <button @click="$emit('open-tenant', t.id)"
@@ -166,9 +166,11 @@ const fixedRows = computed(() => (meta.value.total > 5 ? PAGE_SIZE : 5))
 const allTenantsSuspended = computed(() => tenants.value.length > 0 && tenants.value.every((t) => t.status === 'suspended'))
 
 const statusClass = (status) => {
-  if (status === 'live') return 'bg-[#D1FAE5] text-[#065F46]'
+  if (status === 'live' || status === 'active') return 'bg-[#D1FAE5] text-[#065F46]'
   if (status === 'suspended') return 'bg-amber-100 text-amber-700'
-  return 'bg-blue-50 text-blue-700'
+  if (status === 'demo') return 'bg-blue-50 text-blue-700'
+  if (status === 'implementation') return 'bg-[#FAF5FF] text-[#9333EA]'
+  return 'bg-gray-100 text-gray-700'
 }
 const connectorLabel = (status) => (!status ? 'Not set up' : status === 'active' ? 'Connected' : status)
 const connectorClass = (status) => {
@@ -258,6 +260,11 @@ onMounted(() => load(1))
   background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
   background-size: 400% 100%;
   animation: org-shimmer 1.4s ease infinite;
+}
+:global(.dark-mode-bg) .skeleton,
+:global(body.taxaid-dark) .skeleton {
+  background: linear-gradient(90deg, #21665a 25%, #2d8273 37%, #21665a 63%);
+  background-size: 400% 100%;
 }
 @keyframes org-shimmer {
   0% { background-position: 100% 50%; }

@@ -27,10 +27,22 @@
             <img src="/images/icons/back.svg" class="w-5 h-5 invert" alt="prev" />
           </button>
 
-          <!-- Date text -->
-          <div class="flex items-center gap-3 px-6 h-[50px] bg-white rounded-[10px] border border-[#E5E5E5]" :class="isDark ? 'bg-white/5 border-white/10' : ''">
-            <span class="text-[15px] font-normal text-[#1a1a1a] whitespace-nowrap" :class="isDark ? 'text-white' : ''">{{ formattedDate }}</span>
-            <img src="/images/icons/calendar.svg" class="w-5 h-5 opacity-60" :class="isDark ? 'invert' : 'brightness-0'" alt="calendar" />
+          <!-- Date text / Picker -->
+          <div class="relative">
+            <button @click.stop="showDatePicker = !showDatePicker; showConsDropdown = false"
+                    class="flex items-center gap-3 px-6 h-[50px] bg-white rounded-[10px] border border-[#E5E5E5] cursor-pointer hover:border-[#04C18F] transition-colors"
+                    :class="isDark ? 'bg-white/5 border-white/10 text-white' : ''">
+              <span class="text-[15px] font-normal text-[#1a1a1a] whitespace-nowrap" :class="isDark ? 'text-white' : ''">{{ formattedDate }}</span>
+              <img src="/images/icons/calendar.svg" class="w-5 h-5 opacity-60" :class="isDark ? 'invert' : 'brightness-0'" alt="calendar" />
+            </button>
+            <div v-if="showDatePicker" @click.stop
+                 class="absolute top-full left-0 mt-2 z-50 rounded-[14px] shadow-2xl border p-2"
+                 :class="isDark ? 'bg-[#001410] border-white/10' : 'bg-white border-gray-100'">
+              <ClientOnly>
+                <VDatePicker :model-value="calendarValue" :is-dark="isDark" color="teal" borderless
+                             @update:model-value="onDatePicked" />
+              </ClientOnly>
+            </div>
           </div>
 
           <!-- Next Button -->
@@ -47,17 +59,19 @@
 
         <!-- Consultant Selection -->
         <div class="relative ml-6">
-          <div @click="showConsDropdown = !showConsDropdown"
+          <div @click.stop="showConsDropdown = !showConsDropdown; showDatePicker = false"
                class="flex items-center gap-12 px-6 h-[50px] bg-white rounded-[10px] border border-[#E5E5E5] cursor-pointer group transition-all" :class="isDark ? 'bg-white/5 border-white/10' : 'bg-white'">
             <span class="text-[15px] font-normal text-[#6C768A]" :class="isDark ? 'text-white/70' : ''">{{ selectedConsultantName }}</span>
             <img src="/images/icons/down-select.svg" class="w-4 h-4 transition-all" :class="isDark ? 'invert opacity-60 group-hover:opacity-100' : 'brightness-0 opacity-40 group-hover:opacity-80'" alt="arrow" />
           </div>
-          <div v-if="showConsDropdown" class="absolute top-full left-0 mt-2 bg-white rounded-[12px] shadow-lg border border-gray-100 p-2 z-30 min-w-[220px] flex flex-col gap-1">
+          <div v-if="showConsDropdown" @click.stop class="absolute top-full left-0 mt-2 rounded-[12px] shadow-lg border p-2 z-30 min-w-[220px] flex flex-col gap-1"
+               :class="isDark ? 'bg-[#001410] border-white/10' : 'bg-white border-gray-100'">
             <button v-for="c in consultants" :key="c.id" @click="selectConsultant(c)"
-                    class="text-left px-4 py-2.5 rounded-[10px] text-[14px] text-[#1a1a1a] transition-colors cursor-pointer hover:bg-[#E6FFF3]">
+                    class="text-left px-4 py-2.5 rounded-[10px] text-[14px] transition-colors cursor-pointer"
+                    :class="isDark ? 'text-white hover:bg-white/10' : 'text-[#1a1a1a] hover:bg-[#E6FFF3]'">
               {{ c.name }}
             </button>
-            <p v-if="!consultants.length" class="px-4 py-2.5 text-[13px] text-[#6C768A]">No review consultants found for your department.</p>
+            <p v-if="!consultants.length" class="px-4 py-2.5 text-[13px]" :class="isDark ? 'text-white/50' : 'text-[#6C768A]'">No review consultants found for your department.</p>
           </div>
         </div>
       </div>
@@ -159,6 +173,9 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { DatePicker as VDatePicker } from 'v-calendar'
+import 'v-calendar/dist/style.css'
 import { useReviewManager } from '@/composables/admin/review/useReviewManager'
 
 const { isDark } = useTheme()
@@ -170,8 +187,28 @@ const selectedAdminId   = ref(null)
 const consultants       = ref([])
 const logData           = ref({ logs: [], total_formatted: '0h 0m', count_fixed: 0, count_review: 0, count_internal: 0 })
 const showConsDropdown  = ref(false)
+const showDatePicker    = ref(false)
+
+const calendarValue = computed(() => new Date(selectedDate.value + 'T00:00:00'))
+
+function onDatePicked(val) {
+  if (!val) return
+  const d = val instanceof Date ? val : new Date(val)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  selectedDate.value = `${year}-${month}-${day}`
+  showDatePicker.value = false
+  loadLog()
+}
+
+function handleOutsideClick() {
+  showDatePicker.value = false
+  showConsDropdown.value = false
+}
 
 onMounted(async () => {
+  window.addEventListener('click', handleOutsideClick)
   try {
     consultants.value = await rm.getConsultantList()
   } catch (e) {
@@ -182,6 +219,10 @@ onMounted(async () => {
     selectedAdminId.value = consultants.value[0].id
     await loadLog()
   }
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('click', handleOutsideClick)
 })
 
 async function loadLog() {

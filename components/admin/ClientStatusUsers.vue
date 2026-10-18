@@ -86,7 +86,7 @@
               </td>
               <td class="py-4 px-6">
                 <span :class="u.status === 'live' ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-amber-100 text-amber-700'"
-                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-medium capitalize">
+                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-medium capitalize whitespace-nowrap shrink-0">
                   <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
                   {{ u.status ?? '—' }}
                 </span>
@@ -260,6 +260,11 @@ onMounted(load)
   background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
   background-size: 400% 100%;
   animation: user-shimmer 1.4s ease infinite;
+}
+:global(.dark-mode-bg) .user-skeleton,
+:global(body.taxaid-dark) .user-skeleton {
+  background: linear-gradient(90deg, #21665a 25%, #2d8273 37%, #21665a 63%);
+  background-size: 400% 100%;
 }
 @keyframes user-shimmer {
   0% { background-position: 100% 50%; }

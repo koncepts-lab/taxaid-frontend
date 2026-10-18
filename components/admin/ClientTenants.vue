@@ -33,8 +33,8 @@
         <div>
           <h2 class="text-[18px] text-[#013E32]">Organization Settings</h2>
           <div v-if="orgLoading" class="h-[18px] w-48 rounded bg-gray-200 animate-pulse mt-1"></div>
-          <p v-else class="text-[13px] text-[#00000080]">{{ orgLabel }}
-            <span v-if="orgTenants[0]" class="ml-1 px-2 py-0.5 rounded-full text-[11px] font-medium" :class="isDark ? 'bg-white/10 text-white/80' : 'bg-gray-100 text-gray-500'">ID: {{ selectedOrgId }}</span></p>
+          <p v-else class="text-[13px] text-[#00000080] inline-flex items-center gap-1.5 flex-wrap">{{ orgLabel }}
+            <span v-if="orgTenants[0]" class="px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap inline-flex items-center shrink-0" :class="isDark ? 'bg-white/10 text-white/80' : 'bg-gray-100 text-gray-500'">ID: {{ selectedOrgId }}</span></p>
         </div>
         <div v-if="isSuperAdmin" class="ml-auto flex items-center gap-2">
           <button @click="showDiagnose = true" class="inline-flex items-center gap-1.5 bg-[#007C65] text-white px-4 py-2 rounded-md text-[13px] font-medium hover:bg-[#006A56] shadow-sm transition-colors">Diagnose</button>
@@ -137,7 +137,12 @@
               <tr v-else-if="!organizations.length"><td colspan="8" class="py-10 text-center text-gray-400">No organizations found.</td></tr>
               <template v-else>
               <tr v-for="o in organizations" :key="o.id" class="border-b border-gray-100 hover:bg-gray-50/50">
-                <td class="py-4 px-6 font-medium text-gray-800">{{ o.name }} <span class="ml-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[11px] font-medium">ID: {{ o.id }}</span></td>
+                <td class="py-4 px-6 font-medium text-gray-800 whitespace-nowrap">
+                  <div class="inline-flex items-center gap-1.5">
+                    <span>{{ o.name }}</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[11px] font-medium whitespace-nowrap shrink-0">ID: {{ o.id }}</span>
+                  </div>
+                </td>
                 <td class="py-4 px-6">
                   <p v-if="o.contact_name" class="text-gray-800">{{ o.contact_name }}</p>
                   <p class="text-gray-500 text-[12px]">{{ o.contact_email || '—' }}</p>
@@ -147,14 +152,15 @@
                 <td class="py-4 px-6 whitespace-nowrap">{{ o.created_at ? String(o.created_at).slice(0, 10) : '—' }}</td>
                 <td class="py-4 px-6 whitespace-nowrap">{{ o.plan_name || 'No plan' }}</td>
                 <td class="py-4 px-6">{{ o.tenants_count }}</td>
-                <td class="py-4 px-6">
+                <td class="py-4 px-6 whitespace-nowrap">
                   <div v-if="o.organization_status === 'suspended'" class="flex flex-wrap gap-1.5">
-                    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-medium bg-amber-100 text-amber-700">Organization suspended</span>
+                    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-medium bg-amber-100 text-amber-700 whitespace-nowrap">Organization suspended</span>
                   </div>
-                  <div v-else class="flex flex-wrap gap-1.5">
+                  <div v-else-if="o.status_counts && Object.keys(o.status_counts).length" class="flex flex-wrap gap-1.5">
                     <span v-for="(count, status) in o.status_counts" :key="status"
-                      :class="statusClass(status)" class="inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-medium capitalize">{{ count }} {{ status }}</span>
+                      :class="statusClass(status)" class="inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-medium capitalize whitespace-nowrap shrink-0">{{ count }} {{ status }}</span>
                   </div>
+                  <span v-else class="text-gray-400 text-sm">—</span>
                 </td>
                 <td class="py-4 px-6 text-right">
                   <button @click="openOrg(o.id)" class="inline-flex items-center gap-1.5 border px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors"
@@ -266,9 +272,11 @@ function closeTenant() { router.push({ query: withQuery({ subtab: 'organization'
 function closeOrg() { router.push({ query: withQuery({}, ['organization_id', 'tenant_id', 'subtab', 'aitab']) }) }
 
 const statusClass = (status) => {
-  if (status === 'live') return 'bg-[#D1FAE5] text-[#065F46]'
+  if (status === 'live' || status === 'active') return 'bg-[#D1FAE5] text-[#065F46]'
   if (status === 'suspended') return 'bg-amber-100 text-amber-700'
-  return 'bg-blue-50 text-blue-700'
+  if (status === 'demo') return 'bg-blue-50 text-blue-700'
+  if (status === 'implementation') return 'bg-[#FAF5FF] text-[#9333EA]'
+  return 'bg-gray-100 text-gray-700'
 }
 
 // ── Organization page data ─────────────────────────────────

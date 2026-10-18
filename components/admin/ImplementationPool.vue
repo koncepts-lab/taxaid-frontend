@@ -456,11 +456,14 @@
         <Teleport to="body">
             <Transition name="fade">
                 <div v-if="openDropdownId"
-                    class="absolute z-[9999] bg-white rounded-2xl shadow-[0_10px_50px_rgba(0,0,0,0.2)] border border-gray-100 p-2 overflow-hidden"
+                    class="absolute z-[9999] rounded-2xl shadow-[0_10px_50px_rgba(0,0,0,0.2)] border p-2 overflow-hidden transition-colors"
+                    :class="isDark ? 'bg-[#001410] border-white/10' : 'bg-white border-gray-100'"
                     :style="{ top: dropdownPos.top + 'px', left: dropdownPos.left + 'px', width: dropdownPos.width + 'px' }">
                     <div v-for="opt in dropdownItems" :key="opt" @click.stop="handleSelect(opt)"
-                        class="px-4 py-2.5 text-xs rounded-xl cursor-pointer transition-colors hover:bg-[#E6FDF9] hover:text-[#00896F]"
-                        :class="isOptionSelected(opt) ? 'bg-[#E6FDF9] text-[#00896F] font-bold' : 'text-gray-700'">
+                        class="px-4 py-2.5 text-xs rounded-xl cursor-pointer transition-colors"
+                        :class="isOptionSelected(opt)
+                            ? (isDark ? 'bg-[#1b5e50] text-white font-bold' : 'bg-[#E6FDF9] text-[#00896F] font-bold')
+                            : (isDark ? 'text-white/80 hover:bg-[#002921] hover:text-white' : 'text-gray-700 hover:bg-[#E6FDF9] hover:text-[#00896F]')">
                         {{ opt }}
                     </div>
                 </div>
@@ -470,7 +473,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 
 const props = defineProps({ isDark: Boolean, currentLang: { type: String, default: 'en' } })
 
@@ -482,11 +485,16 @@ const validSubTabs = ['new', 'ongoing', 'completed', 'all', 'registrations']
 const activeSubTab = ref(validSubTabs.includes(route.query.subtab) ? route.query.subtab : 'registrations')
 
 function setSubTab(id) {
+    openDropdownId.value = null
     activeSubTab.value = id
     router.replace({ query: { ...route.query, subtab: id } })
     if (id === 'registrations') { if (!registrationsLoaded.value) loadRegistrations() }
     else loadPool(1)
 }
+
+watch(activeSubTab, () => {
+    openDropdownId.value = null
+})
 const openDropdownId = ref(null)
 const dropdownPos = ref({ top: 0, left: 0, width: 0 })
 const activeClient = ref(null)
@@ -796,11 +804,22 @@ async function confirmLinkPartner() {
     }
 }
 
+let removeWindowClick = null
+
 onMounted(async () => {
-    window.addEventListener('click', (e) => { if (!e.target.closest('button')) openDropdownId.value = null })
+    const handleWindowClick = (e) => {
+        if (!e.target.closest('button')) openDropdownId.value = null
+    }
+    window.addEventListener('click', handleWindowClick)
+    removeWindowClick = () => window.removeEventListener('click', handleWindowClick)
     const tasks = [loadStatusCounts(), getConsultants(), loadRegistrations()]
     if (activeSubTab.value !== 'registrations') tasks.push(loadPool(1))
     const [, consultants] = await Promise.all(tasks)
     consultantList.value = consultants
+})
+
+onBeforeUnmount(() => {
+    openDropdownId.value = null
+    if (removeWindowClick) removeWindowClick()
 })
 </script>
