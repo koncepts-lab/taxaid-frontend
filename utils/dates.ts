@@ -81,10 +81,14 @@ export const formatDisplayDate = (value: Date | string | null | undefined, style
   if (!value) return ''
 
   let y: number, m: number, d: number
-  const match = typeof value === 'string' ? value.match(/^(\d{4})-(\d{2})-(\d{2})/) : null
+  const isoMatch   = typeof value === 'string' ? value.match(/^(\d{4})-(\d{2})-(\d{2})/) : null
+  const dmyMatch   = typeof value === 'string' ? value.match(/^(\d{1,2}) ([A-Za-z]{3}) (\d{4})$/) : null
+  const monthIndex = dmyMatch ? MONTHS.findIndex((mo) => mo.toLowerCase() === dmyMatch[2].toLowerCase()) : -1
 
-  if (match) {
-    y = +match[1]; m = +match[2]; d = +match[3]
+  if (isoMatch) {
+    y = +isoMatch[1]; m = +isoMatch[2]; d = +isoMatch[3]
+  } else if (dmyMatch && monthIndex !== -1) {
+    y = +dmyMatch[3]; m = monthIndex + 1; d = +dmyMatch[1]
   } else {
     const date = value instanceof Date ? value : new Date(value)
     if (Number.isNaN(date.getTime())) return String(value)

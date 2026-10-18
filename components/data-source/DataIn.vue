@@ -71,7 +71,7 @@
                                 {{ ret.label }}<span v-if="ret.fileName" class="font-normal opacity-70"> — {{ ret.fileName }}</span>
                             </p>
                             <p class="text-[11px] opacity-60 mt-0.5" :class="isDark ? 'text-white' : 'text-gray-500'">
-                                {{ ret.uploadDate }}
+                                {{ formatDisplayDate(ret.uploadDate) }}
                             </p>
                         </div>
                         <button v-if="ret.hasFile" @click.stop="previewVatCertificate(ret)"
@@ -98,8 +98,17 @@
                             {{ mappingStatusText(card) }}
                         </p>
                         <p class="text-[11px] opacity-60 mt-0.5" :class="isDark ? 'text-white' : 'text-gray-500'">{{
-                            card.uploadDate }}</p>
+                            formatDisplayDate(card.uploadDate) }}</p>
                     </div>
+                    <!-- TODO: gate to taxaid-only once client-side preview access is scoped -->
+                    <button v-if="PREVIEWABLE_CARD_IDS.includes(card.id)" @click.stop="openPreview(card)"
+                        :title="currentLang === 'ar' ? 'معاينة البيانات' : 'Preview data'"
+                        class="p-2 rounded-lg border border-[#008169]/30 text-[#008169] hover:bg-[#00B794]/10 transition-all shrink-0">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </button>
                 </div>
 
                 <div v-else-if="card.isUploaded" class="p-4 rounded-xl border mb-6 flex items-start gap-3 transition-colors"
@@ -115,8 +124,17 @@
                         <p class="text-sm font-medium truncate" :class="isDark ? 'text-white/90' : 'text-gray-800'">{{
                             card.fileName || (currentLang === 'ar' ? 'مستند تم تحميله' : 'Uploaded document') }}</p>
                         <p class="text-[11px] opacity-60 mt-0.5" :class="isDark ? 'text-white' : 'text-gray-500'">{{
-                            card.uploadDate }}</p>
+                            formatDisplayDate(card.uploadDate) }}</p>
                     </div>
+                    <!-- TODO: gate to taxaid-only once client-side preview access is scoped -->
+                    <button v-if="PREVIEWABLE_CARD_IDS.includes(card.id)" @click.stop="openPreview(card)"
+                        :title="currentLang === 'ar' ? 'معاينة البيانات' : 'Preview data'"
+                        class="p-2 rounded-lg border border-[#008169]/30 text-[#008169] hover:bg-[#00B794]/10 transition-all shrink-0">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </button>
                 </div>
 
                 <div v-else-if="!MAPPING_CARD_LABELS.includes(card.label)"
@@ -133,7 +151,12 @@
                     </p>
                 </div>
 
-                <div v-if="userType === 'client'"></div>
+                <div v-if="card.locked" class="p-4 rounded-xl border border-dashed text-center"
+                    :class="isDark ? 'border-white/15 text-white/40' : 'border-[#04C18F80] text-[#64748B]'">
+                    <p class="text-sm">{{ card.lockReason || (currentLang === 'ar' ? 'مقفل' : 'Locked') }}</p>
+                </div>
+
+                <div v-else-if="userType === 'client'"></div>
 
                 <div v-else class="space-y-3">
                     <div v-if="MAPPING_CARD_LABELS.includes(card.label) && !card.isUploaded" class="mt-4 flex flex-col justify-end h-full">
@@ -276,7 +299,7 @@
                         </p>
                         <p class="text-[11px] opacity-60 mt-0.5"
                             :class="isDark ? 'text-white' : 'text-gray-500'">
-                            {{ budgetStatuses[activeBudgetTab]?.uploadDate }}
+                            {{ formatDisplayDate(budgetStatuses[activeBudgetTab]?.uploadDate) }}
                         </p>
                     </div>
                 </div>
@@ -309,24 +332,35 @@
                     </button>
                 </div>
 
-                <!-- Upload tabs: Download Sample + Add (IC) -->
-                <div v-else-if="isTaxaid" class="space-y-3">
-                    <button @click="handleBudgetDownloadSample(activeBudgetTab)"
+                <!-- Upload tabs: Preview (when already uploaded) + Download Sample + Add (IC) -->
+                <div v-else class="space-y-3">
+                    <!-- TODO: gate to taxaid-only once client-side preview access is scoped -->
+                    <button v-if="budgetStatuses[activeBudgetTab]?.isUploaded" @click="openPreview(activeBudgetTabData, 'budget')"
                         class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-sm font-medium hover:bg-[#00B794]/5 transition-all">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
                         </svg>
-                        {{ currentLang === 'ar' ? 'تحميل نموذج' : 'Download Sample' }}
+                        {{ currentLang === 'ar' ? 'معاينة' : 'Preview' }}
                     </button>
-                    <button @click="openBudgetUploadInput(activeBudgetTab)"
-                        :disabled="budgetUploadingId === activeBudgetTab"
-                        class="w-full flex items-center justify-center gap-3 py-3 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 cursor-pointer">
-                        <span class="text-lg font-light">{{ budgetUploadingId === activeBudgetTab ? '…' : '+' }}</span>
-                        {{ budgetUploadingId === activeBudgetTab
-                            ? (currentLang === 'ar' ? 'جارٍ الرفع...' : 'Uploading...')
-                            : (currentLang === 'ar' ? 'إضافة (IC)' : 'Add (IC)') }}
-                    </button>
+                    <template v-if="isTaxaid">
+                        <button @click="handleBudgetDownloadSample(activeBudgetTab)"
+                            class="w-full flex items-center justify-center gap-3 py-3 border border-[#008169]/30 text-[#008169] rounded-xl text-sm font-medium hover:bg-[#00B794]/5 transition-all">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            {{ currentLang === 'ar' ? 'تحميل نموذج' : 'Download Sample' }}
+                        </button>
+                        <button @click="openBudgetUploadInput(activeBudgetTab)"
+                            :disabled="budgetUploadingId === activeBudgetTab"
+                            class="w-full flex items-center justify-center gap-3 py-3 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 cursor-pointer">
+                            <span class="text-lg font-light">{{ budgetUploadingId === activeBudgetTab ? '…' : '+' }}</span>
+                            {{ budgetUploadingId === activeBudgetTab
+                                ? (currentLang === 'ar' ? 'جارٍ الرفع...' : 'Uploading...')
+                                : (currentLang === 'ar' ? 'إضافة (IC)' : 'Add (IC)') }}
+                        </button>
+                    </template>
                 </div>
             </div>
 
@@ -370,15 +404,21 @@
         :meta="mappingModalMeta"
         :is-dark="isDark"
         :current-lang="currentLang"
+        :template-downloading="mappingTemplateDownloading"
+        :template-error="mappingTemplateError"
         @close="isMappingModalOpen = false"
         @update="handleMappingUpdate"
         @change-page="changeMappingPage"
         @change-per-page="changeMappingPerPage"
+        @open-upload="handleOpenMappingUpload"
+        @download-template="handleDownloadMappingTemplate"
+        @filter-mapped="handleFilterMapped"
     />
 
     <DataSourceUploadModal
         :is-open="isModalOpen"
         :current-lang="currentLang"
+        :title="activeUploadTarget?.id === 'cc_mapping' ? (currentLang === 'ar' ? 'رفع تخطيط مركز التكلفة' : 'Upload Cost Center Mapping') : undefined"
         @close="isModalOpen = false"
         @upload="handleModalUpload"
     />
@@ -392,6 +432,7 @@
         :changes="variancePreview?.changes ?? []"
         :warnings="variancePreview?.warnings ?? []"
         :confirming="props.confirming"
+        :extra-width="varianceTargetId === 'cc_mapping'"
         @close="handleVarianceClose"
         @confirm="handleVarianceConfirm"
     />
@@ -490,38 +531,106 @@
         </Transition>
     </Teleport>
 
+    <!-- Data-In / Budget saved-data preview modal -->
+    <Teleport to="body">
+        <Transition name="modal-fade">
+            <div v-if="previewOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                @click.self="closePreview">
+                <div class="rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl"
+                    :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
+                    <div class="flex items-center justify-between p-4 border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+                        <h3 class="text-base font-semibold truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
+                            {{ previewTitle }}
+                        </h3>
+                        <div class="flex items-center gap-4 shrink-0">
+                            <button @click="downloadPreviewFile" :disabled="previewDownloading"
+                                class="flex items-center gap-2 px-4 py-2 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 disabled:opacity-50">
+                                <svg v-if="previewDownloading" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin">
+                                    <circle cx="12" cy="12" r="9" stroke-opacity="0.3" />
+                                    <path d="M21 12a9 9 0 00-9-9" stroke-linecap="round" />
+                                </svg>
+                                <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                {{ currentLang === 'ar' ? 'تنزيل Excel' : 'Download Excel' }}
+                            </button>
+                            <button @click="closePreview" class="transition-colors" :class="isDark ? 'text-white/70 hover:text-white' : 'text-gray-900 hover:text-gray-600'">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 6L6 18M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 min-h-0 overflow-auto">
+                        <div v-if="dataPreviewLoading" class="p-4 space-y-3 animate-pulse">
+                            <div class="h-8 rounded-lg w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div>
+                            <div v-for="i in 8" :key="'preview-skeleton-'+i" class="h-6 rounded-lg w-full" :class="isDark ? 'bg-white/5' : 'bg-gray-50'"></div>
+                        </div>
+                        <div v-else-if="!previewRows.length" class="h-full flex items-center justify-center text-sm" :class="isDark ? 'text-white/50' : 'text-gray-400'">
+                            {{ currentLang === 'ar' ? 'لا توجد بيانات محفوظة' : 'No saved data' }}
+                        </div>
+                        <table v-else class="w-full text-sm">
+                            <thead class="sticky top-0 z-20">
+                                <tr class="bg-[#008169] text-white">
+                                    <th v-for="col in previewColumns" :key="col"
+                                        class="text-left px-4 py-2.5 text-sm font-medium whitespace-nowrap">
+                                        {{ col }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(row, idx) in previewRows" :key="idx" class="border-b"
+                                    :class="isDark ? 'border-white/5 hover:bg-white/5' : 'border-gray-50 hover:bg-gray-50'">
+                                    <td v-for="(cell, cidx) in row" :key="cidx" class="px-4 py-2.5 whitespace-nowrap"
+                                        :class="isDark ? 'text-white/90' : 'text-gray-800'">
+                                        {{ formatPreviewCell(previewColumns[cidx], cell) }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <CommonPaginationBar v-if="previewRows.length" :meta="previewMeta" :loading="dataPreviewLoading" :dark="isDark"
+                        @page-change="changePreviewPage" @per-page-change="changePreviewPerPage" />
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
+
     <!-- BS / P&L detailed report modal -->
     <Teleport to="body">
         <Transition name="modal-fade">
-            <div v-if="viewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-                <div class="absolute inset-0 bg-black/40" @click="viewModalOpen = false" />
-                <div class="relative bg-white rounded-2xl shadow-xl w-full max-h-[78vh] flex flex-col overflow-hidden transition-all duration-300"
-                    :class="showMonthly ? 'max-w-[90vw]' : 'max-w-lg'">
+            <div v-if="viewModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="viewModalOpen = false" />
+                <div class="relative rounded-2xl shadow-xl w-full max-h-[78vh] flex flex-col overflow-hidden transition-all duration-300"
+                    :class="[isDark ? 'bg-[#002e26]' : 'bg-white', showMonthly ? 'max-w-[90vw]' : 'max-w-lg']">
                     <!-- Header -->
-                    <div class="flex items-start justify-between p-6 pb-4 border-b border-gray-100">
+                    <div class="flex items-start justify-between p-6 pb-4 border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'">
                         <div>
-                            <h2 class="text-lg font-semibold text-gray-900">
+                            <h2 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
                                 {{ viewModalType === 'bs' ? (currentLang === 'ar' ? 'الميزانية العمومية' : 'Balance Sheet') : (currentLang === 'ar' ? 'الأرباح والخسائر' : 'Profit & Loss') }}
                             </h2>
-                            <p class="text-sm text-gray-500 mt-1">
+                            <p class="text-sm mt-1" :class="isDark ? 'text-white/60' : 'text-gray-500'">
                                 {{ viewModalType === 'bs'
                                     ? (currentLang === 'ar' ? 'ملخص المركز المالي - الأصول والالتزامات وحقوق الملكية' : 'Financial position summary — assets, liabilities and equity as per uploaded data')
                                     : (currentLang === 'ar' ? 'الدخل والمصروفات وصافي الربحية من بيانات الميزانية' : 'Income, expenses and net profitability overview from uploaded budget data') }}
                             </p>
                         </div>
                         <div class="flex items-center gap-2 ml-auto pl-4 shrink-0">
-                            <span class="text-xs text-gray-500 whitespace-nowrap">
+                            <span class="text-xs whitespace-nowrap" :class="isDark ? 'text-white/60' : 'text-gray-500'">
                                 {{ currentLang === 'ar' ? 'عرض شهري' : 'Monthly view' }}
                             </span>
                             <button type="button" role="switch" :aria-checked="showMonthly"
                                 @click="showMonthly = !showMonthly"
                                 class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-300 focus:outline-none"
-                                :class="showMonthly ? 'bg-[#008169]' : 'bg-gray-300'">
+                                :class="showMonthly ? 'bg-[#008169]' : (isDark ? 'bg-white/20' : 'bg-gray-300')">
                                 <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300"
                                     :class="showMonthly ? 'translate-x-6' : 'translate-x-1'"></span>
                             </button>
                         </div>
-                        <button @click="viewModalOpen = false" class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors ml-4">
+                        <button @click="viewModalOpen = false" class="p-1 rounded-lg transition-colors ml-4"
+                            :class="isDark ? 'text-white/50 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                             </svg>
@@ -547,14 +656,14 @@
                             <tbody>
                                 <template v-for="(row, idx) in viewModalRows" :key="idx">
                                     <!-- Section header row (is_gap acts as section divider with label) -->
-                                    <tr v-if="row.is_section" class="bg-[#CCFFF4]">
+                                    <tr v-if="row.is_section" :class="isDark ? 'bg-[#00B794]/20' : 'bg-[#CCFFF4]'">
                                         <td :colspan="showMonthly ? viewModalHeaders.length + 2 : 2"
-                                            class="px-6 py-2.5 font-medium text-[#013E32]">{{ row.particulars }}</td>
+                                            class="px-6 py-2.5 font-medium" :class="isDark ? 'text-white' : 'text-[#013E32]'">{{ row.particulars }}</td>
                                     </tr>
                                     <!-- Normal or summary row -->
-                                    <tr v-else :class="[row.is_summary ? 'font-semibold text-[#013E32]' : 'text-gray-700 hover:bg-gray-50', hasViewSubgroups(row) ? 'cursor-pointer' : '']"
+                                    <tr v-else :class="[row.is_summary ? 'font-semibold' : '', row.is_summary ? (isDark ? 'text-white' : 'text-[#013E32]') : (isDark ? 'text-white/80 hover:bg-white/5' : 'text-gray-700 hover:bg-gray-50'), hasViewSubgroups(row) ? 'cursor-pointer' : '']"
                                         @click="hasViewSubgroups(row) && toggleViewRow(row.particulars)">
-                                        <td class="px-6 py-3 border-b border-gray-50 whitespace-nowrap">
+                                        <td class="px-6 py-3 border-b whitespace-nowrap" :class="isDark ? 'border-white/5' : 'border-gray-50'">
                                             <span v-if="hasViewSubgroups(row)" class="inline-flex items-center gap-1.5">
                                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
                                                     class="transition-transform shrink-0" :class="expandedViewRows.has(row.particulars) ? 'rotate-90' : ''">
@@ -566,18 +675,18 @@
                                         </td>
                                         <template v-if="showMonthly">
                                             <td v-for="(h, i) in viewModalHeaders" :key="i"
-                                                class="px-4 py-3 border-b border-gray-50 text-right tabular-nums whitespace-nowrap">
+                                                class="px-4 py-3 border-b text-right tabular-nums whitespace-nowrap" :class="isDark ? 'border-white/5' : 'border-gray-50'">
                                                 {{ (row.months[i] ?? 0).toLocaleString() }}
                                             </td>
                                         </template>
-                                        <td class="px-6 py-3 border-b border-gray-50 text-right tabular-nums whitespace-nowrap">
+                                        <td class="px-6 py-3 border-b text-right tabular-nums whitespace-nowrap" :class="isDark ? 'border-white/5' : 'border-gray-50'">
                                             {{ row.total !== null ? formatStandardNumber(row.total) : '—' }}
                                         </td>
                                     </tr>
 
                                     <tr v-for="(sub, sIndex) in (hasViewSubgroups(row) && expandedViewRows.has(row.particulars) ? row.subgroups : [])"
-                                        :key="`${idx}-sub-${sIndex}`" class="bg-gray-50/60">
-                                        <td class="px-6 py-2 border-b border-gray-50 whitespace-nowrap text-gray-500 text-xs">
+                                        :key="`${idx}-sub-${sIndex}`" :class="isDark ? 'bg-white/5' : 'bg-gray-50/60'">
+                                        <td class="px-6 py-2 border-b whitespace-nowrap text-xs" :class="isDark ? 'border-white/5 text-white/50' : 'border-gray-50 text-gray-500'">
                                             <span class="pl-5 inline-flex items-center gap-1.5">
                                                 {{ sub.subgroup }}
                                                 <span v-if="sub.is_unmapped" title="Not found in this tenant's TB mapping"
@@ -586,18 +695,18 @@
                                         </td>
                                         <template v-if="showMonthly">
                                             <td v-for="(h, i) in viewModalHeaders" :key="i"
-                                                class="px-4 py-2 border-b border-gray-50 text-right tabular-nums whitespace-nowrap text-gray-500 text-xs">
+                                                class="px-4 py-2 border-b text-right tabular-nums whitespace-nowrap text-xs" :class="isDark ? 'border-white/5 text-white/50' : 'border-gray-50 text-gray-500'">
                                                 {{ (sub.months[i] ?? 0).toLocaleString() }}
                                             </td>
                                         </template>
-                                        <td class="px-6 py-2 border-b border-gray-50 text-right tabular-nums whitespace-nowrap text-gray-500 text-xs">
+                                        <td class="px-6 py-2 border-b text-right tabular-nums whitespace-nowrap text-xs" :class="isDark ? 'border-white/5 text-white/50' : 'border-gray-50 text-gray-500'">
                                             {{ formatStandardNumber(sub.total) }}
                                         </td>
                                     </tr>
                                 </template>
                             </tbody>
                         </table>
-                        <div v-if="!viewModalRows.length" class="py-12 text-center text-gray-400 text-sm">
+                        <div v-if="!viewModalRows.length" class="py-12 text-center text-sm" :class="isDark ? 'text-white/40' : 'text-gray-400'">
                             {{ currentLang === 'ar' ? 'لا توجد بيانات. قم بالمزامنة أولاً.' : 'No data available. Sync from Schedules first.' }}
                         </div>
                     </div>
@@ -650,7 +759,59 @@ const {
     fetchCostCenterMappingLedgers, fetchCostCenterOptions, saveCostCenterMappings,
     fetchPrepaidLedgers, savePrepaidAdjustments,
     fetchOpeningBalanceLedgers, saveOpeningBalances,
+    dataPreviewLoading, fetchDataInPreview, fetchBudgetPreview, downloadDataInPreview, downloadBudgetPreview,
 } = useDataIn()
+
+const PREVIEWABLE_CARD_IDS = ['ar', 'ap', 'pdcin', 'pdcout', 'forecast', 'cc_master', 'cc_budget', 'prepaid', 'opening_bal']
+
+const previewOpen = ref(false)
+const previewTitle = ref('')
+const previewColumns = ref([])
+const previewRows = ref([])
+const previewMeta = ref({ current_page: 1, last_page: 1, total: 0, per_page: 20 })
+const previewTarget = ref(null) // { kind: 'data-in' | 'budget', id }
+
+const loadPreviewPage = async (page = 1) => {
+    if (!previewTarget.value) return
+    const { kind, id } = previewTarget.value
+    const result = kind === 'budget'
+        ? await fetchBudgetPreview(id, new Date().getFullYear(), page, previewMeta.value.per_page)
+        : await fetchDataInPreview(id, page, previewMeta.value.per_page)
+    previewColumns.value = result.columns
+    previewRows.value = result.data
+    previewMeta.value = result.meta
+}
+
+const openPreview = async (card, kind = 'data-in') => {
+    previewTarget.value = { kind, id: card.id }
+    previewTitle.value = props.currentLang === 'ar' ? card.labelAr : card.label
+    previewMeta.value = { current_page: 1, last_page: 1, total: 0, per_page: 20 }
+    previewOpen.value = true
+    await loadPreviewPage(1)
+}
+
+const closePreview = () => {
+    previewOpen.value = false
+    previewTarget.value = null
+}
+
+const changePreviewPage = (page) => loadPreviewPage(page)
+const changePreviewPerPage = (perPage) => {
+    previewMeta.value = { ...previewMeta.value, per_page: perPage }
+    loadPreviewPage(1)
+}
+
+const previewDownloading = ref(false)
+const downloadPreviewFile = async () => {
+    if (!previewTarget.value || previewDownloading.value) return
+    previewDownloading.value = true
+    try {
+        const { kind, id } = previewTarget.value
+        kind === 'budget' ? await downloadBudgetPreview(id, new Date().getFullYear()) : await downloadDataInPreview(id)
+    } finally {
+        previewDownloading.value = false
+    }
+}
 
 // ── Existing upload card logic ────────────────────────────────────────────────
 
@@ -718,18 +879,46 @@ const toModalRow = (r) => ({
     mainGroup: r.main_group ?? '',
     subGroup: r.subgroup ?? r.sub_group ?? '',
     ledger: r.ledger_name ?? '',
+    costCenter: r.cost_center ?? '',
     valueInBudget: r.value_in_budget ?? '',
     months: Object.fromEntries(MONTH_KEYS.map(m => [m, r[m] ?? ''])),
 })
 
+const handleOpenMappingUpload = () => {
+    activeUploadTarget.value = { type: 'datain', id: 'cc_mapping' }
+    isModalOpen.value = true
+}
+
+const mappingTemplateDownloading = ref(false)
+const mappingTemplateError = ref('')
+
+const handleDownloadMappingTemplate = async (key) => {
+    mappingTemplateError.value = ''
+    mappingTemplateDownloading.value = true
+    try {
+        await downloadMappingTemplate(key === 'filled')
+    } catch (err) {
+        mappingTemplateError.value = err?.message ?? 'Failed to download template.'
+    } finally {
+        mappingTemplateDownloading.value = false
+    }
+}
+
 // Shared paginated fetch for all 3 mapping cards — keeps rows/meta in sync
+const mappingModalMappedFilter = ref(undefined)
+
+const handleFilterMapped = (mapped) => {
+    mappingModalMappedFilter.value = mapped
+    loadMappingPage(1)
+}
+
 const loadMappingPage = async (page = 1) => {
     mappingModalLoadingRows.value = true
     mappingModalError.value = ''
     mappingModalSuccess.value = ''
     try {
         if (mappingModalCardId.value === 'cc_mapping') {
-            const { data, meta } = await fetchCostCenterMappingLedgers(page, mappingModalMeta.value.per_page)
+            const { data, meta } = await fetchCostCenterMappingLedgers(page, mappingModalMeta.value.per_page, mappingModalMappedFilter.value)
             mappingModalConfig.value.data = data.map(toModalRow)
             mappingModalMeta.value = meta
         } else if (mappingModalCardId.value === 'prepaid') {
@@ -766,6 +955,7 @@ const openUploadModal = async (card) => {
         mappingModalCostCenterOptions.value = []
         mappingModalMeta.value = { current_page: 1, last_page: 1, total: 0, per_page: 20 }
         mappingModalConfig.value = { title: card.label, subtitle: '', alertMessage: '', data: [] }
+        mappingModalLoadingRows.value = true
 
         if (card.id === 'cc_mapping') {
             mappingModalType.value = 'cost_center'
@@ -837,6 +1027,21 @@ const fmtAed = (v) => v === null || v === undefined
     ? '—'
     : Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
+const PREVIEW_DATE_COL = /date/i
+const PREVIEW_NON_AMOUNT_NUMERIC_COL = /^sl no$|credit days|cheque number|possibility/i
+
+const formatPreviewCell = (col, cell) => {
+    if (cell === null || cell === undefined || cell === '') return '—'
+    if (PREVIEW_DATE_COL.test(col ?? '')) {
+        const formatted = formatDisplayDate(cell)
+        return formatted || cell
+    }
+    if (!PREVIEW_NON_AMOUNT_NUMERIC_COL.test(col ?? '') && cell !== true && cell !== false && !isNaN(Number(cell)) && String(cell).trim() !== '') {
+        return formatStandardNumber(cell)
+    }
+    return cell
+}
+
 // VAT certificate inline preview
 const vatPreviewOpen = ref(false)
 const vatPreviewLoading = ref(false)
@@ -903,6 +1108,7 @@ const varianceModalTitle = computed(() => {
     if (varianceTargetId.value === 'ap') return 'Account Payable Variance'
     if (varianceTargetId.value === 'cc_master') return 'Cost Center Master Variance'
     if (varianceTargetId.value === 'cc_budget') return 'Cost Center Budget Variance'
+    if (varianceTargetId.value === 'cc_mapping') return 'Cost Center Mapping Variance'
     if (varianceTargetId.value === 'pdcin') return 'PDC In Variance'
     if (varianceTargetId.value === 'pdcout') return 'PDC Out Variance'
     if (varianceTargetId.value === 'forecast') return 'Sales Forecast Variance'
@@ -949,7 +1155,10 @@ const handleModalUpload = async (file) => {
 const handleVarianceConfirm = async () => {
     if (!variancePreview.value || !varianceTargetId.value) return
     try {
-        await props.confirmUpload(varianceTargetId.value, variancePreview.value.temp_path)
+        const excludedLedgers = varianceTargetId.value === 'cc_mapping'
+            ? (variancePreview.value.changes ?? []).filter(r => !r.locked && !r.checked).map(r => r.ledger_name)
+            : undefined
+        await props.confirmUpload(varianceTargetId.value, variancePreview.value.temp_path, excludedLedgers)
         if (isBudgetTabId(varianceTargetId.value)) {
             budgetStatuses.value[varianceTargetId.value] = {
                 isUploaded: true,
@@ -958,6 +1167,9 @@ const handleVarianceConfirm = async () => {
             }
         } else {
             emit('uploaded', varianceTargetId.value)
+        }
+        if (varianceTargetId.value === 'cc_mapping' && mappingModalCardId.value === 'cc_mapping') {
+            await loadMappingPage(mappingModalMeta.value.current_page)
         }
         isVarianceModalOpen.value = false
         variancePreview.value = null
@@ -1013,6 +1225,7 @@ const {
     fetchBudgetStatuses,
     uploadVat,
     fetchVatFileUrl,
+    downloadMappingTemplate,
 } = useDataIn()
 
 onMounted(() => fetchBudgetStatuses())

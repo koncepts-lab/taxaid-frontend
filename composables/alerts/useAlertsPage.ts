@@ -56,29 +56,48 @@ export const useAlertsPage = () => {
     }))
   )
 
-  const buildParams = (page = 1) => {
+  const CACHE_TTL_MS = 60_000
+  const tabsCache     = ref<Record<string, Record<number, { data: any[]; meta: any }>>>({})
+  const cacheFetchedAt = ref(0)
+
+  const isCacheFresh = () => Date.now() - cacheFetchedAt.value < CACHE_TTL_MS
+
+  const applyCachedPage = (status: string, page: number): boolean => {
+    const entry = tabsCache.value[status]?.[page]
+    if (!entry) return false
+    alerts.value = entry.data
+    meta.value   = { ...meta.value, ...entry.meta, counts: meta.value.counts }
+    return true
+  }
+
+  const buildBaseParams = () => {
     const params: Record<string, any> = {
-      status:   activeStatus.value,
       period:   currentPeriod.value,
-      page,
       per_page: 10,
-      // Backend returns a single-language payload: lang=ar or en (default en)
       lang:     currentLang.value === 'ar' ? 'ar' : 'en',
     }
     if (currentPeriod.value !== 'month') params.date = currentDate.value
-    return new URLSearchParams(params).toString()
+    return params
   }
 
-  const fetchAlerts = async (date?: string | null, period?: string | null, page: number = 1) => {
-    if (date)   currentDate.value   = date
-    if (period) currentPeriod.value = period
+  const loadBundle = async () => {
     loading.value = true
     error.value   = null
-    alerts.value  = []
     try {
-      const result = await useApi(`/alerts?${buildParams(page)}`) as any
-      alerts.value = result?.data ?? []
-      if (result?.meta) meta.value = result.meta
+      const params = { ...buildBaseParams(), status: 'pending,resolved,ignored,all' }
+      const result = await useApi(`/alerts?${new URLSearchParams(params).toString()}`) as any
+
+      const fresh: Record<string, Record<number, { data: any[]; meta: any }>> = {}
+      for (const [status, tab] of Object.entries<any>(result?.tabs ?? {})) {
+        fresh[status] = { 1: { data: tab.data ?? [], meta: tab.meta } }
+      }
+      tabsCache.value    = fresh
+      cacheFetchedAt.value = Date.now()
+      meta.value.counts  = result?.counts ?? meta.value.counts
+
+      if (!applyCachedPage(activeStatus.value, 1)) {
+        alerts.value = []
+      }
     } catch (e: any) {
       error.value = e?.data?.message ?? 'Failed to load alerts.'
     } finally {
@@ -86,13 +105,54 @@ export const useAlertsPage = () => {
     }
   }
 
+  const loadPage = async (status: string, page: number) => {
+    loading.value = true
+    error.value   = null
+    try {
+      const params = { ...buildBaseParams(), status, page }
+      const result = await useApi(`/alerts?${new URLSearchParams(params).toString()}`) as any
+
+      tabsCache.value[status] = { ...(tabsCache.value[status] || {}), [page]: { data: result?.data ?? [], meta: result?.meta } }
+      if (result?.meta?.counts) meta.value.counts = result.meta.counts
+      applyCachedPage(status, page)
+    } catch (e: any) {
+      error.value = e?.data?.message ?? 'Failed to load alerts.'
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const fetchAlerts = async (date?: string | null, period?: string | null, page: number = 1) => {
+    const dateOrPeriodChanged = !!date || !!period
+    if (date)   currentDate.value   = date
+    if (period) currentPeriod.value = period
+
+    if (dateOrPeriodChanged) {
+      await loadBundle()
+      return
+    }
+
+    if (page > 1) {
+      if (applyCachedPage(activeStatus.value, page) && isCacheFresh()) return
+      await loadPage(activeStatus.value, page)
+      return
+    }
+
+    if (applyCachedPage(activeStatus.value, 1) && isCacheFresh()) return
+    await loadBundle()
+  }
+
   const loadMore = async () => {
     if (meta.value.current_page >= meta.value.last_page) return
+    const nextPage = meta.value.current_page + 1
     loadingMore.value = true
     try {
-      const result = await useApi(`/alerts?${buildParams(meta.value.current_page + 1)}`) as any
+      if (applyCachedPage(activeStatus.value, nextPage) && isCacheFresh()) return
+      const params = { ...buildBaseParams(), status: activeStatus.value, page: nextPage }
+      const result  = await useApi(`/alerts?${new URLSearchParams(params).toString()}`) as any
+      tabsCache.value[activeStatus.value] = { ...(tabsCache.value[activeStatus.value] || {}), [nextPage]: { data: result?.data ?? [], meta: result?.meta } }
       alerts.value = [...alerts.value, ...(result?.data ?? [])]
-      if (result?.meta) meta.value = result.meta
+      if (result?.meta) meta.value = { ...meta.value, ...result.meta }
     } finally {
       loadingMore.value = false
     }
@@ -108,13 +168,14 @@ export const useAlertsPage = () => {
       method: 'POST',
       body:   { type, action_by, action_notes },
     })
-    await fetchAlerts()
+    tabsCache.value = {}
+    await loadBundle()
   }
 
   watch(activeStatus, () => fetchAlerts())
   // Rows are server-localized, so a language switch needs a refetch
-  watch(currentLang, () => fetchAlerts())
-  onMounted(() => fetchAlerts())
+  watch(currentLang, () => loadBundle())
+  onMounted(() => loadBundle())
 
   return {
     alerts, loading, loadingMore, error, meta,

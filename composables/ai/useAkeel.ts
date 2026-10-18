@@ -279,8 +279,8 @@ export function useAkeel() {
    *  dataLinkKey: guarantees that specific data-link's real result reaches the model as extra
    *  context (e.g. a One-Click Summary card) — additive only, never replaces normal domain-scoped
    *  tool-choice. message can be omitted when dataLinkKey is set (backend synthesizes it). */
-  async function sendMessage(message: string, domains?: string[], dataLinkKey?: string, hideUserMessage = false) {
-    if (!message?.trim() && !dataLinkKey) return
+  async function sendMessage(message: string, domains?: string[], dataLinkKey?: string, hideUserMessage = false, alertId?: string) {
+    if (!message?.trim() && !dataLinkKey && !alertId) return
     if (sending.value) return
 
     sending.value = true
@@ -309,6 +309,7 @@ export function useAkeel() {
           ...(domains?.length ? { domains } : {}),
           ...(uploadIds.length ? { upload_ids: uploadIds } : {}),
           ...(dataLinkKey ? { data_link_key: dataLinkKey } : {}),
+          ...(alertId ? { alert_id: alertId } : {}),
         },
       })
 

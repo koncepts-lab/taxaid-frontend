@@ -7,15 +7,18 @@
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         </button>
         <div>
-          <h2 class="text-[18px] text-[#013E32]">Tenant Configuration</h2>
-          <div v-if="orgLoading" class="h-[18px] w-56 rounded bg-gray-200 animate-pulse mt-1"></div>
-          <p v-else class="text-[13px] text-[#00000080]">{{ tenantLabel }}</p>
+          <h2 class="text-[18px]" :class="isDark ? 'text-white' : 'text-[#013E32]'">Tenant Configuration</h2>
+          <div v-if="orgLoading" class="h-[18px] w-56 rounded animate-pulse mt-1" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+          <p v-else class="text-[13px]" :class="isDark ? 'text-white/60' : 'text-[#00000080]'">{{ tenantLabel }}</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2 text-sm bg-white p-1.5 rounded-full border border-gray-100 shadow-sm w-fit overflow-x-auto mb-2">
+      <div class="flex items-center gap-2 text-sm p-1.5 rounded-full border shadow-sm w-fit overflow-x-auto mb-2"
+        :class="isDark ? 'bg-[#002E26] border-teal-950/40' : 'bg-white border-gray-100'">
         <button v-for="st in tenantSubtabs" :key="st.key" @click="setSubtab(st.key)"
-          :class="tenantSubtab === st.key ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm' : 'text-gray-700 font-medium px-6 hover:bg-gray-50 hover:text-gray-900'"
+          :class="tenantSubtab === st.key
+            ? 'bg-[#7DF5D4] text-[#006A56] font-semibold px-8 shadow-sm'
+            : (isDark ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900') + ' font-medium px-6'"
           class="py-2 rounded-full transition-colors flex text-center whitespace-nowrap">{{ st.label }}</button>
       </div>
 

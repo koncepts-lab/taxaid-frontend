@@ -306,41 +306,48 @@
     </div>
 
     <!-- Update/Add Payment Method Modal -->
-    <div v-if="isUpdatePaymentModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden">
-        <div class="p-6">
-          <div class="flex justify-between items-start mb-6">
-            <div class="flex gap-4">
-              <div class="w-12 h-12 bg-[#DCFCE7] rounded-xl flex items-center justify-center text-[#00896F]">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg>
+    <Teleport to="body">
+      <div v-if="isUpdatePaymentModalOpen" class="fixed inset-0 z-[20000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" @click.self="closePaymentModal">
+        <div class="rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden transition-colors"
+          :class="isDark ? 'bg-[#002e26] border border-white/10 text-white' : 'bg-white text-gray-900'">
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-6">
+              <div class="flex gap-4">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center"
+                  :class="isDark ? 'bg-teal-950 text-[#00B68D]' : 'bg-[#DCFCE7] text-[#00896F]'">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg>
+                </div>
+                <div>
+                  <h3 class="text-xl font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">Add Payment Method</h3>
+                  <p class="text-sm mt-1" :class="isDark ? 'text-white/60' : 'text-gray-500'">Add a new card to your account</p>
+                </div>
               </div>
-              <div>
-                <h3 class="text-xl font-medium text-gray-900">Add Payment Method</h3>
-                <p class="text-sm text-gray-500 mt-1">Add a new card to your account</p>
-              </div>
+              <button @click="closePaymentModal" :class="isDark ? 'text-white/60 hover:text-white' : 'text-gray-400 hover:text-gray-600'">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+              </button>
             </div>
-            <button @click="closePaymentModal" class="text-gray-400 hover:text-gray-600">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+
+            <div id="update-card-element" class="border rounded-lg px-4 py-3.5"
+              :class="isDark ? 'bg-white/5 border-white/10' : 'bg-white border-[#04C18F80]'"></div>
+            <p v-if="cardError" class="text-sm text-red-500 mt-2">{{ cardError }}</p>
+
+            <div class="border rounded-lg p-4 flex gap-3 mt-4"
+              :class="isDark ? 'bg-teal-950/40 border-teal-500/20 text-teal-200/90' : 'bg-[#EBFAF6] border-[#04C18F80] text-[#00896F]'">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 shrink-0 mt-0.5 text-[#04C18F]"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+              <p class="text-sm">Your payment information is encrypted and processed securely by Stripe.</p>
+            </div>
+          </div>
+
+          <div class="px-6 py-5 flex gap-4" :class="isDark ? 'border-t border-white/5' : ''">
+            <button @click="closePaymentModal" class="flex-1 py-2.5 border text-sm font-medium rounded-lg transition-colors"
+              :class="isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'">Cancel</button>
+            <button @click="submitPaymentMethod" :disabled="savingCard" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a] transition-colors disabled:opacity-50">
+              {{ savingCard ? 'Saving...' : 'Add Card' }}
             </button>
           </div>
-
-          <div id="update-card-element" class="border rounded-lg px-4 py-3.5" style="border-color: #04C18F80;"></div>
-          <p v-if="cardError" class="text-sm text-red-500 mt-2">{{ cardError }}</p>
-
-          <div class="bg-[#EBFAF6] border border-[#04C18F80] rounded-lg p-4 flex gap-3 mt-4">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-[#00896F] shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
-            <p class="text-sm text-[#00896F]">Your payment information is encrypted and processed securely by Stripe.</p>
-          </div>
-        </div>
-
-        <div class="px-6 py-5 flex gap-4">
-          <button @click="closePaymentModal" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
-          <button @click="submitPaymentMethod" :disabled="savingCard" class="flex-1 py-2.5 bg-[#00896F] text-white text-sm font-medium rounded-lg hover:bg-[#00705a] transition-colors disabled:opacity-50">
-            {{ savingCard ? 'Saving...' : 'Add Card' }}
-          </button>
         </div>
       </div>
-    </div>
+    </Teleport>
   </NuxtLayout>
 </template>
 
@@ -523,8 +530,38 @@ const closePaymentModal = () => {
   cardError.value = ''
 }
 
+const getCardElementStyle = () => ({
+  base: {
+    fontSize: '14px',
+    color: isDark.value ? '#ffffff' : '#1f2937',
+    caretColor: isDark.value ? '#ffffff' : '#1f2937',
+    '::placeholder': {
+      color: isDark.value ? 'rgba(255, 255, 255, 0.4)' : '#9ca3af',
+    },
+  },
+  invalid: {
+    color: '#ef4444',
+    caretColor: '#ef4444',
+  },
+})
+
+watch(isDark, () => {
+  if (cardElement) {
+    cardElement.update({ style: getCardElementStyle() })
+  }
+})
+
 watch(isUpdatePaymentModalOpen, async (open) => {
-  if (!open) return
+  if (!open) {
+    if (cardElement) {
+      try {
+        cardElement.unmount()
+        cardElement.destroy()
+      } catch {}
+      cardElement = null
+    }
+    return
+  }
   cardError.value = ''
 
   const config = useRuntimeConfig()
@@ -532,7 +569,7 @@ watch(isUpdatePaymentModalOpen, async (open) => {
   if (!stripe) return
 
   elements = stripe.elements()
-  cardElement = elements.create('card', { style: { base: { fontSize: '14px' } } })
+  cardElement = elements.create('card', { style: getCardElementStyle() })
 
   await nextTick()
   cardElement.mount('#update-card-element')

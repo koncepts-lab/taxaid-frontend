@@ -3,9 +3,9 @@
         <Transition name="fade">
             <div v-if="isOpen"
                 class="fixed inset-0 z-[1100] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-black/60 backdrop-blur-sm"
-                :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="$emit('close')">
+                :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
-                <div class="w-full max-w-6xl bg-white transition-all duration-300 transform scale-100 shadow-2xl overflow-hidden rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 max-h-[92vh] overflow-y-auto no-scrollbar flex flex-col h-[90vh]"
+                <div class="w-full max-w-6xl bg-white transition-all duration-300 transform scale-100 shadow-2xl overflow-hidden rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0 overflow-y-auto no-scrollbar flex flex-col h-[90vh]"
                     :class="isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white'">
 
                     <!-- Header -->
@@ -19,24 +19,42 @@
                                     {{ subtitle }}
                                 </p>
                             </div>
-                            <button @click="$emit('close')"
-                                class="p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" :class="isDark ? 'text-white' : 'text-gray-500'">
-                                    <path d="M18 6L6 18M6 6l12 12" />
-                                </svg>
-                            </button>
+                            <div class="flex items-center gap-2">
+                                <template v-if="type === 'cost_center'">
+                                    <button @click="$emit('open-upload')"
+                                        class="px-4 py-2 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 shadow-sm">
+                                        {{ currentLang === 'ar' ? 'رفع ملف إكسل' : 'Upload Excel' }}
+                                    </button>
+                                    <button @click="showTemplateChoice = true"
+                                        class="px-4 py-2 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 shadow-sm">
+                                        {{ currentLang === 'ar' ? 'تحميل القالب' : 'Download Template' }}
+                                    </button>
+                                </template>
+                                <button @click="$emit('close')"
+                                    class="p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" :class="isDark ? 'text-white' : 'text-gray-500'">
+                                        <path d="M18 6L6 18M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
-                        <!-- Alert Banner -->
-                        <div class="mt-4 p-3 rounded-lg flex items-center gap-2"
-                            :class="isDark ? 'bg-amber-900/20 text-amber-200' : 'bg-[#FFFBEB] text-[#B45309] border border-[#FEF3C7]'">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="8" x2="12" y2="12"></line>
-                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                            </svg>
-                            <span class="text-sm font-medium">{{ alertMessage }}</span>
+                        <div class="mt-4 flex items-center gap-3">
+                            <!-- Alert Banner -->
+                            <div class="flex-1 p-3 rounded-lg flex items-center gap-2 min-w-0"
+                                :class="isDark ? 'bg-amber-900/20 text-amber-200' : 'bg-[#FFFBEB] text-[#B45309] border border-[#FEF3C7]'">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                                <span class="text-sm font-medium">{{ alertMessage }}</span>
+                            </div>
+
+                            <div v-if="type === 'cost_center'" class="w-48 shrink-0">
+                                <CommonSelectDropdown mode="select" :clearable="false" v-model="mappedFilterLabel" :options="mappedFilterOptions" />
+                            </div>
                         </div>
 
                         <div v-if="errorMessage" class="mt-3 p-3 rounded-lg text-sm font-medium bg-red-50 text-red-600 border border-red-100">
@@ -71,11 +89,14 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-if="loadingRows">
-                                    <td :colspan="columnCount" class="py-16 text-center text-sm" :class="isDark ? 'text-white/50' : 'text-gray-400'">
-                                        {{ currentLang === 'ar' ? 'جارٍ التحميل...' : 'Loading ledger data...' }}
-                                    </td>
-                                </tr>
+                                <template v-if="loadingRows">
+                                    <tr v-for="n in skeletonRowCount" :key="`skeleton-${n}`"
+                                        class="border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
+                                        <td v-for="c in columnCount" :key="c" class="px-6 py-4">
+                                            <div class="h-4 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                                        </td>
+                                    </tr>
+                                </template>
                                 <tr v-else-if="!rows.length">
                                     <td :colspan="columnCount" class="py-16 text-center text-sm" :class="isDark ? 'text-white/50' : 'text-gray-400'">
                                         {{ currentLang === 'ar' ? 'لا توجد بيانات دفتر أستاذ متاحة. يرجى رفع ميزان المراجعة أولاً.' : 'No ledger data available. Upload a trial balance first.' }}
@@ -138,6 +159,64 @@
             </div>
         </Transition>
     </Teleport>
+
+    <Teleport to="body">
+        <Transition name="fade">
+            <div v-if="showTemplateChoice"
+                class="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                :dir="currentLang === 'ar' ? 'rtl' : 'ltr'" @click.self="showTemplateChoice = false">
+
+                <div class="w-full max-w-md rounded-2xl shadow-2xl p-6"
+                    :class="isDark ? 'bg-[#01261f] border border-white/10' : 'bg-white'">
+
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+                            {{ currentLang === 'ar' ? 'تحميل قالب التخطيط' : 'Download Mapping Template' }}
+                        </h3>
+                        <button @click="showTemplateChoice = false" class="p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" :class="isDark ? 'text-white' : 'text-gray-500'">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label v-for="o in templateOptions" :key="o.key"
+                            class="flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors"
+                            :class="selectedTemplateKey === o.key
+                                ? (isDark ? 'border-[#008169] bg-[#008169]/10' : 'border-[#008169] bg-[#E6FDF9]')
+                                : (isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')">
+                            <input type="radio" :value="o.key" v-model="selectedTemplateKey" class="mt-1 w-4 h-4 accent-[#008169]" />
+                            <span class="min-w-0">
+                                <span class="block text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+                                    {{ currentLang === 'ar' ? o.labelAr : o.label }}
+                                </span>
+                                <span class="block text-xs mt-0.5" :class="isDark ? 'text-white/50' : 'text-gray-500'">
+                                    {{ currentLang === 'ar' ? o.descriptionAr : o.description }}
+                                </span>
+                            </span>
+                        </label>
+                    </div>
+
+                    <p v-if="templateError" class="text-sm mt-3 p-2 rounded-lg bg-red-50 text-red-600 border border-red-100">
+                        {{ templateError }}
+                    </p>
+
+                    <div class="flex items-center gap-3 mt-5">
+                        <button @click="showTemplateChoice = false" :disabled="templateDownloading"
+                            class="flex-1 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all disabled:opacity-50"
+                            :class="isDark ? 'border-white/20 text-white hover:bg-white/5' : 'border-gray-200 text-gray-700 hover:bg-gray-50'">
+                            {{ currentLang === 'ar' ? 'إلغاء' : 'Cancel' }}
+                        </button>
+                        <button @click="$emit('download-template', selectedTemplateKey)" :disabled="templateDownloading"
+                            class="flex-1 px-4 py-2.5 bg-[#008169] hover:bg-[#006b56] text-white rounded-xl text-sm font-medium transition-all active:scale-95 shadow-sm disabled:opacity-50">
+                            {{ templateDownloading ? (currentLang === 'ar' ? 'جارٍ التحميل...' : 'Downloading...') : (currentLang === 'ar' ? 'تحميل' : 'Download') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
 </template>
 
 <script setup>
@@ -170,15 +249,52 @@ const props = defineProps({
     meta: {
         type: Object,
         default: () => ({ current_page: 1, last_page: 1, total: 0, per_page: 20 })
-    }
+    },
+    templateDownloading: Boolean,
+    templateError: String,
 })
 
-const emit = defineEmits(['close', 'update', 'change-page', 'change-per-page'])
+const emit = defineEmits(['close', 'update', 'change-page', 'change-per-page', 'open-upload', 'download-template', 'filter-mapped'])
+
+const mappedFilterOptions = ['All', 'Mapped', 'Unmapped']
+const mappedFilterLabel = ref('All')
+watch(mappedFilterLabel, (label) => {
+    emit('filter-mapped', label === 'Mapped' ? true : label === 'Unmapped' ? false : undefined)
+})
+watch(() => props.isOpen, (open) => {
+    if (open) mappedFilterLabel.value = 'All'
+})
+
+const showTemplateChoice = ref(false)
+const selectedTemplateKey = ref('filled')
+const templateOptions = [
+    {
+        key: 'blank',
+        label: 'Blank Template', labelAr: 'قالب فارغ',
+        description: 'Headers only — you fill in every column yourself.',
+        descriptionAr: 'رؤوس الأعمدة فقط — تملأ جميع الحقول بنفسك.',
+    },
+    {
+        key: 'filled',
+        label: 'Filled Template', labelAr: 'قالب مُعبّى',
+        description: 'FS Code / Main Group / Subgroup already filled in from your current ledgers.',
+        descriptionAr: 'كود FS / المجموعة الرئيسية / الفرعية معبّأة مسبقاً من دفاتر الحسابات الحالية.',
+    },
+]
+
+watch(() => props.templateDownloading, (downloading, wasDownloading) => {
+    if (wasDownloading && !downloading && !props.templateError) {
+        showTemplateChoice.value = false
+    }
+})
 
 const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
 // 4 fixed columns (FS Code / Main Group / Sub group / Ledger) + type-specific columns
 const columnCount = computed(() => 4 + (props.type === 'prepaid' ? 1 + months.length : 1))
+
+// Fills the fixed-height table area with skeleton rows while loading, matching the per-page row count
+const skeletonRowCount = computed(() => Math.max(1, props.meta?.per_page ?? 10))
 
 const rows = ref([])
 
@@ -188,7 +304,7 @@ const buildRows = () => {
         mainGroup: r.mainGroup,
         subGroup: r.subGroup,
         ledger: r.ledger,
-        value: '',
+        value: r.costCenter ?? '',
         valueInBudget: r.valueInBudget ?? '',
         months: r.months ? { ...r.months } : Object.fromEntries(months.map(m => [m, ''])),
     }))

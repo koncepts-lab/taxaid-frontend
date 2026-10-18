@@ -53,11 +53,11 @@
     <div class="flex flex-col gap-1">
       <div class="text-[12px]">
         <span class="text-gray-400 transition-colors duration-300" :class="isDark ? 'text-white/40' : 'text-gray-400'">{{ currentLang === 'ar' ? 'تجاوزت موعد الاستحقاق: ' : 'Overdue: ' }}</span>
-        <span class="font-bold transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">{{ overdue }}</span>
+        <span class="font-bold transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatNumber(overdue) }}</span>
       </div>
       <div class="text-[12px]">
         <span class="text-gray-400 transition-colors duration-300" :class="isDark ? 'text-white/40' : 'text-gray-400'">{{ currentLang === 'ar' ? 'مستحقة في الـ 30 يوم القادمة: ' : 'Due in next 30 days: ' }}</span>
-        <span class="font-bold transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">{{ dueInNext30Days }}</span>
+        <span class="font-bold transition-colors duration-300" :class="isDark ? 'text-white' : 'text-[#000]'">{{ formatNumber(dueInNext30Days) }}</span>
       </div>
     </div>
   </div>
@@ -82,7 +82,7 @@ const overdue         = computed(() => accountsPayable.value?.overdue ?? 0)
 const dueInNext30Days = computed(() => accountsPayable.value?.dueInNext30Days ?? 0)
 const agingBars       = computed(() => accountsPayable.value?.agingBars ?? [0, 0, 0, 0])
 
-const formatNumber = (n: number) => formatInMillions(n)
+const formatNumber = (n: number) => formatSmartCurrency(n)
 </script>
 
 <style scoped>

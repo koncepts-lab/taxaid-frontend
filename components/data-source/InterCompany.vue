@@ -349,8 +349,7 @@
         <Teleport to="body">
             <Transition name="fade">
                 <div v-if="isModalOpen"
-                    class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-                    @click.self="isModalOpen = false">
+                    class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
                     <div class="bg-white rounded-2xl w-full max-w-xl shadow-2xl relative overflow-hidden">
                         <button @click="isModalOpen = false"
                             class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors">

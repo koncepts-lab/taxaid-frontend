@@ -253,25 +253,16 @@ const pageSize = computed(() => isModalOpen.value ? 8 : 4)
 
 watch(isModalOpen, () => { page.value = 0 })
 
-// TEMP: pads category data for carousel testing — remove once confirmed, revert to the plain computeds below.
-const TEST_EXTRA_CATEGORIES = 9
-const testNames = Array.from({ length: TEST_EXTRA_CATEGORIES }, (_, i) => `Test Category ${i + 1}`)
-
 const rawCategories = computed(() => {
-  const base = currentLang.value === 'ar' ? (props.data?.categoriesAr || []) : (props.data?.categories || [])
-  return [...base, ...testNames]
+  return currentLang.value === 'ar' ? (props.data?.categoriesAr || []) : (props.data?.categories || [])
 })
 
 const rawPrev = computed(() => {
-  const base = props.data?.previousYearRaw?.length ? props.data.previousYearRaw : (props.data?.series?.[0]?.data ?? []).map(v => v * 1_000_000)
-  const extra = testNames.map((_, i) => (i + 1) * 180_000)
-  return [...base, ...extra]
+  return props.data?.previousYearRaw?.length ? props.data.previousYearRaw : (props.data?.series?.[0]?.data ?? []).map(v => v * 1_000_000)
 })
 
 const rawCurr = computed(() => {
-  const base = props.data?.currentYearRaw?.length ? props.data.currentYearRaw : (props.data?.series?.[1]?.data ?? []).map(v => v * 1_000_000)
-  const extra = testNames.map((_, i) => (i + 1) * 230_000)
-  return [...base, ...extra]
+  return props.data?.currentYearRaw?.length ? props.data.currentYearRaw : (props.data?.series?.[1]?.data ?? []).map(v => v * 1_000_000)
 })
 
 const totalPairs = computed(() => rawCategories.value.length)

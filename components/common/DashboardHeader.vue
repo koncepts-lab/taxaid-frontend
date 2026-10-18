@@ -20,12 +20,12 @@
                         <div class="h-3 w-64 max-w-full rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
                     </div>
                     <p v-else-if="hasPeriod" class="text-xs mt-1 h-4 leading-4" :class="isDark ? 'text-[#6FDBBF]' : 'text-[#00896F]'">
-                        <template v-if="cardPeriod.from">{{ currentLang === 'ar' ? 'السنة الحالية:' : 'Current Year:' }} {{ currentLang === 'ar' ? 'عرض البيانات من' : 'Showing data from' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.from) }}</span> {{ currentLang === 'ar' ? 'إلى' : 'to' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.to) }}</span></template>
-                        <template v-else>{{ currentLang === 'ar' ? 'السنة الحالية:' : 'Current Year:' }} {{ currentLang === 'ar' ? 'البيانات حتى تاريخ' : 'Showing data as of' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.as_of) }}</span></template>
+                        <template v-if="cardPeriod.from">{{ currentLang === 'ar' ? `${currentPeriodTerm.ar} الحالية:` : `Current ${currentPeriodTerm.en}:` }} {{ currentLang === 'ar' ? 'عرض البيانات من' : 'Showing data from' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.from) }}</span> {{ currentLang === 'ar' ? 'إلى' : 'to' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.to) }}</span></template>
+                        <template v-else>{{ currentLang === 'ar' ? `${currentPeriodTerm.ar} الحالية:` : `Current ${currentPeriodTerm.en}:` }} {{ currentLang === 'ar' ? 'البيانات حتى تاريخ' : 'Showing data as of' }} <span dir="ltr">{{ formatDisplayDate(cardPeriod.as_of) }}</span></template>
                     </p>
                     <p v-if="hasPeriod && previousPeriod" class="text-xs mt-1 leading-4" :class="isDark ? 'text-white/60' : 'text-black/50'">
-                        <template v-if="previousPeriod.from">{{ currentLang === 'ar' ? 'السنة السابقة:' : 'Previous Year:' }} {{ currentLang === 'ar' ? 'مقارنة بالفترة من' : 'Compared with' }} <span dir="ltr">{{ formatDisplayDate(previousPeriod.from) }}</span> {{ currentLang === 'ar' ? 'إلى' : 'to' }} <span dir="ltr">{{ formatDisplayDate(previousPeriod.to) }}</span></template>
-                        <template v-else>{{ currentLang === 'ar' ? 'السنة السابقة:' : 'Previous Year:' }} {{ currentLang === 'ar' ? 'مقارنة بالبيانات حتى تاريخ' : 'Compared with data as of' }} <span dir="ltr">{{ formatDisplayDate(previousPeriod.as_of) }}</span></template>
+                        <template v-if="previousPeriod.from">{{ currentLang === 'ar' ? `${previousPeriodTerm.ar} السابقة:` : `Previous ${previousPeriodTerm.en}:` }} {{ currentLang === 'ar' ? 'مقارنة بالفترة من' : 'Compared with' }} <span dir="ltr">{{ formatDisplayDate(previousPeriod.from) }}</span> {{ currentLang === 'ar' ? 'إلى' : 'to' }} <span dir="ltr">{{ formatDisplayDate(previousPeriod.to) }}</span></template>
+                        <template v-else>{{ currentLang === 'ar' ? `${previousPeriodTerm.ar} السابقة:` : `Previous ${previousPeriodTerm.en}:` }} {{ currentLang === 'ar' ? 'مقارنة بالبيانات حتى تاريخ' : 'Compared with data as of' }} <span dir="ltr">{{ formatDisplayDate(previousPeriod.as_of) }}</span></template>
                     </p>
                 </div>
             </div>
@@ -47,7 +47,9 @@
                     </button>
 
                     <!-- Date Filter -->
-                    <div v-if="showDateFilter" class="relative" ref="dateDropdownRef">
+                    <CommonDateField v-if="showDateFilter && monthYearOnly" month v-model="pickedMonthValue"
+                        :min-month="minMonth" size="md" />
+                    <div v-else-if="showDateFilter" class="relative" ref="dateDropdownRef">
                         <button @click="showDateDropdown = !showDateDropdown; if(showDateDropdown) showExportDropdown = false"
                             class="flex items-center space-x-2 rtl:space-x-reverse px-4 h-[40px] rounded-lg border transition-colors"
                             :class="isDark ? 'bg-[#002E26] border-[#03D8B0] text-white' : 'bg-white border-[#03D8B0] text-black hover:bg-teal-50'">
@@ -92,16 +94,16 @@
                                             <div class="w-full border rounded-lg px-4 py-2.5 text-sm font-medium" :class="isDark ? 'border-[#03D8B0] text-[#03D8B0]' : 'border-[#03D8B0] text-[#03D8B0]'">
                                                 {{ fromDateFormatted }}
                                             </div>
-                                            <span class="text-xs mt-1 block" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ fromDateLabel }}</span>
+                                            <span class="text-xs mt-1 block" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ currentLang === 'ar' ? 'اليوم' : 'Today' }}</span>
                                         </div>
-                                        
+
                                         <!-- To -->
                                         <div>
                                             <label class="text-sm font-medium mb-1 block" :class="isDark ? 'text-white/80' : 'text-[#013e32]/80'">{{ currentLang === 'ar' ? 'إلى' : 'To' }}</label>
                                             <div class="w-full border rounded-lg px-4 py-2.5 text-sm font-medium" :class="isDark ? 'border-[#03D8B0] text-[#03D8B0]' : 'border-[#03D8B0] text-[#03D8B0]'">
                                                 {{ toDateFormatted }}
                                             </div>
-                                            <span class="text-xs mt-1 block" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ currentLang === 'ar' ? 'اليوم' : 'Today' }}</span>
+                                            <span class="text-xs mt-1 block" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ toDateLabel }}</span>
                                         </div>
                                     </div>
 
@@ -164,16 +166,16 @@
                                                         <div class="w-full border rounded-lg px-4 py-2.5 text-sm font-medium" :class="isDark ? 'border-[#03D8B0] text-[#03D8B0]' : 'border-[#03D8B0] text-[#03D8B0]'">
                                                             {{ fromDateFormatted }}
                                                         </div>
-                                                        <span class="text-xs mt-1 block" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ fromDateLabel }}</span>
+                                                        <span class="text-xs mt-1 block" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ currentLang === 'ar' ? 'اليوم' : 'Today' }}</span>
                                                     </div>
-                                                    
+
                                                     <!-- To -->
                                                     <div>
                                                         <label class="text-sm font-medium mb-1 block" :class="isDark ? 'text-white/80' : 'text-[#013e32]/80'">{{ currentLang === 'ar' ? 'إلى' : 'To' }}</label>
                                                         <div class="w-full border rounded-lg px-4 py-2.5 text-sm font-medium" :class="isDark ? 'border-[#03D8B0] text-[#03D8B0]' : 'border-[#03D8B0] text-[#03D8B0]'">
                                                             {{ toDateFormatted }}
                                                         </div>
-                                                        <span class="text-xs mt-1 block" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ currentLang === 'ar' ? 'اليوم' : 'Today' }}</span>
+                                                        <span class="text-xs mt-1 block" :class="isDark ? 'text-white/50' : 'text-[#8C8C8C]'">{{ toDateLabel }}</span>
                                                     </div>
                                                 </div>
 
@@ -242,6 +244,8 @@ const props = defineProps({
     subtitle: { type: Object, default: () => ({ en: 'Detailed performance breakdown', ar: 'تحليل مفصل للأداء والتفاصيل المالية' }) },
     oneclickreview: { type: Boolean, default: true },
     showDateFilter: { type: Boolean, default: true },
+    monthYearOnly: { type: Boolean, default: false },
+    minMonth: { type: String, default: '' },
     showReload: { type: Boolean, default: true },
     showExport: { type: Boolean, default: true },
     periods: {
@@ -290,19 +294,21 @@ const selectProjectionPeriod = (months) => {
     emit('period-change', months)
 }
 
+// Projection runs forward from today (matches CashFlowService::prepareTimeline) —
+// From = today, To = today + N months, not a backward-looking lookback range.
 const fromDateFormatted = computed(() => {
     const d = new Date(singleDate.value || new Date())
-    d.setMonth(d.getMonth() - activePeriod.value)
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 })
 
 const toDateFormatted = computed(() => {
     const d = new Date(singleDate.value || new Date())
+    d.setMonth(d.getMonth() + activePeriod.value)
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 })
 
-const fromDateLabel = computed(() => {
-    return currentLang.value === 'ar' ? `منذ ${activePeriod.value} أشهر` : `${activePeriod.value} months ago`
+const toDateLabel = computed(() => {
+    return currentLang.value === 'ar' ? `بعد ${activePeriod.value} أشهر` : `in ${activePeriod.value} months`
 })
 const cardToday = useState('cardToday', () => null)
 const serverToday = computed(() => {
@@ -367,6 +373,7 @@ const resetToDefault = () => {
     }
     range.value = { start: null, end: null }
     singleDate.value = null
+    pickedMonthValue.value = toMonthValue('')
     showDateDropdown.value = false
     showExportDropdown.value = false
 }
@@ -446,6 +453,25 @@ const handleSingleChange = (val) => {
     }
 };
 
+const toMonthValue = (value) => {
+    const m = String(value || '').match(/^(\d{2})-(\d{2})-(\d{4})$/)
+    const d = m ? new Date(+m[3], +m[2] - 1, +m[1]) : (baseToday() || new Date())
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+const pickedMonthValue = ref(toMonthValue(props.defaultDate))
+watch(pickedMonthValue, (value) => {
+    if (!value) return
+    const [y, m] = value.split('-')
+    const lastDay = new Date(Number(y), Number(m), 0).getDate()
+    emit('selected-date', {
+        en: 'Custom Date',
+        ar: 'تاريخ مخصص',
+        custom_from: `${String(lastDay).padStart(2, '0')}-${m}-${y}`,
+        custom_to: null
+    })
+})
+
 const handleClickOutside = (event) => {
     if (dateDropdownRef.value && !dateDropdownRef.value.contains(event.target)) {
         showDateDropdown.value = false
@@ -462,6 +488,23 @@ const previousPeriod = computed(() => {
     if (!p || !p.to) return null
     return cardPeriod.value.as_of ? { as_of: p.to } : { from: p.from, to: p.to }
 })
+
+// "Current Year:" is wrong when the actual range is a single month (e.g. cost-center
+// direct mode) or an arbitrary span — label the term to match what from/to actually cover.
+const rangeTerm = (from, to) => {
+    if (!from || !to) return { en: 'Year', ar: 'السنة' }
+    const f = new Date(from)
+    const t = new Date(to)
+    if (f.getFullYear() === t.getFullYear() && f.getMonth() === t.getMonth()) {
+        return { en: 'Month', ar: 'الشهر' }
+    }
+    if (f.getFullYear() === t.getFullYear()) {
+        return { en: 'Year', ar: 'السنة' }
+    }
+    return { en: 'Period', ar: 'الفترة' }
+}
+const currentPeriodTerm = computed(() => rangeTerm(cardPeriod.value?.from, cardPeriod.value?.to))
+const previousPeriodTerm = computed(() => rangeTerm(previousPeriod.value?.from, previousPeriod.value?.to))
 // The period line is reserved while the card loads (skeleton); if nothing arrives the space is released
 const waitingForPeriod = ref(true)
 let periodTimer

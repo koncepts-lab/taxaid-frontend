@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full transition-all duration-500 rounded-3xl">
+    <div class="w-full overflow-hidden transition-all duration-500 rounded-3xl" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
         <div class="sticky top-0 z-20 py-5 lg:px-8 px-4 flex justify-between items-center rounded-t-3xl" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
             <div>
                 <p class="text-[16px] font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص التدفقات النقدية' : 'Cashflow Summary' }}</p>
@@ -25,8 +25,8 @@
     <ClientOnly>
         <Teleport to="body">
         <div v-if="isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
-            <div class="w-full rounded-xl flex flex-col overflow-hidden transition-all duration-500" :class="isDark ? 'bg-[#002e26]' : 'bg-white'" style="max-width: 1500px; margin: 0 15px; max-height: 90vh;">
-                <div class="flex justify-between items-center py-6 px-8 border-b" :class="isDark ? 'border-white/5' : 'border-gray-100'">
+            <div class="w-full h-[580px] max-h-[90vh] rounded-xl flex flex-col overflow-hidden transition-all duration-500 shadow-2xl" :class="isDark ? 'bg-[#002e26]' : 'bg-white'" style="max-width: 1500px; margin: 0 15px;">
+                <div class="flex justify-between items-center py-6 px-8 border-b shrink-0" :class="isDark ? 'border-white/5' : 'border-gray-100'">
                     <div class="flex flex-col">
                         <h2 class="text-lg font-medium" :class="isDark ? 'text-[#00C9A2]' : 'text-[#013e32]'">{{ currentLang === 'ar' ? 'ملخص التدفقات النقدية' : 'Cashflow Summary' }}</h2>
                         <p class="text-xs font-normal mt-1" :class="isDark ? 'text-white/60' : 'text-[#00000096]'">{{ valuesNote(false) }}</p>
@@ -36,7 +36,7 @@
                     </button>
                 </div>
 
-                <div class="w-full flex-1 overflow-auto custom-scrollbar" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
+                <div class="w-full flex-1 min-h-0 overflow-hidden flex flex-col" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
                     <CashFlowSummaryTable :is-modal="true" />
                 </div>
             </div>

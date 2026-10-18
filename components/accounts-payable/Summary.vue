@@ -178,18 +178,13 @@
             <td :colspan="tableColumns.length + 2" class="p-0" :style="{ height: `${fillerHeight}px` }"></td>
           </tr>
         </tbody>
-      </table>
-    </div>
-
-    <div v-if="loading || summaryTotal" class="w-full overflow-x-auto no-scrollbar">
-      <table class="w-full text-left rtl:text-right border-collapse min-w-175">
-        <tfoot>
+        <tfoot v-if="loading || summaryTotal" class="sticky bottom-0 z-10">
           <tr v-if="summaryTotal && !loading" :class="isDark ? 'bg-[#1F6F4D]' : 'bg-[#68E4C4]'" class="transition-all duration-500">
             <td class="lg:px-8 px-4 py-5 font-medium text-[14px]" :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{
               currentLang === 'ar' ? 'الإجمالي' : 'Total' }}</td>
-            <td class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
+            <td class="lg:px-6 px-4 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
               :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ formatValue(summaryTotal.amount) }}</td>
-            <td v-for="col in tableColumns" :key="'foot-' + col.key" class="px-6 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
+            <td v-for="col in tableColumns" :key="'foot-' + col.key" class="lg:px-6 px-4 py-5 text-right rtl:text-left font-medium text-[14px] tabular-nums"
               :class="isDark ? 'text-white' : 'text-[#1A1A1A]'">{{ formatValue(summaryTotal[col.key]) }}</td>
           </tr>
         </tfoot>
