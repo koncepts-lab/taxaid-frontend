@@ -14,7 +14,7 @@
               {{ cfg.title }}
             </div>
             <p class="text-sm mt-2 max-w-2xl" :class="isDark ? 'text-white/60' : 'text-gray-500'">
-              Reconcile differences between Trial Balance and {{ cfg.code }} Report. All variances must be resolved to zero before posting.
+              {{ cfg.subtitle }}
             </p>
           </div>
           <button @click="closeModal" class="transition-colors cursor-pointer" :class="isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'">
@@ -27,11 +27,11 @@
         <div class="px-4 md:px-6 py-4">
           <div class="border rounded-xl p-4 flex flex-col md:flex-row gap-4 mb-3" :class="isDark ? 'bg-white/5 border-white/10' : 'bg-[#eefdf6] border-[#a7f3d0]'">
             <div class="flex-1 min-w-0">
-              <label class="block text-sm font-semibold mb-2" :class="isDark ? 'text-white/70' : 'text-gray-700'">Balance as per TB</label>
+              <label class="block text-sm font-semibold mb-2" :class="isDark ? 'text-white/70' : 'text-gray-700'">{{ cfg.tbLabel }}</label>
               <input type="text" :value="`${code} ${formatAmount(balanceTB)}`" readonly class="w-full border rounded-lg px-4 py-2.5 font-medium focus:outline-none" :class="isDark ? 'bg-[#002e26] border-white/10 text-white' : 'bg-white border-gray-200 text-gray-800'" />
             </div>
             <div class="flex-1 min-w-0">
-              <label class="block text-sm font-semibold mb-2" :class="isDark ? 'text-white/70' : 'text-gray-700'">Balance as per {{ cfg.code }} report</label>
+              <label class="block text-sm font-semibold mb-2" :class="isDark ? 'text-white/70' : 'text-gray-700'">{{ cfg.reportLabel }}</label>
               <input type="text" :value="`${code} ${formatAmount(balanceReport)}`" readonly class="w-full border rounded-lg px-4 py-2.5 font-medium focus:outline-none" :class="isDark ? 'bg-[#002e26] border-white/10 text-white' : 'bg-white border-gray-200 text-gray-800'" />
             </div>
             <div class="flex-1 min-w-0">
@@ -80,7 +80,7 @@
               <tr class="text-white text-sm">
                 <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium rounded-tl-lg">Date</th>
                 <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">Party Name</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">Voucher No.</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">{{ cfg.refColumnLabel }}</th>
                 <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">Amount ({{ code }})</th>
                 <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">Select</th>
                 <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">Adjustments ({{ code }})</th>
@@ -92,19 +92,19 @@
                 <td colspan="7" class="py-8 px-4 text-center" :class="isDark ? 'text-white/50 bg-[#002e26]' : 'text-gray-500 bg-white'">{{ voucherEmptyMessage }}</td>
               </tr>
               <tr v-for="(row, i) in voucherRows" :key="`${activeTab}-${i}`" class="transition-colors" :class="isDark ? 'hover:bg-white/5 bg-[#002e26]' : 'hover:bg-gray-50 bg-white'">
-                <td class="py-3 px-4" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ row.entry_date }}</td>
+                <td class="py-3 px-4" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ rowDate(row) }}</td>
                 <td class="py-3 px-4 font-medium" :class="isDark ? 'text-white/80' : 'text-gray-700'">
-                  {{ row.ledger_name }}
-                  <span v-if="vendorDiff(row.ledger_name)" class="block text-xs font-normal" :class="isDark ? 'text-white/40' : 'text-gray-400'">needs {{ formatAmount(vendorDiff(row.ledger_name)) }}</span>
+                  {{ rowParty(row) }}
+                  <span v-if="vendorDiff(rowParty(row))" class="block text-xs font-normal" :class="isDark ? 'text-white/40' : 'text-gray-400'">needs {{ formatAmount(vendorDiff(rowParty(row))) }}</span>
                 </td>
-                <td class="py-3 px-4" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ row.voucher_no }}</td>
+                <td class="py-3 px-4" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ rowRef(row) }}</td>
                 <td class="py-3 px-4" :class="isDark ? 'text-white/80' : 'text-gray-700'">
-                  <span :class="{'line-through text-gray-400 mr-2': voucherState[i].selected && voucherState[i].adjust}">{{ row.amount }}</span>
+                  <span :class="{'line-through text-gray-400 mr-2': voucherState[i].selected && voucherState[i].adjust}">{{ rowAmount(row) }}</span>
                   <span v-if="voucherState[i].selected && voucherState[i].adjust" class="font-bold text-[#058a64]">{{ voucherState[i].adjust }}</span>
                 </td>
                 <td class="py-3 px-4"><input type="checkbox" v-model="voucherState[i].selected" @change="onRowToggle(voucherState[i])" class="w-4 h-4 rounded text-[#058a64] focus:ring-[#058a64]" :class="isDark ? 'border-white/20 bg-[#002e26]' : 'border-gray-300 bg-white'" /></td>
                 <td class="py-2 px-4">
-                  <input type="text" v-model="voucherState[i].adjust" :placeholder="voucherState[i].selected ? String(row.amount) : 'Select to adjust'" :class="voucherState[i].selected ? (isDark ? 'bg-white/10 rounded-md py-1.5 px-3 text-right text-white' : 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800') : (isDark ? 'bg-transparent disabled:bg-transparent p-0 text-white/30 placeholder-white/20' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300')" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!voucherState[i].selected"/>
+                  <input type="text" v-model="voucherState[i].adjust" :placeholder="voucherState[i].selected ? String(rowAmount(row)) : 'Select to adjust'" :class="voucherState[i].selected ? (isDark ? 'bg-white/10 rounded-md py-1.5 px-3 text-right text-white' : 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800') : (isDark ? 'bg-transparent disabled:bg-transparent p-0 text-white/30 placeholder-white/20' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300')" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!voucherState[i].selected"/>
                 </td>
                 <td class="py-2 px-4">
                   <span v-if="voucherState[i].selected" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium w-24 flex items-center justify-center gap-1">
@@ -112,6 +112,11 @@
                     Applied
                   </span>
                 </td>
+              </tr>
+              <tr v-if="cfg.showTotalRow && voucherRows.length > 0" class="bg-[#a7f3d0] font-bold text-gray-800">
+                <td colspan="3" class="py-3 px-4 text-right">{{ cfg.totalRowLabel }}</td>
+                <td class="py-3 px-4">{{ code }} {{ formatAmount(selectedVoucherTotal) }}</td>
+                <td colspan="3"></td>
               </tr>
             </tbody>
           </table>
@@ -122,17 +127,18 @@
             <thead>
               <tr class="text-white text-sm">
                 <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-40 rounded-tl-lg">Date</th>
+                <th v-if="isSF" class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-auto">Project Name</th>
                 <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-auto">Party Name</th>
                 <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-36">Invoice Number</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-28">Credit Days</th>
+                <th v-if="!isSF" class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-28">Credit Days</th>
                 <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-32">Amount ({{ code }})</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-44">Type</th>
+                <th v-if="!isSF" class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-44">Type</th>
                 <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-32 text-center rounded-tr-lg">Action</th>
               </tr>
             </thead>
             <tbody class="divide-y text-sm" :class="isDark ? 'divide-white/10' : 'divide-gray-100'">
               <tr v-if="manualEntries.length === 0">
-                <td colspan="7" class="py-8 px-4 text-center" :class="isDark ? 'text-white/50 bg-[#002e26]' : 'text-gray-500 bg-white'">
+                <td :colspan="isSF ? 6 : 7" class="py-8 px-4 text-center" :class="isDark ? 'text-white/50 bg-[#002e26]' : 'text-gray-500 bg-white'">
                   No manual entries. Click "Add Manual Entry Row" to add one.
                 </td>
               </tr>
@@ -140,21 +146,26 @@
                 <td class="py-2 px-2">
                   <CommonDateField v-model="entry.date" format="dmy" size="sm" allow-future />
                 </td>
+                <td v-if="isSF" class="py-2 px-2">
+                  <input type="text" v-model="entry.projectName" placeholder="Enter project name" class="w-full border rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
+                </td>
                 <td class="py-2 px-2">
-                  <CommonSelectDropdown v-model="entry.partyName" mode="select" size="sm" searchable :dark="isDark"
+                  <CommonSelectDropdown v-if="!isSF" v-model="entry.partyName" mode="select" size="sm" searchable :dark="isDark"
                     :placeholder="cfg.partyPlaceholder" :options="partyOptions" @update:model-value="onEntryPartyChange(entry)" />
+                  <input v-else type="text" v-model="entry.partyName" placeholder="Enter customer name" class="w-full border rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
                 </td>
                 <td class="py-2 px-2">
-                  <CommonSelectDropdown v-model="entry.invoiceNumber" mode="select" size="sm" searchable :dark="isDark"
+                  <CommonSelectDropdown v-if="!isSF" v-model="entry.invoiceNumber" mode="select" size="sm" searchable :dark="isDark"
                     placeholder="Select invoice" :options="invoiceOptionsFor(entry.partyName)" :disabled="!entry.partyName" />
+                  <input v-else type="text" v-model="entry.invoiceNumber" placeholder="Enter invoice number" class="w-full border rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
                 </td>
-                <td class="py-2 px-2">
+                <td v-if="!isSF" class="py-2 px-2">
                   <input type="text" v-model="entry.creditDays" placeholder="e.g., 30" class="w-full border rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
                 </td>
                 <td class="py-2 px-2">
                   <input type="text" v-model="entry.amount" placeholder="0.00" class="w-full border rounded-md py-1.5 px-3 text-center focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
                 </td>
-                <td class="py-2 px-2">
+                <td v-if="!isSF" class="py-2 px-2">
                   <div class="flex items-center gap-2">
                     <button type="button" @click="entry.type = cfg.primaryType" class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors" :class="entry.type === cfg.primaryType ? 'bg-[#058a64] text-white' : (isDark ? 'bg-white/5 text-white/60 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')">
                       Sales
@@ -196,6 +207,7 @@ import { ref, computed, watch } from 'vue';
 const props = defineProps({
   side: { type: String, required: true },
   data: { type: Object, required: true },
+  date: { type: String, default: null },
 });
 const emit = defineEmits(['close', 'resolved']);
 
@@ -203,11 +215,15 @@ const SIDE_CONFIG = {
   ap: {
     code: 'AP',
     title: 'AP VARIANCE RECONCILIATION',
+    subtitle: 'Reconcile differences between Trial Balance and AP Report. All variances must be resolved to zero before posting.',
+    tbLabel: 'Balance as per TB',
     reportKey: 'Balance as per AP report',
+    reportLabel: 'Balance as per AP report',
     primaryKey: 'Potential reason for variance - Purchase',
     secondaryKey: 'Payment - Unrecorded Transactions',
     primaryLabel: 'Purchase',
     secondaryLabel: 'Payment',
+    refColumnLabel: 'Voucher No.',
     partyPlaceholder: 'Select vendor',
     primaryType: 'purchase',
     bulkEndpoint: '/adjustments/ap/bulk',
@@ -216,23 +232,40 @@ const SIDE_CONFIG = {
   ar: {
     code: 'AR',
     title: 'AR VARIANCE RECONCILIATION',
+    subtitle: 'Reconcile differences between Trial Balance and AR Report. All variances must be resolved to zero before posting.',
+    tbLabel: 'Balance as per TB',
     reportKey: 'Balance as per AR report',
+    reportLabel: 'Balance as per AR report',
     primaryKey: 'Potential reason for variance - Sales',
     secondaryKey: 'Receipt - Unrecorded Transactions',
     primaryLabel: 'Sales',
     secondaryLabel: 'Receipt',
+    refColumnLabel: 'Voucher No.',
     partyPlaceholder: 'Select customer',
     primaryType: 'sales',
     bulkEndpoint: '/adjustments/ar/bulk',
     typeField: 'type',
   },
+  'sales-forecast': {
+    code: 'SF',
+    title: 'SALES FORECAST VARIANCE',
+    subtitle: 'Reconcile discrepancies between forecasted values and actual invoiced revenue.',
+    tbLabel: 'Actual Revenue (Invoiced)',
+    reportLabel: 'Balance as per sales forecast',
+    primaryLabel: 'Reason for variance',
+    refColumnLabel: 'Invoice Number',
+    showTotalRow: true,
+    totalRowLabel: 'Total sales',
+  },
 };
+const isSF = computed(() => props.side === 'sales-forecast');
 const cfg = computed(() => SIDE_CONFIG[props.side]);
 
 const partyOptions = ref([]);
 const invoicesByParty = ref({});
 
 const loadPartyOptions = async () => {
+  if (isSF.value) return;
   try {
     const res = await useApi('/adjustments/parties', { params: { side: props.side } });
     partyOptions.value = res?.data ?? [];
@@ -264,15 +297,26 @@ const baseBalanceReport = ref(0);
 const baseVariance = ref(0);
 
 watch(() => props.data, (d) => {
+  if (isSF.value) {
+    baseBalanceTB.value = Number(d?.actual_revenue ?? 0);
+    baseBalanceReport.value = Number(d?.forecasted_revenue ?? 0);
+    baseVariance.value = Math.abs(baseBalanceTB.value - baseBalanceReport.value);
+    return;
+  }
   baseBalanceTB.value = Number(d?.['Balance as per TB'] ?? 0);
   baseBalanceReport.value = Number(d?.[cfg.value.reportKey] ?? 0);
   baseVariance.value = Number(d?.['Variance'] ?? 0);
 }, { immediate: true });
 
-const primaryRows = computed(() => props.data?.Vouchers?.[cfg.value.primaryKey] ?? []);
-const secondaryRows = computed(() => props.data?.Vouchers?.[cfg.value.secondaryKey] ?? []);
+const primaryRows = computed(() => isSF.value ? (props.data?.reasons ?? []) : (props.data?.Vouchers?.[cfg.value.primaryKey] ?? []));
+const secondaryRows = computed(() => isSF.value ? [] : (props.data?.Vouchers?.[cfg.value.secondaryKey] ?? []));
 const vendorDiffs = computed(() => props.data?.VendorDiffs ?? {});
 const vendorDiff = (ledgerName) => vendorDiffs.value[ledgerName] ? Math.abs(Number(vendorDiffs.value[ledgerName])) : 0;
+
+const rowDate = (row) => isSF.value ? row['Date'] : row.entry_date;
+const rowParty = (row) => isSF.value ? row['Party Name'] : row.ledger_name;
+const rowRef = (row) => isSF.value ? row['Invoice Number'] : row.voucher_no;
+const rowAmount = (row) => isSF.value ? row['Amount'] : row.amount;
 
 const visibleTabs = computed(() => {
   const tabs = [];
@@ -304,9 +348,17 @@ watch(secondaryRows, (rows) => { secondaryState.value = resetRowState(rows); }, 
 
 const voucherRows = computed(() => activeTab.value === 'secondary' ? secondaryRows.value : primaryRows.value);
 const voucherState = computed(() => activeTab.value === 'secondary' ? secondaryState.value : primaryState.value);
-const voucherEmptyMessage = computed(() => activeTab.value === 'secondary'
-  ? `No unrecorded ${cfg.value.secondaryLabel.toLowerCase()} rows found.`
-  : `No ${cfg.value.primaryLabel.toLowerCase()}-side variance rows found.`);
+const voucherEmptyMessage = computed(() => {
+  if (isSF.value) return 'No forecast rows found for this date.';
+  return activeTab.value === 'secondary'
+    ? `No unrecorded ${cfg.value.secondaryLabel.toLowerCase()} rows found.`
+    : `No ${cfg.value.primaryLabel.toLowerCase()}-side variance rows found.`;
+});
+const selectedVoucherTotal = computed(() =>
+  voucherRows.value.reduce((sum, row, i) => voucherState.value[i]?.selected
+    ? sum + toNumber(voucherState.value[i].adjust || rowAmount(row))
+    : sum, 0)
+);
 
 const errorMessage = ref('');
 
@@ -344,18 +396,33 @@ const onRowToggle = (rowState) => {
 const manualEntries = ref([]);
 
 const addManualEntry = () => {
+  if (isSF.value) {
+    manualEntries.value.push({ date: '', projectName: '', partyName: '', invoiceNumber: '', amount: '' });
+    return;
+  }
   manualEntries.value.push({ date: '', partyName: '', invoiceNumber: '', creditDays: '', amount: '', type: cfg.value.primaryType });
 };
 
 const removeManualEntry = (index) => manualEntries.value.splice(index, 1);
 
-const validManualEntries = computed(() =>
-  manualEntries.value.filter((e) => e.partyName && e.date && toNumber(e.amount))
+const validManualEntries = computed(() => isSF.value
+  ? manualEntries.value.filter((e) => e.partyName && e.date && e.invoiceNumber && toNumber(e.amount))
+  : manualEntries.value.filter((e) => e.partyName && e.date && toNumber(e.amount))
 );
 
 const balanceTB = computed(() => baseBalanceTB.value);
 
 const balanceReport = computed(() => {
+  if (isSF.value) {
+    let total = baseBalanceReport.value;
+    primaryRows.value.forEach((row, i) => {
+      if (primaryState.value[i]?.selected) {
+        total += toNumber(primaryState.value[i].adjust || rowAmount(row)) - toNumber(rowAmount(row));
+      }
+    });
+    validManualEntries.value.forEach((e) => { total += toNumber(e.amount); });
+    return total;
+  }
   let total = baseBalanceReport.value;
   primaryRows.value.forEach((row, i) => {
     if (primaryState.value[i]?.selected) total += toNumber(primaryState.value[i].adjust || row.amount);
@@ -371,6 +438,7 @@ const balanceReport = computed(() => {
 });
 
 const variance = computed(() => {
+  if (isSF.value) return Math.abs(balanceTB.value - balanceReport.value);
   let resolved = 0;
   primaryRows.value.forEach((row, i) => {
     if (primaryState.value[i]?.selected) resolved += toNumber(primaryState.value[i].adjust || row.amount);
@@ -387,6 +455,10 @@ const isResolved = computed(() => Math.abs(Number(variance.value)) < 0.005);
 const actionLoading = ref(false);
 
 const appliedAdjustments = computed(() => {
+  if (isSF.value) {
+    const selectedRows = primaryRows.value.filter((_, i) => primaryState.value[i]?.selected);
+    return [...selectedRows, ...validManualEntries.value];
+  }
   const collect = (rows, state, type) => rows
     .map((row, i) => ({ row, state: state[i] }))
     .filter(({ state: s }) => s?.selected)
@@ -427,10 +499,41 @@ const postVariance = async () => {
   errorMessage.value = '';
   actionLoading.value = true;
   try {
-    await useApi(cfg.value.bulkEndpoint, {
-      method: 'POST',
-      body: { variance: 0, adjustments: appliedAdjustments.value },
-    });
+    if (isSF.value) {
+      for (let i = 0; i < primaryRows.value.length; i++) {
+        if (!primaryState.value[i]?.selected) continue;
+        const row = primaryRows.value[i];
+        await useApi('/data-source/sales-forecast/update-adjustments', {
+          method: 'POST',
+          body: {
+            date: row['Date'],
+            party_name: row['Party Name'],
+            invoice_number: row['Invoice Number'],
+            original_invoice_number: row['Invoice Number'],
+            amount: row['Amount'],
+            adjustments: toNumber(primaryState.value[i].adjust || row['Amount']),
+            current_date: props.date,
+          },
+        });
+      }
+      for (const entry of validManualEntries.value) {
+        await useApi('/data-source/sales-forecast/store', {
+          method: 'POST',
+          body: {
+            date: entry.date,
+            project_name: entry.projectName,
+            party_name: entry.partyName,
+            invoice_number: entry.invoiceNumber,
+            amount: entry.amount,
+          },
+        });
+      }
+    } else {
+      await useApi(cfg.value.bulkEndpoint, {
+        method: 'POST',
+        body: { variance: 0, adjustments: appliedAdjustments.value },
+      });
+    }
     await resolveAlert('resolve');
     emit('resolved');
   } catch (err) {

@@ -101,8 +101,9 @@
         :data="dashboardAlerts.missing_ledgers"
         @close="closeModal"
         @resolved="onModalResolved" />
-      <DashboardSalesForecastVarianceModal
+      <DashboardVarianceReconciliationModal
         v-if="openModalKey === 'sales_forecast_variance' && !isMobile"
+        side="sales-forecast"
         :data="dashboardAlerts.sales_forecast_variance"
         :date="today"
         @close="closeModal"

@@ -89,8 +89,9 @@
             @close="closeInspect"
             @resolved="onInspectResolved"
         />
-        <DashboardSalesForecastVarianceModal
+        <DashboardVarianceReconciliationModal
             v-if="inspectKey === 'sales_forecast_variance'"
+            side="sales-forecast"
             :data="inspectData"
             :date="todayIso"
             @close="closeInspect"
