@@ -85,6 +85,19 @@
                             }}
                         </button>
                     </div>
+
+                    <!-- Period selector (AR/AP only) -->
+                    <div v-if="showPeriodSelector" class="mt-5 pt-5 border-t" :class="effectiveDark ? 'border-white/10' : 'border-gray-200'">
+                        <p class="text-sm font-medium mb-2" :class="effectiveDark ? 'text-white/80' : 'text-gray-700'">
+                            {{ currentLang === 'ar' ? 'بيانات صحيحة حتى تاريخ' : 'Data verified up to' }}
+                        </p>
+                        <CommonDateField v-model="periodValue" :dark="effectiveDark" />
+                        <p class="text-xs mt-2" :class="effectiveDark ? 'text-white/50' : 'text-gray-400'">
+                            {{ currentLang === 'ar'
+                                ? 'سيتم استبدال كل بيانات الرفع الحالية بهذا الملف بتاريخ الفترة المحدد'
+                                : 'This file will replace all existing upload data, stamped with this period date' }}
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Footer Buttons -->
@@ -119,6 +132,7 @@ const props = defineProps({
     hint: { type: String, default: null },
     // Comma-separated extensions, matching the native <input accept> attribute (e.g. ".xlsx, .xls" or ".exe").
     accept: { type: String, default: '.xlsx, .xls' },
+    showPeriodSelector: { type: Boolean, default: false },
 })
 
 const { isDark: themeDark } = useTheme()
@@ -130,6 +144,7 @@ const fileInput = ref(null)
 const selectedFile = ref(null)
 const errorMessage = ref('')
 const isDragging = ref(false)
+const periodValue = ref(orgToday())
 
 // 1. Trigger the native file browser
 const triggerPicker = () => {
@@ -171,12 +186,17 @@ const validateAndAssignFile = (file) => {
 const closeModal = () => {
     selectedFile.value = null
     errorMessage.value = ''
+    periodValue.value = orgToday()
     emit('close')
 }
 
 const handleUpload = () => {
     if (selectedFile.value) {
-        emit('upload', selectedFile.value)
+        if (props.showPeriodSelector) {
+            emit('upload', selectedFile.value, { periodValue: periodValue.value })
+        } else {
+            emit('upload', selectedFile.value)
+        }
         closeModal()
     }
 }

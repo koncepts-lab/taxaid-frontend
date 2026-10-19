@@ -227,7 +227,7 @@ export const useDataIn = () => {
   // Single backend route for the whole flow — dispatches on `mode` (+`type` for preview/confirm).
   const DATA_IN_UPLOAD_URL = () => `${config.public.apiBase}/data-source/data-in/upload`
 
-  const previewUpload = async (id: string, file: File): Promise<any> => {
+  const previewUpload = async (id: string, file: File, periodValue?: string | null): Promise<any> => {
     if (!VARIANCE_UPLOAD_IDS.includes(id)) throw new Error(`Unknown data-in id: ${id}`)
 
     previewing.value = true
@@ -236,6 +236,9 @@ export const useDataIn = () => {
       const form = new FormData()
       form.append('mode', 'preview')
       form.append('file', file)
+      if ((id === 'ar' || id === 'ap') && periodValue) {
+        form.append('period_value', periodValue)
+      }
       if (isBudgetVarianceId(id)) {
         form.append('type', 'budget')
         form.append('statement_type', BUDGET_STATEMENT_TYPE_MAP[id])
@@ -265,13 +268,16 @@ export const useDataIn = () => {
     }
   }
 
-  const confirmUpload = async (id: string, tempPath: string, excludedLedgers?: string[]): Promise<void> => {
+  const confirmUpload = async (id: string, tempPath: string, excludedLedgers?: string[], periodValue?: string | null): Promise<void> => {
     if (!VARIANCE_UPLOAD_IDS.includes(id)) throw new Error(`Unknown data-in id: ${id}`)
 
     confirming.value = true
     try {
       const payload: Record<string, any> = { mode: 'confirm', temp_path: tempPath }
       if (excludedLedgers?.length) payload.excluded_ledgers = excludedLedgers
+      if ((id === 'ar' || id === 'ap') && periodValue) {
+        payload.period_value = periodValue
+      }
       if (isBudgetVarianceId(id)) {
         payload.type = 'budget'
         payload.statement_type = BUDGET_STATEMENT_TYPE_MAP[id]
