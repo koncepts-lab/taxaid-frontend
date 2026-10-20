@@ -28,6 +28,7 @@
         <!-- Content -->
         <div class="px-6 pb-6 pt-4 space-y-6">
           <div v-for="(ledger, i) in ledgers" :key="ledger.ledger_name" class="border rounded-xl p-6" :class="[isDark ? 'border-white/10' : 'border-gray-100', i > 0 ? 'border-t' : '']">
+            <span class="inline-block text-xs font-semibold px-2.5 py-1 rounded-full mb-3" :class="isDark ? 'bg-white/10 text-white/80' : 'bg-gray-100 text-gray-600'">Ledger {{ i + 1 }} of {{ ledgers.length }}</span>
 
             <!-- Ledger Info Box -->
             <div class="border rounded-xl p-6 mb-6" :class="isDark ? 'bg-white/5 border-white/10' : 'bg-[#eafaf1] border-[#bbf7d0]'">

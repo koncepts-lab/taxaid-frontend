@@ -36,7 +36,11 @@
               </tr>
               <tr v-for="(row, i) in rows" :key="i" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
                 <td class="py-2 px-3">
-                  <input v-if="row.isNew" type="text" v-model="row.invoice_number" placeholder="Invoice number" class="w-full border rounded-md py-1.5 px-2.5 focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
+                  <input v-if="row.isNew" type="text" v-model="row.invoice_number" placeholder="Invoice number"
+                    class="w-full border rounded-md py-1.5 px-2.5 focus:outline-none focus:ring-1"
+                    :class="isDuplicateRow(i)
+                      ? 'border-red-400 focus:ring-red-400 bg-red-500/10 text-red-500'
+                      : (isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30 focus:ring-[#058a64]' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400 focus:ring-[#058a64]')" />
                   <span v-else :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ row.invoice_number || '—' }}</span>
                 </td>
                 <td class="py-2 px-3">
@@ -60,6 +64,9 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             Create Invoice
           </button>
+          <p v-if="duplicateRowIndexes.size > 0" class="text-sm text-red-500 mt-2">
+            Duplicate invoice numbers for this vendor — give each one a unique number before applying.
+          </p>
         </div>
 
         <div class="shrink-0 px-4 md:px-6 py-4 border-t flex flex-wrap items-center gap-3" :class="isDark ? 'bg-[#002e26] border-white/10' : 'bg-white border-gray-100'">
@@ -90,6 +97,7 @@ const props = defineProps({
   partyName: { type: String, required: true },
   needed: { type: Number, default: 0 },
   invoices: { type: Array, default: null }, // null = not loaded yet
+  purchaseCandidates: { type: Array, default: () => [] }, // TB vouchers suggesting new bills for this vendor
   loading: { type: Boolean, default: false },
   typeField: { type: String, required: true }, // 'transaction_type' | 'type'
   primaryType: { type: String, required: true }, // 'purchase' | 'sales'
@@ -100,9 +108,8 @@ const emit = defineEmits(['close', 'resolved']);
 
 const rows = ref([]);
 
-watch(() => props.invoices, (invs) => {
-  if (!invs) { rows.value = []; return; }
-  rows.value = invs.map((inv) => ({
+const buildRows = () => {
+  const existing = (props.invoices || []).map((inv) => ({
     invoice_number: inv.invoice_number,
     amount: inv.amount,
     date_of_invoice: inv.date_of_invoice,
@@ -111,7 +118,19 @@ watch(() => props.invoices, (invs) => {
     markPaid: false,
     isNew: false,
   }));
-}, { immediate: true });
+  const candidates = (props.purchaseCandidates || []).map((c) => ({
+    invoice_number: c.voucher_no || '',
+    amount: c.amount,
+    date_of_invoice: c.entry_date,
+    credit_days: 0,
+    adjustment: String(c.amount ?? ''),
+    markPaid: false,
+    isNew: true,
+  }));
+  rows.value = [...existing, ...candidates];
+};
+
+watch([() => props.invoices, () => props.purchaseCandidates], buildRows, { immediate: true });
 
 const addInvoiceRow = () => {
   rows.value.push({
@@ -136,13 +155,31 @@ const rowApplied = (row) => row.markPaid ? toNumber(row.amount) : toNumber(row.a
 const totalEntered = computed(() => rows.value.reduce((sum, r) => sum + rowApplied(r), 0));
 const needed = computed(() => Math.abs(props.needed));
 
+const duplicateRowIndexes = computed(() => {
+  const seen = {};
+  rows.value.forEach((r, i) => {
+    const n = (r.invoice_number || '').trim().toLowerCase();
+    if (!n) return;
+    (seen[n] ||= []).push(i);
+  });
+  const bad = new Set();
+  Object.values(seen).forEach((indexes) => {
+    if (indexes.length > 1 && indexes.some((i) => rows.value[i].isNew)) {
+      indexes.forEach((i) => bad.add(i));
+    }
+  });
+  return bad;
+});
+const isDuplicateRow = (i) => duplicateRowIndexes.value.has(i);
+
 const errorMessage = ref('');
 
 const canApply = computed(() =>
   !props.loading &&
   Math.abs(totalEntered.value - needed.value) < 0.01 &&
   rows.value.some((r) => rowApplied(r) !== 0) &&
-  rows.value.every((r) => !r.isNew || (r.invoice_number && toNumber(r.amount) > 0))
+  rows.value.every((r) => !r.isNew || (r.invoice_number && toNumber(r.amount) > 0)) &&
+  duplicateRowIndexes.value.size === 0
 );
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
