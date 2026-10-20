@@ -74,7 +74,7 @@
       <!-- Content: the only scroll region -->
       <div class="flex-1 overflow-y-auto overflow-x-auto px-4 md:px-6 pb-6" :class="isDark ? 'text-white' : ''">
 
-        <div v-show="activeTab === 'primary' || activeTab === 'secondary'">
+        <div v-show="activeTab === 'primary'">
           <table class="w-full text-left border-separate border-spacing-0 min-w-[760px]">
             <thead>
               <tr class="text-white text-sm">
@@ -117,6 +117,38 @@
                 <td colspan="3" class="py-3 px-4 text-right">{{ cfg.totalRowLabel }}</td>
                 <td class="py-3 px-4">{{ code }} {{ formatAmount(selectedVoucherTotal) }}</td>
                 <td colspan="3"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Payment/Receipt side: resolved per vendor, never auto-matched to a bill -->
+        <div v-show="activeTab === 'secondary'">
+          <table class="w-full text-left border-separate border-spacing-0 min-w-[640px]">
+            <thead>
+              <tr class="text-white text-sm">
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium rounded-tl-lg">Party Name</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">Needs ({{ code }})</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">Status</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium rounded-tr-lg">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y text-sm" :class="isDark ? 'divide-white/10' : 'divide-gray-100'">
+              <tr v-if="secondaryVendors.length === 0">
+                <td colspan="4" class="py-8 px-4 text-center" :class="isDark ? 'text-white/50 bg-[#002e26]' : 'text-gray-500 bg-white'">{{ voucherEmptyMessage }}</td>
+              </tr>
+              <tr v-for="vendor in secondaryVendors" :key="vendor" :class="isDark ? 'hover:bg-white/5 bg-[#002e26]' : 'hover:bg-gray-50 bg-white'">
+                <td class="py-3 px-4 font-medium" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ vendor }}</td>
+                <td class="py-3 px-4" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatAmount(vendorDiff(vendor)) }}</td>
+                <td class="py-3 px-4">
+                  <span v-if="vendorResolutions[vendor]" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1 rounded-md text-xs font-medium">Resolved</span>
+                  <span v-else class="text-xs" :class="isDark ? 'text-white/40' : 'text-gray-400'">Pending</span>
+                </td>
+                <td class="py-2 px-4">
+                  <button @click="openVendorModal(vendor)" class="bg-[#058a64] hover:bg-[#047857] text-white px-3 py-1.5 rounded-md text-sm font-medium">
+                    {{ vendorResolutions[vendor] ? 'Edit' : 'Resolve' }}
+                  </button>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -199,6 +231,21 @@
     </div>
   </div>
   </Teleport>
+
+  <DashboardVendorBillResolutionModal
+    v-if="activeVendorModal"
+    :side="props.side"
+    :party-name="activeVendorModal"
+    :needed="vendorDiff(activeVendorModal)"
+    :invoices="invoicesByParty[activeVendorModal] || null"
+    :loading="!invoicesByParty[activeVendorModal]"
+    :type-field="cfg.typeField"
+    :primary-type="cfg.primaryType"
+    :code="code"
+    :is-dark="isDark"
+    @close="activeVendorModal = null"
+    @resolved="onVendorResolved"
+  />
 </template>
 
 <script setup>
@@ -288,6 +335,18 @@ const onEntryPartyChange = (entry) => {
   loadInvoicesForParty(entry.partyName);
 };
 
+// Batch preload every secondary-tab vendor's invoices in one call, right when
+// this modal opens — so clicking "Resolve" on any vendor is instant, with no
+// per-vendor round trip and no repeat calls on revisit.
+const loadInvoicesBatch = async (partyNames) => {
+  const names = [...new Set(partyNames)].filter((n) => n && !invoicesByParty.value[n]);
+  if (!names.length) return;
+  try {
+    const res = await useApi('/adjustments/invoices-batch', { params: { side: props.side, party_names: names } });
+    invoicesByParty.value = { ...invoicesByParty.value, ...(res?.data ?? {}) };
+  } catch (e) { /* non-fatal — falls back to per-vendor fetch on open */ }
+};
+
 const currentLang = useState('currentLang', () => 'en');
 const { isDark } = useTheme();
 const { code } = useCurrency();
@@ -312,6 +371,27 @@ const primaryRows = computed(() => isSF.value ? (props.data?.reasons ?? []) : (p
 const secondaryRows = computed(() => isSF.value ? [] : (props.data?.Vouchers?.[cfg.value.secondaryKey] ?? []));
 const vendorDiffs = computed(() => props.data?.VendorDiffs ?? {});
 const vendorDiff = (ledgerName) => vendorDiffs.value[ledgerName] ? Math.abs(Number(vendorDiffs.value[ledgerName])) : 0;
+
+// Vendors that need resolving on the payment/receipt side — derived from the
+// rows already in this response, no extra request.
+const secondaryVendors = computed(() => [...new Set(secondaryRows.value.map((r) => r.ledger_name))]);
+
+const activeVendorModal = ref(null);
+const vendorResolutions = ref({}); // { [vendorName]: { lines, amount } }
+
+const openVendorModal = (vendor) => {
+  activeVendorModal.value = vendor;
+  loadInvoicesForParty(vendor);
+};
+
+const onVendorResolved = ({ partyName, lines, amount }) => {
+  vendorResolutions.value = { ...vendorResolutions.value, [partyName]: { lines, amount } };
+  activeVendorModal.value = null;
+};
+
+watch(secondaryVendors, (vendors) => {
+  if (vendors.length) loadInvoicesBatch(vendors);
+}, { immediate: true });
 
 const rowDate = (row) => isSF.value ? row['Date'] : row.entry_date;
 const rowParty = (row) => isSF.value ? row['Party Name'] : row.ledger_name;
@@ -427,9 +507,7 @@ const balanceReport = computed(() => {
   primaryRows.value.forEach((row, i) => {
     if (primaryState.value[i]?.selected) total += toNumber(primaryState.value[i].adjust || row.amount);
   });
-  secondaryRows.value.forEach((row, i) => {
-    if (secondaryState.value[i]?.selected) total -= toNumber(secondaryState.value[i].adjust || row.amount);
-  });
+  Object.values(vendorResolutions.value).forEach((r) => { total -= r.amount; });
   validManualEntries.value.forEach((e) => {
     const amt = toNumber(e.amount);
     total += e.type === 'return' ? -amt : amt;
@@ -443,9 +521,7 @@ const variance = computed(() => {
   primaryRows.value.forEach((row, i) => {
     if (primaryState.value[i]?.selected) resolved += toNumber(primaryState.value[i].adjust || row.amount);
   });
-  secondaryRows.value.forEach((row, i) => {
-    if (secondaryState.value[i]?.selected) resolved += toNumber(secondaryState.value[i].adjust || row.amount);
-  });
+  Object.values(vendorResolutions.value).forEach((r) => { resolved += r.amount; });
   validManualEntries.value.forEach((e) => { resolved += toNumber(e.amount); });
   return baseVariance.value - resolved;
 });
@@ -480,12 +556,17 @@ const appliedAdjustments = computed(() => {
   }));
   return [
     ...collect(primaryRows.value, primaryState.value, cfg.value.primaryType),
-    ...collect(secondaryRows.value, secondaryState.value, 'return'),
+    ...Object.values(vendorResolutions.value).flatMap((r) => r.lines),
     ...manual,
   ];
 });
 
-const canPost = computed(() => isResolved.value && appliedAdjustments.value.length > 0);
+// Every vendor with a variance needs its own resolution before posting.
+const allVendorsResolved = computed(() =>
+  secondaryVendors.value.every((v) => vendorResolutions.value[v])
+);
+
+const canPost = computed(() => isResolved.value && appliedAdjustments.value.length > 0 && allVendorsResolved.value);
 
 const resolveAlert = async (type) => {
   if (!props.data.alert_id) return;
