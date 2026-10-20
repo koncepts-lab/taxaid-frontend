@@ -35,17 +35,17 @@
               <input type="text" :value="`${code} ${formatCurrency(balanceReport)}`" readonly class="w-full border rounded-lg px-4 py-2.5 font-medium focus:outline-none" :class="isDark ? 'bg-[#002e26] border-white/10 text-white' : 'bg-white border-gray-200 text-gray-800'" />
             </div>
             <div class="flex-1 min-w-0">
-              <label class="block text-sm font-semibold mb-2" :class="isDark ? 'text-white/70' : 'text-gray-700'">Variance</label>
+              <label class="block text-sm font-semibold mb-2" :class="isDark ? 'text-white/70' : 'text-gray-700'">{{ labels.variance }}</label>
               <input type="text" :value="`${code} ${formatCurrency(variance)}`" readonly :class="isResolved ? (isDark ? 'bg-[#047857]/20 border-[#6ee7b7]/40 text-[#6ee7b7]' : 'bg-[#eefdf6] border-[#6ee7b7] text-[#047857]') : (isDark ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-[#fef2f2] border-[#fca5a5] text-red-600')" class="w-full border rounded-lg px-4 py-2.5 font-medium focus:outline-none" />
             </div>
           </div>
           <div v-if="!isResolved" class="flex items-center gap-2 text-sm font-medium" :class="isDark ? 'text-red-400' : 'text-red-500'">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            {{ code }} {{ formatCurrency(variance) }} variance remaining - Select items below to resolve the variance.
+            {{ code }} {{ formatCurrency(variance) }} {{ labels.varianceRemaining }}
           </div>
           <div v-else class="flex items-center gap-2 text-sm font-medium" :class="isDark ? 'text-[#6ee7b7]' : 'text-[#047857]'">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-            Variance resolved to zero - you can now post the variance.
+            {{ labels.varianceZero }}
           </div>
         </div>
       </div>
@@ -66,7 +66,7 @@
           <!-- <h3 class="text-base font-bold" :class="isDark ? 'text-white' : 'text-gray-800'">{{ activeTabHeading }}</h3> -->
           <button v-if="activeTab === 'manual'" @click="addManualEntry" class="bg-[#058a64] hover:bg-[#047857] text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            Add Manual Entry Row
+            {{ labels.addManualRow }}
           </button>
         </div>
       </div>
@@ -78,13 +78,13 @@
           <table class="w-full text-left border-separate border-spacing-0 min-w-[760px]">
             <thead>
               <tr class="text-white text-sm">
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium rounded-tl-lg">Date</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">Party Name</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium rounded-ss-lg">{{ labels.date }}</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">{{ labels.partyName }}</th>
                 <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">{{ cfg.refColumnLabel }}</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">Amount ({{ code }})</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">Select</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">Adjustments ({{ code }})</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium rounded-tr-lg">Action</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">{{ labels.amount }} ({{ code }})</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">{{ labels.select }}</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">{{ labels.adjustments }} ({{ code }})</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium rounded-se-lg">{{ labels.action }}</th>
               </tr>
             </thead>
             <tbody class="divide-y text-sm" :class="isDark ? 'divide-white/10' : 'divide-gray-100'">
@@ -95,7 +95,7 @@
                 <td class="py-3 px-4" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ rowDate(row) }}</td>
                 <td class="py-3 px-4 font-medium" :class="isDark ? 'text-white/80' : 'text-gray-700'">
                   {{ rowParty(row) }}
-                  <span v-if="vendorDiff(rowParty(row))" class="block text-xs font-normal" :class="isDark ? 'text-white/40' : 'text-gray-400'">needs {{ formatCurrency(vendorDiff(rowParty(row))) }}</span>
+                  <span v-if="vendorDiff(rowParty(row))" class="block text-xs font-normal" :class="isDark ? 'text-white/40' : 'text-gray-400'">{{ labels.needs }} {{ formatCurrency(vendorDiff(rowParty(row))) }}</span>
                 </td>
                 <td class="py-3 px-4" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ rowRef(row) }}</td>
                 <td class="py-3 px-4" :class="isDark ? 'text-white/80' : 'text-gray-700'">
@@ -104,12 +104,12 @@
                 </td>
                 <td class="py-3 px-4"><input type="checkbox" v-model="voucherState[i].selected" @change="onRowToggle(voucherState[i])" class="w-4 h-4 rounded text-[#058a64] focus:ring-[#058a64]" :class="isDark ? 'border-white/20 bg-[#002e26]' : 'border-gray-300 bg-white'" /></td>
                 <td class="py-2 px-4">
-                  <input type="text" v-model="voucherState[i].adjust" :placeholder="voucherState[i].selected ? String(rowAmount(row)) : 'Select to adjust'" :class="voucherState[i].selected ? (isDark ? 'bg-white/10 rounded-md py-1.5 px-3 text-right text-white' : 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800') : (isDark ? 'bg-transparent disabled:bg-transparent p-0 text-white/30 placeholder-white/20' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300')" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!voucherState[i].selected"/>
+                  <input type="text" v-model="voucherState[i].adjust" :placeholder="voucherState[i].selected ? String(rowAmount(row)) : labels.selectToAdjust" :class="voucherState[i].selected ? (isDark ? 'bg-white/10 rounded-md py-1.5 px-3 text-right text-white' : 'bg-gray-100 rounded-md py-1.5 px-3 text-right text-gray-800') : (isDark ? 'bg-transparent disabled:bg-transparent p-0 text-white/30 placeholder-white/20' : 'bg-transparent disabled:bg-transparent p-0 text-gray-400 placeholder-gray-300')" class="w-full border-none focus:outline-none focus:ring-0 text-sm transition-all" :disabled="!voucherState[i].selected"/>
                 </td>
                 <td class="py-2 px-4">
                   <span v-if="voucherState[i].selected" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1.5 rounded-md text-sm font-medium w-24 flex items-center justify-center gap-1">
                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    Applied
+                    {{ labels.applied }}
                   </span>
                 </td>
               </tr>
@@ -127,10 +127,10 @@
           <table class="w-full text-left border-separate border-spacing-0 min-w-[640px]">
             <thead>
               <tr class="text-white text-sm">
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium rounded-tl-lg">Party Name</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">Needs ({{ code }})</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">Status</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium rounded-tr-lg">Action</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium rounded-ss-lg">{{ labels.partyName }}</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">{{ labels.needsCol }} ({{ code }})</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">{{ labels.status }}</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium rounded-se-lg">{{ labels.action }}</th>
               </tr>
             </thead>
             <tbody class="divide-y text-sm" :class="isDark ? 'divide-white/10' : 'divide-gray-100'">
@@ -141,12 +141,12 @@
                 <td class="py-3 px-4 font-medium" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ vendor }}</td>
                 <td class="py-3 px-4" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatCurrency(vendorDiff(vendor)) }}</td>
                 <td class="py-3 px-4">
-                  <span v-if="vendorResolutions[vendor]" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1 rounded-md text-xs font-medium">Resolved</span>
-                  <span v-else class="text-xs" :class="isDark ? 'text-white/40' : 'text-gray-400'">Pending</span>
+                  <span v-if="vendorResolutions[vendor]" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1 rounded-md text-xs font-medium">{{ labels.resolved }}</span>
+                  <span v-else class="text-xs" :class="isDark ? 'text-white/40' : 'text-gray-400'">{{ labels.pending }}</span>
                 </td>
                 <td class="py-2 px-4">
                   <button @click="openVendorModal(vendor)" class="bg-[#058a64] hover:bg-[#047857] text-white px-3 py-1.5 rounded-md text-sm font-medium">
-                    {{ vendorResolutions[vendor] ? 'Edit' : 'Resolve' }}
+                    {{ vendorResolutions[vendor] ? labels.edit : labels.resolveBtn }}
                   </button>
                 </td>
               </tr>
@@ -158,20 +158,20 @@
           <table class="w-full text-left border-separate border-spacing-0 min-w-[900px]">
             <thead>
               <tr class="text-white text-sm">
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-40 rounded-tl-lg">Date</th>
-                <th v-if="isSF" class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-auto">Project Name</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-auto">Party Name</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-36">Invoice Number</th>
-                <th v-if="!isSF" class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-28">Credit Days</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-32">Amount ({{ code }})</th>
-                <th v-if="!isSF" class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-44">Type</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-32 text-center rounded-tr-lg">Action</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-40 rounded-ss-lg">{{ labels.date }}</th>
+                <th v-if="isSF" class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-auto">{{ labels.projectName }}</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-auto">{{ labels.partyName }}</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-36">{{ labels.invoiceNumber }}</th>
+                <th v-if="!isSF" class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-28">{{ labels.creditDays }}</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-32">{{ labels.amount }} ({{ code }})</th>
+                <th v-if="!isSF" class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-44">{{ labels.type }}</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium w-32 text-center rounded-se-lg">{{ labels.action }}</th>
               </tr>
             </thead>
             <tbody class="divide-y text-sm" :class="isDark ? 'divide-white/10' : 'divide-gray-100'">
               <tr v-if="manualEntries.length === 0">
                 <td :colspan="isSF ? 6 : 7" class="py-8 px-4 text-center" :class="isDark ? 'text-white/50 bg-[#002e26]' : 'text-gray-500 bg-white'">
-                  No manual entries. Click "Add Manual Entry Row" to add one.
+                  {{ labels.noManualEntries }}
                 </td>
               </tr>
               <tr v-for="(entry, index) in manualEntries" :key="index" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
@@ -179,20 +179,20 @@
                   <CommonDateField v-model="entry.date" format="dmy" size="sm" allow-future />
                 </td>
                 <td v-if="isSF" class="py-2 px-2">
-                  <input type="text" v-model="entry.projectName" placeholder="Enter project name" class="w-full border rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
+                  <input type="text" v-model="entry.projectName" :placeholder="labels.enterProjectName" class="w-full border rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
                 </td>
                 <td class="py-2 px-2">
                   <CommonSelectDropdown v-if="!isSF" v-model="entry.partyName" mode="select" size="sm" searchable :dark="isDark"
                     :placeholder="cfg.partyPlaceholder" :options="partyOptions" @update:model-value="onEntryPartyChange(entry)" />
-                  <input v-else type="text" v-model="entry.partyName" placeholder="Enter customer name" class="w-full border rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
+                  <input v-else type="text" v-model="entry.partyName" :placeholder="labels.enterCustomerName" class="w-full border rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
                 </td>
                 <td class="py-2 px-2">
                   <CommonSelectDropdown v-if="!isSF" v-model="entry.invoiceNumber" mode="select" size="sm" searchable :dark="isDark"
-                    placeholder="Select invoice" :options="invoiceOptionsFor(entry.partyName)" :disabled="!entry.partyName" />
-                  <input v-else type="text" v-model="entry.invoiceNumber" placeholder="Enter invoice number" class="w-full border rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
+                    :placeholder="labels.selectInvoice" :options="invoiceOptionsFor(entry.partyName)" :disabled="!entry.partyName" />
+                  <input v-else type="text" v-model="entry.invoiceNumber" :placeholder="labels.enterInvoiceNumber" class="w-full border rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
                 </td>
                 <td v-if="!isSF" class="py-2 px-2">
-                  <input type="text" v-model="entry.creditDays" placeholder="e.g., 30" class="w-full border rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
+                  <input type="text" v-model="entry.creditDays" :placeholder="labels.creditDaysPlaceholder" class="w-full border rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
                 </td>
                 <td class="py-2 px-2">
                   <input type="text" v-model="entry.amount" placeholder="0.00" class="w-full border rounded-md py-1.5 px-3 text-center focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
@@ -203,12 +203,12 @@
                       {{ cfg.primaryLabel }}
                     </button>
                     <button type="button" @click="entry.type = 'return'" class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors" :class="entry.type === 'return' ? 'bg-[#058a64] text-white' : (isDark ? 'bg-white/5 text-white/60 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')">
-                      Return
+                      {{ labels.returnLabel }}
                     </button>
                   </div>
                 </td>
                 <td class="py-2 px-2 text-center">
-                  <button @click="removeManualEntry(index)" class="text-red-500 hover:text-red-700 transition-colors font-medium">Delete</button>
+                  <button @click="removeManualEntry(index)" class="text-red-500 hover:text-red-700 transition-colors font-medium">{{ labels.delete }}</button>
                 </td>
               </tr>
             </tbody>
@@ -221,10 +221,10 @@
       <div class="shrink-0 px-4 md:px-6 py-4 border-t flex flex-wrap justify-end items-center gap-3" :class="isDark ? 'bg-[#002e26] border-white/10' : 'bg-white'">
         <p v-if="errorMessage" class="text-sm text-red-500 mr-auto">{{ errorMessage }}</p>
         <button @click="closeModal" class="px-4 py-1.5 border rounded-lg font-medium transition-colors text-sm" :class="isDark ? 'border-white/20 text-white/80 hover:bg-white/10' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
-          Cancel
+          {{ labels.cancel }}
         </button>
         <button @click="postVariance" :disabled="!canPost || actionLoading" :class="canPost ? 'bg-[#058a64] hover:bg-[#047857] text-white cursor-pointer' : (isDark ? 'bg-white/10 text-white/40 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')" class="px-4 py-1.5 rounded-lg font-medium text-sm">
-          {{ actionLoading ? 'Posting...' : 'Post Variance' }}
+          {{ actionLoading ? labels.posting : labels.postVariance }}
         </button>
       </div>
 
@@ -262,52 +262,92 @@ const emit = defineEmits(['close', 'resolved']);
 const SIDE_CONFIG = {
   ap: {
     code: 'AP',
-    title: 'AP VARIANCE RECONCILIATION',
-    subtitle: 'Reconcile differences between Trial Balance and AP Report. All variances must be resolved to zero before posting.',
-    tbLabel: 'Balance as per TB',
     reportKey: 'Balance as per AP report',
-    reportLabel: 'Balance as per AP report',
     primaryKey: 'Potential reason for variance - Purchase',
     secondaryKey: 'Payment - Unrecorded Transactions',
-    primaryLabel: 'Purchase',
-    secondaryLabel: 'Payment',
-    refColumnLabel: 'Voucher No.',
-    partyPlaceholder: 'Select vendor',
     primaryType: 'purchase',
     bulkEndpoint: '/adjustments/ap/bulk',
     typeField: 'transaction_type',
+    en: {
+      title: 'AP VARIANCE RECONCILIATION',
+      subtitle: 'Reconcile differences between Trial Balance and AP Report. All variances must be resolved to zero before posting.',
+      tbLabel: 'Balance as per TB',
+      reportLabel: 'Balance as per AP report',
+      primaryLabel: 'Purchase',
+      secondaryLabel: 'Payment',
+      refColumnLabel: 'Voucher No.',
+      partyPlaceholder: 'Select vendor',
+    },
+    ar: {
+      title: 'تسوية فروقات الحسابات الدائنة',
+      subtitle: 'التوفيق بين الفروقات بين ميزان المراجعة وتقرير الحسابات الدائنة. يجب تسوية جميع الفروقات إلى صفر قبل الترحيل.',
+      tbLabel: 'الرصيد حسب ميزان المراجعة',
+      reportLabel: 'الرصيد حسب تقرير الحسابات الدائنة',
+      primaryLabel: 'مشتريات',
+      secondaryLabel: 'مدفوعات',
+      refColumnLabel: 'رقم السند',
+      partyPlaceholder: 'اختر المورد',
+    },
   },
   ar: {
     code: 'AR',
-    title: 'AR VARIANCE RECONCILIATION',
-    subtitle: 'Reconcile differences between Trial Balance and AR Report. All variances must be resolved to zero before posting.',
-    tbLabel: 'Balance as per TB',
     reportKey: 'Balance as per AR report',
-    reportLabel: 'Balance as per AR report',
     primaryKey: 'Potential reason for variance - Sales',
     secondaryKey: 'Receipt - Unrecorded Transactions',
-    primaryLabel: 'Sales',
-    secondaryLabel: 'Receipt',
-    refColumnLabel: 'Voucher No.',
-    partyPlaceholder: 'Select customer',
     primaryType: 'sales',
     bulkEndpoint: '/adjustments/ar/bulk',
     typeField: 'type',
+    en: {
+      title: 'AR VARIANCE RECONCILIATION',
+      subtitle: 'Reconcile differences between Trial Balance and AR Report. All variances must be resolved to zero before posting.',
+      tbLabel: 'Balance as per TB',
+      reportLabel: 'Balance as per AR report',
+      primaryLabel: 'Sales',
+      secondaryLabel: 'Receipt',
+      refColumnLabel: 'Voucher No.',
+      partyPlaceholder: 'Select customer',
+    },
+    ar: {
+      title: 'تسوية فروقات الحسابات المدينة',
+      subtitle: 'التوفيق بين الفروقات بين ميزان المراجعة وتقرير الحسابات المدينة. يجب تسوية جميع الفروقات إلى صفر قبل الترحيل.',
+      tbLabel: 'الرصيد حسب ميزان المراجعة',
+      reportLabel: 'الرصيد حسب تقرير الحسابات المدينة',
+      primaryLabel: 'مبيعات',
+      secondaryLabel: 'مقبوضات',
+      refColumnLabel: 'رقم السند',
+      partyPlaceholder: 'اختر العميل',
+    },
   },
   'sales-forecast': {
     code: 'SF',
-    title: 'SALES FORECAST VARIANCE',
-    subtitle: 'Reconcile discrepancies between forecasted values and actual invoiced revenue.',
-    tbLabel: 'Actual Revenue (Invoiced)',
-    reportLabel: 'Balance as per sales forecast',
-    primaryLabel: 'Reason for variance',
-    refColumnLabel: 'Invoice Number',
     showTotalRow: true,
-    totalRowLabel: 'Total sales',
+    en: {
+      title: 'SALES FORECAST VARIANCE',
+      subtitle: 'Reconcile discrepancies between forecasted values and actual invoiced revenue.',
+      tbLabel: 'Actual Revenue (Invoiced)',
+      reportLabel: 'Balance as per sales forecast',
+      primaryLabel: 'Reason for variance',
+      refColumnLabel: 'Invoice Number',
+      totalRowLabel: 'Total sales',
+    },
+    ar: {
+      title: 'فروقات توقعات المبيعات',
+      subtitle: 'التوفيق بين القيم المتوقعة والإيرادات الفعلية المفوترة.',
+      tbLabel: 'الإيرادات الفعلية (المفوترة)',
+      reportLabel: 'الرصيد حسب توقعات المبيعات',
+      primaryLabel: 'سبب الفرق',
+      refColumnLabel: 'رقم الفاتورة',
+      totalRowLabel: 'إجمالي المبيعات',
+    },
   },
 };
 const isSF = computed(() => props.side === 'sales-forecast');
-const cfg = computed(() => SIDE_CONFIG[props.side]);
+const currentLang = useState('currentLang', () => 'en');
+const isAr = computed(() => currentLang.value === 'ar');
+const cfg = computed(() => {
+  const base = SIDE_CONFIG[props.side];
+  return { ...base, ...base[isAr.value ? 'ar' : 'en'] };
+});
 
 const partyOptions = ref([]);
 const invoicesByParty = ref({});
@@ -348,7 +388,6 @@ const loadInvoicesBatch = async (partyNames) => {
   } catch (e) { /* non-fatal — falls back to per-vendor fetch on open */ }
 };
 
-const currentLang = useState('currentLang', () => 'en');
 const { isDark } = useTheme();
 const { code } = useCurrency();
 
@@ -406,9 +445,11 @@ const rowAmount = (row) => isSF.value ? row['Amount'] : row.amount;
 const purchaseVendors = computed(() => [...new Set(primaryRows.value.map((r) => r.ledger_name))]);
 const paymentVendors = computed(() => [...new Set(secondaryRows.value.map((r) => r.ledger_name))]);
 const activeVendors = computed(() => activeTab.value === 'payment' ? paymentVendors.value : purchaseVendors.value);
-const activeVendorsEmptyMessage = computed(() => activeTab.value === 'payment'
-  ? `No unrecorded ${cfg.value.secondaryLabel.toLowerCase()} rows found.`
-  : `No ${cfg.value.primaryLabel.toLowerCase()}-side variance rows found.`);
+const activeVendorsEmptyMessage = computed(() => isAr.value
+  ? `لا توجد صفوف فروقات على جانب ${activeTab.value === 'payment' ? cfg.value.secondaryLabel : cfg.value.primaryLabel}.`
+  : (activeTab.value === 'payment'
+    ? `No unrecorded ${cfg.value.secondaryLabel.toLowerCase()} rows found.`
+    : `No ${cfg.value.primaryLabel.toLowerCase()}-side variance rows found.`));
 
 const visibleTabs = computed(() => {
   const tabs = [];
@@ -418,7 +459,7 @@ const visibleTabs = computed(() => {
     if (purchaseVendors.value.length) tabs.push({ key: 'purchase', label: cfg.value.primaryLabel, count: purchaseVendors.value.length });
     if (paymentVendors.value.length) tabs.push({ key: 'payment', label: cfg.value.secondaryLabel, count: paymentVendors.value.length });
   }
-  tabs.push({ key: 'manual', label: 'Manual Entry', count: 0 });
+  tabs.push({ key: 'manual', label: isAr.value ? 'الإدخال اليدوي' : 'Manual Entry', count: 0 });
   return tabs;
 });
 const activeTab = ref(null);
@@ -445,7 +486,7 @@ watch(secondaryRows, (rows) => { secondaryState.value = resetRowState(rows); }, 
 const voucherRows = computed(() => activeTab.value === 'secondary' ? secondaryRows.value : primaryRows.value);
 const voucherState = computed(() => activeTab.value === 'secondary' ? secondaryState.value : primaryState.value);
 const voucherEmptyMessage = computed(() => {
-  if (isSF.value) return 'No forecast rows found for this date.';
+  if (isSF.value) return isAr.value ? 'لا توجد صفوف توقعات لهذا التاريخ.' : 'No forecast rows found for this date.';
   return activeTab.value === 'secondary'
     ? `No unrecorded ${cfg.value.secondaryLabel.toLowerCase()} rows found.`
     : `No ${cfg.value.primaryLabel.toLowerCase()}-side variance rows found.`;
@@ -457,6 +498,78 @@ const selectedVoucherTotal = computed(() =>
 );
 
 const errorMessage = ref('');
+
+const labels = computed(() => isAr.value ? {
+  variance: 'الفرق',
+  varianceRemaining: 'فرق متبقٍ - اختر العناصر أدناه لتسوية الفرق.',
+  varianceZero: 'تم تسوية الفرق إلى صفر - يمكنك الآن ترحيل الفرق.',
+  addManualRow: 'إضافة صف إدخال يدوي',
+  date: 'التاريخ',
+  partyName: 'اسم الطرف',
+  amount: 'المبلغ',
+  select: 'تحديد',
+  adjustments: 'التسويات',
+  action: 'إجراء',
+  needs: 'يحتاج',
+  selectToAdjust: 'اختر للتسوية',
+  applied: 'مُطبّق',
+  needsCol: 'المطلوب',
+  status: 'الحالة',
+  resolved: 'تمت التسوية',
+  pending: 'قيد الانتظار',
+  edit: 'تعديل',
+  resolveBtn: 'تسوية',
+  noManualEntries: 'لا توجد إدخالات يدوية. انقر على «إضافة صف إدخال يدوي» لإضافة واحد.',
+  projectName: 'اسم المشروع',
+  invoiceNumber: 'رقم الفاتورة',
+  creditDays: 'أيام الائتمان',
+  type: 'النوع',
+  enterProjectName: 'أدخل اسم المشروع',
+  enterCustomerName: 'أدخل اسم العميل',
+  selectInvoice: 'اختر الفاتورة',
+  enterInvoiceNumber: 'أدخل رقم الفاتورة',
+  creditDaysPlaceholder: 'مثال: 30',
+  returnLabel: 'مرتجع',
+  delete: 'حذف',
+  cancel: 'إلغاء',
+  posting: 'جارٍ الترحيل...',
+  postVariance: 'ترحيل الفرق',
+} : {
+  variance: 'Variance',
+  varianceRemaining: 'variance remaining - Select items below to resolve the variance.',
+  varianceZero: 'Variance resolved to zero - you can now post the variance.',
+  addManualRow: 'Add Manual Entry Row',
+  date: 'Date',
+  partyName: 'Party Name',
+  amount: 'Amount',
+  select: 'Select',
+  adjustments: 'Adjustments',
+  action: 'Action',
+  needs: 'needs',
+  selectToAdjust: 'Select to adjust',
+  applied: 'Applied',
+  needsCol: 'Needs',
+  status: 'Status',
+  resolved: 'Resolved',
+  pending: 'Pending',
+  edit: 'Edit',
+  resolveBtn: 'Resolve',
+  noManualEntries: 'No manual entries. Click "Add Manual Entry Row" to add one.',
+  projectName: 'Project Name',
+  invoiceNumber: 'Invoice Number',
+  creditDays: 'Credit Days',
+  type: 'Type',
+  enterProjectName: 'Enter project name',
+  enterCustomerName: 'Enter customer name',
+  selectInvoice: 'Select invoice',
+  enterInvoiceNumber: 'Enter invoice number',
+  creditDaysPlaceholder: 'e.g., 30',
+  returnLabel: 'Return',
+  delete: 'Delete',
+  cancel: 'Cancel',
+  posting: 'Posting...',
+  postVariance: 'Post Variance',
+});
 
 const toNumber = (v) => {
   const n = parseFloat(String(v ?? '').replace(/,/g, ''));
@@ -475,7 +588,7 @@ const extractError = (err) => {
     const first = Object.values(data.errors)[0];
     return Array.isArray(first) ? String(first[0]) : String(first);
   }
-  return data?.message || err?.message || 'Something went wrong';
+  return data?.message || err?.message || (isAr.value ? 'حدث خطأ ما' : 'Something went wrong');
 };
 
 const closeModal = () => emit('close');
