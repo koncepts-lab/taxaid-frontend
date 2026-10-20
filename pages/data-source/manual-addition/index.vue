@@ -25,12 +25,12 @@
         <div class="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-4 gap-6">
           
           <!-- Card 1: Lead Master -->
-          <div :class="['p-6 flex flex-col items-center text-center shadow-sm rounded-[20px] border-2', isDark ? 'bg-[#01332a] border-[#063f34]' : 'bg-[#E0F9F3] border-[#6FDBBF]']">
+          <div :class="['p-6 flex flex-col items-center text-center shadow-sm rounded-[20px] border-2 transition-colors', isDark ? 'bg-[#002e26] border-white/10' : 'bg-[#E0F9F3] border-[#6FDBBF]']">
             <div class="mb-4">
               <img src="/images/icons/Lead-Master.svg" alt="Lead Master" class="w-10 h-10" />
             </div>
             <h3 :class="['text-base font-medium mb-3', isDark ? 'text-white' : 'text-[#013E32]']">{{ currentLang === 'ar' ? 'العملاء المحتملين' : 'Lead Master' }}</h3>
-            <p class="text-sm text-gray-500 mb-8 flex-1 leading-relaxed px-2">
+            <p :class="['text-sm mb-8 flex-1 leading-relaxed px-2', isDark ? 'text-white/60' : 'text-gray-500']">
               {{ currentLang === 'ar' ? 'إدارة معلومات العملاء المحتملين وتفاصيلهم' : 'Manage lead information and prospect details' }}
             </p>
             <button @click="router.push('/data-source/manual-addition/add-lead')" class="w-full py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors">
@@ -39,12 +39,12 @@
           </div>
 
           <!-- Card 2: Contract Master Data -->
-          <div :class="['p-6 flex flex-col items-center text-center shadow-sm rounded-[20px] border-2', isDark ? 'bg-[#01332a] border-[#063f34]' : 'bg-[#E0F9F3] border-[#6FDBBF]']">
+          <div :class="['p-6 flex flex-col items-center text-center shadow-sm rounded-[20px] border-2 transition-colors', isDark ? 'bg-[#002e26] border-white/10' : 'bg-[#E0F9F3] border-[#6FDBBF]']">
             <div class="mb-4">
               <img src="/images/icons/Contract-Master-Data.svg" alt="Contract Master Data" class="" />
             </div>
             <h3 :class="['text-base font-medium mb-3', isDark ? 'text-white' : 'text-[#013E32]']">{{ currentLang === 'ar' ? 'بيانات العقد' : 'Contract Master Data' }}</h3>
-            <p class="text-sm text-gray-500 mb-8 flex-1 leading-relaxed px-2">
+            <p :class="['text-sm mb-8 flex-1 leading-relaxed px-2', isDark ? 'text-white/60' : 'text-gray-500']">
               {{ currentLang === 'ar' ? 'تفاصيل العقد والمراحل ونظرة عامة على الميزانية.' : 'Contract details, milestones, and budget overview.' }}
             </p>
             <button @click="router.push('/data-source/manual-addition/add-contract')" class="w-full py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors">
@@ -53,12 +53,12 @@
           </div>
 
           <!-- Card 3: PDC In -->
-          <div :class="['p-6 flex flex-col items-center text-center shadow-sm rounded-[20px] border-2', isDark ? 'bg-[#01332a] border-[#063f34]' : 'bg-[#E0F9F3] border-[#6FDBBF]']">
+          <div :class="['p-6 flex flex-col items-center text-center shadow-sm rounded-[20px] border-2 transition-colors', isDark ? 'bg-[#002e26] border-white/10' : 'bg-[#E0F9F3] border-[#6FDBBF]']">
             <div class="mb-4">
               <img src="/images/icons/PDC-In.svg" alt="PDC In" class="w-10 h-10" />
             </div>
             <h3 :class="['text-base font-medium mb-3', isDark ? 'text-white' : 'text-[#013E32]']">{{ currentLang === 'ar' ? 'شيكات واردة' : 'PDC In' }}</h3>
-            <p class="text-sm text-gray-500 mb-8 flex-1 leading-relaxed px-2">
+            <p :class="['text-sm mb-8 flex-1 leading-relaxed px-2', isDark ? 'text-white/60' : 'text-gray-500']">
               {{ currentLang === 'ar' ? 'الشيكات المؤجلة المستلمة من العملاء' : 'Post-dated cheques received from customers' }}
             </p>
             <button @click="router.push('/data-source/manual-addition/add-pdc-in')" class="w-full py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors">
@@ -67,12 +67,12 @@
           </div>
 
           <!-- Card 4: PDC Out -->
-          <div :class="['p-6 flex flex-col items-center text-center shadow-sm rounded-[20px] border-2', isDark ? 'bg-[#01332a] border-[#063f34]' : 'bg-[#E0F9F3] border-[#6FDBBF]']">
+          <div :class="['p-6 flex flex-col items-center text-center shadow-sm rounded-[20px] border-2 transition-colors', isDark ? 'bg-[#002e26] border-white/10' : 'bg-[#E0F9F3] border-[#6FDBBF]']">
             <div class="mb-4">
               <img src="/images/icons/PDC-Out.svg" alt="PDC Out" class="w-10 h-10" />
             </div>
             <h3 :class="['text-base font-medium mb-3', isDark ? 'text-white' : 'text-[#013E32]']">{{ currentLang === 'ar' ? 'شيكات صادرة' : 'PDC Out' }}</h3>
-            <p class="text-sm text-gray-500 mb-8 flex-1 leading-relaxed px-2">
+            <p :class="['text-sm mb-8 flex-1 leading-relaxed px-2', isDark ? 'text-white/60' : 'text-gray-500']">
               {{ currentLang === 'ar' ? 'الشيكات المؤجلة الصادرة للموردين' : 'Post-dated cheques issued to vendors' }}
             </p>
             <button @click="router.push('/data-source/manual-addition/add-pdc-out')" class="w-full py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors">
@@ -81,12 +81,12 @@
           </div>
 
           <!-- Card 5: AP Manual Adjustment -->
-          <div :class="['p-6 flex flex-col items-center text-center shadow-sm rounded-[20px] border-2', isDark ? 'bg-[#01332a] border-[#063f34]' : 'bg-[#E0F9F3] border-[#6FDBBF]']">
+          <div :class="['p-6 flex flex-col items-center text-center shadow-sm rounded-[20px] border-2 transition-colors', isDark ? 'bg-[#002e26] border-white/10' : 'bg-[#E0F9F3] border-[#6FDBBF]']">
             <div class="mb-4">
               <img src="/images/icons/Accounts-Payable-green.svg" alt="AP Manual Adjustment" class="w-10 h-10" />
             </div>
             <h3 :class="['text-base font-medium mb-3', isDark ? 'text-white' : 'text-[#013E32]']">{{ currentLang === 'ar' ? 'تسوية حسابات دائنة' : 'AP Manual Adjustment' }}</h3>
-            <p class="text-sm text-gray-500 mb-8 flex-1 leading-relaxed px-2">
+            <p :class="['text-sm mb-8 flex-1 leading-relaxed px-2', isDark ? 'text-white/60' : 'text-gray-500']">
               {{ currentLang === 'ar' ? 'إضافة تسويات يدوية للحسابات الدائنة (مشتريات أو مدفوعات)' : 'Add manual accounts payable adjustments (purchase or payment)' }}
             </p>
             <button @click="router.push('/data-source/manual-addition/add-ap-adjustment')" class="w-full py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors">

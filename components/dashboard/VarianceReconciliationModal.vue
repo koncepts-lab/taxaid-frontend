@@ -342,7 +342,7 @@ const loadInvoicesBatch = async (partyNames) => {
   const names = [...new Set(partyNames)].filter((n) => n && !invoicesByParty.value[n]);
   if (!names.length) return;
   try {
-    const res = await useApi('/adjustments/invoices-batch', { params: { side: props.side, party_names: names } });
+    const res = await useApi('/adjustments/invoices-batch', { params: { side: props.side, party_names: names.join(',') } });
     invoicesByParty.value = { ...invoicesByParty.value, ...(res?.data ?? {}) };
   } catch (e) { /* non-fatal — falls back to per-vendor fetch on open */ }
 };

@@ -26,28 +26,29 @@
             </button>
           </div>
 
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mx-auto">
+          <div :class="['rounded-xl shadow-sm border p-8 mx-auto transition-colors', isDark ? 'bg-[#002e26] border-white/10' : 'bg-white border-gray-100']">
 
           <!-- Section 1: Form Fields -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6 mb-10">
             <div>
-              <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">PDC Issue Date</label>
+              <label :class="['block text-[14px] font-medium mb-1.5', isDark ? 'text-white' : 'text-[#0A0A0A]']">PDC Issue Date</label>
               <CommonDateField v-model="form.pdc_issue_date" format="dmy" allow-future />
             </div>
             <div>
-              <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">PDC Realisation Date</label>
+              <label :class="['block text-[14px] font-medium mb-1.5', isDark ? 'text-white' : 'text-[#0A0A0A]']">PDC Realisation Date</label>
               <CommonDateField v-model="form.pdc_realisation_date" format="dmy" allow-future />
             </div>
             <div>
-              <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Bank Name</label>
-              <input type="text" v-model="form.bank_name" placeholder="Enter bank name" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
+              <label :class="['block text-[14px] font-medium mb-1.5', isDark ? 'text-white' : 'text-[#0A0A0A]']">Bank Name</label>
+              <input type="text" v-model="form.bank_name" placeholder="Enter bank name"
+                :class="['w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-sm placeholder-[#717182]', isDark ? 'bg-[#00201a] text-white' : 'text-gray-700']" />
             </div>
           </div>
 
           <!-- Section 2: Cheque Details -->
           <div class="mb-10">
             <div class="flex justify-between items-center mb-4">
-              <h2 class="text-[18px] font-medium text-[#0A0A0A]">Cheque Details</h2>
+              <h2 :class="['text-[18px] font-medium', isDark ? 'text-white' : 'text-[#0A0A0A]']">Cheque Details</h2>
               <button @click="addCheque" class="flex items-center justify-center gap-2 hover:bg-[#52D1B2] transition-colors" style="background: #68E4C4; width: 204px; height: 40px; border-radius: 8.84px; border: 1px solid #04C18F80; color: #0A0A0A; font-size: 16px; font-weight: 400;">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -58,7 +59,7 @@
             
             <div class="w-full overflow-x-auto rounded-t-lg">
               <table class="w-full text-sm text-left">
-                <thead class="bg-[#00896F] text-white">
+                <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#00896F]'">
                   <tr>
                     <th class="px-4 py-3 font-medium rounded-tl-lg">Cheque Number</th>
                     <th class="px-4 py-3 font-medium">Party Name</th>
@@ -66,31 +67,35 @@
                     <th class="px-4 py-3 font-medium rounded-tr-lg">Action</th>
                   </tr>
                 </thead>
-                <tbody class="border-b border-gray-100">
-                  <tr v-for="(cheque, index) in paginatedCheques" :key="cheque.id || index" class="border-b border-gray-100/50">
+                <tbody :class="['border-b', isDark ? 'border-white/10' : 'border-gray-100']">
+                  <tr v-for="(cheque, index) in paginatedCheques" :key="cheque.id || index"
+                    :class="['border-b', isDark ? 'border-white/5 bg-[#00201a]/40' : 'border-gray-100/50']">
                     <td class="p-2 w-48">
-                      <input type="text" v-model="cheque.cheque_number" placeholder="eg., CHQ-123456" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="cheque.cheque_number" placeholder="eg., CHQ-123456"
+                        :class="['w-full px-3 py-2.5 rounded outline-none text-sm placeholder-[#717182]', isDark ? 'bg-[#00201a] border border-white/10 text-white' : 'text-gray-700 bg-[rgb(243,243,245)] border border-[rgba(0,0,0,0.04)]']" />
                     </td>
                     <td class="p-2">
-                      <input type="text" v-model="cheque.party_name" placeholder="Enter party/vendor name" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="cheque.party_name" placeholder="Enter party/vendor name"
+                        :class="['w-full px-3 py-2.5 rounded outline-none text-sm placeholder-[#717182]', isDark ? 'bg-[#00201a] border border-white/10 text-white' : 'text-gray-700 bg-[rgb(243,243,245)] border border-[rgba(0,0,0,0.04)]']" />
                     </td>
                     <td class="p-2 w-40">
-                      <input type="text" v-model="cheque.amount" placeholder="" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="cheque.amount" placeholder=""
+                        :class="['w-full px-3 py-2.5 rounded outline-none text-sm placeholder-[#717182]', isDark ? 'bg-[#00201a] border border-white/10 text-white' : 'text-gray-700 bg-[rgb(243,243,245)] border border-[rgba(0,0,0,0.04)]']" />
                     </td>
                     <td class="p-2 w-24">
-                      <button @click="removeCheque(cheque)" class="text-[#FCA5A5] hover:text-red-500 font-medium transition-colors">Delete</button>
+                      <button @click="removeCheque(cheque)" :class="isDark ? 'text-red-400 hover:text-red-300' : 'text-[#FCA5A5] hover:text-red-500'" class="font-medium transition-colors">Delete</button>
                     </td>
                   </tr>
                 </tbody>
               </table>
-              <div class="bg-[#65E2C4] px-4 py-3 flex justify-end items-center text-sm font-semibold text-[#013E32]">
+              <div :class="['px-4 py-3 flex justify-end items-center text-sm font-semibold', isDark ? 'bg-[#1D5E54] text-white' : 'bg-[#65E2C4] text-[#013E32]']">
                 <span class="mr-4">Total PDC Amount</span>
                 <span>{{ formatInMillions(totalPdcAmount) }} AED</span>
               </div>
               
               <!-- Pagination footer -->
-              <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 mt-2 bg-white rounded-b-lg">
-                  <span class="text-sm text-gray-500">
+              <div :class="['px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-t mt-2 rounded-b-lg', isDark ? 'border-white/10 bg-[#002e26]' : 'border-gray-100 bg-white']">
+                  <span class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-500'">
                       {{ currentLang === 'ar'
                           ? `عرض ${pageStart}–${pageEnd} من ${totalResults} نتيجة`
                           : `Showing ${pageStart}–${pageEnd} of ${totalResults} results`
@@ -99,7 +104,8 @@
 
                   <div class="flex items-center gap-1.5">
                       <button :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)"
-                          class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                          :class="isDark ? 'border-white/10 text-white/80 bg-[#00201a] hover:bg-[#00201a]/70' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'"
+                          class="px-3 py-1.5 rounded-lg border text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all">
                           {{ currentLang === 'ar' ? 'السابق' : 'Previous' }}
                       </button>
 
@@ -111,18 +117,19 @@
                           <button v-else @click="goToPage(p)"
                               :class="p === currentPage
                                   ? 'bg-[#00896F] text-white border-[#00896F]'
-                                  : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+                                  : (isDark ? 'bg-[#00201a] text-white/80 border-white/10 hover:bg-[#00201a]/70' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50')"
                               class="w-8 h-8 flex items-center justify-center rounded-lg border text-sm font-medium transition-all">
                               {{ p }}
                           </button>
                       </template>
 
                       <button :disabled="currentPage >= lastPage" @click="goToPage(currentPage + 1)"
-                          class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                          :class="isDark ? 'border-white/10 text-white/80 bg-[#00201a] hover:bg-[#00201a]/70' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'"
+                          class="px-3 py-1.5 rounded-lg border text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all">
                           {{ currentLang === 'ar' ? 'التالي' : 'Next' }}
                       </button>
 
-                      <span class="ml-3 text-sm text-gray-500 whitespace-nowrap">
+                      <span class="ml-3 text-sm whitespace-nowrap" :class="isDark ? 'text-white/60' : 'text-gray-500'">
                           {{ currentLang === 'ar' ? 'صفوف لكل صفحة:' : 'Rows per page:' }}
                       </span>
                       <CommonSelectDropdown class="w-20" mode="select" size="xs" :clearable="false" :options="perPageOptions" v-model="localPerPage" />
@@ -133,12 +140,13 @@
 
           <!-- Section 3: Notes / Remarks -->
           <div class="mb-4">
-            <h2 class="text-[16px] font-medium text-[#0A0A0A] mb-3">Notes / Remarks</h2>
-            <textarea v-model="form.remarks" placeholder="Add any additional notes or comments about these PDCs..." rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-white focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-gray-400 resize-y"></textarea>
+            <h2 :class="['text-[16px] font-medium mb-3', isDark ? 'text-white' : 'text-[#0A0A0A]']">Notes / Remarks</h2>
+            <textarea v-model="form.remarks" placeholder="Add any additional notes or comments about these PDCs..." rows="4"
+              :class="['w-full px-4 py-3 rounded-lg border focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-sm placeholder-gray-400 resize-y', isDark ? 'bg-[#00201a] border-white/10 text-white' : 'bg-white border-gray-200 text-gray-700']"></textarea>
           </div>
 
           <!-- Bottom Action -->
-          <div class="flex justify-end items-center gap-4 mt-8 border-t border-gray-100 pt-6">
+          <div :class="['flex justify-end items-center gap-4 mt-8 border-t pt-6', isDark ? 'border-white/10' : 'border-gray-100']">
             <p v-if="error" class="text-sm text-red-500">{{ error }}</p>
             <p v-if="success" class="text-sm text-[#00896F] font-medium">{{ success }}</p>
             <button @click="savePdcData" :disabled="saving" class="px-6 py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">

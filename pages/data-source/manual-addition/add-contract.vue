@@ -26,30 +26,32 @@
             </button>
           </div>
 
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mx-auto">
+          <div :class="['rounded-xl shadow-sm border p-8 mx-auto transition-colors', isDark ? 'bg-[#002e26] border-white/10' : 'bg-white border-gray-100']">
 
           <!-- Section 1: Form Fields -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-8">
             <!-- Row 1 -->
             <div>
-              <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Lead ID</label>
+              <label :class="['block text-[14px] font-medium mb-1.5', isDark ? 'text-white' : 'text-[#0A0A0A]']">Lead ID</label>
               <div class="relative">
                 <CommonSelectDropdown mode="select" :clearable="false" placeholder="Select Lead ID" :options="leadIds" :model-value="selectedLeadId" @update:model-value="v => { selectedLeadId = v; onLeadSelected() }" />
               </div>
             </div>
             <div>
-              <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Customer Name</label>
-              <input type="text" v-model="form.contract_name" placeholder="Customer name" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
+              <label :class="['block text-[14px] font-medium mb-1.5', isDark ? 'text-white' : 'text-[#0A0A0A]']">Customer Name</label>
+              <input type="text" v-model="form.contract_name" placeholder="Customer name"
+                :class="['w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-sm placeholder-[#717182]', isDark ? 'bg-[#00201a] text-white' : 'text-gray-700']" />
             </div>
 
             <!-- Row 2 -->
             <div>
-              <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Contract Sign Date</label>
+              <label :class="['block text-[14px] font-medium mb-1.5', isDark ? 'text-white' : 'text-[#0A0A0A]']">Contract Sign Date</label>
               <CommonDateField v-model="form.contract_sign_date" format="dmy" allow-future />
             </div>
             <div>
-              <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Project Name</label>
-              <input type="text" v-model="form.project_name" placeholder="Project name" class="w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-gray-700 text-sm placeholder-[#717182]" />
+              <label :class="['block text-[14px] font-medium mb-1.5', isDark ? 'text-white' : 'text-[#0A0A0A]']">Project Name</label>
+              <input type="text" v-model="form.project_name" placeholder="Project name"
+                :class="['w-full px-4 py-2.5 rounded-lg border border-[#04C18F80] focus:border-[#00896F] focus:ring-1 focus:ring-[#00896F] outline-none text-sm placeholder-[#717182]', isDark ? 'bg-[#00201a] text-white' : 'text-gray-700']" />
             </div>
           </div>
 
@@ -58,32 +60,40 @@
             <!-- Card 1: Sales -->
             <div :class="['border rounded-lg p-6 grid grid-cols-1 md:grid-cols-3 gap-6', isDark ? 'bg-[#00201a] border-[#143e36]' : 'bg-[#E0F9F3] border-[#6FDBBF]']">
               <div>
-                <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Lead Sales Value</label>
-                <input type="text" :value="formatAmount(form.lead_sales_value)" readonly class="w-full px-4 py-2.5 rounded-lg bg-white border-none outline-none text-gray-700 text-sm" />
+                <label :class="['block text-[14px] font-medium mb-1.5', isDark ? 'text-white' : 'text-[#0A0A0A]']">Lead Sales Value</label>
+                <input type="text" :value="formatAmount(form.lead_sales_value)" readonly
+                  :class="['w-full px-4 py-2.5 rounded-lg border-none outline-none text-sm', isDark ? 'bg-[#002e26] text-white' : 'bg-white text-gray-700']" />
               </div>
               <div>
-                <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Final Contract Value</label>
-                <input type="text" v-model="form.final_contract_value" @blur="updateSalesVariance" placeholder="Enter final contract value" class="w-full px-4 py-2.5 rounded-lg bg-white border-none outline-none text-gray-700 text-sm" />
+                <label :class="['block text-[14px] font-medium mb-1.5', isDark ? 'text-white' : 'text-[#0A0A0A]']">Final Contract Value</label>
+                <input type="text" v-model="form.final_contract_value" @blur="updateSalesVariance" placeholder="Enter final contract value"
+                  :class="['w-full px-4 py-2.5 rounded-lg border-none outline-none text-sm placeholder-[#717182]', isDark ? 'bg-[#002e26] text-white' : 'bg-white text-gray-700']" />
               </div>
               <div>
-                <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Sales Variance</label>
-                <input type="text" :value="formatAmount(form.sales_variance)" readonly :class="salesResolved ? 'border border-[#6FDBBF] bg-[#E0F9F3] text-[#00896F]' : 'border border-[#FCA5A5] bg-[#FEE2E2] text-[#EF4444]'" class="w-full px-4 py-2.5 rounded-lg outline-none text-sm font-medium" />
+                <label :class="['block text-[14px] font-medium mb-1.5', isDark ? 'text-white' : 'text-[#0A0A0A]']">Sales Variance</label>
+                <input type="text" :value="formatAmount(form.sales_variance)" readonly
+                  :class="salesResolved ? (isDark ? 'border border-[#00B794]/40 bg-[#00B794]/20 text-[#00FFBC]' : 'border border-[#6FDBBF] bg-[#E0F9F3] text-[#00896F]') : (isDark ? 'border border-red-500/40 bg-red-900/30 text-red-300' : 'border border-[#FCA5A5] bg-[#FEE2E2] text-[#EF4444]')"
+                  class="w-full px-4 py-2.5 rounded-lg outline-none text-sm font-medium" />
               </div>
             </div>
 
             <!-- Card 2: Budget -->
             <div :class="['border rounded-lg p-6 grid grid-cols-1 md:grid-cols-3 gap-6', isDark ? 'bg-[#00201a] border-[#143e36]' : 'bg-[#E0F9F3] border-[#6FDBBF]']">
               <div>
-                <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Planned Lead Budget</label>
-                <input type="text" :value="formatAmount(form.planned_lead_budget)" readonly class="w-full px-4 py-2.5 rounded-lg bg-white border-none outline-none text-gray-700 text-sm" />
+                <label :class="['block text-[14px] font-medium mb-1.5', isDark ? 'text-white' : 'text-[#0A0A0A]']">Planned Lead Budget</label>
+                <input type="text" :value="formatAmount(form.planned_lead_budget)" readonly
+                  :class="['w-full px-4 py-2.5 rounded-lg border-none outline-none text-sm', isDark ? 'bg-[#002e26] text-white' : 'bg-white text-gray-700']" />
               </div>
               <div>
-                <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Current Budget Value</label>
-                <input type="text" v-model="form.current_budget_value" @blur="updateBudgetVariance" placeholder="Enter current budget value" class="w-full px-4 py-2.5 rounded-lg bg-white border-none outline-none text-gray-700 text-sm" />
+                <label :class="['block text-[14px] font-medium mb-1.5', isDark ? 'text-white' : 'text-[#0A0A0A]']">Current Budget Value</label>
+                <input type="text" v-model="form.current_budget_value" @blur="updateBudgetVariance" placeholder="Enter current budget value"
+                  :class="['w-full px-4 py-2.5 rounded-lg border-none outline-none text-sm placeholder-[#717182]', isDark ? 'bg-[#002e26] text-white' : 'bg-white text-gray-700']" />
               </div>
               <div>
-                <label class="block text-[14px] font-medium text-[#0A0A0A] mb-1.5">Budget Variance</label>
-                <input type="text" :value="formatAmount(form.budget_variance)" readonly :class="budgetResolved ? 'border border-[#6FDBBF] bg-[#E0F9F3] text-[#00896F]' : 'border border-[#FCA5A5] bg-[#FEE2E2] text-[#EF4444]'" class="w-full px-4 py-2.5 rounded-lg outline-none text-sm font-medium" />
+                <label :class="['block text-[14px] font-medium mb-1.5', isDark ? 'text-white' : 'text-[#0A0A0A]']">Budget Variance</label>
+                <input type="text" :value="formatAmount(form.budget_variance)" readonly
+                  :class="budgetResolved ? (isDark ? 'border border-[#00B794]/40 bg-[#00B794]/20 text-[#00FFBC]' : 'border border-[#6FDBBF] bg-[#E0F9F3] text-[#00896F]') : (isDark ? 'border border-red-500/40 bg-red-900/30 text-red-300' : 'border border-[#FCA5A5] bg-[#FEE2E2] text-[#EF4444]')"
+                  class="w-full px-4 py-2.5 rounded-lg outline-none text-sm font-medium" />
               </div>
             </div>
           </div>
@@ -104,7 +114,7 @@
           <!-- Section 2: Contract Milestones -->
           <div class="mb-10">
             <div class="flex justify-between items-center mb-4">
-              <h2 class="text-[18px] font-medium text-[#0A0A0A]">Contract Milestones</h2>
+              <h2 :class="['text-[18px] font-medium', isDark ? 'text-white' : 'text-[#0A0A0A]']">Contract Milestones</h2>
               <button @click="addMilestone" class="flex items-center justify-center gap-2 hover:bg-[#52D1B2] transition-colors" style="background: #68E4C4; width: 204px; height: 40px; border-radius: 8.84px; border: 1px solid #04C18F80; color: #0A0A0A; font-size: 16px; font-weight: 400;">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -115,7 +125,7 @@
             
             <div class="w-full overflow-visible rounded-t-lg">
               <table class="w-full text-sm text-left">
-                <thead class="bg-[#00896F] text-white">
+                <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#00896F]'">
                   <tr>
                     <th class="px-4 py-3 font-medium rounded-tl-lg">Date</th>
                     <th class="px-4 py-3 font-medium">Milestone Details</th>
@@ -124,41 +134,47 @@
                     <th class="px-4 py-3 font-medium rounded-tr-lg">Action</th>
                   </tr>
                 </thead>
-                <tbody class="border-b border-gray-100">
-                  <tr v-for="(milestone, index) in paginatedMilestones" :key="milestone.id || index" class="border-b border-gray-100/50">
+                <tbody :class="['border-b', isDark ? 'border-white/10' : 'border-gray-100']">
+                  <tr v-for="(milestone, index) in paginatedMilestones" :key="milestone.id || index"
+                    :class="['border-b', isDark ? 'border-white/5 bg-[#00201a]/40' : 'border-gray-100/50']">
                     <td class="p-2 w-48">
                       <CommonDateField v-model="milestone.date" format="dmy" allow-future />
                     </td>
                     <td class="p-2">
-                      <input type="text" v-model="milestone.milestone_details" placeholder="Describe Milestone Deliverable" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="milestone.milestone_details" placeholder="Describe Milestone Deliverable"
+                        :class="['w-full px-3 py-2.5 rounded outline-none text-sm placeholder-[#717182]', isDark ? 'bg-[#00201a] border border-white/10 text-white' : 'text-gray-700 bg-[rgb(243,243,245)] border border-[rgba(0,0,0,0.04)]']" />
                     </td>
                     <td class="p-2 w-32">
-                      <input type="text" v-model="milestone.lead_amount" placeholder="Amount" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="milestone.lead_amount" placeholder="Amount"
+                        :class="['w-full px-3 py-2.5 rounded outline-none text-sm placeholder-[#717182]', isDark ? 'bg-[#00201a] border border-white/10 text-white' : 'text-gray-700 bg-[rgb(243,243,245)] border border-[rgba(0,0,0,0.04)]']" />
                     </td>
                     <td class="p-2 w-32">
-                      <input type="text" v-model="milestone.final_amount" placeholder="Amount" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="milestone.final_amount" placeholder="Amount"
+                        :class="['w-full px-3 py-2.5 rounded outline-none text-sm placeholder-[#717182]', isDark ? 'bg-[#00201a] border border-white/10 text-white' : 'text-gray-700 bg-[rgb(243,243,245)] border border-[rgba(0,0,0,0.04)]']" />
                     </td>
                     <td class="p-2 w-36">
                       <div class="flex items-center gap-3">
                         <button v-if="!milestone.isApplied" @click="applyMilestone(milestone)" class="px-3 py-1.5 bg-[#00896F] text-white rounded text-xs font-medium hover:bg-[#00705a] transition-colors">Update</button>
-                        <button v-else @click="milestone.isApplied = false" class="px-3 py-1.5 bg-[#D1F2EB] text-[#00896F] rounded text-xs font-medium flex items-center gap-1 transition-colors">
+                        <button v-else @click="milestone.isApplied = false"
+                          :class="isDark ? 'bg-[#00B794]/20 text-[#00FFBC]' : 'bg-[#D1F2EB] text-[#00896F]'"
+                          class="px-3 py-1.5 rounded text-xs font-medium flex items-center gap-1 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                           Applied
                         </button>
-                        <button @click="removeMilestone(milestone)" class="text-[#FCA5A5] hover:text-red-500 font-medium transition-colors text-xs">Delete</button>
+                        <button @click="removeMilestone(milestone)" :class="isDark ? 'text-red-400 hover:text-red-300' : 'text-[#FCA5A5] hover:text-red-500'" class="font-medium transition-colors text-xs">Delete</button>
                       </div>
                     </td>
                   </tr>
                 </tbody>
               </table>
-              <div class="bg-[#65E2C4] px-4 py-3 flex justify-end items-center text-sm font-semibold text-[#013E32]">
+              <div :class="['px-4 py-3 flex justify-end items-center text-sm font-semibold', isDark ? 'bg-[#1D5E54] text-white' : 'bg-[#65E2C4] text-[#013E32]']">
                 <span class="mr-4">Total Milestone Value</span>
                 <span>{{ formatInMillions(totalMilestoneValue) }} AED</span>
               </div>
               
               <!-- Pagination footer -->
-              <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 mt-2 bg-white rounded-b-lg">
-                  <span class="text-sm text-gray-500">
+              <div :class="['px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-t mt-2 rounded-b-lg', isDark ? 'border-white/10 bg-[#002e26]' : 'border-gray-100 bg-white']">
+                  <span class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-500'">
                       {{ currentLang === 'ar'
                           ? `عرض ${pageStart}–${pageEnd} من ${totalResults} نتيجة`
                           : `Showing ${pageStart}–${pageEnd} of ${totalResults} results`
@@ -167,7 +183,8 @@
 
                   <div class="flex items-center gap-1.5">
                       <button :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)"
-                          class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                          :class="isDark ? 'border-white/10 text-white/80 bg-[#00201a] hover:bg-[#00201a]/70' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'"
+                          class="px-3 py-1.5 rounded-lg border text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all">
                           {{ currentLang === 'ar' ? 'السابق' : 'Previous' }}
                       </button>
 
@@ -179,18 +196,19 @@
                           <button v-else @click="goToPage(p)"
                               :class="p === currentPage
                                   ? 'bg-[#00896F] text-white border-[#00896F]'
-                                  : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+                                  : (isDark ? 'bg-[#00201a] text-white/80 border-white/10 hover:bg-[#00201a]/70' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50')"
                               class="w-8 h-8 flex items-center justify-center rounded-lg border text-sm font-medium transition-all">
                               {{ p }}
                           </button>
                       </template>
 
                       <button :disabled="currentPage >= lastPage" @click="goToPage(currentPage + 1)"
-                          class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                          :class="isDark ? 'border-white/10 text-white/80 bg-[#00201a] hover:bg-[#00201a]/70' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'"
+                          class="px-3 py-1.5 rounded-lg border text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all">
                           {{ currentLang === 'ar' ? 'التالي' : 'Next' }}
                       </button>
 
-                      <span class="ml-3 text-sm text-gray-500 whitespace-nowrap">
+                      <span class="ml-3 text-sm whitespace-nowrap" :class="isDark ? 'text-white/60' : 'text-gray-500'">
                           {{ currentLang === 'ar' ? 'صفوف لكل صفحة:' : 'Rows per page:' }}
                       </span>
                       <CommonSelectDropdown class="w-20" mode="select" size="xs" :clearable="false" :options="perPageOptions" v-model="localPerPage" />
@@ -202,7 +220,7 @@
           <!-- Section 3: Budget Overview -->
           <div class="mb-10">
             <div class="flex justify-between items-center mb-4">
-              <h2 class="text-[18px] font-medium text-[#0A0A0A]">Budget Overview - Cost Allocation</h2>
+              <h2 :class="['text-[18px] font-medium', isDark ? 'text-white' : 'text-[#0A0A0A]']">Budget Overview - Cost Allocation</h2>
               <button @click="addBudget" class="flex items-center justify-center gap-2 hover:bg-[#52D1B2] transition-colors" style="background: #68E4C4; width: 204px; height: 40px; border-radius: 8.84px; border: 1px solid #04C18F80; color: #0A0A0A; font-size: 16px; font-weight: 400;">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -213,7 +231,7 @@
             
             <div class="w-full overflow-visible rounded-t-lg">
               <table class="w-full text-sm text-left">
-                <thead class="bg-[#00896F] text-white">
+                <thead class="text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#00896F]'">
                   <tr>
                     <th class="px-4 py-3 font-medium rounded-tl-lg w-20">Sl. No</th>
                     <th class="px-4 py-3 font-medium">Select Cost Heads - Main Group</th>
@@ -222,10 +240,12 @@
                     <th class="px-4 py-3 font-medium rounded-tr-lg">Action</th>
                   </tr>
                 </thead>
-                <tbody class="border-b border-gray-100">
-                  <tr v-for="(budget, index) in paginatedBudgets" :key="budget.id || index" class="border-b border-gray-100/50">
+                <tbody :class="['border-b', isDark ? 'border-white/10' : 'border-gray-100']">
+                  <tr v-for="(budget, index) in paginatedBudgets" :key="budget.id || index"
+                    :class="['border-b', isDark ? 'border-white/5 bg-[#00201a]/40' : 'border-gray-100/50']">
                     <td class="p-2">
-                      <input type="text" :value="(budgetCurrentPage - 1) * budgetPerPage + index + 1" disabled style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-500 text-sm text-center" />
+                      <input type="text" :value="(budgetCurrentPage - 1) * budgetPerPage + index + 1" disabled
+                        :class="['w-full px-3 py-2.5 rounded outline-none text-sm text-center', isDark ? 'bg-[#00201a] border border-white/10 text-white/50' : 'text-gray-500 bg-[rgb(243,243,245)] border border-[rgba(0,0,0,0.04)]']" />
                     </td>
                     <td class="p-2">
                       <div class="relative">
@@ -233,32 +253,36 @@
                       </div>
                     </td>
                     <td class="p-2 w-32">
-                      <input type="text" v-model="budget.lead_amount" placeholder="Amount" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="budget.lead_amount" placeholder="Amount"
+                        :class="['w-full px-3 py-2.5 rounded outline-none text-sm placeholder-[#717182]', isDark ? 'bg-[#00201a] border border-white/10 text-white' : 'text-gray-700 bg-[rgb(243,243,245)] border border-[rgba(0,0,0,0.04)]']" />
                     </td>
                     <td class="p-2 w-32">
-                      <input type="text" v-model="budget.final_amount" placeholder="Amount" style="background: rgb(243, 243, 245); border: 1px solid rgba(0, 0, 0, 0.04);" class="w-full px-3 py-2.5 rounded outline-none text-gray-700 text-sm placeholder-[#717182]" />
+                      <input type="text" v-model="budget.final_amount" placeholder="Amount"
+                        :class="['w-full px-3 py-2.5 rounded outline-none text-sm placeholder-[#717182]', isDark ? 'bg-[#00201a] border border-white/10 text-white' : 'text-gray-700 bg-[rgb(243,243,245)] border border-[rgba(0,0,0,0.04)]']" />
                     </td>
                     <td class="p-2 w-36">
                       <div class="flex items-center gap-3">
                         <button v-if="!budget.isApplied" @click="applyBudget(budget)" class="px-3 py-1.5 bg-[#00896F] text-white rounded text-xs font-medium hover:bg-[#00705a] transition-colors">Update</button>
-                        <button v-else @click="budget.isApplied = false" class="px-3 py-1.5 bg-[#D1F2EB] text-[#00896F] rounded text-xs font-medium flex items-center gap-1 transition-colors">
+                        <button v-else @click="budget.isApplied = false"
+                          :class="isDark ? 'bg-[#00B794]/20 text-[#00FFBC]' : 'bg-[#D1F2EB] text-[#00896F]'"
+                          class="px-3 py-1.5 rounded text-xs font-medium flex items-center gap-1 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                           Applied
                         </button>
-                        <button @click="removeBudget(budget)" class="text-[#FCA5A5] hover:text-red-500 font-medium transition-colors text-xs">Delete</button>
+                        <button @click="removeBudget(budget)" :class="isDark ? 'text-red-400 hover:text-red-300' : 'text-[#FCA5A5] hover:text-red-500'" class="font-medium transition-colors text-xs">Delete</button>
                       </div>
                     </td>
                   </tr>
                 </tbody>
               </table>
-              <div class="bg-[#65E2C4] px-4 py-3 flex justify-end items-center text-sm font-semibold text-[#013E32]">
+              <div :class="['px-4 py-3 flex justify-end items-center text-sm font-semibold', isDark ? 'bg-[#1D5E54] text-white' : 'bg-[#65E2C4] text-[#013E32]']">
                 <span class="mr-4">Total Budget Allocation</span>
                 <span>{{ formatInMillions(totalBudgetValue) }} AED</span>
               </div>
               
               <!-- Pagination footer -->
-              <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 mt-2 bg-white rounded-b-lg">
-                  <span class="text-sm text-gray-500">
+              <div :class="['px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-t mt-2 rounded-b-lg', isDark ? 'border-white/10 bg-[#002e26]' : 'border-gray-100 bg-white']">
+                  <span class="text-sm" :class="isDark ? 'text-white/60' : 'text-gray-500'">
                       {{ currentLang === 'ar'
                           ? `عرض ${budgetPageStart}–${budgetPageEnd} من ${budgetTotalResults} نتيجة`
                           : `Showing ${budgetPageStart}–${budgetPageEnd} of ${budgetTotalResults} results`
@@ -267,7 +291,8 @@
 
                   <div class="flex items-center gap-1.5">
                       <button :disabled="budgetCurrentPage <= 1" @click="budgetGoToPage(budgetCurrentPage - 1)"
-                          class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                          :class="isDark ? 'border-white/10 text-white/80 bg-[#00201a] hover:bg-[#00201a]/70' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'"
+                          class="px-3 py-1.5 rounded-lg border text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all">
                           {{ currentLang === 'ar' ? 'السابق' : 'Previous' }}
                       </button>
 
@@ -279,18 +304,19 @@
                           <button v-else @click="budgetGoToPage(p)"
                               :class="p === budgetCurrentPage
                                   ? 'bg-[#00896F] text-white border-[#00896F]'
-                                  : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+                                  : (isDark ? 'bg-[#00201a] text-white/80 border-white/10 hover:bg-[#00201a]/70' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50')"
                               class="w-8 h-8 flex items-center justify-center rounded-lg border text-sm font-medium transition-all">
                               {{ p }}
                           </button>
                       </template>
 
                       <button :disabled="budgetCurrentPage >= budgetLastPage" @click="budgetGoToPage(budgetCurrentPage + 1)"
-                          class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                          :class="isDark ? 'border-white/10 text-white/80 bg-[#00201a] hover:bg-[#00201a]/70' : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'"
+                          class="px-3 py-1.5 rounded-lg border text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all">
                           {{ currentLang === 'ar' ? 'التالي' : 'Next' }}
                       </button>
 
-                      <span class="ml-3 text-sm text-gray-500 whitespace-nowrap">
+                      <span class="ml-3 text-sm whitespace-nowrap" :class="isDark ? 'text-white/60' : 'text-gray-500'">
                           {{ currentLang === 'ar' ? 'صفوف لكل صفحة:' : 'Rows per page:' }}
                       </span>
                       <CommonSelectDropdown class="w-20" mode="select" size="xs" :clearable="false" :options="perPageOptions" v-model="budgetPerPage" />

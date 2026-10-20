@@ -116,6 +116,7 @@ const props = defineProps({
   invalid: { type: Boolean, default: false },
   size: { type: String, default: 'md' },
   dark: { type: Boolean, default: undefined },
+  useDisplayFormat: { type: Boolean, default: false },
 })
 const emit = defineEmits(['update:modelValue', 'update:from', 'update:to'])
 
@@ -149,9 +150,27 @@ const parseMonth = (value) => {
 
 const parseAny = (value) => (props.month ? parseMonth(value) : parseDay(value))
 
-const fmtText = (date) => (props.month
-  ? `${pad(date.getMonth() + 1)}-${date.getFullYear()}`
-  : `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()}`)
+const DISPLAY_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+const fmtText = (date) => {
+  if (props.useDisplayFormat && !props.month) {
+    const style = displayFormat().date
+    const d = pad(date.getDate())
+    const m = DISPLAY_MONTHS[date.getMonth()]
+    const yyyy = String(date.getFullYear())
+    const yy = yyyy.slice(2)
+    switch (style) {
+      case 'dd mmm yy': return `${d} ${m} ${yy}`
+      case 'dd-mm-yyyy': return `${d}-${pad(date.getMonth() + 1)}-${yyyy}`
+      case 'dd-mm-yy': return `${d}-${pad(date.getMonth() + 1)}-${yy}`
+      case 'mmm dd, yyyy': return `${m} ${d}, ${yyyy}`
+      default: return `${d} ${m} ${yyyy}`
+    }
+  }
+  return props.month
+    ? `${pad(date.getMonth() + 1)}-${date.getFullYear()}`
+    : `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()}`
+}
 
 const outValue = (date) => {
   const y = date.getFullYear()
