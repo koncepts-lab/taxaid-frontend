@@ -200,7 +200,7 @@
                 <td v-if="!isSF" class="py-2 px-2">
                   <div class="flex items-center gap-2">
                     <button type="button" @click="entry.type = cfg.primaryType" class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors" :class="entry.type === cfg.primaryType ? 'bg-[#058a64] text-white' : (isDark ? 'bg-white/5 text-white/60 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')">
-                      Sales
+                      {{ cfg.primaryLabel }}
                     </button>
                     <button type="button" @click="entry.type = 'return'" class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors" :class="entry.type === 'return' ? 'bg-[#058a64] text-white' : (isDark ? 'bg-white/5 text-white/60 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')">
                       Return
