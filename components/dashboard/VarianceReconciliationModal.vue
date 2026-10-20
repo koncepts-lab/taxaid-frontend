@@ -122,8 +122,8 @@
           </table>
         </div>
 
-        <!-- Payment/Receipt side: resolved per vendor, never auto-matched to a bill -->
-        <div v-show="activeTab === 'secondary'">
+        <!-- AP/AR: resolved per vendor, one table driven by whichever tab is active, same modal underneath -->
+        <div v-show="activeTab === 'purchase' || activeTab === 'payment'">
           <table class="w-full text-left border-separate border-spacing-0 min-w-[640px]">
             <thead>
               <tr class="text-white text-sm">
@@ -134,10 +134,10 @@
               </tr>
             </thead>
             <tbody class="divide-y text-sm" :class="isDark ? 'divide-white/10' : 'divide-gray-100'">
-              <tr v-if="secondaryVendors.length === 0">
-                <td colspan="4" class="py-8 px-4 text-center" :class="isDark ? 'text-white/50 bg-[#002e26]' : 'text-gray-500 bg-white'">{{ voucherEmptyMessage }}</td>
+              <tr v-if="activeVendors.length === 0">
+                <td colspan="4" class="py-8 px-4 text-center" :class="isDark ? 'text-white/50 bg-[#002e26]' : 'text-gray-500 bg-white'">{{ activeVendorsEmptyMessage }}</td>
               </tr>
-              <tr v-for="vendor in secondaryVendors" :key="vendor" :class="isDark ? 'hover:bg-white/5 bg-[#002e26]' : 'hover:bg-gray-50 bg-white'">
+              <tr v-for="vendor in activeVendors" :key="vendor" :class="isDark ? 'hover:bg-white/5 bg-[#002e26]' : 'hover:bg-gray-50 bg-white'">
                 <td class="py-3 px-4 font-medium" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ vendor }}</td>
                 <td class="py-3 px-4" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatAmount(vendorDiff(vendor)) }}</td>
                 <td class="py-3 px-4">
@@ -238,6 +238,7 @@
     :party-name="activeVendorModal"
     :needed="vendorDiff(activeVendorModal)"
     :invoices="invoicesByParty[activeVendorModal] || null"
+    :purchase-candidates="purchaseCandidatesFor(activeVendorModal)"
     :loading="!invoicesByParty[activeVendorModal]"
     :type-field="cfg.typeField"
     :primary-type="cfg.primaryType"
@@ -371,10 +372,14 @@ const primaryRows = computed(() => isSF.value ? (props.data?.reasons ?? []) : (p
 const secondaryRows = computed(() => isSF.value ? [] : (props.data?.Vouchers?.[cfg.value.secondaryKey] ?? []));
 const vendorDiffs = computed(() => props.data?.VendorDiffs ?? {});
 const vendorDiff = (ledgerName) => vendorDiffs.value[ledgerName] ? Math.abs(Number(vendorDiffs.value[ledgerName])) : 0;
+const vendorDiffSigned = (ledgerName) => Number(vendorDiffs.value[ledgerName] ?? 0);
 
-// Vendors that need resolving on the payment/receipt side — derived from the
-// rows already in this response, no extra request.
-const secondaryVendors = computed(() => [...new Set(secondaryRows.value.map((r) => r.ledger_name))]);
+const allVendors = computed(() => [...new Set([
+  ...primaryRows.value.map((r) => r.ledger_name),
+  ...secondaryRows.value.map((r) => r.ledger_name),
+])]);
+
+const purchaseCandidatesFor = (vendor) => primaryRows.value.filter((r) => r.ledger_name === vendor);
 
 const activeVendorModal = ref(null);
 const vendorResolutions = ref({}); // { [vendorName]: { lines, amount } }
@@ -389,7 +394,7 @@ const onVendorResolved = ({ partyName, lines, amount }) => {
   activeVendorModal.value = null;
 };
 
-watch(secondaryVendors, (vendors) => {
+watch(allVendors, (vendors) => {
   if (vendors.length) loadInvoicesBatch(vendors);
 }, { immediate: true });
 
@@ -398,10 +403,21 @@ const rowParty = (row) => isSF.value ? row['Party Name'] : row.ledger_name;
 const rowRef = (row) => isSF.value ? row['Invoice Number'] : row.voucher_no;
 const rowAmount = (row) => isSF.value ? row['Amount'] : row.amount;
 
+const purchaseVendors = computed(() => [...new Set(primaryRows.value.map((r) => r.ledger_name))]);
+const paymentVendors = computed(() => [...new Set(secondaryRows.value.map((r) => r.ledger_name))]);
+const activeVendors = computed(() => activeTab.value === 'payment' ? paymentVendors.value : purchaseVendors.value);
+const activeVendorsEmptyMessage = computed(() => activeTab.value === 'payment'
+  ? `No unrecorded ${cfg.value.secondaryLabel.toLowerCase()} rows found.`
+  : `No ${cfg.value.primaryLabel.toLowerCase()}-side variance rows found.`);
+
 const visibleTabs = computed(() => {
   const tabs = [];
-  if (primaryRows.value.length) tabs.push({ key: 'primary', label: cfg.value.primaryLabel, count: primaryRows.value.length });
-  if (secondaryRows.value.length) tabs.push({ key: 'secondary', label: cfg.value.secondaryLabel, count: secondaryRows.value.length });
+  if (isSF.value) {
+    if (primaryRows.value.length) tabs.push({ key: 'primary', label: cfg.value.primaryLabel, count: primaryRows.value.length });
+  } else {
+    if (purchaseVendors.value.length) tabs.push({ key: 'purchase', label: cfg.value.primaryLabel, count: purchaseVendors.value.length });
+    if (paymentVendors.value.length) tabs.push({ key: 'payment', label: cfg.value.secondaryLabel, count: paymentVendors.value.length });
+  }
   tabs.push({ key: 'manual', label: 'Manual Entry', count: 0 });
   return tabs;
 });
@@ -504,10 +520,10 @@ const balanceReport = computed(() => {
     return total;
   }
   let total = baseBalanceReport.value;
-  primaryRows.value.forEach((row, i) => {
-    if (primaryState.value[i]?.selected) total += toNumber(primaryState.value[i].adjust || row.amount);
+  Object.entries(vendorResolutions.value).forEach(([vendor, r]) => {
+    const overstated = vendorDiffSigned(vendor) > 0;
+    total += overstated ? -r.amount : r.amount;
   });
-  Object.values(vendorResolutions.value).forEach((r) => { total -= r.amount; });
   validManualEntries.value.forEach((e) => {
     const amt = toNumber(e.amount);
     total += e.type === 'return' ? -amt : amt;
@@ -518,9 +534,6 @@ const balanceReport = computed(() => {
 const variance = computed(() => {
   if (isSF.value) return Math.abs(balanceTB.value - balanceReport.value);
   let resolved = 0;
-  primaryRows.value.forEach((row, i) => {
-    if (primaryState.value[i]?.selected) resolved += toNumber(primaryState.value[i].adjust || row.amount);
-  });
   Object.values(vendorResolutions.value).forEach((r) => { resolved += r.amount; });
   validManualEntries.value.forEach((e) => { resolved += toNumber(e.amount); });
   return baseVariance.value - resolved;
@@ -535,17 +548,6 @@ const appliedAdjustments = computed(() => {
     const selectedRows = primaryRows.value.filter((_, i) => primaryState.value[i]?.selected);
     return [...selectedRows, ...validManualEntries.value];
   }
-  const collect = (rows, state, type) => rows
-    .map((row, i) => ({ row, state: state[i] }))
-    .filter(({ state: s }) => s?.selected)
-    .map(({ row, state: s }) => ({
-      party_name: row.ledger_name,
-      invoice_number: row.voucher_no || null,
-      date: toApiDate(row.entry_date),
-      adjustment: toNumber(s.adjust || row.amount),
-      credit_days: null,
-      [cfg.value.typeField]: type,
-    }));
   const manual = validManualEntries.value.map((e) => ({
     party_name: e.partyName,
     invoice_number: e.invoiceNumber || null,
@@ -555,7 +557,6 @@ const appliedAdjustments = computed(() => {
     [cfg.value.typeField]: e.type,
   }));
   return [
-    ...collect(primaryRows.value, primaryState.value, cfg.value.primaryType),
     ...Object.values(vendorResolutions.value).flatMap((r) => r.lines),
     ...manual,
   ];
@@ -563,7 +564,7 @@ const appliedAdjustments = computed(() => {
 
 // Every vendor with a variance needs its own resolution before posting.
 const allVendorsResolved = computed(() =>
-  secondaryVendors.value.every((v) => vendorResolutions.value[v])
+  allVendors.value.every((v) => vendorResolutions.value[v])
 );
 
 const canPost = computed(() => isResolved.value && appliedAdjustments.value.length > 0 && allVendorsResolved.value);
