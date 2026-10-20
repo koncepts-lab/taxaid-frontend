@@ -28,20 +28,20 @@
           <div class="border rounded-xl p-4 flex flex-col md:flex-row gap-4 mb-3" :class="isDark ? 'bg-white/5 border-white/10' : 'bg-[#eefdf6] border-[#a7f3d0]'">
             <div class="flex-1 min-w-0">
               <label class="block text-sm font-semibold mb-2" :class="isDark ? 'text-white/70' : 'text-gray-700'">{{ cfg.tbLabel }}</label>
-              <input type="text" :value="`${code} ${formatAmount(balanceTB)}`" readonly class="w-full border rounded-lg px-4 py-2.5 font-medium focus:outline-none" :class="isDark ? 'bg-[#002e26] border-white/10 text-white' : 'bg-white border-gray-200 text-gray-800'" />
+              <input type="text" :value="`${code} ${formatCurrency(balanceTB)}`" readonly class="w-full border rounded-lg px-4 py-2.5 font-medium focus:outline-none" :class="isDark ? 'bg-[#002e26] border-white/10 text-white' : 'bg-white border-gray-200 text-gray-800'" />
             </div>
             <div class="flex-1 min-w-0">
               <label class="block text-sm font-semibold mb-2" :class="isDark ? 'text-white/70' : 'text-gray-700'">{{ cfg.reportLabel }}</label>
-              <input type="text" :value="`${code} ${formatAmount(balanceReport)}`" readonly class="w-full border rounded-lg px-4 py-2.5 font-medium focus:outline-none" :class="isDark ? 'bg-[#002e26] border-white/10 text-white' : 'bg-white border-gray-200 text-gray-800'" />
+              <input type="text" :value="`${code} ${formatCurrency(balanceReport)}`" readonly class="w-full border rounded-lg px-4 py-2.5 font-medium focus:outline-none" :class="isDark ? 'bg-[#002e26] border-white/10 text-white' : 'bg-white border-gray-200 text-gray-800'" />
             </div>
             <div class="flex-1 min-w-0">
               <label class="block text-sm font-semibold mb-2" :class="isDark ? 'text-white/70' : 'text-gray-700'">Variance</label>
-              <input type="text" :value="`${code} ${formatAmount(variance)}`" readonly :class="isResolved ? (isDark ? 'bg-[#047857]/20 border-[#6ee7b7]/40 text-[#6ee7b7]' : 'bg-[#eefdf6] border-[#6ee7b7] text-[#047857]') : (isDark ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-[#fef2f2] border-[#fca5a5] text-red-600')" class="w-full border rounded-lg px-4 py-2.5 font-medium focus:outline-none" />
+              <input type="text" :value="`${code} ${formatCurrency(variance)}`" readonly :class="isResolved ? (isDark ? 'bg-[#047857]/20 border-[#6ee7b7]/40 text-[#6ee7b7]' : 'bg-[#eefdf6] border-[#6ee7b7] text-[#047857]') : (isDark ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-[#fef2f2] border-[#fca5a5] text-red-600')" class="w-full border rounded-lg px-4 py-2.5 font-medium focus:outline-none" />
             </div>
           </div>
           <div v-if="!isResolved" class="flex items-center gap-2 text-sm font-medium" :class="isDark ? 'text-red-400' : 'text-red-500'">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            {{ code }} {{ formatAmount(variance) }} variance remaining - Select items below to resolve the variance.
+            {{ code }} {{ formatCurrency(variance) }} variance remaining - Select items below to resolve the variance.
           </div>
           <div v-else class="flex items-center gap-2 text-sm font-medium" :class="isDark ? 'text-[#6ee7b7]' : 'text-[#047857]'">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -95,7 +95,7 @@
                 <td class="py-3 px-4" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ rowDate(row) }}</td>
                 <td class="py-3 px-4 font-medium" :class="isDark ? 'text-white/80' : 'text-gray-700'">
                   {{ rowParty(row) }}
-                  <span v-if="vendorDiff(rowParty(row))" class="block text-xs font-normal" :class="isDark ? 'text-white/40' : 'text-gray-400'">needs {{ formatAmount(vendorDiff(rowParty(row))) }}</span>
+                  <span v-if="vendorDiff(rowParty(row))" class="block text-xs font-normal" :class="isDark ? 'text-white/40' : 'text-gray-400'">needs {{ formatCurrency(vendorDiff(rowParty(row))) }}</span>
                 </td>
                 <td class="py-3 px-4" :class="isDark ? 'text-white/60' : 'text-gray-600'">{{ rowRef(row) }}</td>
                 <td class="py-3 px-4" :class="isDark ? 'text-white/80' : 'text-gray-700'">
@@ -115,7 +115,7 @@
               </tr>
               <tr v-if="cfg.showTotalRow && voucherRows.length > 0" class="bg-[#a7f3d0] font-bold text-gray-800">
                 <td colspan="3" class="py-3 px-4 text-right">{{ cfg.totalRowLabel }}</td>
-                <td class="py-3 px-4">{{ code }} {{ formatAmount(selectedVoucherTotal) }}</td>
+                <td class="py-3 px-4">{{ code }} {{ formatCurrency(selectedVoucherTotal) }}</td>
                 <td colspan="3"></td>
               </tr>
             </tbody>
@@ -139,7 +139,7 @@
               </tr>
               <tr v-for="vendor in activeVendors" :key="vendor" :class="isDark ? 'hover:bg-white/5 bg-[#002e26]' : 'hover:bg-gray-50 bg-white'">
                 <td class="py-3 px-4 font-medium" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ vendor }}</td>
-                <td class="py-3 px-4" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatAmount(vendorDiff(vendor)) }}</td>
+                <td class="py-3 px-4" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatCurrency(vendorDiff(vendor)) }}</td>
                 <td class="py-3 px-4">
                   <span v-if="vendorResolutions[vendor]" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1 rounded-md text-xs font-medium">Resolved</span>
                   <span v-else class="text-xs" :class="isDark ? 'text-white/40' : 'text-gray-400'">Pending</span>
@@ -458,11 +458,6 @@ const selectedVoucherTotal = computed(() =>
 
 const errorMessage = ref('');
 
-const formatAmount = (v) => {
-  const n = Number(v) || 0;
-  const hasDecimal = Math.round(n * 100) % 100 !== 0;
-  return new Intl.NumberFormat('en-US', { minimumFractionDigits: hasDecimal ? 2 : 0, maximumFractionDigits: 2 }).format(n);
-};
 const toNumber = (v) => {
   const n = parseFloat(String(v ?? '').replace(/,/g, ''));
   return isNaN(n) ? 0 : n;

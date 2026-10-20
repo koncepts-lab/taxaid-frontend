@@ -13,21 +13,33 @@
           </button>
         </div>
 
-        <div class="flex-1 min-h-0 overflow-y-auto px-4 md:px-6 py-4" :class="isDark ? 'text-white' : ''">
-          <div v-if="loading" class="space-y-2.5">
+        <!-- Header is its own static table, never inside the scroll area — avoids sticky-th rendering issues entirely -->
+        <div class="shrink-0 px-4 md:px-6 pt-4" :class="isDark ? 'text-white' : ''">
+          <table class="w-full table-fixed text-left border-separate border-spacing-0 min-w-[640px]">
+            <colgroup>
+              <col style="width:28%"><col style="width:18%"><col style="width:22%"><col style="width:18%"><col style="width:14%">
+            </colgroup>
+            <thead>
+              <tr class="text-white text-sm">
+                <th class="bg-[#058a64] py-2.5 px-3 font-medium rounded-tl-lg">Bill / Invoice No.</th>
+                <th class="bg-[#058a64] py-2.5 px-3 font-medium">Current Amount</th>
+                <th class="bg-[#058a64] py-2.5 px-3 font-medium">Adjustment</th>
+                <th class="bg-[#058a64] py-2.5 px-3 font-medium text-center">Mark Fully Paid</th>
+                <th class="bg-[#058a64] py-2.5 px-3 font-medium rounded-tr-lg text-center">Remove</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+
+        <div class="flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-4" :class="isDark ? 'text-white' : ''">
+          <div v-if="loading" class="space-y-2.5 pt-2">
             <div v-for="n in 3" :key="n" class="h-10 rounded-lg animate-pulse" :class="isDark ? 'bg-white/5' : 'bg-gray-100'"></div>
           </div>
 
-          <table v-else class="w-full text-left border-separate border-spacing-0 min-w-[640px]">
-            <thead>
-              <tr class="text-white text-sm">
-                <th class="sticky top-0 z-10 bg-[#058a64] py-2.5 px-3 font-medium rounded-tl-lg">Bill / Invoice No.</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-2.5 px-3 font-medium">Current Amount</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-2.5 px-3 font-medium">Adjustment</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-2.5 px-3 font-medium text-center">Mark Fully Paid</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-2.5 px-3 font-medium rounded-tr-lg text-center">Remove</th>
-              </tr>
-            </thead>
+          <table v-else class="w-full table-fixed text-left border-separate border-spacing-0 min-w-[640px]">
+            <colgroup>
+              <col style="width:28%"><col style="width:18%"><col style="width:22%"><col style="width:18%"><col style="width:14%">
+            </colgroup>
             <tbody class="divide-y text-sm" :class="isDark ? 'divide-white/10' : 'divide-gray-100'">
               <tr v-if="rows.length === 0">
                 <td colspan="5" class="py-6 px-3 text-center" :class="isDark ? 'text-white/50' : 'text-gray-500'">
@@ -45,10 +57,10 @@
                 </td>
                 <td class="py-2 px-3">
                   <input v-if="row.isNew" type="text" v-model="row.amount" placeholder="0.00" class="w-full border rounded-md py-1.5 px-2.5 text-right focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
-                  <span v-else :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatAmount(row.amount) }}</span>
+                  <span v-else :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatCurrency(row.amount) }}</span>
                 </td>
                 <td class="py-2 px-3">
-                  <input type="text" v-model="row.adjustment" :disabled="row.markPaid" :placeholder="row.markPaid ? String(row.amount) : '0.00'" class="w-full border-none rounded-md py-1.5 px-2.5 text-right focus:outline-none focus:ring-1 focus:ring-[#058a64] disabled:opacity-40" :class="isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-800'" />
+                  <input type="text" v-model="row.adjustment" :disabled="row.markPaid" :placeholder="row.markPaid ? formatCurrency(row.amount) : '0.00'" class="w-full border-none rounded-md py-1.5 px-2.5 text-right focus:outline-none focus:ring-1 focus:ring-[#058a64] disabled:opacity-40" :class="isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-800'" />
                 </td>
                 <td class="py-2 px-3 text-center">
                   <input type="checkbox" v-model="row.markPaid" class="w-4 h-4 rounded text-[#058a64] focus:ring-[#058a64]" :class="isDark ? 'border-white/20 bg-[#002e26]' : 'border-gray-300 bg-white'" />
@@ -71,9 +83,9 @@
 
         <div class="shrink-0 px-4 md:px-6 py-4 border-t flex flex-wrap items-center gap-3" :class="isDark ? 'bg-[#002e26] border-white/10' : 'bg-white border-gray-100'">
           <div class="flex-1 min-w-[180px] text-sm" :class="isDark ? 'text-white/70' : 'text-gray-600'">
-            Needed: <span class="font-semibold">{{ code }} {{ formatAmount(needed) }}</span>
+            Needed: <span class="font-semibold">{{ code }} {{ formatCurrency(needed) }}</span>
             &nbsp;·&nbsp;
-            Entered: <span class="font-semibold">{{ code }} {{ formatAmount(totalEntered) }}</span>
+            Entered: <span class="font-semibold">{{ code }} {{ formatCurrency(totalEntered) }}</span>
           </div>
           <p v-if="errorMessage" class="text-sm text-red-500 w-full">{{ errorMessage }}</p>
           <button @click="$emit('close')" class="px-4 py-1.5 border rounded-lg font-medium text-sm transition-colors" :class="isDark ? 'border-white/20 text-white/80 hover:bg-white/10' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
@@ -142,12 +154,6 @@ const addInvoiceRow = () => {
 const toNumber = (v) => {
   const n = parseFloat(String(v ?? '').replace(/,/g, ''));
   return isNaN(n) ? 0 : n;
-};
-
-const formatAmount = (v) => {
-  const n = Number(v) || 0;
-  const hasDecimal = Math.round(n * 100) % 100 !== 0;
-  return new Intl.NumberFormat('en-US', { minimumFractionDigits: hasDecimal ? 2 : 0, maximumFractionDigits: 2 }).format(n);
 };
 
 const rowApplied = (row) => row.markPaid ? toNumber(row.amount) : toNumber(row.adjustment);
