@@ -212,7 +212,7 @@ const clearInvoice = () => {
 const onInvoiceChange = () => {
   if (form.value.transaction_type === 'return') {
     const inv = invoicesForParty.value.find((i) => i.invoice_number === form.value.invoice_number)
-    form.value.adjustment = inv ? String(inv.amount) : ''
+    form.value.adjustment = inv ? String(Math.round(parseFloat(inv.amount) * 100) / 100) : ''
   }
 }
 
