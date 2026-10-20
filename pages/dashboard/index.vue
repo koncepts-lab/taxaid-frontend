@@ -84,13 +84,15 @@
       </div>
 
       <DashboardAlertToasts v-if="!isMobile" :keys="pendingKeys" @open="openModalKey = $event" @close="dismissKey" />
-      <DashboardApVarianceReconciliationModal
+      <DashboardVarianceReconciliationModal
         v-if="openModalKey === 'ap_variance' && !isMobile"
+        side="ap"
         :data="dashboardAlerts.ap_variance"
         @close="closeModal"
         @resolved="onModalResolved" />
-      <DashboardArVarianceReconciliationModal
+      <DashboardVarianceReconciliationModal
         v-if="openModalKey === 'ar_variance' && !isMobile"
+        side="ar"
         :data="dashboardAlerts.ar_variance"
         @close="closeModal"
         @resolved="onModalResolved" />
@@ -99,8 +101,9 @@
         :data="dashboardAlerts.missing_ledgers"
         @close="closeModal"
         @resolved="onModalResolved" />
-      <DashboardSalesForecastVarianceModal
+      <DashboardVarianceReconciliationModal
         v-if="openModalKey === 'sales_forecast_variance' && !isMobile"
+        side="sales-forecast"
         :data="dashboardAlerts.sales_forecast_variance"
         :date="today"
         @close="closeModal"

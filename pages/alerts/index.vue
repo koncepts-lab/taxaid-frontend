@@ -36,6 +36,7 @@
                             @view="openModal('details', $event)"
                             @resolve="openModal('resolve', $event)"
                             @chat="openModal('chat', $event)"
+                            @inspect="handleInspect"
                         />
 
                         <!-- Pagination -->
@@ -73,6 +74,28 @@
             :isDark="isDark"
             :currentLang="currentLang"
             @close="closeModal"
+        />
+
+        <DashboardVarianceReconciliationModal
+            v-if="inspectKey === 'ap_variance' || inspectKey === 'ar_variance'"
+            :side="inspectKey === 'ap_variance' ? 'ap' : 'ar'"
+            :data="inspectData"
+            @close="closeInspect"
+            @resolved="onInspectResolved"
+        />
+        <DashboardNewLedgerDetectedModal
+            v-if="inspectKey === 'missing_ledgers'"
+            :data="inspectData"
+            @close="closeInspect"
+            @resolved="onInspectResolved"
+        />
+        <DashboardVarianceReconciliationModal
+            v-if="inspectKey === 'sales_forecast_variance'"
+            side="sales-forecast"
+            :data="inspectData"
+            :date="todayIso"
+            @close="closeInspect"
+            @resolved="onInspectResolved"
         />
     </NuxtLayout>
 </template>
@@ -125,6 +148,38 @@ const handleActionSubmit = async (data) => {
 const handleIgnore = async (alert) => {
     await recordAction(alert.id, 'ignore')
     closeModal()
+}
+
+const todayIso = localIsoDate()
+
+const TARGET_TO_KEY = {
+    'ap-verification': 'ap_variance',
+    'ar-verification': 'ar_variance',
+    'ledger-mapping': 'missing_ledgers',
+    'sales-forecast': 'sales_forecast_variance',
+}
+
+const inspectKey = ref(null)
+const inspectData = ref(null)
+
+const handleInspect = async (row) => {
+    const key = TARGET_TO_KEY[row.action?.target]
+    if (!key) return
+    const res = await useApi('/dashboard/alerts')
+    const data = res?.data?.[key]
+    if (!data) return
+    inspectData.value = data
+    inspectKey.value = key
+}
+
+const closeInspect = () => {
+    inspectKey.value = null
+    inspectData.value = null
+}
+
+const onInspectResolved = async () => {
+    closeInspect()
+    await fetchAlerts()
 }
 </script>
 
