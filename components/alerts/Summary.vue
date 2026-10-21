@@ -81,12 +81,12 @@
                             </button>
 
                             <!-- Resolve Button: always occupies space to keep layout consistent -->
-                            <button v-if="canAct"
-                                :class="(row.status === 'Awaiting Action' && !row.isAutoResolve)
+                            <button v-if="canSeeRow(row)"
+                                :class="(row.status === 'Awaiting Action' && (isInspectable(row) || !row.isAutoResolve))
                                     ? 'bg-[#765E00] hover:bg-[#5E4B00] text-white shadow-sm'
                                     : 'invisible pointer-events-none'"
                                 class="flex items-center justify-center px-6 py-1.5 rounded text-sm transition-all"
-                                @click="row.status === 'Awaiting Action' && !row.isAutoResolve && $emit('resolve', row)">
+                                @click="onActionClick(row)">
                                 {{ t.resolve }}
                             </button>
                         </div>
@@ -108,6 +108,26 @@ const props = defineProps({
     type: { type: String, default: 'all' },
     data: { type: Array, required: true }
 });
+
+const emit = defineEmits(['view', 'chat', 'resolve', 'inspect']);
+
+const TARGET_PERMISSION = {
+    'ap-verification': 'cards.accounts_payable',
+    'ar-verification': 'cards.accounts_receivable',
+    'ledger-mapping': 'cards.financials',
+    'sales-forecast': 'cards.revenue',
+};
+const isInspectable = (row) => !!TARGET_PERMISSION[row.action?.target];
+const canSeeRow = (row) => isInspectable(row) ? can(TARGET_PERMISSION[row.action.target]) : canAct.value;
+
+const onActionClick = (row) => {
+    if (row.status !== 'Awaiting Action') return;
+    if (isInspectable(row)) {
+        emit('inspect', row);
+    } else if (!row.isAutoResolve) {
+        emit('resolve', row);
+    }
+};
 
 // Translation dictionary correctly observing currentLang
 const t = computed(() => {

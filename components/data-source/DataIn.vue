@@ -419,6 +419,7 @@
         :is-open="isModalOpen"
         :current-lang="currentLang"
         :title="activeUploadTarget?.id === 'cc_mapping' ? (currentLang === 'ar' ? 'رفع تخطيط مركز التكلفة' : 'Upload Cost Center Mapping') : undefined"
+        :show-period-selector="activeUploadTarget?.id === 'ar' || activeUploadTarget?.id === 'ap'"
         @close="isModalOpen = false"
         @upload="handleModalUpload"
     />
@@ -1116,14 +1117,17 @@ const varianceModalTitle = computed(() => {
     return tab ? `${tab.label} Budget Variance` : 'Variance'
 })
 
-const handleModalUpload = async (file) => {
+const pendingPeriodInfo = ref(null)
+
+const handleModalUpload = async (file, periodInfo) => {
     if (!activeUploadTarget.value) return
     const { type, id } = activeUploadTarget.value
+    pendingPeriodInfo.value = periodInfo ?? null
 
     if ((type === 'datain' || type === 'budget') && props.supportsVariancePreview?.(id)) {
         varianceError.value = ''
         try {
-            const result = await props.previewUpload(id, file)
+            const result = await props.previewUpload(id, file, periodInfo?.periodValue)
             varianceTargetId.value = id
             variancePreview.value = result
             isModalOpen.value = false
@@ -1158,7 +1162,7 @@ const handleVarianceConfirm = async () => {
         const excludedLedgers = varianceTargetId.value === 'cc_mapping'
             ? (variancePreview.value.changes ?? []).filter(r => !r.locked && !r.checked).map(r => r.ledger_name)
             : undefined
-        await props.confirmUpload(varianceTargetId.value, variancePreview.value.temp_path, excludedLedgers)
+        await props.confirmUpload(varianceTargetId.value, variancePreview.value.temp_path, excludedLedgers, pendingPeriodInfo.value?.periodValue)
         if (isBudgetTabId(varianceTargetId.value)) {
             budgetStatuses.value[varianceTargetId.value] = {
                 isUploaded: true,

@@ -126,7 +126,7 @@
                         <tr v-for="month in quarter.months" :key="month.label" class="transition-colors"
                             :class="[
                                 month.is_total
-                                    ? (isDark ? 'bg-[#013e32] font-medium text-white border-0' : 'bg-[#8FE0C4] font-medium text-[#013E32] border-0')
+                                    ? (isDark ? 'bg-[#004d3d] font-semibold text-white border-0' : 'bg-[#8FE0C4] font-medium text-[#013E32] border-0')
                                     : (isDark ? 'border-b border-white/5 hover:bg-white/5 text-white/80' : 'border-b border-gray-100 hover:bg-gray-50 text-gray-700')
                             ]">
                             <td class="px-6 py-3" :class="month.is_total ? 'border-0' : (isDark ? 'border-white/5' : 'border-gray-100')">{{ month.label }}</td>
@@ -136,12 +136,32 @@
                             <td class="px-4 py-3 text-right text-sm">{{ formatCurrency(month.possible) }}</td>
                             <td class="px-4 py-3 text-right text-sm">{{ formatCurrency(month.budget) }}</td>
                             <td class="px-4 py-3 text-right text-sm font-medium"
-                                :class="month.diff !== null && parseFloat(month.diff) < 0 ? 'text-red-500' : 'text-green-600'">
+                                :class="month.diff !== null && parseFloat(month.diff) < 0 ? (isDark ? 'text-[#FF7056]' : 'text-red-500') : (isDark ? 'text-[#00FFBC]' : 'text-green-600')">
                                 {{ formatCurrency(month.diff) }}
                             </td>
                         </tr>
                     </template>
                 </tbody>
+
+                <tfoot v-if="!loading && !error && data.length > 0">
+                    <tr class="transition-colors font-bold border-t-2"
+                        :class="isDark ? 'bg-[#003d30] text-white border-[#00FFBC]/40' : 'bg-[#D2F7EC] text-[#013E32] border-[#008864]'">
+                        <td class="px-6 py-4 text-sm font-bold">
+                            {{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}
+                        </td>
+                        <td class="px-4 py-4 text-right text-sm font-bold">{{ formatCurrency(mainTotals.actual) }}</td>
+                        <td class="px-4 py-4 text-right text-sm font-bold">{{ formatCurrency(mainTotals.income) }}</td>
+                        <td class="px-4 py-4 text-right text-sm font-bold">{{ formatCurrency(mainTotals.forecast) }}</td>
+                        <td class="px-4 py-4 text-right text-sm font-bold">{{ formatCurrency(mainTotals.possible) }}</td>
+                        <td class="px-4 py-4 text-right text-sm font-bold">{{ formatCurrency(mainTotals.budget) }}</td>
+                        <td class="px-4 py-4 text-right text-sm font-bold"
+                            :class="mainTotals.diff !== null && parseFloat(mainTotals.diff) < 0
+                                ? (isDark ? 'text-[#FF7056]' : 'text-red-500')
+                                : (isDark ? 'text-[#00FFBC]' : 'text-green-600')">
+                            {{ formatCurrency(mainTotals.diff) }}
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
@@ -157,6 +177,34 @@ const emit = defineEmits(['open-sales-report'])
 
 const { data, loading, error, activeMode, changeMode, detailedRows, fetchDetailedReport } = useSalesForecast()
 const { code: currencyCode } = useCurrency()
+
+const mainTotals = computed(() => {
+    const totals = { actual: 0, income: 0, forecast: 0, possible: 0, budget: 0, diff: 0 }
+    let hasActual = false, hasIncome = false, hasForecast = false, hasPossible = false, hasBudget = false, hasDiff = false
+
+    for (const year of data.value || []) {
+        for (const q of year.quarters || []) {
+            const qTotal = q.months?.find(m => m.is_total)
+            if (qTotal) {
+                if (qTotal.actual != null) { totals.actual += Number(qTotal.actual); hasActual = true }
+                if (qTotal.income != null) { totals.income += Number(qTotal.income); hasIncome = true }
+                if (qTotal.forecast != null) { totals.forecast += Number(qTotal.forecast); hasForecast = true }
+                if (qTotal.possible != null) { totals.possible += Number(qTotal.possible); hasPossible = true }
+                if (qTotal.budget != null) { totals.budget += Number(qTotal.budget); hasBudget = true }
+                if (qTotal.diff != null) { totals.diff += Number(qTotal.diff); hasDiff = true }
+            }
+        }
+    }
+
+    return {
+        actual: hasActual ? totals.actual : null,
+        income: hasIncome ? totals.income : null,
+        forecast: hasForecast ? totals.forecast : null,
+        possible: hasPossible ? totals.possible : null,
+        budget: hasBudget ? totals.budget : null,
+        diff: hasDiff ? totals.diff : null,
+    }
+})
 
 const openDetailedReport = async () => {
   await fetchDetailedReport()

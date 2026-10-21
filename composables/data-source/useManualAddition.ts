@@ -154,14 +154,17 @@ export const useManualAddition = () => {
   }
 
   // POST /adjustments/ap/manual-adjustment — single AP entry.
-  // Backend always stores +abs(amount) as an unpaid purchase (no transaction_type).
+  // payload.transaction_type: 'purchase' (default, creates a new unpaid entry)
+  // or 'return' (marks an existing invoice_number paid — ignores amount).
   const saveApAdjustment = async (payload: any) => {
     clearMessages()
     saving.value = true
     try {
       const res: any = await useApi('/adjustments/ap/manual-adjustment', { method: 'POST', body: payload })
       success.value = res?.message || 'AP manual adjustment created successfully'
-      return res?.data || null
+      // The 'return' (mark-paid) branch has no `data` payload — return the
+      // response itself so callers can check success without relying on it.
+      return res ?? true
     } catch (err) {
       error.value = extractError(err)
       return null

@@ -108,7 +108,7 @@
                                     </div>
 
                                     <VDatePicker v-else v-model="singleDate" :is-dark="isDark"
-                                        :locale="currentLang === 'ar' ? 'ar' : 'en'" color="teal" borderless
+                                        :locale="currentLang === 'ar' ? 'ar' : 'en'" color="teal" borderless transparent
                                         :min-date="minDate" :max-date="today" :initial-page="singleDate ? undefined : currMonthPage" @update:model-value="handleSingleChange" />
                                 </div>
                                 <template v-else>
@@ -131,7 +131,7 @@
                                                 <div class="p-3">
                                                     <VDatePicker v-model="range.start" :is-dark="isDark"
                                                         :locale="currentLang === 'ar' ? 'ar' : 'en'" color="teal"
-                                                        borderless :min-date="minDate" :max-date="range.end || today"
+                                                        borderless transparent :min-date="minDate" :max-date="range.end || today"
                                                         :initial-page="prevMonthPage"
                                                         @update:model-value="emitRangeChange" />
                                                 </div>
@@ -139,7 +139,7 @@
                                                     :class="isDark ? 'border-white/10' : 'border-gray-100'">
                                                     <VDatePicker v-model="range.end" :is-dark="isDark"
                                                         :locale="currentLang === 'ar' ? 'ar' : 'en'" color="teal"
-                                                        borderless :min-date="range.start || minDate" :max-date="rangeEndMaxDate"
+                                                        borderless transparent :min-date="range.start || minDate" :max-date="rangeEndMaxDate"
                                                         :initial-page="currMonthPage"
                                                         @update:model-value="emitRangeChange" />
                                                 </div>
@@ -180,7 +180,7 @@
                                                 </div>
 
                                                 <VDatePicker v-else v-model="singleDate" :is-dark="isDark"
-                                                    :locale="currentLang === 'ar' ? 'ar' : 'en'" color="teal" borderless
+                                                    :locale="currentLang === 'ar' ? 'ar' : 'en'" color="teal" borderless transparent
                                                     :min-date="minDate" :max-date="today" :initial-page="singleDate ? undefined : currMonthPage" @update:model-value="handleSingleChange" />
                                             </div>
                                         </div>
