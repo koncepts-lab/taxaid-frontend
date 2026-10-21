@@ -244,6 +244,13 @@ body.taxaid-dark img[src*="view.svg"],
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
+.dark-mode-bg .bg-\[\#E0FDF4\],
+body.taxaid-dark .bg-\[\#E0FDF4\],
+.dark-mode-bg .fixed .bg-\[\#E0FDF4\],
+body.taxaid-dark > .fixed .bg-\[\#E0FDF4\] {
+  background-color: #001410 !important;
+}
+
 /* Fix inputs in dark mode */
 .dark-mode-bg input.bg-white,
 .dark-mode-bg textarea.bg-white,
@@ -352,6 +359,15 @@ body.taxaid-dark > .fixed.bg-white {
 .dark-mode-bg .fixed .bg-white .bg-white,
 body.taxaid-dark > .fixed .bg-white .bg-white {
   background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.dark-mode-bg .fixed .bg-white.absolute,
+.dark-mode-bg .fixed .bg-white.z-\[110\],
+.dark-mode-bg .bg-white.z-\[110\],
+body.taxaid-dark .fixed .bg-white.absolute,
+body.taxaid-dark .fixed .bg-white.z-\[110\],
+body.taxaid-dark .bg-white.z-\[110\] {
+  background-color: #103b34 !important;
 }
 
 .dark-mode-bg .fixed .bg-gray-50,

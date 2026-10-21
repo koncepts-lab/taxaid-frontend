@@ -26,7 +26,7 @@
                     <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', loading ? 'animate-spin' : '']">
                 </button>
 
-                <div class="relative w-[220px]">
+                <div class="relative w-[220px]" v-click-outside="() => filterOpen = false">
                     <button @click.stop="filterOpen = !filterOpen"
                         class="w-full h-[48px] px-4 rounded-[10px] border border-[#04C18F] flex items-center justify-between transition-colors cursor-pointer"
                         :class="isDark ? 'bg-black/20 border-white/10 text-white hover:bg-white/5' : 'bg-white text-[#1a1a1a] hover:bg-gray-50'">

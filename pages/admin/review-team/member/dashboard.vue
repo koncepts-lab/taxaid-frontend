@@ -166,7 +166,7 @@
               </div>
 
               <!-- Type of Appointment (Custom Dropdown) -->
-              <div class="space-y-3 relative">
+              <div class="space-y-3 relative" v-click-outside="() => showTypeDropdown = false">
                 <label class="text-[14px] font-medium text-[#1a1a1a] opacity-80" :class="isDark ? 'text-white' : ''">Type of Appointment</label>
                 <div @click="timerState === 'idle' && toggleDropdown('type')"
                      :class="[isDark ? '!bg-white/5 text-white' : 'bg-white', timerState !== 'idle' ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer']"
@@ -186,7 +186,7 @@
               </div>
 
               <!-- Client ID (Custom Dropdown) -->
-              <div class="space-y-3 relative h-auto">
+              <div class="space-y-3 relative h-auto" v-click-outside="() => showClientDropdown = false">
                 <label class="text-[14px] font-medium text-[#1a1a1a] opacity-80" :class="isDark ? 'text-white' : ''">Client ID</label>
                 <template v-if="needsActivityClient">
                   <div @click="timerState === 'idle' && toggleDropdown('client')"
@@ -896,7 +896,7 @@
               <h4 class="text-[15px] font-semibold" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">Select Time</h4>
 
               <!-- Time Dropdown -->
-              <div class="relative">
+              <div class="relative" v-click-outside="() => showTimeSlotDropdown = false">
                 <div @click="showTimeSlotDropdown = !showTimeSlotDropdown"
                      :class="isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-gray-200 text-[#1a1a1a]'"
                      class="w-full flex items-center justify-between px-4 py-3 border rounded-[12px] cursor-pointer transition-all hover:border-[#00896F]">

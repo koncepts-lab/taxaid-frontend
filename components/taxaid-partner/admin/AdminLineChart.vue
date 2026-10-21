@@ -2,7 +2,7 @@
   <div :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-gray-100'" class="rounded-[24px] p-8 shadow-sm flex flex-col min-h-[400px] border transition-colors duration-300">
     <div class="flex justify-between items-center mb-6">
       <h3 class="text-[20px] font-medium" :class="isDark ? 'text-white' : 'text-[#1a1a1a]'">Licensing Report (Cost Breakdown)</h3>
-      <div class="relative w-[180px] z-20">
+      <div class="relative w-[180px] z-20" v-click-outside="() => isLineChartFilterOpen = false">
         <div @click="isLineChartFilterOpen = !isLineChartFilterOpen"
              class="w-full h-[44px] px-4 border outline-none rounded-[12px] flex items-center justify-between cursor-pointer transition-all"
              :class="isLineChartFilterOpen

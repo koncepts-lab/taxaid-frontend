@@ -107,7 +107,7 @@
     <div class="bg-white border border-gray-100 rounded-[10px] shadow-sm p-6">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-[16px] font-medium text-[#101828]">Token Usage by Month</h2>
-        <div class="relative">
+        <div class="relative" v-click-outside="() => isRangeOpen = false">
           <div @click="isRangeOpen = !isRangeOpen"
             class="h-[38px] px-3 border border-[#00896F] rounded-[10px] flex items-center gap-2 cursor-pointer text-[13px] font-medium text-[#101828]">
             {{ rangeLabels[selectedRange] }}

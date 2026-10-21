@@ -127,7 +127,7 @@
             <img src="/images/icons/reload.svg" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', reloading ? 'animate-spin' : '']" alt="refresh" />
           </button>
           
-          <div class="relative w-[220px]">
+          <div class="relative w-[220px]" v-click-outside="() => showSyncStatusDropdown = false">
             <button @click="showSyncStatusDropdown = !showSyncStatusDropdown" 
                     class="w-full h-[48px] px-4 rounded-[10px] border border-[#04C18F] flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
                     :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a]'">
@@ -435,7 +435,7 @@
             <img src="/images/icons/reload.svg" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', reloading ? 'animate-spin' : '']" alt="refresh" />
           </button>
 
-          <div class="relative w-[280px]">
+          <div class="relative w-[280px]" v-click-outside="() => showAppointmentTypeDropdown = false">
             <button @click="showAppointmentTypeDropdown = !showAppointmentTypeDropdown" 
                     class="w-full h-[48px] px-6 rounded-[10px] border border-[#04C18F33] flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
                     :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a]'">

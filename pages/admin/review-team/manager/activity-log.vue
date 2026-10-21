@@ -28,7 +28,7 @@
           </button>
 
           <!-- Date text / Picker -->
-          <div class="relative">
+          <div class="relative" v-click-outside="() => showDatePicker = false">
             <button @click.stop="showDatePicker = !showDatePicker; showConsDropdown = false"
                     class="flex items-center gap-3 px-6 h-[50px] bg-white rounded-[10px] border border-[#E5E5E5] cursor-pointer hover:border-[#04C18F] transition-colors"
                     :class="isDark ? 'bg-white/5 border-white/10 text-white' : ''">
@@ -58,7 +58,7 @@
         </button>
 
         <!-- Consultant Selection -->
-        <div class="relative ml-6">
+        <div class="relative ml-6" v-click-outside="() => showConsDropdown = false">
           <div @click.stop="showConsDropdown = !showConsDropdown; showDatePicker = false"
                class="flex items-center gap-12 px-6 h-[50px] bg-white rounded-[10px] border border-[#E5E5E5] cursor-pointer group transition-all" :class="isDark ? 'bg-white/5 border-white/10' : 'bg-white'">
             <span class="text-[15px] font-normal text-[#6C768A]" :class="isDark ? 'text-white/70' : ''">{{ selectedConsultantName }}</span>

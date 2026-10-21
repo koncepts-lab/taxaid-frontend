@@ -225,7 +225,7 @@
           <p v-if="createError" class="text-red-600 text-sm">{{ createError }}</p>
 
           <!-- Issue Type -->
-          <div class="relative">
+          <div class="relative" v-click-outside="() => isIssueTypeOpen = false">
             <button @click="isIssueTypeOpen = !isIssueTypeOpen" class="w-full relative flex items-center justify-between px-4 py-3 bg-white border border-[#04C18F80] rounded-[10px] outline-none focus:border-[#008169] text-[15px] shadow-sm transition-shadow" :class="form.type_id ? 'text-gray-900' : 'text-gray-500'">
               <span>{{ selectedIssueTypeName || 'Select Issue Type' }}</span>
               <span class="flex items-center pointer-events-none transition-transform duration-200" :class="{ 'rotate-180': isIssueTypeOpen }">
