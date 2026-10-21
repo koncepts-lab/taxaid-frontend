@@ -214,7 +214,7 @@ const tableData = computed(() => {
   return rawRows
     .filter(item => {
       const label = item.particulars?.toLowerCase() || ''
-      return label !== 'gross profit' && label !== 'total'
+      return label !== 'net profit' && label !== 'total'
     })
     .map(item => ({
       label: item.particulars,
@@ -228,7 +228,7 @@ const tableData = computed(() => {
 
 const grossProfit = computed(() => {
   const rows = props.data?.table_data || []
-  const total = rows.find(item => item.particulars?.toLowerCase() === 'gross profit')
+  const total = rows.find(item => item.particulars?.toLowerCase() === 'net profit')
 
   if (!total) return null
 
