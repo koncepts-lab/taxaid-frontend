@@ -13,6 +13,21 @@
           </button>
         </div>
 
+        <div class="shrink-0 px-4 md:px-6 pt-4 flex flex-col sm:flex-row gap-3">
+          <div class="flex-1 border rounded-xl p-3" :class="isDark ? 'bg-white/5 border-white/10' : 'bg-[#eefdf6] border-[#a7f3d0]'">
+            <label class="block text-xs font-semibold mb-1" :class="isDark ? 'text-white/70' : 'text-gray-700'">{{ tbLabel }}</label>
+            <div class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-800'">{{ code }} {{ formatCurrency(tbBalance) }}</div>
+          </div>
+          <div class="flex-1 border rounded-xl p-3" :class="isDark ? 'bg-white/5 border-white/10' : 'bg-[#eefdf6] border-[#a7f3d0]'">
+            <label class="block text-xs font-semibold mb-1" :class="isDark ? 'text-white/70' : 'text-gray-700'">{{ reportLabel }}</label>
+            <div class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-800'">{{ code }} {{ formatCurrency(apBalance) }}</div>
+          </div>
+          <div class="flex-1 border rounded-xl p-3" :class="isDark ? 'bg-white/5 border-white/10' : 'bg-[#eefdf6] border-[#a7f3d0]'">
+            <label class="block text-xs font-semibold mb-1" :class="isDark ? 'text-white/70' : 'text-gray-700'">{{ labels.variance }}</label>
+            <div class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-800'">{{ code }} {{ formatCurrency(needed) }}</div>
+          </div>
+        </div>
+
         <!-- Header is its own static table, never inside the scroll area — avoids sticky-th rendering issues entirely -->
         <div class="shrink-0 px-4 md:px-6 pt-4" :class="isDark ? 'text-white' : ''">
           <table class="w-full table-fixed text-left border-separate border-spacing-0 min-w-[640px]">
@@ -82,10 +97,10 @@
         </div>
 
         <div class="shrink-0 px-4 md:px-6 py-4 border-t flex flex-wrap items-center gap-3" :class="isDark ? 'bg-[#002e26] border-white/10' : 'bg-white border-gray-100'">
-          <div class="flex-1 min-w-[180px] text-sm" :class="isDark ? 'text-white/70' : 'text-gray-600'">
-            {{ labels.needed }}: <span class="font-semibold">{{ code }} {{ formatCurrency(needed) }}</span>
-            &nbsp;·&nbsp;
-            {{ labels.entered }}: <span class="font-semibold">{{ code }} {{ formatCurrency(totalEntered) }}</span>
+          <div class="flex-1 min-w-[180px] text-sm font-medium flex items-center gap-1.5" :class="isBalanced ? (isDark ? 'text-[#6ee7b7]' : 'text-[#047857]') : (isDark ? 'text-white/70' : 'text-gray-600')">
+            <svg v-if="isBalanced" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            <span v-if="isBalanced">{{ labels.balanced }}</span>
+            <span v-else>{{ labels.remaining }}: <span class="font-semibold">{{ code }} {{ formatCurrency(remaining) }}</span></span>
           </div>
           <p v-if="errorMessage" class="text-sm text-red-500 w-full">{{ errorMessage }}</p>
           <button @click="$emit('close')" class="px-4 py-1.5 border rounded-lg font-medium text-sm transition-colors" :class="isDark ? 'border-white/20 text-white/80 hover:bg-white/10' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
@@ -115,6 +130,10 @@ const props = defineProps({
   primaryType: { type: String, required: true }, // 'purchase' | 'sales'
   code: { type: String, default: '' },
   isDark: { type: Boolean, default: false },
+  tbBalance: { type: Number, default: 0 },
+  apBalance: { type: Number, default: 0 },
+  tbLabel: { type: String, default: 'Balance as per TB' },
+  reportLabel: { type: String, default: 'Balance as per report' },
 });
 const emit = defineEmits(['close', 'resolved']);
 
@@ -122,6 +141,7 @@ const currentLang = useState('currentLang', () => 'en');
 const isAr = computed(() => currentLang.value === 'ar');
 const labels = computed(() => isAr.value ? {
   subtitle: 'سوِّ فواتير هذا المورد مقابل فرق ميزان المراجعة.',
+  variance: 'الفرق',
   billNo: 'رقم الفاتورة',
   currentAmount: 'المبلغ الحالي',
   adjustment: 'التسوية',
@@ -133,11 +153,14 @@ const labels = computed(() => isAr.value ? {
   duplicateWarning: 'أرقام فواتير مكررة لهذا المورد — أعطِ كل فاتورة رقماً فريداً قبل التطبيق.',
   needed: 'المطلوب',
   entered: 'المُدخَل',
+  remaining: 'المتبقي',
+  balanced: 'تمت التسوية بالكامل',
   cancel: 'إلغاء',
   apply: 'تطبيق',
   mustMatch: 'يجب أن يساوي المبلغ المُدخل المبلغ المطلوب قبل التطبيق.',
 } : {
   subtitle: "Resolve this vendor's bills against the TB variance.",
+  variance: 'Variance',
   billNo: 'Bill / Invoice No.',
   currentAmount: 'Current Amount',
   adjustment: 'Adjustment',
@@ -149,6 +172,8 @@ const labels = computed(() => isAr.value ? {
   duplicateWarning: 'Duplicate invoice numbers for this vendor — give each one a unique number before applying.',
   needed: 'Needed',
   entered: 'Entered',
+  remaining: 'Remaining',
+  balanced: 'Fully balanced',
   cancel: 'Cancel',
   apply: 'Apply',
   mustMatch: 'Entered amount must equal the needed amount before applying.',
@@ -196,6 +221,8 @@ const rowApplied = (row) => row.markPaid ? toNumber(row.amount) : toNumber(row.a
 
 const totalEntered = computed(() => rows.value.reduce((sum, r) => sum + rowApplied(r), 0));
 const needed = computed(() => Math.abs(props.needed));
+const remaining = computed(() => needed.value - totalEntered.value);
+const isBalanced = computed(() => Math.abs(remaining.value) < 0.01 && totalEntered.value !== 0);
 
 const duplicateRowIndexes = computed(() => {
   const seen = {};

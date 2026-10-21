@@ -50,8 +50,8 @@
         </div>
       </div>
 
-      <!-- Tabs + active section title, same row -->
-      <div class="shrink-0 px-4 md:px-6 pt-3 pb-2 flex flex-wrap items-center justify-between gap-3 border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+      <!-- Tabs + active section title, same row — only Sales Forecast still has tabs -->
+      <div v-if="isSF" class="shrink-0 px-4 md:px-6 pt-3 pb-2 flex flex-wrap items-center justify-between gap-3 border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'">
         <div class="flex items-center gap-2">
           <button v-for="tab in visibleTabs" :key="tab.key" @click="activeTab = tab.key"
             class="px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
@@ -123,7 +123,7 @@
         </div>
 
         <!-- AP/AR: resolved per vendor, one table driven by whichever tab is active, same modal underneath -->
-        <div v-show="activeTab === 'purchase' || activeTab === 'payment'">
+        <div v-show="!isSF">
           <table class="w-full text-left border-separate border-spacing-0 min-w-[640px]">
             <thead>
               <tr class="text-white text-sm">
@@ -134,10 +134,10 @@
               </tr>
             </thead>
             <tbody class="divide-y text-sm" :class="isDark ? 'divide-white/10' : 'divide-gray-100'">
-              <tr v-if="activeVendors.length === 0">
-                <td colspan="4" class="py-8 px-4 text-center" :class="isDark ? 'text-white/50 bg-[#002e26]' : 'text-gray-500 bg-white'">{{ activeVendorsEmptyMessage }}</td>
+              <tr v-if="allVendors.length === 0">
+                <td colspan="4" class="py-8 px-4 text-center" :class="isDark ? 'text-white/50 bg-[#002e26]' : 'text-gray-500 bg-white'">{{ isAr ? 'لا توجد صفوف فروقات.' : 'No variance rows found.' }}</td>
               </tr>
-              <tr v-for="vendor in activeVendors" :key="vendor" :class="isDark ? 'hover:bg-white/5 bg-[#002e26]' : 'hover:bg-gray-50 bg-white'">
+              <tr v-for="vendor in allVendors" :key="vendor" :class="isDark ? 'hover:bg-white/5 bg-[#002e26]' : 'hover:bg-gray-50 bg-white'">
                 <td class="py-3 px-4 font-medium" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ vendor }}</td>
                 <td class="py-3 px-4" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatCurrency(vendorDiff(vendor)) }}</td>
                 <td class="py-3 px-4">
@@ -244,6 +244,10 @@
     :primary-type="cfg.primaryType"
     :code="code"
     :is-dark="isDark"
+    :tb-balance="vendorTbBalance(activeVendorModal)"
+    :ap-balance="vendorApBalance(activeVendorModal)"
+    :tb-label="cfg.tbLabel"
+    :report-label="cfg.reportLabel"
     @close="activeVendorModal = null"
     @resolved="onVendorResolved"
   />
@@ -420,6 +424,10 @@ const allVendors = computed(() => [...new Set([
 
 const purchaseCandidatesFor = (vendor) => primaryRows.value.filter((r) => r.ledger_name === vendor);
 
+const vendorBalances = computed(() => props.data?.VendorBalances ?? {});
+const vendorApBalance = (vendor) => Number(vendorBalances.value[vendor]?.report ?? 0);
+const vendorTbBalance = (vendor) => Number(vendorBalances.value[vendor]?.tb ?? 0);
+
 const activeVendorModal = ref(null);
 const vendorResolutions = ref({}); // { [vendorName]: { lines, amount } }
 
@@ -442,28 +450,19 @@ const rowParty = (row) => isSF.value ? row['Party Name'] : row.ledger_name;
 const rowRef = (row) => isSF.value ? row['Invoice Number'] : row.voucher_no;
 const rowAmount = (row) => isSF.value ? row['Amount'] : row.amount;
 
-const purchaseVendors = computed(() => [...new Set(primaryRows.value.map((r) => r.ledger_name))]);
-const paymentVendors = computed(() => [...new Set(secondaryRows.value.map((r) => r.ledger_name))]);
-const activeVendors = computed(() => activeTab.value === 'payment' ? paymentVendors.value : purchaseVendors.value);
-const activeVendorsEmptyMessage = computed(() => isAr.value
-  ? `لا توجد صفوف فروقات على جانب ${activeTab.value === 'payment' ? cfg.value.secondaryLabel : cfg.value.primaryLabel}.`
-  : (activeTab.value === 'payment'
-    ? `No unrecorded ${cfg.value.secondaryLabel.toLowerCase()} rows found.`
-    : `No ${cfg.value.primaryLabel.toLowerCase()}-side variance rows found.`));
 
+// AP/AR show one direct vendor list, no tabs to switch between — only SF
+// still has separate Primary/Manual Entry tabs.
 const visibleTabs = computed(() => {
+  if (!isSF.value) return [];
   const tabs = [];
-  if (isSF.value) {
-    if (primaryRows.value.length) tabs.push({ key: 'primary', label: cfg.value.primaryLabel, count: primaryRows.value.length });
-  } else {
-    if (purchaseVendors.value.length) tabs.push({ key: 'purchase', label: cfg.value.primaryLabel, count: purchaseVendors.value.length });
-    if (paymentVendors.value.length) tabs.push({ key: 'payment', label: cfg.value.secondaryLabel, count: paymentVendors.value.length });
-  }
+  if (primaryRows.value.length) tabs.push({ key: 'primary', label: cfg.value.primaryLabel, count: primaryRows.value.length });
   tabs.push({ key: 'manual', label: isAr.value ? 'الإدخال اليدوي' : 'Manual Entry', count: 0 });
   return tabs;
 });
 const activeTab = ref(null);
 watch(visibleTabs, (tabs) => {
+  if (!isSF.value) { activeTab.value = 'vendors'; return; }
   if (!tabs.some((t) => t.key === activeTab.value)) {
     activeTab.value = tabs[0]?.key ?? 'manual';
   }
