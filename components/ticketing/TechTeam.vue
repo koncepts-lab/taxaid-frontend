@@ -52,7 +52,7 @@
       </div>
 
       <!-- Tickets Dropdown -->
-      <div class="w-full md:w-[40%] lg:w-[30%] relative">
+      <div class="w-full md:w-[40%] lg:w-[30%] relative" v-click-outside="() => isTicketsOpen = false">
         <button @click="isTicketsOpen = !isTicketsOpen" class="w-full relative flex items-center pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm transition-shadow">
           <span class="absolute left-3 flex items-center pointer-events-none">
             <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

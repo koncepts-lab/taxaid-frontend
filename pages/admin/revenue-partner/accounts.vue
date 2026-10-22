@@ -259,7 +259,7 @@
           </div>
 
           <!-- Status Filter -->
-          <div class="relative w-full max-w-[30%]">
+          <div class="relative w-full max-w-[30%]" v-click-outside="() => isStatusDropdownOpen = false">
             <svg xmlns="http://www.w3.org/2000/svg"
               class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none"
               :class="isDark ? 'text-white/60' : 'text-[#00000040]'" fill="none" viewBox="0 0 24 24"
@@ -326,7 +326,7 @@
               <thead class="bg-[#00835D] text-white">
                 <tr>
                   <th class="px-8 py-5 text-[15px] font-medium first:rounded-tl-2xl">Customer Code</th>
-                  <th class="px-8 py-5 text-[15px] font-medium relative">
+                  <th class="px-8 py-5 text-[15px] font-medium relative" v-click-outside="() => isSourceMenuOpen = false">
                     <div @click="isSourceMenuOpen = !isSourceMenuOpen"
                       class="flex items-center gap-2 cursor-pointer select-none">
                       Source

@@ -5,7 +5,8 @@
       <div>
         <label class="flex items-center gap-1.5 text-[13px] font-medium mb-1">
           Name
-          <span v-if="group.is_custom" class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#82FFE0] text-[#0A0A0A]">
+          <span v-if="group.is_custom" class="px-2 py-0.5 rounded-full text-[11px] font-medium"
+                :class="isDark ? 'bg-[#1b5e50] text-white' : 'bg-[#82FFE0] text-[#0A0A0A]'">
             {{ group.is_ephemeral ? 'Custom · temp' : 'Custom' }}
           </span>
         </label>

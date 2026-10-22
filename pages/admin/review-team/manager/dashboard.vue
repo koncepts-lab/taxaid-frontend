@@ -15,7 +15,7 @@
           <div class="flex justify-between items-start mb-6">
             <h5 class="text-[14px] font-medium opacity-70">{{ metric.title }}</h5>
             <div class="w-8 h-8 flex items-center justify-center">
-              <img :src="metric.icon" :alt="metric.title" class="w-6 h-6 object-contain" />
+              <img :src="metric.icon" :alt="metric.title" class="w-6 h-6 object-contain" :class="isDark ? 'invert' : ''" />
             </div>
           </div>
           <div class="flex items-baseline gap-2">
@@ -61,7 +61,7 @@
           <button @click="navigateToActivityLog" 
                   class="flex items-center gap-3 px-5 py-2.5 rounded-[12px] border border-[#04C18F] text-[14px] font-medium hover:bg-gray-50 transition-colors cursor-pointer text-[#0A0A0A]"
                   :class="isDark ? 'bg-white/5 text-white border-white/20 hover:bg-white/20' : 'bg-white'">
-            <img src="/images/icons/calendar-black.svg" class="w-5 h-5" :class="isDark ? 'invert brightness-0' : 'brightness-0'" alt="calendar" />
+            <img src="/images/icons/calendar-black.svg" class="w-5 h-5" :class="isDark ? 'invert' : 'brightness-0'" alt="calendar" />
             Consultant Activity Log History
           </button>
         </div>
@@ -127,7 +127,7 @@
             <img src="/images/icons/reload.svg" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', reloading ? 'animate-spin' : '']" alt="refresh" />
           </button>
           
-          <div class="relative w-[220px]">
+          <div class="relative w-[220px]" v-click-outside="() => showSyncStatusDropdown = false">
             <button @click="showSyncStatusDropdown = !showSyncStatusDropdown" 
                     class="w-full h-[48px] px-4 rounded-[10px] border border-[#04C18F] flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
                     :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a]'">
@@ -144,12 +144,13 @@
 
             <!-- Dropdown Menu -->
             <div v-if="showSyncStatusDropdown" 
-                 class="absolute top-full left-0 right-0 mt-2 bg-white rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-gray-100 p-2 z-20 flex flex-col gap-1">
+                 class="absolute top-full left-0 right-0 mt-2 rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] border p-2 z-20 flex flex-col gap-1"
+                 :class="isDark ? 'bg-[#001410] border-white/10' : 'bg-white border-gray-100'">
               <button v-for="status in ['All Statuses', 'Synced', 'Not Synced']"
                       :key="status"
                       @click="onSyncFilterChange(status)"
                       class="text-left px-4 py-2.5 rounded-[10px] text-[15px] transition-colors cursor-pointer"
-                      :class="activeSyncStatus === status ? 'bg-[#E6FFF3] text-[#1a1a1a]' : 'text-[#1a1a1a] hover:bg-gray-50'">
+                      :class="activeSyncStatus === status ? (isDark ? 'bg-[#002921] text-white' : 'bg-[#E6FFF3] text-[#1a1a1a]') : (isDark ? 'text-white hover:bg-white/5' : 'text-[#1a1a1a] hover:bg-gray-50')">
                 {{ status }}
               </button>
             </div>
@@ -171,17 +172,17 @@
                 </span>
               </div>
             </td>
-            <td class="py-6 px-8 text-[14px] font-regular">
+            <td class="py-6 px-8 text-[14px] font-regular whitespace-nowrap">
               <span :class="client.status === 'Synced' ? 'bg-[#ECFDF5] text-[#059669] border-[#D1FAE5]' : 'bg-[#FEF2F2] text-[#C10007] border-[#FFA6A6]'"
-                    class="px-3 py-1 rounded-full text-[12px] font-medium border">
+                    class="inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium border whitespace-nowrap">
                 {{ client.status }}
               </span>
             </td>
             <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ client.consultant }}</td>
             <td class="py-6 px-8">
               <button @click="openConnectorConfig(client)"
-                      class="px-4 py-2 rounded-[8px] bg-[#82FFE0] text-[#0A0A0A] text-[13px] font-medium hover:bg-[#6eddc5] transition-colors cursor-pointer"
-                      :class="isDark ? 'bg-[#1b5e50] text-white' : ''">
+                      class="px-4 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer"
+                      :class="isDark ? 'bg-[#1a957e] hover:bg-[#157a67] text-white' : 'bg-[#82FFE0] hover:bg-[#6eddc5] text-[#0A0A0A]'">
                 Config
               </button>
             </td>
@@ -370,19 +371,23 @@
 
               <!-- Dropdown Menu -->
               <div v-if="activeConsultantDropdown === idx"
-                   class="absolute top-[80%] left-8 right-8 mt-2 bg-white rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-gray-100 p-2 z-30 flex flex-col gap-1 min-w-[220px]">
+                   class="absolute top-[80%] left-8 right-8 mt-2 rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.12)] border p-2 z-30 flex flex-col gap-1 min-w-[220px]"
+                   :class="isDark ? 'bg-[#001410] border-white/10' : 'bg-white border-gray-100'">
                 <button v-for="c in consultantList"
                         :key="c.id"
                         @click="selectConsultant(idx, c)"
                         class="text-left px-4 py-3 rounded-[10px] text-[14px] transition-colors cursor-pointer group"
-                        :class="item.selectedConsultant === c.name ? 'bg-[#E6FFF3] text-[#1a1a1a]' : 'text-[#1a1a1a] hover:bg-[#E6FFF3]'">
+                        :class="item.selectedConsultant === c.name
+                          ? (isDark ? 'bg-[#001410] text-white' : 'bg-[#E6FFF3] text-[#1a1a1a]')
+                          : (isDark ? 'text-white hover:bg-[#001410]' : 'text-[#1a1a1a] hover:bg-[#E6FFF3]')">
                   <span class="font-medium">{{ c.name }}</span>
                 </button>
               </div>
             </td>
             <td class="py-6 px-8">
               <button @click="doAssign(item)" :disabled="assigning || !item.selectedConsultantId || item.selectedConsultantId === item.originalConsultantId"
-                      class="px-6 py-2 rounded-[8px] bg-[#04C18F] text-white text-[13px] font-medium hover:bg-[#03a87c] transition-colors cursor-pointer shadow-sm disabled:opacity-50">
+                      class="px-6 py-2 rounded-[8px] bg-[#04C18F] text-white text-[13px] font-medium hover:bg-[#03a87c] transition-colors cursor-pointer shadow-sm"
+                      :class="isDark ? 'disabled:opacity-100' : 'disabled:opacity-50'">
                 {{ assignFilter === 'Assigned' ? 'Reassign' : 'Assign' }}
               </button>
             </td>
@@ -430,7 +435,7 @@
             <img src="/images/icons/reload.svg" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', reloading ? 'animate-spin' : '']" alt="refresh" />
           </button>
 
-          <div class="relative w-[280px]">
+          <div class="relative w-[280px]" v-click-outside="() => showAppointmentTypeDropdown = false">
             <button @click="showAppointmentTypeDropdown = !showAppointmentTypeDropdown" 
                     class="w-full h-[48px] px-6 rounded-[10px] border border-[#04C18F33] flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
                     :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a]'">
@@ -443,12 +448,13 @@
 
             <!-- Appointment Type Dropdown Menu -->
             <div v-if="showAppointmentTypeDropdown" 
-                 class="absolute top-full left-0 right-0 mt-2 bg-white rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-gray-100 p-2 z-30 flex flex-col gap-1">
+                 class="absolute top-full left-0 right-0 mt-2 rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.12)] border p-2 z-30 flex flex-col gap-1"
+                 :class="isDark ? 'bg-[#001410] border-white/10' : 'bg-white border-gray-100'">
               <button v-for="type in ['All Appointment Type', 'Client Review', 'Client Analysis']" 
                       :key="type"
                       @click="selectedAppointmentType = type; showAppointmentTypeDropdown = false"
                       class="text-left px-4 py-3 rounded-[10px] text-[14px] transition-colors cursor-pointer"
-                      :class="selectedAppointmentType === type ? 'bg-[#E6FFF3] text-[#1a1a1a]' : 'text-[#1a1a1a] hover:bg-gray-50'">
+                      :class="selectedAppointmentType === type ? (isDark ? 'bg-[#1a5b4d] text-white' : 'bg-[#E6FFF3] text-[#1a1a1a]') : (isDark ? 'text-white hover:bg-white/5' : 'text-[#1a1a1a] hover:bg-gray-50')">
                 {{ type }}
               </button>
             </div>

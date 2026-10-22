@@ -102,7 +102,7 @@
       </div>
 
       <!-- Status Dropdown -->
-      <div class="w-full md:w-[30%] relative">
+      <div class="w-full md:w-[30%] relative" v-click-outside="() => isStatusOpen = false">
         <button @click="isStatusOpen = !isStatusOpen" class="w-full relative flex items-center pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm transition-shadow">
           <span class="absolute left-3 flex items-center pointer-events-none">
             <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -128,7 +128,7 @@
       </div>
 
       <!-- Type Dropdown -->
-      <div class="w-full md:w-[30%] relative">
+      <div class="w-full md:w-[30%] relative" v-click-outside="() => isTypeOpen = false">
         <button @click="isTypeOpen = !isTypeOpen" class="w-full relative flex items-center pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm transition-shadow">
           <span class="absolute left-3 flex items-center pointer-events-none">
             <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -244,7 +244,7 @@
           <p v-if="createError" class="text-red-600 text-sm">{{ createError }}</p>
 
           <!-- Issue Type -->
-          <div class="relative">
+          <div class="relative" v-click-outside="() => isIssueTypeOpen = false">
             <button @click="isIssueTypeOpen = !isIssueTypeOpen" class="w-full relative flex items-center justify-between px-4 py-3 bg-white border border-[#04C18F80] rounded-[10px] outline-none focus:border-[#008169] text-[15px] shadow-sm transition-shadow" :class="form.type_id ? 'text-gray-900' : 'text-gray-500'">
               <span>{{ selectedIssueTypeName || 'Select Issue Type' }}</span>
               <span class="flex items-center pointer-events-none transition-transform duration-200" :class="{ 'rotate-180': isIssueTypeOpen }">

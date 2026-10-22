@@ -636,7 +636,7 @@
         </div>
 
         <h4 class="text-[15px] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-100">Financial Details</h4>
-        <div class="bg-[#F0FDFA] rounded-[8px] p-4 mb-6">
+        <div class="rounded-[8px] p-4 mb-6" :class="isDark ? 'bg-[#04251f]' : 'bg-[#F0FDFA]'">
           <div class="flex justify-between items-center mb-2">
             <p class="text-[14px] text-gray-600">Subtotal</p>
             <p class="text-[14px] text-gray-900">{{ selectedReviewRow.subtotal }}</p>

@@ -26,10 +26,10 @@
                     <img src="/images/icons/reload.svg" alt="Reload" class="w-5 h-5 opacity-80" :class="[isDark ? 'invert brightness-0' : '', loading ? 'animate-spin' : '']">
                 </button>
 
-                <div class="relative w-[220px]">
+                <div class="relative w-[220px]" v-click-outside="() => filterOpen = false">
                     <button @click.stop="filterOpen = !filterOpen"
-                        class="w-full h-[48px] px-4 rounded-[10px] border border-[#04C18F] flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
-                        :class="isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-white text-[#1a1a1a]'">
+                        class="w-full h-[48px] px-4 rounded-[10px] border border-[#04C18F] flex items-center justify-between transition-colors cursor-pointer"
+                        :class="isDark ? 'bg-black/20 border-white/10 text-white hover:bg-white/5' : 'bg-white text-[#1a1a1a] hover:bg-gray-50'">
                         <span class="text-[14px] font-regular flex-1 text-center">{{ statusLabel }}</span>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="3" class="transition-transform opacity-40" :class="{ 'rotate-180': filterOpen }">
@@ -37,10 +37,13 @@
                         </svg>
                     </button>
                     <div v-if="filterOpen"
-                        class="absolute top-full left-0 right-0 mt-2 bg-white rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-gray-100 p-2 z-20 flex flex-col gap-1">
+                        class="absolute top-full left-0 right-0 mt-2 rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] border p-2 z-20 flex flex-col gap-1"
+                        :class="isDark ? 'bg-[#001410] border-white/10' : 'bg-white border-gray-100'">
                         <button v-for="opt in statusOptions" :key="opt.value" @click.stop="selectStatus(opt.value)"
                             class="text-left px-4 py-2.5 rounded-[10px] text-[15px] transition-colors cursor-pointer"
-                            :class="statusFilter === opt.value ? 'bg-[#E6FFF3] text-[#1a1a1a]' : 'text-[#1a1a1a] hover:bg-gray-50'">
+                            :class="statusFilter === opt.value
+                                ? (isDark ? 'bg-[#1a957e] text-white' : 'bg-[#E6FFF3] text-[#1a1a1a]')
+                                : (isDark ? 'text-white hover:bg-white/5' : 'text-[#1a1a1a] hover:bg-gray-50')">
                             {{ opt.label }}
                         </button>
                     </div>
@@ -110,15 +113,26 @@
                                 (ID <span class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-800'">{{ activeReq?.client_id }}</span>)
                             </p>
                             <div v-if="activeReq?.request_note" class="p-3 rounded-xl text-sm mb-4"
+<<<<<<< HEAD
+                                :class="isDark ? 'bg-[#226257] text-white/90' : 'bg-[#F3F4F6] text-gray-700'">
+                                <span class="font-semibold text-xs block mb-1" :class="isDark ? 'text-white/60' : 'text-gray-500'">Consultant note</span>
+=======
                                 :class="isDark ? 'bg-white/5 border border-white/10 text-white/80' : 'bg-[#F3F4F6] text-gray-700'">
                                 <span class="font-semibold text-xs block mb-1" :class="isDark ? 'text-white/50' : 'text-gray-500'">Consultant note</span>
+>>>>>>> 70f75245d9d35afe28696931ac389289dd045526
                                 {{ activeReq.request_note }}
                             </div>
                             <textarea v-model="rejectNote" rows="2" maxlength="500"
                                 placeholder="Reject note (required to reject)..."
+<<<<<<< HEAD
+                                class="w-full border-none rounded-xl px-4 py-3 text-sm outline-none placeholder:text-[#717182] focus:ring-1 focus:ring-[#00896F] mb-4"
+                                :class="isDark ? 'bg-[#226257] text-white placeholder:text-white/40' : 'bg-[#F3F4F6] text-black focus:bg-white'"></textarea>
+                            <p v-if="modalError" class="text-sm text-[#B91C1C] mb-3 text-center">{{ modalError }}</p>
+=======
                                 class="w-full rounded-xl px-4 py-3 text-sm outline-none mb-4 focus:ring-1 focus:ring-[#00896F]"
                                 :class="isDark ? 'bg-white/5 border border-white/10 text-white placeholder:text-white/40' : 'bg-[#F3F4F6] text-black border-none placeholder:text-[#717182] focus:bg-white'"></textarea>
                             <p v-if="modalError" class="text-sm text-[#FB2C36] mb-3 text-center">{{ modalError }}</p>
+>>>>>>> 70f75245d9d35afe28696931ac389289dd045526
                             <div class="flex gap-3 justify-center">
                                 <button @click="closeReview" class="px-5 py-2 border rounded-md text-sm font-medium transition-colors cursor-pointer"
                                     :class="isDark ? 'border-white/20 text-white/80 hover:bg-white/10' : 'border-gray-200 text-gray-700 hover:bg-gray-50'">Cancel</button>
@@ -146,7 +160,11 @@
                             <div class="space-y-3 mb-6">
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1 rounded-xl px-4 py-3 text-sm font-mono break-all"
+<<<<<<< HEAD
+                                        :class="isDark ? 'bg-[#226257] text-white' : 'bg-[#F3F4F6] text-black'">{{ approvedCreds.username }}</div>
+=======
                                         :class="isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-[#F3F4F6] text-black'">{{ approvedCreds.username }}</div>
+>>>>>>> 70f75245d9d35afe28696931ac389289dd045526
                                     <button @click="copyText(approvedCreds.username, 'user')"
                                         class="border border-[#00896F] text-[#00896F] px-4 py-2.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer"
                                         :class="isDark ? 'bg-transparent hover:bg-white/10' : 'bg-white hover:bg-[#E6FDF9]'">
@@ -155,7 +173,11 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1 rounded-xl px-4 py-3 text-sm font-mono break-all"
+<<<<<<< HEAD
+                                        :class="isDark ? 'bg-[#226257] text-white' : 'bg-[#F3F4F6] text-black'">{{ approvedCreds.password }}</div>
+=======
                                         :class="isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-[#F3F4F6] text-black'">{{ approvedCreds.password }}</div>
+>>>>>>> 70f75245d9d35afe28696931ac389289dd045526
                                     <button @click="copyText(approvedCreds.password, 'pass')"
                                         class="border border-[#00896F] text-[#00896F] px-4 py-2.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer"
                                         :class="isDark ? 'bg-transparent hover:bg-white/10' : 'bg-white hover:bg-[#E6FDF9]'">
@@ -270,8 +292,13 @@
                                 <span class="text-sm" :class="isDark ? 'text-white/90' : 'text-gray-800'">{{ formatTime(activeReq?.expired_at) }}</span>
                             </div>
                             <div v-if="activeReq?.request_note" class="p-3 rounded-xl text-sm"
+<<<<<<< HEAD
+                                :class="isDark ? 'bg-[#226257] text-white/90' : 'bg-[#F3F4F6] text-gray-700'">
+                                <span class="font-semibold text-xs block mb-1" :class="isDark ? 'text-white/60' : 'text-gray-500'">Consultant note</span>
+=======
                                 :class="isDark ? 'bg-white/5 border border-white/10 text-white/80' : 'bg-[#F3F4F6] text-gray-700'">
                                 <span class="font-semibold text-xs block mb-1" :class="isDark ? 'text-white/50' : 'text-gray-500'">Consultant note</span>
+>>>>>>> 70f75245d9d35afe28696931ac389289dd045526
                                 {{ activeReq.request_note }}
                             </div>
                             <div v-if="activeReq?.reject_note" class="p-3 rounded-xl text-sm"
@@ -282,7 +309,11 @@
                             <template v-if="['approved', 'active'].includes(activeReq?.status)">
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1 rounded-xl px-4 py-3 text-sm font-mono break-all"
+<<<<<<< HEAD
+                                        :class="isDark ? 'bg-[#226257] text-white' : 'bg-[#F3F4F6] text-black'">{{ activeReq?.username }}</div>
+=======
                                         :class="isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-[#F3F4F6] text-black'">{{ activeReq?.username }}</div>
+>>>>>>> 70f75245d9d35afe28696931ac389289dd045526
                                     <button @click="copyText(activeReq?.username, 'user')"
                                         class="border border-[#00896F] text-[#00896F] px-4 py-2.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer"
                                         :class="isDark ? 'bg-transparent hover:bg-white/10' : 'bg-white hover:bg-[#E6FDF9]'">
@@ -291,7 +322,11 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1 rounded-xl px-4 py-3 text-sm font-mono break-all"
+<<<<<<< HEAD
+                                        :class="isDark ? 'bg-[#226257] text-white' : 'bg-[#F3F4F6] text-black'">{{ activeReq?.password }}</div>
+=======
                                         :class="isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-[#F3F4F6] text-black'">{{ activeReq?.password }}</div>
+>>>>>>> 70f75245d9d35afe28696931ac389289dd045526
                                     <button @click="copyText(activeReq?.password, 'pass')"
                                         class="border border-[#00896F] text-[#00896F] px-4 py-2.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer"
                                         :class="isDark ? 'bg-transparent hover:bg-white/10' : 'bg-white hover:bg-[#E6FDF9]'">

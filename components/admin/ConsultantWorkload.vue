@@ -59,7 +59,7 @@
                         <td class="px-6 py-5">
                             <button @click="openModal(consultant)"
                                 class="border text-xs font-medium px-4 py-2 rounded-lg transition-colors"
-                                :class="isDark ? 'bg-[#FFF085]/90 hover:bg-[#FDE047] text-black border-black/10' : 'bg-[#FFF085] hover:bg-[#FDE047] text-black border-black/10'">
+                                :class="isDark ? 'bg-[#04b592]/90 hover:bg-[#006d58] text-black border-black/10' : 'bg-[#04b592] hover:bg-[#006d58] text-black border-black/10'">
                                 View details
                             </button>
                         </td>

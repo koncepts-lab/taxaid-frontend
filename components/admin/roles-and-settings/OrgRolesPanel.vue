@@ -145,6 +145,11 @@ async function toggle(field, value) {
   background-size: 400% 100%;
   animation: shimmer 1.4s ease infinite;
 }
+:global(.dark-mode-bg) .skeleton,
+:global(body.taxaid-dark) .skeleton {
+  background: linear-gradient(90deg, #21665a 25%, #2d8273 37%, #21665a 63%);
+  background-size: 400% 100%;
+}
 @keyframes shimmer {
   0% { background-position: 100% 50%; }
   100% { background-position: 0 50%; }

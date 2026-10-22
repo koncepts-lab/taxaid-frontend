@@ -25,7 +25,7 @@
       </div>
 
       <!-- Type of Appointment -->
-      <div class="relative">
+      <div class="relative" v-click-outside="() => typeOpen = false">
         <label class="block text-xs font-medium text-gray-600 mb-1">Type of Appointment</label>
         <button @click="typeOpen = !typeOpen" type="button" :disabled="timerState !== 'idle'"
           class="w-full flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm shadow-sm hover:border-gray-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
@@ -48,7 +48,7 @@
       </div>
 
       <!-- Client ID -->
-      <div class="relative">
+      <div class="relative" v-click-outside="() => clientOpen = false">
         <label class="block text-xs font-medium text-gray-600 mb-1">Client ID</label>
         <button v-if="needsClient" @click="clientOpen = !clientOpen" type="button" :disabled="timerState !== 'idle'"
           class="w-full flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm shadow-sm hover:border-gray-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"

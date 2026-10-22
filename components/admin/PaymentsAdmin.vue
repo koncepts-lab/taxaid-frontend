@@ -371,7 +371,7 @@
 
     <!-- ═══════════════ PLAN PREVIEW MODAL ═══════════════ -->
     <div v-if="previewPlan" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden max-h-[90vh] overflow-y-auto">
+      <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden max-h-[90vh] overflow-y-auto plan-preview-modal">
         <div class="p-6">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-xl font-medium text-gray-900">Preview</h3>

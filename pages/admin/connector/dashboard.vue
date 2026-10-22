@@ -62,7 +62,7 @@
                 <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Group</th>
                 <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Last Sync</th>
                 <th class="py-4 px-8 font-normal text-[15px] border-r border-[#ffffff1A]">Connector Version</th>
-                <th class="py-4 px-8 font-normal text-[15px]">Status</th>
+                <th class="py-4 px-8 font-normal text-[15px] whitespace-nowrap">Status</th>
               </tr>
             </thead>
             <tbody class="divide-y" :class="isDark ? 'divide-white/5' : 'divide-gray-100'">
@@ -93,9 +93,9 @@
                 </td>
                 <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ formatDate(row.last_sync_at) }}</td>
                 <td class="py-6 px-8 text-[14px] font-regular text-[#000000CC]" :class="isDark ? 'text-white/90' : ''">{{ row.connector_version ?? '—' }}</td>
-                <td class="py-6 px-8 text-[14px] font-regular">
+                <td class="py-6 px-8 text-[14px] font-regular whitespace-nowrap">
                   <span :class="row.needs_full_resync ? 'bg-[#FEF2F2] text-[#C10007] border-[#FFA6A6]' : 'bg-[#ECFDF5] text-[#059669] border-[#D1FAE5]'"
-                        class="px-3 py-1 rounded-full text-[12px] font-medium border">
+                        class="inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium border whitespace-nowrap">
                     {{ row.needs_full_resync ? 'Full Resync Pending' : 'OK' }}
                   </span>
                 </td>
@@ -115,13 +115,27 @@
             <p class="text-[14px] text-[#00000080]" :class="isDark ? 'text-white/60' : ''">Edit name, sync time, interval, and notes here</p>
           </div>
           <div class="flex items-center gap-3">
-            <div class="flex items-center rounded-full border border-[#04C18F33] p-1 text-[12px] font-medium">
-              <button @click="setGroupsSubTab('default')" class="px-4 py-1.5 rounded-full transition-colors" :class="groupsSubTab === 'default' ? 'bg-[#82FFE0] text-[#0A0A0A]' : 'text-gray-500'">Default Groups</button>
-              <button @click="setGroupsSubTab('custom')" class="px-4 py-1.5 rounded-full transition-colors" :class="groupsSubTab === 'custom' ? 'bg-[#82FFE0] text-[#0A0A0A]' : 'text-gray-500'">Custom Groups</button>
+            <div class="flex items-center rounded-full border border-[#04C18F33] p-1 text-[12px] font-medium"
+                 :class="isDark ? 'bg-black/20 border-white/10' : ''">
+              <button @click="setGroupsSubTab('default')" class="px-4 py-1.5 rounded-full transition-colors cursor-pointer"
+                      :class="groupsSubTab === 'default'
+                        ? (isDark ? 'bg-[#1b5e50] text-white shadow-sm' : 'bg-[#82FFE0] text-[#0A0A0A]')
+                        : (isDark ? 'text-white/70 hover:bg-white/5' : 'text-gray-500 hover:bg-gray-50')">Default Groups</button>
+              <button @click="setGroupsSubTab('custom')" class="px-4 py-1.5 rounded-full transition-colors cursor-pointer"
+                      :class="groupsSubTab === 'custom'
+                        ? (isDark ? 'bg-[#1b5e50] text-white shadow-sm' : 'bg-[#82FFE0] text-[#0A0A0A]')
+                        : (isDark ? 'text-white/70 hover:bg-white/5' : 'text-gray-500 hover:bg-gray-50')">Custom Groups</button>
             </div>
-            <div class="flex items-center rounded-full border border-[#04C18F33] p-1 text-[12px] font-medium">
-              <button @click="is24Hour = false" class="px-3 py-1 rounded-full transition-colors" :class="!is24Hour ? 'bg-[#82FFE0] text-[#0A0A0A]' : 'text-gray-500'">12h</button>
-              <button @click="is24Hour = true" class="px-3 py-1 rounded-full transition-colors" :class="is24Hour ? 'bg-[#82FFE0] text-[#0A0A0A]' : 'text-gray-500'">24h</button>
+            <div class="flex items-center rounded-full border border-[#04C18F33] p-1 text-[12px] font-medium"
+                 :class="isDark ? 'bg-black/20 border-white/10' : ''">
+              <button @click="is24Hour = false" class="px-3 py-1 rounded-full transition-colors cursor-pointer"
+                      :class="!is24Hour
+                        ? (isDark ? 'bg-[#1b5e50] text-white shadow-sm' : 'bg-[#82FFE0] text-[#0A0A0A]')
+                        : (isDark ? 'text-white/70 hover:bg-white/5' : 'text-gray-500 hover:bg-gray-50')">12h</button>
+              <button @click="is24Hour = true" class="px-3 py-1 rounded-full transition-colors cursor-pointer"
+                      :class="is24Hour
+                        ? (isDark ? 'bg-[#1b5e50] text-white shadow-sm' : 'bg-[#82FFE0] text-[#0A0A0A]')
+                        : (isDark ? 'text-white/70 hover:bg-white/5' : 'text-gray-500 hover:bg-gray-50')">24h</button>
             </div>
           </div>
         </div>
@@ -387,10 +401,10 @@
                 <td class="py-6 px-8 text-[14px]">{{ pkg.version }}</td>
                 <td class="py-6 px-8 text-[14px]">{{ formatDate(pkg.created_at) }}</td>
                 <td class="py-6 px-8 text-[14px]">{{ pkg.scheduled_at ? formatDate(pkg.scheduled_at) : '—' }}</td>
-                <td class="py-6 px-8 text-[14px]">
-                  <span v-if="pkg.is_latest" class="px-3 py-1 rounded-full text-[12px] font-medium border bg-[#ECFDF5] text-[#059669] border-[#D1FAE5]">Latest</span>
+                <td class="py-6 px-8 text-[14px] whitespace-nowrap">
+                  <span v-if="pkg.is_latest" class="inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium border bg-[#ECFDF5] text-[#059669] border-[#D1FAE5] whitespace-nowrap">Latest</span>
                   <button v-else @click="handleSetLatest(pkg)"
-                          class="px-3 py-1 rounded-full text-[12px] font-medium border bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200 cursor-pointer">
+                          class="inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium border bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200 cursor-pointer whitespace-nowrap">
                     Set Latest
                   </button>
                 </td>
@@ -529,9 +543,9 @@
                 <td class="py-6 px-8 text-[14px]">{{ row.group_id ?? '—' }}</td>
                 <td class="py-6 px-8 text-[14px]">{{ formatBytes(row.file_size_bytes) }}</td>
                 <td class="py-6 px-8 text-[14px]">{{ formatDate(row.started_at) }}</td>
-                <td class="py-6 px-8 text-[14px]">
+                <td class="py-6 px-8 text-[14px] whitespace-nowrap">
                   <span :class="row.status === 'synced' ? 'bg-[#ECFDF5] text-[#059669] border-[#D1FAE5]' : 'bg-[#FEF2F2] text-[#C10007] border-[#FFA6A6]'"
-                        class="px-3 py-1 rounded-full text-[12px] font-medium border">
+                        class="inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium border whitespace-nowrap">
                     {{ row.status }}
                   </span>
                 </td>
@@ -562,7 +576,9 @@
           This makes {{ setLatestTarget.version }} the version every connector is offered on its next check.
         </p>
         <div class="flex gap-3 justify-end">
-          <button @click="setLatestTarget = null" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cancel</button>
+          <button @click="setLatestTarget = null"
+                  class="px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                  :class="isDark ? 'text-white/80 hover:bg-[#00896f] hover:text-white' : 'text-gray-600 hover:bg-gray-100'">Cancel</button>
           <button @click="confirmSetLatest" class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-[#00896F] hover:bg-[#00705a]">Set Latest</button>
         </div>
       </div>
@@ -578,7 +594,9 @@
         <input v-model="pinGroupName" type="text" :placeholder="`${pinTenantPrompt.company_name} (dedicated)`"
                class="w-full rounded-[8px] border border-[#04C18F33] px-3 py-2 text-[14px] mb-4" />
         <div class="flex gap-3 justify-end">
-          <button @click="pinTenantPrompt = null; pinGroupName = ''" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cancel</button>
+          <button @click="pinTenantPrompt = null; pinGroupName = ''"
+                  class="px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                  :class="isDark ? 'text-white/80 hover:bg-[#00896f] hover:text-white' : 'text-gray-600 hover:bg-gray-100'">Cancel</button>
           <button @click="confirmPinTenant" :disabled="pinningTenant" class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-[#00896F] hover:bg-[#00705a] disabled:opacity-60">
             {{ pinningTenant ? 'Pinning...' : 'Pin' }}
           </button>

@@ -72,7 +72,7 @@
                                                 @keyup.enter="saveCell('mg', filteredMain[idx - 1])" v-focus
                                                 class="flex-1 min-w-0 h-full px-3 text-black rounded-xl border border-[#00896F] outline-none text-sm shadow-sm" />
                                             <button @mousedown.prevent="saveCell('mg', filteredMain[idx - 1])"
-                                                class="bg-[#FFF085] px-3 h-full rounded-lg text-xs text-black font-medium">Save</button>
+                                                class="bg-[#04b592] px-3 h-full rounded-lg text-xs text-black font-medium">Save</button>
                                         </template>
                                         <template v-else>
                                             <div
@@ -108,7 +108,7 @@
                                                 @keyup.enter="saveCell('sg', filteredSub[idx - 1])" v-focus
                                                 class="flex-1 min-w-0 h-full px-3 rounded-xl text-black border border-[#00896F] outline-none text-sm shadow-sm" />
                                             <button @mousedown.prevent="saveCell('sg', filteredSub[idx - 1])"
-                                                class="bg-[#FFF085] px-3 h-full rounded-lg text-xs text-black font-medium">Save</button>
+                                                class="bg-[#04b592] px-3 h-full rounded-lg text-xs text-black font-medium">Save</button>
                                         </template>
                                         <template v-else>
                                             <div
@@ -155,12 +155,12 @@
                     </div>
 
                     <div v-if="pendingConfirm"
-                        class="bg-[#FFF9E5] border border-[#FACC15] text-gray-800 text-sm rounded-xl px-4 py-3 space-y-3">
+                        class="bg-[#FFF9E5] border border-[#006d58] text-gray-800 text-sm rounded-xl px-4 py-3 space-y-3">
                         <p>A similar value already exists: <b>{{ pendingConfirm.similar }}</b>.
                             Add "<b>{{ pendingConfirm.value }}</b>" anyway?</p>
                         <div class="flex gap-2">
                             <button @click="confirmSimilar"
-                                class="bg-[#FFF085] hover:bg-[#FACC15] text-gray-800 px-4 py-1.5 rounded-lg text-xs font-medium">Add
+                                class="bg-[#04b592] hover:bg-[#006d58] text-gray-800 px-4 py-1.5 rounded-lg text-xs font-medium">Add
                                 anyway</button>
                             <button @click="pendingConfirm = null"
                                 class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-1.5 rounded-lg text-xs font-medium">Cancel</button>
@@ -175,7 +175,7 @@
                                 @input="clearFeedback"
                                 class=" flex-1 bg-[#F3F4F6] border-none rounded-xl px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-[#00896F] text-black" />
                             <button @click="addItem(field.k)"
-                                class="bg-[#FFF085] hover:bg-[#FACC15] text-gray-800 px-8  rounded-lg font-normal text-base whitespace-nowrap transition-all ">+
+                                class="bg-[#04b592] hover:bg-[#006d58] text-gray-800 px-8  rounded-lg font-normal text-base whitespace-nowrap transition-all ">+
                                 Add</button>
                         </div>
                     </div>
@@ -300,7 +300,7 @@
                                                         @keyup.enter="saveCell('mg', tenantMain.items[idx - 1])" v-focus
                                                         class="flex-1 min-w-0 h-full px-3 text-black rounded-xl border border-[#00896F] outline-none text-sm shadow-sm" />
                                                     <button @mousedown.prevent="saveCell('mg', tenantMain.items[idx - 1])"
-                                                        class="bg-[#FFF085] px-3 h-full rounded-lg text-xs text-black font-medium">Save</button>
+                                                        class="bg-[#04b592] px-3 h-full rounded-lg text-xs text-black font-medium">Save</button>
                                                 </template>
                                                 <template v-else>
                                                     <div class="flex-1 flex items-center justify-between text-black bg-[#F3F4F6] px-3 py-2 rounded-xl h-full min-w-0">
@@ -326,7 +326,7 @@
                                                         @keyup.enter="saveCell('sg', tenantSub.items[idx - 1])" v-focus
                                                         class="flex-1 min-w-0 h-full px-3 rounded-xl text-black border border-[#00896F] outline-none text-sm shadow-sm" />
                                                     <button @mousedown.prevent="saveCell('sg', tenantSub.items[idx - 1])"
-                                                        class="bg-[#FFF085] px-3 h-full rounded-lg text-xs text-black font-medium">Save</button>
+                                                        class="bg-[#04b592] px-3 h-full rounded-lg text-xs text-black font-medium">Save</button>
                                                 </template>
                                                 <template v-else>
                                                     <div class="flex-1 flex items-center justify-between text-black bg-[#F3F4F6] px-3 py-2 rounded-xl h-full min-w-0">
@@ -377,12 +377,12 @@
                         </div>
 
                         <div v-if="pendingConfirm"
-                            class="bg-[#FFF9E5] border border-[#FACC15] text-gray-800 text-sm rounded-xl px-4 py-3 space-y-3">
+                            class="bg-[#FFF9E5] border border-[#006d58] text-gray-800 text-sm rounded-xl px-4 py-3 space-y-3">
                             <p>A similar value already exists: <b>{{ pendingConfirm.similar }}</b>.
                                 Add "<b>{{ pendingConfirm.value }}</b>" anyway?</p>
                             <div class="flex gap-2">
                                 <button @click="confirmSimilar"
-                                    class="bg-[#FFF085] hover:bg-[#FACC15] text-gray-800 px-4 py-1.5 rounded-lg text-xs font-medium">Add
+                                    class="bg-[#04b592] hover:bg-[#006d58] text-gray-800 px-4 py-1.5 rounded-lg text-xs font-medium">Add
                                     anyway</button>
                                 <button @click="pendingConfirm = null"
                                     class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-1.5 rounded-lg text-xs font-medium">Cancel</button>
@@ -397,7 +397,7 @@
                                     @input="clearFeedback"
                                     class=" flex-1 bg-[#F3F4F6] border-none rounded-xl px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-[#00896F] text-black" />
                                 <button @click="addItem(field.k)"
-                                    class="bg-[#FFF085] hover:bg-[#FACC15] text-gray-800 px-8  rounded-lg font-normal text-base whitespace-nowrap transition-all ">+
+                                    class="bg-[#04b592] hover:bg-[#006d58] text-gray-800 px-8  rounded-lg font-normal text-base whitespace-nowrap transition-all ">+
                                     Add</button>
                             </div>
                         </div>
@@ -471,13 +471,13 @@
                 <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
                     <button @click="closeBulkModal" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cancel</button>
                     <button v-if="!bulk.items.length" @click="previewBulk" :disabled="bulk.loading || !bulk.raw.trim()"
-                        class="bg-[#FFF085] hover:bg-[#FACC15] disabled:opacity-50 text-gray-800 px-6 py-2 rounded-lg text-sm font-medium">
+                        class="bg-[#04b592] hover:bg-[#006d58] text-gray-800 px-6 py-2 rounded-lg text-sm font-medium">
                         {{ bulk.loading ? 'Checking...' : 'Preview' }}
                     </button>
                     <template v-else>
                         <button @click="bulk.items = []" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">&larr; Back</button>
                         <button @click="confirmBulk" :disabled="bulk.loading || !bulk.items.some(i => i.selected)"
-                            class="bg-[#FFF085] hover:bg-[#FACC15] disabled:opacity-50 text-gray-800 px-6 py-2 rounded-lg text-sm font-medium">
+                            class="bg-[#04b592] hover:bg-[#006d58] text-gray-800 px-6 py-2 rounded-lg text-sm font-medium">
                             {{ bulk.loading ? 'Importing...' : `Import Selected (${bulk.items.filter(i => i.selected).length})` }}
                         </button>
                     </template>

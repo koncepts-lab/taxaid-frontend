@@ -177,16 +177,56 @@ tbody tr:hover td {
   color: white !important;
 }
 
-.dark-mode-bg table tr:hover td {
-  background-color: rgba(255, 255, 255, 0.1) !important;
+.dark-mode-bg table tbody tr:hover,
+.dark-mode-bg tr.hover\:bg-gray-50\/50:hover,
+.dark-mode-bg .hover\:bg-gray-50\/50:hover,
+body.taxaid-dark table tbody tr:hover,
+body.taxaid-dark tr.hover\:bg-gray-50\/50:hover,
+body.taxaid-dark .hover\:bg-gray-50\/50:hover {
+  background-color: color-mix(in oklab, oklch(0.34 0.07 176.99) 50%, #00000045) !important;
+}
+
+.dark-mode-bg table tr:hover td,
+body.taxaid-dark table tr:hover td {
+  background-color: transparent !important;
 }
 
 .dark-mode-bg table td {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
+.dark-mode-bg .skeleton,
+.dark-mode-bg .user-skeleton,
+body.taxaid-dark .skeleton,
+body.taxaid-dark .user-skeleton {
+  background: linear-gradient(90deg, #21665a 25%, #2d8273 37%, #21665a 63%) !important;
+  background-size: 400% 100% !important;
+}
+
+.dark-mode-bg table tbody .animate-pulse,
+.dark-mode-bg .animate-pulse.bg-gray-100,
+.dark-mode-bg .animate-pulse.bg-gray-200,
+body.taxaid-dark table tbody .animate-pulse,
+body.taxaid-dark .animate-pulse.bg-gray-100,
+body.taxaid-dark .animate-pulse.bg-gray-200 {
+  background-color: #21665a !important;
+}
+
 .dark-mode-bg .bg-transparent {
   background-color: transparent !important;
+}
+
+body.taxaid-dark img[src*="reload.svg"],
+.dark-mode-bg img[src*="reload.svg"],
+body.taxaid-dark img[src*="calendar-black.svg"],
+.dark-mode-bg img[src*="calendar-black.svg"],
+body.taxaid-dark img[src*="team.svg"],
+.dark-mode-bg img[src*="team.svg"],
+body.taxaid-dark img[src*="View.svg"],
+.dark-mode-bg img[src*="View.svg"],
+body.taxaid-dark img[src*="view.svg"],
+.dark-mode-bg img[src*="view.svg"] {
+  filter: invert(1);
 }
 
 /* Fix dropdowns in dark mode */
@@ -202,6 +242,13 @@ tbody tr:hover td {
 .dark-mode-bg .divide-gray-50 > :not([hidden]) ~ :not([hidden]),
 .dark-mode-bg .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
   border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-mode-bg .bg-\[\#E0FDF4\],
+body.taxaid-dark .bg-\[\#E0FDF4\],
+.dark-mode-bg .fixed .bg-\[\#E0FDF4\],
+body.taxaid-dark > .fixed .bg-\[\#E0FDF4\] {
+  background-color: #001410 !important;
 }
 
 /* Fix inputs in dark mode */
@@ -314,11 +361,33 @@ body.taxaid-dark > .fixed .bg-white .bg-white {
   background-color: rgba(255, 255, 255, 0.06) !important;
 }
 
+.dark-mode-bg .fixed .bg-white.absolute,
+.dark-mode-bg .fixed .bg-white.z-\[110\],
+.dark-mode-bg .bg-white.z-\[110\],
+body.taxaid-dark .fixed .bg-white.absolute,
+body.taxaid-dark .fixed .bg-white.z-\[110\],
+body.taxaid-dark .bg-white.z-\[110\] {
+  background-color: #103b34 !important;
+}
+
 .dark-mode-bg .fixed .bg-gray-50,
 .dark-mode-bg .fixed .bg-gray-100,
 body.taxaid-dark > .fixed .bg-gray-50,
 body.taxaid-dark > .fixed .bg-gray-100 {
   background-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+.dark-mode-bg .fixed .bg-\[\#F3F4F6\],
+body.taxaid-dark > .fixed .bg-\[\#F3F4F6\] {
+  background-color: #226257 !important;
+  color: #ffffff !important;
+}
+
+.dark-mode-bg .fixed .bg-\[\#F0FDFA\],
+body.taxaid-dark > .fixed .bg-\[\#F0FDFA\],
+.dark-mode-bg .bg-\[\#F0FDFA\],
+body.taxaid-dark .bg-\[\#F0FDFA\] {
+  background-color: #04251f !important;
 }
 
 .dark-mode-bg .fixed .hover\:bg-gray-50:hover,
@@ -379,6 +448,25 @@ body.taxaid-dark > .fixed input::placeholder {
   color: rgba(255, 255, 255, 0.45);
 }
 
+.dark-mode-bg .plan-preview-modal,
+.dark-mode-bg .plan-preview-modal *,
+body.taxaid-dark .plan-preview-modal,
+body.taxaid-dark .plan-preview-modal * {
+  color: #ffffff !important;
+}
+
+.dark-mode-bg .plan-preview-modal .rounded-full button.bg-white,
+body.taxaid-dark .plan-preview-modal .rounded-full button.bg-white {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.dark-mode-bg .plan-preview-modal .border-gray-100,
+.dark-mode-bg .plan-preview-modal .border-gray-200,
+body.taxaid-dark .plan-preview-modal .border-gray-100,
+body.taxaid-dark .plan-preview-modal .border-gray-200 {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
 /* Highlighted rows / selected cards and outline buttons that were unreadable on the dark theme */
 .dark-mode-bg .bg-\[\#ECFDF5\],
 .dark-mode-bg .bg-\[\#ECFDF5\]\/60,
@@ -396,6 +484,24 @@ body.taxaid-dark > .fixed input::placeholder {
 
 .dark-mode-bg .border-red-300 {
   border-color: rgba(248, 113, 113, 0.6) !important;
+}
+
+.dark-mode-bg .bg-\[\#FEF2F2\],
+body.taxaid-dark .bg-\[\#FEF2F2\] {
+  background-color: rgba(239, 68, 68, 0.16) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(248, 113, 113, 0.4) !important;
+}
+
+.dark-mode-bg .bg-\[\#82FFE0\],
+body.taxaid-dark .bg-\[\#82FFE0\] {
+  background-color: #1b5e50 !important;
+  color: #ffffff !important;
+}
+
+.dark-mode-bg button:disabled.bg-\[\#04C18F\],
+body.taxaid-dark button:disabled.bg-\[\#04C18F\] {
+  opacity: 1 !important;
 }
 
 @layer base {
