@@ -113,26 +113,15 @@
                                 (ID <span class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-800'">{{ activeReq?.client_id }}</span>)
                             </p>
                             <div v-if="activeReq?.request_note" class="p-3 rounded-xl text-sm mb-4"
-<<<<<<< HEAD
                                 :class="isDark ? 'bg-[#226257] text-white/90' : 'bg-[#F3F4F6] text-gray-700'">
                                 <span class="font-semibold text-xs block mb-1" :class="isDark ? 'text-white/60' : 'text-gray-500'">Consultant note</span>
-=======
-                                :class="isDark ? 'bg-white/5 border border-white/10 text-white/80' : 'bg-[#F3F4F6] text-gray-700'">
-                                <span class="font-semibold text-xs block mb-1" :class="isDark ? 'text-white/50' : 'text-gray-500'">Consultant note</span>
->>>>>>> 70f75245d9d35afe28696931ac389289dd045526
                                 {{ activeReq.request_note }}
                             </div>
                             <textarea v-model="rejectNote" rows="2" maxlength="500"
                                 placeholder="Reject note (required to reject)..."
-<<<<<<< HEAD
                                 class="w-full border-none rounded-xl px-4 py-3 text-sm outline-none placeholder:text-[#717182] focus:ring-1 focus:ring-[#00896F] mb-4"
                                 :class="isDark ? 'bg-[#226257] text-white placeholder:text-white/40' : 'bg-[#F3F4F6] text-black focus:bg-white'"></textarea>
                             <p v-if="modalError" class="text-sm text-[#B91C1C] mb-3 text-center">{{ modalError }}</p>
-=======
-                                class="w-full rounded-xl px-4 py-3 text-sm outline-none mb-4 focus:ring-1 focus:ring-[#00896F]"
-                                :class="isDark ? 'bg-white/5 border border-white/10 text-white placeholder:text-white/40' : 'bg-[#F3F4F6] text-black border-none placeholder:text-[#717182] focus:bg-white'"></textarea>
-                            <p v-if="modalError" class="text-sm text-[#FB2C36] mb-3 text-center">{{ modalError }}</p>
->>>>>>> 70f75245d9d35afe28696931ac389289dd045526
                             <div class="flex gap-3 justify-center">
                                 <button @click="closeReview" class="px-5 py-2 border rounded-md text-sm font-medium transition-colors cursor-pointer"
                                     :class="isDark ? 'border-white/20 text-white/80 hover:bg-white/10' : 'border-gray-200 text-gray-700 hover:bg-gray-50'">Cancel</button>
@@ -160,11 +149,7 @@
                             <div class="space-y-3 mb-6">
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1 rounded-xl px-4 py-3 text-sm font-mono break-all"
-<<<<<<< HEAD
                                         :class="isDark ? 'bg-[#226257] text-white' : 'bg-[#F3F4F6] text-black'">{{ approvedCreds.username }}</div>
-=======
-                                        :class="isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-[#F3F4F6] text-black'">{{ approvedCreds.username }}</div>
->>>>>>> 70f75245d9d35afe28696931ac389289dd045526
                                     <button @click="copyText(approvedCreds.username, 'user')"
                                         class="border border-[#00896F] text-[#00896F] px-4 py-2.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer"
                                         :class="isDark ? 'bg-transparent hover:bg-white/10' : 'bg-white hover:bg-[#E6FDF9]'">
@@ -173,11 +158,7 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1 rounded-xl px-4 py-3 text-sm font-mono break-all"
-<<<<<<< HEAD
                                         :class="isDark ? 'bg-[#226257] text-white' : 'bg-[#F3F4F6] text-black'">{{ approvedCreds.password }}</div>
-=======
-                                        :class="isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-[#F3F4F6] text-black'">{{ approvedCreds.password }}</div>
->>>>>>> 70f75245d9d35afe28696931ac389289dd045526
                                     <button @click="copyText(approvedCreds.password, 'pass')"
                                         class="border border-[#00896F] text-[#00896F] px-4 py-2.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer"
                                         :class="isDark ? 'bg-transparent hover:bg-white/10' : 'bg-white hover:bg-[#E6FDF9]'">
@@ -292,13 +273,8 @@
                                 <span class="text-sm" :class="isDark ? 'text-white/90' : 'text-gray-800'">{{ formatTime(activeReq?.expired_at) }}</span>
                             </div>
                             <div v-if="activeReq?.request_note" class="p-3 rounded-xl text-sm"
-<<<<<<< HEAD
                                 :class="isDark ? 'bg-[#226257] text-white/90' : 'bg-[#F3F4F6] text-gray-700'">
                                 <span class="font-semibold text-xs block mb-1" :class="isDark ? 'text-white/60' : 'text-gray-500'">Consultant note</span>
-=======
-                                :class="isDark ? 'bg-white/5 border border-white/10 text-white/80' : 'bg-[#F3F4F6] text-gray-700'">
-                                <span class="font-semibold text-xs block mb-1" :class="isDark ? 'text-white/50' : 'text-gray-500'">Consultant note</span>
->>>>>>> 70f75245d9d35afe28696931ac389289dd045526
                                 {{ activeReq.request_note }}
                             </div>
                             <div v-if="activeReq?.reject_note" class="p-3 rounded-xl text-sm"
@@ -309,11 +285,7 @@
                             <template v-if="['approved', 'active'].includes(activeReq?.status)">
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1 rounded-xl px-4 py-3 text-sm font-mono break-all"
-<<<<<<< HEAD
                                         :class="isDark ? 'bg-[#226257] text-white' : 'bg-[#F3F4F6] text-black'">{{ activeReq?.username }}</div>
-=======
-                                        :class="isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-[#F3F4F6] text-black'">{{ activeReq?.username }}</div>
->>>>>>> 70f75245d9d35afe28696931ac389289dd045526
                                     <button @click="copyText(activeReq?.username, 'user')"
                                         class="border border-[#00896F] text-[#00896F] px-4 py-2.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer"
                                         :class="isDark ? 'bg-transparent hover:bg-white/10' : 'bg-white hover:bg-[#E6FDF9]'">
@@ -322,11 +294,7 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1 rounded-xl px-4 py-3 text-sm font-mono break-all"
-<<<<<<< HEAD
                                         :class="isDark ? 'bg-[#226257] text-white' : 'bg-[#F3F4F6] text-black'">{{ activeReq?.password }}</div>
-=======
-                                        :class="isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-[#F3F4F6] text-black'">{{ activeReq?.password }}</div>
->>>>>>> 70f75245d9d35afe28696931ac389289dd045526
                                     <button @click="copyText(activeReq?.password, 'pass')"
                                         class="border border-[#00896F] text-[#00896F] px-4 py-2.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer"
                                         :class="isDark ? 'bg-transparent hover:bg-white/10' : 'bg-white hover:bg-[#E6FDF9]'">
