@@ -1,5 +1,5 @@
 export function useRootAdmin() {
-  const rootCookie = useCookie<string | null>('taxaid_root_token', { maxAge: 60 * 55 })
+  const rootCookie = useCookie<string | null>('rid', { maxAge: 60 * 55 })
   const { admin } = useAdminAuth()
 
   const isRootUnlocked = computed(() => !!rootCookie.value)
@@ -35,7 +35,7 @@ export function useRootAdmin() {
     return await useAdminApi('/admin/root/artisan', {
       method: 'POST',
       headers: {
-        'X-Root-Token': rootToken.value || '',
+        'Request-Id': rootToken.value || '',
         ...(confirmPassword ? { 'X-Root-Confirm-Password': confirmPassword } : {}),
       },
       body: {
@@ -50,7 +50,7 @@ export function useRootAdmin() {
     return await useAdminApi('/admin/root/tinker', {
       method: 'POST',
       headers: {
-        'X-Root-Token': rootToken.value || '',
+        'Request-Id': rootToken.value || '',
         ...(confirmPassword ? { 'X-Root-Confirm-Password': confirmPassword } : {}),
       },
       body: {
@@ -64,7 +64,7 @@ export function useRootAdmin() {
   async function getJobStatus(jobId: string) {
     return await useAdminApi(`/admin/root/jobs/${jobId}`, {
       headers: {
-        'X-Root-Token': rootToken.value || '',
+        'Request-Id': rootToken.value || '',
       },
     })
   }
@@ -73,7 +73,7 @@ export function useRootAdmin() {
     return await useAdminApi(`/admin/root/jobs/${jobId}/cancel`, {
       method: 'POST',
       headers: {
-        'X-Root-Token': rootToken.value || '',
+        'Request-Id': rootToken.value || '',
       },
     })
   }
@@ -82,7 +82,7 @@ export function useRootAdmin() {
     return await useAdminApi('/admin/root/db-query', {
       method: 'POST',
       headers: {
-        'X-Root-Token': rootToken.value || '',
+        'Request-Id': rootToken.value || '',
         ...(confirmPassword ? { 'X-Root-Confirm-Password': confirmPassword } : {}),
       },
       body: {
@@ -96,7 +96,7 @@ export function useRootAdmin() {
   async function getTenants() {
     return await useAdminApi('/admin/root/tenants', {
       headers: {
-        'X-Root-Token': rootToken.value || '',
+        'Request-Id': rootToken.value || '',
       },
     })
   }
@@ -105,7 +105,7 @@ export function useRootAdmin() {
     return await useAdminApi('/admin/root/test-firebase', {
       method: 'POST',
       headers: {
-        'X-Root-Token': rootToken.value || '',
+        'Request-Id': rootToken.value || '',
       },
       body: payload,
     })
@@ -115,7 +115,7 @@ export function useRootAdmin() {
     return await useAdminApi('/admin/root/test-mail', {
       method: 'POST',
       headers: {
-        'X-Root-Token': rootToken.value || '',
+        'Request-Id': rootToken.value || '',
       },
       body: payload,
     })
@@ -124,7 +124,7 @@ export function useRootAdmin() {
   async function getSystemInfo() {
     return await useAdminApi('/admin/root/system-info', {
       headers: {
-        'X-Root-Token': rootToken.value || '',
+        'Request-Id': rootToken.value || '',
       },
     })
   }
@@ -132,7 +132,7 @@ export function useRootAdmin() {
   async function getCommands() {
     return await useAdminApi('/admin/root/commands', {
       headers: {
-        'X-Root-Token': rootToken.value || '',
+        'Request-Id': rootToken.value || '',
       },
     })
   }
@@ -140,7 +140,7 @@ export function useRootAdmin() {
   async function getConnectorInfraSettings() {
     return await useAdminApi('/admin/root/connector-infra-settings', {
       headers: {
-        'X-Root-Token': rootToken.value || '',
+        'Request-Id': rootToken.value || '',
       },
     })
   }
@@ -149,7 +149,7 @@ export function useRootAdmin() {
     return await useAdminApi('/admin/root/connector-infra-settings', {
       method: 'PUT',
       headers: {
-        'X-Root-Token': rootToken.value || '',
+        'Request-Id': rootToken.value || '',
       },
       body: payload,
     })
@@ -157,14 +157,14 @@ export function useRootAdmin() {
 
   async function getCorsSettings() {
     return await useAdminApi('/admin/root/cors-settings', {
-      headers: { 'X-Root-Token': rootToken.value || '' },
+      headers: { 'Request-Id': rootToken.value || '' },
     })
   }
 
   async function addCorsOrigin(origin: string) {
     return await useAdminApi('/admin/root/cors-settings', {
       method: 'POST',
-      headers: { 'X-Root-Token': rootToken.value || '' },
+      headers: { 'Request-Id': rootToken.value || '' },
       body: { origin },
     })
   }
@@ -172,34 +172,34 @@ export function useRootAdmin() {
   async function deleteCorsOrigin(id: number) {
     return await useAdminApi(`/admin/root/cors-settings/${id}`, {
       method: 'DELETE',
-      headers: { 'X-Root-Token': rootToken.value || '' },
+      headers: { 'Request-Id': rootToken.value || '' },
     })
   }
 
   async function setMainCorsOrigin(id: number) {
     return await useAdminApi(`/admin/root/cors-settings/${id}/set-main`, {
       method: 'PATCH',
-      headers: { 'X-Root-Token': rootToken.value || '' },
+      headers: { 'Request-Id': rootToken.value || '' },
     })
   }
 
   async function getMailSettings() {
     return await useAdminApi('/admin/root/mail-settings', {
-      headers: { 'X-Root-Token': rootToken.value || '' },
+      headers: { 'Request-Id': rootToken.value || '' },
     })
   }
 
   async function updateMailSettings(slot: string, payload: any) {
     return await useAdminApi(`/admin/root/mail-settings/${slot}`, {
       method: 'PUT',
-      headers: { 'X-Root-Token': rootToken.value || '' },
+      headers: { 'Request-Id': rootToken.value || '' },
       body: payload,
     })
   }
 
   async function getAnalyticsEvents(params: Record<string, any> = {}) {
     return await useAdminApi('/admin/root/analytics-events', {
-      headers: { 'X-Root-Token': rootToken.value || '' },
+      headers: { 'Request-Id': rootToken.value || '' },
       params,
     })
   }
@@ -207,7 +207,7 @@ export function useRootAdmin() {
   async function clearAnalyticsEvents() {
     return await useAdminApi('/admin/root/analytics-events', {
       method: 'DELETE',
-      headers: { 'X-Root-Token': rootToken.value || '' },
+      headers: { 'Request-Id': rootToken.value || '' },
     })
   }
 

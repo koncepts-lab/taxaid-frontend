@@ -25,6 +25,13 @@
           </button>
         </CommonTooltip>
 
+        <CommonTooltip :text="currentLang === 'ar' ? 'الإعدادات' : 'Settings'">
+          <NuxtLink to="/taxaid-partner/account/settings"
+            class="w-[38px] h-[38px] rounded-full bg-[#00896F]/40 border border-[#ffffff1A] flex items-center justify-center text-white hover:bg-[#00896F]/60 transition-all cursor-pointer">
+            <img :src="isDark ? '/images/icons/settings-dark.svg' : '/images/icons/settings.svg'" alt="Settings" class="w-5 h-5 invert brightness-0" />
+          </NuxtLink>
+        </CommonTooltip>
+
         <CommonTooltip :text="currentLang === 'ar' ? 'التنبيهات' : 'Notifications'">
           <NuxtLink to="/taxaid-partner/notifications"
             class="relative w-[38px] h-[38px] rounded-full bg-[#00896F]/40 border border-[#ffffff1A] flex items-center justify-center text-white hover:bg-[#00896F]/60 transition-all cursor-pointer">

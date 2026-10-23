@@ -91,7 +91,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 definePageMeta({
   layout: false
@@ -145,12 +145,17 @@ const password     = ref('')
 const isLoggingIn  = ref(false)
 const loginError   = ref('')
 
+const geoLocation = ref(null)
+onMounted(() => {
+  useLocation().resolve().then((loc) => { if (loc) geoLocation.value = loc })
+})
+
 async function onLogin() {
   if (isLoggingIn.value) return
   loginError.value = ''
   isLoggingIn.value = true
   try {
-    await login(email.value, password.value)
+    await login(email.value, password.value, geoLocation.value)
   } catch (err) {
     loginError.value = err?.data?.message ?? 'Login failed. Please check your credentials.'
   } finally {

@@ -43,6 +43,14 @@
             <img v-else src="/images/icons/sun.svg" class="w-5 h-5" alt="Light Mode" />
           </button>
         </CommonTooltip>
+        <!-- Settings -->
+        <CommonTooltip :text="currentLang === 'ar' ? 'الإعدادات' : 'Settings'">
+          <NuxtLink to="/admin/account/settings"
+            class="w-[38px] h-[38px] rounded-full bg-[#00896F]/40 border border-[#ffffff1A] flex items-center justify-center text-white hover:bg-[#00896F]/60 transition-colors cursor-pointer">
+            <img :src="isDark ? '/images/icons/settings-dark.svg' : '/images/icons/settings.svg'" alt="Settings" class="w-5 h-5 invert brightness-0" />
+          </NuxtLink>
+        </CommonTooltip>
+
         <!-- Notifications -->
         <CommonTooltip :text="currentLang === 'ar' ? 'التنبيهات' : 'Notifications'">
           <NuxtLink :to="notificationsTo"
@@ -125,8 +133,8 @@ if (props.adminLogout) {
 
 function handleLogout() {
   if (props.adminLogout) {
-    useCookie('admin_token').value = null
-    useCookie('admin_user').value  = null
+    useAdminAuth().logout()
+    return
   }
   navigateTo(props.logoutTo)
 }
