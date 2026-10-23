@@ -44,9 +44,9 @@
             <thead>
               <tr class="text-white text-sm">
                 <th class="bg-[#058a64] py-2.5 px-3 font-medium rounded-ss-lg">{{ labels.billNo }}</th>
-                <th class="bg-[#058a64] py-2.5 px-3 font-medium">{{ labels.currentAmount }}</th>
-                <th class="bg-[#058a64] py-2.5 px-3 font-medium">{{ labels.adjustment }}</th>
-                <th class="bg-[#058a64] py-2.5 px-3 font-medium">{{ labels.afterAdjustment }}</th>
+                <th class="bg-[#058a64] py-2.5 px-3 font-medium text-right">{{ labels.currentAmount }}</th>
+                <th class="bg-[#058a64] py-2.5 px-3 font-medium text-right">{{ labels.adjustment }}</th>
+                <th class="bg-[#058a64] py-2.5 px-3 font-medium text-center">{{ labels.afterAdjustment }}</th>
                 <th class="bg-[#058a64] py-2.5 px-3 font-medium text-center">{{ labels.markPaid }}</th>
                 <th class="bg-[#058a64] py-2.5 px-3 font-medium rounded-se-lg text-center">{{ labels.action }}</th>
               </tr>
@@ -79,7 +79,7 @@
                 <td class="py-2 px-3">
                   <span v-if="row.isNew" class="invisible block mb-1 px-1.5 py-0.5 rounded text-[10px] font-semibold">.</span>
                   <input v-if="row.isNew" type="text" inputmode="decimal" :value="row.amount" @input="onAmountInput(row, $event)" @keydown="onAmountKeydown" placeholder="0.00" class="w-full border rounded-md py-1.5 px-2.5 text-right focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
-                  <span v-else :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatCurrency(row.amount) }}</span>
+                  <span v-else class="block text-right" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatCurrency(row.amount) }}</span>
                 </td>
                 <td class="py-2 px-3">
                   <span v-if="row.isNew" class="invisible block mb-1 px-1.5 py-0.5 rounded text-[10px] font-semibold">.</span>
@@ -127,7 +127,7 @@
                 <tr class="text-white text-sm">
                   <th class="bg-[#047857] py-2.5 px-3 font-medium rounded-ss-lg">{{ labels.billNo }}</th>
                   <th class="bg-[#047857] py-2.5 px-3 font-medium">{{ labels.narration }}</th>
-                  <th class="bg-[#047857] py-2.5 px-3 font-medium">{{ labels.amount }}</th>
+                  <th class="bg-[#047857] py-2.5 px-3 font-medium text-right">{{ labels.amount }}</th>
                   <th class="bg-[#047857] py-2.5 px-3 font-medium rounded-se-lg text-center">{{ labels.action }}</th>
                 </tr>
               </thead>
@@ -146,7 +146,7 @@
                       </span>
                     </span>
                   </td>
-                  <td class="py-2 px-3" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatCurrency(c.amount) }}</td>
+                  <td class="py-2 px-3 text-right" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatCurrency(c.amount) }}</td>
                   <td class="py-2 px-3 text-center">
                     <button @click="addCandidate(c)" class="bg-[#058a64] hover:bg-[#047857] text-white px-3 py-1 rounded-md text-xs font-medium">{{ labels.add }}</button>
                   </td>
@@ -352,9 +352,9 @@ const toNumber = (v) => {
 const afterAdjustment = (row) => row.isNew ? toNumber(row.amount) : toNumber(row.amount) + toNumber(row.adjustment);
 
 const rowDelta = (row) => {
-  if (!row.isNew) return toNumber(row.adjustment);
-  if (row.isAdvance) return -toNumber(row.amount);
-  return toNumber(row.amount);
+  if (!row.isNew) return row.markPaid ? -toNumber(row.amount) : toNumber(row.adjustment);
+  if (row.markPaid) return 0;
+  return row.isAdvance ? -toNumber(row.amount) : toNumber(row.amount);
 };
 
 const totalEntered = computed(() => rows.value.reduce((sum, r) => sum + rowDelta(r), 0));

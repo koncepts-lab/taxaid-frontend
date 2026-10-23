@@ -128,7 +128,7 @@
             <thead>
               <tr class="text-white text-sm">
                 <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium rounded-ss-lg">{{ labels.partyName }}</th>
-                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">{{ labels.needsCol }} ({{ code }})</th>
+                <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium text-right">{{ labels.needsCol }} ({{ code }})</th>
                 <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium">{{ labels.status }}</th>
                 <th class="sticky top-0 z-10 bg-[#058a64] py-3 px-4 font-medium rounded-se-lg">{{ labels.action }}</th>
               </tr>
@@ -139,7 +139,7 @@
               </tr>
               <tr v-for="vendor in allVendors" :key="vendor" :class="isDark ? 'hover:bg-white/5 bg-[#002e26]' : 'hover:bg-gray-50 bg-white'">
                 <td class="py-3 px-4 font-medium" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ vendor }}</td>
-                <td class="py-3 px-4" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatCurrency(vendorDiff(vendor)) }}</td>
+                <td class="py-3 px-4 text-right" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatCurrency(vendorDiff(vendor)) }}</td>
                 <td class="py-3 px-4">
                   <span v-if="vendorResolutions[vendor]" class="bg-[#d1fae5] text-[#047857] border border-[#6ee7b7] px-3 py-1 rounded-md text-xs font-medium">{{ labels.resolved }}</span>
                   <span v-else class="text-xs" :class="isDark ? 'text-white/40' : 'text-gray-400'">{{ labels.pending }}</span>
@@ -420,7 +420,7 @@ const vendorDiffSigned = (ledgerName) => Number(vendorDiffs.value[ledgerName] ??
 const allVendors = computed(() => [...new Set([
   ...primaryRows.value.map((r) => r.ledger_name),
   ...secondaryRows.value.map((r) => r.ledger_name),
-])]);
+])].sort((a, b) => vendorDiff(b) - vendorDiff(a)));
 
 const purchaseCandidatesFor = (vendor) => primaryRows.value.filter((r) => r.ledger_name === vendor);
 const paymentCandidatesFor = (vendor) => secondaryRows.value.filter((r) => r.ledger_name === vendor);
