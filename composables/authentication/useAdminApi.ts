@@ -16,8 +16,8 @@ export const useAdminApi = async (url: string, options: any = {}) => {
     },
     onResponseError({ response }) {
       if (response.status === 401) {
-        if (options.headers && 'X-Root-Token' in options.headers) {
-          const rootToken = useCookie('taxaid_root_token')
+        if (options.headers && 'Request-Id' in options.headers) {
+          const rootToken = useCookie('rid')
           rootToken.value = null
           navigateTo('/admin')
           return
