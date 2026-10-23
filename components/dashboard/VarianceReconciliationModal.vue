@@ -239,15 +239,15 @@
     :needed="vendorDiff(activeVendorModal)"
     :invoices="invoicesByParty[activeVendorModal] || null"
     :purchase-candidates="purchaseCandidatesFor(activeVendorModal)"
+    :payment-candidates="paymentCandidatesFor(activeVendorModal)"
     :loading="!invoicesByParty[activeVendorModal]"
-    :type-field="cfg.typeField"
-    :primary-type="cfg.primaryType"
     :code="code"
     :is-dark="isDark"
     :tb-balance="vendorTbBalance(activeVendorModal)"
     :ap-balance="vendorApBalance(activeVendorModal)"
     :tb-label="cfg.tbLabel"
     :report-label="cfg.reportLabel"
+    :target-date="props.date"
     @close="activeVendorModal = null"
     @resolved="onVendorResolved"
   />
@@ -423,21 +423,26 @@ const allVendors = computed(() => [...new Set([
 ])]);
 
 const purchaseCandidatesFor = (vendor) => primaryRows.value.filter((r) => r.ledger_name === vendor);
+const paymentCandidatesFor = (vendor) => secondaryRows.value.filter((r) => r.ledger_name === vendor);
 
-const vendorBalances = computed(() => props.data?.VendorBalances ?? {});
-const vendorApBalance = (vendor) => Number(vendorBalances.value[vendor]?.report ?? 0);
-const vendorTbBalance = (vendor) => Number(vendorBalances.value[vendor]?.tb ?? 0);
+const originalVendorBalances = computed(() => props.data?.VendorBalances ?? {});
+const resolvedVendorBalances = ref({});
+const vendorApBalance = (vendor) => Number((resolvedVendorBalances.value[vendor] ?? originalVendorBalances.value[vendor])?.report ?? 0);
+const vendorTbBalance = (vendor) => Number((resolvedVendorBalances.value[vendor] ?? originalVendorBalances.value[vendor])?.tb ?? 0);
 
 const activeVendorModal = ref(null);
-const vendorResolutions = ref({}); // { [vendorName]: { lines, amount } }
+const vendorResolutions = ref({}); // { [vendorName]: { balances } } — backend-confirmed
 
 const openVendorModal = (vendor) => {
   activeVendorModal.value = vendor;
   loadInvoicesForParty(vendor);
 };
 
-const onVendorResolved = ({ partyName, lines, amount }) => {
-  vendorResolutions.value = { ...vendorResolutions.value, [partyName]: { lines, amount } };
+const onVendorResolved = ({ partyName, balances }) => {
+  vendorResolutions.value = { ...vendorResolutions.value, [partyName]: { balances } };
+  if (balances) {
+    resolvedVendorBalances.value = { ...resolvedVendorBalances.value, [partyName]: balances };
+  }
   activeVendorModal.value = null;
 };
 
@@ -627,9 +632,9 @@ const balanceReport = computed(() => {
     return total;
   }
   let total = baseBalanceReport.value;
-  Object.entries(vendorResolutions.value).forEach(([vendor, r]) => {
-    const overstated = vendorDiffSigned(vendor) > 0;
-    total += overstated ? -r.amount : r.amount;
+  Object.entries(resolvedVendorBalances.value).forEach(([vendor, bal]) => {
+    const originalReport = Number(originalVendorBalances.value[vendor]?.report ?? 0);
+    total += Number(bal.report ?? 0) - originalReport;
   });
   validManualEntries.value.forEach((e) => {
     const amt = toNumber(e.amount);
@@ -640,10 +645,12 @@ const balanceReport = computed(() => {
 
 const variance = computed(() => {
   if (isSF.value) return Math.abs(balanceTB.value - balanceReport.value);
-  let resolved = 0;
-  Object.values(vendorResolutions.value).forEach((r) => { resolved += r.amount; });
-  validManualEntries.value.forEach((e) => { resolved += toNumber(e.amount); });
-  return baseVariance.value - resolved;
+  let resolvedMagnitude = 0;
+  Object.keys(resolvedVendorBalances.value).forEach((vendor) => {
+    resolvedMagnitude += Math.abs(vendorDiffSigned(vendor));
+  });
+  validManualEntries.value.forEach((e) => { resolvedMagnitude += toNumber(e.amount); });
+  return baseVariance.value - resolvedMagnitude;
 });
 
 const isResolved = computed(() => Math.abs(Number(variance.value)) < 0.005);
@@ -651,22 +658,9 @@ const isResolved = computed(() => Math.abs(Number(variance.value)) < 0.005);
 const actionLoading = ref(false);
 
 const appliedAdjustments = computed(() => {
-  if (isSF.value) {
-    const selectedRows = primaryRows.value.filter((_, i) => primaryState.value[i]?.selected);
-    return [...selectedRows, ...validManualEntries.value];
-  }
-  const manual = validManualEntries.value.map((e) => ({
-    party_name: e.partyName,
-    invoice_number: e.invoiceNumber || null,
-    date: toApiDate(e.date),
-    adjustment: toNumber(e.amount),
-    credit_days: e.creditDays !== '' ? parseInt(e.creditDays, 10) || 0 : null,
-    [cfg.value.typeField]: e.type,
-  }));
-  return [
-    ...Object.values(vendorResolutions.value).flatMap((r) => r.lines),
-    ...manual,
-  ];
+  if (!isSF.value) return [];
+  const selectedRows = primaryRows.value.filter((_, i) => primaryState.value[i]?.selected);
+  return [...selectedRows, ...validManualEntries.value];
 });
 
 // Every vendor with a variance needs its own resolution before posting.
@@ -674,7 +668,9 @@ const allVendorsResolved = computed(() =>
   allVendors.value.every((v) => vendorResolutions.value[v])
 );
 
-const canPost = computed(() => isResolved.value && appliedAdjustments.value.length > 0 && allVendorsResolved.value);
+const canPost = computed(() => isSF.value
+  ? isResolved.value && appliedAdjustments.value.length > 0
+  : isResolved.value && allVendors.value.length > 0 && allVendorsResolved.value);
 
 const resolveAlert = async (type) => {
   if (!props.data.alert_id) return;
@@ -717,11 +713,6 @@ const postVariance = async () => {
           },
         });
       }
-    } else {
-      await useApi(cfg.value.bulkEndpoint, {
-        method: 'POST',
-        body: { variance: 0, adjustments: appliedAdjustments.value },
-      });
     }
     await resolveAlert('resolve');
     emit('resolved');
