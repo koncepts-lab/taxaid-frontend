@@ -19,6 +19,7 @@ const VALID_ADMIN_PATHS = new Set([
   '/admin/revenue-partner/accounts',
   '/admin/revenue-partner/admin',
   '/admin/root',
+  '/admin/account/settings',
 ])
 
 export default defineEventHandler((event) => {

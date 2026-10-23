@@ -163,7 +163,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 
 const props = defineProps({
     currentLang: { type: String, default: 'en' },
@@ -173,6 +173,11 @@ const props = defineProps({
 const { login, admin, forgotPassword } = useAdminAuth()
 const forgotSubmitting = ref(false)
 const forgotSent = ref(false)
+
+const geoLocation = ref(null)
+onMounted(() => {
+    useLocation().resolve().then((loc) => { if (loc) geoLocation.value = loc })
+})
 
 const authMode     = ref('login')
 const form         = reactive({ username: '', password: '', email: '' })
@@ -200,7 +205,7 @@ const handleLogin = async () => {
     loading.value = true
     console.log('Attempting login with:', form.username)
     try {
-        await login(form.username, form.password)
+        await login(form.username, form.password, geoLocation.value)
         console.log('Login successful! Admin data:', admin.value)
         await navigateTo('/admin')
     } catch (e) {

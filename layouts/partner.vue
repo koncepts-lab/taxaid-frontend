@@ -8,4 +8,7 @@
 
 <script setup>
 const { isDark } = useTheme()
+const { syncFromServer } = useRevenueAuth()
+
+onMounted(syncFromServer)
 </script>
