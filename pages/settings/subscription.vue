@@ -68,12 +68,21 @@
             <h2 class="text-[30px] font-normal mb-1">{{ subscription.plan_name }}</h2>
             <p class="text-[16px] text-white font-light">
               {{ currency }} {{ Number(subscription.plan_amount_aed).toFixed(2) }}/{{ subscription.billing_cycle === 'monthly' ? 'month' : 'year' }}
-              <template v-if="subscription.current_period_end"> • Renews on {{ formatDate(subscription.current_period_end) }}</template>
+              <template v-if="subscription.current_period_end">
+                • {{ subscription.cancel_at_period_end ? 'Cancels on' : 'Renews on' }} {{ formatDate(subscription.current_period_end) }}
+              </template>
             </p>
           </div>
-          <div class="text-right">
-            <p class="text-[14px] text-white font-light">Next Payment</p>
-            <p class="text-[24px] text-white font-light">{{ currency }} {{ Number(subscription.plan_amount_aed).toFixed(2) }}</p>
+          <div class="text-right flex flex-col items-end gap-2">
+            <template v-if="!subscription.cancel_at_period_end">
+              <p class="text-[14px] text-white font-light">Next Payment</p>
+              <p class="text-[24px] text-white font-light">{{ currency }} {{ Number(subscription.plan_amount_aed).toFixed(2) }}</p>
+            </template>
+            <button v-if="!isTrial && !subscription.cancel_at_period_end" @click="isCancelModalOpen = true"
+              class="text-[13px] font-medium px-4 py-2 rounded-lg transition-colors shadow-sm border"
+              :class="isDark ? 'bg-[#DC2626] text-white border-[#DC2626] hover:bg-[#B91C1C]' : 'bg-[#FFFFFF] text-[#DC2626] border-white/40 hover:bg-[#FBE9E9]'">
+              Cancel Subscription
+            </button>
           </div>
         </div>
         <div v-else class="rounded-2xl p-8 mb-10 text-center border transition-all duration-300"
@@ -230,6 +239,10 @@
                   <p class="text-[14px]" :class="isDark ? 'text-white/60' : 'text-[#000000CC]'">Expires {{ String(defaultPaymentMethod.card_exp_month).padStart(2, '0') }}/{{ defaultPaymentMethod.card_exp_year }}</p>
                 </div>
               </div>
+              <button @click="pendingRemoveCardId = defaultPaymentMethod.id" class="p-2.5 border rounded-lg transition-colors shadow-sm"
+                :class="isDark ? 'bg-red-950/40 border-red-800/40 text-red-400 hover:bg-red-950/60' : 'bg-white border-red-100 text-red-500 hover:bg-red-50'">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+              </button>
             </div>
           </div>
 
@@ -250,7 +263,7 @@
               <div class="flex items-center gap-3">
                 <button @click="makeDefault(pm.id)" class="px-5 py-2.5 border text-sm font-medium rounded-lg transition-colors shadow-sm"
                   :class="isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'">Set as Default</button>
-                <button @click="removeCard(pm.id)" class="p-2.5 border rounded-lg transition-colors shadow-sm"
+                <button @click="pendingRemoveCardId = pm.id" class="p-2.5 border rounded-lg transition-colors shadow-sm"
                   :class="isDark ? 'bg-red-950/40 border-red-800/40 text-red-400 hover:bg-red-950/60' : 'bg-white border-red-100 text-red-500 hover:bg-red-50'">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
                 </button>
@@ -270,7 +283,10 @@
 
         <!-- Billing History -->
         <div>
-          <h3 class="text-lg font-medium mb-6" :class="isDark ? 'text-white' : 'text-gray-900'">Billing History</h3>
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">Billing History</h3>
+            <CommonDateField month v-model="invoiceMonth" :min-month="orgCreatedMonth" size="sm" />
+          </div>
 
           <div v-if="invoices.length" class="space-y-3">
             <div v-for="invoice in invoices" :key="invoice.id" class="border rounded-2xl p-4 flex items-center justify-between shadow-sm transition-all"
@@ -299,7 +315,9 @@
             </div>
           </div>
           <div v-else class="text-center py-10 border rounded-2xl transition-all"
-            :class="isDark ? 'bg-[#002e26] border-white/5 text-white/50' : 'bg-white border-gray-200 text-[#00000080]'">No billing history yet.</div>
+            :class="isDark ? 'bg-[#002e26] border-white/5 text-white/50' : 'bg-white border-gray-200 text-[#00000080]'">
+            {{ monthFilterApplied ? 'No bills for this month.' : 'No billing history yet.' }}
+          </div>
         </div>
       </template>
 
@@ -348,6 +366,27 @@
         </div>
       </div>
     </Teleport>
+
+    <CommonErrorPopupModal
+      :isOpen="isCancelModalOpen"
+      :isDark="isDark"
+      mode="confirm"
+      title="Cancel your plan?"
+      message="You'll keep access until the end of your current billing period. No refund is issued for the current period."
+      confirmText="Cancel Subscription"
+      @close="isCancelModalOpen = false"
+      @confirm="confirmCancelSubscription" />
+
+    <CommonErrorPopupModal
+      :isOpen="!!pendingRemoveCardId"
+      :isDark="isDark"
+      mode="confirm"
+      icon="delete"
+      title="Remove this card?"
+      message="This payment method will be permanently removed from your account."
+      confirmText="Remove Card"
+      @close="pendingRemoveCardId = null"
+      @confirm="confirmRemoveCard" />
   </NuxtLayout>
 </template>
 
@@ -359,8 +398,23 @@ const { isDark } = useTheme()
 
 const {
   getPlans, getSubscription, getInvoices, createSetupIntent,
-  getPaymentMethods, addPaymentMethod, setDefaultPaymentMethod, deletePaymentMethod,
+  getPaymentMethods, addPaymentMethod, setDefaultPaymentMethod, deletePaymentMethod, cancelSubscription,
 } = usePayment()
+
+const isCancelModalOpen = ref(false)
+const cancelling = ref(false)
+
+const confirmCancelSubscription = async () => {
+  if (cancelling.value) return
+  cancelling.value = true
+  try {
+    const { data } = await cancelSubscription()
+    subscription.value = data
+    isCancelModalOpen.value = false
+  } finally {
+    cancelling.value = false
+  }
+}
 
 const loading = ref(true)
 const billingCycle = ref<'monthly' | 'yearly'>('monthly')
@@ -368,6 +422,12 @@ const plans = ref<any[]>([])
 const subscription = ref<any>(null)
 const orgSubscriptionStatus = ref<any>(null) // { id, status: org active/inactive, subscription: on_trial|trial_ended|active|expired|none, date, days }
 const invoices = ref<any[]>([])
+const currentMonth = (() => {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+})()
+const invoiceMonth = ref(currentMonth)
+const orgCreatedMonth = ref('')
 const paymentMethods = ref<any[]>([])
 
 const priceField = computed(() => billingCycle.value === 'monthly' ? 'monthly_price' : 'annual_price')
@@ -607,9 +667,14 @@ const makeDefault = async (id: number) => {
   paymentMethods.value = paymentMethods.value.map(pm => ({ ...pm, is_default: pm.id === id }))
 }
 
-const removeCard = async (id: number) => {
-  await deletePaymentMethod(id)
-  paymentMethods.value = paymentMethods.value.filter(pm => pm.id !== id)
+const pendingRemoveCardId = ref<number | null>(null)
+
+const confirmRemoveCard = async () => {
+  if (!pendingRemoveCardId.value) return
+  await deletePaymentMethod(pendingRemoveCardId.value)
+  pendingRemoveCardId.value = null
+  const res = await getPaymentMethods()
+  paymentMethods.value = res.data || []
 }
 
 onMounted(async () => {
@@ -623,10 +688,19 @@ onMounted(async () => {
     plans.value = plansRes.data || []
     subscription.value = subRes.data || null
     orgSubscriptionStatus.value = subRes.organization || null
+    orgCreatedMonth.value = subRes.organization?.created_at ? String(subRes.organization.created_at).slice(0, 7) : ''
     invoices.value = invoicesRes.data || []
     paymentMethods.value = pmRes.data || []
   } finally {
     loading.value = false
   }
+})
+
+const monthFilterApplied = ref(false)
+
+watch(invoiceMonth, async (month) => {
+  monthFilterApplied.value = !!month
+  const res = await getInvoices(month)
+  invoices.value = res.data || []
 })
 </script>

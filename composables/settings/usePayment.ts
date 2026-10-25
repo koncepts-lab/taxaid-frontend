@@ -4,8 +4,8 @@ export const usePayment = () => {
 
   const getSubscription = () => useApi('/payment/subscription')
 
-  const getInvoices = (page = 1, perPage = 10) =>
-    useApi(`/payment/invoices?page=${page}&per_page=${perPage}`)
+  const getInvoices = (month = '') =>
+    useApi(month ? `/payment/invoices?month=${month}` : '/payment/invoices')
 
   const createSetupIntent = () => useApi('/payment/setup-intent', { method: 'POST' })
 
