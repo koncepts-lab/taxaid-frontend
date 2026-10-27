@@ -494,6 +494,7 @@
     <div v-else-if="activeTab === 'Roles & Settings'">
       <AdminRolesAndSettingsGroupsTable mode="global" title="Permission Settings" subtitle="Global defaults every organization uses unless it has its own override." class="mt-4" />
       <AdminRolesAndSettingsCmsContent class="mt-6" />
+      <AdminRolesAndSettingsAppVersionSettings class="mt-6" />
     </div>
 
     <div v-else-if="activeTab === 'AI Settings'">
