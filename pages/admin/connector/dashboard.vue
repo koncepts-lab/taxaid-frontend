@@ -350,7 +350,7 @@
                     <button @click="showScheduleCalendar = false" class="text-gray-400 hover:text-gray-600">✕</button>
                   </div>
                   <div class="flex items-start gap-4">
-                    <VDatePicker v-model="upload.scheduledAt" mode="date" color="teal" borderless />
+                    <VDatePicker v-model="upload.scheduledAt" mode="date" color="teal" borderless transparent :is-dark="isDark" />
                     <div class="border-l border-gray-100 pl-4 pt-1">
                       <span class="block text-[12px] text-gray-500 mb-2 text-center">Time</span>
                       <AdminConnectorTimeWheelPicker v-model="upload.scheduledTime" :is24-hour="is24Hour" inline />

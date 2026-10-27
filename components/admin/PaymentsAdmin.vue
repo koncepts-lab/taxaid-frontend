@@ -45,7 +45,7 @@
           <div class="w-full overflow-x-auto min-h-[600px]">
             <table class="w-full text-left border-collapse min-w-[600px]">
               <thead>
-                <tr class="bg-red-50 text-red-700 text-sm">
+                <tr class="bg-[#008865] text-white text-sm">
                   <th class="py-3 px-6 font-medium">Organization</th>
                   <th class="py-3 px-6 font-medium">Amount</th>
                   <th class="py-3 px-6 font-medium">Date</th>
@@ -75,7 +75,7 @@
           <div class="w-full overflow-x-auto min-h-[600px]">
             <table class="w-full text-left border-collapse min-w-[600px]">
               <thead>
-                <tr class="bg-amber-50 text-amber-700 text-sm">
+                <tr class="bg-[#008865] text-white text-sm">
                   <th class="py-3 px-6 font-medium">Organization</th>
                   <th class="py-3 px-6 font-medium">Card</th>
                   <th class="py-3 px-6 font-medium">Expires</th>
@@ -103,7 +103,7 @@
           <div class="w-full overflow-x-auto min-h-[600px]">
             <table class="w-full text-left border-collapse min-w-[600px]">
               <thead>
-                <tr class="bg-red-50 text-red-700 text-sm">
+                <tr class="bg-[#008865] text-white text-sm">
                   <th class="py-3 px-6 font-medium">Organization</th>
                   <th class="py-3 px-6 font-medium">Plan</th>
                   <th class="py-3 px-6 font-medium">Grace Period (days)</th>
@@ -134,29 +134,14 @@
       </div>
 
       <div class="flex items-center gap-3 mb-4">
-        <div class="relative min-w-[160px]">
-          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-          </span>
-          <select v-model="planStatusFilter" @change="loadPlans(1)" class="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
-            <option value="">All Statuses</option>
-            <option value="draft">Draft</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-          <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        <div class="min-w-[160px]">
+          <CommonSelectDropdown v-model="planStatusFilter" mode="select" size="sm"
+            :options="[{ value: '', label: 'All Statuses' }, { value: 'draft', label: 'Draft' }, { value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }]" />
         </div>
 
-        <div class="relative min-w-[160px]">
-          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-          </span>
-          <select v-model="planTypeFilter" @change="loadPlans(1)" class="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
-            <option value="">All Types</option>
-            <option value="general">General</option>
-            <option value="org">Org-Specific</option>
-          </select>
-          <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        <div class="min-w-[160px]">
+          <CommonSelectDropdown v-model="planTypeFilter" mode="select" size="sm"
+            :options="[{ value: '', label: 'All Types' }, { value: 'general', label: 'General' }, { value: 'org', label: 'Org-Specific' }]" />
         </div>
       </div>
 
@@ -360,10 +345,8 @@
       <div class="bg-white border border-amber-200 rounded-xl p-6 shadow-sm max-w-md">
         <p class="text-xs text-amber-700 mb-3">For demo/testing only — edits a live plan's price/entitlements in place, even with real subscribers on it. Not for production use.</p>
         <div class="mb-3">
-          <select v-model="demoEditPlanId" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]">
-            <option :value="null">— Select a plan —</option>
-            <option v-for="p in allPlans" :key="p.id" :value="p.id">{{ p.name }} ({{ p.status }})</option>
-          </select>
+          <CommonSelectDropdown v-model="demoEditPlanId" mode="select"
+            :options="[{ value: null, label: '— Select a plan —' }, ...allPlans.map(p => ({ value: p.id, label: `${p.name} (${p.status})` }))]" />
         </div>
         <button v-if="demoEditPlanId" @click="openDemoEditModal" class="w-full bg-white border border-amber-300 text-amber-700 text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-amber-50 transition-colors">Edit Plan (Demo)</button>
       </div>
@@ -476,10 +459,8 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-1">Status</label>
-                <select v-model="planForm.status" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]">
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
+                <CommonSelectDropdown v-model="planForm.status" mode="select"
+                  :options="[{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }]" />
               </div>
             </div>
 
@@ -520,15 +501,13 @@
                   <div class="grid grid-cols-2 gap-3">
                     <div>
                       <label class="block text-xs text-gray-500 mb-1">Model</label>
-                      <select v-model="planForm.entitlements.ai.model" class="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]">
-                        <option v-for="m in aiModelOptions" :key="m.value" :value="m.value">{{ m.label }}</option>
-                      </select>
+                      <CommonSelectDropdown v-model="planForm.entitlements.ai.model" mode="select" size="sm"
+                        :options="aiModelOptions.map(m => ({ value: m.value, label: m.label }))" />
                     </div>
                     <div>
                       <label class="block text-xs text-gray-500 mb-1">Thinking Level</label>
-                      <select v-model="planForm.entitlements.ai.thinking" class="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]">
-                        <option v-for="t in aiThinkingOptions" :key="t.value" :value="t.value">{{ t.label }}</option>
-                      </select>
+                      <CommonSelectDropdown v-model="planForm.entitlements.ai.thinking" mode="select" size="sm"
+                        :options="aiThinkingOptions.map(t => ({ value: t.value, label: t.label }))" />
                     </div>
                     <div>
                       <label class="block text-xs text-gray-500 mb-1">Max Requests / month</label>
@@ -569,19 +548,16 @@
 
                 <div v-else class="flex items-center gap-3 mb-2">
                   <span class="text-xs text-gray-600 w-2/5 truncate" :title="key">{{ definitionLabel(key) }}</span>
-                  <select v-if="definitionAllowedValues(key).length" v-model="planForm.entitlements[key]" class="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]">
-                    <option v-for="opt in definitionAllowedValues(key)" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                  </select>
+                  <CommonSelectDropdown v-if="definitionAllowedValues(key).length" v-model="planForm.entitlements[key]" mode="select" size="sm" class="flex-1"
+                    :options="definitionAllowedValues(key).map(opt => ({ value: opt.value, label: opt.label }))" />
                   <input v-else-if="definitionType(key) === 'boolean'" type="checkbox" v-model="planForm.entitlements[key]" class="h-4 w-4" />
                   <input v-else type="number" min="0" v-model.number="planForm.entitlements[key]" @change="clampNonNegative(planForm.entitlements, key)" class="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]" />
                   <button type="button" @click="removeEntitlement(key)" class="text-gray-400 hover:text-red-500 shrink-0">✕</button>
                 </div>
               </template>
               <div class="flex items-center gap-2 mt-2">
-                <select v-model="entitlementToAdd" class="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#00896F]">
-                  <option value="">Select an entitlement to add…</option>
-                  <option v-for="def in availableDefinitionsToAdd" :key="def.key" :value="def.key">{{ def.label }}</option>
-                </select>
+                <CommonSelectDropdown v-model="entitlementToAdd" mode="select" size="sm" class="flex-1"
+                  :options="[{ value: '', label: 'Select an entitlement to add…' }, ...availableDefinitionsToAdd.map(def => ({ value: def.key, label: def.label }))]" />
                 <button type="button" @click="addEntitlement" :disabled="!entitlementToAdd" class="text-xs text-[#007C65] font-medium hover:underline disabled:text-gray-300 disabled:no-underline shrink-0">+ Add Entitlement</button>
               </div>
               <p v-if="!allActiveDefinitions.length" class="text-xs text-gray-400 mt-2">No entitlement keys defined yet — add some in the Entitlement Definitions tab first.</p>
@@ -767,11 +743,8 @@
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-1">Type</label>
-                <select v-model="definitionForm.type" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#00896F]">
-                  <option value="boolean">Boolean</option>
-                  <option value="numeric">Numeric</option>
-                  <option value="unlimited_capable">Unlimited-capable</option>
-                </select>
+                <CommonSelectDropdown v-model="definitionForm.type" mode="select"
+                  :options="[{ value: 'boolean', label: 'Boolean' }, { value: 'numeric', label: 'Numeric' }, { value: 'unlimited_capable', label: 'Unlimited-capable' }]" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-1">Unit</label>
@@ -823,6 +796,8 @@
 <script setup>
 // Payments Admin CMS — authoring/monitoring only, no enforcement logic here.
 import { ref, computed, onMounted, watch } from 'vue'
+
+const { isDark } = useTheme()
 
 const {
   getPlans, getOrgPlansGrouped, getPlanStats, getOrganizations, assignPlanToOrg, createPlan, createPlanVersion, updatePlanStatus,
@@ -888,6 +863,7 @@ async function loadPlans(page = 1) {
   }
 }
 function plansPerPageChange(pp) { plansMeta.value.per_page = pp; loadPlans(1) }
+watch(planTypeFilter, () => loadPlans(1))
 
 // ── Org-Specific Plans (grouped by org) ─────────────────────────────────
 const orgPlanGroups = ref([])
