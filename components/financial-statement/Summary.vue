@@ -205,14 +205,14 @@
                 </tr>
 
                 <template v-else v-for="(row, i) in visibleRows" :key="i">
-                    <tr v-if="row.isHeader" :class="isDark ? 'bg-primary-1050' : 'bg-primary-800'">
+                    <tr v-if="row.isHeader" :class="isDark ? 'summary-row-header bg-primary-1050' : 'bg-primary-800'">
                         <td colspan="7" class="lg:px-8 px-4 py-3 font-medium text-start"
                             :class="isDark ? 'text-white/80' : 'text-primary-950'">{{ row.label }}</td>
                     </tr>
                     <tr v-else :class="[
                         (row.label === 'Total Assets' || row.label === 'Total Liabilities & Shareholders Equity')
-                            ? (isDark ? 'bg-[#013e32] text-white font-medium' : 'bg-[#C2F9E9] text-[#013E32] font-medium')
-                            : row.isSummary ? (isDark ? 'bg-[#003d30] font-medium' : 'bg-primary-800 font-medium') : (isDark ? 'bg-[#002e26] border-b border-white/5' : 'bg-white border-b border-gray-50')
+                            ? (isDark ? 'summary-row-grandtotal bg-[#013e32] text-white font-medium' : 'bg-[#C2F9E9] text-[#013E32] font-medium')
+                            : row.isSummary ? (isDark ? 'summary-row-subtotal bg-[#003d30] font-medium' : 'bg-primary-800 font-medium') : (isDark ? 'bg-[#002e26] border-b border-white/5' : 'bg-white border-b border-gray-50')
                     ]" class="transition-all duration-500">
 
                         <template v-if="activeTab === 'ratios'">
@@ -555,4 +555,20 @@ watch(() => props.data, (newData) => {
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.15); border-radius: 10px; }
 :deep(.dark) .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.15); }
+
+.summary-row-header:hover,
+.dark-mode-bg .summary-row-header:hover,
+body.taxaid-dark .summary-row-header:hover {
+    background-color: #1f6f4d !important;
+}
+.summary-row-grandtotal:hover,
+.dark-mode-bg .summary-row-grandtotal:hover,
+body.taxaid-dark .summary-row-grandtotal:hover {
+    background-color: #013e32 !important;
+}
+.summary-row-subtotal:hover,
+.dark-mode-bg .summary-row-subtotal:hover,
+body.taxaid-dark .summary-row-subtotal:hover {
+    background-color: #003d30 !important;
+}
 </style>

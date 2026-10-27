@@ -176,9 +176,11 @@
                                                     <!-- Ledger Data Rows -->
                                                     <tr v-for="(ledger, lIdx) in ledgerDataMap[item.subgroup]"
                                                         :key="`ledger-${lIdx}`" :class="[
-                                                            isDark
-                                                                ? 'bg-emerald-950/15 hover:bg-emerald-900/25 border-b border-gray-800/70'
-                                                                : 'bg-primary-1150 hover:bg-emerald-100/80 border-b border-emerald-200/60'
+                                                            ledger.isTotal
+                                                                ? (isDark ? 'ledger-total-row bg-[#00C9A7]/20 border-y border-[#00C9A7]/50 font-bold' : 'ledger-total-row bg-[#64E9D1]/70 border-y border-[#029F80]/40 font-bold')
+                                                                : (isDark
+                                                                    ? 'bg-emerald-950/15 hover:bg-emerald-900/25 border-b border-gray-800/70'
+                                                                    : 'bg-primary-1150 hover:bg-emerald-100/80 border-b border-emerald-200/60')
                                                         ]">
                                                         <td class="lg:px-8 px-4 py-3.5 text-start">
                                                             <template v-if="isLedgerLinkable(ledger)">
@@ -198,15 +200,15 @@
                                                             </span>
                                                         </td>
                                                         <td class="px-4 py-3.5 text-center "
-                                                            :class="isDark ? 'text-gray-200' : 'text-gray-600'">
+                                                            :class="ledger.isTotal ? (isDark ? 'text-white' : 'text-gray-900') : (isDark ? 'text-gray-200' : 'text-gray-600')">
                                                             {{ formatNumber(ledger.current_year) }}
                                                         </td>
                                                         <td class="px-4 py-3.5 text-center"
-                                                            :class="isDark ? 'text-gray-200' : 'text-gray-600'">
+                                                            :class="ledger.isTotal ? (isDark ? 'text-white' : 'text-gray-900') : (isDark ? 'text-gray-200' : 'text-gray-600')">
                                                             {{ formatNumber(ledger.previous_year) }}
                                                         </td>
                                                         <td class="px-4 py-3.5 text-center"
-                                                            :class="isDark ? 'text-gray-200' : 'text-gray-600'">
+                                                            :class="ledger.isTotal ? (isDark ? 'text-white' : 'text-gray-900') : (isDark ? 'text-gray-200' : 'text-gray-600')">
                                                             {{ ledger.budget ? formatNumber(ledger.budget) : '-' }}
                                                         </td>
                                                         <td class="px-4 py-3.5 text-center">
@@ -214,10 +216,10 @@
                                                                 :class="[ledger.variance < 0 ? 'bg-red-100 text-red-600' : 'bg-[#E6F9F4] text-[#029F80]', 'px-3 py-1 rounded-full text-[11px] font-bold']">
                                                                 {{ ledger.variance_percent }}
                                                             </span>
-                                                            <span v-else :class="isDark ? 'text-gray-200' : 'text-gray-600'">-</span>
+                                                            <span v-else :class="ledger.isTotal ? (isDark ? 'text-white' : 'text-gray-900') : (isDark ? 'text-gray-200' : 'text-gray-600')">-</span>
                                                         </td>
                                                         <td class="px-4 py-3.5 text-center"
-                                                            :class="isDark ? 'text-gray-200' : 'text-gray-600'">
+                                                            :class="ledger.isTotal ? (isDark ? 'text-white' : 'text-gray-900') : (isDark ? 'text-gray-200' : 'text-gray-600')">
                                                             -
                                                         </td>
                                                     </tr>
@@ -239,7 +241,7 @@
                                             <col style="width: 15%">
                                         </colgroup>
                                         <tbody>
-                                            <tr :class="isDark ? 'bg-[#00C9A7]/20 font-bold' : 'bg-[#64E9D1] font-bold'">
+                                            <tr :class="isDark ? 'ledger-total-row bg-[#00C9A7]/20 font-bold' : 'ledger-total-row bg-[#64E9D1] font-bold'">
                                                 <td class="lg:ps-8 ps-4 py-4 text-start">
                                                     <span :class="[isDark ? 'text-white/80' : 'text-gray-700']">{{ totalRow.subgroup }}</span>
                                                 </td>
@@ -486,3 +488,11 @@ watch(
     { immediate: true }
 );
 </script>
+
+<style scoped>
+.ledger-total-row:hover,
+.dark-mode-bg .ledger-total-row:hover,
+body.taxaid-dark .ledger-total-row:hover {
+    background-color: rgba(0, 201, 167, 0.2) !important;
+}
+</style>

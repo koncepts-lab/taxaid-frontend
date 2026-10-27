@@ -11,25 +11,13 @@ const _bsRows      = ref<any[]>([])
 const _ratiosRows  = ref<any[]>([])
 const _reportInfo  = ref({ current: '', previous: '' })
 
-// Loading/error are per-tab — the Ratios fetch fires in the background on
-// mount regardless of the active tab, and a shared flag let its failure
-// bleed into whichever tab the user was actually looking at.
-const _plLoading     = ref(false)
 const _plError       = ref<string | null>(null)
-const _bsLoading     = ref(false)
 const _bsError       = ref<string | null>(null)
-const _ratiosLoading = ref(false)
 const _ratiosError   = ref<string | null>(null)
-let _plReqSeq      = 0
-let _bsReqSeq      = 0
-let _ratiosReqSeq  = 0
 
-// Gap-day snapshot notice for the Balance Sheet tab — same pattern as
-// useAccountsReceivable/useAccountsPayable's snapshot_date fallback.
 const _bsSnapshotDate   = ref<string | null>(null)
 const _bsRequestedDate  = ref<string | null>(null)
 const _bsSnapshotNotice = ref(false)
-
 
 const scheduleMap: Record<string, string | null> = {
   'Revenue':                     '01',
@@ -68,166 +56,170 @@ const fmtVariance = (v: any) => {
   return `${val.toFixed(2)}%`
 }
 
-async function fetchPLData(clearCache = false) {
-  const reqId = ++_plReqSeq
-  _plLoading.value = true
+function basePayload() {
+  const payload: any = { range_option: fsFilters.value.range_option }
+  if (fsFilters.value.range_option === 'Custom Dates') {
+    payload.custom_from = fsFilters.value.custom_from
+    payload.custom_to   = fsFilters.value.custom_to
+  }
+  return payload
+}
+
+let _pendingClearCache: string | boolean | null = null
+
+function applyPL(res: any) {
+  if (res?.status !== 'success') {
+    _plError.value = res?.message ?? 'Failed to load the Profit & Loss report.'
+    return
+  }
   _plError.value = null
   const cardPeriod = useState('cardPeriod')
   const cardToday  = useState('cardToday')
+  cardPeriod.value = res.period ?? null
+  cardToday.value  = res.today ?? null
   try {
-    const payload: any = { range_option: fsFilters.value.range_option }
-    if (fsFilters.value.range_option === 'Custom Dates') {
-      payload.custom_from = fsFilters.value.custom_from
-      payload.custom_to   = fsFilters.value.custom_to
+    if (res.info) {
+      _reportInfo.value = {
+        current:  res.info.current_range  ? `${format(new Date(res.info.current_range.from),  'dd MMM yyyy')} - ${format(new Date(res.info.current_range.to),  'dd MMM yyyy')}` : '',
+        previous: res.info.previous_range ? `${format(new Date(res.info.previous_range.from), 'dd MMM yyyy')} - ${format(new Date(res.info.previous_range.to), 'dd MMM yyyy')}` : '',
+      }
     }
-    if (clearCache) payload.clear_cache = clearCache === 'all' ? 'all' : 'true'
-    const res: any = await useApi('/financial-analysis/pl-maingroup-totals', { method: 'POST', body: payload })
-    if (reqId !== _plReqSeq) return
-    if (res?.status === 'success') {
-      cardPeriod.value = res.period ?? null
-      cardToday.value  = res.today ?? null
-      try {
-        if (res.info) {
-          _reportInfo.value = {
-            current:  res.info.current_range  ? `${format(new Date(res.info.current_range.from),  'dd MMM yyyy')} - ${format(new Date(res.info.current_range.to),  'dd MMM yyyy')}` : '',
-            previous: res.info.previous_range ? `${format(new Date(res.info.previous_range.from), 'dd MMM yyyy')} - ${format(new Date(res.info.previous_range.to), 'dd MMM yyyy')}` : '',
-          }
-        }
-      } catch {}
-      _plRows.value = (res.report || []).map((row: any) => ({
-        label:    row.label,
-        current:  fmtNum(row.current_year),
-        previous: fmtNum(row.previous_year),
-        variance: fmtVariance(row.variance_percent),
-        budget:   row.budget !== null ? fmtNum(row.budget) : '-',
-        progress: row.ytg_percent !== null ? String(row.ytg_percent).replace('%', '') : '-',
-        isSummary: row.isSummary,
-        isHeader:  false,
-        isTotal:   false,
-        schedule:  scheduleMap[row.label] ?? '-',
-      }))
-    } else {
-      _plError.value = res?.message ?? 'Failed to load the Profit & Loss report.'
-    }
-  } catch (e: any) {
-    if (reqId !== _plReqSeq) return
-    console.error('Failed to fetch P&L data', e)
-    _plError.value = e?.data?.message ?? 'Failed to load the Profit & Loss report.'
-  } finally {
-    if (reqId === _plReqSeq) _plLoading.value = false
-  }
+  } catch {}
+  let nextRawSchedulePL = 6
+  _plRows.value = (res.report || []).map((row: any) => ({
+    label:    row.label,
+    current:  fmtNum(row.current_year),
+    previous: fmtNum(row.previous_year),
+    variance: fmtVariance(row.variance_percent),
+    budget:   row.budget !== null ? fmtNum(row.budget) : '-',
+    progress: row.ytg_percent !== null ? String(row.ytg_percent).replace('%', '') : '-',
+    isSummary: row.isSummary,
+    isHeader:  false,
+    isTotal:   false,
+    isRaw:     !!row.isRaw,
+    schedule:  row.isRaw ? String(nextRawSchedulePL++).padStart(2, '0') : (scheduleMap[row.label] ?? '-'),
+  }))
 }
 
-async function fetchBSData(clearCache = false) {
-  const reqId = ++_bsReqSeq
-  _bsLoading.value = true
+function applyBS(res: any) {
+  if (res?.status !== 'success') {
+    _bsError.value = res?.message ?? 'Failed to load the Balance Sheet report.'
+    return
+  }
   _bsError.value = null
   const cardPeriod = useState('cardPeriod')
   const cardToday  = useState('cardToday')
-  try {
-    const payload: any = { range_option: fsFilters.value.range_option }
-    if (fsFilters.value.range_option === 'Custom Dates') {
-      payload.custom_from = fsFilters.value.custom_from
-      payload.custom_to   = fsFilters.value.custom_to
-    }
-    if (clearCache) payload.clear_cache = clearCache === 'all' ? 'all' : 'true'
-    const res: any = await useApi('/financial-analysis/bs-maingroup-totals', { method: 'POST', body: payload })
-    if (reqId !== _bsReqSeq) return
-    if (res?.status === 'success') {
-      cardPeriod.value = res.period ?? null
-      cardToday.value  = res.today ?? null
-      const requested = res.info?.requested_date ?? null
-      const snapshot  = res.info?.snapshot_date  ?? null
-      _bsRequestedDate.value  = requested
-      _bsSnapshotDate.value   = snapshot
-      _bsSnapshotNotice.value = !!(requested && snapshot && requested !== snapshot)
+  cardPeriod.value = res.period ?? null
+  cardToday.value  = res.today ?? null
+  const requested = res.info?.requested_date ?? null
+  const snapshot  = res.info?.snapshot_date  ?? null
+  _bsRequestedDate.value  = requested
+  _bsSnapshotDate.value   = snapshot
+  _bsSnapshotNotice.value = !!(requested && snapshot && requested !== snapshot)
 
-      _bsRows.value = (res.report || []).map((row: any) => ({
-        label:    row.label,
-        current:  fmtNum(row.current_year),
-        previous: fmtNum(row.previous_year),
-        variance: fmtVariance(row.variance_percent),
-        budget:   row.budget !== null ? fmtNum(row.budget) : '-',
-        progress: row.ytg_percent !== null ? String(row.ytg_percent).replace('%', '') : '-',
-        isSummary: row.isSummary || false,
-        isHeader:  row.isHeader  || false,
-        isTotal:   row.isTotal   || false,
-        schedule:  scheduleMapBS[row.label] ?? '-',
-      }))
-    } else {
-      _bsError.value = res?.message ?? 'Failed to load the Balance Sheet report.'
-    }
-  } catch (e: any) {
-    if (reqId !== _bsReqSeq) return
-    console.error('Failed to fetch BS data', e)
-    _bsError.value = e?.data?.message ?? 'Failed to load the Balance Sheet report.'
-  } finally {
-    if (reqId === _bsReqSeq) _bsLoading.value = false
-  }
+  let nextRawScheduleBS = 5
+  _bsRows.value = (res.report || []).map((row: any) => ({
+    label:    row.label,
+    current:  fmtNum(row.current_year),
+    previous: fmtNum(row.previous_year),
+    variance: fmtVariance(row.variance_percent),
+    budget:   row.budget !== null ? fmtNum(row.budget) : '-',
+    progress: row.ytg_percent !== null ? String(row.ytg_percent).replace('%', '') : '-',
+    isSummary: row.isSummary || false,
+    isHeader:  row.isHeader  || false,
+    isTotal:   row.isTotal   || false,
+    isRaw:     !!row.isRaw,
+    schedule:  row.isRaw ? ('S' + (nextRawScheduleBS++)) : (scheduleMapBS[row.label] ?? '-'),
+  }))
 }
 
-async function fetchRatiosData(clearCache = false) {
-  const reqId = ++_ratiosReqSeq
-  _ratiosLoading.value = true
+function applyRatios(res: any) {
+  if (!res?.success) {
+    _ratiosError.value = res?.message ?? 'Failed to load the Ratios report.'
+    return
+  }
   _ratiosError.value = null
-  try {
-    const payload: any = { range_option: fsFilters.value.range_option }
-    if (fsFilters.value.range_option === 'Custom Dates') {
-      payload.custom_from = fsFilters.value.custom_from
-      payload.custom_to   = fsFilters.value.custom_to
+  _ratiosRows.value = (res.report || []).map((row: any) => {
+    let progressVal = 0
+    if (row.year_to_go) {
+      const parsed = parseFloat(String(row.year_to_go).replace('%', ''))
+      if (!isNaN(parsed)) progressVal = Math.min(100, Math.max(0, Math.round(parsed)))
     }
-    if (fsSelectedRatioType.value && fsSelectedRatioType.value !== 'All Ratios') {
-      payload.ratio_type = fsSelectedRatioType.value
+    const isPct = (v: any) => row.category === 'Profitability' || String(row.key_metric).toLowerCase().includes('margin')
+    const fmt = (v: any) => {
+      if (v === null || v === undefined || v === '-' || v === '') return '-'
+      const clean = String(v).replace(/[%,]/g, '').trim()
+      const n = Number(clean)
+      if (isNaN(n)) return v
+      const formatted = formatStandardNumber(n, 2)
+      return isPct(v) || String(v).includes('%') ? `${formatted}%` : formatted
     }
-    if (clearCache) payload.clear_cache = clearCache === 'all' ? 'all' : 'true'
-    const res: any = await useApi('/financial-ratios/comparative-report', { method: 'POST', body: payload })
-    if (reqId !== _ratiosReqSeq) return
-    if (res?.success) {
-      _ratiosRows.value = (res.report || []).map((row: any) => {
-        let progressVal = 0
-        if (row.year_to_go) {
-          const parsed = parseFloat(String(row.year_to_go).replace('%', ''))
-          if (!isNaN(parsed)) progressVal = Math.min(100, Math.max(0, Math.round(parsed)))
-        }
-        const isPct = (v: any) => row.category === 'Profitability' || String(row.key_metric).toLowerCase().includes('margin')
-        const fmt = (v: any) => {
-          if (v === null || v === undefined || v === '-' || v === '') return '-'
-          const clean = String(v).replace(/[%,]/g, '').trim()
-          const n = Number(clean)
-          if (isNaN(n)) return v
-          const formatted = formatStandardNumber(n, 2)
-          return isPct(v) || String(v).includes('%') ? `${formatted}%` : formatted
-        }
-        return {
-          label:    row.key_metric,
-          category: row.category,
-          current:  fmt(row.current_year),
-          previous: fmt(row.previous_year),
-          budget:   fmt(row.budget),
-          variance: fmtVariance(row.variance_percent),
-          progress: progressVal,
-          isSummary: false,
-          isHeader:  false,
-          isTotal:   false,
-          schedule:  '-',
-        }
-      })
-    } else {
-      _ratiosError.value = res?.message ?? 'Failed to load the Ratios report.'
+    return {
+      label:    row.key_metric,
+      category: row.category,
+      current:  fmt(row.current_year),
+      previous: fmt(row.previous_year),
+      budget:   fmt(row.budget),
+      variance: fmtVariance(row.variance_percent),
+      progress: progressVal,
+      isSummary: false,
+      isHeader:  false,
+      isTotal:   false,
+      schedule:  '-',
     }
-  } catch (e: any) {
-    if (reqId !== _ratiosReqSeq) return
-    console.error('Failed to fetch Ratios data', e)
-    _ratiosError.value = e?.data?.message ?? 'Failed to load the Ratios report.'
-  } finally {
-    if (reqId === _ratiosReqSeq) _ratiosLoading.value = false
-  }
+  })
 }
 
-export async function fetchTabData(tabId: string, clearCache = false) {
-  if (tabId === 'profit-loss')    return fetchPLData(clearCache)
-  if (tabId === 'balance-sheet')  return fetchBSData(clearCache)
-  if (tabId === 'ratios')         return fetchRatiosData(clearCache)
+const swr = useStaleWhileRevalidate('financial-statement', {
+  fetchers: {
+    pl: {
+      params: () => basePayload(),
+      fetch: async () => {
+        const payload: any = { ...basePayload(), include_raw_groups: true }
+        if (_pendingClearCache) payload.clear_cache = _pendingClearCache === 'all' ? 'all' : 'true'
+        return await useApi('/financial-analysis/pl-maingroup-totals', { method: 'POST', body: payload })
+      },
+    },
+    bs: {
+      params: () => basePayload(),
+      fetch: async () => {
+        const payload: any = { ...basePayload(), include_raw_groups: true }
+        if (_pendingClearCache) payload.clear_cache = _pendingClearCache === 'all' ? 'all' : 'true'
+        return await useApi('/financial-analysis/bs-maingroup-totals', { method: 'POST', body: payload })
+      },
+    },
+    ratios: {
+      params: () => ({ ...basePayload(), ratio_type: fsSelectedRatioType.value }),
+      fetch: async () => {
+        const payload: any = { ...basePayload() }
+        if (fsSelectedRatioType.value && fsSelectedRatioType.value !== 'All Ratios') {
+          payload.ratio_type = fsSelectedRatioType.value
+        }
+        if (_pendingClearCache) payload.clear_cache = _pendingClearCache === 'all' ? 'all' : 'true'
+        return await useApi('/financial-ratios/comparative-report', { method: 'POST', body: payload })
+      },
+    },
+  },
+  apply: (key, data) => {
+    if (key === 'pl') applyPL(data)
+    if (key === 'bs') applyBS(data)
+    if (key === 'ratios') applyRatios(data)
+  },
+})
+
+const _plLoading     = computed(() => !!swr.loading.pl)
+const _bsLoading     = computed(() => !!swr.loading.bs)
+const _ratiosLoading = computed(() => !!swr.loading.ratios)
+
+export async function fetchTabData(tabId: string, clearCache: string | boolean = false) {
+  const key = tabId === 'profit-loss' ? 'pl' : tabId === 'balance-sheet' ? 'bs' : tabId === 'ratios' ? 'ratios' : null
+  if (!key) return
+  _pendingClearCache = clearCache || null
+  try {
+    await swr.runKey(key, { force: !!clearCache })
+  } finally {
+    _pendingClearCache = null
+  }
 }
 
 export function useFinancialStatement() {

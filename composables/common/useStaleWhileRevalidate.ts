@@ -16,15 +16,28 @@ const hashString = (str: string): string => {
 
 const hashOf = (value: any): string => hashString(stableStringify(value))
 
-type Fetchers = Record<string, () => Promise<any>>
+interface FetcherEntry {
+  params?: any | (() => any)
+  fetch: () => Promise<any>
+}
+
+type Fetchers = Record<string, FetcherEntry | (() => Promise<any>)>
+
+interface KeyCache {
+  order: string[]
+  hashes: Record<string, string>
+  data: Record<string, any>
+}
 
 interface StaleWhileRevalidateOptions {
   fetchers: Fetchers
   apply: (key: string, data: any) => void
+  maxParamSetsPerKey?: number
+  staleFallback?: boolean
 }
 
 export function useStaleWhileRevalidate(moduleKey: string, options: StaleWhileRevalidateOptions) {
-  const { fetchers, apply } = options
+  const { fetchers, apply, maxParamSetsPerKey = 4, staleFallback = false } = options
 
   const storageKey = (): string => {
     let userId = 'anon'
@@ -32,17 +45,17 @@ export function useStaleWhileRevalidate(moduleKey: string, options: StaleWhileRe
     return `swr:${userId}:${moduleKey}`
   }
 
-  const readCache = (): { hashes: Record<string, string>; data: Record<string, any> } => {
-    if (import.meta.server) return { hashes: {}, data: {} }
+  const readCache = (): Record<string, KeyCache> => {
+    if (import.meta.server) return {}
     try {
       const raw = sessionStorage.getItem(storageKey())
-      return raw ? JSON.parse(raw) : { hashes: {}, data: {} }
+      return raw ? JSON.parse(raw) : {}
     } catch {
-      return { hashes: {}, data: {} }
+      return {}
     }
   }
 
-  const writeCache = (cache: { hashes: Record<string, string>; data: Record<string, any> }) => {
+  const writeCache = (cache: Record<string, KeyCache>) => {
     if (import.meta.server) return
     try {
       sessionStorage.setItem(storageKey(), JSON.stringify(cache))
@@ -51,35 +64,62 @@ export function useStaleWhileRevalidate(moduleKey: string, options: StaleWhileRe
 
   const loading = reactive<Record<string, boolean>>({})
 
-  const run = async () => {
-    const cache = readCache()
+  const normalize = (entry: FetcherEntry | (() => Promise<any>)): FetcherEntry =>
+    typeof entry === 'function' ? { fetch: entry } : entry
 
-    for (const key of Object.keys(fetchers)) {
-      if (key in cache.data) {
-        apply(key, cache.data[key])
-      } else {
-        loading[key] = true
-      }
+  const resolveParams = (entry: FetcherEntry) =>
+    typeof entry.params === 'function' ? entry.params() : entry.params ?? null
+
+  const runKey = async (key: string, opts: { force?: boolean } = {}) => {
+    const raw = fetchers[key]
+    if (!raw) return
+    const entry = normalize(raw)
+
+    const cache = readCache()
+    const paramsHash = hashOf(resolveParams(entry))
+    const existing = cache[key]
+
+    if (opts.force) {
+      loading[key] = true
+    } else if (existing && paramsHash in existing.data) {
+      apply(key, existing.data[paramsHash])
+    } else if (staleFallback && existing && existing.order.length) {
+      apply(key, existing.data[existing.order[existing.order.length - 1]])
+    } else {
+      loading[key] = true
     }
 
-    await Promise.all(
-      Object.entries(fetchers).map(async ([key, fetcher]) => {
-        try {
-          const fresh = await fetcher()
-          const freshHash = hashOf(fresh)
+    try {
+      const fresh = await entry.fetch()
+      const freshHash = hashOf(fresh)
+      const keyCache: KeyCache = cache[key] ?? { order: [], hashes: {}, data: {} }
 
-          if (cache.hashes[key] !== freshHash) {
-            apply(key, fresh)
-            cache.hashes[key] = freshHash
-            cache.data[key] = fresh
-            writeCache(cache)
-          }
-        } finally {
-          loading[key] = false
+      if (opts.force || keyCache.hashes[paramsHash] !== freshHash) {
+        apply(key, fresh)
+        keyCache.hashes[paramsHash] = freshHash
+        keyCache.data[paramsHash] = fresh
+      }
+
+      keyCache.order = keyCache.order.filter((h) => h !== paramsHash)
+      keyCache.order.push(paramsHash)
+      while (keyCache.order.length > maxParamSetsPerKey) {
+        const evicted = keyCache.order.shift()
+        if (evicted) {
+          delete keyCache.hashes[evicted]
+          delete keyCache.data[evicted]
         }
-      })
-    )
+      }
+
+      cache[key] = keyCache
+      writeCache(cache)
+    } finally {
+      loading[key] = false
+    }
   }
 
-  return { run, loading }
+  const run = async () => {
+    await Promise.all(Object.keys(fetchers).map(runKey))
+  }
+
+  return { run, runKey, loading }
 }
