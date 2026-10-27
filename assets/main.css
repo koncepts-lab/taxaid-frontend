@@ -222,10 +222,10 @@ body.taxaid-dark img[src*="calendar-black.svg"],
 .dark-mode-bg img[src*="calendar-black.svg"],
 body.taxaid-dark img[src*="team.svg"],
 .dark-mode-bg img[src*="team.svg"],
-body.taxaid-dark img[src*="View.svg"],
-.dark-mode-bg img[src*="View.svg"],
-body.taxaid-dark img[src*="view.svg"],
-.dark-mode-bg img[src*="view.svg"] {
+body.taxaid-dark img[src$="/View.svg"],
+.dark-mode-bg img[src$="/View.svg"],
+body.taxaid-dark img[src$="/view.svg"],
+.dark-mode-bg img[src$="/view.svg"] {
   filter: invert(1);
 }
 

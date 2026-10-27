@@ -141,21 +141,21 @@
                                         <col style="width: 18%">
                                     </colgroup>
                                     <tbody>
-                                        <tr class="font-semibold" :class="isDark ? 'bg-[#1D5E54] text-white' : 'bg-[#64E9D1] text-[#013e32]'">
+                                        <tr class="font-semibold ledger-summary-row-1" :class="isDark ? 'bg-[#1D5E54] text-white' : 'bg-[#64E9D1] text-[#013e32]'">
                                             <td colspan="2" class="ps-8 py-3 text-start text-[13px]">
                                                 {{ currentLang === 'ar' ? 'الإجمالي' : 'Total' }}
                                             </td>
                                             <td class="px-4 py-3 text-end text-[13px]">{{ summaryRows.length >= 3 ? formatNumber(summaryRows[0]?.debit) : '-' }}</td>
                                             <td class="pe-8 py-3 text-end text-[13px]">{{ summaryRows.length >= 3 ? formatNumber(summaryRows[0]?.credit) : '-' }}</td>
                                         </tr>
-                                        <tr class="font-semibold text-white" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
+                                        <tr class="font-semibold text-white ledger-summary-row-2" :class="isDark ? 'bg-[#002B21]' : 'bg-[#008864]'">
                                             <td colspan="2" class="ps-8 py-3.5 text-center text-[13px]">
                                                 {{ currentLang === 'ar' ? 'رصيد الإغلاق' : 'Closing balance' }}
                                             </td>
                                             <td class="px-4 py-3.5 text-end text-[13px]">{{ summaryRows.length >= 3 ? formatNumber(summaryRows[1]?.debit) : '-' }}</td>
                                             <td class="pe-8 py-3.5 text-end text-[13px]">{{ summaryRows.length >= 3 ? formatNumber(summaryRows[1]?.credit) : '-' }}</td>
                                         </tr>
-                                        <tr class="font-semibold text-white" :class="isDark ? 'bg-[#00C9A2]/30' : 'bg-[#1EBBA3]'">
+                                        <tr class="font-semibold text-white ledger-summary-row-3" :class="isDark ? 'bg-[#00C9A2]/30' : 'bg-[#1EBBA3]'">
                                             <td colspan="2" class="ps-8 py-3 text-start text-[13px]"></td>
                                             <td class="px-4 py-3 text-end text-[13px]">{{ summaryRows.length >= 3 ? formatNumber(summaryRows[2]?.debit) : '-' }}</td>
                                             <td class="pe-8 py-3 text-end text-[13px]">{{ summaryRows.length >= 3 ? formatNumber(summaryRows[2]?.credit) : '-' }}</td>
@@ -240,4 +240,20 @@ const handleExport = () => {
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.15); border-radius: 10px; }
 :deep(.dark) .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.15); }
+
+.ledger-summary-row-1:hover,
+.dark-mode-bg .ledger-summary-row-1:hover,
+body.taxaid-dark .ledger-summary-row-1:hover {
+    background-color: #1D5E54 !important;
+}
+.ledger-summary-row-2:hover,
+.dark-mode-bg .ledger-summary-row-2:hover,
+body.taxaid-dark .ledger-summary-row-2:hover {
+    background-color: #002B21 !important;
+}
+.ledger-summary-row-3:hover,
+.dark-mode-bg .ledger-summary-row-3:hover,
+body.taxaid-dark .ledger-summary-row-3:hover {
+    background-color: rgba(0, 201, 162, 0.3) !important;
+}
 </style>

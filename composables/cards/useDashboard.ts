@@ -211,15 +211,19 @@ export function useDashboard() {
 
   const { run: fetchDashboardCached, loading: swrLoading } = useStaleWhileRevalidate('dashboard', {
     fetchers: {
-      full: async () => {
-        const params = new URLSearchParams()
-        if (date.value) params.set('date', date.value)
-        params.set('cashflow_period', String(cashflowPeriod.value))
-        const res: any = await useApi(`/dashboard?${params.toString()}`)
-        return res?.data ?? {}
+      full: {
+        params: () => ({ cashflow_period: cashflowPeriod.value }),
+        fetch: async () => {
+          const params = new URLSearchParams()
+          if (date.value) params.set('date', date.value)
+          params.set('cashflow_period', String(cashflowPeriod.value))
+          const res: any = await useApi(`/dashboard?${params.toString()}`)
+          return res?.data ?? {}
+        },
       },
     },
     apply: (_key, data) => applyData(data),
+    staleFallback: true,
   })
 
   async function fetchSummaryCached() {

@@ -181,6 +181,11 @@
                     </div>
 
                     <p class="text-xs text-gray-400">FS Codes are fixed to BS and P&amp;L and cannot be changed.</p>
+
+                    <button @click="openStatementMapping(null)"
+                        class="w-full bg-[#F3F4F6] hover:bg-gray-200 text-gray-800 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        Statement Group Mapping
+                    </button>
                 </div>
             </div>
         </div>
@@ -403,6 +408,11 @@
                         </div>
 
                         <p class="text-xs text-gray-400">These are extra entries for {{ selectedTenant.name }} only — a value already in the General list can't be duplicated here.</p>
+
+                        <button @click="openStatementMapping(selectedTenant.id)"
+                            class="w-full bg-[#F3F4F6] hover:bg-gray-200 text-gray-800 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
+                            Statement Group Mapping
+                        </button>
                     </div>
                 </div>
             </div>
@@ -414,45 +424,47 @@
         <!-- Bulk Import Modal -->
         <div v-if="bulk.open" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
             @click.self="closeBulkModal">
-            <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-                <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-gray-900">
+            <div class="rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto"
+                :class="isDark ? 'bg-[#002e26] border border-white/10' : 'bg-white'">
+                <div class="px-6 py-5 border-b flex items-center justify-between" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+                    <h3 class="text-lg font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">
                         Bulk Import {{ bulk.type === 'mg' ? 'Main Groups' : 'Subgroups' }}
-                        <span v-if="mode === 'tenant' && selectedTenant" class="text-sm font-normal text-gray-500">— {{ selectedTenant.name }}</span>
+                        <span v-if="mode === 'tenant' && selectedTenant" class="text-sm font-normal" :class="isDark ? 'text-white/50' : 'text-gray-500'">— {{ selectedTenant.name }}</span>
                     </h3>
-                    <button @click="closeBulkModal" class="text-gray-400 hover:text-gray-600">&times;</button>
+                    <button @click="closeBulkModal" class="text-xl leading-none px-1" :class="isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'">&times;</button>
                 </div>
 
-                <div class="p-6 overflow-y-auto flex-1 space-y-5">
+                <div class="p-6 space-y-5">
                     <!-- Step 1: paste -->
                     <div v-if="!bulk.items.length" class="space-y-4">
-                        <div class="flex bg-[#F3F4F6] p-1 rounded-full w-fit">
+                        <div class="flex p-1 rounded-full w-fit" :class="isDark ? 'bg-white/5' : 'bg-[#F3F4F6]'">
                             <button @click="bulk.type = 'mg'"
                                 class="px-5 py-1 rounded-full text-sm font-medium transition-all"
-                                :class="bulk.type === 'mg' ? 'bg-white text-black shadow-sm' : 'text-gray-500'">Main Group</button>
+                                :class="bulk.type === 'mg' ? (isDark ? 'bg-[#1b5e50] text-white shadow-sm' : 'bg-white text-black shadow-sm') : (isDark ? 'text-white/50 hover:text-white' : 'text-gray-500')">Main Group</button>
                             <button @click="bulk.type = 'sg'"
                                 class="px-5 py-1 rounded-full text-sm font-medium transition-all"
-                                :class="bulk.type === 'sg' ? 'bg-white text-black shadow-sm' : 'text-gray-500'">Subgroup</button>
+                                :class="bulk.type === 'sg' ? (isDark ? 'bg-[#1b5e50] text-white shadow-sm' : 'bg-white text-black shadow-sm') : (isDark ? 'text-white/50 hover:text-white' : 'text-gray-500')">Subgroup</button>
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-800">Paste comma-separated values</label>
+                            <label class="text-sm font-semibold" :class="isDark ? 'text-white/85' : 'text-gray-800'">Paste comma-separated values</label>
                             <textarea v-model="bulk.raw" rows="6" placeholder="e.g. Current Asset, Current Liability, Liability, Indirect Income, Non Current Liabilities"
-                                class="w-full mt-2 bg-[#F3F4F6] border-none rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-[#00896F] text-black resize-none"></textarea>
+                                class="w-full mt-2 border-none rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-[#00896F] resize-none"
+                                :class="isDark ? 'bg-white/5 text-white placeholder:text-white/35' : 'bg-[#F3F4F6] text-black'"></textarea>
                         </div>
-                        <p v-if="bulk.error" class="text-sm text-red-600">{{ bulk.error }}</p>
+                        <p v-if="bulk.error" class="text-sm text-red-500">{{ bulk.error }}</p>
                     </div>
 
                     <!-- Step 2: review -->
                     <div v-else class="space-y-3">
-                        <p class="text-sm text-[#717182]">Items that already exist can't be re-added — their checkbox is disabled. "Similar" items are unchecked by default; check them to add anyway.</p>
-                        <div class="border border-gray-100 rounded-xl divide-y divide-gray-100 max-h-[50vh] overflow-y-auto">
+                        <p class="text-sm" :class="isDark ? 'text-white/60' : 'text-[#717182]'">Items that already exist can't be re-added — their checkbox is disabled. "Similar" items are unchecked by default; check them to add anyway.</p>
+                        <div class="border rounded-xl divide-y max-h-[50vh] overflow-y-auto" :class="isDark ? 'border-white/10 divide-white/10' : 'border-gray-100 divide-gray-100'">
                             <label v-for="(it, i) in bulk.items" :key="i"
                                 class="flex items-center gap-3 px-4 py-3"
-                                :class="isExactMatch(it) ? 'opacity-60' : 'cursor-pointer hover:bg-gray-50'">
+                                :class="isExactMatch(it) ? 'opacity-60' : (isDark ? 'cursor-pointer hover:bg-white/5' : 'cursor-pointer hover:bg-gray-50')">
                                 <input type="checkbox" v-model="it.selected" :disabled="isExactMatch(it)" class="accent-[#00896F] w-4 h-4" />
                                 <div class="flex-1 min-w-0">
-                                    <span class="text-sm text-gray-900">{{ it.value }}</span>
-                                    <p v-if="it.status !== 'new'" class="text-xs text-gray-400 truncate">
+                                    <span class="text-sm" :class="isDark ? 'text-white' : 'text-gray-900'">{{ it.value }}</span>
+                                    <p v-if="it.status !== 'new'" class="text-xs truncate" :class="isDark ? 'text-white/40' : 'text-gray-400'">
                                         <template v-if="it.status === 'exists_general'">Already exists in the general list as "{{ it.matched_value }}"</template>
                                         <template v-else-if="it.status === 'exists_tenant'">Already exists in this tenant's list as "{{ it.matched_value }}"</template>
                                         <template v-else-if="it.status === 'similar'">Similar to existing "{{ it.matched_value }}"</template>
@@ -464,23 +476,109 @@
                                 </span>
                             </label>
                         </div>
-                        <p v-if="bulk.resultMsg" class="text-sm" :class="bulk.resultError ? 'text-red-600' : 'text-emerald-600'">{{ bulk.resultMsg }}</p>
+                        <p v-if="bulk.resultMsg" class="text-sm" :class="bulk.resultError ? 'text-red-500' : 'text-emerald-500'">{{ bulk.resultMsg }}</p>
                     </div>
                 </div>
 
-                <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
-                    <button @click="closeBulkModal" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cancel</button>
+                <div class="px-6 py-4 border-t flex justify-end gap-3" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+                    <button @click="closeBulkModal" class="px-4 py-2 rounded-lg text-sm font-medium" :class="isDark ? 'text-white/60 hover:bg-white/5' : 'text-gray-600 hover:bg-gray-100'">Cancel</button>
                     <button v-if="!bulk.items.length" @click="previewBulk" :disabled="bulk.loading || !bulk.raw.trim()"
                         class="bg-[#04b592] hover:bg-[#006d58] text-gray-800 px-6 py-2 rounded-lg text-sm font-medium">
                         {{ bulk.loading ? 'Checking...' : 'Preview' }}
                     </button>
                     <template v-else>
-                        <button @click="bulk.items = []" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">&larr; Back</button>
+                        <button @click="bulk.items = []" class="px-4 py-2 rounded-lg text-sm font-medium" :class="isDark ? 'text-white/60 hover:bg-white/5' : 'text-gray-600 hover:bg-gray-100'">&larr; Back</button>
                         <button @click="confirmBulk" :disabled="bulk.loading || !bulk.items.some(i => i.selected)"
                             class="bg-[#04b592] hover:bg-[#006d58] text-gray-800 px-6 py-2 rounded-lg text-sm font-medium">
                             {{ bulk.loading ? 'Importing...' : `Import Selected (${bulk.items.filter(i => i.selected).length})` }}
                         </button>
                     </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statement Group Mapping Modal -->
+        <div v-if="mapping.open" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="closeStatementMapping">
+            <div class="rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto"
+                :class="isDark ? 'bg-[#002e26] border border-white/10' : 'bg-white'">
+                <div class="px-6 py-5 border-b flex items-center justify-between" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+                    <h3 class="text-lg font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">
+                        Statement Group Mapping
+                        <span class="text-sm font-normal" :class="isDark ? 'text-white/50' : 'text-gray-500'">— {{ mapping.tenantId ? selectedTenant?.name : 'General' }}</span>
+                    </h3>
+                    <button @click="closeStatementMapping" class="text-xl leading-none px-1" :class="isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'">&times;</button>
+                </div>
+
+                <div class="px-6 pt-5 pb-4">
+                    <div class="flex p-1 rounded-full w-fit" :class="isDark ? 'bg-white/5' : 'bg-[#F3F4F6]'">
+                        <button @click="mapping.fsCode = 'P&L'; loadBuckets()"
+                            class="px-6 py-1.5 rounded-full text-sm font-medium transition-all"
+                            :class="mapping.fsCode === 'P&L' ? (isDark ? 'bg-[#1b5e50] text-white shadow-sm' : 'bg-white text-black shadow-sm') : (isDark ? 'text-white/50 hover:text-white' : 'text-gray-500 hover:text-gray-700')">P&amp;L</button>
+                        <button @click="mapping.fsCode = 'BS'; loadBuckets()"
+                            class="px-6 py-1.5 rounded-full text-sm font-medium transition-all"
+                            :class="mapping.fsCode === 'BS' ? (isDark ? 'bg-[#1b5e50] text-white shadow-sm' : 'bg-white text-black shadow-sm') : (isDark ? 'text-white/50 hover:text-white' : 'text-gray-500 hover:text-gray-700')">BS</button>
+                    </div>
+                </div>
+
+                <div class="px-6 pb-6 space-y-4">
+                    <template v-if="mapping.loading">
+                        <div v-for="n in 5" :key="'sk'+n" class="border rounded-2xl px-5 py-4 flex flex-col gap-3" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+                            <div class="h-4 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'" style="width: 35%"></div>
+                            <div class="flex gap-2">
+                                <div class="h-6 rounded-full animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'" style="width: 90px"></div>
+                                <div class="h-6 rounded-full animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'" style="width: 70px"></div>
+                            </div>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div v-for="slot in mapping.slots" :key="slot"
+                            class="border rounded-2xl px-5 py-4 flex flex-col gap-3" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ slot }}</span>
+                                <button @click="openEditBucket(slot)"
+                                    class="bg-[#04b592] hover:bg-[#006d58] text-gray-800 px-3 py-1 rounded-lg text-xs font-medium">Edit</button>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span v-for="g in mapping.buckets[slot]" :key="g.id"
+                                    class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full"
+                                    :class="g.locked ? (isDark ? 'bg-white/5 text-white/40' : 'bg-gray-100 text-gray-400') : (isDark ? 'bg-[#0a2420] text-[#10FFD4]' : 'bg-[#E6FBF4] text-[#00896F]')">
+                                    {{ g.value }}
+                                    <span v-if="g.locked" class="text-[9px] uppercase tracking-wide">global</span>
+                                </span>
+                                <span v-if="!mapping.buckets[slot]?.length" class="text-xs" :class="isDark ? 'text-white/40' : 'text-gray-400'">No groups mapped yet.</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div v-if="mapping.edit.open" class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" @click.self="mapping.edit.open = false">
+                <div class="rounded-2xl shadow-xl w-full max-w-md max-h-[75vh] flex flex-col"
+                    :class="isDark ? 'bg-[#002e26] border border-white/10' : 'bg-white'">
+                    <div class="px-6 py-5 border-b flex items-center justify-between" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+                        <h3 class="text-lg font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Edit "{{ mapping.edit.slot }}"</h3>
+                        <button @click="mapping.edit.open = false" class="text-xl leading-none px-1" :class="isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'">&times;</button>
+                    </div>
+                    <div class="px-6 pt-4">
+                        <input type="text" v-model="mapping.edit.search" placeholder="Search groups..."
+                            class="w-full border-none rounded-xl px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-[#00896F]"
+                            :class="isDark ? 'bg-white/5 text-white placeholder:text-white/35' : 'bg-[#F3F4F6] text-black'" />
+                    </div>
+                    <div class="p-6 overflow-y-auto flex-1 space-y-1">
+                        <p v-if="!mapping.edit.items.length" class="text-sm" :class="isDark ? 'text-white/40' : 'text-gray-400'">No groups available.</p>
+                        <p v-else-if="!filteredEditItems.length" class="text-sm" :class="isDark ? 'text-white/40' : 'text-gray-400'">No matches.</p>
+                        <label v-for="item in filteredEditItems" :key="item.id"
+                            class="flex items-center gap-3 px-2 py-2.5 rounded-xl"
+                            :class="[item.locked ? 'opacity-50' : (isDark ? 'hover:bg-white/5 cursor-pointer' : 'hover:bg-[#F3FDFA] cursor-pointer')]">
+                            <input type="checkbox" v-model="item.checked" :disabled="item.locked" class="accent-[#00896F] w-4 h-4" />
+                            <span class="text-sm flex-1" :class="isDark ? 'text-white' : 'text-gray-900'">{{ item.value }}</span>
+                            <span v-if="item.locked" class="text-[9px] uppercase tracking-wide" :class="isDark ? 'text-white/30' : 'text-gray-400'">global</span>
+                        </label>
+                    </div>
+                    <div class="px-6 py-4 border-t flex justify-end gap-3" :class="isDark ? 'border-white/10' : 'border-gray-100'">
+                        <button @click="mapping.edit.open = false" class="px-4 py-2 rounded-lg text-sm font-medium" :class="isDark ? 'text-white/60 hover:bg-white/5' : 'text-gray-600 hover:bg-gray-100'">Cancel</button>
+                        <button @click="saveEditBucket" class="bg-[#04b592] hover:bg-[#006d58] text-gray-800 px-6 py-2 rounded-lg text-sm font-medium">Save</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -501,6 +599,8 @@ const {
     getTenantsWithCustomMappings,
     previewBulkGroups,
     createBulkGroups,
+    getStatementBuckets,
+    setStatementMapping,
 } = useImplementation()
 
 // --- Sub-tab -----------------------------------------------------------------
@@ -825,6 +925,70 @@ const confirmSimilar = async () => {
             await saveCell(kind, item, true)
         }
     }
+}
+
+const PL_SLOTS = ['Revenue', 'Direct Expenses', 'Indirect Expenses', 'Indirect Income', 'Tax Expense']
+const BS_SLOTS = ['Fixed Assets', 'Current Assets', 'Capital', 'Current Liabilities', 'Non Current Liabilities']
+
+const mapping = reactive({
+    open: false,
+    tenantId: null,
+    fsCode: 'P&L',
+    slots: PL_SLOTS,
+    buckets: {},
+    unmapped: [],
+    loading: false,
+    edit: { open: false, slot: null, items: [], search: '' },
+})
+
+function openStatementMapping(tenantId) {
+    mapping.tenantId = tenantId
+    mapping.fsCode = 'P&L'
+    mapping.open = true
+    loadBuckets()
+}
+function closeStatementMapping() {
+    mapping.open = false
+}
+
+async function loadBuckets() {
+    mapping.slots = mapping.fsCode === 'BS' ? BS_SLOTS : PL_SLOTS
+    mapping.loading = true
+    try {
+        const res = await getStatementBuckets(mapping.fsCode, mapping.tenantId)
+        mapping.buckets = res.buckets ?? {}
+        mapping.unmapped = res.unmapped ?? []
+    } finally {
+        mapping.loading = false
+    }
+}
+
+function openEditBucket(slot) {
+    const inBucket = (mapping.buckets[slot] ?? []).map(g => ({
+        id: g.id, value: g.value, locked: g.locked, checked: true, originalChecked: true,
+    }))
+    const notInBucket = mapping.unmapped.map(g => ({
+        id: g.id, value: g.value, locked: false, checked: false, originalChecked: false,
+    }))
+    mapping.edit.slot = slot
+    mapping.edit.items = [...inBucket, ...notInBucket]
+    mapping.edit.search = ''
+    mapping.edit.open = true
+}
+
+const filteredEditItems = computed(() => {
+    const q = mapping.edit.search.trim().toLowerCase()
+    if (!q) return mapping.edit.items
+    return mapping.edit.items.filter(i => i.value.toLowerCase().includes(q))
+})
+
+async function saveEditBucket() {
+    const changed = mapping.edit.items.filter(i => !i.locked && i.checked !== i.originalChecked)
+    for (const item of changed) {
+        await setStatementMapping(mapping.tenantId, item.id, item.checked ? mapping.edit.slot : null)
+    }
+    mapping.edit.open = false
+    loadBuckets()
 }
 </script>
 

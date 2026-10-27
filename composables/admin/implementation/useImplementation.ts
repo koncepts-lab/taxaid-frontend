@@ -288,6 +288,18 @@ export function useImplementation() {
     return res.data
   }
 
+  async function getStatementBuckets(fsCode: 'P&L' | 'BS', tenantId: number | null = null): Promise<any> {
+    const params: Record<string, any> = { fs_code: fsCode }
+    if (tenantId) params.tenant_id = tenantId
+    const res: any = await apiFetch('/admin/gl/statement-buckets', { params })
+    return res.data ?? { buckets: {}, unmapped: [] }
+  }
+
+  async function setStatementMapping(tenantId: number | null, mainGroupId: number, mapsTo: string | null): Promise<any> {
+    const res: any = await apiFetch('/admin/gl/statement-mapping', { method: 'POST', body: { tenant_id: tenantId, main_group_id: mainGroupId, maps_to: mapsTo } })
+    return res.data
+  }
+
   return {
     getPool,
     getConsultants,
@@ -328,5 +340,7 @@ export function useImplementation() {
     getTenantsWithCustomMappings,
     previewBulkGroups,
     createBulkGroups,
+    getStatementBuckets,
+    setStatementMapping,
   }
 }
