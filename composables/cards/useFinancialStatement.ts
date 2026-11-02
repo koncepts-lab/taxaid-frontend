@@ -19,27 +19,6 @@ const _bsSnapshotDate   = ref<string | null>(null)
 const _bsRequestedDate  = ref<string | null>(null)
 const _bsSnapshotNotice = ref(false)
 
-const scheduleMap: Record<string, string | null> = {
-  'Revenue':                     '01',
-  'Direct Expenses':             '02',
-  'Opening Stock':               null,
-  'Closing Stock':               null,
-  'Gross Profit':                null,
-  'Indirect Expenses':           '03',
-  'Net Operating Income':        null,
-  'Indirect Income':             '04',
-  'Profit Before Tax (PBT)':     null,
-  'Tax Expense':                 '05',
-  'Net Profit':                  null,
-}
-
-const scheduleMapBS: Record<string, string> = {
-  'Fixed Assets':              'S1',
-  'Current Asset':             'S2',
-  'Current Liabilitity':       'S3',
-  'Non Current Liabilities':   'S4',
-}
-
 const fmtNum = (num: any) => {
   if (num === null || num === undefined || num === '-' || num === '') return '-'
   const clean = typeof num === 'string' ? num.replace(/,/g, '') : num
@@ -85,7 +64,7 @@ function applyPL(res: any) {
       }
     }
   } catch {}
-  let nextRawSchedulePL = 6
+  let nextRawSchedulePL = 1
   _plRows.value = (res.report || []).map((row: any) => ({
     label:    row.label,
     current:  fmtNum(row.current_year),
@@ -97,7 +76,7 @@ function applyPL(res: any) {
     isHeader:  false,
     isTotal:   false,
     isRaw:     !!row.isRaw,
-    schedule:  row.isRaw ? String(nextRawSchedulePL++).padStart(2, '0') : (scheduleMap[row.label] ?? '-'),
+    schedule:  row.isRaw ? String(nextRawSchedulePL++).padStart(2, '0') : '-',
   }))
 }
 
@@ -117,7 +96,7 @@ function applyBS(res: any) {
   _bsSnapshotDate.value   = snapshot
   _bsSnapshotNotice.value = !!(requested && snapshot && requested !== snapshot)
 
-  let nextRawScheduleBS = 5
+  let nextRawScheduleBS = 1
   _bsRows.value = (res.report || []).map((row: any) => ({
     label:    row.label,
     current:  fmtNum(row.current_year),
@@ -129,7 +108,7 @@ function applyBS(res: any) {
     isHeader:  row.isHeader  || false,
     isTotal:   row.isTotal   || false,
     isRaw:     !!row.isRaw,
-    schedule:  row.isRaw ? ('S' + (nextRawScheduleBS++)) : (scheduleMapBS[row.label] ?? '-'),
+    schedule:  row.isRaw ? ('S' + (nextRawScheduleBS++)) : '-',
   }))
 }
 

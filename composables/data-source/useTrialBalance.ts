@@ -2,10 +2,13 @@ import { ref, watch, onMounted } from 'vue'
 
 const storageKey = (name: string) => {
   let userId: string | null = null
+  let tenantId: string | null = null
   try {
-    userId = (useAuth().user.value as any)?.id ?? localStorage.getItem('auth_user_id')
+    const user = useAuth().user.value as any
+    userId = user?.id ?? localStorage.getItem('auth_user_id')
+    tenantId = user?.tenant_id ?? null
   } catch {}
-  return `${name}:${userId ?? 'anon'}`
+  return `${name}:${tenantId ?? 'anon'}:${userId ?? 'anon'}`
 }
 
 const readSession = (name: string) => {
