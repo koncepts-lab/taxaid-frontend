@@ -245,7 +245,8 @@
                 <button @click="step = 1" type="button" class="w-1/3 border py-3.5 rounded-lg text-sm font-medium transition-colors" :class="isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'">
                   Back
                 </button>
-                <button @click="goToReview" type="button" class="flex-1 bg-[#00896F] text-white py-3.5 rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors">
+                <button @click="goToReview" type="button" :disabled="confirmingCard" class="flex-1 bg-[#00896F] text-white py-3.5 rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                  <svg v-if="confirmingCard" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                   Review Order
                 </button>
               </div>
@@ -288,8 +289,9 @@
                 <button @click="step = 2" type="button" class="flex-1 border py-3.5 rounded-lg text-sm font-medium transition-colors" :class="isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white text-gray-900 hover:bg-gray-50'" :style="!isDark ? { borderColor: '#A2E8D6' } : {}">
                   Back
                 </button>
-                <button @click="submit" :disabled="submitting" type="button" class="flex-1 bg-[#00896F] text-white py-3.5 rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors disabled:opacity-50">
-                  {{ submitting ? 'Processing...' : 'Confirm Payment' }}
+                <button @click="submit" :disabled="submitting" type="button" class="flex-1 bg-[#00896F] text-white py-3.5 rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                  <svg v-if="submitting" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  {{ submitting ? 'Processing' : 'Confirm Payment' }}
                 </button>
               </div>
             </div>
@@ -483,7 +485,16 @@ async function mountCardElement() {
   if (!stripe) return
 
   elements = stripe.elements()
-  cardElement = elements.create('card', { style: { base: { fontSize: '14px' } } })
+  cardElement = elements.create('card', {
+    style: {
+      base: {
+        fontSize: '14px',
+        color: isDark.value ? '#ffffff' : '#111827',
+        '::placeholder': { color: isDark.value ? 'rgba(255,255,255,0.4)' : '#9ca3af' },
+      },
+      invalid: { color: '#ef4444' },
+    },
+  })
 
   cardElement.mount('#card-element')
   cardElement.on('change', (event) => {
@@ -513,7 +524,11 @@ watch(step, (newStep) => {
   }
 })
 
-function goToReview() {
+const confirmedPaymentMethodId = ref<string | null>(null)
+const confirmingCard = ref(false)
+
+async function goToReview() {
+  if (confirmingCard.value) return
   cardError.value = ''
   const isUsingSaved = savedCards.value.length > 0 && !useNewCard.value
 
@@ -522,14 +537,48 @@ function goToReview() {
       cardError.value = 'Please select a payment method.'
       return
     }
-  } else {
-    if (!cardElement || isCardEmpty.value || !isCardComplete.value) {
-      cardError.value = cardError.value || 'Please enter valid and complete card details.'
-      return
-    }
+    confirmedPaymentMethodId.value = selectedCard.value.stripe_payment_method_id
+    step.value = 3
+    return
   }
 
-  step.value = 3
+  if (!stripe || !cardElement || isCardEmpty.value || !isCardComplete.value) {
+    cardError.value = cardError.value || 'Please enter valid and complete card details.'
+    return
+  }
+
+  confirmingCard.value = true
+  try {
+    const intentRes = await createSetupIntent()
+    const clientSecret = intentRes.data.client_secret
+
+    const { error, setupIntent } = await stripe.confirmCardSetup(clientSecret, {
+      payment_method: { card: cardElement },
+    })
+
+    if (error) {
+      cardError.value = error.message || 'Card confirmation failed'
+      return
+    }
+
+    const paymentMethodId = setupIntent!.payment_method as string
+
+    try {
+      const pmRes = await addPaymentMethod(paymentMethodId)
+      savedCards.value = [...savedCards.value.filter((c: any) => c.id !== pmRes.data.id), pmRes.data]
+      selectedCardId.value = pmRes.data.id
+      useNewCard.value = false
+    } catch {
+      // non-fatal — subscribe() below still works with the raw paymentMethodId either way
+    }
+
+    confirmedPaymentMethodId.value = paymentMethodId
+    step.value = 3
+  } catch (err: any) {
+    cardError.value = err?.data?.message || 'Something went wrong. Please try again.'
+  } finally {
+    confirmingCard.value = false
+  }
 }
 
 onMounted(async () => {
@@ -574,49 +623,13 @@ async function attemptSubscribe(paymentMethodId: string) {
 }
 
 const submit = async () => {
-  if (submitting.value) return
+  if (submitting.value || !confirmedPaymentMethodId.value) return
   submitting.value = true
   cardError.value = ''
 
   try {
     await saveBillingInfo(billing.value)
-
-    let paymentMethodId: string
-
-    if (selectedCard.value && !useNewCard.value) {
-      paymentMethodId = selectedCard.value.stripe_payment_method_id
-    } else {
-      if (!stripe || !cardElement) { submitting.value = false; return }
-
-      const intentRes = await createSetupIntent()
-      const clientSecret = intentRes.data.client_secret
-
-      const { error, setupIntent } = await stripe.confirmCardSetup(clientSecret, {
-        payment_method: { card: cardElement },
-      })
-
-      if (error) {
-        cardError.value = error.message || 'Card confirmation failed'
-        submitting.value = false
-        return
-      }
-
-      paymentMethodId = setupIntent!.payment_method as string
-
-      // Persist the now-verified card immediately — if subscribe() fails below, the card is
-      // still saved locally so a retry reuses it instead of re-confirming a fresh SetupIntent
-      // (which would otherwise leave a Stripe-only card the local list never learns about).
-      try {
-        const pmRes = await addPaymentMethod(paymentMethodId)
-        savedCards.value = [...savedCards.value.filter((c: any) => c.id !== pmRes.data.id), pmRes.data]
-        selectedCardId.value = pmRes.data.id
-        useNewCard.value = false
-      } catch {
-        // non-fatal — subscribe() below still works with the raw paymentMethodId either way
-      }
-    }
-
-    await attemptSubscribe(paymentMethodId)
+    await attemptSubscribe(confirmedPaymentMethodId.value)
   } catch (err: any) {
     cardError.value = err?.data?.message || 'Something went wrong. Please try again.'
   } finally {
