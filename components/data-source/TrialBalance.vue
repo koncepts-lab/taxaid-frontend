@@ -427,17 +427,21 @@
                         <h3 class="text-2xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
                             {{ currentLang === 'ar' ? 'ميزان المراجعة - تقرير مفصل' : 'Trial Balance - Detailed Report' }}
                         </h3>
-                        <button @click="handleDownload" :disabled="downloading"
-                            class="shrink-0 flex items-center gap-2 px-6 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-xl font-normal text-base transition-all active:scale-95 shadow-sm disabled:opacity-50">
-                            <svg v-if="downloading" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin shrink-0">
-                                <circle cx="12" cy="12" r="9" stroke-opacity="0.25" />
-                                <path d="M21 12a9 9 0 0 0-9-9" />
-                            </svg>
-                            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">
-                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                            </svg>
-                            {{ currentLang === 'ar' ? 'تصدير' : 'Export' }}
-                        </button>
+                        <div class="flex items-center gap-3 shrink-0">
+                            <CommonDateField class="w-40" :model-value="props.reportDate" size="sm" :dark="isDark" readonly use-display-format :disabled="!props.onReportDateChange"
+                                @update:model-value="(val) => props.onReportDateChange && props.onReportDateChange(val)" />
+                            <button @click="handleDownload" :disabled="downloading"
+                                class="shrink-0 flex items-center gap-2 px-6 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-xl font-normal text-base transition-all active:scale-95 shadow-sm disabled:opacity-50">
+                                <svg v-if="downloading" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin shrink-0">
+                                    <circle cx="12" cy="12" r="9" stroke-opacity="0.25" />
+                                    <path d="M21 12a9 9 0 0 0-9-9" />
+                                </svg>
+                                <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                                </svg>
+                                {{ currentLang === 'ar' ? 'تصدير' : 'Export' }}
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Modal badges -->
@@ -480,13 +484,14 @@
                                                 @apply="handleFilterApply" :onRefresh="handleRefreshFilterOptions" />
                                         </span>
                                     </th>
-                                    <th class="px-6 py-4 text-left text-sm font-semibold rounded-tr-xl">
+                                    <th class="px-6 py-4 text-left text-sm font-semibold">
                                         <span class="inline-flex items-center gap-1.5">Ledger Account
                                             <DataSourceTbHeaderFilter column="ledger_name" :options="tbFilterOptions.ledger_name"
                                                 :selected="tbFilters.ledger_name" :isDark="isDark" :currentLang="currentLang"
                                                 @apply="handleFilterApply" :onRefresh="handleRefreshFilterOptions" />
                                         </span>
                                     </th>
+                                    <th class="px-6 py-4 text-right text-sm font-semibold rounded-tr-xl">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -496,11 +501,12 @@
                                         <td class="px-6 py-3"><div class="h-5 rounded w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div></td>
                                         <td class="px-6 py-3"><div class="h-5 rounded w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div></td>
                                         <td class="px-6 py-3"><div class="h-5 rounded w-3/4" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div></td>
+                                        <td class="px-6 py-3"><div class="h-5 rounded w-full" :class="isDark ? 'bg-white/10' : 'bg-gray-100'"></div></td>
                                     </tr>
                                 </template>
                                 <template v-else-if="mappingData.length === 0">
                                     <tr>
-                                        <td colspan="4" class="text-center py-10 text-sm" :class="isDark ? 'text-white/40' : 'text-gray-400'">
+                                        <td colspan="5" class="text-center py-10 text-sm" :class="isDark ? 'text-white/40' : 'text-gray-400'">
                                             {{ currentLang === 'ar' ? 'لا توجد بيانات' : 'No data available' }}
                                         </td>
                                     </tr>
@@ -514,6 +520,7 @@
                                         <td class="px-6 py-3 text-sm" :class="isDark ? 'text-white/80' : 'text-gray-600'">{{ item.mainGroup || '—' }}</td>
                                         <td class="px-6 py-3 text-sm" :class="isDark ? 'text-white/80' : 'text-gray-600'">{{ item.subGroup || '—' }}</td>
                                         <td class="px-6 py-3 text-sm" :class="isDark ? 'text-white/90' : 'text-gray-700'">{{ item.ledger }}</td>
+                                        <td class="px-6 py-3 text-sm text-right" :class="isDark ? 'text-white/90' : 'text-gray-700'">{{ item.amount != null ? formatCurrency(item.amount) : '—' }}</td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -608,6 +615,8 @@ const props = defineProps({
     onRefreshFilterOptions: { type: Function, default: null },
     onOpenImport:     { type: Function, default: null },
     onDownload:       { type: Function, default: null },
+    reportDate:       { type: String,   default: null }, // Detailed Report modal only — "Amount" column is as-of this date
+    onReportDateChange: { type: Function, default: null },
 })
 const { isTaxaid } = usePermissions()
 const isAdminMode = computed(() => props.userType === 'admin' && isTaxaid.value)

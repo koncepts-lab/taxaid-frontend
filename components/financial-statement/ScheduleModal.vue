@@ -8,7 +8,7 @@
                 <!-- Main Panel -->
                 <div class="w-full bg-white flex flex-col transition-all duration-500 shadow-2xl overflow-hidden
                  h-[78vh] rounded-t-4xl
-                 sm:max-w-6xl sm:h-[78vh] sm:rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0"
+                 sm:max-w-[88rem] sm:h-[78vh] sm:rounded-t-[2.5rem] md:rounded-2xl mt-auto md:mt-0"
                     :class="[isDark ? 'bg-[#002e26] border-t sm:border border-white/10' : 'bg-white border-none']">
                     <!-- Mobile Drag Handle (Visual only) -->
                     <div class="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
@@ -45,7 +45,7 @@
 
                     <!-- ── Table Container (Handles Horizontal Scroll) ── -->
                     <div class="w-full flex-1 flex flex-col min-h-0 overflow-x-auto overflow-y-hidden no-scrollbar">
-                        <div class="min-w-[800px] flex flex-col flex-1 h-full">
+                        <div class="min-w-[1000px] flex flex-col flex-1 h-full">
 
                             <!-- Loading & Empty States -->
                             <div v-if="loading" class="flex flex-col items-center justify-center py-20">
@@ -61,12 +61,12 @@
                                 <div class="shrink-0 sticky top-0 z-10">
                                     <table class="w-full text-sm table-fixed">
                                         <colgroup>
-                                            <col style="width: 25%">
-                                            <col style="width: 15%">
-                                            <col style="width: 15%">
-                                            <col style="width: 15%">
-                                            <col style="width: 15%">
-                                            <col style="width: 15%">
+                                            <col style="width: 32%">
+                                            <col style="width: 13.6%">
+                                            <col style="width: 13.6%">
+                                            <col style="width: 13.6%">
+                                            <col style="width: 13.6%">
+                                            <col style="width: 13.6%">
                                         </colgroup>
                                         <thead class="text-white bg-[#029F80]">
                                             <tr>
@@ -85,12 +85,12 @@
                                 <div class="overflow-y-auto custom-scrollbar flex-1 min-h-0">
                                     <table class="w-full text-sm table-fixed">
                                         <colgroup>
-                                            <col style="width: 25%">
-                                            <col style="width: 15%">
-                                            <col style="width: 15%">
-                                            <col style="width: 15%">
-                                            <col style="width: 15%">
-                                            <col style="width: 15%">
+                                            <col style="width: 32%">
+                                            <col style="width: 13.6%">
+                                            <col style="width: 13.6%">
+                                            <col style="width: 13.6%">
+                                            <col style="width: 13.6%">
+                                            <col style="width: 13.6%">
                                         </colgroup>
                                         <tbody :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
                                             <template v-for="(item, idx) in bodyRows" :key="idx">
@@ -99,7 +99,7 @@
                                                     class="transition-colors">
                                                     <td class="lg:ps-8 ps-4 py-4 text-start">
                                                         <div class="flex items-center gap-4">
-                                                            <span :class="[isDark ? 'text-white/80' : 'text-gray-700']">{{
+                                                            <span class="whitespace-nowrap" :class="[isDark ? 'text-white/80' : 'text-gray-700']">{{
                                                                 item.subgroup }}</span>
                                                             <button @click="handleLedgerList(item)"
                                                                 class="p-1">
@@ -188,13 +188,13 @@
                                                                     :text="currentLang === 'ar' ? 'عرض دفتر الأستاذ' : 'View Ledger'"
                                                                     position="top">
                                                                     <button @click="openGlReport(ledger)"
-                                                                        class="underline cursor-pointer font-medium text-left"
+                                                                        class="underline cursor-pointer font-medium text-left whitespace-nowrap"
                                                                         :class="isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-black/80 hover:text-emerald-800'">
                                                                         {{ ledger.ledger_name || ledger.subgroup }}
                                                                     </button>
                                                                 </CommonTooltip>
                                                             </template>
-                                                            <span v-else class="font-medium text-left"
+                                                            <span v-else class="font-medium text-left whitespace-nowrap"
                                                                 :class="isDark ? 'text-white' : 'text-[#000]'">
                                                                 {{ ledger.ledger_name || ledger.subgroup }}
                                                             </span>
@@ -233,17 +233,17 @@
                                 <div v-if="totalRow" class="shrink-0">
                                     <table class="w-full text-sm table-fixed">
                                         <colgroup>
-                                            <col style="width: 25%">
-                                            <col style="width: 15%">
-                                            <col style="width: 15%">
-                                            <col style="width: 15%">
-                                            <col style="width: 15%">
-                                            <col style="width: 15%">
+                                            <col style="width: 32%">
+                                            <col style="width: 13.6%">
+                                            <col style="width: 13.6%">
+                                            <col style="width: 13.6%">
+                                            <col style="width: 13.6%">
+                                            <col style="width: 13.6%">
                                         </colgroup>
                                         <tbody>
                                             <tr :class="isDark ? 'ledger-total-row bg-[#00C9A7]/20 font-bold' : 'ledger-total-row bg-[#64E9D1] font-bold'">
                                                 <td class="lg:ps-8 ps-4 py-4 text-start">
-                                                    <span :class="[isDark ? 'text-white/80' : 'text-gray-700']">{{ totalRow.subgroup }}</span>
+                                                    <span class="whitespace-nowrap" :class="[isDark ? 'text-white/80' : 'text-gray-700']">{{ totalRow.subgroup }}</span>
                                                 </td>
                                                 <td class="px-4 py-4 text-center"
                                                     :class="isDark ? 'text-white/60' : 'text-gray-600'">{{

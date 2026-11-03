@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div class="fixed inset-0 z-[100000] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-black/50 backdrop-blur-sm">
-      <div class="rounded-2xl mt-auto md:mt-0 h-[90vh] md:h-[82vh] max-h-[860px] w-[96vw] md:w-full max-w-3xl shadow-2xl flex flex-col overflow-hidden" :class="isDark ? 'bg-[#002e26]' : 'bg-white'" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+      <div class="rounded-2xl mt-auto md:mt-0 h-[90vh] md:h-[82vh] max-h-[860px] w-[96vw] md:w-full max-w-4xl shadow-2xl flex flex-col overflow-hidden" :class="isDark ? 'bg-[#002e26]' : 'bg-white'" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
         <div class="shrink-0 px-4 md:px-6 py-4 flex justify-between items-start border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'">
           <div>
@@ -37,13 +37,15 @@
             <div v-for="n in 3" :key="n" class="h-10 rounded-lg animate-pulse" :class="isDark ? 'bg-white/5' : 'bg-gray-100'"></div>
           </div>
 
-          <table v-else class="w-full table-fixed text-left border-separate border-spacing-0 min-w-[700px]">
+          <div v-else class="overflow-x-auto no-scrollbar">
+          <table class="w-full table-fixed text-left border-separate border-spacing-0 min-w-[880px]">
             <colgroup>
-              <col style="width:22%"><col style="width:16%"><col style="width:16%"><col style="width:16%"><col style="width:16%"><col style="width:14%">
+              <col style="width:16%"><col style="width:20%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:16%">
             </colgroup>
             <thead>
               <tr class="text-white text-sm">
                 <th class="bg-[#058a64] py-2.5 px-3 font-medium rounded-ss-lg">{{ labels.billNo }}</th>
+                <th class="bg-[#058a64] py-2.5 px-3 font-medium text-center">{{ labels.date }}</th>
                 <th class="bg-[#058a64] py-2.5 px-3 font-medium text-right">{{ labels.currentAmount }}</th>
                 <th class="bg-[#058a64] py-2.5 px-3 font-medium text-right">{{ labels.adjustment }}</th>
                 <th class="bg-[#058a64] py-2.5 px-3 font-medium text-center">{{ labels.afterAdjustment }}</th>
@@ -53,7 +55,7 @@
             </thead>
             <tbody class="divide-y text-sm" :class="isDark ? 'divide-white/10' : 'divide-gray-100'">
               <tr v-if="rows.length === 0">
-                <td colspan="6" class="py-6 px-3 text-center" :class="isDark ? 'text-white/50' : 'text-gray-500'">
+                <td colspan="7" class="py-6 px-3 text-center" :class="isDark ? 'text-white/50' : 'text-gray-500'">
                   {{ labels.empty }}
                 </td>
               </tr>
@@ -78,12 +80,18 @@
                 </td>
                 <td class="py-2 px-3">
                   <span v-if="row.isNew" class="invisible block mb-1 px-1.5 py-0.5 rounded text-[10px] font-semibold">.</span>
+                  <CommonDateField v-if="isEditableSource(row)" :model-value="row.date_of_invoice" size="sm" :dark="isDark"
+                    @update:model-value="(val) => nextTick(() => { row.date_of_invoice = val })" />
+                  <span v-else class="block text-center" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatDisplayDate(row.date_of_invoice) || '—' }}</span>
+                </td>
+                <td class="py-2 px-3">
+                  <span v-if="row.isNew" class="invisible block mb-1 px-1.5 py-0.5 rounded text-[10px] font-semibold">.</span>
                   <input v-if="row.isNew" type="text" inputmode="decimal" :value="row.amount" @input="onAmountInput(row, $event)" @keydown="onAmountKeydown" placeholder="0.00" class="w-full border rounded-md py-1.5 px-2.5 text-right focus:outline-none focus:ring-1 focus:ring-[#058a64]" :class="isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400'" />
                   <span v-else class="block text-right" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatCurrency(row.amount) }}</span>
                 </td>
                 <td class="py-2 px-3">
                   <span v-if="row.isNew" class="invisible block mb-1 px-1.5 py-0.5 rounded text-[10px] font-semibold">.</span>
-                  <input v-if="!row.isNew" type="text" inputmode="decimal" :value="row.adjustment" @input="onAdjustmentInput(row, $event)" @keydown="onSignedKeydown" :disabled="row.markPaid" placeholder="0" class="w-full border-none rounded-md py-1.5 px-2.5 text-right focus:outline-none focus:ring-1 focus:ring-[#058a64] disabled:opacity-40" :class="isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-800'" />
+                  <input v-if="!row.isNew && isEditableSource(row)" type="text" inputmode="decimal" :value="row.adjustment" @input="onAdjustmentInput(row, $event)" @keydown="onSignedKeydown" :disabled="row.markPaid" placeholder="0" class="w-full border-none rounded-md py-1.5 px-2.5 text-right focus:outline-none focus:ring-1 focus:ring-[#058a64] disabled:opacity-40" :class="isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-800'" />
                   <span v-else class="block text-center" :class="isDark ? 'text-white/30' : 'text-gray-300'">—</span>
                 </td>
                 <td class="py-2 px-3 text-right font-medium" :class="isDark ? 'text-white' : 'text-gray-800'">
@@ -92,15 +100,17 @@
                 </td>
                 <td class="py-2 px-3 text-center">
                   <span v-if="row.isNew" class="invisible block mb-1 px-1.5 py-0.5 rounded text-[10px] font-semibold">.</span>
-                  <input type="checkbox" v-model="row.markPaid" class="w-4 h-4 rounded text-[#058a64] focus:ring-[#058a64]" :class="isDark ? 'border-white/20 bg-[#002e26]' : 'border-gray-300 bg-white'" />
+                  <input type="checkbox" v-model="row.markPaid" :disabled="!isEditableSource(row)" class="w-4 h-4 rounded text-[#058a64] focus:ring-[#058a64] disabled:opacity-40" :class="isDark ? 'border-white/20 bg-[#002e26]' : 'border-gray-300 bg-white'" />
                 </td>
                 <td class="py-2 px-3 text-center">
+                  <span v-if="row.isNew" class="invisible block mb-1 px-1.5 py-0.5 rounded text-[10px] font-semibold">.</span>
                   <button v-if="row.isNew" @click="removeRow(i)" class="text-red-500 hover:text-red-700 text-sm font-medium">{{ labels.remove }}</button>
                   <span v-else :class="isDark ? 'text-white/20' : 'text-gray-300'">—</span>
                 </td>
               </tr>
             </tbody>
           </table>
+          </div>
 
           <div v-if="!loading" class="flex flex-wrap gap-2 mt-3">
             <button @click="addInvoiceRow" type="button" class="bg-[#058a64] hover:bg-[#047857] text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors">
@@ -119,6 +129,7 @@
 
           <div class="mt-6" v-if="!loading">
             <h3 class="text-sm font-bold mb-2" :class="isDark ? 'text-white' : 'text-gray-800'">{{ labels.candidatesHeading }}</h3>
+            <div class="overflow-x-auto no-scrollbar">
             <table class="w-full table-fixed text-left border-separate border-spacing-0 min-w-[700px]">
               <colgroup>
                 <col style="width:20%"><col style="width:42%"><col style="width:20%"><col style="width:18%">
@@ -153,6 +164,7 @@
                 </tr>
               </tbody>
             </table>
+            </div>
           </div>
         </div>
 
@@ -176,13 +188,14 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 
 const props = defineProps({
   side: { type: String, required: true }, // 'ap' | 'ar'
   partyName: { type: String, required: true },
   needed: { type: Number, default: 0 }, // kept for compat; sign-aware requiredChange below is authoritative
   invoices: { type: Array, default: null }, // null = not loaded yet; each row needs an `id`
+  initialLines: { type: Array, default: () => [] }, // previously staged lines for this vendor, to restore on reopen
   purchaseCandidates: { type: Array, default: () => [] }, // TB vouchers suggesting new bills (balance-increasing)
   paymentCandidates: { type: Array, default: () => [] }, // TB vouchers suggesting unrecorded payments/receipts (balance-decreasing)
   loading: { type: Boolean, default: false },
@@ -194,7 +207,7 @@ const props = defineProps({
   reportLabel: { type: String, default: 'Balance as per report' },
   targetDate: { type: String, default: null },
 });
-const emit = defineEmits(['close', 'resolved']);
+const emit = defineEmits(['close', 'staged']);
 
 const currentLang = useState('currentLang', () => 'en');
 const isAr = computed(() => currentLang.value === 'ar');
@@ -205,6 +218,7 @@ const labels = computed(() => isAr.value ? {
   invoicesHeading: 'الفواتير',
   candidatesHeading: 'أسباب محتملة للفرق من دفتر اليومية',
   billNo: 'رقم الفاتورة',
+  date: 'التاريخ',
   currentAmount: 'المبلغ الحالي',
   adjustment: 'التسوية',
   afterAdjustment: 'بعد التسوية',
@@ -235,6 +249,7 @@ const labels = computed(() => isAr.value ? {
   invoicesHeading: 'Invoices',
   candidatesHeading: 'Potential reasons for variance found from Day Book',
   billNo: 'Bill / Invoice No.',
+  date: 'Date',
   currentAmount: 'Current Amount',
   adjustment: 'Adjustment',
   afterAdjustment: 'After Adjustment',
@@ -263,19 +278,54 @@ const labels = computed(() => isAr.value ? {
 const rows = ref([]);
 const candidateRows = ref([]);
 
+const toNumber = (v) => {
+  const n = parseFloat(String(v ?? '').replace(/,/g, ''));
+  return isNaN(n) ? 0 : n;
+};
+const todayStr = () => props.targetDate || new Date().toISOString().slice(0, 10);
+
+const isEditableSource = (row) => row.isNew || row.source === 'adjustment';
+
 const buildRows = () => {
-  rows.value = (props.invoices || []).map((inv) => ({
-    id: inv.id,
-    invoice_number: inv.invoice_number,
-    amount: inv.amount,
-    date_of_invoice: inv.date_of_invoice,
-    credit_days: inv.credit_days,
-    description: inv.description,
-    adjustment: '',
-    markPaid: false,
-    isNew: false,
-    isAdvance: false,
-  }));
+  const editLines = (props.initialLines || []).filter((l) => l.action === 'edit');
+  const newLines = (props.initialLines || []).filter((l) => l.action !== 'edit');
+
+  rows.value = (props.invoices || []).map((inv) => {
+    const staged = editLines.find((l) => l.id === inv.id);
+    const row = {
+      id: inv.id,
+      invoice_number: inv.invoice_number,
+      amount: inv.amount,
+      date_of_invoice: inv.date_of_invoice,
+      credit_days: inv.credit_days,
+      description: inv.description,
+      source: inv.source,
+      adjustment: '',
+      markPaid: false,
+      isNew: false,
+      isAdvance: false,
+    };
+    if (staged) {
+      row.adjustment = String(staged.amount - toNumber(inv.amount));
+      row.markPaid = !!staged.mark_paid;
+      if (staged.date_of_invoice) row.date_of_invoice = staged.date_of_invoice;
+    }
+    return row;
+  });
+
+  newLines.forEach((line) => {
+    rows.value.push({
+      id: null,
+      invoice_number: line.invoice_number || '',
+      amount: String(Math.abs(line.amount)),
+      date_of_invoice: line.date_of_invoice || todayStr(),
+      credit_days: line.credit_days || 0,
+      adjustment: '',
+      markPaid: false,
+      isNew: true,
+      isAdvance: line.action === 'advance',
+    });
+  });
 };
 
 const buildCandidates = () => {
@@ -289,14 +339,14 @@ watch([() => props.purchaseCandidates, () => props.paymentCandidates], buildCand
 
 const addInvoiceRow = () => {
   rows.value.push({
-    id: null, invoice_number: '', amount: '', date_of_invoice: '',
+    id: null, invoice_number: '', amount: '', date_of_invoice: todayStr(),
     credit_days: 0, adjustment: '', markPaid: false, isNew: true, isAdvance: false,
   });
 };
 
 const addAdvanceRow = () => {
   rows.value.push({
-    id: null, invoice_number: '', amount: '', date_of_invoice: '',
+    id: null, invoice_number: '', amount: '', date_of_invoice: todayStr(),
     credit_days: 0, adjustment: '', markPaid: false, isNew: true, isAdvance: true,
   });
 };
@@ -306,7 +356,7 @@ const addCandidate = (c) => {
     id: null,
     invoice_number: c.voucher_no || '',
     amount: String(c.amount ?? ''),
-    date_of_invoice: c.entry_date,
+    date_of_invoice: c.entry_date || todayStr(),
     credit_days: 0,
     adjustment: '',
     markPaid: false,
@@ -342,11 +392,6 @@ const onSignedKeydown = (e) => {
   if (CONTROL_KEYS.includes(e.key) || e.ctrlKey || e.metaKey) return;
   if (e.key === '-' && e.target.selectionStart === 0 && !e.target.value.includes('-')) return;
   if (!/^[0-9.]$/.test(e.key)) e.preventDefault();
-};
-
-const toNumber = (v) => {
-  const n = parseFloat(String(v ?? '').replace(/,/g, ''));
-  return isNaN(n) ? 0 : n;
 };
 
 const afterAdjustment = (row) => row.isNew ? toNumber(row.amount) : toNumber(row.amount) + toNumber(row.adjustment);
@@ -395,9 +440,10 @@ const canApply = computed(() =>
   duplicateRowIndexes.value.size === 0
 );
 
-const todayStr = () => props.targetDate || new Date().toISOString().slice(0, 10);
-
-const apply = async () => {
+// Stages the vendor's edits locally — nothing is written to the DB here.
+// The parent modal holds the draft and sends everything in one request
+// when the user hits the final "Post Variance" button.
+const apply = () => {
   errorMessage.value = '';
   if (!canApply.value) {
     errorMessage.value = labels.value.mustMatch;
@@ -415,12 +461,14 @@ const apply = async () => {
         id: row.id,
         amount: afterAdjustment(row),
         mark_paid: row.markPaid,
+        date_of_invoice: row.date_of_invoice || null,
       });
     } else if (row.isAdvance) {
       lines.push({
         action: 'advance',
         invoice_number: row.invoice_number || null,
         amount: toNumber(row.amount),
+        date_of_invoice: row.date_of_invoice || todayStr(),
       });
     } else {
       lines.push({
@@ -429,27 +477,15 @@ const apply = async () => {
         amount: toNumber(row.amount),
         credit_days: row.credit_days || 0,
         mark_paid: row.markPaid,
+        date_of_invoice: row.date_of_invoice || todayStr(),
       });
     }
   });
 
-  submitting.value = true;
-  try {
-    const res = await useApi('/adjustments/resolve-vendor', {
-      method: 'POST',
-      body: {
-        side: props.side,
-        party_name: props.partyName,
-        date: todayStr(),
-        lines,
-      },
-    });
-    emit('resolved', { partyName: props.partyName, balances: res?.balances ?? null });
-  } catch (err) {
-    const data = err?.data || err?.response?._data;
-    errorMessage.value = data?.message || err?.message || (isAr.value ? 'حدث خطأ ما' : 'Something went wrong');
-  } finally {
-    submitting.value = false;
-  }
+  emit('staged', {
+    partyName: props.partyName,
+    lines,
+    balances: { tb: props.tbBalance, report: liveReportBalance.value },
+  });
 };
 </script>

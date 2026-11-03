@@ -223,7 +223,8 @@
         <button @click="closeModal" class="px-4 py-1.5 border rounded-lg font-medium transition-colors text-sm" :class="isDark ? 'border-white/20 text-white/80 hover:bg-white/10' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
           {{ labels.cancel }}
         </button>
-        <button @click="postVariance" :disabled="!canPost || actionLoading" :class="canPost ? 'bg-[#058a64] hover:bg-[#047857] text-white cursor-pointer' : (isDark ? 'bg-white/10 text-white/40 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')" class="px-4 py-1.5 rounded-lg font-medium text-sm">
+        <button @click="postVariance" :disabled="!canPost || actionLoading" :class="canPost ? 'bg-[#058a64] hover:bg-[#047857] text-white cursor-pointer' : (isDark ? 'bg-white/10 text-white/40 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')" class="px-4 py-1.5 rounded-lg font-medium text-sm flex items-center gap-2">
+          <svg v-if="actionLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
           {{ actionLoading ? labels.posting : labels.postVariance }}
         </button>
       </div>
@@ -238,18 +239,19 @@
     :party-name="activeVendorModal"
     :needed="vendorDiff(activeVendorModal)"
     :invoices="invoicesByParty[activeVendorModal] || null"
+    :initial-lines="vendorDraftLines[activeVendorModal] || []"
     :purchase-candidates="purchaseCandidatesFor(activeVendorModal)"
     :payment-candidates="paymentCandidatesFor(activeVendorModal)"
     :loading="!invoicesByParty[activeVendorModal]"
     :code="code"
     :is-dark="isDark"
-    :tb-balance="vendorTbBalance(activeVendorModal)"
-    :ap-balance="vendorApBalance(activeVendorModal)"
+    :tb-balance="vendorOriginalTbBalance(activeVendorModal)"
+    :ap-balance="vendorOriginalApBalance(activeVendorModal)"
     :tb-label="cfg.tbLabel"
     :report-label="cfg.reportLabel"
     :target-date="props.date"
     @close="activeVendorModal = null"
-    @resolved="onVendorResolved"
+    @staged="onVendorStaged"
   />
 </template>
 
@@ -418,6 +420,7 @@ const vendorDiff = (ledgerName) => vendorDiffs.value[ledgerName] ? Math.abs(Numb
 const vendorDiffSigned = (ledgerName) => Number(vendorDiffs.value[ledgerName] ?? 0);
 
 const allVendors = computed(() => [...new Set([
+  ...Object.keys(vendorDiffs.value).filter((v) => vendorDiff(v) > 0),
   ...primaryRows.value.map((r) => r.ledger_name),
   ...secondaryRows.value.map((r) => r.ledger_name),
 ])].sort((a, b) => vendorDiff(b) - vendorDiff(a)));
@@ -429,17 +432,24 @@ const originalVendorBalances = computed(() => props.data?.VendorBalances ?? {});
 const resolvedVendorBalances = ref({});
 const vendorApBalance = (vendor) => Number((resolvedVendorBalances.value[vendor] ?? originalVendorBalances.value[vendor])?.report ?? 0);
 const vendorTbBalance = (vendor) => Number((resolvedVendorBalances.value[vendor] ?? originalVendorBalances.value[vendor])?.tb ?? 0);
+// The vendor modal always computes its own adjustments relative to the ORIGINAL,
+// unstaged balance — never the already-staged one — since it rebuilds each row's
+// delta from the original invoice amounts on every reopen.
+const vendorOriginalApBalance = (vendor) => Number(originalVendorBalances.value[vendor]?.report ?? 0);
+const vendorOriginalTbBalance = (vendor) => Number(originalVendorBalances.value[vendor]?.tb ?? 0);
 
 const activeVendorModal = ref(null);
-const vendorResolutions = ref({}); // { [vendorName]: { balances } } — backend-confirmed
+const vendorResolutions = ref({}); // { [vendorName]: true } — staged locally, not yet posted to DB
+const vendorDraftLines = ref({}); // { [vendorName]: lines[] } — staged edit/create/advance lines for the final batch post
 
 const openVendorModal = (vendor) => {
   activeVendorModal.value = vendor;
   loadInvoicesForParty(vendor);
 };
 
-const onVendorResolved = ({ partyName, balances }) => {
-  vendorResolutions.value = { ...vendorResolutions.value, [partyName]: { balances } };
+const onVendorStaged = ({ partyName, lines, balances }) => {
+  vendorResolutions.value = { ...vendorResolutions.value, [partyName]: true };
+  vendorDraftLines.value = { ...vendorDraftLines.value, [partyName]: lines };
   if (balances) {
     resolvedVendorBalances.value = { ...resolvedVendorBalances.value, [partyName]: balances };
   }
@@ -536,7 +546,7 @@ const labels = computed(() => isAr.value ? {
   returnLabel: 'مرتجع',
   delete: 'حذف',
   cancel: 'إلغاء',
-  posting: 'جارٍ الترحيل...',
+  posting: 'جارٍ الترحيل',
   postVariance: 'ترحيل الفرق',
 } : {
   variance: 'Variance',
@@ -571,7 +581,7 @@ const labels = computed(() => isAr.value ? {
   returnLabel: 'Return',
   delete: 'Delete',
   cancel: 'Cancel',
-  posting: 'Posting...',
+  posting: 'Posting',
   postVariance: 'Post Variance',
 });
 
@@ -711,6 +721,19 @@ const postVariance = async () => {
             invoice_number: entry.invoiceNumber,
             amount: entry.amount,
           },
+        });
+      }
+    } else {
+      // AP/AR: nothing was written to the DB while resolving each vendor —
+      // every vendor's staged lines get committed together here, in one
+      // transaction, only now that the whole variance is confirmed at zero.
+      const parties = Object.entries(vendorDraftLines.value)
+        .filter(([, lines]) => lines?.length)
+        .map(([party_name, lines]) => ({ party_name, lines }));
+      if (parties.length) {
+        await useApi('/adjustments/resolve-vendors-batch', {
+          method: 'POST',
+          body: { side: props.side, date: props.date || new Date().toISOString().slice(0, 10), parties },
         });
       }
     }

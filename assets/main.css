@@ -583,6 +583,43 @@ body.taxaid-dark button:disabled.bg-\[\#04C18F\] {
   }
 }
 
+/* v-calendar*/
+.vc-light {
+  --vc-bg: #ffffff !important;
+  --vc-border: rgba(4, 193, 143, 0.4) !important;
+  --vc-hover-bg: rgba(0, 137, 111, 0.1) !important;
+  --vc-focus-ring: 0 0 0 2px #00896f !important;
+  --vc-header-arrow-hover-bg: rgba(0, 137, 111, 0.18) !important;
+  --vc-nav-hover-bg: rgba(0, 137, 111, 0.18) !important;
+  --vc-nav-item-active-bg: #00896f !important;
+  --vc-nav-item-active-color: #ffffff !important;
+  --vc-nav-item-current-color: #00896f !important;
+  --vc-day-popover-container-bg: #ffffff !important;
+  --vc-day-popover-container-border: rgba(4, 193, 143, 0.4) !important;
+  --vc-popover-content-bg: #ffffff !important;
+  --vc-popover-content-border: rgba(4, 193, 143, 0.4) !important;
+  --vc-select-hover-bg: rgba(0, 137, 111, 0.1) !important;
+}
+.vc-dark {
+  --vc-bg: #002e26 !important;
+  --vc-border: rgba(3, 216, 176, 0.3) !important;
+  --vc-hover-bg: rgba(0, 255, 188, 0.15) !important;
+  --vc-focus-ring: 0 0 0 2px #00ffbc !important;
+  --vc-header-arrow-hover-bg: rgba(0, 255, 188, 0.3) !important;
+  --vc-nav-hover-bg: rgba(0, 255, 188, 0.3) !important;
+  --vc-nav-item-active-bg: #00ffbc !important;
+  --vc-nav-item-active-color: #013e32 !important;
+  --vc-nav-item-current-color: #00ffbc !important;
+  --vc-day-popover-container-bg: #002e26 !important;
+  --vc-day-popover-container-border: rgba(3, 216, 176, 0.3) !important;
+  --vc-popover-content-bg: #002e26 !important;
+  --vc-popover-content-border: rgba(3, 216, 176, 0.3) !important;
+  --vc-select-bg: #002e26 !important;
+  --vc-select-hover-bg: rgba(0, 255, 188, 0.15) !important;
+  --vc-time-select-group-bg: #002e26 !important;
+  --vc-time-select-group-border: rgba(3, 216, 176, 0.3) !important;
+}
+
 @supports (appearance: base-select) {
   select.appearance-none,
   select.appearance-none::picker(select) {

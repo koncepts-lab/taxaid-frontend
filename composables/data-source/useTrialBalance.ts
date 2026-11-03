@@ -36,6 +36,8 @@ export function useTrialBalance() {
 
   const tbPage    = ref(1)
   const tbPerPage = ref(10) // ← change this to set the default rows per page (options: 10, 20, 30, 40)
+  // Detailed Report modal only — "Amount" column is as-of this date, defaults to today (tenant timezone)
+  const tbReportDate = ref(localIsoDate())
   const tbMeta    = ref({
     current_page:   1,
     last_page:      1,
@@ -151,7 +153,7 @@ export function useTrialBalance() {
     tbError.value   = null
 
     const [mappingResult, configResult, optionsResult] = await Promise.allSettled([
-      useApi(`/data-source/opening-balance?page=${tbPage.value}&per_page=${tbPerPage.value}${filterQuery()}`),
+      useApi(`/data-source/opening-balance?page=${tbPage.value}&per_page=${tbPerPage.value}&date=${tbReportDate.value}${filterQuery()}`),
       useApi('/configuration-settings'),
       useApi('/ledgers/mapping-options'),
     ])
@@ -176,6 +178,7 @@ export function useTrialBalance() {
             mainGroup: pending?.mainGroup ?? r.main_group ?? '',
             subGroup:  pending?.subGroup  ?? r.subgroup   ?? '',
             ledger:    r.ledger_name ?? '',
+            amount:    r.amount ?? null,
           }
         })
 
@@ -412,8 +415,13 @@ export function useTrialBalance() {
     setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
   }
 
+  const setReportDate = async (date: string) => {
+    tbReportDate.value = date
+    await fetchTrialBalance(1, tbPerPage.value)
+  }
+
   const downloadMapping = async () => {
-    const blob = await useApi('/ledgers/mapping-export', { responseType: 'blob' }) as Blob
+    const blob = await useApi(`/ledgers/mapping-export?date=${tbReportDate.value}`, { responseType: 'blob' }) as Blob
     const objectUrl = URL.createObjectURL(blob)
     const anchor    = document.createElement('a')
     anchor.href     = objectUrl
@@ -506,6 +514,8 @@ export function useTrialBalance() {
     tbError,
     tbPage,
     tbPerPage,
+    tbReportDate,
+    setReportDate,
     tbMeta,
     tbFilters,
     tbFilterOptions,
