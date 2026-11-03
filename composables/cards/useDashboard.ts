@@ -230,8 +230,10 @@ export function useDashboard() {
     error.value = null
     let hasCache = false
     try {
-      const userId = localStorage.getItem('auth_user_id') ?? 'anon'
-      hasCache = !!sessionStorage.getItem(`swr:${userId}:dashboard`)
+      const user = useAuth().user.value as any
+      const userId = user?.id ?? localStorage.getItem('auth_user_id') ?? 'anon'
+      const tenantId = user?.tenant_id ?? 'anon'
+      hasCache = !!sessionStorage.getItem(`swr:${tenantId}:${userId}:dashboard`)
     } catch {}
     if (!hasCache) loading.value = true
     try {

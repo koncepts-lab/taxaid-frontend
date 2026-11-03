@@ -41,8 +41,13 @@ export function useStaleWhileRevalidate(moduleKey: string, options: StaleWhileRe
 
   const storageKey = (): string => {
     let userId = 'anon'
-    try { userId = localStorage.getItem('auth_user_id') ?? 'anon' } catch {}
-    return `swr:${userId}:${moduleKey}`
+    let tenantId = 'anon'
+    try {
+      const user = useAuth().user.value as any
+      userId = user?.id ?? localStorage.getItem('auth_user_id') ?? 'anon'
+      tenantId = user?.tenant_id ?? 'anon'
+    } catch {}
+    return `swr:${tenantId}:${userId}:${moduleKey}`
   }
 
   const readCache = (): Record<string, KeyCache> => {
