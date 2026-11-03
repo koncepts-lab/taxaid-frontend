@@ -44,10 +44,14 @@
           </div>
           <button @click="handleSyncNow" :disabled="syncing"
             class="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5" :class="syncing ? 'animate-spin' : ''">
+            <svg v-if="syncing" class="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
             </svg>
-            {{ syncing ? 'Requesting...' : 'Sync Now' }}
+            {{ syncing ? 'Requesting' : 'Sync Now' }}
           </button>
         </div>
         <p v-if="syncMessage" class="text-[13px] -mt-3 px-1" :class="syncMessageOk ? 'text-[#00896F]' : 'text-red-500'">{{ syncMessage }}</p>
@@ -61,9 +65,24 @@
 
           <!-- 4 rows visible, then scroll -->
           <div class="space-y-4 overflow-y-auto pr-1" style="max-height: 356px;">
-            <div v-if="loading" class="py-8 text-center text-sm" :class="isDark ? 'text-white/40' : 'text-gray-400'">Loading...</div>
+            <template v-if="loading">
+              <div v-for="i in 4" :key="i"
+                class="flex items-center justify-between p-4 border rounded-lg animate-pulse"
+                :class="isDark ? 'border-white/10 bg-white/[0.03]' : 'border-[#6FDBBF]/60 bg-white'">
+                <div class="flex items-center gap-4 w-full">
+                  <div class="w-8 h-8 rounded-full shrink-0"
+                    :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-3.5 w-36 rounded"
+                      :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                    <div class="h-3 w-56 max-w-[70%] rounded"
+                      :class="isDark ? 'bg-white/10' : 'bg-gray-200'"></div>
+                  </div>
+                </div>
+              </div>
+            </template>
             <div v-else-if="!history.length" class="py-8 text-center text-sm" :class="isDark ? 'text-white/40' : 'text-gray-400'">No syncs yet.</div>
-            <div v-for="item in history" :key="item.id" class="flex items-center justify-between p-4 border rounded-lg"
+            <div v-else v-for="item in history" :key="item.id" class="flex items-center justify-between p-4 border rounded-lg"
               :class="isDark ? 'border-white/10 bg-white/[0.03]' : 'border-[#6FDBBF] bg-white'">
               <div class="flex items-center gap-4">
                 <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
