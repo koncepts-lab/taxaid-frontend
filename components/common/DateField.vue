@@ -14,9 +14,9 @@
           :class="inputClasses" class="flex-1 min-w-0 w-0 bg-transparent outline-none text-left tabular-nums" />
       </template>
       <input v-else :value="texts.single" @input="onInput('single', $event)" @blur="commit('single')" @keydown="onKeydown('single', $event)" @click="openOnClick"
-        type="text" inputmode="numeric" :maxlength="maxLength" autocomplete="off" dir="ltr" :disabled="disabled"
+        type="text" inputmode="numeric" :maxlength="maxLength" autocomplete="off" dir="ltr" :disabled="disabled" :readonly="readonly"
         :placeholder="placeholder || defaultPlaceholder" :title="bad.single ? invalidHint : undefined"
-        :class="inputClasses" class="flex-1 min-w-0 w-0 bg-transparent outline-none text-left tabular-nums" />
+        :class="[inputClasses, readonly ? 'cursor-pointer' : '']" class="flex-1 min-w-0 w-0 bg-transparent outline-none text-left tabular-nums" />
 
       <button ref="iconRef" type="button" :disabled="disabled" @click="toggle" @keydown.esc.stop.prevent="close"
         aria-haspopup="dialog" :aria-expanded="open" :aria-label="isAr ? 'فتح التقويم' : 'Open calendar'"
@@ -48,7 +48,7 @@
           <div v-if="yearGridOpen" class="grid grid-cols-3 gap-1.5">
             <button v-for="y in 12" :key="y" type="button" :disabled="yearDisabled(yearGridStart + y - 1)"
               @click="pickYear(yearGridStart + y - 1)"
-              class="h-10 rounded-[9px] text-sm cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              class="h-10 rounded-[9px] text-sm cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors outline-none focus:outline-none focus:ring-2 focus:ring-[#00896F]"
               :class="yearClasses(yearGridStart + y - 1)">{{ yearGridStart + y - 1 }}</button>
           </div>
 
@@ -69,7 +69,7 @@
             </div>
             <div class="grid grid-cols-3 gap-1.5">
               <button v-for="m in 12" :key="m" type="button" :disabled="monthDisabled(m)" @click="pickMonth(m)"
-                class="h-10 rounded-[9px] text-sm cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                class="h-10 rounded-[9px] text-sm cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors outline-none focus:outline-none focus:ring-2 focus:ring-[#00896F]"
                 :class="monthClasses(m)">{{ monthLabel(m) }}</button>
             </div>
           </template>
@@ -117,6 +117,7 @@ const props = defineProps({
   size: { type: String, default: 'md' },
   dark: { type: Boolean, default: undefined },
   useDisplayFormat: { type: Boolean, default: false },
+  readonly: { type: Boolean, default: false }, // text can't be typed — click/icon only opens the calendar
 })
 const emit = defineEmits(['update:modelValue', 'update:from', 'update:to'])
 
@@ -420,7 +421,7 @@ const onSingle = (value) => {
   bad.single = false
   texts.single = fmtText(date)
   emit('update:modelValue', outValue(date))
-  closeAndFocus()
+  nextTick(closeAndFocus)
 }
 
 const pickMonth = (m) => onSingle(new Date(pickerYear.value, m - 1, 1))
@@ -435,7 +436,7 @@ const onRange = (value) => {
   texts.to = fmtText(end)
   emit('update:from', outValue(start))
   emit('update:to', outValue(end))
-  closeAndFocus()
+  nextTick(closeAndFocus)
 }
 
 const onClickOutside = (e) => {

@@ -192,7 +192,9 @@
                 :onRefreshOptions="() => fetchMappingOptions()"
                 :onRefreshFilterOptions="() => fetchFilterOptions()"
                 :onOpenImport="() => (importOpen = true)"
-                :onDownload="() => downloadMapping()" />
+                :onDownload="() => downloadMapping()"
+                :reportDate="tbReportDate"
+                :onReportDateChange="(d) => setReportDate(d)" />
               <DataSourceUploadModal
                 :is-open="importOpen && !importHasFile"
                 :current-lang="currentLang"
@@ -261,7 +263,7 @@ const handleModeChange = async (module, label) => {
 }
 
 // ── Trial Balance (live API) ───────────────────────────────────────────────
-const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoading: tbLoadingState, tbMeta, tbFilters, tbFilterOptions, applyFilters, fetchTrialBalance, fetchMappingOptions, fetchFilterOptions, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, loadInitial: loadTb, tbLogs: tbLiveLogs, tbLogsMeta, tbLogsLoading, fetchLogs: fetchTbLogs, importOpen, importHasFile, importUploading, importLoading, importError, importVariance, importRows, uploadMappingFile, previewMappingImport, confirmMappingImport, cancelMappingImport, downloadMappingTemplate, downloadMapping } = useTrialBalance()
+const { tbMappingData, tbConfigData, tbMappingOptions, tbSaving, tbError, tbLoading: tbLoadingState, tbMeta, tbFilters, tbFilterOptions, applyFilters, fetchTrialBalance, fetchMappingOptions, fetchFilterOptions, updateTrialBalance, updateConfigSettings, configLocked: tbConfigLocked, unlockConfigSettings, integrityData: tbIntegrityData, integrityLoading: tbIntegrityLoading, integrityMeta: tbIntegrityMeta, integrityIssues: tbIntegrityIssues, runIntegrityCheck, loadInitial: loadTb, tbLogs: tbLiveLogs, tbLogsMeta, tbLogsLoading, fetchLogs: fetchTbLogs, importOpen, importHasFile, importUploading, importLoading, importError, importVariance, importRows, uploadMappingFile, previewMappingImport, confirmMappingImport, cancelMappingImport, downloadMappingTemplate, downloadMapping, tbReportDate, setReportDate } = useTrialBalance()
 
 const currentLang = useState('currentLang', () => 'en')
 const { isDark } = useTheme()
