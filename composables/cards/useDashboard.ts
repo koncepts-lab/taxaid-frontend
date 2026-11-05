@@ -119,7 +119,7 @@ export function useDashboard() {
         // so the arc maxes there.
         {
           label: 'Liquidity Status', labelAr: 'حالة السيولة',
-          value: ratio.toFixed(2), progress: Math.min(100, (ratio / 2) * 100),
+          value: ratio.toFixed(2), progress: Math.max(0, Math.min(100, (ratio / 2) * 100)),
           color: ratio >= 1 ? '#009848' : '#F1B208',
         },
       ],

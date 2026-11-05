@@ -932,7 +932,7 @@ const confirmSimilar = async () => {
 
 const PL_SLOTS = ['Revenue', 'Direct Expenses', 'Indirect Expenses', 'Indirect Income', 'Tax Expense']
 const BS_SLOTS = ['Fixed Assets', 'Current Assets', 'Capital', 'Current Liabilities', 'Non Current Liabilities']
-const GENERAL_SLOTS = ['Sundry Debtors', 'Sundry Creditors', 'Stock in Hand', 'Prepaid Expenses']
+const GENERAL_SLOTS = ['Sundry Debtors', 'Sundry Creditors', 'Stock in Hand', 'Prepaid Expenses', 'Cash', 'Bank Accounts', 'Short-Term Investments', 'Loans (Liability)', 'Finance Costs']
 
 const mapping = reactive({
     open: false,
