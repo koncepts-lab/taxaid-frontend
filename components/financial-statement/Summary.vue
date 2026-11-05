@@ -123,9 +123,9 @@
                 <tr>
                     <template v-if="activeTab === 'ratios'">
                         <template v-if="selectedRatio === 'All Ratios'">
-                            <th class="lg:px-8 px-4 py-4 font-medium text-sm text-start">{{ t.colRatioCat }}
+                            <th class="lg:px-8 px-4 py-4 font-medium text-sm text-start w-[22%]">{{ t.colRatioCat }}
                             </th>
-                            <th class="font-medium text-center  text-sm px-4">{{ t.colMetric }}</th>
+                            <th class="font-medium text-center  text-sm px-4 w-[18%]">{{ t.colMetric }}</th>
                         </template>
                         <template v-else>
                             <th colspan="2" class="lg:px-8 px-4 py-4 font-medium  text-sm text-start">{{
@@ -135,10 +135,10 @@
                     </template>
                     <template v-else>
                         <th :class="isCompressed ? `lg:px-8 px-4 py-3` : `lg:px-8 px-4 py-4`"
-                            class="font-medium  text-sm text-start">
+                            class="font-medium  text-sm text-start w-[26%]">
                             {{ t.colRevenue }}
                         </th>
-                        <th class="font-medium text-center  text-sm px-4">
+                        <th class="font-medium text-center  text-sm px-4 w-[8%]">
                             {{ t.colSchedule }}
                         </th>
                     </template>
@@ -156,8 +156,8 @@
                         {{ activeTab === 'ratios' ? t.colBalance : t.colBudget }}
                     </th>
 
-                    <th class="font-medium text-center  text-sm px-4">{{ t.colVariance }}</th>
-                    <th class="font-medium text-center  text-sm ">{{ t.colYTG }}</th>
+                    <th class="font-medium text-center  text-sm px-4 w-[12%]">{{ t.colVariance }}</th>
+                    <th class="font-medium text-center  text-sm w-[12%]">{{ t.colYTG }}</th>
                 </tr>
             </thead>
             <tbody>

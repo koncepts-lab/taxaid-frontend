@@ -53,7 +53,7 @@
               class="transition-all duration-300 hover:opacity-80"
             />
             <g v-for="(slice, index) in computedSlices" :key="'label-' + index">
-              <g v-if="animProgress > 50" :transform="`translate(${slice.textPos.x}, ${slice.textPos.y}) rotate(42)`">
+              <g v-if="animProgress > 50 && series[index] >= 10" :transform="`translate(${slice.textPos.x}, ${slice.textPos.y}) rotate(42)`">
                 <text 
                   fill="white" 
                   font-size="9" 
@@ -84,7 +84,7 @@
           <div v-for="(label, index) in labels" :key="index" 
             class="flex items-center justify-between gap-3 text-white">
             <div class="flex items-center gap-3 min-w-0 flex-1">
-              <div class="w-[13px] h-[13px] rounded-full flex-shrink-0" :style="{ backgroundColor: colors[index] }"></div>
+              <div class="w-[13px] h-[13px] rounded-full flex-shrink-0" :style="{ backgroundColor: sliceColor(series[index], index) }"></div>
               <span class="text-[13px] font-normal truncate" :title="currentLang === 'ar' ? labelsAr[index] : label">
                 {{ currentLang === 'ar' ? labelsAr[index] : label }}
               </span>
@@ -131,7 +131,7 @@
                   class="transition-all duration-300 hover:opacity-80"
                 />
                 <g v-for="(slice, index) in computedSlices" :key="'modal-label-' + index">
-                  <g v-if="animProgress > 50" :transform="`translate(${slice.textPos.x}, ${slice.textPos.y}) rotate(42)`">
+                  <g v-if="animProgress > 50 && series[index] >= 10" :transform="`translate(${slice.textPos.x}, ${slice.textPos.y}) rotate(42)`">
                     <text 
                       fill="white" 
                       font-size="9" 
@@ -159,7 +159,7 @@
               <div v-for="(label, index) in labels" :key="'modal-'+index" 
                 class="flex items-center justify-between gap-4 text-white">
                 <div class="flex items-center gap-3 min-w-0 flex-1">
-                  <div class="w-[14px] h-[14px] rounded-full flex-shrink-0" :style="{ backgroundColor: colors[index] }"></div>
+                  <div class="w-[14px] h-[14px] rounded-full flex-shrink-0" :style="{ backgroundColor: sliceColor(series[index], index) }"></div>
                   <span class="text-[14px] font-normal truncate">{{ currentLang === 'ar' ? labelsAr[index] : label }}</span>
                 </div>
                 <div class="text-[14px] font-medium tabular-nums shrink-0 text-white/95">
@@ -226,6 +226,8 @@ const formatLegendValue = (index: number) => {
 const colors = ['#004D41', '#00966C', '#FFB100', '#D29600', '#FF7E5B']
 const radii = [100, 96, 88, 80, 72]
 
+const sliceColor = (value: number, index: number) => (index === 1 && value < 5 ? '#00FFBC' : colors[index])
+
 const animProgress = ref(0)
 
 onMounted(() => {
@@ -244,9 +246,14 @@ onMounted(() => {
 
 const computedSlices = computed(() => {
   let currentAngle = 90
+  // Normalize by the series' own true sum, not a hardcoded 100 — the backend
+  // sends each slice pre-rounded to 1 decimal, so they don't always add up to
+  // exactly 100 (e.g. 54.2+30.3+10+4.1+1.4=99.9/100.1), which left a visible
+  // gap (or overlap) at the seam where the last slice met the first.
+  const totalSum = series.value.reduce((sum: number, v: number) => sum + v, 0) || 100
   return series.value.map((val: number, index: number) => {
     const value = val * (animProgress.value / 100)
-    const angle = (value / 100) * 360
+    const angle = (value / totalSum) * 360
     const r = radii[index] || 100
     const startAngle = currentAngle
     const endAngle = currentAngle + angle
@@ -271,7 +278,7 @@ const computedSlices = computed(() => {
     }
     
     currentAngle += angle
-    return { path, textPos, color: colors[index], value }
+    return { path, textPos, color: sliceColor(val, index), value }
   })
 })
 </script>

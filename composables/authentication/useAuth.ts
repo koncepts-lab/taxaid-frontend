@@ -26,7 +26,7 @@ export const useAuth = () => {
       const response: any = await $fetch('/auth/login', {
         baseURL: config.public.apiBase,
         method: 'POST',
-        body: { ...credentials, ...sessionMeta },
+        body: { ...credentials, ...sessionMeta, loadDashboard: true },
         headers: { 'Accept': 'application/json' }
       })
 
@@ -76,6 +76,12 @@ export const useAuth = () => {
         // Persisted so syncWebPush can bind the device token to this user
         if (response.data.user?.id) {
           try { localStorage.setItem('auth_user_id', String(response.data.user.id)) } catch {}
+        }
+
+        // Dashboard data bundled with login (loadDashboard=true above) — prime
+        // the dashboard's cache so its first fetch resolves instantly if nothing changed.
+        if (response.data.dashboard) {
+          try { useDashboard().seedFromLogin(response.data.dashboard) } catch {}
         }
         // Force syncWebPush to re-register the device token under THIS new
         // session — its backend row is tied to the session (token_id) and

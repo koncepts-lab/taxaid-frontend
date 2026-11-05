@@ -177,7 +177,9 @@ const getStackedSegments = (monthIndex: number) => {
     const offset = isFirst ? 0 : (isMobile.value ? 13 : 20);
     segments.push({
       height: isFirst ? `${heightPercent}%` : `calc(${heightPercent}% + ${offset}px)`,
-      bottom: isFirst ? `${currentBottom}%` : `calc(${currentBottom}% - ${offset}px)`,
+      // max(0px, ...) — clamps so a short bar near the baseline can't have its
+      // bottom edge pushed below the x-axis by the fixed pill-overlap offset.
+      bottom: isFirst ? `${currentBottom}%` : `max(0px, calc(${currentBottom}% - ${offset}px))`,
       index: seriesIndex,
       zIndex: zIndexes[seriesIndex] ?? 10
     });

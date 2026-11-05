@@ -498,15 +498,15 @@
         </div>
 
         <!-- Statement Group Mapping Modal -->
-        <div v-if="mapping.open" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="closeStatementMapping">
-            <div class="rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto"
+        <div v-if="mapping.open" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <div class="rounded-2xl shadow-xl w-full max-w-2xl"
                 :class="isDark ? 'bg-[#002e26] border border-white/10' : 'bg-white'">
                 <div class="px-6 py-5 border-b flex items-center justify-between" :class="isDark ? 'border-white/10' : 'border-gray-100'">
                     <h3 class="text-lg font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">
                         Statement Group Mapping
                         <span class="text-sm font-normal" :class="isDark ? 'text-white/50' : 'text-gray-500'">— {{ mapping.tenantId ? selectedTenant?.name : 'General' }}</span>
                     </h3>
-                    <button @click="closeStatementMapping" class="text-xl leading-none px-1" :class="isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'">&times;</button>
+                    <button @click="closeStatementMapping" class="text-3xl leading-none px-2 py-1" :class="isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'">&times;</button>
                 </div>
 
                 <div class="px-6 pt-5 pb-4">
@@ -523,7 +523,7 @@
                     </div>
                 </div>
 
-                <div class="px-6 pb-6 space-y-4">
+                <div class="px-6 pb-6 space-y-4 h-[60vh] overflow-y-auto">
                     <template v-if="mapping.loading">
                         <div v-for="n in 5" :key="'sk'+n" class="border rounded-2xl px-5 py-4 flex flex-col gap-3" :class="isDark ? 'border-white/10' : 'border-gray-100'">
                             <div class="h-4 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'" style="width: 35%"></div>
@@ -555,12 +555,12 @@
                 </div>
             </div>
 
-            <div v-if="mapping.edit.open" class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" @click.self="mapping.edit.open = false">
+            <div v-if="mapping.edit.open" class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4">
                 <div class="rounded-2xl shadow-xl w-full max-w-md max-h-[75vh] flex flex-col"
                     :class="isDark ? 'bg-[#002e26] border border-white/10' : 'bg-white'">
                     <div class="px-6 py-5 border-b flex items-center justify-between" :class="isDark ? 'border-white/10' : 'border-gray-100'">
                         <h3 class="text-lg font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Edit "{{ mapping.edit.slot }}"</h3>
-                        <button @click="mapping.edit.open = false" class="text-xl leading-none px-1" :class="isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'">&times;</button>
+                        <button @click="mapping.edit.open = false" class="text-3xl leading-none px-2 py-1" :class="isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'">&times;</button>
                     </div>
                     <div class="px-6 pt-4">
                         <input type="text" v-model="mapping.edit.search" placeholder="Search groups..."
