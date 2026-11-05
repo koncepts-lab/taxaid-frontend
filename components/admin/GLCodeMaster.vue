@@ -977,9 +977,12 @@ function openEditBucket(slot) {
     const inBucket = (mapping.buckets[slot] ?? []).map(g => ({
         id: g.id, value: g.value, locked: g.locked, checked: true, originalChecked: true,
     }))
-    const notInBucket = mapping.unmapped.map(g => ({
-        id: g.id, value: g.value, locked: false, checked: false, originalChecked: false,
-    }))
+    const slotNames = mapping.slots.map(s => s.trim().toLowerCase())
+    const notInBucket = mapping.unmapped
+        .filter(g => !slotNames.includes(g.value.trim().toLowerCase()))
+        .map(g => ({
+            id: g.id, value: g.value, locked: false, checked: false, originalChecked: false,
+        }))
     mapping.edit.slot = slot
     mapping.edit.items = [...inBucket, ...notInBucket]
     mapping.edit.search = ''
