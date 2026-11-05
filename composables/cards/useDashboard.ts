@@ -11,11 +11,10 @@ export function useDashboard() {
   const loading = useState<boolean>('dashboard_loading', () => false)
   const error = useState<string | null>('dashboard_error', () => null)
   const date = useState<string | null>('dashboard_date', () => null)
+  // Default view is 3 months; backend always returns the full 6-month window,
+  // sliced client-side in `cashflow` below — toggling this never refetches.
   const cashflowPeriod = useState<number>('dashboard_cashflow_period', () => 3)
   const requestSeq = useState<number>('dashboard_request_seq', () => 0)
-  // Session cache for period-toggle results, keyed by card+period+date —
-  // switching 3→6 refetches each period once, then reuses it.
-  const periodCache = useState<Record<string, any>>('dashboard_period_cache', () => ({}))
 
   // Pass e.g. ['cash_flow'] to only recompute/refetch that card (used by the
   // period toggle, so switching months doesn't re-run all 9 cards' queries)
@@ -25,27 +24,15 @@ export function useDashboard() {
   }
 
   async function fetchSummary(focus?: string[]) {
-    // Serve a single-card toggle from the session cache when we've already
-    // fetched that card at this period/date (monthly data — safe to reuse
-    // for the session).
-    const cacheKey = focus?.length === 1
-      ? `${focus[0]}|${cashflowPeriod.value}|${date.value ?? 'today'}`
-      : null
-    if (cacheKey && periodCache.value[cacheKey]) {
-      applyData({ [focus![0]]: periodCache.value[cacheKey] })
-      return
-    }
-
-    // Guard against a slower earlier request (e.g. from rapid re-clicking a
-    // toggle) resolving after a later one and overwriting fresher data with
-    // stale data — only the response to the LATEST request is applied.
+    // Guard against a slower earlier request resolving after a later one and
+    // overwriting fresher data with stale data — only the response to the
+    // LATEST request is applied.
     const myRequestId = ++requestSeq.value
     loading.value = true
     error.value = null
     try {
       const params = new URLSearchParams()
       if (date.value) params.set('date', date.value)
-      params.set('cashflow_period', String(cashflowPeriod.value))
       if (focus?.length) params.set('focus', focus.join(','))
 
       const res: any = await useApi(`/dashboard?${params.toString()}`)
@@ -53,9 +40,6 @@ export function useDashboard() {
       // Merge rather than replace — a focused fetch only returns a subset of
       // keys, and must not wipe out the other cards already loaded.
       applyData(res?.data ?? {})
-      if (cacheKey && res?.data?.[focus![0]]) {
-        periodCache.value[cacheKey] = res.data[focus![0]]
-      }
     } catch (err: any) {
       if (myRequestId !== requestSeq.value) return
       error.value = err?.data?.message ?? 'Failed to load dashboard data'
@@ -67,8 +51,9 @@ export function useDashboard() {
   }
 
   // ── Revenue (Revenue.vue) ─────────────────────────────────────────────────
-  // Gauge is Gross Profit Margin (revenue vs COGS). netRevenue is the current VAT
-  // year's filed quarters — a different period basis than totalRevenue.
+  // Gauge is Target Achieved (achieved vs target), same metric as the /revenue
+  // page's gauge. netRevenue is the current VAT year's filed quarters — a
+  // different period basis than totalRevenue.
   const revenue = computed(() => {
     const d = raw.value?.revenue
     if (!d) return null
@@ -76,22 +61,35 @@ export function useDashboard() {
       totalRevenue: d.currentValue,
       netRevenue: d.netRevenue,
       grossProfitMargin: d.grossProfitMargin ?? 0,
+      target: d.target ?? 0,
+      achieved: d.achieved ?? 0,
+      previousValue: d.previousValue ?? 0,
+      previousYearPct: d.previousYearPct ?? 0,
     }
   })
 
   // ── Cashflow (Cashflow.vue) ───────────────────────────────────────────────
-  // Backend sends chart-ready values (millions, real vs 90%-lead-projected
-  // scenario, y-axis max) — no unit conversion or math here, just render.
+  // Backend always sends the full 6-month window (chart-ready: millions, real vs
+  // 90%-lead-projected scenario) — the 3/6 month toggle slices it client-side,
+  // no refetch needed.
   const cashflow = computed(() => {
     const d = raw.value?.cash_flow
     if (!d) return null
+    const n = cashflowPeriod.value
+    const categories = (d.chartCategories ?? []).slice(0, n)
+    const real = (d.realScenario ?? []).slice(0, n)
+    const hypo = (d.hypotheticalScenario ?? []).slice(0, n)
+    // Scale is fixed to the full 6-month range so toggling never changes the
+    // y-axis — only the line/x-axis redraw, which ApexCharts can update in
+    // place without needing a fresh chart instance.
+    const fullMax = Math.max(1, ...(d.realScenario ?? []), ...(d.hypotheticalScenario ?? []))
     return {
-      chartCategories: d.chartCategories ?? [],
+      chartCategories: categories,
       series: {
-        realScenario: d.realScenario ?? [],
-        hypotheticalScenario: d.hypotheticalScenario ?? [],
+        realScenario: real,
+        hypotheticalScenario: hypo,
       },
-      yAxis: { min: 0, max: d.yAxisMax ?? 1, unit: 'M' },
+      yAxis: { min: 0, max: fullMax * 1.2, unit: 'M' },
     }
   })
 
@@ -121,7 +119,7 @@ export function useDashboard() {
         // so the arc maxes there.
         {
           label: 'Liquidity Status', labelAr: 'حالة السيولة',
-          value: ratio.toFixed(2), progress: Math.min(100, (ratio / 2) * 100),
+          value: ratio.toFixed(2), progress: Math.max(0, Math.min(100, (ratio / 2) * 100)),
           color: ratio >= 1 ? '#009848' : '#F1B208',
         },
       ],
@@ -209,14 +207,12 @@ export function useDashboard() {
   // ── Tax Queries (TaxQueries.vue) ──────────────────────────────────────────
   const taxQueries = computed(() => raw.value?.tax_queries ?? null)
 
-  const { run: fetchDashboardCached, loading: swrLoading } = useStaleWhileRevalidate('dashboard', {
+  const { run: fetchDashboardCached, seed: seedDashboardCached, loading: swrLoading } = useStaleWhileRevalidate('dashboard', {
     fetchers: {
       full: {
-        params: () => ({ cashflow_period: cashflowPeriod.value }),
         fetch: async () => {
           const params = new URLSearchParams()
           if (date.value) params.set('date', date.value)
-          params.set('cashflow_period', String(cashflowPeriod.value))
           const res: any = await useApi(`/dashboard?${params.toString()}`)
           return res?.data ?? {}
         },
@@ -228,14 +224,10 @@ export function useDashboard() {
 
   async function fetchSummaryCached() {
     error.value = null
-    let hasCache = false
-    try {
-      const user = useAuth().user.value as any
-      const userId = user?.id ?? localStorage.getItem('auth_user_id') ?? 'anon'
-      const tenantId = user?.tenant_id ?? 'anon'
-      hasCache = !!sessionStorage.getItem(`swr:${tenantId}:${userId}:dashboard`)
-    } catch {}
-    if (!hasCache) loading.value = true
+    // Always show the skeleton while this resolves — even cache-seeded data
+    // (e.g. from login) needs confirming against a live fetch before it's
+    // safe to call "ready"; a blank unstyled flash is worse than a skeleton.
+    loading.value = true
     try {
       await fetchDashboardCached()
     } catch (err: any) {
@@ -247,6 +239,14 @@ export function useDashboard() {
     }
   }
 
+  // Primes the dashboard's SWR cache from data bundled into the login response
+  // (loadDashboard=true) so the first real fetch resolves instantly if nothing
+  // changed, while still confirming against a live call before the skeleton clears.
+  function seedFromLogin(data: Record<string, any>) {
+    if (!data) return
+    seedDashboardCached('full', data)
+  }
+
   return {
     loading,
     swrLoading,
@@ -255,6 +255,7 @@ export function useDashboard() {
     cashflowPeriod,
     fetchSummary,
     fetchSummaryCached,
+    seedFromLogin,
     revenue,
     cashflow,
     financialStatements,

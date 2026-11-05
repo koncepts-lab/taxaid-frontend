@@ -288,15 +288,15 @@ export function useImplementation() {
     return res.data
   }
 
-  async function getStatementBuckets(fsCode: 'P&L' | 'BS', tenantId: number | null = null): Promise<any> {
+  async function getStatementBuckets(fsCode: 'P&L' | 'BS' | 'GENERAL', tenantId: number | null = null): Promise<any> {
     const params: Record<string, any> = { fs_code: fsCode }
     if (tenantId) params.tenant_id = tenantId
     const res: any = await apiFetch('/admin/gl/statement-buckets', { params })
     return res.data ?? { buckets: {}, unmapped: [] }
   }
 
-  async function setStatementMapping(tenantId: number | null, mainGroupId: number, mapsTo: string | null): Promise<any> {
-    const res: any = await apiFetch('/admin/gl/statement-mapping', { method: 'POST', body: { tenant_id: tenantId, main_group_id: mainGroupId, maps_to: mapsTo } })
+  async function setStatementMapping(tenantId: number | null, groupId: number, mapsTo: string | null, type: 'main_group' | 'sub_group' = 'main_group'): Promise<any> {
+    const res: any = await apiFetch('/admin/gl/statement-mapping', { method: 'POST', body: { tenant_id: tenantId, main_group_id: groupId, maps_to: mapsTo, type } })
     return res.data
   }
 

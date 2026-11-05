@@ -126,5 +126,27 @@ export function useStaleWhileRevalidate(moduleKey: string, options: StaleWhileRe
     await Promise.all(Object.keys(fetchers).map(runKey))
   }
 
-  return { run, runKey, loading }
+  // Primes the cache for `key` with data obtained elsewhere (e.g. bundled into
+  // the login response) so the next runKey() applies it instantly, then skips
+  // re-applying once its own fetch confirms the data is unchanged.
+  const seed = (key: string, data: any) => {
+    const raw = fetchers[key]
+    if (!raw) return
+    const entry = normalize(raw)
+    const paramsHash = hashOf(resolveParams(entry))
+    const dataHash = hashOf(data)
+
+    const cache = readCache()
+    const keyCache: KeyCache = cache[key] ?? { order: [], hashes: {}, data: {} }
+    keyCache.hashes[paramsHash] = dataHash
+    keyCache.data[paramsHash] = data
+    keyCache.order = keyCache.order.filter((h) => h !== paramsHash)
+    keyCache.order.push(paramsHash)
+    cache[key] = keyCache
+    writeCache(cache)
+
+    apply(key, data)
+  }
+
+  return { run, runKey, seed, loading }
 }

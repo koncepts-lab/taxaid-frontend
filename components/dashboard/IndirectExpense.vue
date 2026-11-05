@@ -37,6 +37,8 @@
               <path
                 :d="slice.path"
                 :fill="index < revealedCount ? slice.color : placeholderColor"
+                :stroke="index < revealedCount ? slice.color : placeholderColor"
+                stroke-width="1"
                 class="transition-[fill] duration-500 ease-out"
               />
               <text
@@ -97,8 +99,12 @@ const PIE_RADIUS = 100;
 
 const computedSlices = computed(() => {
   let currentAngle = 90;
+  // Normalize by the series' own true sum, not a hardcoded 100 — each slice
+  // arrives pre-rounded to 1 decimal from the backend, so they don't always
+  // add up to exactly 100, which left a visible gap at the seam.
+  const totalSum = series.value.reduce((sum: number, v: number) => sum + v, 0) || 100;
   return series.value.map((val: number, index: number) => {
-    const angle = (val / 100) * 360;
+    const angle = (val / totalSum) * 360;
     const r = PIE_RADIUS;
     const startAngle = currentAngle;
     const endAngle = currentAngle + angle;

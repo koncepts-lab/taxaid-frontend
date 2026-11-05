@@ -498,15 +498,15 @@
         </div>
 
         <!-- Statement Group Mapping Modal -->
-        <div v-if="mapping.open" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="closeStatementMapping">
-            <div class="rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto"
+        <div v-if="mapping.open" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <div class="rounded-2xl shadow-xl w-full max-w-2xl"
                 :class="isDark ? 'bg-[#002e26] border border-white/10' : 'bg-white'">
                 <div class="px-6 py-5 border-b flex items-center justify-between" :class="isDark ? 'border-white/10' : 'border-gray-100'">
                     <h3 class="text-lg font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">
                         Statement Group Mapping
                         <span class="text-sm font-normal" :class="isDark ? 'text-white/50' : 'text-gray-500'">— {{ mapping.tenantId ? selectedTenant?.name : 'General' }}</span>
                     </h3>
-                    <button @click="closeStatementMapping" class="text-xl leading-none px-1" :class="isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'">&times;</button>
+                    <button @click="closeStatementMapping" class="text-3xl leading-none px-2 py-1" :class="isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'">&times;</button>
                 </div>
 
                 <div class="px-6 pt-5 pb-4">
@@ -517,10 +517,13 @@
                         <button @click="mapping.fsCode = 'BS'; loadBuckets()"
                             class="px-6 py-1.5 rounded-full text-sm font-medium transition-all"
                             :class="mapping.fsCode === 'BS' ? (isDark ? 'bg-[#1b5e50] text-white shadow-sm' : 'bg-white text-black shadow-sm') : (isDark ? 'text-white/50 hover:text-white' : 'text-gray-500 hover:text-gray-700')">BS</button>
+                        <button @click="mapping.fsCode = 'GENERAL'; loadBuckets()"
+                            class="px-6 py-1.5 rounded-full text-sm font-medium transition-all"
+                            :class="mapping.fsCode === 'GENERAL' ? (isDark ? 'bg-[#1b5e50] text-white shadow-sm' : 'bg-white text-black shadow-sm') : (isDark ? 'text-white/50 hover:text-white' : 'text-gray-500 hover:text-gray-700')">General</button>
                     </div>
                 </div>
 
-                <div class="px-6 pb-6 space-y-4">
+                <div class="px-6 pb-6 space-y-4 h-[60vh] overflow-y-auto">
                     <template v-if="mapping.loading">
                         <div v-for="n in 5" :key="'sk'+n" class="border rounded-2xl px-5 py-4 flex flex-col gap-3" :class="isDark ? 'border-white/10' : 'border-gray-100'">
                             <div class="h-4 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-gray-100'" style="width: 35%"></div>
@@ -552,12 +555,12 @@
                 </div>
             </div>
 
-            <div v-if="mapping.edit.open" class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" @click.self="mapping.edit.open = false">
+            <div v-if="mapping.edit.open" class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4">
                 <div class="rounded-2xl shadow-xl w-full max-w-md max-h-[75vh] flex flex-col"
                     :class="isDark ? 'bg-[#002e26] border border-white/10' : 'bg-white'">
                     <div class="px-6 py-5 border-b flex items-center justify-between" :class="isDark ? 'border-white/10' : 'border-gray-100'">
                         <h3 class="text-lg font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Edit "{{ mapping.edit.slot }}"</h3>
-                        <button @click="mapping.edit.open = false" class="text-xl leading-none px-1" :class="isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'">&times;</button>
+                        <button @click="mapping.edit.open = false" class="text-3xl leading-none px-2 py-1" :class="isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'">&times;</button>
                     </div>
                     <div class="px-6 pt-4">
                         <input type="text" v-model="mapping.edit.search" placeholder="Search groups..."
@@ -929,6 +932,7 @@ const confirmSimilar = async () => {
 
 const PL_SLOTS = ['Revenue', 'Direct Expenses', 'Indirect Expenses', 'Indirect Income', 'Tax Expense']
 const BS_SLOTS = ['Fixed Assets', 'Current Assets', 'Capital', 'Current Liabilities', 'Non Current Liabilities']
+const GENERAL_SLOTS = ['Sundry Debtors', 'Sundry Creditors', 'Stock in Hand', 'Prepaid Expenses', 'Cash', 'Bank Accounts', 'Short-Term Investments', 'Loans (Liability)', 'Finance Costs']
 
 const mapping = reactive({
     open: false,
@@ -951,8 +955,14 @@ function closeStatementMapping() {
     mapping.open = false
 }
 
+function slotsFor(fsCode) {
+    if (fsCode === 'BS') return BS_SLOTS
+    if (fsCode === 'GENERAL') return GENERAL_SLOTS
+    return PL_SLOTS
+}
+
 async function loadBuckets() {
-    mapping.slots = mapping.fsCode === 'BS' ? BS_SLOTS : PL_SLOTS
+    mapping.slots = slotsFor(mapping.fsCode)
     mapping.loading = true
     try {
         const res = await getStatementBuckets(mapping.fsCode, mapping.tenantId)
@@ -967,9 +977,12 @@ function openEditBucket(slot) {
     const inBucket = (mapping.buckets[slot] ?? []).map(g => ({
         id: g.id, value: g.value, locked: g.locked, checked: true, originalChecked: true,
     }))
-    const notInBucket = mapping.unmapped.map(g => ({
-        id: g.id, value: g.value, locked: false, checked: false, originalChecked: false,
-    }))
+    const slotNames = mapping.slots.map(s => s.trim().toLowerCase())
+    const notInBucket = mapping.unmapped
+        .filter(g => !slotNames.includes(g.value.trim().toLowerCase()))
+        .map(g => ({
+            id: g.id, value: g.value, locked: false, checked: false, originalChecked: false,
+        }))
     mapping.edit.slot = slot
     mapping.edit.items = [...inBucket, ...notInBucket]
     mapping.edit.search = ''
@@ -983,9 +996,10 @@ const filteredEditItems = computed(() => {
 })
 
 async function saveEditBucket() {
+    const type = mapping.fsCode === 'GENERAL' ? 'sub_group' : 'main_group'
     const changed = mapping.edit.items.filter(i => !i.locked && i.checked !== i.originalChecked)
     for (const item of changed) {
-        await setStatementMapping(mapping.tenantId, item.id, item.checked ? mapping.edit.slot : null)
+        await setStatementMapping(mapping.tenantId, item.id, item.checked ? mapping.edit.slot : null, type)
     }
     mapping.edit.open = false
     loadBuckets()

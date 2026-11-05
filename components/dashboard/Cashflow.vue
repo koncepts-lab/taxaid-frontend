@@ -56,10 +56,11 @@
     <!-- Chart & Filters Area -->
     <div class="flex gap-3">
       <!-- Chart -->
-      <div class="flex-1 h-[180px]">
+      <div class="flex-1 h-[180px] relative overflow-hidden">
         <ClientOnly>
           <apexchart :key="cashflowPeriod" width="100%" height="100%" type="area" :options="chartOptions" :series="chartSeries"></apexchart>
         </ClientOnly>
+        <div :key="'reveal-' + cashflowPeriod" class="absolute top-0 left-0 right-0 bottom-[55px] pointer-events-none reveal-mask" :class="isDark ? 'bg-[#002e26]' : 'bg-white'"></div>
       </div>
 
       <!-- Desktop: Vertical Time Filters -->
@@ -106,11 +107,12 @@ const isHovered = computed(() => hoveredMenuItem.value === 'Cashflow')
 const { isDark } = useTheme()
 
 // ── Pull values from useDashboard() ───────────────────────────────────────
-const { cashflow, cashflowPeriod, fetchSummary } = useDashboard()
+const { cashflow, cashflowPeriod } = useDashboard()
 
+// Backend always returns the full 6-month window — toggling just re-slices
+// the already-loaded data client-side, no refetch.
 const selectCashflowPeriod = (months: number) => {
   cashflowPeriod.value = months
-  fetchSummary(['cash_flow'])
 }
 
 const chartSeries = computed(() => [
@@ -129,13 +131,19 @@ const chartCategories = computed(() => cashflow.value?.chartCategories ?? [])
 const realColor = computed(() => cashflow.value?.colors?.realScenario ?? '#00B794')
 const hypoColor = computed(() => cashflow.value?.colors?.hypotheticalScenario ?? '#FF7B5F')
 const yMax      = computed(() => cashflow.value?.yAxis?.max ?? 1)
+const yUnit     = computed(() => cashflow.value?.yAxis?.unit ?? 'M')
+
+// Stable function reference (not recreated inside chartOptions each render) —
+// ApexCharts' options-update diffing can otherwise drop an inline formatter.
+const yAxisFormatter = (value: number) => Math.round(value) + yUnit.value
 
 const chartOptions = computed(() => ({
   chart: {
     type: 'area',
     toolbar: { show: false },
     fontFamily: 'inherit',
-    zoom: { enabled: false }
+    zoom: { enabled: false },
+    animations: { enabled: true, easing: 'easeinout', speed: 1000, dynamicAnimation: { enabled: true, speed: 350 } }
   },
   legend: { show: false },
   colors: [realColor.value, hypoColor.value],
@@ -163,7 +171,7 @@ const chartOptions = computed(() => ({
     max: yMax.value,
     tickAmount: 5,
     labels: {
-      formatter: (value: number) => value.toFixed(0) + (cashflow.value?.yAxis?.unit ?? 'M'),
+      formatter: yAxisFormatter,
       style: { colors: isDark.value ? '#6B7280' : '#9CA3AF', fontSize: '12px' }
     }
   },
@@ -190,18 +198,12 @@ const chartOptions = computed(() => ({
 </script>
 
 <style scoped>
-@keyframes sweep-right {
-  0% {
-    clip-path: inset(0 100% 0 0);
-  }
-  100% {
-    clip-path: inset(0 0 0 0);
-  }
+@keyframes reveal-slide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
 }
 
-:deep(.apexcharts-series) {
-  animation: sweep-right 1.5s ease-out forwards;
-  animation-delay: 0.5s;
-  clip-path: inset(0 100% 0 0);
+.reveal-mask {
+  animation: reveal-slide 1.2s ease-out forwards;
 }
 </style>

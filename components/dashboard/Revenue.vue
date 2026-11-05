@@ -63,7 +63,7 @@
           <path :d="marginPath" :stroke="colors.fill" :stroke-width="strokeW" stroke-linecap="round" fill="none" />
 
           <circle
-            v-if="marginPct > 0"
+            v-if="achievedPct > 0"
             :cx="marker.x"
             :cy="marker.y"
             r="9"
@@ -80,10 +80,10 @@
         <!-- Center Value & Icon -->
         <div class="absolute inset-0 flex flex-col items-center justify-center pt-[40%]">
           <span class="leading-none text-[40px] font-semibold block">
-            {{ Math.round(marginPct) }}%
+            {{ Math.round(achievedPct) }}%
           </span>
           <span class="text-[11px] font-light opacity-60 mt-1 mb-0 uppercase tracking-widest block">
-            {{ currentLang === 'ar' ? 'هامش الربح الإجمالي' : 'Gross Profit Margin' }}
+            {{ currentLang === 'ar' ? 'تم تحقيق الهدف' : 'Target Achieved' }}
           </span>
           
           <!-- Center Icon moved inside absolute container -->
@@ -135,9 +135,13 @@ const isHovered = computed(() => hoveredMenuItem.value === 'Revenue')
 // ── Live values from the dashboard API
 const { revenue } = useDashboard()
 
-const totalRevenue = computed(() => revenue.value?.totalRevenue      ?? 0)
-const marginPct    = computed(() => revenue.value?.grossProfitMargin ?? 0)
-const netRevenue   = computed(() => revenue.value?.netRevenue        ?? 0)
+const totalRevenue = computed(() => revenue.value?.totalRevenue ?? 0)
+const netRevenue   = computed(() => revenue.value?.netRevenue   ?? 0)
+
+// Gauge is Target Achieved (achieved vs target), same metric as the /revenue page's gauge.
+const target   = computed(() => revenue.value?.target   ?? 0)
+const achieved = computed(() => revenue.value?.achieved ?? 0)
+const achievedPct = computed(() => target.value > 0 ? Math.min(100, (achieved.value / target.value) * 100) : 0)
 
 const colors = { track: "#0A7C4B", fill: "#03D8B0" }
 const svgW = 400; const svgH = 240;
@@ -173,7 +177,7 @@ const arcPath = (a0: number, a1: number) => {
 
 // Single arc, 0-100% of the semicircle — filled portion grows on mount.
 const displayLimitDeg = computed(() => startDeg + (animProgress.value / 100) * (endDeg - startDeg));
-const marginEndDeg = computed(() => startDeg + (Math.min(100, marginPct.value) / 100) * (endDeg - startDeg));
+const marginEndDeg = computed(() => startDeg + (Math.min(100, achievedPct.value) / 100) * (endDeg - startDeg));
 
 const marginPath = computed(() => arcPath(startDeg, Math.min(marginEndDeg.value, displayLimitDeg.value)));
 const trackPath = computed(() => arcPath(startDeg, endDeg));
