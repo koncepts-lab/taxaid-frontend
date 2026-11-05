@@ -517,6 +517,9 @@
                         <button @click="mapping.fsCode = 'BS'; loadBuckets()"
                             class="px-6 py-1.5 rounded-full text-sm font-medium transition-all"
                             :class="mapping.fsCode === 'BS' ? (isDark ? 'bg-[#1b5e50] text-white shadow-sm' : 'bg-white text-black shadow-sm') : (isDark ? 'text-white/50 hover:text-white' : 'text-gray-500 hover:text-gray-700')">BS</button>
+                        <button @click="mapping.fsCode = 'GENERAL'; loadBuckets()"
+                            class="px-6 py-1.5 rounded-full text-sm font-medium transition-all"
+                            :class="mapping.fsCode === 'GENERAL' ? (isDark ? 'bg-[#1b5e50] text-white shadow-sm' : 'bg-white text-black shadow-sm') : (isDark ? 'text-white/50 hover:text-white' : 'text-gray-500 hover:text-gray-700')">General</button>
                     </div>
                 </div>
 
@@ -929,6 +932,7 @@ const confirmSimilar = async () => {
 
 const PL_SLOTS = ['Revenue', 'Direct Expenses', 'Indirect Expenses', 'Indirect Income', 'Tax Expense']
 const BS_SLOTS = ['Fixed Assets', 'Current Assets', 'Capital', 'Current Liabilities', 'Non Current Liabilities']
+const GENERAL_SLOTS = ['Sundry Debtors', 'Sundry Creditors', 'Stock in Hand', 'Prepaid Expenses']
 
 const mapping = reactive({
     open: false,
@@ -951,8 +955,14 @@ function closeStatementMapping() {
     mapping.open = false
 }
 
+function slotsFor(fsCode) {
+    if (fsCode === 'BS') return BS_SLOTS
+    if (fsCode === 'GENERAL') return GENERAL_SLOTS
+    return PL_SLOTS
+}
+
 async function loadBuckets() {
-    mapping.slots = mapping.fsCode === 'BS' ? BS_SLOTS : PL_SLOTS
+    mapping.slots = slotsFor(mapping.fsCode)
     mapping.loading = true
     try {
         const res = await getStatementBuckets(mapping.fsCode, mapping.tenantId)
@@ -983,9 +993,10 @@ const filteredEditItems = computed(() => {
 })
 
 async function saveEditBucket() {
+    const type = mapping.fsCode === 'GENERAL' ? 'sub_group' : 'main_group'
     const changed = mapping.edit.items.filter(i => !i.locked && i.checked !== i.originalChecked)
     for (const item of changed) {
-        await setStatementMapping(mapping.tenantId, item.id, item.checked ? mapping.edit.slot : null)
+        await setStatementMapping(mapping.tenantId, item.id, item.checked ? mapping.edit.slot : null, type)
     }
     mapping.edit.open = false
     loadBuckets()
