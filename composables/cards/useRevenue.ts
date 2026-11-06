@@ -114,15 +114,24 @@ export const useRevenue = () => {
     if (!res?.data?.top_10_ledgers) return { customers: [], cumulative: [] }
 
     const total = res.data.total_sales_amount
-    let runningSum = 0
     const colors = ['#04C18F','#FF886A','#FFB01A','#008FFB','#00E396','#775DD0','#546E7A','#26A69A','#D10CE8','#FF4560']
-    const cumulative: number[] = []
 
+    // Backend returns top_10_ledgers alphabetically (display order) — cumulative %
+    // must accumulate by value rank instead, so rank a copy first and map each
+    // customer's cumulative share back by name before building the display array.
+    const byValueDesc = [...res.data.top_10_ledgers].sort((a: any, b: any) => Number(b.amount ?? 0) - Number(a.amount ?? 0))
+    let runningSum = 0
+    const cumulativeByName: Record<string, number> = {}
+    for (const item of byValueDesc) {
+      runningSum += Number(item.amount ?? 0)
+      cumulativeByName[item.name] = Number(((runningSum / total) * 100).toFixed(2))
+    }
+
+    const cumulative: number[] = []
     const customers = res.data.top_10_ledgers.map((item: any, index: number) => {
       const rawAmount = Number(item.amount ?? 0)
       const valM = Number((rawAmount / 1_000_000).toFixed(2))
-      runningSum += rawAmount
-      cumulative.push(Number(((runningSum / total) * 100).toFixed(2)))
+      cumulative.push(cumulativeByName[item.name] ?? 0)
       return {
         id:      `C${index + 1}`,
         name:    item.name,
