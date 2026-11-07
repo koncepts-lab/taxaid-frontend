@@ -1277,6 +1277,8 @@
         </div>
       </div>
 
+      <AdminRootAiModelSettings v-if="activeTab === 'ai-settings'" />
+
     </main>
   </div>
   </NuxtLayout>
@@ -1324,6 +1326,7 @@ const tabs = [
   { id: 'diagnostics', label: 'CORS & Environment' },
   { id: 'connector-infra', label: 'Connector Infra Settings' },
   { id: 'analytics', label: 'Analytics' },
+  { id: 'ai-settings', label: 'AI Settings' },
 ]
 
 const route = useRoute()

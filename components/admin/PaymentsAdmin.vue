@@ -500,14 +500,14 @@
                   </div>
                   <div class="grid grid-cols-2 gap-3">
                     <div>
-                      <label class="block text-xs text-gray-500 mb-1">Model</label>
-                      <CommonSelectDropdown v-model="planForm.entitlements.ai.model" mode="select" size="sm"
-                        :options="aiModelOptions.map(m => ({ value: m.value, label: m.label }))" />
+                      <label class="block text-xs text-gray-500 mb-1">Tier</label>
+                      <CommonSelectDropdown v-model="planForm.entitlements.ai.chat_tier" mode="select" size="sm"
+                        :options="chatTierSelectOptions" placeholder="(Default tier)" @update:modelValue="onChatTierChange" />
                     </div>
-                    <div>
+                    <div v-if="selectedChatTierLevels.length">
                       <label class="block text-xs text-gray-500 mb-1">Thinking Level</label>
-                      <CommonSelectDropdown v-model="planForm.entitlements.ai.thinking" mode="select" size="sm"
-                        :options="aiThinkingOptions.map(t => ({ value: t.value, label: t.label }))" />
+                      <CommonSelectDropdown v-model="planForm.entitlements.ai.chat_thinking_level" mode="select" size="sm"
+                        :options="selectedChatTierLevels.map(l => ({ value: l, label: l }))" />
                     </div>
                     <div>
                       <label class="block text-xs text-gray-500 mb-1">Max Requests / month</label>
@@ -801,7 +801,7 @@ const { isDark } = useTheme()
 
 const {
   getPlans, getOrgPlansGrouped, getPlanStats, getOrganizations, assignPlanToOrg, createPlan, createPlanVersion, updatePlanStatus,
-  getEntitlementDefinitions, createEntitlementDefinition, toggleEntitlementDefinitionActive: apiToggleDefinitionActive, getAiModelOptions,
+  getEntitlementDefinitions, createEntitlementDefinition, toggleEntitlementDefinitionActive: apiToggleDefinitionActive, getChatTierOptions,
   getSubscriptions, cancelSubscription, getPayments, setDunningOverride, getAlerts,
   getPaymentSettings, updatePaymentSettings, getTrialPlan, saveTrialPlan, demoEditPlan,
 } = usePaymentsAdmin()
@@ -1043,12 +1043,25 @@ function definitionType(key) {
 function definitionAllowedValues(key) {
   return allActiveDefinitions.value.find(d => d.key === key)?.allowed_values ?? []
 }
-const aiModelOptions = ref([])
-const aiThinkingOptions = ref([])
-async function loadAiModelOptions() {
-  const res = await getAiModelOptions()
-  aiModelOptions.value = res?.models ?? []
-  aiThinkingOptions.value = res?.thinking_levels ?? []
+const chatTiers = ref([])
+async function loadChatTierOptions() {
+  const res = await getChatTierOptions()
+  chatTiers.value = res?.data ?? []
+}
+const chatTierSelectOptions = computed(() => chatTiers.value.map(t => ({
+  value: t.tier_key,
+  label: t.tier_key.replace(/_/g, ' ') + (t.is_default ? ' (Default)' : ''),
+})))
+const selectedChatTierLevels = computed(() => {
+  const tier = chatTiers.value.find(t => t.tier_key === planForm.value.entitlements.ai?.chat_tier)
+  return tier?.thinking_config?.levels ?? []
+})
+function onChatTierChange(tierKey) {
+  const tier = chatTiers.value.find(t => t.tier_key === tierKey)
+  const levels = tier?.thinking_config?.levels ?? []
+  if (!levels.includes(planForm.value.entitlements.ai.chat_thinking_level)) {
+    planForm.value.entitlements.ai.chat_thinking_level = tier?.thinking_config?.active_level ?? null
+  }
 }
 function clampNonNegative(obj, key) {
   if ((obj[key] ?? 0) < 0) obj[key] = 0
@@ -1063,7 +1076,7 @@ function normalizeAiEntitlement(entitlements) {
 function addEntitlement() {
   if (!entitlementToAdd.value) return
   if (entitlementToAdd.value === 'ai') {
-    planForm.value.entitlements.ai = { enabled: true, model: 'gemini-flash', thinking: 'medium', max_requests: 200, max_tokens: 5000, chat_enabled: true, alerts_enabled: true }
+    planForm.value.entitlements.ai = { enabled: true, chat_tier: null, chat_thinking_level: null, max_requests: 200, max_tokens: 5000, chat_enabled: true, alerts_enabled: true }
     entitlementToAdd.value = ''
     return
   }
@@ -1368,7 +1381,7 @@ function goPastduePage(p) { pastdueMeta.value.current_page = p; loadAlerts() }
 
 onMounted(async () => {
   await Promise.all([
-    loadStats(), loadAllActiveDefinitions(), loadAlerts(), loadAiModelOptions(),
+    loadStats(), loadAllActiveDefinitions(), loadAlerts(), loadChatTierOptions(),
     loadPlans(), loadOrgPlans(), loadDefinitions(), loadSubscriptions(), loadPayments(), loadSettings(), loadAllPlans(),
   ])
 })

@@ -116,6 +116,196 @@
       </div>
     </div>
 
+    <!-- Model Settings sub-tab -->
+    <div v-if="activeSubTab === 'Model Settings'" class="space-y-4">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-[16px] font-semibold text-gray-800">Model Tiers</h2>
+        <button @click="openAddTierModal" class="px-4 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+          + Add Tier
+        </button>
+      </div>
+
+      <div class="bg-[#61FFD62E] border border-[#00BE8CBD] rounded-[10px] p-4 flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div class="relative w-full md:w-[40%]">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </span>
+          <input v-model="modelTiers.search" @input="debouncedLoad('modelTiers')" type="text" placeholder="Search tier key…" autocomplete="off"
+            class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 shadow-sm" />
+        </div>
+        <div class="relative min-w-[140px]">
+          <select v-model="modelTiers.status" @change="loadModelTiers(1)"
+            class="w-full pl-3 pr-8 py-2 bg-white border border-gray-200 rounded-md outline-none focus:border-[#008169] text-sm text-gray-700 appearance-none shadow-sm">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </span>
+        </div>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-[10px] overflow-hidden shadow-sm">
+        <div class="w-full overflow-x-auto min-h-[300px]">
+          <table class="w-full text-left border-collapse min-w-[760px]">
+            <thead>
+              <tr class="bg-[#008865] text-white text-sm">
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Model Tier</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Usage</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Model</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Provider</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Mode</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Supported Levels</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Default</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap">Status</th>
+                <th class="py-3 px-6 font-medium whitespace-nowrap text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="text-sm text-gray-700">
+              <template v-if="modelTiers.loading">
+                <tr v-for="n in 5" :key="'sk'+n" class="border-b border-gray-100">
+                  <td v-for="c in 9" :key="c" class="py-3.5 px-6"><div class="h-4 bg-gray-100 rounded animate-pulse" :style="{ width: skeletonWidth(c) }"></div></td>
+                </tr>
+              </template>
+              <tr v-else-if="!modelTiers.rows.length"><td colspan="9" class="py-10 text-center text-gray-400">No tiers found.</td></tr>
+              <template v-else>
+                <tr v-for="t in modelTiers.rows" :key="t.id" class="border-b border-gray-100 hover:bg-gray-50/50">
+                  <td class="py-3.5 px-6 font-medium text-gray-800">{{ formatTierKey(t.tier_key) }}</td>
+                  <td class="py-3.5 px-6">{{ formatUsageType(t.usage_type) }}</td>
+                  <td class="py-3.5 px-6">{{ t.model?.model_key }}</td>
+                  <td class="py-3.5 px-6">{{ t.model?.thinking_config?.provider }}</td>
+                  <td class="py-3.5 px-6">{{ formatMechanism(t.model?.thinking_config?.mechanism) }}</td>
+                  <td class="py-3.5 px-6">{{ formatModelThinkingMode(t.model) }}</td>
+                  <td class="py-3.5 px-6">
+                    <span v-if="t.is_default" class="rounded-full px-2.5 py-1 text-[12px] font-medium whitespace-nowrap bg-[#D1FAE5] text-[#065F46]">Default</span>
+                  </td>
+                  <td class="py-3.5 px-6">
+                    <span class="rounded-full px-2.5 py-1 text-[12px] font-medium whitespace-nowrap" :class="t.is_active ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-gray-100 text-gray-500'">{{ t.is_active ? 'Active' : 'Inactive' }}</span>
+                  </td>
+                  <td class="py-3.5 px-6 text-right">
+                    <button @click="openTierActionsModal(t)" class="px-3 py-1.5 border border-gray-300 rounded-md text-xs font-medium hover:bg-gray-50 text-gray-700 transition-colors">
+                      Configure
+                    </button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+        <div class="px-6 pb-4">
+          <CommonPaginationBar v-if="modelTiers.meta.total > 0" :meta="modelTiers.meta" :loading="modelTiers.loading"
+            @page-change="(p) => loadModelTiers(p)" @per-page-change="(pp) => { modelTiers.perPage = pp; loadModelTiers(1) }" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Tier modal — closes only via the Close button -->
+    <div v-if="addTierModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-xl shadow-lg w-[420px] max-w-full p-6 relative">
+        <h3 class="text-[16px] font-semibold text-gray-900 mb-4">Add Tier</h3>
+
+        <label class="block text-[13px] text-gray-600 mb-1.5">Tier Key</label>
+        <input v-model="newTier.tier_key" type="text" placeholder="e.g. chat_gemini_flash"
+          class="w-full mb-3 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
+
+        <label class="block text-[13px] text-gray-600 mb-1.5">Usage Type</label>
+        <select v-model="newTier.usage_type" class="w-full mb-3 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169] bg-white">
+          <option value="chat">Chat</option>
+          <option value="narration">Alerts</option>
+        </select>
+
+        <label class="block text-[13px] text-gray-600 mb-1.5">Model</label>
+        <select v-model="newTier.current_model_id" class="w-full mb-4 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169] bg-white">
+          <option :value="null" disabled>{{ rootModels.length ? 'Select a model…' : 'No models yet — add one on Root → AI Settings' }}</option>
+          <option v-for="m in rootModels" :key="m.id" :value="m.id">{{ m.model_key }}</option>
+        </select>
+
+        <div class="flex justify-end gap-3">
+          <button @click="addTierModalOpen = false" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Close</button>
+          <button @click="submitNewTier" :disabled="!newTier.tier_key || !newTier.current_model_id || tiersSaving"
+            class="px-4 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-60 inline-flex items-center gap-2">
+            <CommonAnimationsSpinner v-if="tiersSaving" />
+            <span>Add Tier</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tier actions modal — closes only via the X button -->
+    <div v-if="tierActionsModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-xl shadow-lg w-[400px] max-w-full p-6 relative">
+        <button @click="tierActionsModalOpen = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+
+        <h3 class="text-[16px] font-semibold text-gray-900 mb-1 pr-6">{{ formatTierKey(actionsTier?.tier_key) }}</h3>
+        <p class="text-[13px] text-gray-500 mb-4">{{ formatUsageType(actionsTier?.usage_type) }} · {{ actionsTier?.model?.model_key }}</p>
+
+        <label class="block text-[12px] text-gray-500 mb-1.5">Model</label>
+        <div class="flex gap-2 mb-4">
+          <select v-model="changeModelId" class="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169] bg-white">
+            <option v-for="m in rootModels" :key="m.id" :value="m.id">{{ m.model_key }}</option>
+          </select>
+          <button @click="runChangeModel" :disabled="!changeModelId || changeModelId === actionsTier?.current_model_id || changingModel"
+            class="px-4 py-2 bg-[#00896F] hover:bg-[#00705a] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2">
+            <CommonAnimationsSpinner v-if="changingModel" />
+            <span>Change</span>
+          </button>
+        </div>
+
+        <div class="flex gap-2 mb-4">
+          <button @click="toggleTierField(actionsTier, 'is_default')" :disabled="actionsTier?.is_default"
+            class="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            {{ actionsTier?.is_default ? 'Already the default' : 'Set as default' }}
+          </button>
+          <button @click="runVerifyTier(actionsTier)" :disabled="verifyingTierId === actionsTier?.id"
+            class="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-60 inline-flex items-center justify-center gap-2">
+            <CommonAnimationsSpinner v-if="verifyingTierId === actionsTier?.id" />
+            <span>Verify</span>
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+          <span class="text-[12px] text-gray-500">Disable / remove this tier</span>
+          <div class="flex gap-2">
+            <button @click="toggleTierField(actionsTier, 'is_active')" :disabled="actionsTier?.is_default"
+              :title="actionsTier?.is_default ? 'Unset as default before disabling' : (actionsTier?.is_active ? 'Disable this tier' : 'Enable this tier')"
+              class="p-2 rounded-md border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="actionsTier?.is_active ? 'text-[#16A34A]' : 'text-gray-400'">
+                <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+                <line x1="12" y1="2" x2="12" y2="12" />
+              </svg>
+            </button>
+            <button @click="deleteTier(actionsTier)" :disabled="actionsTier?.is_active || actionsTier?.is_default"
+              :title="actionsTier?.is_default ? 'Unset as default before removing' : (actionsTier?.is_active ? 'Disable this tier before removing it' : 'Remove this tier')"
+              class="p-2 rounded-md border border-[#FFC9C9] text-[#DC2626] hover:bg-[#FEF2F2] disabled:opacity-40 disabled:cursor-not-allowed">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <CommonErrorPopupModal
+      :is-open="tierVerifyModalOpen"
+      :mode="tierVerifyResult?.success ? 'success' : 'error'"
+      :title="tierVerifyResult?.success ? 'Verified' : 'Verify Failed'"
+      :message="tierVerifyResult?.success ? `Model is working (${tierVerifyResult.time_ms ?? 0}ms)` : (tierVerifyResult?.message ?? 'Request failed.')"
+      @close="tierVerifyModalOpen = false"
+    />
+
+    <CommonErrorPopupModal
+      :is-open="tierActionErrorOpen"
+      mode="error"
+      title="Failed"
+      :message="tierActionErrorMessage"
+      @close="tierActionErrorOpen = false"
+    />
+
     <!-- Data-Links sub-tab -->
     <div v-if="activeSubTab === 'Data-Links'" class="space-y-4">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -800,11 +990,148 @@ import { ref, reactive, computed, watch, onMounted } from 'vue'
 const {
   getSettings, addSetting, deleteSetting, getUsageSnapshot,
   getDataLinks, updateDataLink,
+  getModelCatalogOptions, getModelTiers, createModelTier, updateModelTier, deleteModelTier, verifyModelTier,
   getRules, updateRule,
   getAlertRules, updateAlertRule,
   getChatPrompts, createChatPrompt, updateChatPrompt, deleteChatPrompt, cloneChatPrompt,
   getAlertRuleGroups, createAlertRuleGroup, updateAlertRuleGroup, assignRulesToGroup, unassignRuleFromGroup, getUnassignedAlertRules,
 } = useAdminAi()
+
+// -- Model Settings sub-tab state --
+const modelTiers = makeTableState()
+const rootModels = ref([])
+const newTier = ref({ tier_key: '', usage_type: 'chat', current_model_id: null })
+const tiersSaving = ref(false)
+const verifyingTierId = ref(null)
+
+const addTierModalOpen = ref(false)
+const tierActionsModalOpen = ref(false)
+const actionsTier = ref(null)
+const changeModelId = ref(null)
+const changingModel = ref(false)
+
+const tierVerifyModalOpen = ref(false)
+const tierVerifyResult = ref(null)
+const tierActionErrorOpen = ref(false)
+const tierActionErrorMessage = ref('')
+
+function showTierActionError(err, fallback) {
+  tierActionErrorMessage.value = err?.data?.message ?? fallback
+  tierActionErrorOpen.value = true
+}
+function showTierVerifyResult(result) {
+  tierVerifyResult.value = result
+  tierVerifyModalOpen.value = true
+}
+
+function formatUsageType(usageType) {
+  return usageType === 'narration' ? 'Alerts' : 'Chat'
+}
+function formatTierKey(tierKey) {
+  return (tierKey ?? '').replace(/[-_]/g, ' ')
+}
+function formatMechanism(mechanism) {
+  if (!mechanism) return '—'
+  return mechanism.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+function formatModelThinkingMode(model) {
+  const config = model?.thinking_config
+  if (!config) return '—'
+  if (config.budget_tokens != null) return `${Number(config.budget_tokens).toLocaleString()} tokens`
+  if (config.levels?.length) {
+    const label = config.levels.map(l => l.charAt(0).toUpperCase() + l.slice(1)).join(', ')
+    return config.active_level ? `${label} (active: ${config.active_level})` : label
+  }
+  return '—'
+}
+
+function openAddTierModal() {
+  newTier.value = { tier_key: '', usage_type: 'chat', current_model_id: null }
+  addTierModalOpen.value = true
+}
+function openTierActionsModal(tier) {
+  actionsTier.value = tier
+  changeModelId.value = tier.current_model_id
+  tierActionsModalOpen.value = true
+}
+
+async function loadModelTiers(page = 1) {
+  modelTiers.loading = true
+  try {
+    const res = await getModelTiers({ page, per_page: modelTiers.perPage, search: modelTiers.search || undefined, status: modelTiers.status || undefined })
+    modelTiers.rows = res?.data ?? []
+    modelTiers.meta = applyMeta(res)
+  } catch (err) {
+    console.error('Failed to load model tiers', err)
+  } finally {
+    modelTiers.loading = false
+  }
+}
+async function loadRootModels() {
+  try {
+    const res = await getModelCatalogOptions()
+    rootModels.value = res?.data ?? []
+  } catch (err) {
+    console.error('Failed to load root model catalog', err)
+  }
+}
+async function submitNewTier() {
+  tiersSaving.value = true
+  try {
+    await createModelTier({
+      tier_key: newTier.value.tier_key,
+      usage_type: newTier.value.usage_type,
+      current_model_id: newTier.value.current_model_id,
+    })
+    addTierModalOpen.value = false
+    await loadModelTiers(modelTiers.meta.current_page)
+  } catch (err) {
+    showTierActionError(err, 'Failed to create tier.')
+  } finally {
+    tiersSaving.value = false
+  }
+}
+async function toggleTierField(tier, field) {
+  try {
+    await updateModelTier(tier.id, { [field]: !tier[field] })
+    tierActionsModalOpen.value = false
+    await loadModelTiers(modelTiers.meta.current_page)
+  } catch (err) {
+    showTierActionError(err, 'Failed to update tier.')
+  }
+}
+async function runChangeModel() {
+  if (!changeModelId.value || changeModelId.value === actionsTier.value?.current_model_id) return
+  changingModel.value = true
+  try {
+    await updateModelTier(actionsTier.value.id, { current_model_id: changeModelId.value })
+    tierActionsModalOpen.value = false
+    await loadModelTiers(modelTiers.meta.current_page)
+  } catch (err) {
+    showTierActionError(err, 'Failed to change model.')
+  } finally {
+    changingModel.value = false
+  }
+}
+async function deleteTier(tier) {
+  try {
+    await deleteModelTier(tier.id)
+    tierActionsModalOpen.value = false
+    await loadModelTiers(modelTiers.meta.current_page)
+  } catch (err) {
+    showTierActionError(err, 'Failed to remove tier.')
+  }
+}
+async function runVerifyTier(tier) {
+  verifyingTierId.value = tier.id
+  try {
+    showTierVerifyResult(await verifyModelTier(tier.id))
+  } catch (e) {
+    showTierVerifyResult(e?.data ?? { success: false, message: 'Request failed.' })
+  } finally {
+    verifyingTierId.value = null
+  }
+}
 
 // The 9 main report pages + support pages + the reserved 'default' fallback.
 const pageOptions = [
@@ -825,8 +1152,8 @@ function formatDomain(d) {
   return d.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
 }
 // 'Rules' (ai_rules) hidden — unused, data-links (ai_data_links) cover this today.
-const subTabs = ['Instructions', 'Data-Links', 'Alert Rules', 'Alert Groups', 'Quick Questions & Tips']
-const subTabSlugs = { 'Instructions': 'instructions', 'Data-Links': 'data-links', 'Rules': 'rules', 'Alert Rules': 'alert-rules', 'Alert Groups': 'alert-groups', 'Quick Questions & Tips': 'quick-questions' }
+const subTabs = ['Instructions', 'Data-Links', 'Model Settings', 'Alert Rules', 'Alert Groups', 'Quick Questions & Tips']
+const subTabSlugs = { 'Instructions': 'instructions', 'Data-Links': 'data-links', 'Rules': 'rules', 'Model Settings': 'model-settings', 'Alert Rules': 'alert-rules', 'Alert Groups': 'alert-groups', 'Quick Questions & Tips': 'quick-questions' }
 const slugToSubTab = Object.fromEntries(Object.entries(subTabSlugs).map(([k, v]) => [v, k]))
 
 const route = useRoute()
@@ -836,6 +1163,13 @@ const activeSubTab = ref(slugToSubTab[route.query.subtab] ?? 'Instructions')
 watch(activeSubTab, (val) => {
   router.replace({ query: { ...route.query, subtab: subTabSlugs[val] } })
 })
+
+watch(activeSubTab, (val) => {
+  if (val === 'Model Settings' && !modelTiers.rows.length) {
+    loadModelTiers()
+    loadRootModels()
+  }
+}, { immediate: true })
 
 const globalSettings = ref([])
 const newInstruction = ref('')
@@ -931,6 +1265,7 @@ function debouncedLoad(key) {
     if (key === 'alertRules') loadAlertRules(1)
     if (key === 'chatPrompts') loadChatPrompts(1)
     if (key === 'alertGroups') loadAlertGroups(1)
+    if (key === 'modelTiers') loadModelTiers(1)
   }, 400)
 }
 

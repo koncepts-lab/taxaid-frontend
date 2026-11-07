@@ -77,6 +77,10 @@ export function usePaymentsAdmin() {
   // hardcoded here, so adding a model backend-side needs no frontend change.
   const getAiModelOptions = () => useAdminApi('/admin/ai/model-options')
 
+  // Drives the 'ai' entitlement's Tier/Thinking-Level picker — each tier's real model
+  // thinking_config, so the Thinking Level select only ever shows levels that model supports.
+  const getChatTierOptions = () => useAdminApi('/admin/ai/chat-tier-options')
+
   // ── Subscriptions / payments monitoring ────────────────────────────────
   const getSubscriptions = (page = 1, perPage = 10, status?: string) => {
     const q = new URLSearchParams({ page: String(page), per_page: String(perPage) })
@@ -129,7 +133,7 @@ export function usePaymentsAdmin() {
 
   return {
     getPlans, getPlan, getOrgPlansGrouped, getPlanStats, getOrganizations, assignPlanToOrg, createPlan, createPlanVersion, updatePlanStatus,
-    getEntitlementDefinitions, createEntitlementDefinition, toggleEntitlementDefinitionActive, getAiModelOptions,
+    getEntitlementDefinitions, createEntitlementDefinition, toggleEntitlementDefinitionActive, getAiModelOptions, getChatTierOptions,
     getSubscriptions, cancelSubscription, getPayments, setDunningOverride, getAlerts,
     getPaymentSettings, updatePaymentSettings, getTrialPlan, saveTrialPlan, demoEditPlan,
   }

@@ -211,12 +211,86 @@ export function useRootAdmin() {
     })
   }
 
+  // -- AI model catalog --
+  /** params.status: 'active' (default) | 'disabled' | 'removed' | 'all' */
+  async function getAiModels(params: Record<string, any> = {}) {
+    return await useAdminApi('/admin/root/ai/models', {
+      headers: { 'Request-Id': rootToken.value || '' },
+      params,
+    })
+  }
+
+  async function createAiModel(body: { model_key: string; thinking_config: { provider: string; mechanism: string; levels?: string[]; active_level?: string; budget_tokens?: number } }) {
+    return await useAdminApi('/admin/root/ai/models', {
+      method: 'POST',
+      headers: { 'Request-Id': rootToken.value || '' },
+      body,
+    })
+  }
+
+  /** Tests a model_key/thinking_config combo before it is saved. */
+  async function verifyAiModelConfig(body: { model_key: string; thinking_config: { provider: string; mechanism: string; levels?: string[]; active_level?: string; budget_tokens?: number } }) {
+    return await useAdminApi('/admin/root/ai/models/verify-config', {
+      method: 'POST',
+      headers: { 'Request-Id': rootToken.value || '' },
+      body,
+    })
+  }
+
+  /** Tests low/medium/high individually against the real API, returns { levels: { low: {...}, medium: {...}, high: {...} } }. */
+  async function verifyAiModelLevels(body: { model_key: string; provider: string; mechanism: string; budget_tokens?: number }) {
+    return await useAdminApi('/admin/root/ai/models/verify-levels', {
+      method: 'POST',
+      headers: { 'Request-Id': rootToken.value || '' },
+      body,
+    })
+  }
+
+  async function updateAiModel(id: number, body: Partial<{ model_key: string; thinking_config: { provider: string; mechanism: string; levels?: string[]; active_level?: string; budget_tokens?: number }; is_active: boolean }>) {
+    return await useAdminApi(`/admin/root/ai/models/${id}`, {
+      method: 'PATCH',
+      headers: { 'Request-Id': rootToken.value || '' },
+      body,
+    })
+  }
+
+  async function deleteAiModel(id: number) {
+    return await useAdminApi(`/admin/root/ai/models/${id}`, {
+      method: 'DELETE',
+      headers: { 'Request-Id': rootToken.value || '' },
+    })
+  }
+
+  async function verifyAiModel(id: number) {
+    return await useAdminApi(`/admin/root/ai/models/${id}/verify`, {
+      method: 'POST',
+      headers: { 'Request-Id': rootToken.value || '' },
+    })
+  }
+
+  /** messages: the whole conversation so far ({role, text}[]). */
+  async function testChatAiModel(id: number, messages: Array<{ role: string; text: string }>) {
+    return await useAdminApi(`/admin/root/ai/models/${id}/test-chat`, {
+      method: 'POST',
+      headers: { 'Request-Id': rootToken.value || '' },
+      body: { messages },
+    })
+  }
+
   return {
     isRootUnlocked,
     rootToken,
     rootLoading,
     unlock,
     lock,
+    getAiModels,
+    createAiModel,
+    verifyAiModelConfig,
+    verifyAiModelLevels,
+    updateAiModel,
+    deleteAiModel,
+    verifyAiModel,
+    testChatAiModel,
     runArtisan,
     runTinker,
     getJobStatus,
