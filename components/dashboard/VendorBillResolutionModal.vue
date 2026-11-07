@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 z-[100000] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-black/50 backdrop-blur-sm">
+    <div class="fixed inset-0 z-[100000] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 backdrop-blur-sm">
       <div class="rounded-2xl mt-auto md:mt-0 h-[90vh] md:h-[82vh] max-h-[860px] w-[96vw] md:w-full max-w-4xl shadow-2xl flex flex-col overflow-hidden" :class="isDark ? 'bg-[#002e26]' : 'bg-white'" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
         <div class="shrink-0 px-4 md:px-6 py-4 flex justify-between items-start border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'">
@@ -72,10 +72,7 @@
                       : (isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30 focus:ring-[#058a64]' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400 focus:ring-[#058a64]')" />
                   <span v-else class="flex items-center gap-1.5" :class="isDark ? 'text-white/80' : 'text-gray-700'">
                     {{ row.invoice_number || '—' }}
-                    <span v-if="row.description" class="group relative inline-flex">
-                      <svg class="w-3.5 h-3.5 cursor-help" :class="isDark ? 'text-white/40' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                      <span class="hidden group-hover:block absolute z-10 left-0 top-full mt-1 w-56 p-2 rounded-md text-xs font-normal shadow-lg" :class="isDark ? 'bg-[#002e26] border border-white/10 text-white/80' : 'bg-white border border-gray-200 text-gray-700'">{{ row.description }}</span>
-                    </span>
+                    <svg v-if="row.description" class="w-3.5 h-3.5 cursor-help" :class="isDark ? 'text-white/40' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24" @mouseenter="showTooltip($event, row.description)" @mouseleave="hideTooltip"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                   </span>
                 </td>
                 <td class="py-2 px-3">
@@ -100,7 +97,7 @@
                 </td>
                 <td class="py-2 px-3 text-center">
                   <span v-if="row.isNew" class="invisible block mb-1 px-1.5 py-0.5 rounded text-[10px] font-semibold">.</span>
-                  <input type="checkbox" v-model="row.markPaid" :disabled="!isEditableSource(row)" class="w-4 h-4 rounded text-[#058a64] focus:ring-[#058a64] disabled:opacity-40" :class="isDark ? 'border-white/20 bg-[#002e26]' : 'border-gray-300 bg-white'" />
+                  <input type="checkbox" v-model="row.markPaid" class="w-4 h-4 rounded text-[#058a64] focus:ring-[#058a64] disabled:opacity-40" :class="isDark ? 'border-white/20 bg-[#002e26]' : 'border-gray-300 bg-white'" />
                 </td>
                 <td class="py-2 px-3 text-center">
                   <span v-if="row.isNew" class="invisible block mb-1 px-1.5 py-0.5 rounded text-[10px] font-semibold">.</span>
@@ -151,10 +148,7 @@
                   <td class="py-2 px-3" :class="isDark ? 'text-white/70' : 'text-gray-600'">
                     <span class="flex items-center gap-1.5">
                       <span class="truncate">{{ c.narration || labels.noNarration }}</span>
-                      <span v-if="c.narration" class="group relative inline-flex shrink-0">
-                        <svg class="w-3.5 h-3.5 cursor-help" :class="isDark ? 'text-white/40' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span class="hidden group-hover:block absolute z-10 left-0 top-full mt-1 w-56 p-2 rounded-md text-xs font-normal shadow-lg" :class="isDark ? 'bg-[#002e26] border border-white/10 text-white/80' : 'bg-white border border-gray-200 text-gray-700'">{{ c.narration }}</span>
-                      </span>
+                      <svg v-if="c.narration" class="w-3.5 h-3.5 cursor-help shrink-0" :class="isDark ? 'text-white/40' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24" @mouseenter="showTooltip($event, c.narration)" @mouseleave="hideTooltip"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </span>
                   </td>
                   <td class="py-2 px-3 text-right" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatCurrency(c.amount) }}</td>
@@ -185,10 +179,24 @@
       </div>
     </div>
   </Teleport>
+  <Teleport to="body">
+    <div v-if="tooltip.visible" class="fixed z-[100001] w-56 p-2 rounded-md text-xs font-normal shadow-lg pointer-events-none"
+      :style="{ top: tooltip.top + 'px', left: tooltip.left + 'px' }"
+      :class="isDark ? 'bg-[#002e26] border border-white/10 text-white/80' : 'bg-white border border-gray-200 text-gray-700'">
+      {{ tooltip.text }}
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
+
+const tooltip = ref({ visible: false, top: 0, left: 0, text: '' });
+const showTooltip = (event, text) => {
+  const rect = event.currentTarget.getBoundingClientRect();
+  tooltip.value = { visible: true, top: rect.bottom + 4, left: rect.left, text };
+};
+const hideTooltip = () => { tooltip.value.visible = false; };
 
 const props = defineProps({
   side: { type: String, required: true }, // 'ap' | 'ar'
