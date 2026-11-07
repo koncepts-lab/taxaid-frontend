@@ -183,6 +183,27 @@ export function useRootAdmin() {
     })
   }
 
+  async function getVaultSlots() {
+    return await useAdminApi('/admin/root/vault', {
+      headers: { 'Request-Id': rootToken.value || '' },
+    })
+  }
+
+  async function saveVaultSlot(category: string, key_name: string, value: string) {
+    return await useAdminApi('/admin/root/vault', {
+      method: 'POST',
+      headers: { 'Request-Id': rootToken.value || '' },
+      body: { category, key_name, value },
+    })
+  }
+
+  async function clearVaultSlot(category: string, key_name: string) {
+    return await useAdminApi(`/admin/root/vault/${category}/${key_name}`, {
+      method: 'DELETE',
+      headers: { 'Request-Id': rootToken.value || '' },
+    })
+  }
+
   async function getMailSettings() {
     return await useAdminApi('/admin/root/mail-settings', {
       headers: { 'Request-Id': rootToken.value || '' },
@@ -307,6 +328,9 @@ export function useRootAdmin() {
     addCorsOrigin,
     deleteCorsOrigin,
     setMainCorsOrigin,
+    getVaultSlots,
+    saveVaultSlot,
+    clearVaultSlot,
     getMailSettings,
     updateMailSettings,
     getAnalyticsEvents,

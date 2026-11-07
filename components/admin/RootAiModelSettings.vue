@@ -129,7 +129,7 @@
               </label>
             </div>
             <div v-if="newModel.levels.length" class="mt-2">
-              <label class="block text-[12px] opacity-60 mb-1">Active Level</label>
+              <label class="block text-[12px] opacity-60 mb-1">Default Level</label>
               <select v-model="newModel.activeLevel" class="w-full px-3 py-2 border rounded-md text-sm outline-none" :class="isDark ? 'bg-transparent border-white/10 text-white' : 'border-gray-200'">
                 <option v-for="lvl in newModel.levels" :key="lvl" :value="lvl">{{ lvl }}</option>
               </select>
@@ -264,7 +264,7 @@ function formatSupportedLevels(m) {
   if (config.budget_tokens != null) return `${Number(config.budget_tokens).toLocaleString()} tokens`
   if (config.levels?.length) {
     const label = config.levels.map(l => l.charAt(0).toUpperCase() + l.slice(1)).join(', ')
-    return config.active_level ? `${label} (active: ${config.active_level})` : label
+    return config.active_level ? `${label} (default: ${config.active_level})` : label
   }
   return '—'
 }

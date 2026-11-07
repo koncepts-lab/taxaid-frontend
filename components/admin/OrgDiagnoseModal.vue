@@ -11,7 +11,10 @@
             </p>
           </div>
           <div class="flex items-center gap-2">
-            <button @click="run()" :disabled="loading || fixing || running" class="text-[13px] bg-[#007C65] text-white px-3 py-1.5 rounded-md font-medium hover:bg-[#006A56] disabled:opacity-60">{{ loading ? 'Checking…' : 'Run again' }}</button>
+            <button @click="run()" :disabled="loading || fixing || running" class="text-[13px] bg-[#007C65] text-white px-3 py-1.5 rounded-md font-medium hover:bg-[#006A56] disabled:opacity-60 flex items-center gap-1.5">
+              <CommonAnimationsSpinner v-if="loading" size="w-3.5 h-3.5" />
+              {{ loading ? 'Checking' : 'Run again' }}
+            </button>
             <button @click="$emit('close')" class="text-xl leading-none px-1" :class="muted">&times;</button>
           </div>
         </div>
