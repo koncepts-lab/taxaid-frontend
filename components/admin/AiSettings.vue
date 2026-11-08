@@ -1040,7 +1040,7 @@ function formatModelThinkingMode(model) {
   if (config.budget_tokens != null) return `${Number(config.budget_tokens).toLocaleString()} tokens`
   if (config.levels?.length) {
     const label = config.levels.map(l => l.charAt(0).toUpperCase() + l.slice(1)).join(', ')
-    return config.active_level ? `${label} (active: ${config.active_level})` : label
+    return config.active_level ? `${label} (default: ${config.active_level})` : label
   }
   return '—'
 }
