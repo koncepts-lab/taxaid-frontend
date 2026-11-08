@@ -1157,9 +1157,11 @@
             <input
               v-model="corsNewOrigin"
               type="text"
+              name="cors-origin-url"
+              autocomplete="off"
               placeholder="https://example.com"
               class="flex-1 min-w-[180px] h-[42px] px-3.5 rounded-[10px] border outline-none text-[13px] font-mono"
-              :class="isDark ? 'bg-black/40 border-white/10 text-white placeholder:text-white/40' : 'bg-white border-[#04C18F33] text-[#1a1a1a]'"
+              :class="isDark ? 'vault-value-input-dark bg-black/40 border-white/10 text-white placeholder:text-white/40' : 'vault-value-input-light bg-white border-[#04C18F33] text-[#1a1a1a]'"
               @keyup.enter="submitAddCorsOrigin"
             />
             <button
@@ -1210,6 +1212,91 @@
             </div>
             <p v-if="!corsOrigins.length" class="text-xs opacity-60 py-2">No origins yet.</p>
           </div>
+        </div>
+      </div>
+
+      <div
+        v-if="activeTab === 'diagnostics'"
+        :class="isDark ? 'bg-[#00141080] border-white/10' : 'bg-white border-[#E5E5E5]'"
+        class="rounded-[20px] border shadow-sm p-6 space-y-3 min-w-0"
+      >
+        <h4 class="text-[14px] font-semibold text-[#004D40]" :class="isDark ? 'text-[#10FFD4]' : ''">Vault</h4>
+        <p class="text-[11px] opacity-70" :class="isDark ? 'text-white/60' : ''">Encrypted secrets for connected integrations. Fill in or update a value below; once saved, only a masked preview is shown.</p>
+
+        <div
+          v-if="credentialReport"
+          class="p-3 rounded-[10px] text-xs"
+          :class="reportBoxClasses(credentialReport.success)"
+        >
+          {{ credentialReport.message }}
+        </div>
+
+        <div class="space-y-2 overflow-y-auto pr-1 max-h-[360px]">
+          <div
+            v-for="row in vaultSlots"
+            :key="`${row.category}:${row.key_name}`"
+            class="rounded-[12px] p-3 border space-y-2"
+            :class="isDark ? 'bg-black/30 border-white/10' : 'bg-gray-50 border-gray-200'"
+          >
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[13px] font-medium" :class="isDark ? 'text-white/90' : 'text-gray-800'">{{ row.label }}</span>
+              <span
+                class="px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wider shrink-0"
+                :class="row.configured
+                  ? (isDark ? 'bg-emerald-950/60 text-emerald-300' : 'bg-emerald-100 text-emerald-800')
+                  : (isDark ? 'bg-white/10 text-white/50' : 'bg-gray-200 text-gray-500')"
+              >
+                {{ row.configured ? 'Configured' : 'Not set' }}
+              </span>
+            </div>
+
+            <div class="flex flex-wrap gap-2 items-center">
+              <div class="relative flex-1 min-w-[180px]">
+                <input
+                  v-model="credentialDrafts[`${row.category}:${row.key_name}`]"
+                  :type="credentialVisible[`${row.category}:${row.key_name}`] ? 'text' : 'password'"
+                  autocomplete="off"
+                  :placeholder="row.configured ? `Saved (${row.masked_value}), leave blank to keep` : 'Enter value'"
+                  class="w-full h-[38px] pl-3 pr-10 rounded-[8px] border outline-none text-[12px] font-mono"
+                  :class="isDark ? 'vault-value-input-dark bg-black/40 border-white/10 text-white placeholder:text-white/40' : 'vault-value-input-light bg-white border-[#04C18F33] text-[#1a1a1a] placeholder:text-gray-400'"
+                />
+                <button
+                  type="button"
+                  @click="toggleCredentialVisible(row)"
+                  tabindex="-1"
+                  class="absolute right-0 top-0 h-[38px] w-9 flex items-center justify-center cursor-pointer"
+                  :class="isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-700'"
+                  :title="credentialVisible[`${row.category}:${row.key_name}`] ? 'Hide value' : 'Show value'"
+                >
+                  <svg v-if="!credentialVisible[`${row.category}:${row.key_name}`]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-11-8-11-8a18.77 18.77 0 015.06-5.94M9.9 4.24A10.4 10.4 0 0112 4c7 0 11 8 11 8a18.77 18.77 0 01-2.22 3.19m-6.11-.47a3 3 0 11-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                </button>
+              </div>
+              <button
+                @click="saveCredentialSlot(row)"
+                :disabled="credentialSaving || !credentialDrafts[`${row.category}:${row.key_name}`]?.trim()"
+                class="h-[38px] px-4 rounded-[8px] bg-[#007C65] hover:bg-[#006552] disabled:opacity-50 text-white font-semibold text-[12px] transition cursor-pointer shrink-0"
+              >
+                Save
+              </button>
+              <button
+                v-if="row.configured"
+                @click="askClearCredential(row)"
+                :disabled="credentialSaving"
+                class="h-[38px] px-4 rounded-[8px] text-[12px] font-medium cursor-pointer transition disabled:opacity-50"
+                :class="isDark ? 'border border-red-500/40 text-red-300 hover:bg-red-950/40' : 'border border-red-300 text-red-600 hover:bg-red-50'"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+          <p v-if="!vaultSlots.length" class="text-xs opacity-60 py-2">No slots defined.</p>
         </div>
       </div>
 
@@ -1277,8 +1364,22 @@
         </div>
       </div>
 
+      <AdminRootAiModelSettings v-if="activeTab === 'ai-settings'" />
+
     </main>
   </div>
+
+  <CommonErrorPopupModal
+    :is-open="confirmClearOpen"
+    :is-dark="isDark"
+    mode="confirm"
+    icon="delete"
+    title="Clear this value?"
+    :message="pendingClearRow ? `This clears the saved value for ${pendingClearRow.label}. This cannot be undone.` : ''"
+    confirm-text="Clear"
+    @close="confirmClearOpen = false"
+    @confirm="confirmClearCredential"
+  />
   </NuxtLayout>
 </template>
 
@@ -1297,6 +1398,7 @@ const {
   isRootUnlocked, runArtisan, runTinker, getJobStatus, cancelJob: cancelJobApi, runDbQuery, getTenants, testFirebase, testMail,
   getSystemInfo, getCommands, lock, getConnectorInfraSettings, updateConnectorInfraSettings,
   getCorsSettings, addCorsOrigin, deleteCorsOrigin, setMainCorsOrigin,
+  getVaultSlots, saveVaultSlot, clearVaultSlot,
   getMailSettings, updateMailSettings,
   getAnalyticsEvents, clearAnalyticsEvents,
 } = useRootAdmin()
@@ -1311,6 +1413,7 @@ onMounted(() => {
   loadCommandsCatalog()
   loadConnectorInfraSettings()
   loadCorsSettings()
+  loadVaultSlots()
   loadMailSettings()
   if (activeTab.value === 'analytics') loadAnalytics()
   resumeActiveJobIfAny()
@@ -1324,6 +1427,7 @@ const tabs = [
   { id: 'diagnostics', label: 'CORS & Environment' },
   { id: 'connector-infra', label: 'Connector Infra Settings' },
   { id: 'analytics', label: 'Analytics' },
+  { id: 'ai-settings', label: 'AI Settings' },
 ]
 
 const route = useRoute()
@@ -2010,6 +2114,71 @@ async function markMainCorsOrigin(id) {
   }
 }
 
+const vaultSlots = ref([])
+const credentialDrafts = ref({})
+const credentialVisible = ref({})
+const credentialSaving = ref(false)
+const credentialReport = ref(null)
+
+function toggleCredentialVisible(row) {
+  const key = `${row.category}:${row.key_name}`
+  credentialVisible.value[key] = !credentialVisible.value[key]
+}
+
+async function loadVaultSlots() {
+  try {
+    const res = await getVaultSlots()
+    vaultSlots.value = res?.slots || []
+  } catch (err) {
+    console.error('Failed to load vault slots', err)
+  }
+}
+
+async function saveCredentialSlot(row) {
+  const draftKey = `${row.category}:${row.key_name}`
+  const value = (credentialDrafts.value[draftKey] || '').trim()
+  if (!value) return
+  credentialSaving.value = true
+  credentialReport.value = null
+  try {
+    await saveVaultSlot(row.category, row.key_name, value)
+    credentialDrafts.value[draftKey] = ''
+    credentialReport.value = { success: true, message: `${row.label} saved.` }
+    await loadVaultSlots()
+  } catch (err) {
+    credentialReport.value = { success: false, message: err?.data?.message || 'Failed to save.' }
+  } finally {
+    credentialSaving.value = false
+  }
+}
+
+const confirmClearOpen = ref(false)
+const pendingClearRow = ref(null)
+
+function askClearCredential(row) {
+  pendingClearRow.value = row
+  confirmClearOpen.value = true
+}
+
+async function confirmClearCredential() {
+  const row = pendingClearRow.value
+  confirmClearOpen.value = false
+  if (!row) return
+
+  credentialSaving.value = true
+  credentialReport.value = null
+  try {
+    await clearVaultSlot(row.category, row.key_name)
+    credentialReport.value = { success: true, message: `${row.label} cleared.` }
+    await loadVaultSlots()
+  } catch (err) {
+    credentialReport.value = { success: false, message: err?.data?.message || 'Failed to clear.' }
+  } finally {
+    credentialSaving.value = false
+    pendingClearRow.value = null
+  }
+}
+
 // 7. MAIL SETTINGS
 const mailSlotLabels = {
   sandbox: { title: 'Sandbox SMTP', desc: 'Test-catcher SMTP mailer. Enable alongside Main SMTP for dual-send.' },
@@ -2066,6 +2235,21 @@ function handleLock() {
 </script>
 
 <style scoped>
+.vault-value-input-light:-webkit-autofill,
+.vault-value-input-light:-webkit-autofill:hover,
+.vault-value-input-light:-webkit-autofill:focus {
+  -webkit-text-fill-color: #1a1a1a;
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+.vault-value-input-dark:-webkit-autofill,
+.vault-value-input-dark:-webkit-autofill:hover,
+.vault-value-input-dark:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff;
+  -webkit-box-shadow: 0 0 0px 1000px rgba(20, 30, 28, 1) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 .custom-terminal-scrollbar::-webkit-scrollbar {
   width: 8px;
   height: 8px;

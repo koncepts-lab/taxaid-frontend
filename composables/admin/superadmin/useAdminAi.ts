@@ -69,6 +69,15 @@ export function useAdminAi() {
   const updateDataLink = (id: number, body: { label: string; context: string; category?: string | null; is_active: boolean }) =>
     useAdminApi(`/admin/ai/data-links/${id}`, { method: 'PUT', body })
 
+  const getModelCatalogOptions = () => useAdminApi('/admin/ai/model-tiers/model-options')
+  const getModelTiers = (params?: { usage_type?: string; search?: string; status?: string; page?: number; per_page?: number }) => useAdminApi(`/admin/ai/model-tiers${qs(params)}`)
+  const createModelTier = (body: { tier_key: string; usage_type: string; current_model_id: number; is_default?: boolean; is_active?: boolean }) =>
+    useAdminApi('/admin/ai/model-tiers', { method: 'POST', body })
+  const updateModelTier = (id: number, body: Partial<{ usage_type: string; current_model_id: number; is_default: boolean; is_active: boolean }>) =>
+    useAdminApi(`/admin/ai/model-tiers/${id}`, { method: 'PUT', body })
+  const deleteModelTier = (id: number) => useAdminApi(`/admin/ai/model-tiers/${id}`, { method: 'DELETE' })
+  const verifyModelTier = (id: number) => useAdminApi(`/admin/ai/model-tiers/${id}/verify`, { method: 'POST' })
+
   const getRules = (params?: { page?: number; per_page?: number; search?: string; domain?: string; category?: string }) => useAdminApi(`/admin/ai/rules${qs(params)}`)
   const updateRule = (id: number, body: { label: string; context_template: string | null; category?: string | null; is_active: boolean }) =>
     useAdminApi(`/admin/ai/rules/${id}`, { method: 'PUT', body })
@@ -112,6 +121,7 @@ export function useAdminAi() {
     exportClientAiConfig, runClientAiConfigAction,
     getSettings, addSetting, deleteSetting, getUsageSnapshot,
     getDataLinks, updateDataLink,
+    getModelCatalogOptions, getModelTiers, createModelTier, updateModelTier, deleteModelTier, verifyModelTier,
     getRules, updateRule,
     getAlertRules, updateAlertRule,
     getChatPrompts, createChatPrompt, updateChatPrompt, deleteChatPrompt, cloneChatPrompt,
