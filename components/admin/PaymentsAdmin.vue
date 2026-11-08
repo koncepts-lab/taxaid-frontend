@@ -1060,7 +1060,7 @@ function onChatTierChange(tierKey) {
   const tier = chatTiers.value.find(t => t.tier_key === tierKey)
   const levels = tier?.thinking_config?.levels ?? []
   if (!levels.includes(planForm.value.entitlements.ai.chat_thinking_level)) {
-    planForm.value.entitlements.ai.chat_thinking_level = tier?.thinking_config?.active_level ?? null
+    planForm.value.entitlements.ai.chat_thinking_level = tier?.thinking_config?.default_level ?? null
   }
 }
 function clampNonNegative(obj, key) {

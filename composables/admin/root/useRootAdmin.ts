@@ -241,7 +241,7 @@ export function useRootAdmin() {
     })
   }
 
-  async function createAiModel(body: { model_key: string; thinking_config: { provider: string; mechanism: string; levels?: string[]; active_level?: string; budget_tokens?: number } }) {
+  async function createAiModel(body: { model_key: string; thinking_config: { provider: string; mechanism: string; levels?: string[]; default_level?: string; budget_tokens?: number } }) {
     return await useAdminApi('/admin/root/ai/models', {
       method: 'POST',
       headers: { 'Request-Id': rootToken.value || '' },
@@ -250,7 +250,7 @@ export function useRootAdmin() {
   }
 
   /** Tests a model_key/thinking_config combo before it is saved. */
-  async function verifyAiModelConfig(body: { model_key: string; thinking_config: { provider: string; mechanism: string; levels?: string[]; active_level?: string; budget_tokens?: number } }) {
+  async function verifyAiModelConfig(body: { model_key: string; thinking_config: { provider: string; mechanism: string; levels?: string[]; default_level?: string; budget_tokens?: number } }) {
     return await useAdminApi('/admin/root/ai/models/verify-config', {
       method: 'POST',
       headers: { 'Request-Id': rootToken.value || '' },
@@ -267,7 +267,7 @@ export function useRootAdmin() {
     })
   }
 
-  async function updateAiModel(id: number, body: Partial<{ model_key: string; thinking_config: { provider: string; mechanism: string; levels?: string[]; active_level?: string; budget_tokens?: number }; is_active: boolean }>) {
+  async function updateAiModel(id: number, body: Partial<{ model_key: string; thinking_config: { provider: string; mechanism: string; levels?: string[]; default_level?: string; budget_tokens?: number }; is_active: boolean }>) {
     return await useAdminApi(`/admin/root/ai/models/${id}`, {
       method: 'PATCH',
       headers: { 'Request-Id': rootToken.value || '' },

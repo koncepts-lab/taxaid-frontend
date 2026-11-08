@@ -250,7 +250,7 @@ function buildThinkingConfig(m) {
   const config = { provider: m.provider, mechanism: m.mechanism }
   if (LEVEL_MECHANISMS.includes(m.mechanism)) {
     config.levels = m.levels
-    config.active_level = m.activeLevel
+    config.default_level = m.activeLevel
   }
   if (m.mechanism === 'claude_budget_tokens') config.budget_tokens = m.budgetTokens
   return config
@@ -264,7 +264,7 @@ function formatSupportedLevels(m) {
   if (config.budget_tokens != null) return `${Number(config.budget_tokens).toLocaleString()} tokens`
   if (config.levels?.length) {
     const label = config.levels.map(l => l.charAt(0).toUpperCase() + l.slice(1)).join(', ')
-    return config.active_level ? `${label} (default: ${config.active_level})` : label
+    return config.default_level ? `${label} (default: ${config.default_level})` : label
   }
   return '—'
 }
