@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 z-[100000] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 backdrop-blur-sm">
-      <div class="rounded-2xl mt-auto md:mt-0 h-[90vh] md:h-[82vh] max-h-[860px] w-[96vw] md:w-full max-w-4xl shadow-2xl flex flex-col overflow-hidden" :class="isDark ? 'bg-[#002e26]' : 'bg-white'" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
+    <div class="fixed inset-0 z-[100000] flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4">
+      <div class="rounded-2xl mt-auto md:mt-0 h-[90vh] md:h-[82vh] max-h-[860px] w-[96vw] md:w-full max-w-5xl shadow-2xl flex flex-col overflow-hidden" :class="isDark ? 'bg-[#002e26]' : 'bg-white'" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
         <div class="shrink-0 px-4 md:px-6 py-4 flex justify-between items-start border-b" :class="isDark ? 'border-white/10' : 'border-gray-100'">
           <div>
@@ -40,7 +40,7 @@
           <div v-else class="overflow-x-auto no-scrollbar">
           <table class="w-full table-fixed text-left border-separate border-spacing-0 min-w-[880px]">
             <colgroup>
-              <col style="width:16%"><col style="width:20%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:16%">
+              <col style="width:24%"><col style="width:18%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:10%">
             </colgroup>
             <thead>
               <tr class="text-white text-sm">
@@ -70,14 +70,14 @@
                     :class="isDuplicateRow(i)
                       ? 'border-red-400 focus:ring-red-400 bg-red-500/10 text-red-500'
                       : (isDark ? 'bg-white/5 border-white/10 text-white/80 placeholder-white/30 focus:ring-[#058a64]' : 'bg-gray-50 border-gray-200 text-gray-600 placeholder-gray-400 focus:ring-[#058a64]')" />
-                  <span v-else class="flex items-center gap-1.5" :class="isDark ? 'text-white/80' : 'text-gray-700'">
-                    {{ row.invoice_number || '—' }}
-                    <svg v-if="row.description" class="w-3.5 h-3.5 cursor-help" :class="isDark ? 'text-white/40' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24" @mouseenter="showTooltip($event, row.description)" @mouseleave="hideTooltip"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <span v-else class="flex items-center gap-1.5 min-w-0" :class="isDark ? 'text-white/80' : 'text-gray-700'">
+                    <span class="truncate" @mouseenter="onTruncatableHover($event, row.invoice_number)" @mouseleave="hideTooltip">{{ row.invoice_number || '—' }}</span>
+                    <svg v-if="row.description" class="w-3.5 h-3.5 cursor-help shrink-0" :class="isDark ? 'text-white/40' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24" @mouseenter="showTooltip($event, row.description)" @mouseleave="hideTooltip"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                   </span>
                 </td>
                 <td class="py-2 px-3">
                   <span v-if="row.isNew" class="invisible block mb-1 px-1.5 py-0.5 rounded text-[10px] font-semibold">.</span>
-                  <CommonDateField v-if="isEditableSource(row)" :model-value="row.date_of_invoice" size="sm" :dark="isDark"
+                  <CommonDateField v-if="row.isNew" :model-value="row.date_of_invoice" size="sm" :dark="isDark"
                     @update:model-value="(val) => nextTick(() => { row.date_of_invoice = val })" />
                   <span v-else class="block text-center" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatDisplayDate(row.date_of_invoice) || '—' }}</span>
                 </td>
@@ -97,7 +97,7 @@
                 </td>
                 <td class="py-2 px-3 text-center">
                   <span v-if="row.isNew" class="invisible block mb-1 px-1.5 py-0.5 rounded text-[10px] font-semibold">.</span>
-                  <input type="checkbox" v-model="row.markPaid" class="w-4 h-4 rounded text-[#058a64] focus:ring-[#058a64] disabled:opacity-40" :class="isDark ? 'border-white/20 bg-[#002e26]' : 'border-gray-300 bg-white'" />
+                  <input type="checkbox" :checked="row.markPaid" @change="onMarkPaidToggle(row, $event.target.checked)" class="w-4 h-4 rounded text-[#058a64] focus:ring-[#058a64] disabled:opacity-40" :class="isDark ? 'border-white/20 bg-[#002e26]' : 'border-gray-300 bg-white'" />
                 </td>
                 <td class="py-2 px-3 text-center">
                   <span v-if="row.isNew" class="invisible block mb-1 px-1.5 py-0.5 rounded text-[10px] font-semibold">.</span>
@@ -127,9 +127,9 @@
           <div class="mt-6" v-if="!loading">
             <h3 class="text-sm font-bold mb-2" :class="isDark ? 'text-white' : 'text-gray-800'">{{ labels.candidatesHeading }}</h3>
             <div class="overflow-x-auto no-scrollbar">
-            <table class="w-full table-fixed text-left border-separate border-spacing-0 min-w-[700px]">
+            <table class="w-full table-fixed text-left border-separate border-spacing-0 min-w-[780px]">
               <colgroup>
-                <col style="width:20%"><col style="width:42%"><col style="width:20%"><col style="width:18%">
+                <col style="width:24%"><col style="width:42%"><col style="width:14%"><col style="width:20%">
               </colgroup>
               <thead>
                 <tr class="text-white text-sm">
@@ -144,7 +144,9 @@
                   <td colspan="4" class="py-6 px-3 text-center" :class="isDark ? 'text-white/50' : 'text-gray-500'">{{ labels.noCandidates }}</td>
                 </tr>
                 <tr v-for="(c, i) in candidateRows" :key="`c-${i}`" :class="isDark ? 'bg-[#002e26]' : 'bg-white'">
-                  <td class="py-2 px-3" :class="isDark ? 'text-white/70' : 'text-gray-600'">{{ c.voucher_no || '—' }}</td>
+                  <td class="py-2 px-3" :class="isDark ? 'text-white/70' : 'text-gray-600'">
+                    <span class="truncate block" @mouseenter="onTruncatableHover($event, c.voucher_no)" @mouseleave="hideTooltip">{{ c.voucher_no || '—' }}</span>
+                  </td>
                   <td class="py-2 px-3" :class="isDark ? 'text-white/70' : 'text-gray-600'">
                     <span class="flex items-center gap-1.5">
                       <span class="truncate">{{ c.narration || labels.noNarration }}</span>
@@ -152,8 +154,11 @@
                     </span>
                   </td>
                   <td class="py-2 px-3 text-right" :class="isDark ? 'text-white/80' : 'text-gray-700'">{{ formatCurrency(c.amount) }}</td>
-                  <td class="py-2 px-3 text-center">
-                    <button @click="addCandidate(c)" class="bg-[#058a64] hover:bg-[#047857] text-white px-3 py-1 rounded-md text-xs font-medium">{{ labels.add }}</button>
+                  <td class="py-2 px-3" :class="matchingInvoiceRow(c) ? 'text-left' : 'text-center'">
+                    <div class="flex items-center gap-1.5" :class="matchingInvoiceRow(c) ? 'justify-start' : 'justify-center'">
+                      <button @click="addCandidate(c)" class="bg-[#058a64] hover:bg-[#047857] text-white px-3 py-1 rounded-md text-xs font-medium">{{ labels.add }}</button>
+                      <button v-if="matchingInvoiceRow(c)" @click="markPaidFromCandidate(c)" class="bg-[#058a64] hover:bg-[#047857] text-white px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap">{{ labels.markPaidSuggestion }}</button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -197,6 +202,10 @@ const showTooltip = (event, text) => {
   tooltip.value = { visible: true, top: rect.bottom + 4, left: rect.left, text };
 };
 const hideTooltip = () => { tooltip.value.visible = false; };
+const onTruncatableHover = (event, text) => {
+  if (!text || event.target.scrollWidth <= event.target.clientWidth) return;
+  showTooltip(event, text);
+};
 
 const props = defineProps({
   side: { type: String, required: true }, // 'ap' | 'ar'
@@ -243,6 +252,7 @@ const labels = computed(() => isAr.value ? {
   noNarration: 'لا يوجد بيان متاح',
   amount: 'المبلغ',
   add: 'إضافة',
+  markPaidSuggestion: 'تحديد كمدفوع',
   noCandidates: 'لا توجد أسباب محتملة من دفتر اليومية لهذا المورد.',
   duplicateWarning: 'أرقام فواتير مكررة لهذا المورد — أعطِ كل فاتورة رقماً فريداً قبل التطبيق.',
   balanced: 'تمت التسوية بالكامل',
@@ -274,6 +284,7 @@ const labels = computed(() => isAr.value ? {
   noNarration: 'No narration available',
   amount: 'Amount',
   add: 'Add',
+  markPaidSuggestion: 'Mark as Paid',
   noCandidates: 'No potential reasons found from the day book for this vendor.',
   duplicateWarning: 'Duplicate invoice numbers for this vendor — give each one a unique number before applying.',
   balanced: 'Fully balanced',
@@ -292,7 +303,7 @@ const toNumber = (v) => {
 };
 const todayStr = () => props.targetDate || new Date().toISOString().slice(0, 10);
 
-const isEditableSource = (row) => row.isNew || row.source === 'adjustment';
+const isEditableSource = () => true;
 
 const buildRows = () => {
   const editLines = (props.initialLines || []).filter((l) => l.action === 'edit');
@@ -379,6 +390,24 @@ const removeRow = (i) => {
   const row = rows.value[i];
   if (row.sourceCandidate) candidateRows.value.push(row.sourceCandidate);
   rows.value.splice(i, 1);
+};
+
+const matchingInvoiceRow = (c) => rows.value.find((row) => !row.isNew && !row.markPaid && Math.abs(toNumber(row.amount) - toNumber(c.amount)) < 0.01);
+
+const markPaidFromCandidate = (c) => {
+  const row = matchingInvoiceRow(c);
+  if (!row) return;
+  row.markPaid = true;
+  row.sourceCandidate = c;
+  candidateRows.value = candidateRows.value.filter((item) => item !== c);
+};
+
+const onMarkPaidToggle = (row, checked) => {
+  row.markPaid = checked;
+  if (!checked && row.sourceCandidate) {
+    candidateRows.value.push(row.sourceCandidate);
+    row.sourceCandidate = null;
+  }
 };
 
 const sanitizeAmount = (v) => String(v ?? '').replace(/[^0-9.]/g, '');
