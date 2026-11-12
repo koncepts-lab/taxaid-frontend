@@ -114,13 +114,14 @@
         </div>
       </div>
 
-      <div class="pt-3 border-t border-white/10 mx-2">
-        
+      <!-- Net Revenue (After Returns) — hidden for now, kept for later use; wrapper div kept empty (no border) to preserve just the spacing -->
+      <div class="pt-3 mx-2">
+        <!--
         <div class="text-[18px] font-thin flex items-center justify-center gap-1">
           <img src="/images/icons/dirham.svg" alt="Icon" class="w-[16px]" />{{ formatNumber(netRevenue) }}
           <div class="text-[14px] font-thin">{{ currentLang === 'ar' ? 'صافي الإيرادات (بعد المرتجعات)' : 'Net Revenue (After Returns)' }}</div>
         </div>
-        
+        -->
       </div>
     </div>
   </div>
