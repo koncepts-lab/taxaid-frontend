@@ -591,7 +591,7 @@
             <button v-else @click="handleSendPartnerResetEmail" :disabled="resetEmailSending" class="w-full bg-[#007C65] text-white py-2.5 rounded-md text-sm font-medium hover:bg-[#006A56] transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-sm flex items-center justify-center gap-2">
               <svg v-if="resetEmailSending" class="animate-spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
               <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-              {{ resetEmailSending ? 'Sending...' : 'Send Reset Email' }}
+              {{ resetEmailSending ? 'Sending' : 'Send Reset Email' }}
             </button>
           </div>
         </div>
@@ -695,10 +695,10 @@
         <div class="px-6 py-5 flex items-center justify-between gap-3">
           <h2 class="text-[19px] font-semibold text-gray-900 whitespace-nowrap">Edit User</h2>
           <div class="flex items-center gap-3">
-            <button v-if="!editUser?.welcome_email_sent_at" @click="handleResendWelcomeEmail" :disabled="resendingMail" class="px-4 py-1.5 rounded-md border border-[#FDE68A] bg-[#FFFBEB] text-[#92400E] text-[13px] font-medium hover:bg-[#FEF3C7] transition-colors disabled:opacity-60 flex items-center gap-2 whitespace-nowrap">
+            <!-- <button v-if="!editUser?.welcome_email_sent_at" @click="handleResendWelcomeEmail" :disabled="resendingMail" class="px-4 py-1.5 rounded-md border border-[#FDE68A] bg-[#FFFBEB] text-[#92400E] text-[13px] font-medium hover:bg-[#FEF3C7] transition-colors disabled:opacity-60 flex items-center gap-2 whitespace-nowrap">
               <svg v-if="resendingMail" width="13" height="13" viewBox="0 0 24 24" fill="none" class="animate-spin"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" fill="none"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
               {{ resendingMail ? 'Sending…' : 'Resend Login Mail' }}
-            </button>
+            </button> -->
             <button @click="showEditUserModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
@@ -712,6 +712,10 @@
           <div>
             <label class="block text-[14px] font-semibold text-gray-900 mb-2">Email Address *</label>
             <input v-model="editUserForm.email" type="email" placeholder="user@taxaid.com" class="w-full border border-[#A7F3D0] rounded-md px-3 py-2.5 text-[14px] text-gray-900 focus:outline-none focus:border-[#007C65] focus:ring-1 focus:ring-[#007C65] placeholder-gray-400 shadow-sm" />
+            <label v-if="isEmailModified" class="flex items-center gap-2 mt-2 cursor-pointer select-none">
+              <input type="checkbox" v-model="sendLoginEmailOnUpdate" class="w-4 h-4 rounded border-gray-300 accent-[#007C65] cursor-pointer" />
+              <span class="text-[13px] text-gray-700 font-medium">Send login credentials with new generated password to this new email</span>
+            </label>
           </div>
           <div>
             <label class="block text-[14px] font-semibold text-gray-900 mb-2">Phone Number</label>
@@ -756,13 +760,13 @@
         <div class="px-6 py-5 flex items-center justify-end gap-3 bg-white mt-2">
           <button @click="handleResetUserPassword" :disabled="resettingPassword" class="px-5 py-2 rounded-md border border-gray-200 bg-white text-gray-700 text-[14px] font-medium hover:bg-gray-50 transition-colors disabled:opacity-60 flex items-center gap-2 whitespace-nowrap">
             <svg v-if="resettingPassword" width="14" height="14" viewBox="0 0 24 24" fill="none" class="animate-spin"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" fill="none"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
-            {{ resettingPassword ? 'Sending…' : 'Reset User Password' }}
+            {{ resettingPassword ? 'Sending' : 'Reset User Password' }}
           </button>
           <button @click="showEditUserModal = false" :disabled="savingUser" class="px-5 py-2 rounded-md border border-gray-200 bg-white text-gray-700 text-[14px] font-medium hover:bg-gray-50 transition-colors disabled:opacity-60 flex items-center gap-2 whitespace-nowrap">Cancel</button>
           <button @click="handleEditUser" :disabled="savingUser" class="bg-[#007C65] text-white px-5 py-2 rounded-md font-medium text-[14px] flex items-center gap-2 hover:bg-[#006A56] transition-colors shadow-sm disabled:opacity-60 whitespace-nowrap">
             <svg v-if="savingUser" width="16" height="16" viewBox="0 0 24 24" fill="none" class="animate-spin"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" fill="none"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
             <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            {{ savingUser ? 'Saving…' : 'Save Changes' }}
+            {{ savingUser ? 'Saving' : 'Save Changes' }}
           </button>
         </div>
       </div>
@@ -1007,7 +1011,7 @@
           <button v-if="addUserStep === 3" @click="handleCreateUser" :disabled="creatingUser" class="w-1/2 bg-[#007C65] text-white py-2.5 rounded-md font-medium text-[15px] flex items-center justify-center gap-2 hover:bg-[#006A56] transition-colors shadow-sm disabled:opacity-60">
             <svg v-if="creatingUser" width="18" height="18" viewBox="0 0 24 24" fill="none" class="animate-spin"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" fill="none"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
             <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            {{ creatingUser ? 'Creating…' : 'Create User' }}
+            {{ creatingUser ? 'Creating' : 'Create User' }}
           </button>
         </div>
       </div>
@@ -1338,9 +1342,16 @@ async function openConfigureModal(user) {
   showConfigureModal.value = true
 }
 
+const sendLoginEmailOnUpdate = ref(true)
+const isEmailModified = computed(() => {
+  if (!editUser.value?.email || !editUserForm.value?.email) return false
+  return editUserForm.value.email.trim().toLowerCase() !== editUser.value.email.trim().toLowerCase()
+})
+
 function openEditModal(user) {
   editUser.value     = user
   editUserForm.value = { full_name: user.full_name, email: user.email, phone_number: user.phone_number ?? '', admin_role_id: user.admin_role_id, department_id: user.department_id, title: user.meta?.title ?? '', description: user.meta?.description ?? '', notes: user.meta?.notes ?? '' }
+  sendLoginEmailOnUpdate.value = true
   resendMailStatus.value = null
   resetPasswordStatus.value = null
   editUserError.value = ''
@@ -1374,7 +1385,11 @@ async function handleEditUser() {
   savingUser.value = true
   editUserError.value = ''
   try {
+    const shouldSendLoginMail = isEmailModified.value && sendLoginEmailOnUpdate.value
     await updateUser(editUser.value.id, editUserForm.value)
+    if (shouldSendLoginMail) {
+      await resendWelcomeEmail(editUser.value.id)
+    }
     showEditUserModal.value = false
     await loadData()
   } catch (err) {

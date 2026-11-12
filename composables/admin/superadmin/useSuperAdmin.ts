@@ -75,7 +75,11 @@ export function useSuperAdmin() {
   }
 
   async function updateUser(id: number, data: Record<string, any>): Promise<AdminUser> {
-    const res: any = await apiFetch(`/admin/users/${id}`, { method: 'PUT', body: data })
+    const payload = { ...data }
+    if (payload.admin_role_id !== undefined && payload.role_id === undefined) {
+      payload.role_id = payload.admin_role_id
+    }
+    const res: any = await apiFetch(`/admin/users/${id}`, { method: 'PUT', body: payload })
     return res.data ?? res
   }
 
