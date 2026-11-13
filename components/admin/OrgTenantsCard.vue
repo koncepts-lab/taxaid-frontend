@@ -80,17 +80,21 @@
     </div>
 
     <div v-if="!loading && org" class="px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-4">
-      <div class="min-w-0">
+      <div class="min-w-0 flex items-center gap-3">
         <p class="text-[13px] font-medium text-gray-800">Organization status:
           <span class="capitalize" :class="org.status === 'suspended' ? 'text-amber-700' : 'text-[#065F46]'">{{ org.status || 'active' }}</span>
         </p>
+        <button v-if="org.status === 'suspended' && canDeleteOrg" @click="startDeleteOrg" :disabled="deleteBusy"
+          class="whitespace-nowrap px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-[12px] font-medium transition-colors disabled:opacity-60">Delete</button>
         <p v-if="org.status !== 'suspended' && !allTenantsSuspended" class="text-[12px] text-gray-400 mt-0.5">Every tenant must be suspended before the organization can be suspended.</p>
       </div>
-      <button v-if="org.status === 'suspended'" @click="orgTarget = 'active'" :disabled="orgBusy"
-        class="whitespace-nowrap px-4 py-2 bg-[#00896F] text-white rounded-md text-[13px] font-medium hover:bg-[#00705a] disabled:opacity-60">Unsuspend Organization</button>
-      <button v-else @click="orgTarget = 'suspended'" :disabled="orgBusy || !allTenantsSuspended"
-        class="whitespace-nowrap px-4 py-2 border rounded-md text-[13px] font-medium disabled:opacity-40"
-        :class="isDark ? 'border-red-400 text-red-300 hover:bg-red-500/10' : 'border-red-300 text-red-600 hover:bg-red-50'">Suspend Organization</button>
+      <div class="flex items-center gap-3">
+        <button v-if="org.status === 'suspended'" @click="orgTarget = 'active'" :disabled="orgBusy"
+          class="whitespace-nowrap px-4 py-2 bg-[#00896F] text-white rounded-md text-[13px] font-medium hover:bg-[#00705a] disabled:opacity-60">Unsuspend Organization</button>
+        <button v-else @click="orgTarget = 'suspended'" :disabled="orgBusy || !allTenantsSuspended"
+          class="whitespace-nowrap px-4 py-2 border rounded-md text-[13px] font-medium disabled:opacity-40"
+          :class="isDark ? 'border-red-400 text-red-300 hover:bg-red-500/10' : 'border-red-300 text-red-600 hover:bg-red-50'">Suspend Organization</button>
+      </div>
     </div>
 
     <div v-if="orgTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -128,6 +132,30 @@
         </div>
       </div>
     </div>
+
+    <Teleport to="body">
+      <div v-if="showDeleteModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" @click.self="showDeleteModal = false">
+        <div class="bg-white rounded-xl shadow-lg w-[420px] max-w-full p-6">
+          <h3 class="text-[16px] font-semibold text-gray-900 mb-2">Delete organization?</h3>
+          <p class="text-sm text-gray-500 mb-4">
+            <span class="font-medium text-gray-700">{{ org?.name }}</span><br>
+            This will permanently delete the organization, its schema, tenants, users, and cancel any active Stripe subscriptions. This cannot be undone.
+          </p>
+          <label class="block text-[13px] text-gray-600 mb-1.5">Confirm with your Super Admin password</label>
+          <input v-model="adminPassword" type="password" placeholder="Your password" autocomplete="current-password"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008169]" />
+          <p v-if="deleteError" class="text-[13px] text-red-500 mt-2">{{ deleteError }}</p>
+          <div class="flex justify-end gap-3 mt-6">
+            <button @click="showDeleteModal = false" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+            <button @click="confirmDeleteOrg" :disabled="deleteBusy || !adminPassword"
+              class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-60">
+              <CommonAnimationsSpinner v-if="deleteBusy" size="w-4 h-4" />
+              <span>{{ deleteBusy ? 'Deleting' : 'Delete organization' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
   <Teleport to="body">
     <div v-if="aiTip" class="fixed z-[80] pointer-events-none rounded-md px-3 py-2 shadow-lg space-y-0.5 text-[12px] border"
@@ -148,7 +176,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['changed', 'open-tenant', 'loaded', 'rename'])
 
-const { getTenants, setTenantStatus, setOrganizationStatus } = useClientManagement()
+const { getTenants, setTenantStatus, setOrganizationStatus, deleteOrganization } = useClientManagement()
 
 const PAGE_SIZE = 10
 
@@ -161,6 +189,17 @@ const error = ref('')
 const target = ref(null)
 const orgTarget = ref(null)
 const orgBusy = ref(false)
+
+const showDeleteModal = ref(false)
+const adminPassword = ref('')
+const deleteBusy = ref(false)
+const deleteError = ref('')
+
+const canDeleteOrg = computed(() => {
+  if (!org.value || org.value.status !== 'suspended' || !org.value.updated_at) return false
+  const suspendedTime = new Date(org.value.updated_at).getTime()
+  return (Date.now() - suspendedTime) >= 24 * 60 * 60 * 1000
+})
 
 const fixedRows = computed(() => (meta.value.total > 5 ? PAGE_SIZE : 5))
 const allTenantsSuspended = computed(() => tenants.value.length > 0 && tenants.value.every((t) => t.status === 'suspended'))
@@ -211,7 +250,12 @@ async function load(page = 1) {
       last_page: res?.last_page ?? 1,
     }
     const first = tenants.value[0]
-    org.value = first ? { id: first.organization_id, name: first.organization_name, status: first.organization_status } : org.value
+    org.value = first ? {
+      id: first.organization_id,
+      name: first.organization_name,
+      status: first.organization_status,
+      updated_at: first.organization_updated_at || first.updated_at,
+    } : org.value
     emit('loaded', tenants.value)
   } catch (e) {
     error.value = e?.data?.message ?? 'Failed to load organization.'
@@ -241,7 +285,7 @@ async function applyOrgStatus() {
   error.value = ''
   try {
     await setOrganizationStatus(props.organizationId, orgTarget.value)
-    org.value = org.value ? { ...org.value, status: orgTarget.value } : org.value
+    org.value = org.value ? { ...org.value, status: orgTarget.value, updated_at: new Date().toISOString() } : org.value
     orgTarget.value = null
     emit('changed')
   } catch (e) {
@@ -249,6 +293,28 @@ async function applyOrgStatus() {
     orgTarget.value = null
   } finally {
     orgBusy.value = false
+  }
+}
+
+function startDeleteOrg() {
+  adminPassword.value = ''
+  deleteError.value = ''
+  showDeleteModal.value = true
+}
+
+async function confirmDeleteOrg() {
+  deleteBusy.value = true
+  deleteError.value = ''
+  try {
+    await deleteOrganization(props.organizationId, adminPassword.value)
+    showDeleteModal.value = false
+    emit('changed')
+    const router = useRouter()
+    router.push({ path: '/admin/management', query: { tab: 'organization-management' } })
+  } catch (e) {
+    deleteError.value = e?.data?.message || 'Could not delete organization.'
+  } finally {
+    deleteBusy.value = false
   }
 }
 
