@@ -224,12 +224,10 @@ export function useDashboard() {
 
   async function fetchSummaryCached() {
     error.value = null
-    // Always show the skeleton while this resolves — even cache-seeded data
-    // (e.g. from login) needs confirming against a live fetch before it's
-    // safe to call "ready"; a blank unstyled flash is worse than a skeleton.
-    loading.value = true
+    const fetchPromise = fetchDashboardCached()
+    loading.value = raw.value === null
     try {
-      await fetchDashboardCached()
+      await fetchPromise
     } catch (err: any) {
       error.value = err?.data?.message ?? 'Failed to load dashboard data'
       // eslint-disable-next-line no-console
