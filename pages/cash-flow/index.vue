@@ -29,7 +29,7 @@
                         :showPeriodToggle="true"
                         :projectionPeriod="period"
                         :periods="cashFlowPeriods"
-                        @reload="() => fetchProjection(trackReloadClick('cash-flow'))"
+                        @reload="handleReload"
                         @selected-date="handleDateSelected"
                         @period-change="handlePeriodChange"
                         @export="exportOpen = true"
@@ -120,6 +120,11 @@ const handleDateSelected = (periodData) => {
 const handlePeriodChange = (months) => {
     period.value = months
     fetchProjection()
+}
+
+const handleReload = () => {
+    scenario.value = '100% Scenario'
+    fetchProjection(trackReloadClick('cash-flow'))
 }
 
 const { openOneClickSummary } = useAkeel()

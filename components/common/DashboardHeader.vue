@@ -376,6 +376,9 @@ const resetToDefault = () => {
     pickedMonthValue.value = toMonthValue('')
     showDateDropdown.value = false
     showExportDropdown.value = false
+    if (props.showPeriodToggle) {
+        selectProjectionPeriod(3)
+    }
 }
 
 const handleReload = () => {
