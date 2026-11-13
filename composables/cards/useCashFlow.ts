@@ -32,6 +32,24 @@ export const useCashFlow = () => {
     }
   }
 
+  const scenarioChartRaw = useState<any>('cashflow_scenario_chart_raw', () => null)
+
+  const fetchScenarioChart = async () => {
+    try {
+      const params = new URLSearchParams()
+      if (activeDate.value) params.set('date', activeDate.value)
+      params.set('period',   String(period.value))
+      params.set('scenario', '100% Scenario')
+      params.set('show_last_year_fallback', showLastYearFallback.value ? '1' : '0')
+      params.set('include_90', '1')
+
+      const res = await useApi(`/cash-flow/projection?${params.toString()}`) as any
+      scenarioChartRaw.value = res.data ?? null
+    } catch {
+      scenarioChartRaw.value = null
+    }
+  }
+
   // ── ⓘ invoice-details drill-down (GET /cash-flow/customer-projection) ────
 
   const customerDetail        = useState<any>('cashflow_customer_detail', () => null)
@@ -193,16 +211,23 @@ export const useCashFlow = () => {
     return Array.from(new Set([...incoming, ...outgoing]))
   })
 
-  // ── CashFlowChart (line: Incoming = Real, Outgoing = Hypothetical) ────────
+  const scenarioChartMonths = computed((): string[] => {
+    if (!scenarioChartRaw.value) return []
+    return Object.keys(scenarioChartRaw.value['Opening Cash Balance']?.monthly_totals ?? {})
+  })
 
   const scenarioChart = computed(() => {
-    if (!rawData.value || !months.value.length) return null
-    const ms = months.value
-    const d  = rawData.value
+    if (!scenarioChartRaw.value || !scenarioChartMonths.value.length) return null
+    const ms = scenarioChartMonths.value
+    const d  = scenarioChartRaw.value
+    const realRaw = ms.map((m, i) => i === 0
+      ? (d['Opening Cash Balance']?.monthly_totals?.[m] ?? 0)
+      : (d['Closing Balance']?.monthly_totals?.[m] ?? 0))
+    const hypoRaw = ms.map(m => d['Projections from 90%']?.monthly_totals?.[m] ?? 0)
     return {
       series: [
-        { name: 'Real Scenario',        nameAr: 'سيناريو حقيقي',    data: ms.map(m => toM(d['Incoming']?.monthly_totals?.[m] ?? 0)), dataRaw: ms.map(m => d['Incoming']?.monthly_totals?.[m] ?? 0) },
-        { name: 'Hypothetical Scenario', nameAr: 'سيناريو افتراضي', data: ms.map(m => toM(d['Outgoing']?.monthly_totals?.[m] ?? 0)), dataRaw: ms.map(m => d['Outgoing']?.monthly_totals?.[m] ?? 0) },
+        { name: 'Real Scenario',        nameAr: 'سيناريو حقيقي',    data: realRaw.map(toM), dataRaw: realRaw },
+        { name: 'Hypothetical Scenario', nameAr: 'سيناريو افتراضي', data: hypoRaw.map(toM), dataRaw: hypoRaw },
       ],
       categories:   ms,
       categoriesAr: translateMonthLabels(ms),
@@ -235,6 +260,7 @@ export const useCashFlow = () => {
     fallbackMonths,
     showLastYearFallback,
     fetchProjection,
+    fetchScenarioChart,
     customerDetail,
     customerDetailLoading,
     customerDetailError,
