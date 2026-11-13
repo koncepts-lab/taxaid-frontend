@@ -84,17 +84,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from 'vue';
+import { computed, ref } from 'vue';
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
 const { code: currencyCode, valuesNote } = useCurrency()
 const { unit, fmt, axisFmt, axisFor, plotter } = useChartHelper('cash_flow_scenario_unit')
 const isModalOpen = ref(false)
 
-const { scenarioChart, fyLabel, fallbackMonths, activeDate, period, fetchScenarioChart } = useCashFlow()
-
-onMounted(fetchScenarioChart)
-watch([activeDate, period], fetchScenarioChart)
+const { scenarioChart, fyLabel, fallbackMonths } = useCashFlow()
 
 const rawSeries = computed(() => scenarioChart.value?.series ?? [])
 const peak = computed(() => Math.max(0, ...rawSeries.value.flatMap(s => s.dataRaw ?? [])))
