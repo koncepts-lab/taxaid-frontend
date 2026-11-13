@@ -33,10 +33,11 @@
             :disabled="saving"
             class="flex items-center gap-2 px-5 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+            <CommonAnimationsSpinner v-if="saving" size="w-4 h-4" />
+            <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
             </svg>
-            {{ saving ? 'Saving...' : 'Save Changes' }}
+            {{ saving ? 'Saving' : 'Save Changes' }}
           </button>
         </div>
       </template>
@@ -183,17 +184,17 @@
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
           </div>
           <div class="flex-1">
-            <p class="text-xs mb-0.5" :class="isDark ? 'text-white/50' : 'text-gray-500'">First Name</p>
-            <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ profile.firstName }}</p>
+            <p class="text-xs mb-0.5" :class="isDark ? 'text-white/50' : 'text-gray-500'">Name</p>
+            <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ [profile.firstName, profile.lastName].filter(Boolean).join(' ') || '—' }}</p>
           </div>
         </div>
         <div :class="['border rounded-xl p-4 flex items-center gap-4 transition-colors', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
           <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="isDark ? 'bg-teal-500/20 text-[#04C18F]' : 'bg-[#E6F6F2] text-[#00896F]'">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.364a4.125 4.125 0 0 0-6.338 0 .375.375 0 0 1-.58-.337 4.5 4.5 0 0 1 7.498 0 .375.375 0 0 1-.58.337Z" /></svg>
           </div>
           <div class="flex-1">
-            <p class="text-xs mb-0.5" :class="isDark ? 'text-white/50' : 'text-gray-500'">Last Name</p>
-            <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ profile.lastName }}</p>
+            <p class="text-xs mb-0.5" :class="isDark ? 'text-white/50' : 'text-gray-500'">TaxAid License ID</p>
+            <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ taxaidLicenseId || '—' }}</p>
           </div>
         </div>
         <div :class="['border rounded-xl p-4 flex items-center gap-4 transition-colors', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#EBFAF680] border-[#E9F3F0]']">
@@ -269,10 +270,11 @@
               type="button"
               @click="handleVerifyEmailClick"
               :disabled="emailOtp.sending"
-              class="shrink-0 px-4 py-2 rounded-lg text-sm font-medium border transition-colors disabled:opacity-50"
+              class="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium border transition-colors disabled:opacity-50"
               :class="emailOtp.codeSent ? 'border-[#00896F] text-[#00896F] bg-white' : 'bg-[#00C853] text-white border-[#00C853] hover:bg-[#00b34a]'"
             >
-              {{ emailOtp.sending ? 'Sending...' : (emailOtp.codeSent ? 'Verify' : 'Verify Email') }}
+              <CommonAnimationsSpinner v-if="emailOtp.sending" size="w-3.5 h-3.5" />
+              {{ emailOtp.sending ? 'Sending' : (emailOtp.codeSent ? 'Verify' : 'Verify Email') }}
             </button>
             <span v-if="emailVerified" class="shrink-0 flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium bg-[#E6F6F2] text-[#00896F] border border-[#00896F]">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
@@ -294,9 +296,10 @@
                 type="button"
                 @click="handleConfirmOtp"
                 :disabled="emailOtp.confirming || emailOtp.code.length !== 4"
-                class="px-4 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] disabled:opacity-50"
+                class="flex items-center gap-1.5 px-4 py-2 bg-[#00896F] text-white rounded-lg text-sm font-medium hover:bg-[#00705a] disabled:opacity-50"
               >
-                {{ emailOtp.confirming ? 'Checking...' : 'Confirm' }}
+                <CommonAnimationsSpinner v-if="emailOtp.confirming" size="w-3.5 h-3.5" />
+                {{ emailOtp.confirming ? 'Checking' : 'Confirm' }}
               </button>
               <button
                 type="button"
@@ -689,8 +692,10 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useProfile } from '~/composables/settings/useProfile'
+import { useIdentity } from '~/composables/authentication/useIdentity'
 
 const { isDark } = useTheme()
+const { taxaidLicenseId, ensureIdentity } = useIdentity()
 
 const { profile, pictureUrl, loading, saving, error, fetchProfile, saveProfile, sendEmailChangeCode, verifyEmailChangeCode, uploadPicture } = useProfile()
 
@@ -717,7 +722,10 @@ let resendTimer: ReturnType<typeof setInterval> | null = null
 
 const emailChanged = computed(() => !!profile.value && profile.value.email !== savedEmail.value)
 
-onMounted(() => fetchProfile(false, canEditCompany.value))
+onMounted(() => {
+  ensureIdentity()
+  fetchProfile(false, canEditCompany.value)
+})
 
 watch(profile, (p) => {
   if (p && !savedEmail.value) savedEmail.value = p.email

@@ -68,6 +68,8 @@ export const useAuth = () => {
           email: response.data.user?.email ?? '',
           role: response.data.user?.role ?? null,
           accountType: response.data.user?.account_type ?? null,
+          tenantId: response.data.user?.tenant_id ?? null,
+          licenseId: response.data.tenant?.license_id ?? null,
         } as any
 
         resetProfile()
