@@ -32,16 +32,19 @@ export const useChartHelper = (storageKey = 'chart_unit') => {
 
   const formatWhole = (value: any) => whole.format(Number(value) || 0)
 
-  const axisFor = (peak: number) => {
+  const axisFor = (peak: number, trough: number = 0) => {
     const top = peak * 1.12
-    if (top <= 0) return { max: 5, ticks: 5 }
+    const bottom = trough < 0 ? trough * 1.12 : 0
 
-    const rough = top / 5
+    if (top <= 0 && bottom >= 0) return { min: 0, max: 5, ticks: 5 }
+
+    const rough = (top - bottom) / 5
     const power = Math.pow(10, Math.floor(Math.log10(rough)))
     const step = [1, 1.5, 2, 2.5, 3, 4, 5, 10].map(m => m * power).find(s => s >= rough) ?? 10 * power
     const max = Math.ceil(top / step) * step
+    const min = bottom < 0 ? Math.floor(bottom / step) * step : 0
 
-    return { max, ticks: Math.max(2, Math.round(max / step)) }
+    return { min, max, ticks: Math.max(2, Math.round((max - min) / step)) }
   }
 
   // Bars too small to see get a minimum height; labels and tooltips still show the real value.

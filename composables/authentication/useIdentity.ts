@@ -6,7 +6,14 @@ export const useIdentity = () => {
   const cookie = useCookie<any>('identity')
   const { roleLabel } = useRoleLabel()
 
-  const identity = computed<{ name: string; email: string; role?: string | null; accountType?: string | null } | null>(() => {
+  const identity = computed<{
+    name: string
+    email: string
+    role?: string | null
+    accountType?: string | null
+    tenantId?: number | null
+    licenseId?: string | null
+  } | null>(() => {
     const value = cookie.value
     return value && typeof value === 'object' ? value : null
   })
@@ -16,8 +23,17 @@ export const useIdentity = () => {
     email: string | null | undefined,
     role: string | null | undefined = cookie.value?.role ?? null,
     accountType: string | null | undefined = cookie.value?.accountType ?? null,
+    tenantId: number | null | undefined = cookie.value?.tenantId ?? null,
+    licenseId: string | null | undefined = cookie.value?.licenseId ?? null,
   ) => {
-    cookie.value = { name: name || '', email: email || '', role: role || null, accountType: accountType || null }
+    cookie.value = {
+      name: name || '',
+      email: email || '',
+      role: role || null,
+      accountType: accountType || null,
+      tenantId: tenantId ?? null,
+      licenseId: licenseId || null,
+    }
   }
 
   const identityContact = computed(() =>
@@ -26,6 +42,13 @@ export const useIdentity = () => {
       : (identity.value?.email || '')
   )
 
+  const taxaidLicenseId = computed(() => {
+    const lic = identity.value?.licenseId
+    const tid = identity.value?.tenantId
+    if (!lic) return ''
+    return tid ? `${lic}-${tid}` : lic
+  })
+
   const ensureIdentity = async () => {
     const timezone = useCookie('timezone')
     if ((syncedThisLoad && identity.value?.email && timezone.value) || !useCookie('auth_token').value) return
@@ -33,10 +56,17 @@ export const useIdentity = () => {
     try {
       const me: any = await useApi('/me')
       useCookie('display_format').value = me?.data?.user?.display_format ?? null
-      setIdentity(me?.data?.user?.company_name, me?.data?.user?.email, me?.data?.user?.role, me?.data?.user?.account_type)
+      setIdentity(
+        me?.data?.user?.company_name,
+        me?.data?.user?.email,
+        me?.data?.user?.role,
+        me?.data?.user?.account_type,
+        me?.data?.user?.tenant_id,
+        me?.data?.tenant?.license_id,
+      )
       if (me?.data?.tenant?.timezone) timezone.value = me.data.tenant.timezone
     } catch {}
   }
 
-  return { identity, identityContact, setIdentity, ensureIdentity }
+  return { identity, identityContact, taxaidLicenseId, setIdentity, ensureIdentity }
 }

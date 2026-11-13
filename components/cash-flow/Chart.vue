@@ -84,17 +84,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 const currentLang = useState('currentLang')
 const { isDark } = useTheme()
 const { code: currencyCode, valuesNote } = useCurrency()
 const { unit, fmt, axisFmt, axisFor, plotter } = useChartHelper('cash_flow_scenario_unit')
 const isModalOpen = ref(false)
 
-const { scenarioChart, fyLabel, fallbackMonths } = useCashFlow()
+const { scenarioChart, fyLabel, fallbackMonths, activeDate, period, fetchScenarioChart } = useCashFlow()
+
+onMounted(fetchScenarioChart)
+watch([activeDate, period], fetchScenarioChart)
 
 const rawSeries = computed(() => scenarioChart.value?.series ?? [])
 const peak = computed(() => Math.max(0, ...rawSeries.value.flatMap(s => s.dataRaw ?? [])))
+const trough = computed(() => Math.min(0, ...rawSeries.value.flatMap(s => s.dataRaw ?? [])))
 
 const chartSeries = computed(() => {
   const plot = plotter(peak.value)
@@ -138,9 +142,9 @@ const chartOptions = computed(() => ({
     tooltip: { enabled: false }
   },
   yaxis: {
-    min: 0,
-    max: axisFor(peak.value).max,
-    tickAmount: axisFor(peak.value).ticks,
+    min: axisFor(peak.value, trough.value).min,
+    max: axisFor(peak.value, trough.value).max,
+    tickAmount: axisFor(peak.value, trough.value).ticks,
     labels: {
       formatter: (value: number) => value === 0 ? '0' : axisFmt(value),
       style: { colors: '#FFFFFF', fontSize: '13px', fontWeight: 500 }

@@ -78,7 +78,8 @@
                     {{ currentLang === 'ar' ? 'الرصيد الافتتاحي' : 'Opening Balance' }}
                 </td>
                 <td v-for="(value, idx) in openingBalance" :key="idx" :class="[cellPadX, isDark ? 'text-[#F5E6A8]' : 'text-black', 'text-right rtl:text-left font-medium text-[14px]']">
-                    {{ value }}
+                    <span v-if="loading" class="inline-block h-[14px] w-16 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-black/10'"></span>
+                    <template v-else>{{ value }}</template>
                 </td>
             </tr>
 
@@ -95,7 +96,8 @@
                     </div>
                 </td>
                 <td v-for="(value, idx) in incoming" :key="idx" :class="[cellPadX, isDark ? 'text-white/80' : 'text-black', 'text-right rtl:text-left font-medium text-[14px]']">
-                    {{ value }}
+                    <span v-if="loading" class="inline-block h-[14px] w-16 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-black/10'"></span>
+                    <template v-else>{{ value }}</template>
                 </td>
             </tr>
 
@@ -112,7 +114,8 @@
                     </div>
                 </td>
                 <td v-for="(value, idx) in outgoing" :key="idx" :class="[cellPadX, isDark ? 'text-white/80' : 'text-black', 'text-right rtl:text-left font-medium text-[14px]']">
-                    {{ value }}
+                    <span v-if="loading" class="inline-block h-[14px] w-16 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-black/10'"></span>
+                    <template v-else>{{ value }}</template>
                 </td>
             </tr>
 
@@ -122,7 +125,8 @@
                     {{ currentLang === 'ar' ? 'صافي الحركات' : 'Net Movements' }}
                 </td>
                 <td v-for="(value, idx) in netMovements" :key="idx" :class="[cellPadX, 'text-right rtl:text-left font-medium text-[14px]']">
-                    {{ value }}
+                    <span v-if="loading" class="inline-block h-[14px] w-16 rounded animate-pulse bg-black/10"></span>
+                    <template v-else>{{ value }}</template>
                 </td>
             </tr>
 
@@ -132,7 +136,8 @@
                     {{ currentLang === 'ar' ? 'التدفق الخارج لشراء الأصول' : 'Outflow for Asset purchase' }}
                 </td>
                 <td v-for="(value, idx) in assetPurchase" :key="idx" :class="[cellPadX, isDark ? 'text-white/80' : 'text-black', 'text-right rtl:text-left font-medium text-[14px]']">
-                    {{ value }}
+                    <span v-if="loading" class="inline-block h-[14px] w-16 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-black/10'"></span>
+                    <template v-else>{{ value }}</template>
                 </td>
             </tr>
             <tr class="transition-all duration-500" :class="isDark ? 'bg-[#002e26] border-b border-white/10' : 'bg-white border-b border-gray-100'">
@@ -140,7 +145,8 @@
                     {{ currentLang === 'ar' ? 'التدفق الخارج لسداد القرض' : 'Outflow for Loan repayment' }}
                 </td>
                 <td v-for="(value, idx) in loanRepayment" :key="idx" :class="[cellPadX, isDark ? 'text-white/80' : 'text-black', 'text-right rtl:text-left font-medium text-[14px]']">
-                    {{ value }}
+                    <span v-if="loading" class="inline-block h-[14px] w-16 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-black/10'"></span>
+                    <template v-else>{{ value }}</template>
                 </td>
             </tr>
             <tr class="transition-all duration-500" :class="isDark ? 'bg-[#002e26] border-b border-white/10' : 'bg-white border-b border-gray-100'">
@@ -148,7 +154,8 @@
                     {{ currentLang === 'ar' ? 'تدفق/خروج من المساهمين' : 'Inflow/ outflow from shareholders' }}
                 </td>
                 <td v-for="(value, idx) in shareholders" :key="idx" :class="[cellPadX, isDark ? 'text-white/80' : 'text-black', 'text-right rtl:text-left font-medium text-[14px]']">
-                    {{ value }}
+                    <span v-if="loading" class="inline-block h-[14px] w-16 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-black/10'"></span>
+                    <template v-else>{{ value }}</template>
                 </td>
             </tr>
             <tr class="transition-all duration-500" :class="isDark ? 'bg-[#002e26] border-b border-white/10' : 'bg-white border-b border-gray-100'">
@@ -156,7 +163,8 @@
                     {{ currentLang === 'ar' ? 'التسويات المدفوعة مقدماً' : 'Prepaid adjustments' }}
                 </td>
                 <td v-for="(value, idx) in prepaidAdjustments" :key="idx" :class="[cellPadX, isDark ? 'text-white/80' : 'text-black', 'text-right rtl:text-left font-medium text-[14px]']">
-                    {{ value }}
+                    <span v-if="loading" class="inline-block h-[14px] w-16 rounded animate-pulse" :class="isDark ? 'bg-white/10' : 'bg-black/10'"></span>
+                    <template v-else>{{ value }}</template>
                 </td>
             </tr>
         </tbody>
@@ -167,7 +175,8 @@
                     {{ currentLang === 'ar' ? 'الإغلاق' : 'Closing' }}
                 </td>
                 <td v-for="(value, idx) in closing" :key="idx" :class="[cellPadX, 'text-right rtl:text-left font-medium text-[14px]', !isModal && idx === closing.length - 1 ? 'rounded-br-3xl rtl:rounded-br-none rtl:rounded-bl-3xl' : '']">
-                    {{ value }}
+                    <span v-if="loading" class="inline-block h-[14px] w-16 rounded animate-pulse bg-black/10"></span>
+                    <template v-else>{{ value }}</template>
                 </td>
             </tr>
         </tfoot>
@@ -192,7 +201,7 @@ const props = defineProps({
 const { isDark } = useTheme()
 const currentLang = useState('currentLang', () => 'en')
 
-const { summary, fallbackMonths } = useCashFlow()
+const { summary, fallbackMonths, loading } = useCashFlow()
 
 const months          = computed(() => summary.value?.months          ?? [])
 const openingBalance  = computed(() => summary.value?.openingBalance  ?? [])
